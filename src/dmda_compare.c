@@ -18,7 +18,7 @@ PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 	PetscInt cx1,cy1,cz1 , cx2,cy2,cz2;
 	PetscInt dim1 , dim2;
 	PetscInt sw1 , sw2;
-	DMDAPeriodicType wrap1 , wrap2;
+	DMDABoundaryType wrap1X,wrap1Y,wrap1Z, wrap2X,wrap2Y,wrap2Z;
 	DMDAStencilType st1 , st2;
 	MPI_Comm comm;
 	PetscMPIInt rank;
@@ -28,8 +28,8 @@ PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 	PetscFunctionBegin;
 	*flg = PETSC_TRUE;
 
-	ierr = DMDAGetInfo( da1, &dim1, &M1,&N1,&P1, &cx1,&cy1,&cz1, 0, &sw1, &wrap1, &st1 );CHKERRQ(ierr);
-	ierr = DMDAGetInfo( da2, &dim2, &M2,&N2,&P2, &cx2,&cy2,&cz2, 0, &sw2, &wrap2, &st2 );CHKERRQ(ierr);
+	ierr = DMDAGetInfo( da1, &dim1, &M1,&N1,&P1, &cx1,&cy1,&cz1, 0, &sw1, &wrap1X,&wrap1Y,&wrap1Z, &st1 );CHKERRQ(ierr);
+	ierr = DMDAGetInfo( da2, &dim2, &M2,&N2,&P2, &cx2,&cy2,&cz2, 0, &sw2, &wrap2X,&wrap2Y,&wrap2Z, &st2 );CHKERRQ(ierr);
 	
 	ierr = DMDAGetCorners( da1, &si1,&sj1,&sk1 , &mx1,&my1,&mz1 );CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da2, &si2,&sj2,&sk2 , &mx2,&my2,&mz2 );CHKERRQ(ierr);
@@ -49,7 +49,11 @@ PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 	if( cz1 != cz2 ) {	__DMDACompareStructures( "pz",cz1,cz2 );		*flg = PETSC_FALSE;	}
 	
 	if( sw1 != sw2 ) {		__DMDACompareStructures( "stencil_width",sw1,sw2 );		*flg = PETSC_FALSE;	}
-	if( wrap1 != wrap2 ) {	__DMDACompareStructures( "wrap",wrap1,wrap2 );			*flg = PETSC_FALSE;	}
+
+	if( wrap1X != wrap2X ) {  __DMDACompareStructures( "wrapX",wrap1X,wrap2X );		*flg = PETSC_FALSE;	}
+        if( wrap1Y != wrap2Y ) {  __DMDACompareStructures( "wrapY",wrap1Y,wrap2Y );             *flg = PETSC_FALSE;     }
+        if( wrap1Z != wrap2Z ) {  __DMDACompareStructures( "wrapZ",wrap1Z,wrap2Z );             *flg = PETSC_FALSE;     }
+
 	
 	if( si1 != si2 ) {	__DMDACompareStructures( "si",si1,si2 );		*flg = PETSC_FALSE;	}
 	if( sj1 != sj2 ) {	__DMDACompareStructures( "sj",sj1,sj2 );		*flg = PETSC_FALSE;	}

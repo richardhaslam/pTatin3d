@@ -13,8 +13,10 @@ extern PetscErrorCode DMView_DA_Private(DM da);
 */
 #undef __FUNCT__
 #define __FUNCT__ "x_DMDACreate3d"
-PetscErrorCode  x_DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilType stencil_type,PetscInt M,
-														 PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
+PetscErrorCode  x_DMDACreate3d(
+  MPI_Comm comm,DMDABoundaryType wrap[],DMDAStencilType stencil_type,
+  PetscInt M, PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,
+  PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscErrorCode ierr;
 	
@@ -23,7 +25,7 @@ PetscErrorCode  x_DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilTy
   ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
-  ierr = DMDASetPeriodicity(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, wrap[0],wrap[1],wrap[2]);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
@@ -45,14 +47,12 @@ PetscErrorCode  x_DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilTy
  */
 #undef __FUNCT__
 #define __FUNCT__ "DMDACreate3dRedundant"
-PetscErrorCode DMDACreate3dRedundant(DM da,
-																	 PetscInt si, PetscInt ei, PetscInt sj, PetscInt ej, PetscInt sk, PetscInt ek,
-																	 PetscInt n_dofs,
-																	 DM *_seq_DA )
+PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj, PetscInt ej, PetscInt sk, PetscInt ek,PetscInt n_dofs,DM *_seq_DA )
 {
 	PetscInt M,N,P,dof;
 	PetscInt sw;
-	DMDAPeriodicType wrap;
+	DMDABoundaryType wrap[3];
+	DMDABoundaryType wrapNP[] = {DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE};
 	DMDAStencilType st;
 	DM _sda;
 	PetscInt i,j,k,c;
@@ -66,15 +66,15 @@ PetscErrorCode DMDACreate3dRedundant(DM da,
 	PetscErrorCode ierr;
 	
 	
-	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap,&st );CHKERRQ(ierr);
+	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap[0],&wrap[1],&wrap[2],&st );CHKERRQ(ierr);
 	/* check ranges */
-	if( si < 0 || ei > M ) {
+	if( si < 0 || (ei-1) > M-1 ) {
 		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in i-direction to gather is too large" );
 	}
-	if( sj < 0 || ej > N ) {
+	if( sj < 0 || (ej-1) > N-1 ) {
 		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in j-direction to gather is too large" );
 	}
-	if( sk < 0 || ek > P ) {
+	if( sk < 0 || (ek-1) > P-1 ) {
 		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in k-direction to gather is too large" );
 	}
 
@@ -145,14 +145,14 @@ PetscErrorCode DMDACreate3dRedundant(DM da,
 	*/
 #endif
 	
-	ierr = x_DMDACreate3d( PETSC_COMM_SELF, DMDA_NONPERIODIC, st, (ei-si),(ej-sj),(ek-sk), PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, n_dofs, sw, 0,0,0, &_sda );CHKERRQ(ierr);
+	ierr = x_DMDACreate3d( PETSC_COMM_SELF, wrapNP, st, (ei-si),(ej-sj),(ek-sk), PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, n_dofs, sw, 0,0,0, &_sda );CHKERRQ(ierr);
 	/* more hacky shit due to DMSetFromOptions() in constructor */
 	{
 		DM_DA          *dd = (DM_DA*)_sda->data;
 		DM dd_da_coordinates;
 		PetscInt _m,_n,_p,_M,_N,_P;
-		ierr = DMDAGetInfo(_sda,0,&_m,&_n,&_p,&_M,&_N,&_P,0,0,0,0);CHKERRQ(ierr);
-		ierr = x_DMDACreate3d(((PetscObject)_sda)->comm,st,DMDA_STENCIL_BOX,_m,_n,_p,_M,_N,_P,3,sw,0,0,0,&dd_da_coordinates);CHKERRQ(ierr);
+		ierr = DMDAGetInfo(_sda,0,&_m,&_n,&_p,&_M,&_N,&_P,0,0,0,0,0,0);CHKERRQ(ierr);
+		ierr = x_DMDACreate3d(((PetscObject)_sda)->comm,wrapNP,st,_m,_n,_p,_M,_N,_P,3,sw,0,0,0,&dd_da_coordinates);CHKERRQ(ierr);
 		dd->da_coordinates = dd_da_coordinates;
 	
 	}
@@ -173,11 +173,11 @@ PetscErrorCode DMDACreate3dRedundant(DM da,
 	/* Since the new da is sequential, we don't need to call DMDAUpdateGhostedCoordinates() */
 	
 	/* tidy */
-	ierr = VecScatterDestroy(sctx);CHKERRQ(ierr);
-	ierr = ISDestroy(is_fine);CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&sctx);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_fine);CHKERRQ(ierr);
 	ierr = PetscFree(fine_indices);CHKERRQ(ierr);
-	ierr = ISDestroy(is_local);CHKERRQ(ierr);
-	ierr = VecDestroy(global_coords_fine_NATURAL);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_local);CHKERRQ(ierr);
+	ierr = VecDestroy(&global_coords_fine_NATURAL);CHKERRQ(ierr);
 	
 	*_seq_DA = _sda;
 	

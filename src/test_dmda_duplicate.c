@@ -34,7 +34,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturb)
 	
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	avgdx = (gmax[0]-gmin[0])/( (PetscReal)(M-1) );
 	avgdy = (gmax[1]-gmin[1])/( (PetscReal)(N-1) );
 	avgdz = (gmax[2]-gmin[2])/( (PetscReal)(P-1) );
@@ -66,7 +66,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturb)
 	
 	
 	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
-	ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+	ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }
@@ -87,7 +87,7 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	PetscFunctionBegin;
 	
 	/* create da1 */
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 
 	/* set an aspect ratio box, then perturb the coords */	
 	x0 = y0 = z0 = -1.0;
@@ -103,7 +103,7 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	avgdx = (gmax[0]-gmin[0])/( (PetscReal)(M-1) );
 	avgdy = (gmax[1]-gmin[1])/( (PetscReal)(N-1) );
 	avgdz = (gmax[2]-gmin[2])/( (PetscReal)(P-1) );
@@ -120,8 +120,8 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = DMDAViewPetscVTK(da, PETSC_NULL, "test_dmda_dup_1.vtk");CHKERRQ(ierr);
 	ierr = DMDAViewPetscVTK(da2, PETSC_NULL, "test_dmda_dup_2.vtk");CHKERRQ(ierr);
 
-	ierr = DMDestroy(da);CHKERRQ(ierr);
-	ierr = DMDestroy(da2);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
+	ierr = DMDestroy(&da2);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }

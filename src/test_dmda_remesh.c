@@ -1,10 +1,9 @@
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
-#define _GNU_SOURCE
 
 #include <petsc.h>
 #include <petscvec.h>
@@ -29,7 +28,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -42,8 +41,8 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
 
 	/* remesh */
 	plane[0].x = -1.5;   plane[0].y = -1.1;   plane[0].z = -2.0;
@@ -59,11 +58,10 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	
-	
-	ierr = DMDestroy(da);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }
@@ -83,7 +81,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -96,8 +94,8 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr  = VecDestroy(&x);CHKERRQ(ierr);
 	
 	/* remesh */
 	plane[0].x = -1.5;   plane[0].y = -1.1;   plane[0].z = -2.0;
@@ -113,12 +111,12 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr  = VecDestroy(&x);CHKERRQ(ierr);
 	
 	
-	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d(da,0,P-1);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d(da,0,P);CHKERRQ(ierr);
 	
 	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -126,11 +124,10 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr  = VecDestroy(&x);CHKERRQ(ierr);
 	
-	
-	ierr = DMDestroy(da);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }

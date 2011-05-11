@@ -26,7 +26,7 @@ PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscIn
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -48,10 +48,10 @@ PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscIn
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr  = VecDestroy(&x);CHKERRQ(ierr);
 	
-	ierr = DMDestroy(da);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }

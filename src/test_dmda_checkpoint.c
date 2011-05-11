@@ -36,7 +36,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	PetscOptionsGetInt( PETSC_NULL, "-my", &ny, 0 );
 	PetscOptionsGetInt( PETSC_NULL, "-mz", &nz, 0 );
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -66,7 +66,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	/* dump field to disk */
 	ierr = PetscViewerBinaryOpen( ((PetscObject)da)->comm, "dmda_checkpoint_stressfield.dat", FILE_MODE_WRITE, &v );CHKERRQ(ierr);
 	ierr = VecView( x, v );CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(v);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
 
 	/* dump coords to disk */
 	/*
@@ -79,8 +79,8 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	/* dump dm to disk */
 	ierr = DMDAPackDataToFile( da, "dmda_checkpoint_output.dat" );CHKERRQ(ierr);
 	
-	ierr = DMDestroy(da);CHKERRQ(ierr);
-	ierr = VecDestroy( x );CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -112,8 +112,8 @@ PetscErrorCode test_dmda_checkpoint_load( void )
 	/* dump field to vtk */
 	ierr = DMDAViewPetscVTK(da, x, "dmda_checkpoint_2.vtk");CHKERRQ(ierr);
 	
-	ierr = DMDestroy(da);CHKERRQ(ierr);
-	ierr = VecDestroy(x);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

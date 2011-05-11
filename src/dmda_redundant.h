@@ -5,10 +5,7 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
-PetscErrorCode DMDACreate3dRedundant(DM da,
-																		 PetscInt si, PetscInt ei, PetscInt sj, PetscInt ej, PetscInt sk, PetscInt ek,
-																		 PetscInt n_dofs,
-																		 DM *_seq_DM );
+PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj, PetscInt ej, PetscInt sk, PetscInt ek, PetscInt n_dofs, DM *_seq_DM );
 
 
 #endif

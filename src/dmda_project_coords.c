@@ -33,7 +33,7 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 		ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 		ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 		ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterDestroy(inject);CHKERRQ(ierr);
+		ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
 	}
 	
 	/* update ghost coordinates for all levels except the finest */
@@ -65,7 +65,7 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 	ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterDestroy(inject);CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
 	
 	/* update ghost coordinates */
 	ierr = DMDAUpdateGhostedCoordinates(dac);CHKERRQ(ierr);

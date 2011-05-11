@@ -1,10 +1,10 @@
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
-#define _GNU_SOURCE
 
 #include <petsc.h>
 #include <petscvec.h>
@@ -35,7 +35,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
 	
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	avgdx = (gmax[0]-gmin[0])/( (PetscReal)(M-1) );
 	avgdy = (gmax[1]-gmin[1])/( (PetscReal)(N-1) );
 	avgdz = (gmax[2]-gmin[2])/( (PetscReal)(P-1) );
@@ -67,7 +67,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
 	
 	
 	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
-	ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+	ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }
@@ -88,7 +88,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -96,7 +96,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	avgdx = (gmax[0]-gmin[0])/( (PetscReal)(M-1) );
 	avgdy = (gmax[1]-gmin[1])/( (PetscReal)(N-1) );
 	avgdz = (gmax[2]-gmin[2])/( (PetscReal)(P-1) );
@@ -118,8 +118,8 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr  = VecDestroy(&x);CHKERRQ(ierr);
 
 	{
 		char *name;
@@ -134,12 +134,12 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da_red, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(x);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+	ierr  = VecDestroy(&x);CHKERRQ(ierr);
 	
 	
-	ierr = DMDestroy(da);CHKERRQ(ierr);
-	ierr = DMDestroy(da_red);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
+	ierr = DMDestroy(&da_red);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }
