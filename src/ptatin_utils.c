@@ -1,4 +1,8 @@
 
+#include "errno.h"
+#include "sys/types.h"
+#include "sys/stat.h"
+
 #include "petsc.h"
 #include "ptatin_utils.h"
 
