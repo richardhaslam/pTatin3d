@@ -48,6 +48,24 @@ PetscErrorCode BCListDestroy(BCList *list)
 {
 	BCList         ll = *list;
 	PetscErrorCode ierr;
+
+	{
+		PetscBool isdir;
+		PetscInt n,cnt;
+
+		cnt = 0;
+		for (n=0; n<ll->L; n++) {
+			ierr = BCListIsDirichlet(ll->dofidx_global[n],&isdir);CHKERRQ(ierr);
+			if (isdir==PETSC_TRUE) { cnt++; }
+		}
+		PetscPrintf(PETSC_COMM_WORLD,"BCList(global): only %D of %D entries need to be stored \n", cnt, ll->L );
+		cnt = 0;
+		for (n=0; n<ll->L_local; n++) {
+			ierr = BCListIsDirichlet(ll->dofidx_local[n],&isdir);CHKERRQ(ierr);
+			if (isdir==PETSC_TRUE) { cnt++; }
+		}
+		PetscPrintf(PETSC_COMM_WORLD,"BCList(local): only %D of %D entries need to be stored \n", cnt, ll->L );
+	}
 	
 	ierr = PetscFree(ll->vals_global);CHKERRQ(ierr);
 	ierr = PetscFree(ll->vals_local);CHKERRQ(ierr);
