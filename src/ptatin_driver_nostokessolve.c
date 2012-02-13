@@ -63,7 +63,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
-	
+/*	
 	{	
 		PetscScalar zero = 0.0;
 		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -90,8 +90,14 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	}
-	
-	
+	{
+		BCList flat;
+		
+		ierr = BCListFlattenedCreate(user->stokes_ctx->u_bclist,&flat);CHKERRQ(ierr);
+		ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
+		user->stokes_ctx->u_bclist = flat;
+	}
+*/	
 	
 	
 	
@@ -100,6 +106,14 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	
+	{
+		Vec X;
+		
+		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
+		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+
+	}
 	/* dummy outputting */
 	{
 		Vec X;

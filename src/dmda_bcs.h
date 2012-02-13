@@ -55,4 +55,11 @@ PetscErrorCode BCListInsertLocal(BCList list,Vec y);
 PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc doflocation,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscScalar*,void*),void *ctx);
 PetscBool BCListEvaluator_constant( PetscScalar position[], PetscScalar *value, void *ctx );
 
+/* flattened (memory efficient versions) */
+PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat);
+PetscErrorCode BCListFlatInsert(BCList list,Vec y);
+PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y);
+PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F);
+
+
 #endif

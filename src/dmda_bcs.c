@@ -66,11 +66,20 @@ PetscErrorCode BCListDestroy(BCList *list)
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"BCList(local): only %D of %D entries need to be stored \n", cnt, ll->L );
 	}
-	
-	ierr = PetscFree(ll->vals_global);CHKERRQ(ierr);
-	ierr = PetscFree(ll->vals_local);CHKERRQ(ierr);
-	ierr = PetscFree(ll->dofidx_global);CHKERRQ(ierr);
-	ierr = PetscFree(ll->dofidx_local);CHKERRQ(ierr);
+
+	if (ll->vals_global != ll->vals_local) {
+		ierr = PetscFree(ll->vals_global);CHKERRQ(ierr);
+		ierr = PetscFree(ll->vals_local);CHKERRQ(ierr);
+	} else {
+		ierr = PetscFree(ll->vals_global);CHKERRQ(ierr);
+	}
+
+	if (ll->dofidx_global != ll->dofidx_local) {
+		ierr = PetscFree(ll->dofidx_global);CHKERRQ(ierr);
+		ierr = PetscFree(ll->dofidx_local);CHKERRQ(ierr);
+	} else {
+		ierr = PetscFree(ll->dofidx_global);CHKERRQ(ierr);
+	}
 	ierr = PetscFree(ll->scale_global);CHKERRQ(ierr);
 	
 	ierr = DMDestroy(&ll->dm);CHKERRQ(ierr);
@@ -649,6 +658,195 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 	ierr = BCListRestoreGlobalIndices(list,&L,&idx);
 	ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	ierr = BCListGlobalToLocal(list);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/* FLATTENED VARIANT */
+#undef __FUNCT__
+#define __FUNCT__ "BCListFlattenedCreate"
+PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
+{
+	PetscErrorCode ierr;
+	BCList F;
+	PetscMPIInt nproc;
+	PetscInt count,k;
+	PetscReal mem_usage_min,mem_usage_max,mem_usage = 0.0;
+	
+	PetscFunctionBegin;
+	
+	
+	ierr = BCListCreate(&F);CHKERRQ(ierr);
+	F->dm = std->dm;
+	ierr = PetscObjectReference((PetscObject)F->dm);CHKERRQ(ierr);
+	F->blocksize = std->blocksize;
+	
+	
+	/* two pass */
+	
+	/* count global size */
+	count = 0;
+	for (k=0; k<std->L; k++) {
+		if (std->dofidx_global[k] == BCList_DIRICHLET) {
+			count++;
+		}
+	}
+	
+	ierr = PetscMalloc( sizeof(PetscInt)*count,&F->dofidx_global );CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscInt)*count);
+	ierr = PetscMalloc( sizeof(PetscScalar)*count,&F->vals_global );CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
+	ierr = PetscMalloc( sizeof(PetscScalar)*count,&F->scale_global );CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*count);
+	count = 0;
+	for (k=0; k<std->L; k++) {
+		if (std->dofidx_global[k] == BCList_DIRICHLET) {
+			F->dofidx_global[count] = k;
+			F->vals_global[count]   = std->vals_global[k];
+			F->scale_global[count]  = std->scale_global[k];
+
+			count++;
+		}
+	}
+	F->L = count;
+	
+	ierr = MPI_Comm_size(((PetscObject)std->dm)->comm,&nproc);CHKERRQ(ierr);
+	if (nproc==1) {
+		F->vals_local   = F->vals_global;
+		F->dofidx_local = F->dofidx_global;
+		F->L_local      = F->L;
+	} else {
+	
+		/* count global size */
+		count = 0;
+		for (k=0; k<std->L_local; k++) {
+			if (std->dofidx_local[k] == BCList_DIRICHLET) {
+				count++;
+			}
+		}
+		
+		ierr = PetscMalloc( sizeof(PetscInt)*count,&F->dofidx_local );CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscInt)*count);  
+		ierr = PetscMalloc( sizeof(PetscScalar)*count,&F->vals_local );CHKERRQ(ierr);   mem_usage += (PetscScalar)(sizeof(PetscInt)*count);
+		
+		count = 0;
+		for (k=0; k<std->L; k++) {
+			if (std->dofidx_local[k] == BCList_DIRICHLET) {
+				F->dofidx_local[count] = k;
+				F->vals_local[count]   = std->vals_local[k];
+				
+				count++;
+			}
+		}
+		F->L_local = count;
+		
+	}
+	
+	mem_usage = mem_usage * 1.0e-6;
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,((PetscObject)std->dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,((PetscObject)std->dm)->comm);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
+	
+	
+	*flat = F;
+	
+	PetscFunctionReturn(0);
+}
+
+/* matrix free stuff */
+/*
+ if (isbc_local[i] == dirch) y[i] = xbc[i]
+ else                        y[i] = y[i] 
+ */
+#undef __FUNCT__
+#define __FUNCT__ "BCListFlatInsert"
+PetscErrorCode BCListFlatInsert(BCList list,Vec y)
+{
+	PetscInt m,k,L;
+	PetscInt *idx;
+	PetscScalar *LA_x,*LA_y;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = BCListGetGlobalIndices(list,&L,&idx);CHKERRQ(ierr);
+	ierr = BCListGetGlobalValues(list,&L,&LA_x);CHKERRQ(ierr);
+	ierr = VecGetArray(y,&LA_y);CHKERRQ(ierr);
+	ierr = VecGetLocalSize(y,&m);CHKERRQ(ierr);
+	for (k=0; k<L; k++) {
+		PetscInt dirichlet_idx = idx[k];
+
+		LA_y[dirichlet_idx] = LA_x[dirichlet_idx];
+	}
+	ierr = VecRestoreArray(y,&LA_y);CHKERRQ(ierr);
+	ierr = BCListRestoreGlobalIndices(list,&L,&idx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/*
+ if (isbc_local[i] == dirch) y[i] = xbc[i]
+ else                        y[i] = y[i] 
+ */
+#undef __FUNCT__
+#define __FUNCT__ "BCListFlatInsertLocal"
+PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
+{
+	PetscInt M,k,L;
+	const PetscInt *idx;
+	PetscScalar *LA_x,*LA_y;
+	PetscBool is_seq = PETSC_FALSE;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	L    = list->L_local;
+	idx  = list->dofidx_local;
+	LA_x = list->vals_local;
+	ierr = VecGetArray(y,&LA_y);CHKERRQ(ierr);
+	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
+	
+	/* debug error checking */
+	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
+	
+	for (k=0; k<L; k++) {
+		PetscInt dirichlet_idx = idx[k];
+
+		LA_y[dirichlet_idx] = LA_x[dirichlet_idx];
+	}
+	ierr = VecRestoreArray(y,&LA_y);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/*
+ Apply's
+ F = scale(X-phi) where ever a dirichlet is encountered.
+ */
+#undef __FUNCT__
+#define __FUNCT__ "BCListFlatResidualDirichlet"
+PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
+{
+	PetscInt m,k,L;
+	const PetscInt *idx;
+	PetscScalar *LA_S,*LA_X,*LA_F,*LA_phi;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	
+	L      = list->L;
+	idx    = list->dofidx_global;
+	LA_phi = list->vals_global;
+	LA_S   = list->scale_global;
+	
+	ierr = VecGetArray(X,&LA_X);CHKERRQ(ierr);
+	ierr = VecGetArray(F,&LA_F);CHKERRQ(ierr);
+	
+	/* debug error checking */
+	for (k=0; k<L; k++) {
+		PetscInt dirichlet_idx = idx[k];
+
+		LA_F[dirichlet_idx] = LA_S[dirichlet_idx]*(LA_X[dirichlet_idx] - LA_phi[dirichlet_idx]);
+	}
+	ierr = VecRestoreArray(X,&LA_X);CHKERRQ(ierr);
+	ierr = VecRestoreArray(F,&LA_F);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
