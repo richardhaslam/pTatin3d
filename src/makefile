@@ -52,9 +52,9 @@ export EXTERNAL_LIBS	=	${PETSC_LIB}
 export TATIN_LIB			=	-L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels ${EXTERNAL_LIBS}
 
 ## or run >make CFLAGS='-g -O0'
-export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall
-export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall -Wno-unused-variable
+export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
 export TATIN_CFLAGS					= ${TATIN_CFLAGS_DEBUG}
 export TATIN_CC							= ${PCC}
 
