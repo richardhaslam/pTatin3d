@@ -64,21 +64,27 @@ PetscErrorCode BCListDestroy(BCList *list)
 #define __FUNCT__ "BCListSetSizes"
 PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_local)
 {
+	PetscReal mem_usage_min,mem_usage_max,mem_usage = 0.0;
 	PetscErrorCode ierr;
 	
 	list->blocksize = bs;
 	list->N  = N;
 	list->L  = bs * N;
-	ierr = PetscMalloc( sizeof(PetscInt)*list->L,    &list->dofidx_global);CHKERRQ(ierr);
-	ierr = PetscMalloc( sizeof(PetscScalar)*list->L, &list->vals_global);CHKERRQ(ierr);
-	ierr = PetscMalloc( sizeof(PetscScalar)*list->L, &list->scale_global); CHKERRQ(ierr);
+	ierr = PetscMalloc( sizeof(PetscInt)*list->L,    &list->dofidx_global);CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscInt)*list->L);
+	ierr = PetscMalloc( sizeof(PetscScalar)*list->L, &list->vals_global);CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L);
+	ierr = PetscMalloc( sizeof(PetscScalar)*list->L, &list->scale_global); CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L);
 	
 	list->N_local  = N_local;
 	list->L_local  = bs * N_local;
-	ierr = PetscMalloc( sizeof(PetscInt)*list->L_local,    &list->dofidx_local);CHKERRQ(ierr);
-	ierr = PetscMalloc( sizeof(PetscScalar)*list->L_local, &list->vals_local);CHKERRQ(ierr);
+	ierr = PetscMalloc( sizeof(PetscInt)*list->L_local,    &list->dofidx_local);CHKERRQ(ierr);  mem_usage += (PetscReal)(sizeof(PetscInt)*list->L_local);
+	ierr = PetscMalloc( sizeof(PetscScalar)*list->L_local, &list->vals_local);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L_local);
 	
 	ierr = BCListInitialize(list);CHKERRQ(ierr);
+	
+	mem_usage = mem_usage * 1.0e-6;
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,((PetscObject)list->dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,((PetscObject)list->dm)->comm);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	PetscFunctionReturn(0);
 }
