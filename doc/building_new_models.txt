@@ -1,0 +1,113 @@
+
+The idea we have for building models is that should be separated as much as possible
+from the core functionality of ptatin. That is, we want to seperate boundary conditions,
+mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (stokes).
+
+For this reason, we have a adopted a model structure in which models are compiled and combined into
+a separate, stand alone library. When using a ptatin_driver (i.e which is needed to solve something),
+we link the model library against the solver library.
+
+Models live under the directory
+	ptatin3d/src/models/
+the models are compiled into the following static library
+	ptatin3d/src/models/libptatin3dmodels.a
+	
+We have provided, as an example, a model called "template_model".
+	
+To add a model, add the directory name containing your model in
+	ptatin3d/src/models/makefile
+under the variable
+	TATIN_MODEL_DIR = \
+        template_model
+
+Within the directory
+	ptatin3d/src/models/template_model
+we have the files which define any data structures needed for the model,
+here called
+	template_modelctx.h
+and the file containing the model desription. A model description consists
+of defining the following operations.
+
+FP_pTatinModel_Initialize
+FP_pTatinModel_ApplyBoundaryCondition
+FP_pTatinModel_ApplyMaterialBoundaryCondition
+FP_pTatinModel_ApplyInitialMeshGeometry
+FP_pTatinModel_ApplyInitialMaterialGeometry
+FP_pTatinModel_UpdateMeshGeometry
+FP_pTatinModel_Output
+FP_pTatinModel_Destroy
+
+Most of these operations are self explainatory.
+The function FP_pTatinModel_Destroy() is used to destroy the memory required by an data structures 
+which were created as part of the model.
+
+To define the model we have to perform the following steps 
+1) pTatinModelCreate()
+Calling this creates a little structure to hold your function pointers and other model related information.
+
+2) pTatinModelSetName(...,MODELNAME);
+The variable in MODELNAME, will used as the command line arguement used to select the model
+	-patatin_model MODELNAME
+
+3) pTatinModelSetUserData()
+Set any data structures required by the model.
+
+4) Specify the function pointers. This is done via pTatinModelSetFunctionPointer().
+The second arg indicates which function pointer is used. These are defined via
+typedef enum { } pTatinModelOperation; in ptatin_models.h
+
+pTatinModelSetFunctionPointer(...,PTATIN_MODEL_APPLY_BC,my_apply_bc_function);
+pTatinModelSetFunctionPointer(...,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,my_apply_init_material_geom_function);
+
+5) Finally, you register the model via the call
+pTatinModelRegister()
+This will add your model definition into a list which ptatin will have access to.
+
+6) Finally, you need to edit
+	ptatin_models.c
+and add the function call to register your model.
+This should be done within
+		pTatinModelRegisterAll()
+as you'll note, you will see the "template" model registration function 	
+		pTatinModelRegister_Template();
+
+So you don't have the compiler warning about "implicitly defined function", simply add the protoytype as an extern, like
+	extern PetscErrorCode pTatinModelRegister_Template(void);
+
+*Note* 
+That there is also a makefile associated with each model.
+For example,
+	ptatin3d/src/models/template_model/makefile
+In general, the makefiles for each different model will all be very similar.
+It is recommended to use the model makefile identified above as the basis of a makefile for any new model.
+For most new models, one would simply have to list the C files used in defining the model in the variable
+
+## List source files here
+MODEL_SRC = \
+        template_model.c
+
+
+**Note**
+Models must be compiled at the root level of the code tree.
+That is, to make a model, you must run "make" from 
+	ptatin3d/src
+You cannot run make from within the model directory
+	ptatin3d/src/models
+or
+	ptatin3d/src/models/template_model
+
+If you ONLY want to compile the models within
+	ptatin3d/src/models
+then execute the following command
+	make models
+from the directory
+	ptatin3d/src
+
+
+DAM ~Feb 13, 2012
+
+
+
+
+
+
