@@ -1,6 +1,6 @@
 ## ==============================================================================
-##  make for tatin
 ##
+##     makefile for pTatin3d
 ##
 ## ==============================================================================
 
@@ -9,7 +9,7 @@ include ${PETSC_DIR}/conf/rules
 
 export TATIN_DIR	=	${PWD}
 
-export T_SRC	=	\
+export TATIN_SRC = \
 			dmda_update_coords.c \
 			dmda_project_coords.c \
 			dmda_compare.c \
@@ -18,60 +18,114 @@ export T_SRC	=	\
 			dmda_duplicate.c \
 			dmda_view_petscvtk.c \
 			dmda_checkpoint.c \
+			dmda_bcs.c \
+			dmda_element_q2p1.c \
+			element_type_Q2.c \
+			swarm_fields.c \
+			data_exchanger.c \
+			MPntStd_def.c \
+			MPntPStokes_def.c \
+			output_paraview.c \
+			material_point_std_utils.c \
+			ptatin_utils.c \
+			ptatin3d_stokes.c \
+			ptatin3d.c \
+			ptatin_models.c \
+			
+export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
-export T_OBJ	=	$(T_SRC:.c=.o)
+TATIN_TESTS	=	\
+			test_dmda_update_coords \
+			test_dmda_redundant \
+			test_dmda_remesh \
+			test_dmda_duplicate \
+			test_dmda_checkpoint \
+			test_model \
 
-TEST		=	test_dmda_update_coords \
-					test_dmda_redundant \
-					test_dmda_remesh \
-					test_dmda_duplicate \
-					test_dmda_checkpoint \
+TATIN_MODELS		=
+TATIN_DRIVERS		= \
+			ptatin_driver_nostokessolve \
 
-export INC		=	-I. -I${PETSC_DIR}/include
-export LIB		=	${PETSC_LIB}
+
+export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
+export EXTERNAL_LIBS	=	${PETSC_LIB}
+export TATIN_LIB			=	-L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels ${EXTERNAL_LIBS}
 
 ## or run >make CFLAGS='-g -O0'
-export CFLAGS_DEBUG	=	-O0 -g -Wall
-export CFLAGS_O2_OSX	=	-std=gnu99 -O2 -Wall -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export CFLAGS_O3_OSX	=	-std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export CFLAGS		= 	${CFLAGS_DEBUG}
+export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall
+export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS					= ${TATIN_CFLAGS_DEBUG}
+export TATIN_CC							= ${PCC}
 
 all: 
-	${MAKE} base_objects
-	${MAKE} libs
-	${MAKE} test
+	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
+	-@echo ${PWD}
+	
+	-@${MAKE} base_objects
+	-@${MAKE} libs
+	-@${MAKE} models
+	-@${MAKE} tests
+	-@${MAKE} drivers
+
 
 base_objects:
 	-@echo ""
 	-@echo "*** Creating ptatin object files ***"
-	@for a in ${T_OBJ} ; do \
+	@for a in ${TATIN_OBJ} ; do \
 		${MAKE} $$a; \
 	done
+
 
 libs: base_objects
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
-	-@ar rcs libptatin3d.a ${T_OBJ}
+	-@ar rcs libptatin3d.a ${TATIN_OBJ}
 
-test: libs
+
+tests: libs models
 	-@echo ""
 	-@echo "*** Building tests ***"
-	@for t in ${TEST} ; do \
+	@for t in ${TATIN_TESTS} ; do \
 		${MAKE} $${t}.o; \
-		${PCC} ${CFLAGS} -o $${t}.app $${t}.o ${T_OBJ} ${INC} ${LIB}; \
+		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
 	done
 
-%.o: %.c ${T_SRC}
-	-@echo ""
-	${PCC} ${CFLAGS} -c $*.c ${INC}
 
+models0: libs
+	-@echo ""
+	-@echo "*** Building pTatin models ***"
+	@for t in ${TATIN_MODELS} ; do \
+		-@${MAKE} $${t}.o; \
+	done
+
+models: libs
+	-@echo ""
+	-@echo "*** Building pTatin models ***"
+	-@${MAKE} -C models/
+
+
+drivers: libs models
+	-@echo ""
+	-@echo "*** Building pTatin executables ***"
+	@for t in ${TATIN_DRIVERS} ; do \
+		${MAKE} $${t}.o; \
+		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
+	done
+
+
+%.o: %.c
+	-@echo ""
+	${PCC} ${TATIN_CFLAGS} -c $*.c ${TATIN_INC}
 
 
 clean_all:
 	-@echo ""
+	-@echo "*** Removing models ***"
+	-@${MAKE} clean_all -C models/
 	-@echo "*** Removing base_objects ***"
-	-@rm -f ${T_OBJ}
+	-@rm -f ${TATIN_OBJ}
 	-@echo "*** Removing tests object files ***"
 	-@rm -f *.o
 	-@echo "*** Removing ptatin applications ***"
