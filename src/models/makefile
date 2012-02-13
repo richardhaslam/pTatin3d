@@ -1,7 +1,8 @@
 
 ## LIST MODEL DIRECTORIES HERE
 TATIN_MODEL_DIR = \
-	template_model
+	template_model \
+	viscous_sinker \
 
 
 

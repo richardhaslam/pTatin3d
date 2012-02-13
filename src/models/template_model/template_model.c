@@ -80,7 +80,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Template"
-PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,void *ctx)
+PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx)
 {
 	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
 	PetscErrorCode ierr;
@@ -93,7 +93,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Template"
-PetscErrorCode ModelOutput_Template(pTatinCtx c,void *ctx)
+PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
 	PetscErrorCode ierr;
@@ -117,7 +117,7 @@ PetscErrorCode ModelDestroy_Template(pTatinCtx c,void *ctx)
 	/* Free contents of structure */
 	
 	/* Free structure */
-	ierr = PetscFree(ctx);CHKERRQ(ierr);
+	ierr = PetscFree(data);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
