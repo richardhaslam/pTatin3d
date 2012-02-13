@@ -4,7 +4,7 @@
 
 #include "private/ptatin3d_ctx_impl.h"
 
-#include "element_type_q2.h"
+#include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
 #include "MPntStd_def.c"
 #include "MPntPStokes_def.h"
