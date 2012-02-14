@@ -18,21 +18,6 @@ typedef enum {
 } pTatinModelOperation;
 
 
-typedef struct _p_pTatinModel *pTatinModel;
-
-struct _p_pTatinModel {
-	pTatinCtx ptat_ctx;
-	char *model_name;
-	void *model_data;
-	PetscErrorCode (*FP_pTatinModel_Initialize)(pTatinCtx,void*);
-	PetscErrorCode (*FP_pTatinModel_ApplyBoundaryCondition)(pTatinCtx,void*);
-	PetscErrorCode (*FP_pTatinModel_ApplyMaterialBoundaryCondition)(pTatinCtx,void*);
-	PetscErrorCode (*FP_pTatinModel_ApplyInitialMeshGeometry)(pTatinCtx,void*);
-	PetscErrorCode (*FP_pTatinModel_ApplyInitialMaterialGeometry)(pTatinCtx,void*);
-	PetscErrorCode (*FP_pTatinModel_UpdateMeshGeometry)(pTatinCtx,Vec,void*);
-	PetscErrorCode (*FP_pTatinModel_Output)(pTatinCtx,Vec,const char*,void*);
-	PetscErrorCode (*FP_pTatinModel_Destroy)(pTatinCtx,void*);
-};
 
 extern pTatinModel *registered_model_list;
 

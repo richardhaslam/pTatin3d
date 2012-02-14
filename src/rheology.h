@@ -2,6 +2,8 @@
 #ifndef __ptatin_rheology_h__
 #define __ptatin_rheology_h__
 
+#include "petsc.h"
+#include "petscdm.h"
 #include "ptatin3d.h"
 
 typedef enum { 

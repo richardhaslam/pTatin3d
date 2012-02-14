@@ -3,9 +3,10 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
 
-#include "private/ptatin3d_ctx_impl.h"
 #include "ptatin3d.h"
+#include "private/ptatin_impl.h"
 
+#include "material_point_utils.h"
 #include "material_point_std_utils.h"
 #include "ptatin_models.h"
 #include "ptatin_utils.h"
@@ -123,6 +124,13 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 		ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(user,X,"step0");CHKERRQ(ierr);
 		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	}
+	{
+//		const int nf=2;
+//		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes }; 
+		const int nf=1;
+		const MaterialPointField mp_prop_list[] = { MPField_Stokes }; 
+		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test0");CHKERRQ(ierr);
 	}
 	
 	

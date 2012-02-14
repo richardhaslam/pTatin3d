@@ -1,22 +1,20 @@
 
 #include "petsc.h"
 
-
-#include "private/ptatin3d_ctx_impl.h"
+#include "ptatin3d.h"
+#include "ptatin3d_defs.h"
 
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-
 #include "material_point_std_utils.h"
-
 #include "ptatin_utils.h"
-#include "ptatin3d_defs.h"
-#include "ptatin3d.h"
 #include "ptatin3d_stokes.h"
 #include "output_paraview.h"
 #include "ptatin_models.h"
+
+#include "private/ptatin_impl.h"
 
 
 /* PHYSICS MESHES */
@@ -481,3 +479,43 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 	
 	PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetMaterialPoints"
+PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
+{
+	PetscErrorCode ierr;
+	if (db) { *db = ctx->materialpoint_db; }
+	if (de) { *de = ctx->materialpoint_ex; }
+	PetscFunctionReturn(0);
+}
+																			 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetModel"
+PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m)
+{
+	PetscErrorCode ierr;
+	if (m) { *m = ctx->model; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetRheology"
+PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r)
+{
+	PetscErrorCode ierr;
+	if (r) { *r = &ctx->rheology_constants; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetStokesContext"
+PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
+{
+	PetscErrorCode ierr;
+	if (s) { *s = ctx->stokes_ctx; }
+	PetscFunctionReturn(0);
+}
+
+

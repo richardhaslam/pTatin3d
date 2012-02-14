@@ -1,7 +1,7 @@
 
 
-#ifndef __ptatin3d_ctx_impl_h__
-#define __ptatin3d_ctx_impl_h__
+#ifndef __private_ptatin3d_ctx_impl_h__
+#define __private_ptatin3d_ctx_impl_h__
 
 #include "petsc.h"
 #include "dmda_bcs.h"

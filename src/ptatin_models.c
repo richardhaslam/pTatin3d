@@ -1,6 +1,7 @@
 
 #include "petsc.h"
 #include "ptatin3d.h"
+#include "private/ptatin_impl.h"
 #include "ptatin_models.h"
 
 pTatinModel *registered_model_list = NULL;

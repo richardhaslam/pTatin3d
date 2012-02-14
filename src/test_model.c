@@ -10,7 +10,7 @@ Run with:
 #define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
-#include "ptatin_models.h"
+#include "private/ptatin_impl.h"
 
 extern PetscErrorCode pTatinModelRegister_Template(void);
 

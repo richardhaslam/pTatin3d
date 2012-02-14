@@ -7,6 +7,13 @@
 #include "petscvec.h"
 #include "petscdm.h"
 
+
+
+typedef struct _p_pTatinCtx *pTatinCtx;
+typedef struct _p_pTatinModel *pTatinModel;
+typedef struct _p_PhysCompStokes *PhysCompStokes;
+
+
 /*
 #include "dmda_bcs.h"
 #include "dmda_checkpoint.h"
@@ -28,8 +35,9 @@
 #include "ptatin_models.h"
 */
 
-
-typedef struct _p_pTatinCtx *pTatinCtx;
+#include "swarm_fields.h"
+#include "data_exchanger.h"
+#include "rheology.h"
 
 
 PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user);
@@ -43,5 +51,10 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx);
 PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx);
 PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx);
 PetscErrorCode pTatinModelLoad(pTatinCtx ctx);
+
+PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de);
+PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m);
+PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r);
+PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s);
 
 #endif

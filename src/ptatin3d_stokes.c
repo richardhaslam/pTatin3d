@@ -1,11 +1,11 @@
 
 
 #include "petsc.h"
-#include "dmda_element_q2p1.h"
-
-#include "ptatin3d_defs.h"
 #include "ptatin3d.h"
-#include "ptatin3d_stokes.h"
+#include "dmda_element_q2p1.h"
+#include "ptatin3d_defs.h"
+
+#include "private/ptatin_impl.h"
 
 
 #undef __FUNCT__

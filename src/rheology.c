@@ -1,8 +1,8 @@
 
 #include "petsc.h"
 
-#include "private/ptatin3d_ctx_impl.h"
 #include "ptatin3d.h"
+#include "private/ptatin_impl.h"
 
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"

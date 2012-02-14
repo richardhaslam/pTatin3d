@@ -2,14 +2,14 @@
 
 #define _GNU_SOURCE
 #include "petsc.h"
+
+#include "ptatin3d.h"
+#include "private/ptatin_impl.h"
+
 #include "dmda_bcs.h"
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-#include "private/ptatin3d_ctx_impl.h"
-#include "ptatin3d.h"
-#include "ptatin_models.h"
-#include "rheology.h"
 
 #include "viscous_sinker_ctx.h"
 
