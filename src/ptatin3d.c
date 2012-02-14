@@ -6,7 +6,7 @@
 
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
-#include "MPntStd_def.c"
+#include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 
 #include "material_point_std_utils.h"
