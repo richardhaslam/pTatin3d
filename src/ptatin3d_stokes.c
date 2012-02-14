@@ -1,11 +1,12 @@
 
 
 #include "petsc.h"
-#include "ptatin3d.h"
-#include "dmda_element_q2p1.h"
 #include "ptatin3d_defs.h"
-
+#include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "dmda_element_q2p1.h"
+#include "quadrature.h"
+
 
 
 #undef __FUNCT__
@@ -157,15 +158,6 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	PetscFunctionReturn(0);
 }
 
-
-
-
-
-
-
-
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompCreateBoundaryList_Stokes"
 PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx)
@@ -185,4 +177,60 @@ PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompCreateVolumeQuadrature_Stokes"
+PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
+{
+	DM dav;
+	PetscInt lmx,lmy,lmz;
+	PetscInt np_per_dim,ncells;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	dav = ctx->dav;
+
+	np_per_dim = 3;
+  ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+	ncells = lmx * lmy * lmz;
+	ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,np_per_dim,ncells,&ctx->volQ);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_Velocity"
+PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])
+{
+  PetscInt n,idx;
+	
+  PetscFunctionBegin;
+  for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
+		idx = u_eqn[3*n  ];
+    fields_F[idx] += Fe_u[NSD*n  ];
+		
+		idx = u_eqn[3*n+1];
+    fields_F[idx] += Fe_u[NSD*n+1];
+
+		idx = u_eqn[3*n+2];
+    fields_F[idx] += Fe_u[NSD*n+1];
+}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_Pressure"
+PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(PetscScalar *fields_F,PetscInt p_eqn[],PetscScalar Fe_p[])
+{
+  PetscInt n,idx;
+	
+  PetscFunctionBegin;
+  for (n = 0; n<P_BASIS_FUNCTIONS; n++) {
+		idx = p_eqn[n];
+    fields_F[idx] += Fe_p[n];
+  }
+  PetscFunctionReturn(0);
+}
+
 

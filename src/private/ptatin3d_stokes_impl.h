@@ -11,7 +11,7 @@ struct _p_PhysCompStokes {
 	DM                      dav,dap;
   DM                      stokes_pack;
 	BCList                  u_bclist,p_bclist;
-	//	QuadratureStokes        Q;
+	Quadrature              volQ;
 	//	SurfaceQuadratureStokes surfQ[QUAD_EDGES]; /* four edges */
 	PetscBool               use_mf_stokes;
 };

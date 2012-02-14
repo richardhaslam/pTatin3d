@@ -12,6 +12,9 @@
 typedef struct _p_pTatinCtx *pTatinCtx;
 typedef struct _p_pTatinModel *pTatinModel;
 typedef struct _p_PhysCompStokes *PhysCompStokes;
+typedef struct _p_Quadrature *Quadrature;
+
+typedef enum { LINE_QUAD=0,SURFACE_QUAD,VOLUME_QUAD } QuadratureType;
 
 
 /*

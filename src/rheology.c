@@ -126,7 +126,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 	DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
 	mp_std    = PField_std->data; /* should write a function to do this */
 	mp_stokes = PField_stokes->data; /* should write a function to do this */
-	
+#if 0	
 	switch (user->coefficient_projection_type) {
 
 		case 0:			/* Perform P0 projection over Q2 element directly onyo uadrature points */
@@ -141,7 +141,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
 			break;
 	}
-	
+#endif	
   PetscFunctionReturn(0);
 }
 

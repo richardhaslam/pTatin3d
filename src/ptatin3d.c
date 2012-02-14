@@ -37,7 +37,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	
 	ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
 	ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
-	//	ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
+	ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
 	//	ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
 	
 	user->stokes_ctx = stokes;

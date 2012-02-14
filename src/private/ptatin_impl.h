@@ -5,5 +5,6 @@
 #include "ptatin3d_ctx_impl.h"
 #include "ptatin3d_stokes_impl.h"
 #include "ptatin_models_impl.h"
+#include "quadrature_impl.h"
 
 #endif

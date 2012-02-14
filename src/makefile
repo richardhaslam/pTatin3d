@@ -25,6 +25,7 @@ export TATIN_SRC = \
 			data_exchanger.c \
 			MPntStd_def.c \
 			MPntPStokes_def.c \
+			QPntVolCoefStokes_def.c \
 			output_paraview.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
@@ -35,6 +36,7 @@ export TATIN_SRC = \
 			rheology.c \
 			stokes_rheology_viscous.c \
 			stokes_form_function.c \
+			quadrature.c \
 			
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
