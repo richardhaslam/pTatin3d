@@ -9,6 +9,7 @@
 #include "private/ptatin3d_ctx_impl.h"
 #include "ptatin3d.h"
 #include "ptatin_models.h"
+#include "rheology.h"
 
 #include "viscous_sinker_ctx.h"
 
@@ -18,6 +19,7 @@
 PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+  RheologyConstants      *rheology;
 	PetscBool flg;
 	PetscErrorCode ierr;
 	
@@ -26,13 +28,8 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	/* set initial values for model parameters */
-	/* material properties */
-	data->nmaterials = 2;
-	data->eta0 = 1.0;
-	data->eta1 = 2.0;
-	data->rho0 = 0.0;
-	data->rho1 = 1.0;
+  rheology                = &c->rheology_constants;
+	rheology->rheology_type = RHEOLOGY_VISCOUS;
 	
 	/* box geometry */
 	data->Lx = 2.0;
@@ -55,12 +52,21 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	data->boundary_conditon_type = VSBC_FreeSlip;
 		
 	/* parse from command line */
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_eta0",&data->eta0,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_eta1",&data->eta1,&flg);CHKERRQ(ierr);
+	rheology->nphases_active = 2;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_rho0",&data->rho0,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_rho1",&data->rho1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
 
+	/* set initial values for model parameters */
+	/* material properties */
+	data->nmaterials = rheology->nphases_active;
+	data->eta0 = rheology->const_eta0[0];
+	data->eta1 = rheology->const_eta0[1];
+	data->rho0 = rheology->const_rho0[0];
+	data->rho1 = rheology->const_rho0[1];
+	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Lx",&data->Lx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Ly",&data->Ly,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Lz",&data->Lz,&flg);CHKERRQ(ierr);
