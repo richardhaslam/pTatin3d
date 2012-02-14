@@ -26,6 +26,7 @@ export TATIN_SRC = \
 			MPntStd_def.c \
 			MPntPStokes_def.c \
 			output_paraview.c \
+			material_point_utils.c \
 			material_point_std_utils.c \
 			ptatin_utils.c \
 			ptatin3d_stokes.c \
@@ -40,7 +41,7 @@ TATIN_TESTS	=	\
 			test_dmda_remesh \
 			test_dmda_duplicate \
 			test_dmda_checkpoint \
-			test_model \
+			test_model
 
 TATIN_MODELS		=
 TATIN_DRIVERS		= \
@@ -50,6 +51,7 @@ TATIN_DRIVERS		= \
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
 export EXTERNAL_LIBS	=	${PETSC_LIB}
 export TATIN_LIB			=	-L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels ${EXTERNAL_LIBS}
+#export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels 
 
 ## or run >make CFLAGS='-g -O0'
 export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall -Wno-unused-variable
@@ -81,13 +83,13 @@ libs: base_objects
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
-	-@ar rcs libptatin3d.a ${TATIN_OBJ}
+	ar rcs libptatin3d.a ${TATIN_OBJ}
 
 
 tests: libs models
 	-@echo ""
 	-@echo "*** Building tests ***"
-	@for t in ${TATIN_TESTS} ; do \
+	for t in ${TATIN_TESTS} ; do \
 		${MAKE} $${t}.o; \
 		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
 	done
