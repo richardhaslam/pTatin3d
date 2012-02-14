@@ -28,6 +28,7 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *
 					MPntStd   *marker_std;
 					
 					DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField_std);
+					DataFieldGetAccess(PField_std);
 					marker_std = PField_std->data;
 					
 					MPntStdVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntStd*)marker_std);
@@ -41,6 +42,7 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *
 					MPntPStokes *marker_stokes;
 					
 					DataBucketGetDataFieldByName(db, MPntPStokes_classname ,&PField_stokes);
+					DataFieldGetAccess(PField_stokes);
 					marker_stokes = PField_stokes->data;
 
 					MPntPStokesVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntPStokes*)marker_stokes);
@@ -77,6 +79,7 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vt
 				MPntStd   *marker_std;
 				
 				DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField_std);
+				DataFieldGetAccess(PField_std);
 				marker_std = PField_std->data;
 				
 				MPntStdVTKWriteBinaryAppendedDataAllFields(vtk_fp,(const int)npoints,(const MPntStd*)marker_std);
@@ -90,6 +93,7 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vt
 				MPntPStokes *marker_stokes;
 				
 				DataBucketGetDataFieldByName(db, MPntPStokes_classname ,&PField_stokes);
+				DataFieldGetAccess(PField_stokes);
 				marker_stokes = PField_stokes->data;
 				
 				MPntPStokesVTKWriteBinaryAppendedDataAllFields(vtk_fp,(const int)npoints,(const MPntPStokes*)marker_stokes);
