@@ -33,6 +33,7 @@ export TATIN_SRC = \
 			ptatin3d.c \
 			ptatin_models.c \
 			rheology.c \
+			stokes_rheology_viscous.c \	
 			
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 

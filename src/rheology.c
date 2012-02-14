@@ -9,6 +9,7 @@
 #include "swarm_fields.h"
 
 #include "rheology.h"
+#include "stokes_rheology_viscous.h"
 
 
 #undef __FUNCT__
@@ -86,9 +87,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 				been_here = 1;
 			}
 			/* update on markers */
-			//ierr = EvaluateRheologyNonlinearitiesMarkers_Viscous(user,dau,u,dap,p);CHKERRQ(ierr);
-			
-			
+			ierr = EvaluateRheologyNonlinearitiesMarkers_Viscous(user,dau,u,dap,p);CHKERRQ(ierr);
 			break;
 			
 		case RHEOLOGY_VISCO_PLASTIC:
@@ -99,7 +98,6 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			/* update on markers */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_PLASTIC using markers not defined");
 			//ierr = EvaluateRheologyNonlinearitiesMarkers_ViscoPlastic(user,dau,u,dap,p);CHKERRQ(ierr);
-			
 			break;
 			
 		case RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING:
