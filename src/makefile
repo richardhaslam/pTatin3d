@@ -32,6 +32,7 @@ export TATIN_SRC = \
 			ptatin3d_stokes.c \
 			ptatin3d.c \
 			ptatin_models.c \
+			rheology.c \
 			
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
@@ -89,7 +90,7 @@ libs: base_objects
 tests: libs models
 	-@echo ""
 	-@echo "*** Building tests ***"
-	for t in ${TATIN_TESTS} ; do \
+	@for t in ${TATIN_TESTS} ; do \
 		${MAKE} $${t}.o; \
 		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
 	done

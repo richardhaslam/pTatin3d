@@ -374,7 +374,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
   user->step             = 0;
   user->dt_adv           = user->dt_min;
   
-//  ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
+  ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
   
 	*ctx = user;
 	

@@ -9,7 +9,7 @@
 #include "data_exchanger.h"
 #include "ptatin3d_stokes.h"
 #include "ptatin_models.h"
-
+#include "rheology.h"
 
 struct _p_pTatinCtx {
 	PhysCompStokes stokes_ctx;
@@ -41,6 +41,9 @@ struct _p_pTatinCtx {
 	PetscInt  output_frequency;
 	PetscReal time_max,time;
 	
+	/* rheology */
+  RheologyConstants rheology_constants;
+
 	/* model function pointers */
 	pTatinModel model;
 };
