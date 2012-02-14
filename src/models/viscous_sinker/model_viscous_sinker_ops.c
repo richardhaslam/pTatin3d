@@ -31,8 +31,8 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	data->nmaterials = 2;
 	data->eta0 = 1.0;
 	data->eta1 = 2.0;
-	data->rho0 = 10.0;
-	data->rho1 = 10.0;
+	data->rho0 = 0.0;
+	data->rho1 = 1.0;
 	
 	/* box geometry */
 	data->Lx = 2.0;
