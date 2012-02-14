@@ -33,6 +33,7 @@ typedef struct _p_PhysCompStokes *PhysCompStokes;
 #include "ptatin_utils.h"
 #include "ptatin3d_stokes.h"
 #include "ptatin_models.h"
+#include "rheology.h"
 */
 
 #include "swarm_fields.h"
