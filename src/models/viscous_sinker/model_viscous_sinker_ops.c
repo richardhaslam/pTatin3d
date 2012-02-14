@@ -167,7 +167,7 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 			break;
 	}
 	
-	
+/*	
 	{
 		BCList flat;
 		
@@ -175,7 +175,7 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 		ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
 		user->stokes_ctx->u_bclist = flat;
 	}
-	
+*/	
 	PetscFunctionReturn(0);
 }
 

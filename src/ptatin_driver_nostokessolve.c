@@ -10,7 +10,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "material_point_std_utils.h"
 #include "ptatin_models.h"
 #include "ptatin_utils.h"
-
+#include "stokes_form_function.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_material_points_gmg"
@@ -100,10 +100,28 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	}
 */	
 	
+	/* test form function */
+	{
+		Vec X,F;
+		SNES snes;
+		
+		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+
+		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		
+		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+		
+		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+	}
 	
 	
 	
 	
+	
+	
+	/* test viewer */
 	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	
@@ -115,6 +133,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
 	}
+	
 	/* dummy outputting */
 	{
 		Vec X;
@@ -125,6 +144,8 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(user,X,"step0");CHKERRQ(ierr);
 		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	}
+	
+	/* test generic viewer */
 	{
 //		const int nf=2;
 //		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes }; 
