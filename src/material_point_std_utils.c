@@ -5,7 +5,7 @@
 #include "string.h"
 #include "math.h"
 
-#include "pTatin3d.h"
+#include "ptatin3d.h"
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
 #include "swarm_fields.h"
