@@ -180,11 +180,14 @@ PetscErrorCode ModelInitialize_GENE3D(pTatinCtx c,void *ctx)
 				free(option_name);
 			}
 				break;
+      case 3: {
+				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"visco-elasto-plastic rheology not handled in 3D tatin \n");
+      }
 		}
 	}
 	
 	/* bc type */
-	data->boundary_conditon_type = VSBC_FreeSlip;
+	data->boundary_conditon_type = GENEBC_FreeSlip;
 	
 	
 	/* set initial values for model parameters */
@@ -205,7 +208,7 @@ PetscErrorCode ModelApplyBoundaryCondition_GENE3D(pTatinCtx user,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	switch (data->boundary_conditon_type) {
-		case VSBC_FreeSlip:
+		case GENEBC_FreeSlip:
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			
@@ -216,7 +219,7 @@ PetscErrorCode ModelApplyBoundaryCondition_GENE3D(pTatinCtx user,void *ctx)
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			break;
 			
-		case VSBC_NoSlip:
+		case GENEBC_NoSlip:
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -242,7 +245,7 @@ PetscErrorCode ModelApplyBoundaryCondition_GENE3D(pTatinCtx user,void *ctx)
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			break;
 			
-		case VSBC_FreeSlipFreeSurface:
+		case GENEBC_FreeSlipFreeSurface:
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			
@@ -250,7 +253,7 @@ PetscErrorCode ModelApplyBoundaryCondition_GENE3D(pTatinCtx user,void *ctx)
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			break;
 			
-		case VSBC_NoSlipFreeSurface:
+		case GENEBC_NoSlipFreeSurface:
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -322,12 +325,12 @@ PetscErrorCode pTatin3d_ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
 	ModelGENE3DCtx *data = (ModelGENE3DCtx*)ctx;
-	PetscInt               p,n_mp_points,i,nlayer;
+	PetscInt               p,n_mp_points,i,nLayer;
 	DataBucket             db;
 	DataField              PField_std;
 	int                    phase_init, phase, phase_index, is_valid;
 	PetscInt               phaseLayer[LAYER_MAX];
-	PetscScalar            Ylayer[LAYER_MAX+1];
+	PetscScalar            YLayer[LAYER_MAX+1];
 	char                   *option_name;
 	PetscErrorCode         ierr;
 	PetscBool              flg;
@@ -343,18 +346,18 @@ PetscErrorCode pTatin3d_ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	/* read layers from options */
-	nlayer = 1; 
-	ierr = PetscOptionsGetInt("model_GENE3D_","-nlayer",&nlayer,&flg);CHKERRQ(ierr);
-	Ylayer[0] = Oy ; 
-	for (i=1;i<nlayer;i++){	
+	nLayer = 1; 
+	ierr = PetscOptionsGetInt("model_GENE3D_","-nlayer",&nLayer,&flg);CHKERRQ(ierr);
+	YLayer[0] = data->Oy ; 
+	for (i=1;i<nLayer;i++){	
 		asprintf(&option_name, "-Ylayer_%d",i);
 		ierr = PetscOptionsGetReal("model_GENE3D_",option_name,&YLayer[i],&flg);CHKERRQ(ierr);
-		if (found == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
+		if (flg == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 		free(option_name);
-		if (YLayer[i] > Ylayer[i-1]){
+		if (YLayer[i] > YLayer[i-1]){
 			asprintf(&option_name, "-phaseLayer_%d",i);
-			ierr = PetscOptionsGetReal("model_GENE3D_",option_name,&phaseLayer[i],&flg);CHKERRQ(ierr);
-			if (found == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
+			ierr = PetscOptionsGetInt("model_GENE3D_",option_name,&phaseLayer[i],&flg);CHKERRQ(ierr);
+			if (flg == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 			free(option_name);
 		} else { 	
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Layers must be entered so that ylayer_[i-1] is larger than ylayer_[i]\n");
@@ -367,7 +370,7 @@ PetscErrorCode pTatin3d_ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 			DataFieldAccessPoint(PField_std,p,(void**)&material_point);
 			Ypos = material_point->coor[1];
 			i=0;
-			while ( (Ypos >= Ylayer[i]) && (i < nlayer)) { 		
+			while ( (Ypos >= YLayer[i]) && (i < nLayer)) { 		
 				i++;
 			}
 			phase = phaseLayer[i]; 
@@ -387,12 +390,14 @@ PetscErrorCode ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
 	ModelGENE3DCtx *data = (ModelGENE3DCtx*)ctx;
+	PetscErrorCode         ierr;
 	PhaseMap               phasemap;
 	PetscInt               p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std;
 	int                    phase_init, phase, phase_index, is_valid;
-	
+	char                   *map_file,*name;
+  PetscBool              flg; 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
