@@ -10,7 +10,7 @@
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-#include "Phase_map.h"
+#include "phase_map.h"
 
 #include "GENE3D_ctx.h"
 
@@ -306,87 +306,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_GENE3D(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_GENE3D"
-PetscErrorCode ModelApplyInitialMaterialGeometry_GENE3D(pTatinCtx c,void *ctx)
-{
-	ModelGENE3DCtx *data = (ModelGENE3DCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
-	DataBucket             db;
-	DataField              PField_std,PField_stokes;
-	int                    phase;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
-	/* define properties on material points */
-	db = c->materialpoint_db;
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
-	DataFieldGetAccess(PField_std);
-	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
-	
-	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
-	DataFieldGetAccess(PField_stokes);
-	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
-	
-	
-	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
-	for (p=0; p<n_mp_points; p++) {
-		MPntStd     *material_point;
-		MPntPStokes *mpprop_stokes;
-		double      *position;
-		double      eta,rho;
-		
-		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
-		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
-		
-		/* Access using the getter function provided for you (recommeneded for beginner user) */
-		MPntStdGetField_global_coord(material_point,&position);
-		
-		phase = 0;
-		eta =  data->eta0;
-		rho = -data->rho0;
-		
-		if (data->is_sphere) {
-			double rx = (position[0]-data->origin[0])/(0.5*data->length[0]);
-			double ry = (position[1]-data->origin[1])/(0.5*data->length[1]);
-			double rz = (position[2]-data->origin[2])/(0.5*data->length[2]);
-			
-			if ( rx*rx + ry*ry + rz*rz < 1.0 ) {
-				phase = 1;
-				eta =  data->eta1;
-				rho = -data->rho1;
-			}
-			
-		} else { /* box */
-			if ( (position[0]>data->origin[0] - 0.5*data->length[0]) && (position[0]<data->origin[0] + 0.5*data->length[0]) ) {
-				if ( (position[1]>data->origin[1] - 0.5*data->length[1]) && (position[1]<data->origin[1] + 0.5*data->length[1]) ) {
-					if ( (position[2]>data->origin[2] - 0.5*data->length[2]) && (position[2]<data->origin[1] + 0.5*data->length[2]) ) {
-						phase = 1;
-						eta =  data->eta1;
-						rho = -data->rho1;
-					}
-				}
-			}
-			
-		}
-		
-		
-		/* user the setters provided for you */
-		MPntStdSetField_phase_index(material_point,phase);
-		
-		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
-		MPntPStokesSetField_density(mpprop_stokes,rho);
-	}
-	
-	DataFieldRestoreAccess(PField_std);
-	DataFieldRestoreAccess(PField_stokes);
-	
-	PetscFunctionReturn(0);
-}
 
 //=====================================================================================================================================
 
@@ -416,16 +335,16 @@ PetscErrorCode pTatin3d_ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 
 	/* read layers from options */
 	nlayer = 1; 
-	ierr = PetscOptionsGetInt("Model_GENE3D_","-nlayer",&nlayer,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt("model_GENE3D_","-nlayer",&nlayer,&flg);CHKERRQ(ierr);
     Ylayer[0] = Oy ; 
 	for (i=1,i<nlayer,i++){	
 			asprintf(&option_name, "-Ylayer_%d",i);
-			ierr = PetscOptionsGetReal(model,option_name,&YLayer[i],&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal("model_GENE3D_",option_name,&YLayer[i],&flg);CHKERRQ(ierr);
 			if (found == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 			free(option_name);
 	if (YLayer[i] > Ylayer[i-1]){
 			asprintf(&option_name, "-phaseLayer_%d",i);
-			ierr = PetscOptionsGetReal(model,option_name,&phaseLayer[i],&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal("model_GENE3D_",option_name,&phaseLayer[i],&flg);CHKERRQ(ierr);
 			if (found == PETSC_FALSE) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 			free(option_name);
 	} else { 	
@@ -469,7 +388,7 @@ PetscErrorCode ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 		 
 
-	ierr = PetscOptionsGetString(Model_GENE3D_,"-map_file",map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString("model_GENE3D_","-map_file",map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   	if (flg == PETSC_FALSE) {
     	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Expected user to provide a map file \n");
   	}
@@ -531,14 +450,12 @@ PetscErrorCode ModelSetInitialStokesVariableOnMarker_GENE3D(pTatinCtx c,void *ct
 /* define properties on material points */
 {
 	ModelGENE3DCtx *data = 	(ModelGENE3DCtx*)ctx;
-	PhaseMap               	phasemap;
 	PetscInt               	e,p,n_mp_points;
 	DataBucket            	db;
 	DataField             	PField_std,PField_stokes;
 	int                    	phase_index, i;
 	PetscErrorCode         	ierr;
 	RheologyConstants      	*rheology;
-    char 					*name;
 	      
 	PetscFunctionBegin;
   	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);

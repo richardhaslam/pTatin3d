@@ -37,6 +37,7 @@ export TATIN_SRC = \
 			stokes_rheology_viscous.c \
 			stokes_form_function.c \
 			quadrature.c \
+			phase_map.c \
 			
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
