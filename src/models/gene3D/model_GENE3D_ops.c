@@ -628,9 +628,8 @@ ModelApplyInitialMeshGeometry_GENE3D (pTatinCtx c, void *ctx)
 //=====================================================================================================================================
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatin3d_ModelSetMarkerIndexLayerCake_GENE3D"
-PetscErrorCode
-pTatin3d_ModelSetMarkerIndexFromMap_GENE3D (pTatinCtx c, void *ctx)
+#define __FUNCT__ "ModelSetMarkerIndexLayeredCake_GENE3D"
+PetscErrorCode ModelSetMarkerIndexLayeredCake_GENE3D (pTatinCtx c, void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
