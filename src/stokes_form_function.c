@@ -69,7 +69,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar u[],DM
 	PetscGetTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = StokesPressure_GetElementLocalIndices(p_el_lidx,(PetscInt*)&elnidx_p[nen_p*e]);CHKERRQ(ierr);
-		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,cell_gausspoints);CHKERRQ(ierr);
+		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
 		/*
 		ierr = DMDAGetElementCoordinatesQ2_2D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
 		ierr = DMDAGetVectorElementFieldQ2_2D(elu,(PetscInt*)&elnidx_u[nen_u*e],u);CHKERRQ(ierr);
