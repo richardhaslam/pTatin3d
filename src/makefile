@@ -47,7 +47,8 @@ TATIN_TESTS	=	\
 			test_dmda_remesh \
 			test_dmda_duplicate \
 			test_dmda_checkpoint \
-			test_model
+
+#			test_model
 
 TATIN_MODELS		=
 TATIN_DRIVERS		= \
@@ -56,8 +57,8 @@ TATIN_DRIVERS		= \
 
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
 export EXTERNAL_LIBS	=	${PETSC_LIB}
-export TATIN_LIB			=	-L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels ${EXTERNAL_LIBS}
-#export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels 
+export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmodels -lptatin3d ${EXTERNAL_LIBS}
+#export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels
 
 ## or run >make CFLAGS='-g -O0'
 export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall -Wno-unused-variable
@@ -100,15 +101,7 @@ tests: libs models
 		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
 	done
 
-
-models0: libs
-	-@echo ""
-	-@echo "*** Building pTatin models ***"
-	@for t in ${TATIN_MODELS} ; do \
-		-@${MAKE} $${t}.o; \
-	done
-
-models: libs
+models: base_objects libs
 	-@echo ""
 	-@echo "*** Building pTatin models ***"
 	-@${MAKE} -C models/

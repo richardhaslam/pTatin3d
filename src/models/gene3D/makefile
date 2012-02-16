@@ -19,7 +19,7 @@ all:
 #	-@echo ${TATIN_DIR}
 #	-@echo ${TATIN_MODEL_INC}
 	
-	-@for a in ${MODEL_OBJ} ; do \
+	for a in ${MODEL_OBJ} ; do \
 		${MAKE} $$a; \
 	done
 	-@echo "    + adding objects: " ${MODEL_OBJ}

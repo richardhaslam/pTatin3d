@@ -3,8 +3,7 @@
 TATIN_MODEL_DIR = \
 	template_model \
 	viscous_sinker \
-	gene3D \
-
+	gene3D
 
 
 ## DONT NOT EDIT LINES BELOW
@@ -21,7 +20,7 @@ modellib:
 	-@echo ""
 	-@echo "  Assembling model library using object files:" 
 	-@ls *.o
-	-@ar rcs libptatin3dmodels.a *.o
+	ar rcs libptatin3dmodels.a *.o
 	-@rm *.o
 	
 clean_all:

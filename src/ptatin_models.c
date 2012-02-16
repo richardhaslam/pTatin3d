@@ -303,6 +303,7 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 /* Users add prototypes here */
 extern PetscErrorCode pTatinModelRegister_Template(void);
 extern PetscErrorCode pTatinModelRegister_ViscousSinker(void);
+extern PetscErrorCode pTatinModelRegister_GENE3D(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -316,7 +317,6 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_GENE3D();CHKERRQ(ierr);
-	
-	
+		
 	PetscFunctionReturn(0);
 }
