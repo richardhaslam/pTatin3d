@@ -132,7 +132,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	{
 	case 0:
 	  {
-	    asprintf (&option_name, "-eta_%d", i);
+	    asprintf (&option_name, "-eta0_%d", i);
 	    ierr =
 	      PetscOptionsGetReal (model, option_name,
 				   &(rheology->const_eta0[i]), &found);
@@ -157,7 +157,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	  break;
 	case 1:
 	  {
-	    asprintf (&option_name, "-eta_%d", i);
+	    asprintf (&option_name, "-eta0_%d", i);
 	    ierr =
 	      PetscOptionsGetReal (model, option_name,
 				   &(rheology->const_eta0[i]), &found);
@@ -227,6 +227,22 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	  break;
 	case 2:
 	  {
+	    asprintf (&option_name, "-eta0_%d", i);
+	    ierr =
+	      PetscOptionsGetReal (model, option_name,
+				   &(rheology->const_eta0[i]), &found);
+	    CHKERRQ (ierr);
+	    if (found == PETSC_FALSE)
+	      SETERRQ1 (PETSC_COMM_SELF, PETSC_ERR_USER,
+			"Expected user to provide value to option %s \n",
+			option_name);
+	    free (option_name);
+
+	    asprintf (&option_name, "-rho_%d", i);
+	    ierr =
+	      PetscOptionsGetReal (model, option_name,
+				   &(rheology->const_rho0[i]), &found);
+	    CHKERRQ (ierr);
 	    asprintf (&option_name, "-Co_%d", i);
 	    ierr =
 	      PetscOptionsGetReal (model, option_name,
@@ -678,6 +694,7 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_GENE3D (pTatinCtx c, void *ctx)
 	    PetscOptionsGetInt ("model_GENE3D_", option_name, &phaseLayer[i],
 				&flg);
 	  CHKERRQ (ierr);
+		
 	  if (flg == PETSC_FALSE)
 	    SETERRQ1 (PETSC_COMM_SELF, PETSC_ERR_SUP,
 		      "Expected user to provide value to option %s \n",

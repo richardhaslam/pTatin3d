@@ -11,7 +11,6 @@ typedef struct {
 	PetscInt  nmaterials;
 	PetscReal Lx,Ly,Lz;
 	PetscReal Ox,Oy,Oz;
-	PetscReal length[3];
 	GENE3DBC  boundary_conditon_type; /* [ 0 free slip | 1 no slip | 2 free surface + free slip | 3 free surface + no slip ] */
 	GENE3DINIGEOM  initial_geom;
 } ModelGENE3DCtx;
