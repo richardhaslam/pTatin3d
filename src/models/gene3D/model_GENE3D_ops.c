@@ -52,7 +52,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
   /* box geometry */
   PetscPrintf (PETSC_COMM_WORLD, "reading box geometry from options\n");
 
-  ierr = PetscOptionsGetReal (model, "-Lx", &data->Lx, &flg);
+  ierr = PetscOptionsGetReal (PETSC_NULL, "-Lx", &data->Lx, &flg);
   CHKERRQ (ierr);
   if (found == PETSC_FALSE)
     {
@@ -60,7 +60,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	       "Expected user to provide model length Lx \n");
     }
 
-  ierr = PetscOptionsGetReal (model, "-Ly", &data->Ly, &flg);
+  ierr = PetscOptionsGetReal (PETSC_NULL, "-Ly", &data->Ly, &flg);
   CHKERRQ (ierr);
   if (found == PETSC_FALSE)
     {
@@ -68,7 +68,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	       "Expected user to provide model length Ly \n");
     }
 
-  ierr = PetscOptionsGetReal (model, "-Lz", &data->Lz, &flg);
+  ierr = PetscOptionsGetReal (PETSC_NULL, "-Lz", &data->Lz, &flg);
   CHKERRQ (ierr);
   if (found == PETSC_FALSE)
     {
@@ -77,7 +77,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
     }
 
 
-  ierr = PetscOptionsGetReal (model, "-Ox", &data->Ox, &flg);
+  ierr = PetscOptionsGetReal (PETSC_NULL, "-Ox", &data->Ox, &flg);
   CHKERRQ (ierr);
   if (found == PETSC_FALSE)
     {
@@ -85,7 +85,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	       "Expected user to provide model Origin Ox \n");
     }
 
-  ierr = PetscOptionsGetReal (model, "-Oy", &data->Oy, &flg);
+  ierr = PetscOptionsGetReal (PETSC_NULL, "-Oy", &data->Oy, &flg);
   CHKERRQ (ierr);
   if (found == PETSC_FALSE)
     {
@@ -93,7 +93,7 @@ ModelInitialize_GENE3D (pTatinCtx c, void *ctx)
 	       "Expected user to provide model Origin Oy \n");
     }
 
-  ierr = PetscOptionsGetReal (model, "-Oz", &data->Oz, &flg);
+  ierr = PetscOptionsGetReal (PETSC_NULL, "-Oz", &data->Oz, &flg);
   CHKERRQ (ierr);
   if (found == PETSC_FALSE)
     {

@@ -315,6 +315,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	/* call registration functions for each model here */
 	ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_GENE3D();CHKERRQ(ierr);
 	
 	
 	PetscFunctionReturn(0);
