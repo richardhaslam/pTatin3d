@@ -465,7 +465,7 @@ ModelSetMarkerIndexFromMap_GENE3D (pTatinCtx c, void *ctx)
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
   PhaseMap phasemap;
-  PetscInt p, n_mp_points;
+  PetscInt p, n_mp_points,dir_0,dir_1,direction;
   DataBucket db;
   DataField PField_std;
   int phase_init, phase, phase_index, is_valid;
@@ -479,9 +479,34 @@ ModelSetMarkerIndexFromMap_GENE3D (pTatinCtx c, void *ctx)
   if (flg == PETSC_FALSE) {
 		SETERRQ (PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide a map file \n");
 	}
-	
+  ierr = PetscOptionsGetInt (MODEL_NAME, "-extrude_dir", &direction, &flg);CHKERRQ(ierr);
+ if (flg == PETSC_FALSE) {
+		SETERRQ (PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide an extrusion direction \n");
+	}	
+
+  switch (direction){
+    case 0:{
+    dir_0 = 2;
+    dir_1 = 1;
+    } 
+    break;  
+    case 1:{
+    dir_0 = 0;
+    dir_1 = 2;
+    } 
+    break;   
+    
+    case 2:{
+    dir_0 = 0;
+    dir_1 = 1;
+    } 
+    break;  
+  } 
+
   asprintf (&name, "./inputdata/%s.pmap", map_file);
   PhaseMapLoadFromFile (name, &phasemap);
+  free (name);
+	
   asprintf (&name, "./inputdata/%s_phase_map.gp", map_file);
   PhaseMapViewGnuplot (name, phasemap);
   free (name);
@@ -498,16 +523,18 @@ ModelSetMarkerIndexFromMap_GENE3D (pTatinCtx c, void *ctx)
   for (p = 0; p < n_mp_points; p++)
 	{
 		MPntStd *material_point;
-		double XYposition[2];
+		double position2D[2],*pos;
 		
+
 		DataFieldAccessPoint (PField_std, p, (void **) &material_point);
-		
-		XYposition[0] = material_point->coor[0];
-		XYposition[1] = material_point->coor[1];
+		MPntStdGetField_global_coord(material_point,&pos);
+
+		position2D[0] = pos[dir_0];
+		position2D[1] = pos[dir_1];
 		
 		MPntStdGetField_phase_index (material_point, &phase_init);
 		
-		PhaseMapGetPhaseIndex (phasemap, XYposition, &phase_index);
+		PhaseMapGetPhaseIndex (phasemap, position2D, &phase_index);
 		
 		PhaseMapCheckValidity (phasemap, phase_index, &is_valid);
 		//PetscPrintf(PETSC_COMM_WORLD,"Phase index : %d  is_valid %d \n", phase_index,is_valid);
@@ -521,7 +548,8 @@ ModelSetMarkerIndexFromMap_GENE3D (pTatinCtx c, void *ctx)
 		MPntStdSetField_phase_index (material_point, phase);
 		
 	}
-	
+
+  PhaseMapDestroy(&phasemap);	
   DataFieldRestoreAccess (PField_std);
 	
 	
