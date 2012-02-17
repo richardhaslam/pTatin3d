@@ -75,7 +75,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 	MPntPStokes       *mp_stokes;
 	PetscErrorCode    ierr;
   static int        been_here=0;
-	
+	PhysCompStokes    stokes;
 	
 	PetscFunctionBegin;
   rheo = &user->rheology_constants;
@@ -126,7 +126,9 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 	DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
 	mp_std    = PField_std->data; /* should write a function to do this */
 	mp_stokes = PField_stokes->data; /* should write a function to do this */
-#if 0	
+
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	
 	switch (user->coefficient_projection_type) {
 
 		case 0:			/* Perform P0 projection over Q2 element directly onyo uadrature points */
@@ -134,14 +136,14 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			break;
 			
 		case 1:			/* Perform Q1 projection over Q2 element and interpolate back to quadrature points */
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q1 marker->quadrature projection not supported");
+			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
 			break;
 			
 		case 2: 			/* Perform Q2 projection and interpolate back to quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
 			break;
 	}
-#endif	
+
   PetscFunctionReturn(0);
 }
 

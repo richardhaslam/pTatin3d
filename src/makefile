@@ -64,7 +64,7 @@ export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dm
 export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall -Wno-unused-variable
 export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
 export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS					= ${TATIN_CFLAGS_DEBUG}
+export TATIN_CFLAGS					= ${TATIN_CFLAGS_O2_OSX}
 export TATIN_CC							= ${PCC}
 
 all: 

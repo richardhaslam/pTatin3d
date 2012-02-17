@@ -26,5 +26,9 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
 PetscErrorCode DMDAGetElementCoordinatesQ2_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[]);
 PetscErrorCode DMDAGetScalarElementFieldQ2_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
 PetscErrorCode DMDAGetVectorElementFieldQ2_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
+PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[]);
+PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[]);
+PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[]);
+PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[]);
 
 #endif

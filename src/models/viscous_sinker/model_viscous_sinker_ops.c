@@ -52,6 +52,12 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	data->boundary_conditon_type = VSBC_FreeSlip;
 		
 	/* parse from command line */
+	rheology->const_eta0[0] = 1.0;
+	rheology->const_eta0[1] = 2.0;
+
+	rheology->const_rho0[0] = 0.0;
+	rheology->const_rho0[1] = 1.0;
+	
 	rheology->nphases_active = 2;
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);

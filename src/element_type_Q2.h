@@ -85,7 +85,7 @@ struct _p_ConformingElementFamily {
 void extract_element_surface_field_Q2_3D( int face_id, int fid_node_list[][9], int dofs, double e_data[], double surf_e_data[] );
 void ElementTypeCreate_Q2(ConformingElementFamily *_e,const int dim);
 
-inline void pTatin_ConstructNi_Q2_3D( double _xi[], double Ni[] );
-inline void pTatinConstructGNi_Q2_3D( double _xi[], double GNi[3][Q2_NODES_PER_EL_3D] );
+void pTatin_ConstructNi_Q2_3D( double _xi[], double Ni[] );
+void pTatinConstructGNi_Q2_3D( double _xi[], double GNi[3][Q2_NODES_PER_EL_3D] );
 
 #endif

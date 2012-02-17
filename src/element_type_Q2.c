@@ -16,7 +16,7 @@
 #include "element_type_Q2.h"
 #include "ptatin3d_defs.h"
 
-inline void pTatin_ConstructNi_Q2_3D( double _xi[], double Ni[] )
+void pTatin_ConstructNi_Q2_3D( double _xi[], double Ni[] )
 {
 	int i,j,k,d,cnt;
 	double basis_NI[3][3];
@@ -40,7 +40,7 @@ inline void pTatin_ConstructNi_Q2_3D( double _xi[], double Ni[] )
 	}
 }
 
-inline void pTatinConstructGNi_Q2_3D( double _xi[], double GNi[3][Q2_NODES_PER_EL_3D] )
+void pTatinConstructGNi_Q2_3D( double _xi[], double GNi[3][Q2_NODES_PER_EL_3D] )
 {
 	double basis_NI[3][3];
 	double basis_GNI[3][3];

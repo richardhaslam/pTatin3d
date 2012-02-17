@@ -65,6 +65,37 @@ PetscErrorCode QuadratureView(Quadrature q)
 	PetscFunctionReturn(0);
 }
 
+void QuadratureCreateGauss_2pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal **_q_weight)
+{
+	const double s = 0.577350269189;
+	const double w_1d[] = { 1.0, 1.0 };
+	const double xi_1d[] = { -s, s};
+	int I,J,K;
+	PetscReal *q_coor,*q_weight;
+	
+	
+	/* standard 2x2x2 point quadrature */
+	*ngp = 8;
+	PetscMalloc( sizeof(double)*(*ngp)*3, &q_coor );
+	PetscMalloc( sizeof(double)*(*ngp)  , &q_weight );
+	
+	for( I=0; I<2; I++ ) {
+		for( J=0; J<2; J++ ) {
+			for( K=0; K<2; K++ ) {
+				int idx = I + J*2 + K*2*2;
+				
+				q_weight[idx] = w_1d[I] * w_1d[J] * w_1d[K];
+				
+				q_coor[3*idx+0] = xi_1d[I];
+				q_coor[3*idx+1] = xi_1d[J];
+				q_coor[3*idx+2] = xi_1d[K];
+			}
+		}
+	}
+	*_q_coor = q_coor;
+	*_q_weight = q_weight;
+}
+
 void QuadratureCreateGauss_3pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal **_q_weight)
 {
 	const double sqrt_15_on_5 = 0.774596669241483; /* sqrt(15)/5 */
@@ -120,7 +151,7 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 			
 		case 2:
 			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");
-			//QuadratureCreateGauss_2pnt_3D(&ngp,gp_xi,gp_weight);
+			QuadratureCreateGauss_2pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 			
 		case 3:

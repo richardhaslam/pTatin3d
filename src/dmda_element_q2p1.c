@@ -2,6 +2,7 @@
 
 #include "petsc.h"
 #include "petscdm.h"
+#include "ptatin3d_defs.h"
 #include "dmda_element_q2p1.h"
 
 
@@ -554,6 +555,51 @@ PetscErrorCode DMDAGetVectorElementFieldQ2_3D(PetscScalar elfield[],PetscInt eln
 		elfield[3*n+1] = LA_gfield[3*elnid[n]+1];
 		elfield[3*n+2] = LA_gfield[3*elnid[n]+2];
 	}
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetScalarElementField"
+PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[])
+{
+	PetscInt n;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	for (n=0; n<npe; n++) {
+		elfield[n] = LA_gfield[elnid[n]];
+	}
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_DOF"
+PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
+{
+  PetscInt n,d,el_idx,idx;
+	
+  PetscFunctionBegin;
+	for (d=0; d<ndof; d++) {
+		for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
+			el_idx = ndof*n + d;
+			idx    = eqn[el_idx];
+			fields_F[idx] += Fe[el_idx];
+		}
+	}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Q2GetElementLocalIndicesDOF"
+PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
+{
+	PetscInt n,d;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	for (d=0; d<ndof; d++) {
+		for (n=0; n<U_BASIS_FUNCTIONS; n++) {
+			el_localIndices[ndof*n+d] = ndof*elnid[n]+d;
+		}
+	}		
 	PetscFunctionReturn(0);
 }
 

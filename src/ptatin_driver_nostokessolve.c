@@ -104,18 +104,43 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	{
 		Vec X,F;
 		SNES snes;
+		Mat JMF;
+		
+		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+		
+		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+		ierr = VecDestroy(&X);CHKERRQ(ierr);
+		ierr = VecDestroy(&F);CHKERRQ(ierr);
+	}
+	
+#if 0
+	{
+		Vec X,F;
+		SNES snes;
+		Mat JMF;
 		
 		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		ierr = MatCreateSNESMF(snes,&JMF);CHKERRQ(ierr);
+		ierr = SNESSetJacobian(snes,JMF,JMF,0,0);CHKERRQ(ierr);
 		
-		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+//		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+
+		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 		
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+		ierr = VecDestroy(&X);CHKERRQ(ierr);
+		ierr = VecDestroy(&F);CHKERRQ(ierr);
 	}
-	
+#endif	
 	
 	
 	
