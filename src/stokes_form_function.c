@@ -932,8 +932,8 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			//MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
-			MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 
 		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(&Ye[0],  vel_el_lidx,Yu);CHKERRQ(ierr);
@@ -977,8 +977,14 @@ PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
 	
 	/* get the local (ghosted) entries for each physics */
 	ierr = DMCompositeScatter(stokes_pack,X,XUloc,XPloc);CHKERRQ(ierr);
-	/* insert boundary conditions into local vectors */
-	ierr = BCListInsertLocal(stokes->u_bclist,XUloc);CHKERRQ(ierr);
+
+	/* Zero entries in local vectors corresponding to dirichlet boundary conditions */
+	/* This has the affect of zeroing out columns when the mat-mult is performed */
+	ierr = BCListInsertLocalZero(stokes->u_bclist,XUloc);CHKERRQ(ierr);
+	/* if we have pressure boundary conditions */
+	/*
+	ierr = BCListInsertLocalZero(stokes->p_bclist,XPloc);CHKERRQ(ierr);
+	*/
 	
 	ierr = VecGetArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
 	ierr = VecGetArray(XPloc,&LA_XPloc);CHKERRQ(ierr);
@@ -988,7 +994,6 @@ PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
 	ierr = VecZeroEntries(YPloc);CHKERRQ(ierr);
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecGetArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
-	
 	
 	/* momentum + continuity */
 	ierr = MF_Stokes_yAx(stokes,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
@@ -1005,11 +1010,18 @@ PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
 	
-	/* modify F for the boundary conditions, F_k = scale_k(x_k - phi_k) */
+	/* modify Y for the boundary conditions, y_k = scale_k(x_k) */
 	ierr = DMCompositeGetAccess(stokes_pack,Y,&Yu,&Yp);CHKERRQ(ierr);
+
 	ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	
-	ierr = BCListResidualDirichlet(stokes->u_bclist,Xu,Yu);CHKERRQ(ierr);
+	/* Clobbering entries in global vector corresponding to dirichlet boundary conditions */
+	/* This has the affect of zeroing out rows when the mat-mult is performed */
+	ierr = BCListInsertDirichlet_MatMult(stokes->u_bclist,Xu,Yu);CHKERRQ(ierr);
+	/* if we have pressure boundary conditions */
+	/*
+	ierr = BCListInsertDirichlet_MatMult(stokes->p_bclist,Xp,Yp);CHKERRQ(ierr);
+	*/
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Y,&Yu,&Yp);CHKERRQ(ierr);
