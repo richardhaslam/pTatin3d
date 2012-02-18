@@ -117,6 +117,18 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = VecDestroy(&F);CHKERRQ(ierr);
 	}
 	
+	{
+		Vec X,Y;
+
+		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
+
+		ierr = MF_Stokes(X,Y,(void*)user);CHKERRQ(ierr);
+
+		ierr = VecDestroy(&X);CHKERRQ(ierr);
+		ierr = VecDestroy(&Y);CHKERRQ(ierr);
+	}
+	
 #if 0
 	{
 		Vec X,F;
