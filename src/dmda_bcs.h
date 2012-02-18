@@ -50,6 +50,11 @@ PetscErrorCode BCListGetDofIdx(BCList list,PetscInt *Lg,PetscInt **dofidx_global
 PetscErrorCode BCListInsert(BCList list,Vec y);
 PetscErrorCode BCListInsertLocal(BCList list,Vec y);
 
+/* for mat mult */
+PetscErrorCode BCListInsertZero(BCList list,Vec y);
+PetscErrorCode BCListInsertLocalZero(BCList list,Vec y);
+PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F);
+
 
 /* 3d */
 PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc doflocation,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscScalar*,void*),void *ctx);
@@ -60,6 +65,8 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat);
 PetscErrorCode BCListFlatInsert(BCList list,Vec y);
 PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y);
 PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F);
+
+
 
 
 #endif
