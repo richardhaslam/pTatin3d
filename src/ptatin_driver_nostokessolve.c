@@ -155,7 +155,115 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 #endif	
 	
 	
+	{
+		Mat B,subA;
+		Vec X,F;
+		IS *is;
+		Vec u,p;
+		PetscInt n,mu,mp,Mu,Mp,start,offset;
+		IS isU,isV,isW;
+		Mat Aii;
+		
+		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+		
+		ierr = DMCompositeGetGlobalISs(user->stokes_ctx->stokes_pack,&is);CHKERRQ(ierr);
+
+		
+		/* Sizes */
+		ierr = DMCompositeGetAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
+		ierr = VecGetSize(u,&Mu);CHKERRQ(ierr);
+		ierr = VecGetLocalSize(u,&mu);CHKERRQ(ierr);
+		ierr = VecGetSize(p,&Mp);CHKERRQ(ierr);
+		ierr = VecGetLocalSize(p,&mp);CHKERRQ(ierr);
+		ierr = VecGetOwnershipRange(u,&start,PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
+		
+		n = (mu/3);
+		offset = start + 0;
+		ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isU);CHKERRQ(ierr);
+		offset = start + 1;
+		ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isV);CHKERRQ(ierr);
+		offset = start + 2;
+		ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isW);CHKERRQ(ierr);
+			
+		
+		/* test operator, A */
+		PetscPrintf(PETSC_COMM_WORLD,"operatorA\n");
+		ierr = StokesQ2P1CreateMatrix_Operator(user->stokes_ctx,&B);CHKERRQ(ierr);
+		ierr = MatMult(B,X,F);CHKERRQ(ierr);
+		
+		// A11
+		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+		// A11vv
+		ierr = MatGetSubMatrix(B,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+
+		
+		// A12
+		ierr = MatGetSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+		// A21
+		ierr = MatGetSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+		// A22
+		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+		ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+		/* ========================================= */
+			
+		/* test pc operator, B */
+		PetscPrintf(PETSC_COMM_WORLD,"operatorB\n");
+		ierr = StokesQ2P1CreateMatrixNest_Operator(user->stokes_ctx,1,1,1,&B);CHKERRQ(ierr);
+		ierr = MatMult(B,X,F);CHKERRQ(ierr);
+
+		/* Get A11 */
+		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+		ierr = MatView(subA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+		
+		/* Get Auu,Avv,Aww */	
+		ierr = MatGetSubMatrix(subA,isU,isU,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+
+		ierr = MatGetSubMatrix(subA,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+
+		ierr = MatGetSubMatrix(subA,isW,isW,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 	
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+		/* Get A12 */
+		ierr = MatGetSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+		/* A21 */
+		ierr = MatGetSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+		/* A22 */
+		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatDestroy(&subA);CHKERRQ(ierr);
+		
+		ierr = MatDestroy(&B);CHKERRQ(ierr);
+
+		
+		ierr = ISDestroy(&isU);CHKERRQ(ierr);
+		ierr = ISDestroy(&isV);CHKERRQ(ierr);
+		ierr = ISDestroy(&isW);CHKERRQ(ierr);
+
+		ierr = VecDestroy(&X);CHKERRQ(ierr);
+		ierr = VecDestroy(&F);CHKERRQ(ierr);
+
+		ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
+		ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
+		ierr = PetscFree(is);CHKERRQ(ierr);
+	}
 	
 	
 	/* test viewer */

@@ -6,8 +6,7 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
-
-PetscErrorCode DMDARestrictCoordinateHierarchy(DM da[],PetscInt nlevels);
+PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels);
 PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac);
 
 #endif
