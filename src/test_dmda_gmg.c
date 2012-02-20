@@ -485,6 +485,8 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	/* Basic solver configuration using SNES - FIELDSPLIT */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+
+	ierr = VecSetRandom(F,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	ierr = SNESSetDM(snes,multipys_pack);CHKERRQ(ierr);
