@@ -49,6 +49,7 @@ TATIN_TESTS	=	\
 			test_dmda_duplicate \
 			test_dmda_checkpoint \
 			test_dmda_gmg \
+			test_mat_assem \
 
 #			test_model
 
