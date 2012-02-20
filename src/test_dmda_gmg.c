@@ -465,6 +465,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		ierr = MatA11MFSetup(ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
 		
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(ctx,&A11MF[k]);CHKERRQ(ierr);
+		ierr = MatA11MFDestroy(&ctx);CHKERRQ(ierr);
 	}
 	A11MF[nlevels-1] = PETSC_NULL;
 	
@@ -665,8 +666,8 @@ int main(int argc,char **argv)
 	ierr = pTatinWriteOptionsFile(PETSC_NULL);CHKERRQ(ierr);
 	
 //	ierr = test_pTatin3d_gmg_galerkin(argc,argv);CHKERRQ(ierr);
-//	ierr = test_pTatin3d_gmg_mf(argc,argv);CHKERRQ(ierr);
-	ierr = test_putatin(argc,argv);CHKERRQ(ierr);
+	ierr = test_pTatin3d_gmg_mf(argc,argv);CHKERRQ(ierr);
+//	ierr = test_putatin(argc,argv);CHKERRQ(ierr);
 	
 	ierr = PetscFinalize();CHKERRQ(ierr);
 	return 0;

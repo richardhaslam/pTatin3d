@@ -231,9 +231,9 @@ PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
 		ierr = ISDestroy(&A->isUVW);CHKERRQ(ierr);
 		ierr = DMDestroy(&A->daU);CHKERRQ(ierr);
 		ierr = PetscFree(A);CHKERRQ(ierr);
+
+		*B = PETSC_NULL;
 	}
-	
-	*B = PETSC_NULL;
 	
   PetscFunctionReturn(0);
 }
@@ -252,15 +252,17 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
 	A->refcnt--;
 	if (A->refcnt==0) {
 		ierr = DMDestroy(&A->daUVW);CHKERRQ(ierr);
+		ierr = ISDestroy(&A->isUVW);CHKERRQ(ierr);
 		
 		ierr = ISDestroy(&A->isU);CHKERRQ(ierr);
 		ierr = ISDestroy(&A->isV);CHKERRQ(ierr);
 		ierr = ISDestroy(&A->isW);CHKERRQ(ierr);
 		ierr = DMDestroy(&A->daU);CHKERRQ(ierr);
 		ierr = PetscFree(A);CHKERRQ(ierr);
+
+		*B = PETSC_NULL;
 	}
 	
-	*B = PETSC_NULL;
 	
   PetscFunctionReturn(0);
 }
@@ -469,6 +471,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 					PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
 					ierr = MatCopy_StokesMF_A11MF(ctx,&copyA11);CHKERRQ(ierr);
 					ierr = StokesQ2P1CreateMatrix_MFOperator_A11(copyA11,B);CHKERRQ(ierr);
+					ierr = MatA11MFDestroy(&copyA11);CHKERRQ(ierr);
 				} else {
 					// to nothing
 				}
@@ -559,6 +562,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 				PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
 				ierr = MatStokesMFCopy(ctx,&copyA);CHKERRQ(ierr);
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A12(copyA,B);CHKERRQ(ierr);
+				ierr = MatStokesMFDestroy(&copyA);CHKERRQ(ierr);
 			} else {
 				// to nothing
 			}
@@ -576,6 +580,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 				PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
 				ierr = MatStokesMFCopy(ctx,&copyA);CHKERRQ(ierr);
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A21(copyA,B);CHKERRQ(ierr);
+				ierr = MatStokesMFDestroy(&copyA);CHKERRQ(ierr);
 			} else {
 				// to nothing
 			}
@@ -1049,7 +1054,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A11)
 	
 	PetscFunctionBegin;
 	
-	
+	Stk->refcnt++;
 	ierr = MatCreateShell(PETSC_COMM_WORLD,Stk->mu+Stk->mp,Stk->mu+Stk->mp,Stk->Mu+Stk->Mp,Stk->Mu+Stk->Mp,(void*)Stk,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
@@ -1202,6 +1207,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
+		ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	}
 	ierr = MatSetOptionsPrefix(Auu,"stokes_A_A11_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
@@ -1211,6 +1217,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stokes->A12 doesn't support assembled operator");
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A12(StkCtx,&Aup);CHKERRQ(ierr);
+		ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	}
 	ierr = MatSetOptionsPrefix(Aup,"stokes_A_A12_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Aup);CHKERRQ(ierr);
@@ -1220,6 +1227,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stokes->A21 doesn't support assembled operator");
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A21(StkCtx,&Apu);CHKERRQ(ierr); 
+		ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	}
 	ierr = MatSetOptionsPrefix(Apu,"stokes_A_A21_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
@@ -1246,8 +1254,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
 	ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
 	ierr = PetscFree(is);CHKERRQ(ierr);
-	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
-	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -1328,8 +1334,8 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
 	ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
 	ierr = PetscFree(is);CHKERRQ(ierr);
-	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
