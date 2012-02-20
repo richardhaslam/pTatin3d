@@ -585,6 +585,74 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "test_putatin"
+PetscErrorCode test_putatin(int argc,char **argv)
+{
+	DM             multipys_pack,dav,dap;
+	pTatinCtx      user;
+	PetscMPIInt    rank;
+	Mat            A,B;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
+	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	
+	/* Register all models */
+	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
+	/* Load model, call an initialization routines */
+	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+	
+	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
+	
+	/* Generate physics modules */
+	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
+	
+	/* Pack all physics together */
+	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
+	user->pack = user->stokes_ctx->stokes_pack;
+	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
+	
+	/* fetch some local variables */
+	multipys_pack = user->pack;
+	dav           = user->stokes_ctx->dav;
+	dap           = user->stokes_ctx->dap;
+	
+	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
+	
+	/* mesh geometry */
+	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+	
+	/* interpolate point coordinates (needed if mesh was modified) */
+	//ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
+	//for (e=0; e<QUAD_EDGES; e++) {
+	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
+	//}
+	/* interpolate material point coordinates (needed if mesh was modified) */
+	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
+	
+	/* material geometry */
+	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+	
+	/* boundary conditions */
+	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
+	
+	
+	/* define operators A */
+	ierr = StokesQ2P1CreateMatrix_Operator(user->stokes_ctx,&A);CHKERRQ(ierr);
+	/* define operators B */
+	ierr = StokesQ2P1CreateMatrixNest_PCOperator(user->stokes_ctx,1,1,1,&B);CHKERRQ(ierr);
+	
+	ierr = MatDestroy(&A);CHKERRQ(ierr);
+	ierr = MatDestroy(&B);CHKERRQ(ierr);
+	
+	ierr = pTatin3dDestroyContext(&user);
+	
+	PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -597,7 +665,8 @@ int main(int argc,char **argv)
 	ierr = pTatinWriteOptionsFile(PETSC_NULL);CHKERRQ(ierr);
 	
 //	ierr = test_pTatin3d_gmg_galerkin(argc,argv);CHKERRQ(ierr);
-	ierr = test_pTatin3d_gmg_mf(argc,argv);CHKERRQ(ierr);
+//	ierr = test_pTatin3d_gmg_mf(argc,argv);CHKERRQ(ierr);
+	ierr = test_putatin(argc,argv);CHKERRQ(ierr);
 	
 	ierr = PetscFinalize();CHKERRQ(ierr);
 	return 0;
