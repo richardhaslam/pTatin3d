@@ -36,9 +36,12 @@ export TATIN_SRC = \
 			rheology.c \
 			stokes_rheology_viscous.c \
 			stokes_form_function.c \
+			stokes_operators_mf.c \
 			stokes_operators.c \
 			quadrature.c \
 			phase_map.c \
+			element_utils_q2.c \
+			stokes_assembly.c \
 			
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
@@ -50,6 +53,9 @@ TATIN_TESTS	=	\
 			test_dmda_checkpoint \
 			test_dmda_gmg \
 			test_mat_assem \
+			test_stokes_operators \
+
+
 
 #			test_model
 

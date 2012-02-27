@@ -34,33 +34,10 @@
 #include "dmda_duplicate.h"
 #include "dmda_bcs.h"
 #include "quadrature.h"
+
 #include "stokes_operators.h"
+#include "stokes_operators_mf.h"
 
-struct _p_MatStokesMF {
-	PetscInt    mu,mp,Mu,Mp;
-	PetscInt    level;
-	PetscInt    ii;
-	DM          stokes_pack,daUVW,dap;
-	BCList      u_bclist,p_bclist;
-	Quadrature  volQ;
-	DM          daU;
-	IS          isUVW,isU,isV,isW,isP; /* Need the IS's for GetSubMatrix */
-	PetscInt    refcnt;
-};
-
-struct _p_MatA11MF {
-	PetscInt    mu,Mu;
-	DM          daUVW;
-	BCList      u_bclist;
-	Quadrature  volQ;
-	DM          daU; /* Optionally need this */
-	IS          isUVW; /* Needed for full column space */
-	IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
-	PetscInt    refcnt;
-	/* Not sure I need this at all */
-	PetscInt    level;
-	PetscInt    ii;
-};
 
 
 #undef __FUNCT__  
@@ -801,7 +778,7 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	
 	/* momentum + continuity */
-	//ierr = MF_Stokes_yAx(ctx,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
+	ierr = MFStokesWrapper_A(ctx->volQ,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
@@ -831,10 +808,10 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Y,&Yu,&Yp);CHKERRQ(ierr);
 	
-	{
-		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
-		ierr = VecCopy(X,Y);CHKERRQ(ierr);
-	}
+//	{
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		ierr = VecCopy(X,Y);CHKERRQ(ierr);
+//	}
 	
   PetscFunctionReturn(0);
 }
@@ -875,11 +852,12 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
-	/* momentum + continuity */
-	//ierr = MF_Stokes_yAx(ctx,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	/* momentum */
+	ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+//	printf("yin\n");VecView(YUloc,PETSC_VIEWER_STDOUT_SELF);
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
@@ -894,10 +872,10 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	/* This has the affect of zeroing out rows when the mat-mult is performed */
 	ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
 	
-	{
-		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
-		ierr = VecCopy(X,Y);CHKERRQ(ierr);
-	}
+//	{
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		ierr = VecCopy(X,Y);CHKERRQ(ierr);
+//	}
   PetscFunctionReturn(0);
 }
 
@@ -947,8 +925,8 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	ierr = VecZeroEntries(YUloc);CHKERRQ(ierr);
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
-	/* momentum + continuity */
-	//ierr = MF_Stokes_yAx(ctx,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	/* grad */
+	ierr = MFStokesWrapper_A12(ctx->volQ,dau,dap,LA_XPloc,LA_YUloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XPloc,&LA_XPloc);CHKERRQ(ierr);
@@ -966,10 +944,10 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	/* This has the affect of zeroing out rows when the mat-mult is performed */
 	ierr = BCListInsertZero(ctx->u_bclist,Y);CHKERRQ(ierr);
 	
-	{
-		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
-		ierr = VecSet(Y,1.0);CHKERRQ(ierr);
-	}
+//	{
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		ierr = VecSet(Y,1.0);CHKERRQ(ierr);
+//	}
   PetscFunctionReturn(0);
 }
 
@@ -1016,8 +994,8 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
 	ierr = VecZeroEntries(YPloc);CHKERRQ(ierr);
 	ierr = VecGetArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	
-	/* momentum + continuity */
-	//ierr = MF_Stokes_yAx(ctx,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	/* div */
+	ierr = MFStokesWrapper_A21(ctx->volQ,dau,dap,LA_XUloc,LA_YPloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
@@ -1038,10 +1016,10 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
 	ierr = BCListInsertZero(ctx->p_bclist,Y);CHKERRQ(ierr);
 	 */
 	
-	{
-		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
-		ierr = VecSet(Y,1.0);CHKERRQ(ierr);
-	}
+//	{
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		ierr = VecSet(Y,1.0);CHKERRQ(ierr);
+//	}
   PetscFunctionReturn(0);
 }
 
@@ -1336,6 +1314,146 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	ierr = PetscFree(is);CHKERRQ(ierr);
 	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StokesA12Preallocation_basic"
+PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
+{
+	PetscInt nnz,onnz;
+	PetscBool flg;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	/* Each pressure dof is connected to all vel dofs in a single cell, 27 * 3 */
+	nnz = 27 * 3;
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
+	
+	onnz = 4;
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"StokesA12Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
+	
+	ierr = MatSeqAIJSetPreallocation(mat,nnz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatMPIAIJSetPreallocation(mat,nnz,PETSC_NULL,onnz,PETSC_NULL);CHKERRQ(ierr);
+
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StokesA21Preallocation_basic"
+PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
+{
+	PetscInt nnz,onnz;
+	PetscBool flg;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	/* n_pressure_basis * neighbour_cells = 4 x 8 */
+	nnz = 32;
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
+
+	onnz = 4;
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"StokesA21Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
+	
+	ierr = MatSeqAIJSetPreallocation(mat,nnz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatMPIAIJSetPreallocation(mat,nnz,PETSC_NULL,onnz,PETSC_NULL);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StokesQ2P1CreateMatrix_A12"
+PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat)
+{
+  DM             pack,dav,dap;
+	Mat            Aup;
+	MPI_Comm       comm;
+	PetscInt       mu,Mu,mp,Mp,i,j;
+	Vec            X,Xu,Xp;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+  /* Fetch the DA's */
+	pack = user->stokes_pack;
+  ierr = DMCompositeGetEntries(pack,&dav,&dap);CHKERRQ(ierr);
+	
+	/* Fetch sizes */
+	ierr = DMGetGlobalVector(pack,&X);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	ierr = VecGetSize(Xu,&Mu);CHKERRQ(ierr);
+	ierr = VecGetLocalSize(Xu,&mu);CHKERRQ(ierr);
+	ierr = VecGetSize(Xp,&Mp);CHKERRQ(ierr);
+	ierr = VecGetLocalSize(Xp,&mp);CHKERRQ(ierr);
+	ierr = DMCompositeRestoreAccess(pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	ierr = DMRestoreGlobalVector(pack,&X);CHKERRQ(ierr);
+	
+	/* Create matrix - this is not meant to be efficient non-zero allocation */
+	comm = ((PetscObject)pack)->comm;
+  ierr = MatCreate(comm,&Aup);CHKERRQ(ierr);
+	ierr = MatSetType(Aup,MATAIJ);CHKERRQ(ierr);
+	ierr = MatSetSizes(Aup,mu,mp,Mu,Mp);CHKERRQ(ierr);
+	
+	/* Do some preallocation */
+	ierr = StokesA21Preallocation_basic(Aup,dav,dap);CHKERRQ(ierr);
+	
+	ierr = MatSetOption(Aup,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
+	
+	ierr = MatSetFromOptions(Aup);CHKERRQ(ierr);
+	
+	*mat = Aup;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StokesQ2P1CreateMatrix_A21"
+PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
+{
+  DM             pack,dav,dap;
+	Mat            Apu;
+	MPI_Comm       comm;
+	PetscInt       mu,Mu,mp,Mp,i,j;
+	Vec            X,Xu,Xp;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+  /* Fetch the DA's */
+	pack = user->stokes_pack;
+  ierr = DMCompositeGetEntries(pack,&dav,&dap);CHKERRQ(ierr);
+	
+	/* Fetch sizes */
+	ierr = DMGetGlobalVector(pack,&X);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	ierr = VecGetSize(Xu,&Mu);CHKERRQ(ierr);
+	ierr = VecGetLocalSize(Xu,&mu);CHKERRQ(ierr);
+	ierr = VecGetSize(Xp,&Mp);CHKERRQ(ierr);
+	ierr = VecGetLocalSize(Xp,&mp);CHKERRQ(ierr);
+	ierr = DMCompositeRestoreAccess(pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	ierr = DMRestoreGlobalVector(pack,&X);CHKERRQ(ierr);
+	
+	/* Create matrix - this is not meant to be efficient non-zero allocation */
+	comm = ((PetscObject)pack)->comm;
+  ierr = MatCreate(comm,&Apu);CHKERRQ(ierr);
+	ierr = MatSetType(Apu,MATAIJ);CHKERRQ(ierr);
+	ierr = MatSetSizes(Apu,mp,mu,Mp,Mu);CHKERRQ(ierr);
+	
+	/* Do some preallocation */
+	ierr = StokesA21Preallocation_basic(Apu,dav,dap);CHKERRQ(ierr);
+	
+	ierr = MatSetOption(Apu,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
+	
+	ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
+	
+	*mat = Apu;
 	
 	PetscFunctionReturn(0);
 }

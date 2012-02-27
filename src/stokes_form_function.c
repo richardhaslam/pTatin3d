@@ -10,6 +10,7 @@
 #include "swarm_fields.h"
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
+//#include "element_utils_q2.h"
 #include "QPntVolCoefStokes_def.h"
 #include "quadrature.h"
 
@@ -852,9 +853,8 @@ PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-
-#include "stokes_q2p1_mf_operators_def.c"
-#include "stokes_q2p1_mf_operators_diag_def.c"
+//#include "stokes_q2p1_mf_operators_def.c"
+//#include "stokes_q2p1_mf_operators_diag_def.c"
 
 #undef __FUNCT__
 #define __FUNCT__ "MF_Stokes_yAx"
@@ -936,8 +936,8 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 
-		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(&Ye[0],  vel_el_lidx,Yu);CHKERRQ(ierr);
-		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(&Ye[81], p_el_lidx,  Yp);CHKERRQ(ierr);
+		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,&Ye[0]);CHKERRQ(ierr);
+		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
 	PetscGetTime(&t1);
@@ -1028,4 +1028,3 @@ PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
 	
   PetscFunctionReturn(0);
 }
-
