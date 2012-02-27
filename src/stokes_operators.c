@@ -1328,8 +1328,8 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	
 	PetscFunctionBegin;
 	
-	/* Each pressure dof is connected to all vel dofs in a single cell, 27 * 3 */
-	nnz = 27 * 3;
+	/* n_pressure_basis * neighbour_cells = 4 x 8 */
+	nnz = 32;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 	
 	onnz = 4;
@@ -1353,8 +1353,8 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 	
 	PetscFunctionBegin;
 
-	/* n_pressure_basis * neighbour_cells = 4 x 8 */
-	nnz = 32;
+	/* Each pressure dof is connected to all vel dofs in a single cell, 27 * 3 */
+	nnz = 27 * 3;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 
 	onnz = 4;
@@ -1402,7 +1402,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat)
 	ierr = MatSetSizes(Aup,mu,mp,Mu,Mp);CHKERRQ(ierr);
 	
 	/* Do some preallocation */
-	ierr = StokesA21Preallocation_basic(Aup,dav,dap);CHKERRQ(ierr);
+	ierr = StokesA12Preallocation_basic(Aup,dav,dap);CHKERRQ(ierr);
 	
 	ierr = MatSetOption(Aup,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
 	

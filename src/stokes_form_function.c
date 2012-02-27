@@ -10,13 +10,14 @@
 #include "swarm_fields.h"
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
-//#include "element_utils_q2.h"
+#include "element_utils_q2.h"
 #include "QPntVolCoefStokes_def.h"
 #include "quadrature.h"
 
-#define NQP 27
-#define NPE 27
+//#define NQP 27
+//#define NPE 27
 
+#if 0
 void ConstructNi_P0_3D(const double _xi[],double coords[],double Ni[])
 {
 	//	printf("hey P0_2D\n");
@@ -366,6 +367,7 @@ void evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],PetscRe
 	
 	// TOTAL = 18 + 14 + 58 + 15 = 105
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal_profile"
@@ -391,7 +393,7 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	PetscFunctionBegin;
 
 	/* quadrature */
-	prepare_elementQ2(NQP,WEIGHT,XI,NI,GNI);
+	P3D_prepare_elementQ2(NQP,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -413,7 +415,7 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
 
 		/* coord transformation */
-		v1_evaluate_geometry_elementQ2(elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(NQP,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 //		evaluate_geometry_elementQ2(NQP,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 	
 	}
@@ -455,7 +457,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	
 	/* quadrature */
 	ngp = user->volQ->npoints;
-	prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -497,7 +499,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 		PetscMemzero( Fe, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D*3 );
 		PetscMemzero( Be, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D*3 );
 			
-		evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 		
 		/* evaluate the viscosity */
 		for (p=0; p<ngp; p++) {
@@ -674,7 +676,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 	
 	/* quadrature */
 	ngp = user->volQ->npoints;
-	prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);	
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);	
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -713,7 +715,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 		PetscMemzero( Fe, sizeof(PetscScalar)* P_BASIS_FUNCTIONS );
 		PetscMemzero( Be, sizeof(PetscScalar)* P_BASIS_FUNCTIONS );
 
-		evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 		
 		for (p=0; p<ngp; p++) {
 			PetscScalar  div_u_gp;
@@ -885,7 +887,7 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	PetscFunctionBegin;
 	/* quadrature */
 	ngp = user->volQ->npoints;
-	prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -922,7 +924,7 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
 			ConstructNi_pressure(xip,elcoords,NIp[p]);
 		}
-		evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3 + P_BASIS_FUNCTIONS ) );

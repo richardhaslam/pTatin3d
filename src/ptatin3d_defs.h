@@ -33,19 +33,19 @@
 
 #ifdef PBASIS_P0
 #define P_BASIS_FUNCTIONS 1
-#define ConstructNi_pressure(_xi,coords,Ni) ConstructNi_P0_3D(_xi,coords,Ni)
+#define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P0_3D(_xi,coords,Ni)
 #endif
 #ifdef PBASIS_P1_GLOBAL
 #define P_BASIS_FUNCTIONS 4
-#define ConstructNi_pressure(_xi,coords,Ni) ConstructNi_P1G_3D(_xi,coords,Ni)
+#define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P1G_3D(_xi,coords,Ni)
 #endif
 #ifdef PBASIS_P1_LOCAL
 #define P_BASIS_FUNCTIONS 4
-#define ConstructNi_pressure(_xi,coords,Ni) ConstructNi_P1L_3D(_xi,coords,Ni)
+#define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P1L_3D(_xi,coords,Ni)
 #endif
 #ifdef PBASIS_P1_GLOBAL_RELATIVE
 #define P_BASIS_FUNCTIONS 4
-#define ConstructNi_pressure(_xi,coords,Ni) ConstructNi_P1GRel_3D(_xi,coords,Ni)
+#define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P1GRel_3D(_xi,coords,Ni)
 #endif
 
 #endif

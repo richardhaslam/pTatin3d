@@ -480,17 +480,17 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	/* perform tests */
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
 	
-//	ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
-//	ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
+	ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
+	ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
 	
-//	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
-//	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);
+	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
+	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A12(user->stokes_ctx);CHKERRQ(ierr);
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
 
-	
+
 	ierr = pTatin3dDestroyContext(&user);
 
 	PetscFunctionReturn(0);

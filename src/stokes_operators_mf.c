@@ -133,7 +133,7 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	PetscFunctionBegin;
 	/* quadrature */
 	ngp = volQ->npoints;
-	prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
 			ConstructNi_pressure(xip,elcoords,NIp[p]);
 		}
-		evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3 + P_BASIS_FUNCTIONS ) );
@@ -222,7 +222,7 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	PetscFunctionBegin;
 	/* quadrature */
 	ngp = volQ->npoints;
-	prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -252,7 +252,7 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
 			ConstructNi_pressure(xip,elcoords,NIp[p]);
 		}
-		evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3 ) );
@@ -303,7 +303,7 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	PetscFunctionBegin;
 	/* quadrature */
 	ngp = volQ->npoints;
-	prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -339,7 +339,7 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
 			ConstructNi_pressure(xip,elcoords,NIp[p]);
 		}
-		evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( P_BASIS_FUNCTIONS ) );
