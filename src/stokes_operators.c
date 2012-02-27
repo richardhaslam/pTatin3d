@@ -1345,7 +1345,7 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
                            onnz = 16 assembly = 8.5164e+01 sec
 	                   onnz = 24 assembly = 5.3824e+00 sec
         */
-	onnz = 4;
+	onnz = 16;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"StokesA12Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
@@ -1386,7 +1386,6 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 	                   onnz = 50 assembly = 3.3143e+00 sec
 	                   onnz = 60 assembly = 2.9067e+00 sec
         */
-
 	onnz = 30;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
