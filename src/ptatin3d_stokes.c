@@ -214,7 +214,7 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *
     fields_F[idx] += Fe_u[NSD*n+1];
 
 		idx = u_eqn[3*n+2];
-    fields_F[idx] += Fe_u[NSD*n+1];
+    fields_F[idx] += Fe_u[NSD*n+2];
 }
   PetscFunctionReturn(0);
 }
