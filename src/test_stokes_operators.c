@@ -234,6 +234,13 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	
 	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
+
+	/*
+	PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
+	ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
+	ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	*/
 	
 	/* compare result */
 	ierr = VecDot(y,y,&cmp);CHKERRQ(ierr);
@@ -246,9 +253,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[A11_mfo.x-A11_asm.x]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[A11_mfo.x-A11_asm.x]  = %+1.8e \n", max );
-	
-//	ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-	
+
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	ierr = VecDestroy(&y);CHKERRQ(ierr);
 	ierr = VecDestroy(&y2);CHKERRQ(ierr);
@@ -480,8 +485,8 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	/* perform tests */
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
 	
-	ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
-	ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
+//	ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
+//	ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
 	
 	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);

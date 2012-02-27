@@ -81,12 +81,23 @@ PetscErrorCode BCListInsertScaling(Mat A,PetscInt N_EQNS, PetscInt gidx[],BCList
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
+#if 0
 	L   = list->L;
 	idx = list->dofidx_global;
 	for (k=0; k<L; k++) {
 		if (idx[k]==BCList_DIRICHLET) {
 			//printf("local index %d is dirichlet--->inserted into %d\n", k,gidx[k]);
 			ierr = MatSetValue(A,gidx[k],gidx[k],list->scale_global[k],INSERT_VALUES);CHKERRQ(ierr);
+		}
+	}
+#endif
+	
+	L   = list->L_local;
+	idx = list->dofidx_local;
+	for (k=0; k<L; k++) {
+		if (idx[k]==BCList_DIRICHLET) {
+			//printf("local index %d is dirichlet--->inserted into %d\n", k,gidx[k]);
+			ierr = MatSetValue(A,gidx[k],gidx[k],1.0,INSERT_VALUES);CHKERRQ(ierr);
 		}
 	}
 	
@@ -153,15 +164,17 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	DM        cda;
 	Vec       gcoords;
 	PetscReal *LA_gcoords;
-	PetscInt  nel,nen_u,e,ii,jj;
+	PetscInt  nel,nen_u,e,ii,jj,kk;
 	PetscInt       vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	const PetscInt *elnidx_u;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
 	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
 	PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
-	PetscReal      fac,D[NSTRESS][NSTRESS];
+	PetscReal      fac,D[NSTRESS][NSTRESS],diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
 	
 	PetscLogDouble t0,t1;
+	PetscLogDouble t0c,t1c,tc;
+	PetscLogDouble t0q,t1q,tq;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -185,6 +198,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
+	tc = 0.0;
+	tq = 0.0;
 	PetscGetTime(&t0);
 	for (e=0;e<nel;e++) {
 		/* get local indices */
@@ -211,13 +226,18 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ae, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS );
 		
+		PetscGetTime(&t0c);
 		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		PetscGetTime(&t1c);
+		tc += (t1c-t0c);
 		
 		/* evaluate the viscosity */
 		for (p=0; p<ngp; p++) {
 			el_eta[p] = cell_gausspoints[p].eta;
 		}
 		
+#if 0		
+		PetscGetTime(&t0q);
 		for (p=0; p<ngp; p++) {
 			
 			fac = WEIGHT[p] * detJ[p];
@@ -232,6 +252,64 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 			
 			FormStokes3D_transB_isoD_B( Q2_NODES_PER_EL_3D, dNudx[p],dNudy[p],dNudz[p], D, Ae );
 		}
+		PetscGetTime(&t1q);
+		tq += (t1q-t0q);
+#endif
+		
+//#if 0
+		PetscGetTime(&t0q);
+		for (p=0; p<ngp; p++) {
+			
+			fac = WEIGHT[p] * detJ[p];
+				
+			for (ii = 0; ii < NPE; ii++) {
+				PetscScalar d_dx_i = dNudx[p][ii];
+				PetscScalar d_dy_i = dNudy[p][ii];
+				PetscScalar d_dz_i = dNudz[p][ii];
+				
+				B[0][3*ii  ] = d_dx_i; B[0][3*ii+1] = 0.0;     B[0][3*ii+2] = 0.0;
+				B[1][3*ii  ] = 0.0;    B[1][3*ii+1] = d_dy_i;  B[1][3*ii+2] = 0.0;
+				B[2][3*ii  ] = 0.0;    B[2][3*ii+1] = 0.0;     B[2][3*ii+2] = d_dz_i;
+				
+				B[3][3*ii] = d_dy_i;   B[3][3*ii+1] = d_dx_i;  B[3][3*ii+2] = 0.0;   /* e_xy */
+				B[4][3*ii] = d_dz_i;   B[4][3*ii+1] = 0.0;     B[4][3*ii+2] = d_dx_i;/* e_xz */
+				B[5][3*ii] = 0.0;      B[5][3*ii+1] = d_dz_i;  B[5][3*ii+2] = d_dy_i;/* e_yz */
+			}
+			
+			
+			diagD[0] = 2.0*fac*el_eta[p];
+			diagD[1] = 2.0*fac*el_eta[p];
+			diagD[2] = 2.0*fac*el_eta[p];
+			
+			diagD[3] =     fac*el_eta[p];
+			diagD[4] =     fac*el_eta[p];
+			diagD[5] =     fac*el_eta[p];
+
+			/* form Bt tildeD B */
+			/*
+			 Ke_ij = Bt_ik . D_kl . B_lj
+			 = B_ki . D_kl . B_lj
+			 = B_ki . D_kk . B_kj
+			 */
+			for (ii = 0; ii < 81; ii++) {
+				for (jj = ii; jj < 81; jj++) {
+					for (kk = 0; kk < 6; kk++) {
+						Ae[ii*81+jj] += B[kk][ii]*diagD[kk]*B[kk][jj];
+					}
+				}
+			}
+			
+		}
+		PetscGetTime(&t1q);
+		
+		
+		/* fill lower triangular part */
+		for (ii = 0; ii < 81; ii++) {
+			for (jj = ii; jj < 81; jj++) {
+				Ae[jj*81+ii] = Ae[ii*81+jj];
+			}
+		}
+//#endif	
 		
 		ierr = MatSetValues(A,Q2_NODES_PER_EL_3D * U_DOFS,ge_eqnums,Q2_NODES_PER_EL_3D * U_DOFS,ge_eqnums,Ae,ADD_VALUES);CHKERRQ(ierr);
 
@@ -239,6 +317,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	PetscGetTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Auu <geom>, = %1.4e (sec)\n",tc);
+	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Auu <quad>, = %1.4e (sec)\n",tq);
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Auu, = %1.4e (sec)[flush]\n",t1-t0);
 
 	ierr = BCListRemoveDirichletMask(NUM_GINDICES,GINDICES,u_bclist);CHKERRQ(ierr);
