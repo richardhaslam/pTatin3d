@@ -1331,7 +1331,20 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	/* n_pressure_basis * neighbour_cells = 4 x 8 */
 	nnz = 32;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
-	
+
+        /*
+        I've tuned this parameter for speed, not memory usage
+        BRUTUS:
+        8 cpus  mx^3 = 60 onnz =  4  assembly > 5 mins
+                          onnz =  8  assembly > 5 mins
+                          onnz = 16  assembly = 4.5953e+01 sec
+	                  onnz = 24  assembly = 4.1227e+00 sec
+
+        64 cpus mx^3 = 120 onnz =  4 assembly = sec
+                           onnz =  8 assembly = sec
+                           onnz = 16 assembly = 8.5164e+01 sec
+	                   onnz = 24 assembly = 5.3824e+00 sec
+        */
 	onnz = 4;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
@@ -1357,7 +1370,24 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 	nnz = 27 * 3;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 
-	onnz = 4;
+        /*
+        I've tuned this parameter for speed, not memory usage
+        BRUTUS:
+        8 cpus  mx^3 = 60 onnz = 4   assembly = 2.2707e+02 sec
+        8 cpus  mx^3 = 60 onnz = 10  assembly > 5 mins
+	                  onnz = 20  assembly > 5 mins
+	                  onnz = 30  assembly = 1.9846e+01 sec
+	                  onnz = 40  assembly = 3.0207e+01 sec
+
+        64 cpus mx^3 = 120 onnz = 4 assembly = 3.6358e+02 sec
+
+	                   onnz = 30 assembly = 2.7790e+01 sec 
+	                   onnz = 40 assembly = 4.0755e+01 sec
+	                   onnz = 50 assembly = 3.3143e+00 sec
+	                   onnz = 60 assembly = 2.9067e+00 sec
+        */
+
+	onnz = 30;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"StokesA21Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
