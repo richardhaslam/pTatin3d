@@ -32,9 +32,9 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	rheology->rheology_type = RHEOLOGY_VISCOUS;
 	
 	/* box geometry */
-	data->Lx = 2.0;
-	data->Ly = 3.0;
-	data->Lz = 4.0;
+	data->Lx = 1.0;
+	data->Ly = 1.0;
+	data->Lz = 1.0;
 	
 	/* inclusion geometry */
 	data->is_sphere = PETSC_TRUE;
@@ -53,7 +53,7 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 		
 	/* parse from command line */
 	rheology->const_eta0[0] = 1.0;
-	rheology->const_eta0[1] = 2.0;
+	rheology->const_eta0[1] = 1.0;
 
 	rheology->const_rho0[0] = 0.0;
 	rheology->const_rho0[1] = 1.0;
@@ -84,9 +84,9 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Oy",&data->origin[1],&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Oz",&data->origin[2],&flg);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_lx",&data->length[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_ly",&data->length[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_lz",&data->length[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_dx",&data->length[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_dy",&data->length[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_dz",&data->length[2],&flg);CHKERRQ(ierr);
 
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_viscous_sinker_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
 	
@@ -270,9 +270,16 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 			}
 			
 		} else { /* box */
+			/*
+			printf("length = %lf %lf %lf \n",data->length[0],data->length[1],data->length[2]); 
+			printf("origin = %lf %lf %lf \n",data->origin[0],data->origin[1],data->origin[2]); 
+			printf("x: range [%lf %lf] xp = %lf \n",data->origin[0] - 0.5*data->length[0],data->origin[0] + 0.5*data->length[0],position[0]);
+			printf("y: range [%lf %lf] yp = %lf \n",data->origin[1] - 0.5*data->length[1],data->origin[1] + 0.5*data->length[1],position[1]);
+			printf("z: range [%lf %lf] zp = %lf \n",data->origin[2] - 0.5*data->length[2],data->origin[2] + 0.5*data->length[2],position[2]);
+			*/
 			if ( (position[0]>data->origin[0] - 0.5*data->length[0]) && (position[0]<data->origin[0] + 0.5*data->length[0]) ) {
 				if ( (position[1]>data->origin[1] - 0.5*data->length[1]) && (position[1]<data->origin[1] + 0.5*data->length[1]) ) {
-					if ( (position[2]>data->origin[2] - 0.5*data->length[2]) && (position[2]<data->origin[1] + 0.5*data->length[2]) ) {
+					if ( (position[2]>data->origin[2] - 0.5*data->length[2]) && (position[2]<data->origin[2] + 0.5*data->length[2]) ) {
 						phase = 1;
 						eta =  data->eta1;
 						rho = -data->rho1;
