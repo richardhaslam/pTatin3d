@@ -14,6 +14,7 @@
 #include "quadrature.h"
 #include "element_type_Q2.h"
 #include "material_point_utils.h"
+#include "element_utils_q2.h"
 
 
 #undef __FUNCT__
@@ -436,8 +437,91 @@ void pTatinConstructNI_Q1_3D(const double _xi[],double Ni[])
   
   Ni[6] = 0.125*(1.0-xi)*(1.0+eta)*(1.0+zeta); /*1-0+1*/
   Ni[7] = 0.125*(1.0+xi)*(1.0+eta)*(1.0+zeta); /*1-1+1*/
+}
+
+/*
+
+ 6[2]--7--8[3]
+  |         |
+  3     4   5
+  |         |
+ 0[0]--1--2[1]
+
+ 
+ 15---16---17
+ |          |
+ 12   13   14
+ |          |
+ 9----10---11
+
+ 
+ 24[6]---25---26[7]
+  |              |
+  21     22     23
+  |              |
+ 18[4]---19---20[5]
+ 
+*/
+void pTatinConstructNI_Q1_on_Q2_3D(const double _xi[],double Ni[])
+{
+	PetscScalar NiQ1[8];
+  PetscScalar xi   = _xi[0];
+  PetscScalar eta  = _xi[1];
+  PetscScalar zeta = _xi[2];
+  
+  NiQ1[   0] = 0.125*(1.0-xi)*(1.0-eta)*(1.0-zeta); /*0-0*/
+  NiQ1[   1] = 0.125*(1.0+xi)*(1.0-eta)*(1.0-zeta); /*0-1*/
+  
+  NiQ1[   2] = 0.125*(1.0-xi)*(1.0+eta)*(1.0-zeta); /*1-0*/
+  NiQ1[   3] = 0.125*(1.0+xi)*(1.0+eta)*(1.0-zeta); /*1-1*/
+	
+  NiQ1[   4] = 0.125*(1.0-xi)*(1.0-eta)*(1.0+zeta); /*0-0+1*/
+  NiQ1[   5] = 0.125*(1.0+xi)*(1.0-eta)*(1.0+zeta); /*0-1+1*/
+  
+  NiQ1[   6] = 0.125*(1.0-xi)*(1.0+eta)*(1.0+zeta); /*1-0+1*/
+  NiQ1[   7] = 0.125*(1.0+xi)*(1.0+eta)*(1.0+zeta); /*1-1+1*/
+
+	/* vertex guys */
+	Ni[   0] = NiQ1[0];
+	Ni[   2] = NiQ1[1];
+	Ni[   6] = NiQ1[2];
+	Ni[   8] = NiQ1[3];
+	
+	Ni[  18] = NiQ1[4];
+	Ni[  20] = NiQ1[5];
+	Ni[  24] = NiQ1[6];
+	Ni[  26] = NiQ1[7];
+	
+	/* edge guys */
+	Ni[ 1] = 0.5 * ( NiQ1[0] + NiQ1[1] );
+	Ni[ 3] = 0.5 * ( NiQ1[0] + NiQ1[2] );
+	Ni[ 5] = 0.5 * ( NiQ1[1] + NiQ1[3] );
+	Ni[ 7] = 0.5 * ( NiQ1[2] + NiQ1[3] );
+
+	Ni[ 9] = 0.5 * ( NiQ1[0] + NiQ1[4] );
+	Ni[11] = 0.5 * ( NiQ1[1] + NiQ1[5] );
+	
+	Ni[15] = 0.5 * ( NiQ1[2] + NiQ1[6] );
+	Ni[17] = 0.5 * ( NiQ1[3] + NiQ1[7] );
+	
+	Ni[19] = 0.5 * ( NiQ1[4] + NiQ1[5] );
+	Ni[21] = 0.5 * ( NiQ1[4] + NiQ1[6] );
+	Ni[23] = 0.5 * ( NiQ1[5] + NiQ1[7] );
+	Ni[25] = 0.5 * ( NiQ1[6] + NiQ1[7] );
+	
+	/* face */
+	Ni[ 4] = 0.5 * ( NiQ1[0] + NiQ1[1] + NiQ1[2] + NiQ1[3] );
+	Ni[10] = 0.5 * ( NiQ1[0] + NiQ1[1] + NiQ1[4] + NiQ1[5] );
+	Ni[12] = 0.5 * ( NiQ1[0] + NiQ1[2] + NiQ1[4] + NiQ1[6] );
+	Ni[14] = 0.5 * ( NiQ1[1] + NiQ1[3] + NiQ1[5] + NiQ1[7] );
+	Ni[16] = 0.5 * ( NiQ1[2] + NiQ1[3] + NiQ1[6] + NiQ1[7] );
+	Ni[22] = 0.5 * ( NiQ1[4] + NiQ1[5] + NiQ1[6] + NiQ1[7] );
+	
+	/* center */
+	Ni[13] = 0.125 * ( NiQ1[0] + NiQ1[1] + NiQ1[2] + NiQ1[3] + NiQ1[4] + NiQ1[5] + NiQ1[6] + NiQ1[7] );
 	
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes"
@@ -532,7 +616,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		
 	}
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
+	//PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
 	
   ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
@@ -585,7 +669,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 	ierr = DMGlobalToLocalBegin(clone,properties_A2,INSERT_VALUES,Lproperties_A2);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalEnd(  clone,properties_A2,INSERT_VALUES,Lproperties_A2);CHKERRQ(ierr);
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (scatter): %1.4lf ]\n",t1-t0);
+//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (scatter): %1.4lf ]\n",t1-t0);
 	
 	PetscGetTime(&t0);
 	ierr = VecGetArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
@@ -648,7 +732,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
   ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
 	
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
 	
 	ierr = DMRestoreLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);
 	ierr = DMRestoreLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);
@@ -708,6 +792,331 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const 
 	
 	ierr = DMDestroy(&clone);CHKERRQ(ierr);
 	
+	PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints"
+PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
+																																					DM clone,Vec properties_A1,Vec properties_A2,
+																																					Quadrature Q) 
+{
+	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
+	PetscScalar Ae1[Q2_NODES_PER_EL_3D], Ae2[Q2_NODES_PER_EL_3D], Be[Q2_NODES_PER_EL_3D];
+	PetscInt el_lidx[U_BASIS_FUNCTIONS];
+	Vec Lproperties_A1, Lproperties_A2;
+	PetscScalar *LA_properties_A1, *LA_properties_A2;
+	PetscLogDouble t0,t1;
+	PetscInt p,i;
+	PetscInt nel,nen,e;
+	const PetscInt *elnidx;
+	
+	PetscInt ngp;
+	PetscScalar *xi_mp;
+	PetscScalar NIu[MAX_QUAD_PNTS][U_BASIS_FUNCTIONS];
+	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+	PetscScalar range_eta[2],range_rho[2];
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	
+	ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
+	ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	ierr = VolumeQuadratureGetAllCellData_Stokes(Q,&all_gausspoints);CHKERRQ(ierr);
+	
+	/* scatter to quadrature points */
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
+	
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A2,ADD_VALUES,properties_A2);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A2,ADD_VALUES,properties_A2);CHKERRQ(ierr);
+	
+	/* ========================================= */
+	
+	/* scatter result back to local array and do the interpolation onto the quadrature points */
+	ngp       = Q->npoints;
+	xi_mp     = Q->q_xi_coor;
+	for (p=0; p<ngp; p++) {
+		PetscScalar *xip = &xi_mp[3*p];
+		
+		ierr = PetscMemzero(NIu[p], sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		
+		P3D_ConstructNi_Q2_3D(xip,NIu[p]);
+	}
+	
+	PetscGetTime(&t0);
+	ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
+	ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
+	
+	ierr = DMGlobalToLocalBegin(clone,properties_A1,INSERT_VALUES,Lproperties_A1);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd(  clone,properties_A1,INSERT_VALUES,Lproperties_A1);CHKERRQ(ierr);
+	
+	ierr = DMGlobalToLocalBegin(clone,properties_A2,INSERT_VALUES,Lproperties_A2);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd(  clone,properties_A2,INSERT_VALUES,Lproperties_A2);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (scatter): %1.4lf ]\n",t1-t0);
+	
+	PetscGetTime(&t0);
+	ierr = VecGetArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+	
+	/* traverse elements and interpolate */
+	for (e=0;e<nel;e++) {
+		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+		
+		ierr = Q2GetElementLocalIndicesDOF(el_lidx,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+		
+		ierr = DMDAGetScalarElementField(Ae1,nen,(PetscInt*)&elnidx[nen*e],LA_properties_A1);CHKERRQ(ierr);
+		ierr = DMDAGetScalarElementField(Ae2,nen,(PetscInt*)&elnidx[nen*e],LA_properties_A2);CHKERRQ(ierr);
+		
+		/* The Q2 interpolant tends to overshoot / undershoot when you have viscosity jumps */
+		range_eta[0] = 1.0e32;  /* min */
+		range_eta[1] = -1.0e32; /* max */
+		range_rho[0] = 1.0e32;
+		range_rho[1] = -1.0e32;
+		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+			if (Ae1[i]<range_eta[0]) { range_eta[0] = Ae1[i]; }
+			if (Ae1[i]>range_eta[1]) { range_eta[1] = Ae1[i]; }
+			if (Ae2[i]<range_rho[0]) { range_rho[0] = Ae2[i]; }
+			if (Ae2[i]>range_rho[1]) { range_rho[1] = Ae2[i]; }
+		}
+		
+		for (p=0; p<ngp; p++) {
+			cell_gausspoints[p].eta = 0.0;
+			cell_gausspoints[p].Fu[0] = 0.0;
+			cell_gausspoints[p].Fu[1] = 0.0;
+			cell_gausspoints[p].Fu[2] = 0.0;
+
+			cell_gausspoints[p].Fp = 0.0;
+
+			for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+				cell_gausspoints[p].eta    += NIu[p][i] * Ae1[i];
+				cell_gausspoints[p].Fu[1]  += NIu[p][i] * Ae2[i];
+			}
+			if (cell_gausspoints[p].eta < range_eta[0]) { cell_gausspoints[p].eta = range_eta[0]; }
+			if (cell_gausspoints[p].eta > range_eta[1]) { cell_gausspoints[p].eta = range_eta[1]; }
+			if (cell_gausspoints[p].Fu[1] < range_rho[0]) { cell_gausspoints[p].Fu[1] = range_rho[0]; }
+			if (cell_gausspoints[p].Fu[1] > range_rho[1]) { cell_gausspoints[p].Fu[1] = range_rho[1]; }
+		}
+	}
+	
+  ierr = VecRestoreArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+	
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+	
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGrid"
+PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGrid(
+																																					DM clone,Vec properties_A1,Vec properties_A2,Vec properties_B,
+																																					const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[]) 
+{
+	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
+	PetscScalar Ae1[Q2_NODES_PER_EL_3D], Ae2[Q2_NODES_PER_EL_3D], Be[Q2_NODES_PER_EL_3D];
+	PetscInt el_lidx[U_BASIS_FUNCTIONS];
+	Vec Lproperties_A1, Lproperties_A2, Lproperties_B;
+	PetscScalar *LA_properties_A1, *LA_properties_A2, *LA_properties_B;
+	PetscLogDouble t0,t1;
+	PetscInt p,i;
+	PetscInt nel,nen,e;
+	const PetscInt *elnidx;
+	
+	PetscInt ngp;
+	PetscScalar *xi_mp;
+	PetscScalar NIu[MAX_QUAD_PNTS][U_BASIS_FUNCTIONS];
+	PetscScalar range_eta[2],range_rho[2];
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	
+	ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
+	ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
+	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_B, &LA_properties_B);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	PetscGetTime(&t0);
+	for (p=0; p<npoints; p++) {
+		double *xi_p  = &mp_std[p].xi[0];
+		double eta_p  = mp_stokes[p].eta;
+		double rho_p  = mp_stokes[p].rho;
+		
+		ierr = PetscMemzero(Ae1,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		ierr = PetscMemzero(Ae2,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		ierr = PetscMemzero(Be, sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		
+		pTatinConstructNI_Q1_on_Q2_3D(xi_p,Ni_p);
+		
+		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+			Ae1[i] = Ni_p[i] * eta_p;
+			Ae2[i] = Ni_p[i] * rho_p;
+			Be[i]  = Ni_p[i];
+		}
+		
+		/* sum into local vectors */
+		e = mp_std[p].wil;
+		ierr = Q2GetElementLocalIndicesDOF(el_lidx,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+		
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A1, 1, el_lidx,Ae1);CHKERRQ(ierr);
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A2, 1, el_lidx,Ae2);CHKERRQ(ierr);
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_B,  1, el_lidx,Be);CHKERRQ(ierr);
+		
+	}
+	PetscGetTime(&t1);
+	//PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
+	
+  ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+	
+	
+	/* scatter to quadrature points */
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
+	
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A2,ADD_VALUES,properties_A2);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A2,ADD_VALUES,properties_A2);CHKERRQ(ierr);
+	
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+	
+	/* scale */
+	ierr = VecPointwiseDivide( properties_A1, properties_A1, properties_B );CHKERRQ(ierr);
+	ierr = VecPointwiseDivide( properties_A2, properties_A2, properties_B );CHKERRQ(ierr);
+	/* ========================================= */
+	
+	
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+	
+	ierr = DMRestoreLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy"
+PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[])
+{
+	PetscInt  dof,k;
+	DM        clone[100];
+	Vec       properties_A1[100], properties_A2[100], properties_B;
+	PetscBool view;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	/* setup */
+	dof = 1;
+	for (k=0; k<nlevels; k++) {
+		ierr = DMDADuplicateLayout(da[k],dof,2,DMDA_STENCIL_BOX,&clone[k]);CHKERRQ(ierr); /* Q2 - but we'll fake it as a Q1 with cells the same size as the Q2 guys */
+	}
+	
+	for (k=0; k<nlevels; k++) {
+		ierr = DMGetGlobalVector(clone[k],&properties_A1[k]);CHKERRQ(ierr);  ierr = PetscObjectSetName( (PetscObject)properties_A1[k], "LocalL2ProjQ1_nu");CHKERRQ(ierr);
+		ierr = DMGetGlobalVector(clone[k],&properties_A2[k]);CHKERRQ(ierr);  ierr = PetscObjectSetName( (PetscObject)properties_A2[k], "LocalL2ProjQ1_rho");CHKERRQ(ierr);
+		ierr = VecZeroEntries(properties_A1[k]);CHKERRQ(ierr);
+		ierr = VecZeroEntries(properties_A2[k]);CHKERRQ(ierr);
+	}
+	ierr = DMGetGlobalVector(clone[nlevels-1],&properties_B);CHKERRQ(ierr);
+	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
+	
+	/* compute */
+	ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGrid(
+																																		clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B, 																																	 
+																																		npoints, mp_std,mp_stokes );CHKERRQ(ierr);	
+
+	ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
+																																		clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],
+																																		Q[nlevels-1] );CHKERRQ(ierr);
+	/* view */
+	view = PETSC_FALSE;
+	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,PETSC_NULL);
+	if (view) {
+		PetscViewer viewer;
+		
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "SwarmUpdateProperties_LocalL2Proj_Stokes_fine.vtk", &viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = DMView(clone[nlevels-1], viewer);CHKERRQ(ierr);
+		ierr = VecView(properties_A1[nlevels-1], viewer);CHKERRQ(ierr);
+		ierr = VecView(properties_A2[nlevels-1], viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
+
+	
+	for (k=nlevels-1; k>=1; k--) {
+		VecScatter inject;
+		/* This introduces scaling effects I need to deal with */
+//		ierr = MatRestrict(R[k],properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
+//		ierr = MatRestrict(R[k],properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
+
+		ierr = DMGetInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
+
+		ierr = VecScatterBegin(inject,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+		ierr = VecScatterEnd(inject  ,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+		ierr = VecScatterBegin(inject,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+		ierr = VecScatterEnd(inject  ,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+		
+		ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+		
+		
+		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
+																												clone[k-1], properties_A1[k-1],properties_A2[k-1],
+																												Q[k-1] );CHKERRQ(ierr);
+
+		if (view) {
+			PetscViewer viewer;
+			char name[512];
+			
+			sprintf(name,"SwarmUpdateProperties_LocalL2Proj_Stokes_%d.vtk",k-1);
+			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, name, &viewer);CHKERRQ(ierr);
+			ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+			ierr = DMView(clone[k-1], viewer);CHKERRQ(ierr);
+			ierr = VecView(properties_A1[k-1], viewer);CHKERRQ(ierr);
+			ierr = VecView(properties_A2[k-1], viewer);CHKERRQ(ierr);
+			ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+		}
+		
+	}
+	
+	
+	/* destroy */
+	ierr = DMRestoreGlobalVector(clone[nlevels-1],&properties_B);CHKERRQ(ierr);
+
+	for (k=0; k<nlevels; k++) {
+		ierr = DMRestoreGlobalVector(clone[k],&properties_A2[k]);CHKERRQ(ierr);
+		ierr = DMRestoreGlobalVector(clone[k],&properties_A1[k]);CHKERRQ(ierr);
+	}	
+	for (k=0; k<nlevels; k++) {
+		ierr = DMDestroy(&clone[k]);CHKERRQ(ierr);
+	}
 	PetscFunctionReturn(0);
 }
 
