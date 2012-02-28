@@ -1679,6 +1679,14 @@ def generator_Q2Pm1_3d():
 	zero_fields(Xc,dim,nnodes_u,['u','v','w'],nnodes_p,[])
 	Stokes3dMixedFEM_MatMult_gp_with_filter('MatMultMF_Stokes_MixedFEM3d_A22',nnodes_u,nnodes_p,Xc,[],['p'])
 
+
+	Xc = X * 1.0
+	Stokes3dMixedFEM_MatMult_gp_with_filter('MatMultMF_Stokes_MixedFEM3d_yuvw_eq_Buvwp',nnodes_u,nnodes_p,Xc,['u','v','w'],[])
+
+	Xc = X * 1.0
+	Stokes3dMixedFEM_MatMult_gp_with_filter('MatMultMF_Stokes_MixedFEM3d_yp_eq_Buvwp',nnodes_u,nnodes_p,Xc,[],['p'])
+
+
 	file.close()
 	sys.stdout = sys.__stdout__
 

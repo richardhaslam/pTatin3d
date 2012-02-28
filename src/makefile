@@ -62,7 +62,7 @@ TATIN_TESTS	=	\
 TATIN_MODELS		=
 TATIN_DRIVERS		= \
 			ptatin_driver_nostokessolve \
-
+			ptatin_driver_asmsolve \
 
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
 export EXTERNAL_LIBS	=	${PETSC_LIB}
