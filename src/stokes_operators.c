@@ -37,6 +37,7 @@
 
 #include "stokes_operators.h"
 #include "stokes_operators_mf.h"
+#include "stokes_assembly.h"
 
 
 
@@ -383,23 +384,34 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3)
 {
 	PetscErrorCode ierr;
-	PetscScalar *LA_v2,*LA_v3;
+	PetscScalar *LA_v2,*LA_v3,*LA_tmp;
 	PetscInt i,n;
+	Vec tmp;
   PetscFunctionBegin;
 	
-	ierr = MatMult(A,v1,v3);CHKERRQ(ierr);
+	ierr = VecDuplicate(v2,&tmp);CHKERRQ(ierr);
+	ierr = MatMult(A,v1,tmp);CHKERRQ(ierr);
+	
 	ierr = VecGetLocalSize(v2,&n);CHKERRQ(ierr);
 	ierr = VecGetArray(v2,&LA_v2);CHKERRQ(ierr);
 	ierr = VecGetArray(v3,&LA_v3);CHKERRQ(ierr);
+	ierr = VecGetArray(tmp,&LA_tmp);CHKERRQ(ierr);
 	for (i=0; i<n; i++) {
-		LA_v3[i] = LA_v3[i] + LA_v2[i];
+//		printf("  [%d] : v2 = %lf .. v3 = %lf \n", i,LA_tmp[i],LA_v2[i]);
+		LA_v3[i] = LA_tmp[i] + LA_v2[i];
 	}
-	ierr = VecRestoreArray(v2,&LA_v2);CHKERRQ(ierr);
 	ierr = VecRestoreArray(v3,&LA_v3);CHKERRQ(ierr);
+	ierr = VecRestoreArray(v2,&LA_v2);CHKERRQ(ierr);
+	ierr = VecRestoreArray(tmp,&LA_tmp);CHKERRQ(ierr);
+	ierr = VecDestroy(&tmp);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
 
+/*
+ 
+ 
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MFStokes_A"
 PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
@@ -441,8 +453,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 				} else {
 					ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 				}
-				PetscPrintf(PETSC_COMM_WORLD,"ierr = AssembleAUU_Stokes();CHKERRQ(ierr);  TODO \n");
-				
+				//PetscPrintf(PETSC_COMM_WORLD,"ierr = AssembleAUU_Stokes();CHKERRQ(ierr);  TODO \n");
+				ierr = MatAssemble_StokesA_AUU(*B,ctx->daUVW,ctx->u_bclist,ctx->volQ);CHKERRQ(ierr);
 			} else {
 				if (cll==MAT_INITIAL_MATRIX) {
 					PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
@@ -1270,27 +1282,43 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	
 	/* A11 */
 	if (tA11==0) {
-		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);  ierr = MatSetOptionsPrefix(Auu,"Buu");CHKERRQ(ierr);
+		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
+/*
+		ierr = DMGetMatrix(dau,MATSBAIJ,&Auu);CHKERRQ(ierr);
+		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+*/ 
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 	}
-
+	ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
+	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
+	
 	/* Schur complement */
-	ierr = DMGetMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);  ierr = MatSetOptionsPrefix(Spp,"S*");CHKERRQ(ierr);
+	ierr = DMGetMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
+/*
+	ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+	ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+*/
+	ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
+	ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
 
 	/* A12 */
 	if (tA12==0) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stokes->A12 doesn't support assembled operator");
 	} else {
-		ierr = StokesQ2P1CreateMatrix_MFOperator_A12(StkCtx,&Aup);CHKERRQ(ierr); ierr = MatSetOptionsPrefix(Aup,"Bup");CHKERRQ(ierr);
+		ierr = StokesQ2P1CreateMatrix_MFOperator_A12(StkCtx,&Aup);CHKERRQ(ierr);
 	}
+	ierr = MatSetOptionsPrefix(Aup,"Bup_");CHKERRQ(ierr);
+	ierr = MatSetFromOptions(Aup);CHKERRQ(ierr);
 	
 	/* A21 */
 	if (tA21==0) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stokes->A21 doesn't support assembled operator");
 	} else {
-		ierr = StokesQ2P1CreateMatrix_MFOperator_A21(StkCtx,&Apu);CHKERRQ(ierr); ierr = MatSetOptionsPrefix(Apu,"Bpu");CHKERRQ(ierr);
+		ierr = StokesQ2P1CreateMatrix_MFOperator_A21(StkCtx,&Apu);CHKERRQ(ierr);
 	}
+	ierr = MatSetOptionsPrefix(Apu,"Bpu_");CHKERRQ(ierr);
+	ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
 	
 	/* Create nest */
 	ierr = DMCompositeGetGlobalISs(pack,&is);CHKERRQ(ierr);
