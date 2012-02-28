@@ -300,7 +300,6 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 			}
 			
 		}
-		PetscGetTime(&t1q);
 		
 		
 		/* fill lower triangular part */
@@ -309,6 +308,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 				Ae[jj*81+ii] = Ae[ii*81+jj];
 			}
 		}
+		PetscGetTime(&t1q);
+		tq += (t1q-t0q);
 //#endif	
 		
 		ierr = MatSetValues(A,Q2_NODES_PER_EL_3D * U_DOFS,ge_eqnums,Q2_NODES_PER_EL_3D * U_DOFS,ge_eqnums,Ae,ADD_VALUES);CHKERRQ(ierr);
@@ -430,7 +431,7 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 				for (jj=ii; jj<P_BASIS_FUNCTIONS; jj++) {
 					IJ = jj + ii*P_BASIS_FUNCTIONS;
 					
-					Ae[IJ] += fac * ( NIp[p][ii] * NIp[p][jj] );
+					Ae[IJ] -= fac * ( NIp[p][ii] * NIp[p][jj] );
 				}
 			}
 		}
