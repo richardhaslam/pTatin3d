@@ -412,6 +412,75 @@ PetscErrorCode compare_mf_A12(PhysCompStokes user)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "compare_mf_A"
+PetscErrorCode compare_mf_A(PhysCompStokes user)
+{
+	Mat            A,B;
+	Vec            x,xu,xp,y,y2;
+	DM             dav,dap,pack;
+	PetscScalar    min,max;
+	PetscReal      cmp;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
+	
+	/* create the mf operators */
+	dav = user->dav;
+	dap = user->dap;
+	pack = user->stokes_pack;
+	
+	/* matrix free */
+	ierr = DMCreateGlobalVector(pack,&x);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
+		ierr = VecSetRandom(xu,PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecSetRandom(xp,PETSC_NULL);CHKERRQ(ierr);
+//		ierr = VecZeroEntries(xp);CHKERRQ(ierr);
+	ierr = DMCompositeRestoreAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
+	
+	ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+	
+	ierr = StokesQ2P1CreateMatrix_Operator(user,&A);CHKERRQ(ierr);
+	ierr = MatMult(A,x,y);CHKERRQ(ierr);
+
+//	PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
+//	ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	
+	/* assembled */
+	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
+	
+	ierr = StokesQ2P1CreateMatrixNest_Operator(user,PETSC_TRUE,PETSC_TRUE,PETSC_TRUE,&B);CHKERRQ(ierr);
+	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
+	
+//	 PetscPrintf(PETSC_COMM_WORLD,"y_asm\n");
+//	 ierr = VecView(y2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+	
+	/* compare result */
+	ierr = VecDot(y,y,&cmp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  y.y    = %+1.8e [mfo]\n", cmp );
+	ierr = VecDot(y2,y2,&cmp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
+	
+	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
+	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  min[A_mfo.x-A_asm.x]  = %+1.8e \n", min );
+	PetscPrintf(PETSC_COMM_WORLD,"  max[A_mfo.x-A_asm.x]  = %+1.8e \n", max );
+	
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
+	ierr = VecDestroy(&y);CHKERRQ(ierr);
+	ierr = VecDestroy(&y2);CHKERRQ(ierr);
+	
+	ierr = MatDestroy(&A);CHKERRQ(ierr);
+	ierr = MatDestroy(&B);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_assemble_stokes"
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
@@ -491,6 +560,8 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A12(user->stokes_ctx);CHKERRQ(ierr);
+	
+	ierr = compare_mf_A(user->stokes_ctx);CHKERRQ(ierr);
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
