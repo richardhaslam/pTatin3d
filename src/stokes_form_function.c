@@ -637,7 +637,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	}
 	
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"Assemble Ru, = %1.4e (sec)\n",t1-t0);
+	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Ru, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
@@ -703,7 +703,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 		for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 			ux[k] = elu[3*k  ];
 			uy[k] = elu[3*k+1];
-			uy[k] = elu[3*k+2];
+			uz[k] = elu[3*k+2];
 		}
 		
 		for (p=0; p<ngp; p++) {
@@ -747,7 +747,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Rp, p_el_lidx,Fe);CHKERRQ(ierr);
 	}
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"Assemble Rp, = %1.4e (sec)\n",t1-t0);
+	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Rp, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
@@ -829,7 +829,7 @@ PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
 	ierr = FormFunctionLocal_P(stokes,dau,LA_Uloc,dap,LA_Ploc,LA_FPloc);CHKERRQ(ierr);
 
 	/* profiling */
-	ierr = FormFunctionLocal_profile(stokes,dau,LA_Uloc,dap,LA_Ploc,LA_FPloc);CHKERRQ(ierr);
+	//ierr = FormFunctionLocal_profile(stokes,dau,LA_Uloc,dap,LA_Ploc,LA_FPloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(FPloc,&LA_FPloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(FUloc,&LA_FUloc);CHKERRQ(ierr);
@@ -934,7 +934,7 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			//MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 
