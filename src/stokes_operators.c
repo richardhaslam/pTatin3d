@@ -1520,7 +1520,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
 PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],Mat *mat)
 {
   DM             pack,dav,dap;
-	PetscBool      same;
+	PetscBool      same1,same2,same3;
 	Mat            Auu;
 	PetscErrorCode ierr;
 	
@@ -1537,8 +1537,10 @@ PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],M
 	}
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same);CHKERRQ(ierr);
-	if (same) {
+	ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+	ierr = PetscTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+	ierr = PetscTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+	if (same1||same2||same3) {
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}
 	
@@ -1552,6 +1554,20 @@ PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],M
 PetscErrorCode MatShellGetMatStokesMF(Mat A,MatStokesMF *mf)
 {
 	MatStokesMF     ctx;
+	PetscErrorCode  ierr;
+	
+  PetscFunctionBegin;
+	
+	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+	*mf = ctx;
+	
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "MatShellGetMatA11MF"
+PetscErrorCode MatShellGetMatA11MF(Mat A,MatA11MF *mf)
+{
+	MatA11MF     ctx;
 	PetscErrorCode  ierr;
 	
   PetscFunctionBegin;

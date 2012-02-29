@@ -19,6 +19,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_duplicate.h"
 #include "dmda_project_coords.h"
 
+typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinKSPMonitorStokesBlocks"
@@ -893,11 +894,13 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	SNES      snes;
 	KSP       ksp;
 	PC        pc;
+	PetscBool flg;
+	OperatorType  level_type[10];
 	
 	PetscMPIInt    rank;
 	DM             dav_hierarchy[10];
 	Mat            interpolatation_v[10],interpolatation_eta[10];
-	PetscInt       nlevels,k;
+	PetscInt       nlevels,k,max;
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
 	
@@ -927,6 +930,15 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
+	
+	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
+	{
+		Vec X;
+
+		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	}
+	 ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -970,6 +982,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	/* Set all dav's to be of type Q2 */
 	for (k=0; k<nlevels-1; k++) {
+		ierr = PetscObjectSetOptionsPrefix((PetscObject)dav_hierarchy[k],"stk_velocity_");CHKERRQ(ierr);
 		ierr = DMDASetElementType_Q2(dav_hierarchy[k]);CHKERRQ(ierr);
 	}
 	
@@ -1063,27 +1076,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	u_bclist[nlevels-1] = user->stokes_ctx->u_bclist;
 
-	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	
 	/* ============================================== */
 	/* CONFIGURE OPERATORS */
 
-	/* A11 operator */
-	
-	for (k=0; k<nlevels; k++) {
-		Mat Auu;
-		
-		ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
-		ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
-		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
-		
-		ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
-		ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
-		
-		operatorA11[k] = Auu;
-		operatorB11[k] = Auu;
-	}	
-	
 	/* A operator */
 	ierr = StokesQ2P1CreateMatrix_Operator(user->stokes_ctx,&A);CHKERRQ(ierr);
 	{
@@ -1123,25 +1119,131 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		bA[1][0] = Apu;        bA[1][1] = Spp;
 	
 		/* Set fine A11 into nest */
-		//ierr = MatNestSetSubMat(B,0,0,operatorA11[nlevels-1]);CHKERRQ(ierr);
-		bA[0][0] = operatorA11[nlevels-1];		
+		//bA[0][0] = operatorA11[nlevels-1];		
 		
 		ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&B);CHKERRQ(ierr);
 		ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 		ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+		//ierr = MatNestSetSubMat(B,0,0,operatorA11[nlevels-1]);CHKERRQ(ierr);
 		
-		/* tidy up */
-		for (i=0; i<2; i++) {
-			for (j=0; j<2; j++) {
-				if (bA[i][j]) { ierr = MatDestroy(&bA[i][j]);CHKERRQ(ierr); }
-			}
-		}
+		/* tidy up - hand back destruction to B */
+		ierr = MatDestroy(&Aup);CHKERRQ(ierr);
+		ierr = MatDestroy(&Apu);CHKERRQ(ierr);
+		ierr = MatDestroy(&Spp);CHKERRQ(ierr);
 	}
 	
-	{ Mat subA;
-	ierr = MatGetSubMatrix(B,is_stokes_field[0],is_stokes_field[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-	ierr = MatGetSubMatrix(B,is_stokes_field[1],is_stokes_field[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+	
+	
+	/* A11 operator */
+	
+	/* OPTION 1 - JUST ASSEMBLE EVERYTHING */
+/*	
+	for (k=0; k<nlevels; k++) {
+		Mat Auu;
+		
+		ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+		ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
+		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+		
+		ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
+		ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
+		
+		operatorA11[k] = Auu;
+		
+		operatorB11[k] = Auu;
+		ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
 	}	
+*/	
+
+	/* defaults */
+	level_type[0] = OP_TYPE_REDISC_ASM;
+	for (k=1; k<nlevels; k++) {
+		level_type[k] = OP_TYPE_REDISC_MF;
+	}
+	
+	max = nlevels;
+	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	for (k=nlevels-1; k>=0; k--) {
+//		PetscInt level_type[] = {0,1,1,1};
+		
+		switch (level_type[k]) {
+
+			case 0:
+			{
+				Mat Auu;
+				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
+				
+				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
+				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
+				ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
+				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
+				ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+				ierr = PetscTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+				ierr = PetscTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+				if (same1||same2||same3) {
+					ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+				}
+				ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
+				ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
+				
+				operatorA11[k] = Auu;
+				operatorB11[k] = Auu;
+				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+				
+			}
+				break;
+
+			case 1:
+			{
+				Mat Auu;
+				MatA11MF mf,A11Ctx;
+
+				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
+				ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
+				ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
+				
+				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
+				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
+				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
+				
+				operatorA11[k] = Auu;
+				operatorB11[k] = Auu;
+				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+				
+				ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+			}
+				break;
+				
+			case 2:
+			{
+				Mat Auu;
+
+				if (k==nlevels-1) {
+					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
+				}	
+				
+				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
+				
+				ierr = MatPtAP(operatorA11[k+1],interpolatation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+				
+				operatorA11[k] = Auu;
+				operatorB11[k] = Auu;
+				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+			}
+				break;
+				
+			default:
+				break;
+		}
+	}	
+	
+	
+	
+	
+	/* Set fine A11 into nest */
+	ierr = MatNestSetSubMat(B,0,0,operatorA11[nlevels-1]);CHKERRQ(ierr);
 	
 	/* ============================================== */
 	
@@ -1151,7 +1253,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* work vector for solution and residual */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-	
+
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	
 	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
@@ -1166,16 +1268,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
-//	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
 
-	{ Mat subA;
-		ierr = MatGetSubMatrix(B,is_stokes_field[0],is_stokes_field[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(B,is_stokes_field[1],is_stokes_field[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-	}	
-	
-#if 0	
 	/* configure uu split for galerkin multi-grid */
 	{
 		PetscInt nsplits;
@@ -1200,11 +1295,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
-			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 		}
-		
 	}
-#endif
 	
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	
@@ -1224,6 +1317,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	for (k=0; k<nlevels; k++) {
 		ierr = MatDestroy(&operatorA11[k]);CHKERRQ(ierr);
+		ierr = MatDestroy(&operatorB11[k]);CHKERRQ(ierr);
 	}
 	
 	for (k=1; k<nlevels; k++) {

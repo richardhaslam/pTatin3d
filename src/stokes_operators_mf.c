@@ -97,7 +97,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	}
 	
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11, = %1.4e (sec)\n",t1-t0);
+	//PetscPrintf(PETSC_COMM_WORLD,"MatMultA11, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
