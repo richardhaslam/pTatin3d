@@ -1,0 +1,3 @@
+
+./ptatin_driver_asmsolve.app -lattice_layout_Nx 3 -lattice_layout_Ny 3 -lattice_layout_Nz 3 -ptatin_model viscous_sinker -output_path testing -snes_view -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -fieldsplit_p_ksp_type preonly -fieldsplit_u_mg_coarse_pc_type cholesky -dau_nlevels 3 -mx 20 -my 20 -mz 20 -fieldsplit_u_ksp_type fgmres -fieldsplit_u_ksp_monitor -ksp_monitor_true_residual -snes_type ksponly -snes_rtol 1.0e-6 -snes_atol 1.0e-6 -ksp_rtol 1.0e-6 -ksp_atol 1.0e-8  -fieldsplit_u_mg_levels_ksp_max_it 4 -ksp_type fgmres -fieldsplit_u_mg_levels_pc_type none  -model_viscous_sinker_eta0 1.0 -log_summary -mx 48 -my 48 -mz 48 -dau_nlevels 5 -A11_operator_type 2,2,0,1,1 -stk_velocity_da_mat_type aij
+
