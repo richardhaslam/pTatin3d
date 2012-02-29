@@ -1027,7 +1027,8 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	PetscInt  dof,k;
 	DM        clone[100];
 	Vec       properties_A1[100], properties_A2[100], properties_B;
-	PetscBool view;
+	PetscInt  ptype;
+	PetscBool view,flg;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1057,7 +1058,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 																																		Q[nlevels-1] );CHKERRQ(ierr);
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,PETSC_NULL);
+	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,&flg);
 	if (view) {
 		PetscViewer viewer;
 		
@@ -1069,23 +1070,49 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 
-	
+	ptype = 0;
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_hierarchy_projection_type",&ptype,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=1; k--) {
-		VecScatter inject;
-		/* This introduces scaling effects I need to deal with */
-//		ierr = MatRestrict(R[k],properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
-//		ierr = MatRestrict(R[k],properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
-
-		ierr = DMGetInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
-
-		ierr = VecScatterBegin(inject,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterEnd(inject  ,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
-		ierr = VecScatterBegin(inject,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterEnd(inject  ,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 		
-		ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
-		
+		switch (ptype) {
+			
+			case 0:
+			{
+				Vec scale;
+
+				/* This introduces scaling effects I need to deal with */
+				ierr = DMGetInterpolationScale(clone[k-1],clone[k],R[k],&scale);CHKERRQ(ierr);
+				
+				ierr = MatRestrict(R[k],properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
+				ierr = MatRestrict(R[k],properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
+				
+				ierr = VecPointwiseMult(properties_A1[k-1],properties_A1[k-1],scale);CHKERRQ(ierr);
+				ierr = VecPointwiseMult(properties_A2[k-1],properties_A2[k-1],scale);CHKERRQ(ierr);
+				
+				ierr = VecDestroy(&scale);CHKERRQ(ierr);
+			}
+				break;
+				
+			case 1:
+			{
+				VecScatter inject;
+
+				ierr = DMGetInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
+				
+				ierr = VecScatterBegin(inject,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+				ierr = VecScatterEnd(inject  ,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+				
+				ierr = VecScatterBegin(inject,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+				ierr = VecScatterEnd(inject  ,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+				
+				ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+			}
+				break;
+				
+			default:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Must use -mp_hierarchy_projection_type {0,1}"); 
+				break;
+		}
 		
 		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
 																												clone[k-1], properties_A1[k-1],properties_A2[k-1],
