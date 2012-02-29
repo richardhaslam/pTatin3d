@@ -58,4 +58,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21(MatStokesMF Stk,Mat *A21);
 PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat);
 PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat);
 
+PetscErrorCode MatShellGetMatStokesMF(Mat A,MatStokesMF *mf);
+
 #endif

@@ -198,16 +198,16 @@ PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
 	
 	A->refcnt--;
 	if (A->refcnt==0) {
-		ierr = DMDestroy(&A->daUVW);CHKERRQ(ierr);
-		ierr = DMDestroy(&A->dap);CHKERRQ(ierr);
-		ierr = DMDestroy(&A->stokes_pack);CHKERRQ(ierr);
+		if (A->daUVW) { ierr = DMDestroy(&A->daUVW);CHKERRQ(ierr); }
+		if (A->dap) { ierr = DMDestroy(&A->dap);CHKERRQ(ierr); }
+		if (A->stokes_pack) { ierr = DMDestroy(&A->stokes_pack);CHKERRQ(ierr); }
 		
-		ierr = ISDestroy(&A->isU);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isV);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isW);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isP);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isUVW);CHKERRQ(ierr);
-		ierr = DMDestroy(&A->daU);CHKERRQ(ierr);
+		if (A->isU) { ierr = ISDestroy(&A->isU);CHKERRQ(ierr); }
+		if (A->isV) { ierr = ISDestroy(&A->isV);CHKERRQ(ierr); }
+		if (A->isW) { ierr = ISDestroy(&A->isW);CHKERRQ(ierr); }
+		if (A->isP) { ierr = ISDestroy(&A->isP);CHKERRQ(ierr); }
+		if (A->isUVW) { ierr = ISDestroy(&A->isUVW);CHKERRQ(ierr); }
+		if (A->daU) { ierr = DMDestroy(&A->daU);CHKERRQ(ierr); }
 		ierr = PetscFree(A);CHKERRQ(ierr);
 
 		*B = PETSC_NULL;
@@ -229,13 +229,13 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
 	
 	A->refcnt--;
 	if (A->refcnt==0) {
-		ierr = DMDestroy(&A->daUVW);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isUVW);CHKERRQ(ierr);
+		if (A->daUVW) { ierr = DMDestroy(&A->daUVW);CHKERRQ(ierr); }
+		if (A->isUVW) { ierr = ISDestroy(&A->isUVW);CHKERRQ(ierr); }
 		
-		ierr = ISDestroy(&A->isU);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isV);CHKERRQ(ierr);
-		ierr = ISDestroy(&A->isW);CHKERRQ(ierr);
-		ierr = DMDestroy(&A->daU);CHKERRQ(ierr);
+		if (A->isU) { ierr = ISDestroy(&A->isU);CHKERRQ(ierr); }
+		if (A->isV) { ierr = ISDestroy(&A->isV);CHKERRQ(ierr); }
+		if (A->isW) { ierr = ISDestroy(&A->isW);CHKERRQ(ierr); }
+		if (A->daU) { ierr = DMDestroy(&A->daU);CHKERRQ(ierr); }
 		ierr = PetscFree(A);CHKERRQ(ierr);
 
 		*B = PETSC_NULL;
@@ -298,15 +298,15 @@ PetscErrorCode MatStokesMFCopy(MatStokesMF A,MatStokesMF *B)
 	
 	Stk->stokes_pack  = A->stokes_pack;    ierr = PetscObjectReference((PetscObject)A->stokes_pack);CHKERRQ(ierr);
 	
-	Stk->isU   = A->isU;             ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr);
-	Stk->isV   = A->isV;             ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr);
-	Stk->isW   = A->isW;             ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr);
-	Stk->isP   = A->isP;             ierr = PetscObjectReference((PetscObject)A->isP);CHKERRQ(ierr);
-	Stk->isUVW = A->isUVW;           ierr = PetscObjectReference((PetscObject)A->isUVW);CHKERRQ(ierr);
+	Stk->isU   = A->isU;             if (A->isU) { ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr); }
+	Stk->isV   = A->isV;             if (A->isV) { ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr); }
+	Stk->isW   = A->isW;             if (A->isW) { ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr); }
+	Stk->isP   = A->isP;             if (A->isP) { ierr = PetscObjectReference((PetscObject)A->isP);CHKERRQ(ierr); }
+	Stk->isUVW = A->isUVW;           if (A->isUVW) { ierr = PetscObjectReference((PetscObject)A->isUVW);CHKERRQ(ierr); }
 	
-	Stk->daUVW = A->daUVW;        ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr);
-	Stk->daU   = A->daU;          ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr);
-	Stk->dap   = A->dap;          ierr = PetscObjectReference((PetscObject)A->dap);CHKERRQ(ierr);
+	Stk->daUVW = A->daUVW;        if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
+	Stk->daU   = A->daU;          if (A->daU) { ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr); }
+	Stk->dap   = A->dap;          if (A->dap) { ierr = PetscObjectReference((PetscObject)A->dap);CHKERRQ(ierr); }
 	
 	Stk->refcnt = 1;
 	
@@ -333,12 +333,12 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
 	
-	A11->isU   = A->isU;             ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr);
-	A11->isV   = A->isV;             ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr);
-	A11->isW   = A->isW;             ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr);
+	A11->isU   = A->isU;             if (A->isU) { ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr); }
+	A11->isV   = A->isV;             if (A->isV) { ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr); }
+	A11->isW   = A->isW;             if (A->isW) { ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr); }
 	
-	A11->daUVW = A->daUVW;        ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr);
-	A11->daU   = A->daU;          ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr);
+	A11->daUVW = A->daUVW;        if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
+	A11->daU   = A->daU;          if (A->daU) { ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr); }
 	
 	A11->refcnt = 1;
 	
@@ -365,12 +365,12 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
 	
-	A11->isU   = A->isU;             ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr);
-	A11->isV   = A->isV;             ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr);
-	A11->isW   = A->isW;             ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr);
+	A11->isU   = A->isU;             if (A->isU) { ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr); }
+	A11->isV   = A->isV;             if (A->isV) { ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr); }
+	A11->isW   = A->isW;             if (A->isW) { ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr); }
 	
-	A11->daUVW = A->daUVW;        ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr);
-	A11->daU   = A->daU;          ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr);
+	A11->daUVW = A->daUVW;        if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
+	A11->daU   = A->daU;          if (A->daU) { ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr); }
 	
 	A11->refcnt = 1;
 	
@@ -1282,11 +1282,11 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	
 	/* A11 */
 	if (tA11==0) {
-		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
-/*
+//		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
+//
 		ierr = DMGetMatrix(dau,MATSBAIJ,&Auu);CHKERRQ(ierr);
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
-*/ 
+// 
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 	}
@@ -1294,11 +1294,11 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 	
 	/* Schur complement */
-	ierr = DMGetMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
-/*
+//	ierr = DMGetMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
+
 	ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
 	ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
-*/
+
 	ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
 
@@ -1514,3 +1514,51 @@ PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreate_StokesA11_asm"
+PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],Mat *mat)
+{
+  DM             pack,dav,dap;
+	PetscBool      same;
+	Mat            Auu;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	pack = user->stokes_pack;
+  ierr = DMCompositeGetEntries(pack,&dav,&dap);CHKERRQ(ierr);
+
+	ierr = DMGetMatrix(dav,MATAIJ,&Auu);CHKERRQ(ierr);
+	//ierr = DMGetMatrix(dav,MATSBAIJ,&Auu);CHKERRQ(ierr);
+
+	if (prefix) {
+		ierr = MatSetOptionsPrefix(Auu,prefix);CHKERRQ(ierr);
+	}
+	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
+
+	ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same);CHKERRQ(ierr);
+	if (same) {
+		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+	}
+	
+	*mat = Auu;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatShellGetMatStokesMF"
+PetscErrorCode MatShellGetMatStokesMF(Mat A,MatStokesMF *mf)
+{
+	MatStokesMF     ctx;
+	PetscErrorCode  ierr;
+	
+  PetscFunctionBegin;
+	
+	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+	*mf = ctx;
+	
+  PetscFunctionReturn(0);
+}
+
