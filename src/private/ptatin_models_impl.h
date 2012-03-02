@@ -10,6 +10,7 @@ struct _p_pTatinModel {
 	char *model_name;
 	void *model_data;
 	PetscErrorCode (*FP_pTatinModel_Initialize)(pTatinCtx,void*);
+	PetscErrorCode (*FP_pTatinModel_ApplyInitialSolution)(pTatinCtx,Vec,void*);
 	PetscErrorCode (*FP_pTatinModel_ApplyBoundaryCondition)(pTatinCtx,void*);
 	PetscErrorCode (*FP_pTatinModel_ApplyMaterialBoundaryCondition)(pTatinCtx,void*);
 	PetscErrorCode (*FP_pTatinModel_ApplyInitialMeshGeometry)(pTatinCtx,void*);
