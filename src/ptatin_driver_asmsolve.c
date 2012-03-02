@@ -903,6 +903,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscInt       nlevels,k,max;
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
+	PetscInt       kk;
 	
 	PetscErrorCode ierr;
 	
@@ -915,6 +916,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+	/* Check if model is being restarted from a checkpointed file */
+	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
 	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
 	
@@ -958,7 +961,6 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
-	
 	
 	/* set up mg */
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
@@ -1058,7 +1060,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 	}
 	
-	/* define boundary conditions */
+	/* define boundary conditions - HARDCODED */
 	for (k=0; k<nlevels-1; k++) {
 		PetscScalar zero = 0.0;
 		
@@ -1082,6 +1084,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 
 	/* A operator */
 	ierr = StokesQ2P1CreateMatrix_Operator(user->stokes_ctx,&A);CHKERRQ(ierr);
+	/* memory saving - only need daU IF you want to split A11 into A11uu,A11vv,A11ww */
 	{
 		MatStokesMF mf;
 		
@@ -1165,8 +1168,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	max = nlevels;
 	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
-//		PetscInt level_type[] = {0,1,1,1};
-		
+
 		switch (level_type[k]) {
 
 			case 0:
@@ -1185,6 +1187,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				if (same1||same2||same3) {
 					ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 				}
+				/* should move assembly into jacobian */
 				ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
 				ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
 				
@@ -1226,6 +1229,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				
 				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
 				
+				/* should move coarse grid assembly into jacobian */
 				ierr = MatPtAP(operatorA11[k+1],interpolatation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
 				
 				operatorA11[k] = Auu;
@@ -1254,6 +1258,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
+	/* initial condition */
+	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
+		
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	
 	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
@@ -1264,6 +1271,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 	ierr = KSPMonitorSet(ksp,pTatinKSPMonitorStokesBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -1290,7 +1298,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation_v[k]);CHKERRQ(ierr);
 		}
 		
-		/* drop the operators in */
+		/* drop the operators in - i presume this will also need to be performed inside the jacobian each time the operators are modified */
+		/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
 		ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
 		ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 		for( k=1; k<nlevels; k++ ){
@@ -1300,12 +1309,56 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+
+
 	
 	
+	
+	{
+		char name[100];
+		
+		sprintf(name,"ic_step%.6d",user->step);
+		ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
+	}
+
+	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%d]: time %lf Myr \n", user->step, user->time );
+	for (kk=0; kk<user->nsteps; kk++) {
+		PetscInt tk = user->step+1;
+		
+		/* do solve */
+
+		/* update markers */
+		
+		
+		
+		user->time += 0.12;
+		user->step++;
+		PetscPrintf(PETSC_COMM_WORLD,"Timestep[%d] : Cycle[%d/%d] : time %lf Myr \n", tk, kk, user->nsteps-1, user->time );
+
+		
+		if ((kk+1)%5==0) {
+			char name[100];
+			
+			sprintf(name,"step%.6d",tk);
+			ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
+		}
+		
+		if ((kk+1)%10==0) {
+			char name[100];
+			
+			PetscPrintf(PETSC_COMM_WORLD,"  checkpointing ptatin :: Model timestep %d : time %lf Myr : cycle[%d/%d] \n", tk,user->time,kk, user->nsteps-1 );
+			/* check point test */
+			//	ierr = pTatin3dContextSave(user,"checkpoint.file");CHKERRQ(ierr);
+			//	ierr = pTatin3dContextLoad(user,"checkpoint.file");CHKERRQ(ierr);
+			
+			sprintf(name,"step%.6d",tk);
+			ierr = pTatin3dCheckpoint(user,X,name);CHKERRQ(ierr);
+		}
+
+	}
 	
 	/* test viewer */
-	ierr = pTatinModel_Output(user->model,user,X,"step000");CHKERRQ(ierr);
-	
+	//ierr = pTatinModel_Output(user->model,user,X,"step001");CHKERRQ(ierr);
 	
 	
 	/* Clean up */
