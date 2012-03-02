@@ -15,7 +15,9 @@ struct _p_pTatinCtx {
 	PhysCompStokes stokes_ctx;
 	//	PhysCompEnergy energy_ctx;
 	//	PhysCompCoords coords_ctx;
-	
+
+	PetscBool  restart_from_file;
+	char       restart_prefix[1256];
 	PetscBool  use_mf_stokes;
 	
 	/* rheology */
