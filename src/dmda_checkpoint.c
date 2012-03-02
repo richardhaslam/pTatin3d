@@ -37,7 +37,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	if (has_coords==PETSC_TRUE) {
 		char coord_file[1000];
 
-		sprintf(coord_file,"coords_%s",name);
+		sprintf(coord_file,"%s.coords",name);
 		ierr = PetscViewerBinaryOpen( ((PetscObject)da)->comm, coord_file, FILE_MODE_WRITE, &v );CHKERRQ(ierr);
 		ierr = VecView( coords, v );CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);		
@@ -55,7 +55,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	//  0    1,2,3    4     5    6        7          8,9,10     11
 	ierr = VecCreate( PETSC_COMM_SELF, &dd ); CHKERRQ(ierr);
 	L = (PetscInt)(DMDA_ENDFLAG);
-	printf("L=%d \n", L );
+
 	ierr = VecSetSizes( dd, PETSC_DECIDE, L ); CHKERRQ(ierr);
 	ierr = VecSetType( dd, VECSEQ ); CHKERRQ(ierr);
 	
@@ -83,32 +83,6 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 		case DMDA_BOUNDARY_PERIODIC:
 			val = 3.1;
 			break;
-/*
-		case DMDA_XPERIODIC:
-			val = 1.1;
-			break;
-		case DMDA_YPERIODIC:
-			val = 2.1;
-			break;
-		case DMDA_XYPERIODIC:
-			val = 3.1;
-			break;
-		case DMDA_XYZPERIODIC:
-			val = 4.1;
-			break;
-		case DMDA_XZPERIODIC:
-			val = 5.1;
-			break;
-		case DMDA_YZPERIODIC:
-			val = 6.1;
-			break;
-		case DMDA_ZPERIODIC:
-			val = 7.1;
-			break;
-		case DMDA_XYZGHOSTED:
-			val = 8.1;
-			break;
-*/
 	}
 	if (i==0) { ierr = VecSetValue( dd, DMDA_WRAPX, val, INSERT_VALUES ); CHKERRQ(ierr); }
 	if (i==1) { ierr = VecSetValue( dd, DMDA_WRAPY, val, INSERT_VALUES ); CHKERRQ(ierr); }
@@ -242,7 +216,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 		ierr = DMDASetUniformCoordinates(*da, 0.0,1.0,0.0,1.0,0.0,1.0); CHKERRQ(ierr);
 		ierr = DMDAGetCoordinates(*da, &da_coords);CHKERRQ(ierr);
 		
-		sprintf(coord_file,"coords_%s",name);
+		sprintf(coord_file,"%s.coords",name);
 		ierr = PetscViewerBinaryOpen( ((PetscObject)(*da))->comm, coord_file, FILE_MODE_READ, &v );CHKERRQ(ierr);
 		ierr = VecLoad(da_coords,v);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);		
