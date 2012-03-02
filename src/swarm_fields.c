@@ -640,7 +640,9 @@ void _DataFieldViewBinary(DataField field, FILE *fp )
 	fprintf(fp,"%s\n", field->name);
 	
 	fwrite(field->data, field->atomic_size, field->L, fp);
+/*
 	printf("  ** wrote %zu bytes for DataField \"%s\" \n", field->atomic_size * field->L, field->name );
+*/
 	fprintf(fp,"\n</DataField>\n");
 }
 
