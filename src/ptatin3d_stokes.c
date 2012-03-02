@@ -6,7 +6,7 @@
 #include "private/ptatin_impl.h"
 #include "dmda_element_q2p1.h"
 #include "quadrature.h"
-
+#include "dmda_checkpoint.h"
 
 
 #undef __FUNCT__
@@ -233,4 +233,118 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(PetscScalar *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompLoadMesh_Stokes3d"
+PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[])
+{
+	DM dav,dap,multipys_pack;
+	PetscInt vbasis_dofs;
+	PetscInt pbasis_dofs;
+	PetscInt p,Mp,Np,Pp,*lxv,*lyv,*lzv,i,MX,MY,MZ;
+	const PetscInt *lxp,*lyp,*lzp;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	/* pressure */
+	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_p,&dap);CHKERRQ(ierr);
+	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
+
+	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dap,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*(Mp+1),&lxv);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*(Np+1),&lyv);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*(Pp+1),&lzv);CHKERRQ(ierr);
+	for (p=0; p<Mp; p++) {
+		lxv[p] = lxp[p] * 2;
+	} lxv[Mp-1]++;
+	for (p=0; p<Np; p++) {
+		lyv[p] = lyp[p] * 2;
+	} lyv[Np-1]++;
+	for (p=0; p<Pp; p++) {
+		lzv[p] = lzp[p] * 2;
+	} lzv[Pp-1]++;
+
+	
+	/* velocity */
+	/* FUCK ME, the layout changes and the Q2-P1 elements won't line up anymore...lame */
+//	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
+//	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+
+	MX = ctx->mx;
+	MY = ctx->my;
+	MZ = ctx->mz;
+	
+	vbasis_dofs = 3;
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
+	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+	ierr = PetscFree(lxv);CHKERRQ(ierr);
+	ierr = PetscFree(lyv);CHKERRQ(ierr);
+	ierr = PetscFree(lzv);CHKERRQ(ierr);
+	
+	/* load an initial geometry */
+//	ierr = DMDALoadCoordinatesFromFile(dav,"coord-data.dat");CHKERRQ(ierr);
+	ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
+	
+	/* stokes */
+	ierr = DMCompositeCreate(PETSC_COMM_WORLD,&multipys_pack);CHKERRQ(ierr);
+	ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);	
+	ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);	
+	
+	ierr = DMDASetFieldName(dav,0,"ux");CHKERRQ(ierr);
+	ierr = DMDASetFieldName(dav,1,"uy");CHKERRQ(ierr);
+	ierr = DMDASetFieldName(dav,2,"uz");CHKERRQ(ierr);
+	switch (P_BASIS_FUNCTIONS) {
+		case 1:
+			ierr = DMDASetFieldName(dap,0,"P0_p");CHKERRQ(ierr);
+			break;
+		case 4:
+			ierr = DMDASetFieldName(dap,0,"P1_p");CHKERRQ(ierr);
+			ierr = DMDASetFieldName(dap,1,"P1_dpdx");CHKERRQ(ierr);
+			ierr = DMDASetFieldName(dap,2,"P1_dpdy");CHKERRQ(ierr);
+			ierr = DMDASetFieldName(dap,3,"P1_dpdz");CHKERRQ(ierr);
+			break;
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Pressure space may ONLY contain 1 or 4 basis functions");
+			break;
+	}
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)dav,"stk_velocity_");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)dap,"stk_pressure_");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)multipys_pack,"stk_pack_");CHKERRQ(ierr);
+	
+	ctx->dav  = dav;
+	ctx->dap  = dap;
+	ctx->stokes_pack = multipys_pack;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompSaveMesh_Stokes3d"
+PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[],const char fname_coors[])
+{
+	DM dav,dap;
+	Vec coords;
+	PetscViewer viewer;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	dav = ctx->dav;
+	dap = ctx->dap;
+
+	/* pressure */
+	ierr = DMDAPackDataToFile(dav,fname_vel);CHKERRQ(ierr);
+
+	/* velocity */
+	ierr = DMDAPackDataToFile(dap,fname_p);CHKERRQ(ierr);
+	
+	/* coords */
+	ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+	ierr = PetscViewerBinaryOpen( ((PetscObject)dav)->comm,fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	ierr = VecView(coords,viewer);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
