@@ -758,7 +758,7 @@ void _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 }
 
 
-void _DataBucketLoadFromFileBinary(const char filename[], DataBucket *_db)
+void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 {
 	DataBucket db;
 	FILE *fp;
@@ -798,8 +798,13 @@ void _DataBucketLoadFromFileBinary(const char filename[], DataBucket *_db)
 	*_db = db;
 }
 
-void DataBucketLoadFromFile(const char filename[], DataBucketViewType type, DataBucket *db)
+void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
 {
+	int nproc,rank;
+	
+	MPI_Comm_size(comm,&nproc);
+	MPI_Comm_rank(comm,&rank);
+		
 	printf("** DataBucketLoadFromFile **\n");
 	if(type==DATABUCKET_VIEW_STDOUT) {
 		
@@ -807,7 +812,15 @@ void DataBucketLoadFromFile(const char filename[], DataBucketViewType type, Data
 		printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
 		ERROR();
 	} else if(type==DATABUCKET_VIEW_BINARY) {
-		_DataBucketLoadFromFileBinary(filename,db);
+		if (nproc==1) {
+			_DataBucketLoadFromFileBinary_SEQ(filename,db);
+		} else {
+			char *name;
+			
+			asprintf(&name,"%s_p%1.5d",filename, rank );
+			_DataBucketLoadFromFileBinary_SEQ(name,db);
+			free(name);
+		}
 	} else {
 		printf("ERROR: Not implemented\n");
 		ERROR();
