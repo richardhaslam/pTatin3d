@@ -13,6 +13,7 @@
 #include "ptatin3d_stokes.h"
 #include "output_paraview.h"
 #include "ptatin_models.h"
+#include "dmda_checkpoint.h"
 
 #include "private/ptatin_impl.h"
 
@@ -20,8 +21,8 @@
 /* PHYSICS MESHES */
 
 #undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_PhysCompStokesCreate"
-PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
+#define __FUNCT__ "pTatin3d_PhysCompStokesNew"
+PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 {
 	PetscErrorCode  ierr;
 	PhysCompStokes stokes;
@@ -46,22 +47,63 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_PhysCompStokesCreate"
+PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
+{
+	PetscErrorCode  ierr;
+	PhysCompStokes stokes;
+	
+	
+	PetscFunctionBegin;
+
+	if (user->restart_from_file) {
+		/* load from file */
+		char vname[1257];
+		char pname[1257];		
+		
+		/* dav,dap */
+		if (user->restart_prefix) {
+			sprintf(vname,"%s/ptat3dcpf.dmda-velocity_%s",user->outputpath,user->restart_prefix);
+			sprintf(pname,"%s/ptat3dcpf.dmda-pressure_%s",user->outputpath,user->restart_prefix);
+		} else {
+			sprintf(vname,"%s/ptat3dcpf.dmda-velocity",user->outputpath);
+			sprintf(pname,"%s/ptat3dcpf.dmda-pressure",user->outputpath);
+		}
+		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", vname );
+		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", pname );
+		
+		ierr = pTatin3d_PhysCompStokesLoad(user,(const char*)vname,(const char*)pname);CHKERRQ(ierr);
+	} else {
+		/* create from data */
+		ierr = pTatin3d_PhysCompStokesNew(user);CHKERRQ(ierr);
+	}	
+	
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes"
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char *pvdfilename;
 	char *name;
 	DM stokes_pack;
 	Vec UP;
 	PetscLogDouble t0,t1;
+	static int beenhere=0;
+	static char *pvdfilename;
 	PetscFunctionBegin;
 	
 	PetscGetTime(&t0);
 	// PVD
-	asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath);
-	if (ctx->step==0) {
+	if (beenhere==0) {
+		asprintf(&pvdfilename,"%s/timeseries_vp_step%d.pvd",ctx->outputpath,ctx->step);
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+
+		beenhere = 1;
 	}
 	{
 		char *vtkfilename;
@@ -75,7 +117,6 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
 		free(vtkfilename);
 	}
-	free(pvdfilename);
 	
 	// PVTS + VTS
 	if (prefix) {
@@ -286,19 +327,23 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char *pvdfilename;
 	char *name;
 	DM stokes_pack;
 	Vec UP;
 	PetscLogDouble t0,t1;
+	static int beenhere=0;
+	static char *pvdfilename;
 	
 	PetscFunctionBegin;
 	
 	PetscGetTime(&t0);
 	// PVD
-	asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath);
-	if (ctx->step==0) {
+	if (beenhere==0) {
+		asprintf(&pvdfilename,"%s/timeseries_mpoints_std_step%d.pvd",ctx->outputpath,ctx->step);
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
 	}
 	{
 		char *vtkfilename;
@@ -312,7 +357,6 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
 		free(vtkfilename);
 	}
-	free(pvdfilename);
 	
 	// PVTS + VTS
 	if (prefix) {
@@ -329,8 +373,6 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3dCreateContext"
@@ -352,6 +394,8 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	user->pack     = PETSC_NULL; /* DM composite for velocity and pressure */
 	
 	/* set defaults */
+	user->restart_from_file = PETSC_FALSE;
+	
 	user->mx               = 4;
 	user->my               = 4;
 	user->mz               = 4;
@@ -517,5 +561,260 @@ PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
 	if (s) { *s = ctx->stokes_ctx; }
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3dContextLoad"
+PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
+{
+	PetscViewer viewer;
+	pTatinCtx cc;
+	PetscErrorCode ierr;
+
+	PetscFunctionBegin;
+	ierr = pTatin3dCreateContext(&cc);CHKERRQ(ierr);
+	ierr = PetscMemzero(cc,sizeof(struct _p_pTatinCtx));CHKERRQ(ierr);
+
+	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+	
+	ierr = PetscViewerBinaryRead(viewer,cc,sizeof(struct _p_pTatinCtx)/sizeof(char),PETSC_CHAR);
+	
+	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	 
+	*ctx = cc;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3dContextSave"
+PetscErrorCode pTatin3dContextSave(pTatinCtx ctx,const char filename[])
+{
+	PetscViewer viewer;
+	PetscErrorCode ierr;
+
+	PetscFunctionBegin;
+	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	
+	ierr = PetscViewerBinaryWrite(viewer,ctx,sizeof(struct _p_pTatinCtx)/sizeof(char),PETSC_CHAR,PETSC_FALSE);
+	
+	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	
+	 
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_PhysCompStokesLoad"
+PetscErrorCode pTatin3d_PhysCompStokesLoad(pTatinCtx user,const char vname[],const char pname[])
+{
+	PhysCompStokes stokes;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
+	
+	stokes->mx = user->mx;
+	stokes->my = user->my;
+	stokes->mz = user->mz;
+	stokes->use_mf_stokes = user->use_mf_stokes;
+	
+	ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
+//	ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
+	
+	ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
+	ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
+	//	ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
+	
+	user->stokes_ctx = stokes;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3dCheckpoint"
+PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
+{
+	PetscViewer viewer;
+	PetscErrorCode ierr;
+	char start[1256];
+	char f1[1256];
+	char f2[1256];
+	char f3[1256];
+	
+	PetscFunctionBegin;
+
+	
+	/* context */
+	if (prefix) {
+		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->outputpath,prefix);
+	} else {
+		sprintf(start,"%s/ptat3dcpf.ctx",ctx->outputpath);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
+	ierr = pTatin3dContextSave(ctx,start);CHKERRQ(ierr);	
+	
+	/* dav,dap */
+	if (prefix) {
+		sprintf(f1,"%s/ptat3dcpf.dmda-velocity_%s",ctx->outputpath,prefix);
+		sprintf(f2,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->outputpath,prefix);
+		sprintf(f3,"%s/ptat3dcpf.dmda-pressure_%s",ctx->outputpath,prefix);
+	} else {
+		sprintf(f1,"%s/ptat3dcpf.dmda-velocity",ctx->outputpath);
+		sprintf(f2,"%s/ptat3dcpf.dmda-velocity-coords",ctx->outputpath);
+		sprintf(f3,"%s/ptat3dcpf.dmda-pressure",ctx->outputpath);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f2 );
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f3 );
+	
+	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,f2);CHKERRQ(ierr);
+
+	/* solution */
+	if (prefix) {
+		sprintf(f1,"%s/ptat3dcpf.dmda-X_%s",ctx->outputpath,prefix);
+	} else {
+		sprintf(f1,"%s/ptat3dcpf.dmda-X",ctx->outputpath);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+	{
+		PetscViewer viewer;
+		
+		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = VecView(X,viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
+	
+	/* material points */
+	if (prefix) {
+		sprintf(start,"%s/ptat3dcpf.markers_%s",ctx->outputpath,prefix);
+	} else {
+		sprintf(start,"%s/ptat3dcpf.markers",ctx->outputpath);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
+	DataBucketView(PETSC_COMM_WORLD,ctx->materialpoint_db,start,DATABUCKET_VIEW_BINARY);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinRestart_Initialize"
+PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinRestart_ApplyInitialMeshGeometry"
+PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
+{
+	char name[1256];
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+
+	sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->outputpath,ctx->restart_prefix);
+	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMeshGeometry] from %s \n", name );
+	ierr = DMDALoadCoordinatesFromFile(ctx->stokes_ctx->dav,name);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinRestart_ApplyInitialMaterialGeometry"
+PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *data)
+{
+	char name[1256];
+	DataBucket db;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+
+	if (ctx->materialpoint_db) {
+			DataBucketDestroy(&ctx->materialpoint_db);
+	}
+	
+	sprintf(name,"%s/ptat3dcpf.markers_%s",ctx->outputpath,ctx->restart_prefix);
+	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry] from %s \n", name );
+	DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
+	ctx->materialpoint_db = db;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinRestart_ApplyInitialSolution"
+PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data)
+{
+	char name[1256];
+	Vec Xt;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	sprintf(name,"%s/ptat3dcpf.dmda-X_%s",ctx->outputpath,ctx->restart_prefix);
+	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialSolution] from %s \n", name );
+	ierr = DMDALoadGlobalVectorFromFile(ctx->pack,name,&Xt);CHKERRQ(ierr);
+	ierr = VecCopy(Xt,X);CHKERRQ(ierr);
+	ierr = VecDestroy(&Xt);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3dRestart"
+PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
+{
+	PetscBool flg;
+	pTatinCtx ctx2;
+	PetscViewer viewer;
+	PetscErrorCode ierr;
+	char start[1256];
+	char f1[1256];
+	char f2[1256];
+	char f3[1256];
+	pTatinModel model;
+
+	
+	PetscFunctionBegin;
+	
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,1256-1,&flg);CHKERRQ(ierr);
+	if (flg==PETSC_TRUE) {
+		ctx->restart_from_file = PETSC_TRUE;
+	}
+	
+	if (!ctx->restart_from_file) {
+		PetscFunctionReturn(0);
+	}
+
+	/* context */
+	if (ctx->restart_prefix) {
+		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->outputpath,ctx->restart_prefix);
+	} else {
+		sprintf(start,"%s/ptat3dcpf.ctx",ctx->outputpath);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", start );
+	ierr = pTatin3dContextLoad(&ctx2,start);CHKERRQ(ierr);	
+
+	/* get a copy of the model pointer - or we load again */
+//	model = ctx->model;
+	ierr = PetscMemcpy(ctx,ctx2,sizeof(struct _p_pTatinCtx));CHKERRQ(ierr);
+//	ctx->model = model;
+	
+	ctx->restart_from_file = PETSC_TRUE;
+	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,1256-1,&flg);CHKERRQ(ierr);
+	
+	
+	ierr = pTatin3dParseOptions(ctx);CHKERRQ(ierr);
+	ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
+	
+	/* set new function pointers for loading model */
+	ctx->model->FP_pTatinModel_ApplyInitialSolution = pTatinRestart_ApplyInitialSolution;
+	ctx->model->FP_pTatinModel_ApplyInitialMeshGeometry = pTatinRestart_ApplyInitialMeshGeometry;
+	ctx->model->FP_pTatinModel_ApplyInitialMaterialGeometry = pTatinRestart_ApplyInitialMaterialGeometry;
+	
+	PetscFunctionReturn(0);
+}
+
 
 

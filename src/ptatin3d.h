@@ -61,4 +61,11 @@ PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m);
 PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r);
 PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s);
 
+PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[]);
+PetscErrorCode pTatin3dContextSave(pTatinCtx ctx,const char filename[]);
+PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[]);
+
+PetscErrorCode pTatin3d_PhysCompStokesLoad(pTatinCtx user,const char vname[],const char pname[]);
+PetscErrorCode pTatin3dRestart(pTatinCtx ctx);
+
 #endif
