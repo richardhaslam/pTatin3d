@@ -370,6 +370,30 @@ PetscErrorCode BCListInsert(BCList list,Vec y)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "BCListInsertValueIntoDirichletSlot"
+PetscErrorCode BCListInsertValueIntoDirichletSlot(BCList list,PetscScalar value,Vec y)
+{
+	PetscInt m,k,L;
+	PetscInt *idx;
+	PetscScalar *LA_y;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = BCListGetGlobalIndices(list,&L,&idx);CHKERRQ(ierr);
+	ierr = VecGetArray(y,&LA_y);CHKERRQ(ierr);
+	ierr = VecGetLocalSize(y,&m);CHKERRQ(ierr);
+	for (k=0; k<m; k++) {
+		if (idx[k]==BCList_DIRICHLET) {
+			LA_y[k] = value;
+		}
+	}
+	ierr = VecRestoreArray(y,&LA_y);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
 /*
  if (isbc_local[i] == dirch) y[i] = 0.0
  else                        y[i] = y[i] 

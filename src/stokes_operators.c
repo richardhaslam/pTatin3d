@@ -829,6 +829,48 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagaonl_MFStokes_A11"
+PetscErrorCode MatGetDiagaonl_MFStokes_A11(Mat A,Vec X)
+{
+	MatA11MF          ctx;
+  PetscErrorCode    ierr;
+  DM                dau;
+  Vec               XUloc;
+  PetscScalar       *LA_XUloc;
+	
+  PetscFunctionBegin;
+  
+	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+	dau = ctx->daUVW;
+	
+  ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
+
+	/* Zero input X */
+	ierr = VecZeroEntries(X);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+	
+	/* A11 from momentum */
+	ierr = MFStokesWrapper_diagA11(ctx->volQ,dau,LA_XUloc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
+	
+	/* do global fem summation */
+	ierr = DMLocalToGlobalBegin(dau,XUloc,ADD_VALUES,X);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd  (dau,XUloc,ADD_VALUES,X);CHKERRQ(ierr);
+	
+  ierr = DMRestoreLocalVector(dau,&XUloc);CHKERRQ(ierr);
+	
+	/* modify X for the boundary conditions, x_k = scale_k(x_k) */
+
+	/* FOR THE MOMENT THE DIAGONAL IS ALWAYS 1 x_k = scale_k(1.0) */
+	/* Clobbering entries in global vector corresponding to dirichlet boundary conditions */
+	ierr = BCListInsertValueIntoDirichletSlot(ctx->u_bclist,1.0,X);CHKERRQ(ierr);
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMult_MFStokes_A11"
 PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 {
@@ -1071,6 +1113,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
 	
 	*A = B;

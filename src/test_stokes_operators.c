@@ -481,6 +481,68 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "compare_mf_diagA11"
+PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
+{
+	MatStokesMF    StkCtx;
+	MatA11MF       A11Ctx;
+	Mat            Auu,B;
+	Vec            y,y2;
+	DM             da;
+	PetscScalar    min,max;
+	PetscReal      cmp;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
+	
+	/* create the mf operators */
+	da = user->dav;
+	ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
+	ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
+	ierr = MatCopy_StokesMF_A11MF(StkCtx,&A11Ctx);CHKERRQ(ierr);
+	
+	ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
+	
+	/* matrix free */
+	ierr = DMCreateGlobalVector(da,&y);CHKERRQ(ierr);
+	
+	ierr = MatGetDiagonal(Auu,y);CHKERRQ(ierr);
+	
+	/* assembled */
+	ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
+	
+	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
+	
+	ierr = MatGetDiagonal(B,y2);CHKERRQ(ierr);
+	
+	/* compare result */
+	ierr = VecDot(y,y,&cmp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  y.y    = %+1.8e [mfo]\n", cmp );
+	ierr = VecDot(y2,y2,&cmp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
+	
+	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
+	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  min[diagA11_mfo-diagA11_asm]  = %+1.8e \n", min );
+	PetscPrintf(PETSC_COMM_WORLD,"  max[diagA11_mfo-diagA11_asm]  = %+1.8e \n", max );
+	
+	ierr = VecDestroy(&y);CHKERRQ(ierr);
+	ierr = VecDestroy(&y2);CHKERRQ(ierr);
+	
+	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
+	ierr = MatDestroy(&Auu);CHKERRQ(ierr);
+	ierr = MatDestroy(&B);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_assemble_stokes"
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
@@ -556,12 +618,16 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	
 //	ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
 //	ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
-	
+
+/*
 	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A12(user->stokes_ctx);CHKERRQ(ierr);
 	
 	ierr = compare_mf_A(user->stokes_ctx);CHKERRQ(ierr);
+*/
+	
+	ierr = compare_mf_diagA11(user->stokes_ctx);CHKERRQ(ierr);
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");

@@ -55,6 +55,8 @@ PetscErrorCode BCListInsertZero(BCList list,Vec y);
 PetscErrorCode BCListInsertLocalZero(BCList list,Vec y);
 PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F);
 
+/* for mat get diagonal */
+PetscErrorCode BCListInsertValueIntoDirichletSlot(BCList list,PetscScalar value,Vec y);
 
 /* 3d */
 PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc doflocation,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscScalar*,void*),void *ctx);
