@@ -73,6 +73,9 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 		case PTATIN_MODEL_APPLY_MAT_BC:
 			model->FP_pTatinModel_ApplyMaterialBoundaryCondition = ( PetscErrorCode(*)(pTatinCtx,void*) )func;
 			break;
+		case PTATIN_MODEL_APPLY_INIT_SOLUTION:
+			model->FP_pTatinModel_ApplyInitialSolution = ( PetscErrorCode(*)(pTatinCtx,Vec,void*) )func;
+			break;
 		case PTATIN_MODEL_APPLY_INIT_MESH_GEOM:
 			model->FP_pTatinModel_ApplyInitialMeshGeometry = ( PetscErrorCode(*)(pTatinCtx,void*) )func;
 			break;
@@ -210,6 +213,20 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 	
 	if (model->FP_pTatinModel_Output) {
 		ierr = model->FP_pTatinModel_Output(ctx,X,name,model->model_data);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModel_ApplyInitialSolution"
+PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,Vec X)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	if (model->FP_pTatinModel_ApplyInitialSolution) {
+		ierr = model->FP_pTatinModel_ApplyInitialSolution(ctx,X,model->model_data);CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);

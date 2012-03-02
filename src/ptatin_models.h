@@ -10,6 +10,7 @@ typedef enum {
 	PTATIN_MODEL_INIT=0,
 	PTATIN_MODEL_APPLY_BC,
 	PTATIN_MODEL_APPLY_MAT_BC,
+	PTATIN_MODEL_APPLY_INIT_SOLUTION,
 	PTATIN_MODEL_APPLY_INIT_MESH_GEOM,
 	PTATIN_MODEL_APPLY_INIT_MAT_GEOM,
 	PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,
@@ -42,7 +43,7 @@ PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx 
 PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTatinCtx ctx);
-
+PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,Vec X);
 
 
 #endif
