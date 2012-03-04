@@ -84,13 +84,13 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 		n2 = n0 + 2;
 		
 		if (n2<sig+mg) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
+//			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
 			cntx++;
 			continue;
 		}		
 		
 		if (si+m-n2>1) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
+//			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
 			cntx++;
 			continue;
 		}		
@@ -118,13 +118,13 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 		
 		/* if start and end of element are inside global range - keep it */
 		if (n2<sjg+ng) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
+//			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
 			cnty++;
 			continue;
 		}		
 		
 		if (sj+n-n2>1) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
+//			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
 			cnty++;
 			continue;
 		}		
@@ -152,14 +152,14 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 		//		printf("last-n2 = %d \n", sk+p-n2 );
 		/* if start and end of element are inside global range - keep it */
 		if (n2<skg+pg) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
+//			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
 			//			printf("[GLOBAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
 			cntz++;
 			continue;
 		}		
 		
 		if (sk+p-n2>1) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
+//			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
 			//			printf("[LOCAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
 			cntz++;
 			continue;
