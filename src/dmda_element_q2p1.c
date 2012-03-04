@@ -48,15 +48,17 @@ PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ
 PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
 	const PetscInt order = 2;
-	PetscInt i,j,k;
+	PetscInt i,j,k,start;
 	PetscInt cntx,cnty,cntz;
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
+	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
-	int rank;
+	PetscMPIInt rank;
 	
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
@@ -64,20 +66,155 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
 	
 	cntx = cnty = cntz = 0;
+
+	
+	/* ======================================================================================== */
+	// x
 	for (i=si; i<si+m; i++) {
-		if (i%order==0) { /*printf("rank%d claiming %d (x)\n",rank,i);*/ cntx++; }
+		if (i%2==0 && i==si && i!=0) { continue; } /* reject first ghost if its's even */
+		if (i%2==0) {
+			start = i;
+			break;
+		}
 	}
-	if (si+m==M) {cntx--;}
+	while (start + 2 * cntx < si+m) {
+		PetscInt n0,n2;
+		
+		n0 = start + 2 * cntx;
+		n2 = n0 + 2;
+		
+		if (n2<sig+mg) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
+			cntx++;
+			continue;
+		}		
+		
+		if (si+m-n2>1) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(i) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,si,si+m-1 );
+			cntx++;
+			continue;
+		}		
+		
+		if (si+m-n2<=1) {
+			break;
+		}		
+	}
 	
+	/* ======================================================================================== */
+	// y
 	for (j=sj; j<sj+n; j++) {
-		if (j%order==0) { /*printf("rank%d claiming %d (y)\n",rank,j);*/ cnty++; }
+		if (j%2==0 && j==sj && j!=0) { continue; } /* reject first ghost if its's even */
+		if (j%2==0) {
+			start = j;
+			break;
+		}
 	}
-	if (sj+n==N) {cnty--;}
 	
-	for (k=sk; k<sk+p; k++) {
-		if (k%order==0) { cntz++; }
+	while (start + 2 * cnty < sj+n) {
+		PetscInt n0,n2;
+		
+		n0 = start + 2 * cnty;
+		n2 = n0 + 2;
+		
+		/* if start and end of element are inside global range - keep it */
+		if (n2<sjg+ng) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
+			cnty++;
+			continue;
+		}		
+		
+		if (sj+n-n2>1) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(j) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sj,sj+n-1 );
+			cnty++;
+			continue;
+		}		
+		
+		if (sj+n-n2<=1) {
+			break;
+		}		
 	}
-	if (sk+p==P) {cntz--;}
+	
+	/* ======================================================================================== */
+	// z
+	for (k=sk; k<sk+p; k++) {
+		if (k%2==0 && k==sk && k!=0) { continue; } /* reject first ghost if its's even */
+		if (k%2==0) {
+			start = k;
+			break;
+		}
+	}
+	while (start + 2 * cntz < p+sk) {
+		PetscInt n0,n2;
+		
+		n0 = start + 2 * cntz;
+		n2 = n0 + 2;
+		
+		//		printf("last-n2 = %d \n", sk+p-n2 );
+		/* if start and end of element are inside global range - keep it */
+		if (n2<skg+pg) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
+			//			printf("[GLOBAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
+			cntz++;
+			continue;
+		}		
+		
+		if (sk+p-n2>1) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT(k) (%6d - %6d) inside range l[%6d - %6d]\n", n0,n2,sk,sk+p-1 );
+			//			printf("[LOCAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
+			cntz++;
+			continue;
+		}		
+		
+		if (sk+p-n2<=1) {
+			/* this means the element is taking two entries from the ghost cells */
+			//			printf("[OUTSIDE] element (%d .. %d) [%d-%d]l [%d-%d]g\n", n0,n2,sk,sk+p-1,skg,skg+pg-1);
+			break;
+		}		
+	}
+	
+	/* ======================================================================================== */
+	
+#if 0	
+	// z
+	for (k=sk; k<sk+p; k++) {
+		if (k%2==0 && k==sk && k!=0) { continue; } /* reject first ghost if its's even */
+
+		if (k%2==0) {
+			start = k;
+			break;
+		}
+	}
+	while (start + 2 * cntz < p+sk) {
+		PetscInt n0,n2;
+		
+		n0 = start + 2 * cntz;
+		n2 = n0 + 2;
+		
+//		printf("last-n2 = %d \n", sk+p-n2 );
+		/* if start and end of element are inside global range - keep it */
+		if (n2<skg+pg) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT (%4d - %4d) inside range l[%4d-%4d]\n", n0,n2,sk,sk+p-1 );
+//			printf("[GLOBAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
+			cntz++;
+			continue;
+		}		
+		
+		if (sk+p-n2>1) {
+			PetscPrintf(PETSC_COMM_SELF,"ELEMENT (%4d - %4d) inside range l[%4d-%4d]\n", n0,n2,sk,sk+p-1 );
+//			printf("[LOCAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
+			cntz++;
+			continue;
+		}		
+
+		if (sk+p-n2<=1) {
+			/* this means the element is taking two entries from the ghost cells */
+//			printf("[OUTSIDE] element (%d .. %d) [%d-%d]l [%d-%d]g\n", n0,n2,sk,sk+p-1,skg,skg+pg-1);
+			break;
+		}		
+		
+	}
+	/*printf("mx,my,mz = %d %d %d \n", cntx,cnty,cntz);*/
+#endif
 	
 	if (mx) { *mx = cntx; }
 	if (my) { *my = cnty; }
@@ -94,34 +231,49 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	PetscInt i,j,k;
 	PetscInt cntx,cnty,cntz;
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
+	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
 	int rank;
 	
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
 	
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-	/*printf("[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
+	/*PetscPrintf(PETSC_COMM_SELF,"[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
 	
 	cntx = cnty = cntz = 0;
+	// x
 	for (i=si; i<si+m; i++) {
-		if (i%order==0) { break; }
+		if (i%2==0 && i==si && i!=0) { continue; } /* reject first ghost if its's even */
+		if (i%2==0) {
+			*sei = i;
+			break;
+		}
 	}
-	if (sei) { *sei = i; }
-	
+
+	// y
 	for (j=sj; j<sj+n; j++) {
-		if (j%order==0) {  break; }
+		if (j%2==0 && j==sj && j!=0) { continue; } /* reject first ghost if its's even */
+		if (j%2==0) {
+			*sej = j;
+			break;
+		}
 	}
-	if (sej) { *sej = j; }
 	
+	// z
 	for (k=sk; k<sk+p; k++) {
-		if (k%order==0) { break; }
+		if (k%2==0 && k==sk && k!=0) { continue; } /* reject first ghost if its's even */
+		if (k%2==0) {
+			*sek = k;
+			break;
+		}
 	}
-	if (sek) { *sek = k; }
+	/*PetscPrintf(PETSC_COMM_SELF,"si,sj,sk = %d %d %d \n", *sei,*sej,*sek);*/
 	
 	ierr = DMDAGetLocalSizeElementQ2(da,mx,my,mz);CHKERRQ(ierr);
 	
@@ -241,7 +393,7 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	const PetscInt order = 2;
 	PetscErrorCode ierr;
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
-	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,width;
+	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
 	PetscInt *el;
 	PetscInt *gidx,ngidx,dof;
 	int rank;
@@ -258,27 +410,18 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 		ierr = DMDAGetCornersElementQ2(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 		ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
 		ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
-		ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,0);CHKERRQ(ierr);
+		ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 		ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
-		
-		/*
-		 printf("[%d] ngidx=%d dof=%d\n", rank,ngidx,dof);
-		 if(rank==0){
-		 for(i=0;i<ngidx;i++) {
-		 printf("gidx[%d]=%d\n",i,gidx[i]);
-		 }
-		 }
-		 */
 		
 		elcnt = 0;
 
-		//		printf("[%d]: esi=%d, gsi=%d\n", rank,esi,gsi);
 		for (ek=0; ek<mz; ek++) {
-			k = (esk-gsk) + 2*ek;
+			k = esk-gsk + 2*ek;
 			for (ej=0; ej<my; ej++) {
-				j = (esj-gsj) + 2*ej;
+				j = esj-gsj + 2*ej;
 				for (ei=0; ei<mx; ei++) {
-					i = (esi-gsi) + 2*ei;
+					i = esi-gsi + 2*ei;
+
 					el = &idx[_npe*elcnt];
 					
 					//				printf("[%d]: i=%d \n", rank,i );
@@ -317,12 +460,16 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 					nid[24] = (i  ) + (j+2) *X  + (k+2) *X*Y; 
 					nid[25] = (i+1) + (j+2) *X  + (k+2) *X*Y; 
 					nid[26] = (i+2) + (j+2) *X  + (k+2) *X*Y; 
-					
-					//				if(rank==0) printf("%d,%d, %d %d %d, %d %d %d , %d %d %d \n", ei,ej,
-					//													 nid[0],nid[1],nid[2],nid[3],nid[4],nid[5],nid[6],nid[7],nid[8] );
-					
+
+/*					
+					if(rank==1) printf("%d,%d,%d %d %d %d, %d %d %d , %d %d %d \n", i,j,k,
+											 nid[0],nid[1],nid[2],nid[3],nid[4],nid[5],nid[6],nid[7],nid[8] );
+*/					
 					for (n=0; n<_npe; n++) {
 						if (nid[n]>M*N*P) { 
+							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Local indexing exceeds number of global nodes");
+						}
+						if (nid[n]>X*Y*Z) { 
 							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Local indexing exceeds number of global nodes");
 						}
 						el[n] = nid[n]; //gidx[dof*nid[n]+0]/dof;
