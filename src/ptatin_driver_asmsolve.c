@@ -392,7 +392,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	
 	nlevels = 1;
 	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
-	PetscPrintf(PETSC_COMM_WORLD,"NLEVELS = %d mx,my,mz = %d %d %d \n", nlevels,user->mx,user->my,user->mz );
+	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -618,6 +618,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	
 	nlevels = 1;
 	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -968,6 +969,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	nlevels = 1;
 	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
 	
