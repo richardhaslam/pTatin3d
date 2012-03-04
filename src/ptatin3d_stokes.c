@@ -35,6 +35,18 @@ PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],
 	}
 	PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "StokesVelocityScalar_GetElementLocalIndices"
+PetscErrorCode StokesVelocityScalar_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
+{
+	PetscInt n;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	for (n=0; n<27; n++) {
+		el_localIndices[n] = elnid[n] ;
+	}
+	PetscFunctionReturn(0);
+}
 
 
 /* physics component loader */
@@ -94,7 +106,8 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	MX = mx;
 	MY = my;
 	MZ = mz;
-	
+
+#if 0
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, pbasis_dofs,0, 0,0,0, &dap );CHKERRQ(ierr);
@@ -121,6 +134,21 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	ierr = PetscFree(lxv);CHKERRQ(ierr);
 	ierr = PetscFree(lyv);CHKERRQ(ierr);
 	ierr = PetscFree(lzv);CHKERRQ(ierr);
+#endif
+
+	vbasis_dofs = 3;
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,2, PETSC_NULL,PETSC_NULL,PETSC_NULL, &dav );CHKERRQ(ierr);
+	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+	
+	
+	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
+	
+	
+	pbasis_dofs = P_BASIS_FUNCTIONS;
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
+	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
 	
 	/* set an initial geometry */
 	ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
@@ -212,10 +240,10 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *
 		
 		idx = u_eqn[3*n+1];
     fields_F[idx] += Fe_u[NSD*n+1];
-
+		
 		idx = u_eqn[3*n+2];
     fields_F[idx] += Fe_u[NSD*n+2];
-}
+	}
   PetscFunctionReturn(0);
 }
 
@@ -233,6 +261,20 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(PetscScalar *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity"
+PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])
+{
+  PetscInt n,idx;
+	
+  PetscFunctionBegin;
+  for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
+		idx = u_eqn[n];
+    fields_F[idx] += Fe_u[n];
+	}
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompLoadMesh_Stokes3d"
 PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[])
@@ -246,6 +288,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	
 	PetscFunctionBegin;
 
+#if 0	
 	/* pressure */
 	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_p,&dap);CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
@@ -281,6 +324,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	ierr = PetscFree(lxv);CHKERRQ(ierr);
 	ierr = PetscFree(lyv);CHKERRQ(ierr);
 	ierr = PetscFree(lzv);CHKERRQ(ierr);
+#endif
 	
 	/* load an initial geometry */
 //	ierr = DMDALoadCoordinatesFromFile(dav,"coord-data.dat");CHKERRQ(ierr);
