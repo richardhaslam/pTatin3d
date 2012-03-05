@@ -1093,6 +1093,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		ierr = MatShellGetMatStokesMF(A,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
+		mf->daU = PETSC_NULL;
 	}
 
 	/* B operator */
@@ -1213,7 +1214,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				
+				mf->daU = PETSC_NULL;				
+
 				operatorA11[k] = Auu;
 				operatorB11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
