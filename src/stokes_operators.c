@@ -847,6 +847,7 @@ PetscErrorCode MatGetDiagaonl_MFStokes_A11(Mat A,Vec X)
 
 	/* Zero input X */
 	ierr = VecZeroEntries(X);CHKERRQ(ierr);
+	ierr = VecZeroEntries(XUloc);CHKERRQ(ierr);
 	
 	ierr = VecGetArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
 	
