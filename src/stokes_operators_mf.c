@@ -78,7 +78,7 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
