@@ -383,13 +383,18 @@ PetscErrorCode BCListInsertValueIntoDirichletSlot(BCList list,PetscScalar value,
 	ierr = BCListGetGlobalIndices(list,&L,&idx);CHKERRQ(ierr);
 	ierr = VecGetArray(y,&LA_y);CHKERRQ(ierr);
 	ierr = VecGetLocalSize(y,&m);CHKERRQ(ierr);
+
+	if (L!=m) {
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"L != m");
+	}
 	for (k=0; k<m; k++) {
 		if (idx[k]==BCList_DIRICHLET) {
 			LA_y[k] = value;
 		}
 	}
 	ierr = VecRestoreArray(y,&LA_y);CHKERRQ(ierr);
-	
+	ierr = BCListRestoreGlobalIndices(list,&L,&idx);CHKERRQ(ierr);	
+
 	PetscFunctionReturn(0);
 }
 
