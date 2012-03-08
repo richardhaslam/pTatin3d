@@ -42,6 +42,7 @@ export TATIN_SRC = \
 			phase_map.c \
 			element_utils_q2.c \
 			stokes_assembly.c \
+			monitors.c \
 			
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 

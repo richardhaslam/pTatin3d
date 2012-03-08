@@ -18,6 +18,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_element_q2p1.h"
 #include "dmda_duplicate.h"
 #include "dmda_project_coords.h"
+#include "monitors.h"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
@@ -1277,7 +1278,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinKSPMonitorStokesBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitorStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ViewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
