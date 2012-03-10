@@ -15,8 +15,8 @@
 
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatin_KSPMonitor_StokesResiduals3d"
-PetscErrorCode pTatin_KSPMonitorStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
+#define __FUNCT__ "pTatin_KSPMonitor_StdoutStokesResiduals3d"
+PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
 {
 	PetscErrorCode ierr;
 	pTatinCtx ctx;
@@ -47,8 +47,8 @@ PetscErrorCode pTatin_KSPMonitorStokesResiduals3d(KSP ksp,PetscInt n,PetscReal r
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatin_KSPMonitor_ViewStokesResiduals3d"
-PetscErrorCode pTatin_KSPMonitor_ViewStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
+#define __FUNCT__ "pTatin_KSPMonitor_ParaviewStokesResiduals3d"
+PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
 {
 	PetscErrorCode ierr;
 	pTatinCtx ctx;

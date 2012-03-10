@@ -1279,8 +1279,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitorStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ViewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	

@@ -43,7 +43,8 @@ export TATIN_SRC = \
 			element_utils_q2.c \
 			stokes_assembly.c \
 			monitors.c \
-			
+			mp_advection.c \			
+
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
 TATIN_TESTS	=	\
@@ -55,8 +56,7 @@ TATIN_TESTS	=	\
 			test_dmda_gmg \
 			test_mat_assem \
 			test_stokes_operators \
-
-
+			test_mp_advection \
 
 #			test_model
 

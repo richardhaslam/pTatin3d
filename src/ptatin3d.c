@@ -99,7 +99,7 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	PetscGetTime(&t0);
 	// PVD
 	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_vp_step%d.pvd",ctx->outputpath,ctx->step);
+		asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath);
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 
@@ -339,7 +339,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscGetTime(&t0);
 	// PVD
 	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_mpoints_std_step%d.pvd",ctx->outputpath,ctx->step);
+		asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath);
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
