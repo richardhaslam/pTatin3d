@@ -635,7 +635,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 			ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
 		}
 		
-		if ((kk+1)%10==0) {
+		if ((kk+1)%user->output_frequency==0) {
 			char name[100];
 			
 			PetscPrintf(PETSC_COMM_WORLD,"  checkpointing ptatin :: Model timestep %d : time %lf Myr : cycle[%d/%d] \n", tk,user->time,kk, user->nsteps-1 );
