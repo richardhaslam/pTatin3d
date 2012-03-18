@@ -16,7 +16,7 @@
 #include "petscdm.h"
 
 #include "ptatin3d_defs.h"
-#include "pTatin3d.h"
+#include "ptatin3d.h"
 #include "swarm_fields.h"
 #include "data_exchanger.h"
 #include "MPntStd_def.h"
