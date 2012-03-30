@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# specify the name of the job and the output/error files
+#BSUB -J test_asm64.app
+#BSUB -o test_asm64-%J.out
+#BSUB -e test_asm64-%J.error
+
+
+# specify the number of cpus and memory required PER CPU 
+#BSUB -n 64
+
+#BSUB -R 'rusage[mem=2900]'
+## BSUB -R 'span[ptile=4] rusage[mem=6000]'
+## BSUB -R 'span[ptile=4] rusage[mem=1900] select[model==Opteron8380]'
+
+# walltime HH:MM
+#BSUB -W 07:35
+
+# send me an email when its started and done
+#BSUB -B -N
+
+## -A11_operator_type 2,2,2,2,0
+
+mpirun ./ptatin_driver_asmsolve.app -ptatin_model viscous_sinker -mx 10 -my 10 -mz 10 -dau_nlevels 2 -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -stk_velocity_da_mat_type aij -ksp_type fgmres -fieldsplit_u_ksp_type fgmres -fieldsplit_u_mg_levels_ksp_max_it 2  -fieldsplit_u_ksp_monitor -ksp_monitor_true_residual -A11_operator_type 0,1,1,1,1 -model_viscous_sinker_eta0 1.0 -fieldsplit_u_mg_levels_pc_type jacobi -fieldsplit_u_mg_levels_ksp_max_it 1 -fieldsplit_p_ksp_type preonly -fieldsplit_p_pc_type jacobi -mx 96 -my 96 -mz 96  -fieldsplit_u_mg_coarse_pc_type lu -fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist    -da_processors_x 4 -da_processors_y 4 -da_processors_z 4 -dau_nlevels 5 -snes_view  -model_viscous_sinker_eta0 1.0e-6  -fieldsplit_u_mg_levels_ksp_type chebychev -fieldsplit_u_mg_levels_ksp_max_it 10 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -ksp_max_it 10 -log_summary test.log
+
