@@ -43,7 +43,7 @@ export TATIN_SRC = \
 			element_utils_q2.c \
 			stokes_assembly.c \
 			monitors.c \
-			mp_advection.c \			
+			mp_advection.c
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
@@ -56,7 +56,7 @@ TATIN_TESTS	=	\
 			test_dmda_gmg \
 			test_mat_assem \
 			test_stokes_operators \
-			test_mp_advection \
+			test_mp_advection
 
 #			test_model
 
@@ -72,11 +72,15 @@ export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dm
 
 ## or run >make CFLAGS='-g -O0'
 export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall -Wno-unused-variable
+
 export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
 export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS					= ${TATIN_CFLAGS_O2_OSX}
-#export TATIN_CFLAGS					= ${TATIN_CFLAGS_DEBUG}
-export TATIN_CC							= ${PCC}
+
+export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
+export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
+
+export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
+export TATIN_CC			= ${PCC}
 
 all: 
 	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
