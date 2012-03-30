@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# @ job_name = pTat3s
+# @ job_name = pTat3d
 # @ comment = "pTat3d_profile"
 
 # ## Blue Gene job
