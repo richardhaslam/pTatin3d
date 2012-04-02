@@ -1,0 +1,26 @@
+					ptatin_driver_asmsolve		test_stokes_operators
+					"MatMult time reported"		TATIN_CFLAGS_O2_OSX					TATIN_CFLAGS_O3_OCTO		
+
+np              sub domain      mesh    assembled       mf              assembled			mf			mf (mtune=native)  	(-mtune=nocona)
+1 (1,1,1)       12^3            12					
+                24^3            24      26                  		8.1945e+00/1.7744e-01		2.1638e-01	      	
+                36^3            36	8.8246e+01	1.0414e+02	2.7825e+01/5.9772e-01		7.2443e-01
+                48^3            48                                      6.6552e+01/1.4355e+00		1.7319e+00		1.6968e+00		1.9276e+00		1.6636e+00	
+													==>> 5.7113e-01 with 2x2x2 quadrature
+
+
+np              sub domain      mesh	assembled	mf
+8 (2,2,2)       12^3            24	
+                24^3            48	        			9.8713e+00/3.3056e-01		2.3215e-01
+                36^3            72					3.3667e+01/1.1253e+00		7.7895e-01
+                48^3            96					swapping			1.8450e+00
+
+
+
+
+gcc -c -Q -march=native --help=target
+
+48^3	1.6966e+00	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
+	1.7114e+00	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops
+	1.6995e+00	= -O3 -std=gnu99 -mtune=core2 -msse4 -march=core2 -funroll-loops -ffast-math -ftree-vectorize -ftree-vectorizer-verbose=2
+	
