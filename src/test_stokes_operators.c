@@ -201,6 +201,8 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	DM             da;
 	PetscScalar    min,max;
 	PetscReal      cmp;
+	PetscLogDouble t0,t1;
+	double tl,timeMIN,timeMAX;
 	PetscErrorCode ierr;
 	
 	
@@ -225,15 +227,35 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
+	PetscGetTime(&t0);
 	ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = (double)(t1 - t0);
+	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
+	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+
+
 
 	/* assembled */
 	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
 
 	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	PetscGetTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = (double)(t1 - t0);
+	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
+	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
+	PetscGetTime(&t0);
 	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = (double)(t1 - t0);
+	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
+	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	/*
 	PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
@@ -619,15 +641,16 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 //	ierr = ass_A11(user->stokes_ctx);CHKERRQ(ierr);
 //	ierr = ass_B22(user->stokes_ctx);CHKERRQ(ierr);
 
-/*
+
 	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
+/*
 	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A12(user->stokes_ctx);CHKERRQ(ierr);
 	
 	ierr = compare_mf_A(user->stokes_ctx);CHKERRQ(ierr);
 */
 	
-	ierr = compare_mf_diagA11(user->stokes_ctx);CHKERRQ(ierr);
+//	ierr = compare_mf_diagA11(user->stokes_ctx);CHKERRQ(ierr);
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
