@@ -1,0 +1,55 @@
+
+MatMult profiling
+
+
+mpirun -np 4 -cwd /bgscratch/$USER/dmay/pTat3d -partition R00-M0-00 /home/podladch/codes/dmay/codes/ptatin3d/ptatin_driver_asmsolve.app -args "-ptatin_model viscous_sinker -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -stk_velocity_da_mat_type aij -ksp_type fgmres -fieldsplit_u_ksp_type fgmres -fieldsplit_u_mg_levels_ksp_max_it 2 -fieldsplit_u_ksp_monitor -ksp_monitor_true_residual -A11_operator_type 1 -model_viscous_sinker_eta0 1.0 -fieldsplit_u_mg_levels_pc_type jacobi -fieldsplit_u_mg_levels_ksp_max_it 1 -fieldsplit_p_ksp_type preonly -fieldsplit_p_pc_type jacobi  -snes_view -model_viscous_sinker_eta0 1.0e1 -fieldsplit_u_mg_levels_ksp_type chebychev -fieldsplit_u_mg_levels_ksp_max_it 10 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -ksp_max_it 10 -ksp_max_it 5 -fieldsplit_u_ksp_max_it 3 -fieldsplit_u_mg_levels_ksp_max_it 5 -log_summary -dau_nlevels 1 -mx 8 -my 8 -mz 8"
+
+** TEST: max size with one level using VN
+
+np = 8 (2,2,2)
+-mode VN
+mesh	24	48	72	96
+	Y	Y	N	N
+
+-mode DUAL
+mesh	24	48	72	96
+				Y
+
+-mode SMP
+mesh	24	48	72	96
+
+
+
+/*
+
+mpirun -np 125 -cwd /bgscratch/$USER/dmay/pTat3d -partition R00-M0-1 -mode SMP /home/podladch/codes/dmay/codes/ptatin3d/ptatin_driver_asmsolve.app -args "-ptatin_model viscous_sinker -pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_schur_factorization_type upper -stk_velocity_da_mat_type aij -ksp_type fgmres -fieldsplit_u_ksp_type fgmres -fieldsplit_u_mg_levels_ksp_max_it 2 -fieldsplit_u_ksp_monitor -ksp_monitor_true_residual -A11_operator_type 1 -model_viscous_sinker_eta0 1.0 -fieldsplit_u_mg_levels_pc_type jacobi -fieldsplit_u_mg_levels_ksp_max_it 1 -fieldsplit_p_ksp_type preonly -fieldsplit_p_pc_type jacobi  -snes_view -model_viscous_sinker_eta0 1.0e1 -fieldsplit_u_mg_levels_ksp_type chebychev -fieldsplit_u_mg_levels_ksp_max_it 10 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 -ksp_max_it 10 -ksp_max_it 5 -fieldsplit_u_ksp_max_it 3 -fieldsplit_u_mg_levels_ksp_max_it 5 -log_summary -dau_nlevels 1 -mx 120 -my 120 -mz 120" > /bgscratch/$USER/dmay/pTat3d/matvec-smp.p125.mx120 &
+
+*/
+
+
+np		sub domain	mesh		SMP			DUAL		VN
+8 (2,2,2)	12^3		24		
+		24^3		48		matvec-smp.p8.mx48
+		36^3		72		
+		48^3		96					X
+
+27 (3,3,3)	
+		12		36		matvec-smp.p27.mx36
+		24		72
+		36		108
+		48		144							X
+
+64 (4,4,4)	12		48		matvec-smp.p64.mx48
+		24		96
+		36		144
+		48		192							X
+
+125 (5,5,5)
+		12		60		matvec-smp.p125.mx60	matvec-dual.p125.mx60		matvec-vn.p125.mx60
+		24		120		matvec-smp.p125.mx120	matvec-dual.p125.mx120		matvec-vn.p125.mx120
+		36		180		matvec-smp.p125.mx180	matvec-dual.p125.mx180		X
+		48		240		matvec-smp.p125.mx240	out of memory			X
+
+
+
+
