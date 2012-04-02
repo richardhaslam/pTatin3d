@@ -79,6 +79,8 @@ export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vec
 export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
 export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
 
+export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
+
 export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
 export TATIN_CC			= ${PCC}
 
