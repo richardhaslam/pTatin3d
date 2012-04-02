@@ -882,9 +882,12 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   Vec               XUloc,YUloc;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
+	PetscBool         use_low_order_geometry = PETSC_FALSE;
 	
   PetscFunctionBegin;
   
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
 	
@@ -908,7 +911,11 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* momentum */
-	ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	if (use_low_order_geometry==PETSC_FALSE) {
+		ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	} else {
+		ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	}
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);

@@ -16,6 +16,7 @@ struct _p_MatStokesMF {
 	DM          daU;
 	IS          isUVW,isU,isV,isW,isP; /* Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
+	Vec         nodal_viscosity;
 };
 
 struct _p_MatA11MF {
@@ -30,6 +31,7 @@ struct _p_MatA11MF {
 	/* Not sure I need this at all */
 	PetscInt    level;
 	PetscInt    ii;
+	Vec         nodal_viscosity;
 };
 
 

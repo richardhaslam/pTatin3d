@@ -41,6 +41,7 @@ export TATIN_SRC = \
 			quadrature.c \
 			phase_map.c \
 			element_utils_q2.c \
+			element_utils_q1.c \
 			stokes_assembly.c \
 			monitors.c \
 			mp_advection.c
@@ -81,7 +82,7 @@ export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qip
 
 export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
 
-export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
+export TATIN_CFLAGS		= ${TATIN_CFLAGS_O2_OSX}
 export TATIN_CC			= ${PCC}
 
 all: 
