@@ -130,7 +130,25 @@ void P3D_evaluate_geometry_elementQ1(PetscInt nqp,PetscReal el_coords[8*3],Petsc
 	/* flops = [NQP*NPE] * 15 */
 }
 
+/*
+ 
+ 6 7 8
+ 3 4 5
+ 0 1 2
 
+ 
+ 15 16 17
+ 12 13 14
+ 9 10 11
+ 
+ 
+ 24 25 26
+ 21 22 23
+ 18 19 20
+ 
+ */
+
+// 2/8, 2/16, 2/12
 void P3D_evaluate_geometry_elementQ1_appliedQ2(PetscInt nqp,
 																		 PetscReal detJ[],
 																		 PetscReal GNIQ1[][3][8],
@@ -241,14 +259,14 @@ void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 	PetscInt idx_v1,idx_v2,idx_v3,idx_v4,idx_v5,idx_v6,idx_v7,idx_v8;
 	
 	idx_v1 = 0;
-	idx_v2 = 4;
-	idx_v3 = 5;
-	idx_v4 = 1;
+	idx_v2 = 1;
+	idx_v3 = 3;
+	idx_v4 = 2;
 	
-	idx_v5 = 2;
-	idx_v6 = 6;
+	idx_v5 = 4;
+	idx_v6 = 5;
 	idx_v7 = 7;
-	idx_v8 = 3;
+	idx_v8 = 6;
 	
 	for (k=0; k<3; k++) {
 		el_coordsQ1[3*0+k] = el_coords[3*0+k];
@@ -291,17 +309,17 @@ void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 		a001[k] =  0.125*(v5[k] + v6[k] + v7[k] + v8[k] - v1[k] - v2[k] - v3[k] - v4[k]);
 	}
 	
-	J[0][0] = a100[2] ;
-	J[0][1] = a010[2] ;
-	J[0][2] = a001[2] ;
+	J[0][0] = a100[0] ;
+	J[0][1] = a010[0] ;
+	J[0][2] = a001[0] ;
 	
-	J[1][0] = a100[0] ;
-	J[1][1] = a010[0] ;
-	J[1][2] = a001[0] ;
+	J[1][0] = a100[1] ;
+	J[1][1] = a010[1] ;
+	J[1][2] = a001[1] ;
 	
-	J[2][0] = a100[1] ;
-	J[2][1] = a010[1] ;
-	J[2][2] = a001[1] ;
+	J[2][0] = a100[2] ;
+	J[2][1] = a010[2] ;
+	J[2][2] = a001[2] ;
 	
 	detJ_p = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) // a
 	- J[0][1]*(J[1][0]*J[2][2] + J[1][2]*J[2][0]) 
@@ -367,14 +385,14 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 	PetscInt idx_v1,idx_v2,idx_v3,idx_v4,idx_v5,idx_v6,idx_v7,idx_v8;
 	
 	idx_v1 = 0;
-	idx_v2 = 4;
-	idx_v3 = 5;
-	idx_v4 = 1;
+	idx_v2 = 1;
+	idx_v3 = 3;
+	idx_v4 = 2;
 	
-	idx_v5 = 2;
-	idx_v6 = 6;
+	idx_v5 = 4;
+	idx_v6 = 5;
 	idx_v7 = 7;
-	idx_v8 = 3;
+	idx_v8 = 6;
 
 
 	for (k=0; k<3; k++) {
@@ -433,9 +451,9 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 		a001[k] =  0.125*(v5[k] + v6[k] + v7[k] + v8[k] - v1[k] - v2[k] - v3[k] - v4[k]);
 	}
 	
-	J[0] = a100[2] ;
-	J[1] = a010[0] ;
-	J[2] = a001[1] ;
+	J[0] = a100[0] ;
+	J[1] = a010[1] ;
+	J[2] = a001[2] ;
 	
 	detJ_p = J[0]*J[1]*J[2];
 	/* flops =  2 */
