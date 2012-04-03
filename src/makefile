@@ -57,6 +57,7 @@ TATIN_TESTS	=	\
 			test_dmda_gmg \
 			test_mat_assem \
 			test_stokes_operators \
+			test_stokes_operators_approximations \
 			test_mp_advection
 
 #			test_model
@@ -65,6 +66,8 @@ TATIN_MODELS		=
 TATIN_DRIVERS		= \
 			ptatin_driver_nostokessolve \
 			ptatin_driver_asmsolve \
+			ptatin_driver_asmsolve_approx
+
 
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
 export EXTERNAL_LIBS	=	${PETSC_LIB}
