@@ -120,6 +120,8 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	PetscFunctionBegin;
 	/* quadrature */
 	ngp = volQ->npoints;
+//	if (ngp==27) { printf("ngp = 27\n");}
+//	if (ngp==8) { printf("ngp = 8\n");}
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
@@ -208,7 +210,6 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscFunctionBegin;
 	/* quadrature */
 	ngp = volQ->npoints;
-	ngp = 8;
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* prepare Q1 basis */
