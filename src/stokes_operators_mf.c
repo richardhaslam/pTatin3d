@@ -268,7 +268,7 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 		
 //		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 //		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
-//		P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+//			P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
 			P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
 		
 		/* initialise element stiffness matrix */

@@ -171,17 +171,17 @@ void P3D_evaluate_geometry_elementQ1_appliedQ2(PetscInt nqp,
 			PetscReal yc = el_coordsQ1[3*k+1];
 			PetscReal zc = el_coordsQ1[3*k+2];
 			
-			J[0][0] += 1.0*GNIQ1[p][0][k] * xc ;
-			J[0][1] += 1.0*GNIQ1[p][0][k] * yc ;
-			J[0][2] += 1.0*GNIQ1[p][0][k] * zc ;
+			J[0][0] += GNIQ1[p][0][k] * xc ;
+			J[0][1] += GNIQ1[p][0][k] * yc ;
+			J[0][2] += GNIQ1[p][0][k] * zc ;
 			
-			J[1][0] += 1.0*GNIQ1[p][1][k] * xc ;
-			J[1][1] += 1.0*GNIQ1[p][1][k] * yc ;
-			J[1][2] += 1.0*GNIQ1[p][1][k] * zc ;
+			J[1][0] += GNIQ1[p][1][k] * xc ;
+			J[1][1] += GNIQ1[p][1][k] * yc ;
+			J[1][2] += GNIQ1[p][1][k] * zc ;
 			
-			J[2][0] += 1.0*GNIQ1[p][2][k] * xc ;
-			J[2][1] += 1.0*GNIQ1[p][2][k] * yc ;
-			J[2][2] += 1.0*GNIQ1[p][2][k] * zc ;
+			J[2][0] += GNIQ1[p][2][k] * xc ;
+			J[2][1] += GNIQ1[p][2][k] * yc ;
+			J[2][2] += GNIQ1[p][2][k] * zc ;
 		}
 		
 		/* flops = [NQP*NPE] * 18 */
@@ -252,58 +252,35 @@ void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 	PetscInt k,p;
 	PetscReal t4, t6, t8, t10, t12, t14, t17;
 	PetscReal J[3][3],iJ[3][3],detJ_p;
-	PetscReal el_coordsQ1[8*3];
 	PetscReal a000[3],a100[3],a010[3],a001[3];
 	PetscReal v1[3],v2[3],v3[3],v4[3],v5[3],v6[3],v7[3],v8[3];
-	PetscInt idx_v1,idx_v2,idx_v3,idx_v4,idx_v5,idx_v6,idx_v7,idx_v8;
 	
-	idx_v1 = 0;
-	idx_v2 = 4;
-	idx_v3 = 5;
-	idx_v4 = 1;
-	
-	idx_v5 = 2;
-	idx_v6 = 6;
-	idx_v7 = 7;
-	idx_v8 = 3;
 	
 	for (k=0; k<3; k++) {
-		el_coordsQ1[3*0+k] = el_coords[3*0+k];
-		el_coordsQ1[3*1+k] = el_coords[3*2+k];
-		el_coordsQ1[3*2+k] = el_coords[3*6+k];
-		el_coordsQ1[3*3+k] = el_coords[3*8+k];
+		v1[k] = el_coords[3*0+k];
+		v2[k] = el_coords[3*2+k];
+		v3[k] = el_coords[3*6+k];
+		v4[k] = el_coords[3*8+k];
 		
-		el_coordsQ1[3*4+k] = el_coords[3*18+k];
-		el_coordsQ1[3*5+k] = el_coords[3*20+k];
-		el_coordsQ1[3*6+k] = el_coords[3*24+k];
-		el_coordsQ1[3*7+k] = el_coords[3*26+k];
+		v5[k] = el_coords[3*18+k];
+		v6[k] = el_coords[3*20+k];
+		v7[k] = el_coords[3*24+k];
+		v8[k] = el_coords[3*26+k];
 	}
 
-	for (k=0; k<3; k++) {
-		v1[k] = el_coordsQ1[3*idx_v1+k];
-		v2[k] = el_coordsQ1[3*idx_v2+k];
-		v3[k] = el_coordsQ1[3*idx_v3+k];
-		v4[k] = el_coordsQ1[3*idx_v4+k];
-
-		v5[k] = el_coordsQ1[3*idx_v5+k];
-		v6[k] = el_coordsQ1[3*idx_v6+k];
-		v7[k] = el_coordsQ1[3*idx_v7+k];
-		v8[k] = el_coordsQ1[3*idx_v8+k];
-	}
-	
 /*
  
  MAP = a000 + a100x + a010y + a001z
  
  a000 =  0.125*v1 + 0.125*v2 + 0.125*v3 + 0.125*v4 + 0.125*v5 + 0.125*v6 + 0.125*v7 + 0.125*v8
- a100 =  0.125*v2 + 0.125*v3 + 0.125*v6 + 0.125*v7 - 0.125*v1 - 0.125*v4 - 0.125*v5 - 0.125*v8
- a010 =  0.125*v3 + 0.125*v4 + 0.125*v7 + 0.125*v8 - 0.125*v1 - 0.125*v2 - 0.125*v5 - 0.125*v6
+ a100 =  0.125*v3 + 0.125*v4 + 0.125*v7 + 0.125*v8 - 0.125*v1 - 0.125*v2 - 0.125*v5 - 0.125*v6
+ a010 =  0.125*v2 + 0.125*v3 + 0.125*v6 + 0.125*v7 - 0.125*v1 - 0.125*v4 - 0.125*v5 - 0.125*v8
  a001 =  0.125*v5 + 0.125*v6 + 0.125*v7 + 0.125*v8 - 0.125*v1 - 0.125*v2 - 0.125*v3 - 0.125*v4
  
 */
 
 	for (k=0; k<3; k++) {
-		a100[k] =  0.125*(v2[k] + v3[k] + v6[k] + v7[k] - v1[k] - v4[k] - v5[k] - v8[k]);
+		a100[k] =  0.125*(v2[k] + v4[k] + v6[k] + v8[k] - v1[k] - v3[k] - v5[k] - v7[k]);
 		a010[k] =  0.125*(v3[k] + v4[k] + v7[k] + v8[k] - v1[k] - v2[k] - v5[k] - v6[k]);
 		a001[k] =  0.125*(v5[k] + v6[k] + v7[k] + v8[k] - v1[k] - v2[k] - v3[k] - v4[k]);
 	}
@@ -376,90 +353,39 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 																						PetscReal dNudzQ2[][27] )
 {
 	PetscInt k,p;
-	PetscReal t4, t6, t8, t10, t12, t14, t17;
 	PetscReal J[3],iJ[3],detJ_p;
-	PetscReal el_coordsQ1[8*3];
 	PetscReal a000[3],a100[3],a010[3],a001[3];
 	PetscReal v1[3],v2[3],v3[3],v4[3],v5[3],v6[3],v7[3],v8[3];
-	PetscInt idx_v1,idx_v2,idx_v3,idx_v4,idx_v5,idx_v6,idx_v7,idx_v8;
 	
-	/*
-	idx_v1 = 0;
-	idx_v2 = 1;
-	idx_v3 = 3;
-	idx_v4 = 2;
-	
-	idx_v5 = 4;
-	idx_v6 = 5;
-	idx_v7 = 7;
-	idx_v8 = 6;
-*/
-	idx_v1 = 0;
-	idx_v2 = 4;
-	idx_v3 = 5;
-	idx_v4 = 1;
-	
-	idx_v5 = 2;
-	idx_v6 = 6;
-	idx_v7 = 7;
-	idx_v8 = 3;
-	
-
-	for (k=0; k<3; k++) {
-		el_coordsQ1[3*0+k] = el_coords[3*0+k];
-		el_coordsQ1[3*1+k] = el_coords[3*2+k];
-		el_coordsQ1[3*2+k] = el_coords[3*6+k];
-		el_coordsQ1[3*3+k] = el_coords[3*8+k];
-		
-		el_coordsQ1[3*4+k] = el_coords[3*18+k];
-		el_coordsQ1[3*5+k] = el_coords[3*20+k];
-		el_coordsQ1[3*6+k] = el_coords[3*24+k];
-		el_coordsQ1[3*7+k] = el_coords[3*26+k];
-	}
-	
-	for (k=0; k<3; k++) {
-		v1[k] = el_coordsQ1[3*idx_v1+k];
-		v2[k] = el_coordsQ1[3*idx_v2+k];
-		v3[k] = el_coordsQ1[3*idx_v3+k];
-		v4[k] = el_coordsQ1[3*idx_v4+k];
-		
-		v5[k] = el_coordsQ1[3*idx_v5+k];
-		v6[k] = el_coordsQ1[3*idx_v6+k];
-		v7[k] = el_coordsQ1[3*idx_v7+k];
-		v8[k] = el_coordsQ1[3*idx_v8+k];
-	}
-	
-	/*
 	for (k=0; k<3; k++) {
 		v1[k] = el_coords[3*0+k];
-		v2[k] = el_coords[3*18+k];
-		v3[k] = el_coords[3*20+k];
-		v4[k] = el_coords[3*2+k];
+		v2[k] = el_coords[3*2+k];
+		v3[k] = el_coords[3*6+k];
+		v4[k] = el_coords[3*8+k];
 		
-		v5[k] = el_coords[3*6+k];
-		v6[k] = el_coords[3*24+k];
-		v7[k] = el_coords[3*26+k];
-		v8[k] = el_coords[3*8+k];
+		v5[k] = el_coords[3*18+k];
+		v6[k] = el_coords[3*20+k];
+		v7[k] = el_coords[3*24+k];
+		v8[k] = el_coords[3*26+k];
 	}
-	*/
-	
 	
 	/*
 	 
 	 MAP = a000 + a100x + a010y + a001z
 	 
 	 a000 =  0.125*v1 + 0.125*v2 + 0.125*v3 + 0.125*v4 + 0.125*v5 + 0.125*v6 + 0.125*v7 + 0.125*v8
-	 a100 =  0.125*v2 + 0.125*v3 + 0.125*v6 + 0.125*v7 - 0.125*v1 - 0.125*v4 - 0.125*v5 - 0.125*v8
+	 a100 =  0.125*v2 + 0.125*v4 + 0.125*v6 + 0.125*v8 - 0.125*v1 - 0.125*v3 - 0.125*v5 - 0.125*v7
 	 a010 =  0.125*v3 + 0.125*v4 + 0.125*v7 + 0.125*v8 - 0.125*v1 - 0.125*v2 - 0.125*v5 - 0.125*v6
 	 a001 =  0.125*v5 + 0.125*v6 + 0.125*v7 + 0.125*v8 - 0.125*v1 - 0.125*v2 - 0.125*v3 - 0.125*v4
 	 
 	 */
 	
 	for (k=0; k<3; k++) {
-		a100[k] =  0.125*(v2[k] + v3[k] + v6[k] + v7[k] - v1[k] - v4[k] - v5[k] - v8[k]);
+		a100[k] =  0.125*(v2[k] + v4[k] + v6[k] + v8[k] - v1[k] - v3[k] - v5[k] - v7[k]);
 		a010[k] =  0.125*(v3[k] + v4[k] + v7[k] + v8[k] - v1[k] - v2[k] - v5[k] - v6[k]);
 		a001[k] =  0.125*(v5[k] + v6[k] + v7[k] + v8[k] - v1[k] - v2[k] - v3[k] - v4[k]);
 	}
+
 	
 	J[0] = 1.0*a100[0] ;
 	J[1] = 1.0*a010[1] ;
