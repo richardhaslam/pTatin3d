@@ -130,25 +130,6 @@ void P3D_evaluate_geometry_elementQ1(PetscInt nqp,PetscReal el_coords[8*3],Petsc
 	/* flops = [NQP*NPE] * 15 */
 }
 
-/*
- 
- 6 7 8
- 3 4 5
- 0 1 2
-
- 
- 15 16 17
- 12 13 14
- 9 10 11
- 
- 
- 24 25 26
- 21 22 23
- 18 19 20
- 
- */
-
-// 2/8, 2/16, 2/12
 void P3D_evaluate_geometry_elementQ1_appliedQ2(PetscInt nqp,
 																		 PetscReal detJ[],
 																		 PetscReal GNIQ1[][3][8],
@@ -190,18 +171,19 @@ void P3D_evaluate_geometry_elementQ1_appliedQ2(PetscInt nqp,
 			PetscReal yc = el_coordsQ1[3*k+1];
 			PetscReal zc = el_coordsQ1[3*k+2];
 			
-			J[0][0] += GNIQ1[p][0][k] * xc ;
-			J[0][1] += GNIQ1[p][0][k] * yc ;
-			J[0][2] += GNIQ1[p][0][k] * zc ;
+			J[0][0] += 1.0*GNIQ1[p][0][k] * xc ;
+			J[0][1] += 1.0*GNIQ1[p][0][k] * yc ;
+			J[0][2] += 1.0*GNIQ1[p][0][k] * zc ;
 			
-			J[1][0] += GNIQ1[p][1][k] * xc ;
-			J[1][1] += GNIQ1[p][1][k] * yc ;
-			J[1][2] += GNIQ1[p][1][k] * zc ;
+			J[1][0] += 1.0*GNIQ1[p][1][k] * xc ;
+			J[1][1] += 1.0*GNIQ1[p][1][k] * yc ;
+			J[1][2] += 1.0*GNIQ1[p][1][k] * zc ;
 			
-			J[2][0] += GNIQ1[p][2][k] * xc ;
-			J[2][1] += GNIQ1[p][2][k] * yc ;
-			J[2][2] += GNIQ1[p][2][k] * zc ;
+			J[2][0] += 1.0*GNIQ1[p][2][k] * xc ;
+			J[2][1] += 1.0*GNIQ1[p][2][k] * yc ;
+			J[2][2] += 1.0*GNIQ1[p][2][k] * zc ;
 		}
+		
 		/* flops = [NQP*NPE] * 18 */
 		
 		detJ[p] = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) // a
@@ -241,6 +223,23 @@ void P3D_evaluate_geometry_elementQ1_appliedQ2(PetscInt nqp,
 	
 }
 
+/* please refer to these papers */
+/*
+
+[1] On the nested refinement of quadrilateral and hexahedral finite elements and the affine approximation
+  Shangyou Zhang
+  Numer. Math. (2004) 98: 559–579 
+ 
+[2] Numerical integration with Taylor truncations for the quadrilateral and hexahedral finite elements 
+  Shangyou Zhang
+	Journal of Computational and Applied Mathematics 205 (2007) 325 – 342
+ 
+[3] A STABLE AFFINE-APPROXIMATE FINITE ELEMENT METHOD
+  K. ARUNAKIRINATHAR AND B. D. REDDY
+  SIAM J. NUMER. ANAL.
+  Vol. 40, No. 1, pp. 180–197
+ 
+*/
 void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 																							 PetscReal detJ[],
 																							 PetscReal GNIQ1[][3][8],
@@ -259,14 +258,14 @@ void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 	PetscInt idx_v1,idx_v2,idx_v3,idx_v4,idx_v5,idx_v6,idx_v7,idx_v8;
 	
 	idx_v1 = 0;
-	idx_v2 = 1;
-	idx_v3 = 3;
-	idx_v4 = 2;
+	idx_v2 = 4;
+	idx_v3 = 5;
+	idx_v4 = 1;
 	
-	idx_v5 = 4;
-	idx_v6 = 5;
+	idx_v5 = 2;
+	idx_v6 = 6;
 	idx_v7 = 7;
-	idx_v8 = 6;
+	idx_v8 = 3;
 	
 	for (k=0; k<3; k++) {
 		el_coordsQ1[3*0+k] = el_coords[3*0+k];
@@ -309,17 +308,17 @@ void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 		a001[k] =  0.125*(v5[k] + v6[k] + v7[k] + v8[k] - v1[k] - v2[k] - v3[k] - v4[k]);
 	}
 	
-	J[0][0] = a100[0] ;
-	J[0][1] = a010[0] ;
-	J[0][2] = a001[0] ;
+	J[0][0] = 1.0*a100[0] ;
+	J[0][1] = 1.0*a010[0] ;
+	J[0][2] = 1.0*a001[0] ;
 	
-	J[1][0] = a100[1] ;
-	J[1][1] = a010[1] ;
-	J[1][2] = a001[1] ;
+	J[1][0] = 1.0*a100[1] ;
+	J[1][1] = 1.0*a010[1] ;
+	J[1][2] = 1.0*a001[1] ;
 	
-	J[2][0] = a100[2] ;
-	J[2][1] = a010[2] ;
-	J[2][2] = a001[2] ;
+	J[2][0] = 1.0*a100[2] ;
+	J[2][1] = 1.0*a010[2] ;
+	J[2][2] = 1.0*a001[2] ;
 	
 	detJ_p = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1]) // a
 	- J[0][1]*(J[1][0]*J[2][2] + J[1][2]*J[2][0]) 
@@ -384,6 +383,7 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 	PetscReal v1[3],v2[3],v3[3],v4[3],v5[3],v6[3],v7[3],v8[3];
 	PetscInt idx_v1,idx_v2,idx_v3,idx_v4,idx_v5,idx_v6,idx_v7,idx_v8;
 	
+	/*
 	idx_v1 = 0;
 	idx_v2 = 1;
 	idx_v3 = 3;
@@ -393,7 +393,17 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 	idx_v6 = 5;
 	idx_v7 = 7;
 	idx_v8 = 6;
-
+*/
+	idx_v1 = 0;
+	idx_v2 = 4;
+	idx_v3 = 5;
+	idx_v4 = 1;
+	
+	idx_v5 = 2;
+	idx_v6 = 6;
+	idx_v7 = 7;
+	idx_v8 = 3;
+	
 
 	for (k=0; k<3; k++) {
 		el_coordsQ1[3*0+k] = el_coords[3*0+k];
@@ -451,9 +461,9 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 		a001[k] =  0.125*(v5[k] + v6[k] + v7[k] + v8[k] - v1[k] - v2[k] - v3[k] - v4[k]);
 	}
 	
-	J[0] = a100[0] ;
-	J[1] = a010[1] ;
-	J[2] = a001[2] ;
+	J[0] = 1.0*a100[0] ;
+	J[1] = 1.0*a010[1] ;
+	J[2] = 1.0*a001[2] ;
 	
 	detJ_p = J[0]*J[1]*J[2];
 	/* flops =  2 */
