@@ -203,7 +203,12 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 
 	PetscReal GNIQ1[NQP][3][8];
-	
+	/* if you want to cache values - don't do it this way - store it on operator */
+	/*
+	static PetscReal *cell_detJ;
+	static PetscReal *cell_J;
+	static PetscBool beenhere;
+	*/
 	PetscReal fac;
 	PetscLogDouble t0,t1;
 	
@@ -216,7 +221,22 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	for (p=0; p<ngp; p++) {
 		P3D_ConstructGNi_Q1_3D(XI[p],GNIQ1[p]);
 	}
-	
+
+	/* 
+	// update values //
+	if (beenhere==PETSC_FALSE) {
+		PetscInt ncells,lmx,lmy,lmz;
+		
+		ierr = DMDAGetSizeElementQ2(dau,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+		ncells = lmx * lmy * lmz;
+		
+		PetscMalloc(ncells*sizeof(PetscReal),&cell_detJ);
+		PetscMalloc(3*ncells*sizeof(PetscReal),&cell_J);
+		
+		
+		beenhere = PETSC_TRUE;
+	}
+	 */	
 	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
@@ -247,7 +267,9 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 		}
 		
 //		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
-		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+//		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+//		P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+			P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
