@@ -68,4 +68,7 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[]);
 PetscErrorCode pTatin3d_PhysCompStokesLoad(pTatinCtx user,const char vname[],const char pname[]);
 PetscErrorCode pTatin3dRestart(pTatinCtx ctx);
 
+PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data);
+PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data);
+
 #endif

@@ -417,6 +417,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
   user->dt_adv           = user->dt_min;
   
   ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
+	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
 	*ctx = user;
 	
@@ -449,10 +450,42 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 	 if (user->dap) { ierr = DMDestroy(&user->dap);CHKERRQ(ierr); }
 	 if (user->dav) { ierr = DMDestroy(&user->dav);CHKERRQ(ierr); }
 	 */
+	ierr = PetscContainerDestroy(&user->model_data);CHKERRQ(ierr);
 	
 	ierr = PetscFree(user);CHKERRQ(ierr);
 	
 	*ctx = PETSC_NULL;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinCtxGetModelData"
+PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data)
+{
+	PetscErrorCode ierr;
+	PetscContainer container;
+	
+  PetscFunctionBegin;
+	ierr = PetscObjectQuery((PetscObject)ctx->model_data,name,(PetscObject*)&container);CHKERRQ(ierr);
+	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with ctx->model_data",name);
+	ierr = PetscContainerGetPointer(container,data);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinCtxAttachModelData"
+PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data)
+{
+	PetscContainer container;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+  ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,(void*)data);CHKERRQ(ierr);
+	
+	ierr = PetscObjectCompose((PetscObject)ctx->model_data,name,(PetscObject)container);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

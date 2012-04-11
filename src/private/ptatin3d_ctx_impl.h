@@ -48,6 +48,7 @@ struct _p_pTatinCtx {
 
 	/* model function pointers */
 	pTatinModel model;
+	PetscContainer model_data;
 };
 
 #endif

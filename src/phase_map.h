@@ -22,4 +22,8 @@ void PhaseMapCheckValidity(PhaseMap phasemap,int phase,int *is_valid);
 void PhaseMapGetMaxPhases(PhaseMap phasemap,int *maxphase);
 void PhaseMapViewGnuplot(const char filename[],PhaseMap phasemap);
 
+PetscErrorCode pTatinCtxAttachPhaseMap(pTatinCtx ctx,PhaseMap map);
+PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map);
+
+
 #endif

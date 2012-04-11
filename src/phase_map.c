@@ -4,6 +4,8 @@
 #include "string.h"
 #include "math.h"
 
+#include "ptatin3d.h"
+#include "ptatin3d_defs.h"
 #include "phase_map.h"
 
 void PhaseMapCreate(PhaseMap *map)
@@ -109,7 +111,7 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 
 void PhaseMapLoadFromFile_ASCII_ZIPPED(const char filename[],PhaseMap *map)
 {
-	printf("Ascii zipped loading is not supported\n");
+	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Ascii zipped loading is not supported");
 	exit(0);
 }
 
@@ -224,6 +226,36 @@ void PhaseMapGetMaxPhases(PhaseMap phasemap,int *maxphase)
 {
 	*maxphase = phasemap->nphases;
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinCtxAttachPhaseMap"
+PetscErrorCode pTatinCtxAttachPhaseMap(pTatinCtx ctx,PhaseMap map)
+{
+	PetscContainer container;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+
+	ierr = pTatinCtxAttachModelData(ctx,"phasemap",(void*)map);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinCtxGetPhaseMap"
+PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map)
+{
+	void *mymap;
+	PetscContainer container;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	ierr = pTatinCtxGetModelData(ctx,"phasemap",&mymap);CHKERRQ(ierr);
+	*map = (PhaseMap)mymap;
+	
+	PetscFunctionReturn(0);
+}
+
 
 #if 0
 void test_PhaseMap(void)
