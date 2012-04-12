@@ -220,6 +220,13 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 	
+	{
+		Vec velocity,pressure;
+		
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
 	
 
 	
@@ -251,7 +258,6 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
-	
 	
 	/* test viewer */
 	ierr = pTatinModel_Output(user->model,user,X,"model");CHKERRQ(ierr);
@@ -1065,6 +1071,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	
 	/* define boundary conditions - HARDCODED */
+	/*
 	for (k=0; k<nlevels-1; k++) {
 		PetscScalar zero = 0.0;
 		
@@ -1080,7 +1087,13 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = DMDABCListTraverse3d(u_bclist[k],dav_hierarchy[k],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		
 	}
+	*/
+	for (k=0; k<nlevels-1; k++) {
+		ierr = DMDABCListCreate(dav_hierarchy[k],&u_bclist[k]);CHKERRQ(ierr);
+	}
 	u_bclist[nlevels-1] = user->stokes_ctx->u_bclist;
+
+	ierr = pTatinModel_ApplyBoundaryConditionMG(nlevels,u_bclist,dav_hierarchy,user->model,user);CHKERRQ(ierr);
 
 	
 	/* ============================================== */
@@ -1267,6 +1280,15 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* initial condition */
 	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
 		
+	/* boundary condition */
+	{
+		Vec velocity,pressure;
+		
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+	
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	
 	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
