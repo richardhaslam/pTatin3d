@@ -70,6 +70,9 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 		case PTATIN_MODEL_APPLY_BC:
 			model->FP_pTatinModel_ApplyBoundaryCondition = ( PetscErrorCode(*)(pTatinCtx,void*) )func;
 			break;
+		case PTATIN_MODEL_APPLY_BCMG:
+			model->FP_pTatinModel_ApplyBoundaryConditionMG = ( PetscErrorCode(*)(PetscInt,BCList*,DM*,pTatinCtx,void*) )func;
+			break;
 		case PTATIN_MODEL_APPLY_MAT_BC:
 			model->FP_pTatinModel_ApplyMaterialBoundaryCondition = ( PetscErrorCode(*)(pTatinCtx,void*) )func;
 			break;
@@ -303,6 +306,20 @@ PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ct
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "pTatinModel_ApplyBoundaryConditionMG"
+PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],DM dav[],pTatinModel model,pTatinCtx ctx)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	if (model->FP_pTatinModel_ApplyBoundaryConditionMG) {
+		ierr = model->FP_pTatinModel_ApplyBoundaryConditionMG(nl,bclist,dav,ctx,model->model_data);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModel_ApplyMaterialBoundaryCondition"
 PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTatinCtx ctx)
 {
@@ -321,6 +338,7 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 extern PetscErrorCode pTatinModelRegister_Template(void);
 extern PetscErrorCode pTatinModelRegister_ViscousSinker(void);
 extern PetscErrorCode pTatinModelRegister_GENE3D(void);
+extern PetscErrorCode pTatinModelRegister_Indentor(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -334,6 +352,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_GENE3D();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
 		
 	PetscFunctionReturn(0);
 }
