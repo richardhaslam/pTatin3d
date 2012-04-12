@@ -3,7 +3,8 @@
 TATIN_MODEL_DIR = \
 	template_model \
 	viscous_sinker \
-	gene3D
+	gene3D \
+	indentor
 
 
 ## DONT NOT EDIT LINES BELOW
