@@ -9,6 +9,7 @@ struct _p_pTatinModel {
 	pTatinCtx ptat_ctx;
 	char *model_name;
 	void *model_data;
+	PetscContainer data;
 	PetscErrorCode (*FP_pTatinModel_Initialize)(pTatinCtx,void*);
 	PetscErrorCode (*FP_pTatinModel_ApplyInitialSolution)(pTatinCtx,Vec,void*);
 	PetscErrorCode (*FP_pTatinModel_ApplyBoundaryCondition)(pTatinCtx,void*);

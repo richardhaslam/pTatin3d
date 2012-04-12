@@ -55,6 +55,36 @@ PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinModelGetModelData"
+PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **data)
+{
+	PetscErrorCode ierr;
+	PetscContainer container;
+	
+  PetscFunctionBegin;
+	ierr = PetscObjectQuery((PetscObject)ctx->data,name,(PetscObject*)&container);CHKERRQ(ierr);
+	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with model->model_data",name);
+	ierr = PetscContainerGetPointer(container,data);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinModelSetModelData"
+PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *data)
+{
+	PetscContainer container;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+  ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,(void*)data);CHKERRQ(ierr);
+	
+	ierr = PetscObjectCompose((PetscObject)ctx->data,name,(PetscObject)container);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelSetFunctionPointer"

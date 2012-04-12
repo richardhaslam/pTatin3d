@@ -26,12 +26,15 @@ extern pTatinModel *registered_model_list;
 
 PetscErrorCode pTatinModelCreate(pTatinModel *model);
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[]);
-PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data);
 PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperation type,void(*func)(void));
 PetscErrorCode pTatinModelRegister(pTatinModel model);
 PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model);
 
+PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data);
 PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data);
+
+PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **data);
+PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *data);
 
 PetscErrorCode pTatinModelRegisterAll(void);
 
