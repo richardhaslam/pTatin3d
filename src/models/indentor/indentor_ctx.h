@@ -20,6 +20,7 @@ typedef struct {
 	PetscReal viscosity_bar;
 	PetscReal velocity_bar;
 	PetscReal time_bar;
+	PetscReal pressure_bar;
 } ModelIndentorCtx;
 
 

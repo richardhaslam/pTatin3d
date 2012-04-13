@@ -53,7 +53,7 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	data->viscosity_bar = 1.0e22;
 	data->velocity_bar  = 1.0e-10;
 	data->time_bar      = data->length_bar / data->velocity_bar;
-	
+	data->pressure_bar  = data->length_bar * data->density_bar;
 
 	/* box geometry */
 	data->Lx = 500.0;
@@ -133,6 +133,7 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 		PetscPrintf(PETSC_COMM_WORLD,"  t*    : %1.4e [s]\n", data->time_bar );
 		PetscPrintf(PETSC_COMM_WORLD,"  eta*  : %1.4e [Pa.s]\n", data->viscosity_bar );
 		PetscPrintf(PETSC_COMM_WORLD,"  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"  P*    : %1.4e [Pa]\n", data->pressure_bar );
 
 		data->Lx = data->Lx / data->length_bar;
 		data->Ly = data->Ly / data->length_bar;
@@ -396,21 +397,21 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 		if (ycoord<72.0) {
 			phase = 3;
 			eta =  data->eta[3];
-			rho = -data->rho[3]*9.8;
+			rho =  data->rho[3];
 		} else if (ycoord<(72.0+12.0)) {
 			phase = 2;
 			eta =  data->eta[2];
-			rho = -data->rho[2]*9.8;
+			rho =  data->rho[2];
 		} else if (ycoord<(72.0+12.0+18.0)) {
 			phase = 1;
 			eta =  data->eta[1];
-			rho = -data->rho[1]*9.8;
+			rho =  data->rho[1];
 		} else {
 			phase = 0;
 			eta =  data->eta[0];
-			rho = -data->rho[0]*9.8;
+			rho =  data->rho[0];
 		}
-		
+		rho = -rho * 9.8;
 
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
@@ -461,6 +462,35 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecDuplicate(X,&RHS);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"[indentor]: check scales \n");
+
+	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
+
+	ierr = VecStrideMin(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," min|P0|   = %+1.4e \n",fp);
+	ierr = VecStrideMax(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," max|P0|   = %+1.4e \n",fp);
+
+	ierr = VecStrideMin(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," min|dPdx| = %+1.4e \n",fp);
+	ierr = VecStrideMax(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," max|dPdx| = %+1.4e \n",fp);
+
+	ierr = VecStrideMin(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," min|dPdy| = %+1.4e \n",fp);
+	ierr = VecStrideMax(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," max|dPdy| = %+1.4e \n",fp);
+
+	ierr = VecStrideMin(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," min|dPdz| = %+1.4e \n",fp);
+	ierr = VecStrideMax(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
+	
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
+	
+	
+	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
 	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
 
