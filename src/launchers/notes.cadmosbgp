@@ -50,6 +50,14 @@ np		sub domain	mesh		SMP			DUAL		VN
 		36		180		matvec-smp.p125.mx180	matvec-dual.p125.mx180		X
 		48		240		matvec-smp.p125.mx240	out of memory			X
 
+					VN
+512 (8,8,8)	2		16	matvec-vn.p512.mx16  *
+		4		32	matvec-vn.p512.mx32  *
+		8		64	matvec-vn.p512.mx64  *
+		12		96	matvec-vn.p512.mx96  *
+		16		128	matvec-vn.p512.mx128 *
+		20		160	matvec-vn.p512.mx160 *
+		24		192	
 
 
 
