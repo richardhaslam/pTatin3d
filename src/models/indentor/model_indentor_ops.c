@@ -48,13 +48,23 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	Ma2sec               = 1.0e6 * (365.0 * 24.0 * 60.0 * 60.0 );
 	cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
 	
+	/*
 	data->density_bar   = 1000.0;
 	data->length_bar    = 100.0 * 1.0e3;
 	data->viscosity_bar = 1.0e22;
 	data->velocity_bar  = 1.0e-10;
 	data->time_bar      = data->length_bar / data->velocity_bar;
 	data->pressure_bar  = data->length_bar * data->density_bar;
+ */
 
+	data->length_bar    = 120.0 * 1.0e3;
+	data->viscosity_bar = 2.5e21;
+	data->velocity_bar  = 1.0e-10;
+	data->time_bar      = data->length_bar / data->velocity_bar;
+	data->pressure_bar  = data->viscosity_bar*data->velocity_bar / data->length_bar;
+	data->density_bar   = data->viscosity_bar*data->velocity_bar / ( data->length_bar * data->length_bar );
+	
+	
 	/* box geometry */
 	data->Lx = 500.0;
 	data->Ly = 120.0;
@@ -135,6 +145,9 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 		PetscPrintf(PETSC_COMM_WORLD,"  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
 		PetscPrintf(PETSC_COMM_WORLD,"  P*    : %1.4e [Pa]\n", data->pressure_bar );
 
+		PetscPrintf(PETSC_COMM_WORLD,"  Paraview: scaling factor for velocity [mm/yr] = %1.4e \n", 10.0 * data->velocity_bar/cm_per_yer2m_per_sec );
+		PetscPrintf(PETSC_COMM_WORLD,"  Paraview: scaling factor for pressure [Mpa]   = %1.4e \n", 1.0e-6 * data->pressure_bar );
+		
 		data->Lx = data->Lx / data->length_bar;
 		data->Ly = data->Ly / data->length_bar;
 		data->Lz = data->Lz / data->length_bar;
@@ -411,7 +424,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 			eta =  data->eta[0];
 			rho =  data->rho[0];
 		}
-		rho = -rho * 9.8;
+		rho = -rho * 10.0;
 
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
