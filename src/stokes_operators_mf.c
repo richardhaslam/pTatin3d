@@ -20,7 +20,12 @@
 #include "stokes_q2p1_mf_operators_def.c"
 #include "stokes_q2p1_mf_operators_diag_def.c"
 
-
+//
+//#define NO_LOWORDER_OPERATORS
+#define ONEPOINTQ_LOWORDER_OPERATORS
+//#define Q1GEOM_LOWORDER_OPERATORS
+//#define AFFINEGEOM_LOWORDER_OPERATORS
+//
 
 /* --- A11 --- */
 #undef __FUNCT__
@@ -71,6 +76,102 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
 		
 		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+		
+		/* initialise element stiffness matrix */
+		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
+		
+		for (p=0; p<ngp; p++) {
+			el_eta[p] = cell_gausspoints[p].eta;
+			fac       = WEIGHT[p] * detJ[p];
+			
+			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+		}
+		
+		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
+	}
+	
+	PetscGetTime(&t1);
+	//PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11, = %1.4e (sec)\n",t1-t0);
+	
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MFStokesWrapper_diagA11LowOrder"
+PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScalar Yu[])
+{	
+	PetscErrorCode ierr;
+	PetscInt p,ngp;
+	DM cda;
+	Vec gcoords;
+	PetscReal *LA_gcoords;
+	PetscInt nel,nen_u,e,k;
+	const PetscInt *elnidx_u;
+	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
+	PetscReal el_eta[MAX_QUAD_PNTS];
+	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
+	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
+	PetscInt  *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
+	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	PetscReal fac;
+	PetscLogDouble t0,t1;
+	PetscReal GNIQ1[NQP][3][8];
+	PetscReal xiC[3],GNIC[3][NPE];
+	
+	PetscFunctionBegin;
+	/* quadrature */
+	ngp = volQ->npoints;
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+
+	/* prepare Q1 basis */
+	for (p=0; p<ngp; p++) {
+		P3D_ConstructGNi_Q1_3D(XI[p],GNIQ1[p]);
+	}
+
+	xiC[0] = xiC[1] = xiC[2] = 0.0;
+	P3D_ConstructGNi_Q2_3D(xiC,GNIC);
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+	
+	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
+	
+	PetscGetTime(&t0);
+	for (e=0;e<nel;e++) {
+		
+		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+		
+		ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+		
+		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
+		
+#ifdef NO_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+#endif
+#ifdef ONEPOINTQ_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ2_1gp(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+#endif
+#ifdef Q1GEOM_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+#endif
+#ifdef AFFINEGEOM_LOWORDER_OPERATORS
+		/* this appears to be broken */
+		//P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+		
+		/* double the iteration count */
+		P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+#endif
+		
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
@@ -203,6 +304,7 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 
 	PetscReal GNIQ1[NQP][3][8];
+	PetscReal GNIC[3][Q2_NODES_PER_EL_3D],xiC[3];
 	/* if you want to cache values - don't do it this way - store it on operator */
 	/*
 	static PetscReal *cell_detJ;
@@ -222,6 +324,9 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 		P3D_ConstructGNi_Q1_3D(XI[p],GNIQ1[p]);
 	}
 
+	xiC[0] = xiC[1] = xiC[2] = 0.0;
+	P3D_ConstructGNi_Q2_3D(xiC,GNIC);
+	
 	/* 
 	// update values //
 	if (beenhere==PETSC_FALSE) {
@@ -265,27 +370,49 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 			uy[k] = elu[3*k+1];
 			uz[k] = elu[3*k+2];
 		}
-		
-//		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
-//		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
-//			P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
-			P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+
+#ifdef NO_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+#endif
+#ifdef ONEPOINTQ_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ2_1gp(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+#endif
+#ifdef Q1GEOM_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
+#endif
+#ifdef AFFINEGEOM_LOWORDER_OPERATORS
+		/* this appears to be broken */
+		//P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+
+		/* double the iteration count */
+		P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+#endif
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
-		
+
 		for (p=0; p<ngp; p++) {
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
 			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
 		}
-		
+		/*
+		 // this doesn't work //
+		{
+			p = 13;
+			
+			el_eta[p] = cell_gausspoints[p].eta;
+			fac       = WEIGHT[p] * detJ[p];
+			
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+		}
+		*/
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
 	PetscGetTime(&t1);
-	//PetscPrintf(PETSC_COMM_WORLD,"MatMultA11, = %1.4e (sec)\n",t1-t0);
+//	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11PC, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
