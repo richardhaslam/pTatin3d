@@ -28,7 +28,7 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
 	PetscReal y_height,dy;
 	
 	PetscFunctionBegin;
-	gbump_amp    = -1.1;
+	gbump_amp    = -0.6;
 	gbump_lambda = -5.6;
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_amp",&gbump_amp,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_lambda",&gbump_lambda,PETSC_NULL);CHKERRQ(ierr);
@@ -56,9 +56,9 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
 
 				/* constant spacing */
 				y_height = gbump_amp * exp(gbump_lambda*(xn*xn+zn*zn))+1.0;
-				dy = y_height/(PetscReal)(MY-1);
+				dy = (y_height+1.0)/(PetscReal)(MY-1);
 				
-				_coord[k][j][i].y = j * dy;
+				_coord[k][j][i].y = -1.0 + j * dy;
 			}
 		}
 	}
