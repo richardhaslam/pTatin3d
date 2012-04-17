@@ -1229,10 +1229,28 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
 				mf->daU = PETSC_NULL;				
-
 				operatorA11[k] = Auu;
-				operatorB11[k] = Auu;
-				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+				
+				{
+					PetscBool use_low_order_geometry = PETSC_FALSE;
+					
+					ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+					if (use_low_order_geometry==PETSC_TRUE) {
+						Mat Buu;
+						
+						PetscPrintf(PETSC_COMM_WORLD,"Activiting low order A11 operator \n");
+						ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
+						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
+						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
+						mf->daU = PETSC_NULL;				
+						operatorB11[k] = Buu;
+						
+					} else {
+						operatorB11[k] = Auu;
+						ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+					}
+				}
+				
 				
 				ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 			}
@@ -1333,8 +1351,22 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
 		ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 		for( k=1; k<nlevels; k++ ){
+			PetscBool use_low_order_geometry = PETSC_FALSE;
+
+			
 			ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
-			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+
+			// use A for smoother, B for residual
+			ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+			if (use_low_order_geometry==PETSC_TRUE) {
+				ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				
+				//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			} else {
+				// Use A for smoother, lo
+				ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			}
+		
 		}
 	}
 	
