@@ -59,5 +59,38 @@ np		sub domain	mesh		SMP			DUAL		VN
 		20		160	matvec-vn.p512.mx160 *
 		24		192	
 
+Weak scaling
+VN
+
+27  (3,3,3)	20	60	matvec-weaksclVN.p27.mx60
+
+64  (4,4,4)	20	80	matvec-weaksclVN.p64.mx80
+
+125 (5,5,5)	20	100	matvec-weaksclVN.p125.mx100
+
+216 (6,6,6)	20	120	matvec-weaksclVN.p216.mx120
+
+343 (7,7,7)	20	140	matvec-weaksclVN.p343.mx140
+
+512 (8,8,8)	24	192	CRASH
+		22	176	CRASH
+		20	160	matvec-weaksclVN.p512.mx160
+
+Strong scaling of mat vecs
+
+mpirun -np 16 -cwd /bgscratch/$USER/dmay/pTat3d -mode SMP -partition R00-M0-02 ${PWD}/ptatin_driver_asmsolve.app -args "-options_file ${PWD}/bgp.matvec.opts -mx 80 -my 80 -mz 80 -ksp_max_it 1 -fieldsplit_u_mg_levels_ksp_max_it 4 -fieldsplit_u_ksp_max_it 1  -log_summary"
+
+16 - 128 cores SMP
+		16				32				64				128
+mx = 96^3	matvec-strsclSMP.p16.mx96()	matvec-strsclSMP.p32.mx96	matvec-strsclSMP.p64.mx96	matvec-strsclSMP.p128.mx96
+     80^3	matvec-strsclSMP.p16.mx80	matvec-strsclSMP.p32.mx80	matvec-strsclSMP.p64.mx80	matvec-strsclSMP.p128.mx80
+     48^3
+     40^3
+     32^3
+     16^3	matvec-strsclSMP.p16.mx16	matvec-strsclSMP.p32.mx16	 matvec-strsclSMP.p64.mx16	matvec-strsclSMP.p128.mx16
+
+
+
+
 
 
