@@ -330,6 +330,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Auu, = %1.4e (sec)[final]\n",t1-t0);
+
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -477,6 +479,8 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble App, = %1.4e (sec)[final]\n",t1-t0);
+
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -610,6 +614,8 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	PetscGetTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Aup, = %1.4e (sec)[final]\n",t1-t0);
 	
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -741,6 +747,8 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Apu, = %1.4e (sec)[final]\n",t1-t0);
+
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
