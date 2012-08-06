@@ -6,7 +6,6 @@
 #include "data_exchanger.h"
 #include "MPntStd_def.h"
 
-typedef enum { _FALSE=0, _TRUE=1 } Truth;
 
 PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucket db,int start_pid,int end_pid);
 PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,DataBucket db);

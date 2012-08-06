@@ -685,7 +685,7 @@ void compute_surface_geometry_Q2_3D(	ConformingElementFamily e,
 	*J = mag;
 }	
 
-static inline void ElementHelper_matrix_inverse_3x3(double A[3][3],double B[3][3])
+inline void ElementHelper_matrix_inverse_3x3(double A[3][3],double B[3][3])
 {
 	double t4, t6, t8, t10, t12, t14, t17;
 	

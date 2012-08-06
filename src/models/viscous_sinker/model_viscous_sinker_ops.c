@@ -314,7 +314,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,0.0,data->Lx, 0.0,data->Ly, 0.0,data->Lz);CHKERRQ(ierr);
 
 //	printf("NOT RUNNING DEFORMED MESH EXAMPLE \n");	
-	ierr = MeshDeformation_GaussianBump_YMAX(c->stokes_ctx->dav);CHKERRQ(ierr);
+//	ierr = MeshDeformation_GaussianBump_YMAX(c->stokes_ctx->dav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
