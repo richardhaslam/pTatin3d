@@ -1,0 +1,23 @@
+
+This folder contains pvpython scripts to assist in 
+importing and exporting data into and out of ptatin
+
+Note: 
+To use the pvython scripts, you may have to modify your environment
+variable PYTHONPATH. For example;
+  export PYTHONPATH=/Applications/ParaView3.12.0-RC2.app/Contents/bin
+
+[convert_pvtu2vtu.py]
+- Reads in a pvtu file and writes out a single vtu file.
+- This may be useful for restarting models if you don't have a checkpoint file
+- Usage: 
+  pvpython convert_pvtu2vtu.py -i PVTU_FILE_TO_CONVERT
+
+[marker_extract_vtu2binary.py]
+- Reads in a vtu file and will extract the marker coordinates and any other
+fields which may be specified. 
+- Specifying fields to extract is done manually by edit the python script
+- Coordinates and other fields are written into seperate files
+- Usage:
+  pvpython marker_extract_vtu2binary.py -i VTU_FILE_TO_CONVERT -o outputfile_prefix
+
