@@ -30,6 +30,7 @@ export TATIN_SRC = \
 			output_paraview.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
+			material_point_load.c \
 			ptatin_utils.c \
 			ptatin3d_stokes.c \
 			ptatin3d.c \
@@ -59,7 +60,8 @@ TATIN_TESTS	=	\
 			test_mat_assem \
 			test_stokes_operators \
 			test_stokes_operators_approximations \
-			test_mp_advection
+			test_mp_advection \
+			test_material_point_load
 
 #			test_model
 

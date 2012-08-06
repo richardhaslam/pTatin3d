@@ -162,7 +162,7 @@ def extract_field(ug_reader,fieldname,outfilename):
 	pointdata = ug_markers.GetPointData().GetArray(fieldname)
 #	print pointdata
 	if pointdata == None:
-		print '!!ERROR: Could not locate field with name "' + 'fieldname' + '"'
+		print '!!ERROR: Could not locate field with name "' + str(fieldname) + '"'
 		sys.exit(1)
 	else:
 		print '# Found datafield name: ' + fieldname
