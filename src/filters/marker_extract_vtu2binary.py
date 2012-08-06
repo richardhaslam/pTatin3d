@@ -12,6 +12,7 @@ from paraview.vtk import *
 from paraview.vtk import io
 
 
+# ===============================================================
 def extract_coords_phase(ug_reader,outfilename):
 	ug_markers = ug_reader.GetOutput()
 	print '#  number of cells in mesh:', ug_markers.GetNumberOfCells()
@@ -80,6 +81,7 @@ def extract_coords_phase(ug_reader,outfilename):
 
 
 
+# ===============================================================
 def extract_coords(ug_reader,outfilename):
 	ug_markers = ug_reader.GetOutput()
 	print '#  number of cells in mesh:', ug_markers.GetNumberOfCells()
@@ -143,6 +145,7 @@ def extract_coords(ug_reader,outfilename):
 #
 # 11 => double (Float64)
 #
+# ===============================================================
 def extract_field(ug_reader,fieldname,outfilename):
 	ug_markers = ug_reader.GetOutput()
 	if ug_markers.GetNumberOfCells() != ug_markers.GetNumberOfPoints():
@@ -210,34 +213,34 @@ def extract_field(ug_reader,fieldname,outfilename):
 		sys.exit(1)
 
 	elif datatypeindex == 2:  # VTK_CHAR
-		phase_array = array('c', field_list)	
+		field_array = array('c', field_list)	
 
 	elif datatypeindex == 3:  # VTK_SIGNED_CHAR
-		phase_array = array('b', field_list)	
+		field_array = array('b', field_list)	
 
 	elif datatypeindex == 4:  # VTK_SHORT
-		phase_array = array('h', field_list)	
+		field_array = array('h', field_list)	
 
 	elif datatypeindex == 5:  # VTK_UNSIGNED_SHORT
-		phase_array = array('H', field_list)	
+		field_array = array('H', field_list)	
 
 	elif datatypeindex == 6:  # VTK_INT
-		phase_array = array('i', field_list)	
+		field_array = array('i', field_list)	
 
 	elif datatypeindex == 7:  # VTK_UNSIGNED_INT
-		phase_array = array('I', field_list)	
+		field_array = array('I', field_list)	
 
 	elif datatypeindex == 8:  # VTK_LONG
-		phase_array = array('l', field_list)	
+		field_array = array('l', field_list)	
 
 	elif datatypeindex == 9:  # VTK_UNSIGNED_LONG
-		phase_array = array('L', field_list)	
+		field_array = array('L', field_list)	
 
 	elif datatypeindex == 10: # VTK_FLOAT
-		phase_array = array('f', field_list)	
+		field_array = array('f', field_list)	
 
 	elif datatypeindex == 11: # VTK_DOUBLE
-		phase_array = array('d', field_list)
+		field_array = array('d', field_list)
 
 	elif datatypeindex == 12: # VTK_ID_TYPE
 		print '!!ERROR: Unsupported type VTK_ID_TYPE'
@@ -254,10 +257,122 @@ def extract_field(ug_reader,fieldname,outfilename):
 	binfile.write( str(ug_markers.GetNumberOfPoints()) + '\n' )
 
 	# write data to file	
-	phase_array.tofile(binfile)
+	field_array.tofile(binfile)
 
 	binfile.close()
 
+
+# ===============================================================
+def extact_field(ug_markers,fieldname,outfilename):
+
+	pointdata = None
+	pointdata = ug_markers.GetPointData().GetArray(fieldname)
+#	print pointdata
+	if pointdata == None:
+		print '!!ERROR: Could not locate field with name "' + str(fieldname) + '"'
+		sys.exit(1)
+	else:
+		print '  # Found datafield name: ' + fieldname
+		print '  # Data type index: ' + str( pointdata.GetDataType() )
+
+	field_list = []
+	for c in range(0,ug_markers.GetNumberOfCells()):
+		field_p = pointdata.GetValue(c)
+		field_list.append( int(field_p) )
+
+
+	######################################
+	name = fieldname + '_' + outfilename
+	
+	print '  # Writing file: ' + name
+
+	binfile = open(name,'wb')
+
+	datatypeindex = pointdata.GetDataType()
+
+	# write field types
+	if datatypeindex   == 0:  # VTK_VOID
+		print '!!ERROR: Unsupported type VTK_VOID'
+		sys.exit(1)
+
+	elif datatypeindex == 1:  # VTK_BIT
+		print '!!ERROR: Unsupported type VTK_BIT'
+		sys.exit(1)
+
+	elif datatypeindex == 2:  # VTK_CHAR
+		field_array = array('c', field_list)	
+
+	elif datatypeindex == 3:  # VTK_SIGNED_CHAR
+		field_array = array('b', field_list)	
+
+	elif datatypeindex == 4:  # VTK_SHORT
+		field_array = array('h', field_list)	
+
+	elif datatypeindex == 5:  # VTK_UNSIGNED_SHORT
+		field_array = array('H', field_list)	
+
+	elif datatypeindex == 6:  # VTK_INT
+		field_array = array('i', field_list)	
+
+	elif datatypeindex == 7:  # VTK_UNSIGNED_INT
+		field_array = array('I', field_list)	
+
+	elif datatypeindex == 8:  # VTK_LONG
+		field_array = array('l', field_list)	
+
+	elif datatypeindex == 9:  # VTK_UNSIGNED_LONG
+		field_array = array('L', field_list)	
+
+	elif datatypeindex == 10: # VTK_FLOAT
+		field_array = array('f', field_list)	
+
+	elif datatypeindex == 11: # VTK_DOUBLE
+		field_array = array('d', field_list)
+
+	elif datatypeindex == 12: # VTK_ID_TYPE
+		print '!!ERROR: Unsupported type VTK_ID_TYPE'
+		sys.exit(1)
+
+	else:
+		print '!!ERROR: Unsupported data type: ' + str(datatypeindex)
+		sys.exit(1)
+
+	# write vtk data type index
+	binfile.write( str(datatypeindex) + '\n' )
+	
+	# write header - number of points
+	binfile.write( str(ug_markers.GetNumberOfPoints()) + '\n' )
+
+	# write data to file	
+	field_array.tofile(binfile)
+
+	binfile.close()
+
+
+
+# ===============================================================
+def extract_field_prompt(ug_reader,outfilename):
+
+	ug_markers = ug_reader.GetOutput()
+	if ug_markers.GetNumberOfCells() != ug_markers.GetNumberOfPoints():
+		print '!!ERROR: This does not look like a marker file !!\n'
+		sys.exit(1)
+
+	allpointdata = ug_markers.GetPointData()
+	numpointdatatypes = allpointdata.GetNumberOfArrays()
+	print '#  Number of data arrays: '+ str(numpointdatatypes)
+	for p in range(0,numpointdatatypes):
+		print '#    DataArrayName['+str(p)+']: ' + allpointdata.GetArrayName(p)
+	print ''
+		
+	fieldname = None
+	while True:
+		fieldname = raw_input("  Select a field to extract... (or exit to quit) ")
+		if fieldname == 'exit':
+			print '  Finished extraction'
+			break
+		else:
+			extact_field(ug_markers,fieldname,outfilename)
 
 
 
@@ -301,10 +416,11 @@ def main():
 	extract_coords(reader,options.opt_outputfile)
 
 	# DUMP OPTIONAL FIELDS
-	extract_field(reader,'phase',options.opt_outputfile)
+#	extract_field(reader,'phase',options.opt_outputfile)
 #	extract_field(reader,'wil',options.opt_outputfile)
 #	extract_field(reader,'eta',options.opt_outputfile)
 
+	extract_field_prompt(reader,options.opt_outputfile)
 
 		
 if __name__ == '__main__':
