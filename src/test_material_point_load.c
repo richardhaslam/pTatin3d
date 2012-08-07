@@ -144,6 +144,10 @@ PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,Pe
 	
 	ierr = MaterialPointStdInsertBasic(db,da,start,N1,coords_mp,phase_mp);CHKERRQ(ierr);
 	ierr = MaterialPointStdRemoval(db,start,N1,-1);CHKERRQ(ierr);
+
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,n_mp_points);CHKERRQ(ierr);
+
 	
 	free(coords_mp);
 	free(phase_mp);
