@@ -16,8 +16,12 @@ variable PYTHONPATH. For example;
 [marker_extract_vtu2binary.py]
 - Reads in a vtu file and will extract the marker coordinates and any other
 fields which may be specified. 
-- Specifying fields to extract is done manually by edit the python script
+- Specifying fields to extract is done either via keyboard prompt, or via command line args
 - Coordinates and other fields are written into seperate files
 - Usage:
-  pvpython marker_extract_vtu2binary.py -i VTU_FILE_TO_CONVERT -o outputfile_prefix
+  [field to extract defined via keyboard prompt]
+  pvpython marker_extract_vtu2binary.py -i VTU_FILE_TO_CONVERT
+  [field to extract via command line arguments]
+  pvpython marker_extract_vtu2binary.py -i VTU_FILE_TO_CONVERT -f field1,field2,
+
 

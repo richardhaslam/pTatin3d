@@ -393,8 +393,12 @@ def main():
 	optparser.add_option( "-i", "--input", dest="opt_inputfile",
 										help="Input file name", metavar="FILE")
 
-	optparser.add_option( "-o", "--output", dest="opt_outputfile", default="markers.dat",
+	optparser.add_option( "-o", "--output", dest="opt_outputfile",
 										help="Output file name", metavar="FILE")
+
+	optparser.add_option( "-f", "--fields", dest="opt_fieldlist",
+										help="Field list to extract", metavar="FILE")
+
 
 	(options, argv) = optparser.parse_args()
 
@@ -409,18 +413,32 @@ def main():
 	reader.SetFileName(infilename)
 	reader.Update()
 
+	outfilename = options.opt_outputfile
+	if os.path.splitext(infilename)[1]=='.vtu':
+		outfilename = os.path.splitext(infilename)[0] + "_bin.dat"
+
+	
 # DEPRECIATED
 #	extract_coords_phase(reader,options.opt_outputfile)
 
 	# DUMP COORDS
-	extract_coords(reader,options.opt_outputfile)
+	extract_coords(reader,outfilename)
 
-	# DUMP OPTIONAL FIELDS
-#	extract_field(reader,'phase',options.opt_outputfile)
-#	extract_field(reader,'wil',options.opt_outputfile)
-#	extract_field(reader,'eta',options.opt_outputfile)
+	# DUMP FIELDS VIA COMMAND LINE ARGS
+#	extract_field(reader,'phase',outfilename)
+#	extract_field(reader,'wil',outfilename)
+#	extract_field(reader,'eta',outfilename)
+	if options.opt_fieldlist != None:
+		#print options.opt_fieldlist
+		#flist = os.path.splitext(options.opt_fieldlist)==','
+		flist = options.opt_fieldlist.split(',')
+		#print flist
+		for f in flist:
+			extract_field(reader,str(f),outfilename)
 
-	extract_field_prompt(reader,options.opt_outputfile)
+	else:
+		# DUMP FIELDS VIA PROMPT
+		extract_field_prompt(reader,outfilename)
 
 		
 if __name__ == '__main__':
