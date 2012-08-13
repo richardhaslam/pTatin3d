@@ -7,6 +7,6 @@
 typedef struct {
 	PetscReal param1;
 	PetscInt  param2;
-} TemplateModelCtx;
+} ModelTemplateCtx;
 
 #endif

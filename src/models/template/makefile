@@ -1,7 +1,7 @@
 
 ## List source files here
 MODEL_SRC = \
-	template_model.c
+	model_ops_template.c
 	
 
 ## USER SHOULD NOT NEED TO EDIT ANYTHING BELOW

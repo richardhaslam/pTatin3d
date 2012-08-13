@@ -5,14 +5,14 @@
 #include "ptatin3d.h"
 #include "ptatin_models.h"
 
-#include "template_modelctx.h"
+#include "model_template_ctx.h"
 
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Template"
 PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscBool flg;
 	PetscErrorCode ierr;
 	
@@ -29,7 +29,7 @@ PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyBoundaryCondition_Template"
 PetscErrorCode ModelApplyBoundaryCondition_Template(pTatinCtx c,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
@@ -39,10 +39,28 @@ PetscErrorCode ModelApplyBoundaryCondition_Template(pTatinCtx c,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelApplyBoundaryConditionMG_Template"
+PetscErrorCode ModelApplyBoundaryConditionMG_Template(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
+{
+	PetscInt n;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	for (n=0; n<nl; n++) {
+		/* Define boundary conditions for each level in the MG hierarchy */
+		
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Template"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -55,7 +73,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ct
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_Template"
 PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -69,7 +87,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Template"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -82,7 +100,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Template"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -95,7 +113,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx
 #define __FUNCT__ "ModelOutput_Template"
 PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -108,7 +126,7 @@ PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *
 #define __FUNCT__ "ModelDestroy_Template"
 PetscErrorCode ModelDestroy_Template(pTatinCtx c,void *ctx)
 {
-	TemplateModelCtx *data = (TemplateModelCtx*)ctx;
+	ModelTemplateCtx *data = (ModelTemplateCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -126,15 +144,15 @@ PetscErrorCode ModelDestroy_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "pTatinModelRegister_Template"
 PetscErrorCode pTatinModelRegister_Template(void)
 {
-	TemplateModelCtx *data;
+	ModelTemplateCtx *data;
 	pTatinModel m,model;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	/* Allocate memory for the data structure for this model */
-	ierr = PetscMalloc(sizeof(TemplateModelCtx),&data);CHKERRQ(ierr);
-	ierr = PetscMemzero(data,sizeof(TemplateModelCtx));CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(ModelTemplateCtx),&data);CHKERRQ(ierr);
+	ierr = PetscMemzero(data,sizeof(ModelTemplateCtx));CHKERRQ(ierr);
 	
 	/* set initial values for model parameters */
 	data->param1 = 0.0;
@@ -144,7 +162,7 @@ PetscErrorCode pTatinModelRegister_Template(void)
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
 
 	/* Set name, model select via -ptatin_model NAME */
-	ierr = pTatinModelSetName(m,"template");CHKERRQ(ierr);
+	ierr = pTatinModelSetName(m,"Template");CHKERRQ(ierr);
 
 	/* Set model data */
 	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
@@ -152,6 +170,7 @@ PetscErrorCode pTatinModelRegister_Template(void)
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Template);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Template);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Template);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Template);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Template);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Template);CHKERRQ(ierr);

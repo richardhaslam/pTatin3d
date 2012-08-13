@@ -1,7 +1,7 @@
 
 ## LIST MODEL DIRECTORIES HERE
 TATIN_MODEL_DIR = \
-	template_model \
+	template \
 	viscous_sinker \
 	gene3D \
 	indentor
