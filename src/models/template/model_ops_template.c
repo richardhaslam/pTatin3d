@@ -162,7 +162,7 @@ PetscErrorCode pTatinModelRegister_Template(void)
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
 
 	/* Set name, model select via -ptatin_model NAME */
-	ierr = pTatinModelSetName(m,"Template");CHKERRQ(ierr);
+	ierr = pTatinModelSetName(m,"template");CHKERRQ(ierr);
 
 	/* Set model data */
 	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
