@@ -39,6 +39,7 @@ PetscErrorCode MarkerCoordinatesLoadFromFile(const char name[],long int *length,
 
 	for (p=0; p<n_markers; p++) {
 		fread(&data[3*p],sizeof(double),3,fp);
+		//printf("%1.4e %1.4e %1.4e \n", data[3*p],data[3*p+1],data[3*p+2]);
 	}	
 	
 	fclose(fp);
@@ -165,7 +166,7 @@ PetscErrorCode MaterialPointStdRemoval(DataBucket db,long int start,long int npo
 	DataFieldRestoreAccess(PField_std);
 	
 	printf("  kept   n_mp_points %ld \n", end-start );
-	DataBucketSetSizes(db,end+1,-1); // -ve buffer val retains old value //
+	DataBucketSetSizes(db,end,-1); // -ve buffer val retains old value //
 	
 	PetscFunctionReturn(0);
 }
@@ -212,12 +213,14 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 	for (p=start; p<start+npoints; p++) {
 		MPntStd     *material_point;
 		MPntStd     test_p;
+		int         pindex = p - start;
 		
 		test_p.pid     = 0;
-		test_p.coor[0] = coords_mp[3*p  ];
-		test_p.coor[1] = coords_mp[3*p+1];
-		test_p.coor[2] = coords_mp[3*p+2];
-		test_p.phase   = phase_mp[p];
+		test_p.coor[0] = coords_mp[3*pindex  ];
+		test_p.coor[1] = coords_mp[3*pindex+1];
+		test_p.coor[2] = coords_mp[3*pindex+2];
+		test_p.phase   = phase_mp[pindex];
+		//printf("test_p.phase = %d: %d \n", test_p.phase, phase_mp[pindex] );
 		test_p.wil     = -1;
 		
 		DataFieldInsertPoint(PField_std,p,(void*)&test_p);
