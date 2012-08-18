@@ -1,5 +1,5 @@
 
-The idea we have for building models is that should be separated as much as possible
+The idea we have for building models is that models should be separated as much as possible
 from the core functionality of ptatin. That is, we want to seperate boundary conditions,
 mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (stokes).
 
@@ -12,24 +12,27 @@ Models live under the directory
 the models are compiled into the following static library
 	ptatin3d/src/models/libptatin3dmodels.a
 	
-We have provided, as an example, a model called "template_model".
+We have provided, as an example, a model called "template".
 	
 To add a model, add the directory name containing your model in
 	ptatin3d/src/models/makefile
 under the variable
 	TATIN_MODEL_DIR = \
-        template_model
+        template
 
 Within the directory
-	ptatin3d/src/models/template_model
-we have the files which define any data structures needed for the model,
-here called
-	template_modelctx.h
-and the file containing the model desription. A model description consists
+	ptatin3d/src/models/template
+are the files which define any data structures needed for the model,
+which here are called
+	model_template_ctx.h
+and a file (model_ops_template.c) containing the model desription. 
+
+A model description consists
 of defining the following operations.
 
 FP_pTatinModel_Initialize
 FP_pTatinModel_ApplyBoundaryCondition
+FP_pTatinModel_ApplyBoundaryConditionMG
 FP_pTatinModel_ApplyMaterialBoundaryCondition
 FP_pTatinModel_ApplyInitialMeshGeometry
 FP_pTatinModel_ApplyInitialMaterialGeometry
@@ -59,9 +62,11 @@ typedef enum { } pTatinModelOperation; in ptatin_models.h
 pTatinModelSetFunctionPointer(...,PTATIN_MODEL_APPLY_BC,my_apply_bc_function);
 pTatinModelSetFunctionPointer(...,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,my_apply_init_material_geom_function);
 
-5) Finally, you register the model via the call
+5) Register the model via the call
 pTatinModelRegister()
 This will add your model definition into a list which ptatin will have access to.
+
+Steps 1-5 are provided within the function pTatinModelRegister_Template().
 
 6) Finally, you need to edit
 	ptatin_models.c
@@ -77,14 +82,14 @@ So you don't have the compiler warning about "implicitly defined function", simp
 *Note* 
 That there is also a makefile associated with each model.
 For example,
-	ptatin3d/src/models/template_model/makefile
+	ptatin3d/src/models/template/makefile
 In general, the makefiles for each different model will all be very similar.
 It is recommended to use the model makefile identified above as the basis of a makefile for any new model.
 For most new models, one would simply have to list the C files used in defining the model in the variable
 
 ## List source files here
 MODEL_SRC = \
-        template_model.c
+        template.c
 
 
 **Note**
@@ -94,7 +99,7 @@ That is, to make a model, you must run "make" from
 You cannot run make from within the model directory
 	ptatin3d/src/models
 or
-	ptatin3d/src/models/template_model
+	ptatin3d/src/models/template
 
 If you ONLY want to compile the models within
 	ptatin3d/src/models
@@ -104,7 +109,7 @@ from the directory
 	ptatin3d/src
 
 
-DAM ~Feb 13, 2012
+DAM ~Aug 18, 2012
 
 
 
