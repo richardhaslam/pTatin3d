@@ -350,6 +350,18 @@ def write_out_c_class( MatPropClass, MatPropClassShortName, variable_name_list, 
 
 def MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list ):
 
+	# check all arrays have same length
+	L = len(variable_name_list);
+	if L != len(variable_type_list):
+		print 'ERROR: len(variable_name_list) != len(variable_type_list)'
+		exit(0);
+	if L != len(variable_extend_list):
+		print 'ERROR: len(variable_name_list) != len(variable_extend_list)'
+		exit(0);
+	if L != len(variable_textural_name_list):
+		print 'ERROR: len(variable_name_list) != len(variable_textural_name_list)'
+		exit(0);
+
 
 	# check all types are doubles
 	L = len(variable_name_list);
@@ -389,7 +401,7 @@ def Generate_pTatin3d_MaterialProperties_RheologyArrhenius():
 	MatPropClassShort = 'RheoArrhenius'
 	variable_name_list = [ 'b',      'n',      'E',      'V',      'R'     ]
 	variable_type_list = [ 'double', 'double', 'double', 'double', 'double'  ]
-	variable_extend_list        = [ 1, 1, 1, 1, 1, 1 ]
+	variable_extend_list        = [ 1, 1, 1, 1, 1 ]
 	variable_textural_name_list = [ 'pre_exponential_factor', 'stres_exponent', 'activation_energy', 'activation_volume', 'universal_gas_constant' ]
 
 	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
