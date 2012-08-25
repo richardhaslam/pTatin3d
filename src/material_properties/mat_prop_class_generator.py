@@ -364,11 +364,11 @@ def MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list
 
 
 	# check all types are doubles
-	L = len(variable_name_list);
-	for v in xrange(L):
-		if variable_type_list[v] != 'double':
-			print 'ERROR: All variables must be of type double: Please change type of variable named ' + str(variable_name_list[v])
-			exit(0)
+#	L = len(variable_name_list);
+#	for v in xrange(L):
+#		if variable_type_list[v] != 'double':
+#			print 'ERROR: All variables must be of type double: Please change type of variable named ' + str(variable_name_list[v])
+#			exit(0)
 
 	# write out the header
 	file = open(MatPropClass+'_def.h','w')
@@ -396,17 +396,81 @@ def MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list
 
 # ==================================================================================
 
-def Generate_pTatin3d_MaterialProperties_RheologyArrhenius():
-	MatPropClass      = 'MatProp_RheologyArrhenius'
-	MatPropClassShort = 'RheoArrhenius'
-	variable_name_list = [ 'b',      'n',      'E',      'V',      'R'     ]
-	variable_type_list = [ 'double', 'double', 'double', 'double', 'double'  ]
-	variable_extend_list        = [ 1, 1, 1, 1, 1 ]
-	variable_textural_name_list = [ 'pre_exponential_factor', 'stres_exponent', 'activation_energy', 'activation_volume', 'universal_gas_constant' ]
+def Generate_pTatin3d_MaterialConstant_MaterialType():
+	MatPropClass      = 'MaterialConst_MaterialType'
+	MatPropClassShort = 'MaterialType'
+	variable_name_list = [ 'visc_type', 'plastic_type', 'softening_type', 'density_type'  ]
+	variable_type_list = [ 'int', 'int', 'int', 'int' ]
+	variable_extend_list        = [ 1,1,1,1 ]
+	variable_textural_name_list = [ 'visc_type', 'plastic_type', 'softening_type', 'density_type' ]
 
 	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
+def Generate_pTatin3d_MaterialConstant_ViscosityConst():
+	MatPropClass      = 'MaterialConst_ViscosityConst'
+	MatPropClassShort = 'ViscConst'
+	variable_name_list = [ 'eta0'  ]
+	variable_type_list = [ 'double' ]
+	variable_extend_list        = [ 1 ]
+	variable_textural_name_list = [ 'eta0' ]
+
+	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
-Generate_pTatin3d_MaterialProperties_RheologyArrhenius()
+def Generate_pTatin3d_MaterialConstant_ViscosityArrhenius():
+	MatPropClass      = 'MaterialConst_ViscosityArrhenius'
+	MatPropClassShort = 'ViscArrhenius'
+	variable_name_list = [ 'enthalpy', 'preexpA', 'nexp',   'Vmol',   'Tref',   'Ascale'  ]
+	variable_type_list = [ 'double',   'double',  'double', 'double', 'double', 'double'  ]
+	variable_extend_list        = [ 1, 1, 1, 1, 1, 1 ]
+	variable_textural_name_list = [ 'enthalpy', 'pre_exponential_factor', 'stres_exponent', 'activation_volume', 'temp_ref', 'Ascale' ]
+
+	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
+def Generate_pTatin3d_MaterialConstant_RheologyMises():
+	MatPropClass      = 'MaterialConst_RheologyMises'
+	MatPropClassShort = 'RheoMises'
+	variable_name_list = [ 'tau_yield',      'tau_yield_inf'  ]
+	variable_type_list = [ 'double', 'double' ]
+	variable_extend_list        = [ 1, 1 ]
+	variable_textural_name_list = [ 'yield_stress', 'yield_stress_inf' ]
+
+	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
+def Generate_pTatin3d_MaterialConstant_RheologyDruckerPrager():
+	MatPropClass      = 'MaterialConst_RheologyDruckerPrager'
+	MatPropClassShort = 'RheoDP'
+	variable_name_list = [ 'Co',      'phi',  'Co_inf', 'phi_inf', 'Hst_cutoff', 'Tst_cutoff'  ]
+	variable_type_list = [ 'double', 'double', 'double', 'double', 'double', 'double' ]
+	variable_extend_list        = [ 1, 1, 1, 1, 1, 1 ]
+	variable_textural_name_list = [ 'cohesion', 'friction_angle', 'Co_inf', 'phi_inf', 'high_stress_cutoff', 'tensile_stress_cutoff' ]
+
+	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
+def Generate_pTatin3d_MaterialConstant_RheologySoftening():
+	MatPropClass      = 'MaterialConst_RheologySoftening'
+	MatPropClassShort = 'RheoSoftening'
+	variable_name_list = [ 'min_strain_cutoff',      'max_strain_cutoff'  ]
+	variable_type_list = [ 'double', 'double' ]
+	variable_extend_list        = [ 1, 1 ]
+	variable_textural_name_list = [ 'min_strain_cutoff', 'max_strain_cutoff' ]
+
+	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
+Generate_pTatin3d_MaterialConstant_MaterialType()
+
+Generate_pTatin3d_MaterialConstant_ViscosityConst()
+Generate_pTatin3d_MaterialConstant_ViscosityArrhenius()
+
+# plastic
+Generate_pTatin3d_MaterialConstant_RheologyMises()
+Generate_pTatin3d_MaterialConstant_RheologyDruckerPrager()
+
+# softening
+Generate_pTatin3d_MaterialConstant_RheologySoftening()
+
