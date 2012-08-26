@@ -36,5 +36,5 @@ clean_all:
 	done
 
 	-@rm -f *.o
-	-@rm ${TATIN_MODEL_LIB}
+	-@rm -f ${TATIN_MODEL_LIB}
 
