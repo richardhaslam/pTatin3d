@@ -10,6 +10,7 @@
 #include "ptatin3d_stokes.h"
 #include "ptatin_models.h"
 #include "rheology.h"
+#include "material_constants.h"
 
 struct _p_pTatinCtx {
 	PhysCompStokes stokes_ctx;
@@ -45,6 +46,7 @@ struct _p_pTatinCtx {
 	
 	/* rheology */
   RheologyConstants rheology_constants;
+	DataBucket material_constants;
 
 	/* model function pointers */
 	pTatinModel model;
