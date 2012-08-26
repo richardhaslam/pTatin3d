@@ -16,6 +16,8 @@ typedef struct _p_Quadrature *Quadrature;
 
 typedef enum { LINE_QUAD=0,SURFACE_QUAD,VOLUME_QUAD } QuadratureType;
 
+typedef struct _p_RheologyConstants RheologyConstants;
+
 
 /*
 #include "dmda_bcs.h"
@@ -41,7 +43,7 @@ typedef enum { LINE_QUAD=0,SURFACE_QUAD,VOLUME_QUAD } QuadratureType;
 
 #include "swarm_fields.h"
 #include "data_exchanger.h"
-#include "rheology.h"
+//#include "rheology.h"
 
 
 PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user);

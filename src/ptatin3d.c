@@ -417,6 +417,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
   user->dt_adv           = user->dt_min;
   
   ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
+	ierr = MaterialConstantsInitialize(&user->material_constants);CHKERRQ(ierr);
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
 	*ctx = user;
@@ -450,6 +451,9 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 	 if (user->dap) { ierr = DMDestroy(&user->dap);CHKERRQ(ierr); }
 	 if (user->dav) { ierr = DMDestroy(&user->dav);CHKERRQ(ierr); }
 	 */
+
+	if (user->material_constants) { DataBucketDestroy(&user->material_constants); }
+	
 	ierr = PetscContainerDestroy(&user->model_data);CHKERRQ(ierr);
 	
 	ierr = PetscFree(user);CHKERRQ(ierr);
