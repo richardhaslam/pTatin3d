@@ -10,10 +10,35 @@ typedef enum {
 	RHEOLOGY_VISCOUS=0, 
 	RHEOLOGY_VISCO_PLASTIC, 
 	RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING, 
-	RHEOLOGY_VISCO_ELASTIC_PLASTIC 
+	RHEOLOGY_VISCO_ELASTIC_PLASTIC,
+	RHEOLOGY_VP_STD
 } RheologyType;
 
-typedef struct _p_RheologyConstants RheologyConstants;
+
+typedef enum { 
+	VISCOUS_CONSTANT=0,
+	VISCOUS_FRANKK,
+	VISCOUS_ARRHENIUS
+} ViscousType;
+
+typedef enum { 
+	PLASTIC_NONE=0,
+	PLASTIC_MISES,
+	PLASTIC_DP
+} PlasticType;
+
+typedef enum { 
+	SOFTENING_NONE=0,
+	SOFTENING_LINEAR,
+	SOFTENING_EXPONENTIAL
+} SofteningType;
+
+typedef enum { 
+	DENSITY_CONSTANT=0,
+	DENSITY_BOUSINESQ
+} DensityType;
+
+
 
 #define MAX_PHASE 100
 
