@@ -17,8 +17,8 @@
 const char MODEL_NAME[] = "model_GENE3D_";
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_GENE3D"
-PetscErrorCode ModelInitialize_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelInitialize_Gene3D"
+PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 {
   ModelGENE3DCtx    *data = (ModelGENE3DCtx *) ctx;
   RheologyConstants *rheology;
@@ -246,8 +246,8 @@ PetscErrorCode ModelInitialize_GENE3D(pTatinCtx c,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_GENE3D"
-PetscErrorCode ModelApplyBoundaryCondition_GENE3D(pTatinCtx user,void *ctx)
+#define __FUNCT__ "ModelApplyBoundaryCondition_Gene3D"
+PetscErrorCode ModelApplyBoundaryCondition_Gene3D(pTatinCtx user,void *ctx)
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscScalar zero = 0.0;
@@ -337,8 +337,8 @@ PetscErrorCode ModelApplyBoundaryCondition_GENE3D(pTatinCtx user,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_GENE3D"
-PetscErrorCode ModelApplyMaterialBoundaryCondition_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Gene3D"
+PetscErrorCode ModelApplyMaterialBoundaryCondition_Gene3D(pTatinCtx c,void *ctx)
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
@@ -351,8 +351,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_GENE3D(pTatinCtx c,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_GENE3D"
-PetscErrorCode ModelApplyInitialMeshGeometry_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelApplyInitialMeshGeometry_Gene3D"
+PetscErrorCode ModelApplyInitialMeshGeometry_Gene3D(pTatinCtx c,void *ctx)
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
@@ -369,8 +369,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_GENE3D(pTatinCtx c,void *ctx)
 //=====================================================================================================================================
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelSetMarkerIndexLayeredCake_GENE3D"
-PetscErrorCode ModelSetMarkerIndexLayeredCake_GENE3D (pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelSetMarkerIndexLayeredCake_Gene3D"
+PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
@@ -403,8 +403,8 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_GENE3D (pTatinCtx c,void *ctx)
 		asprintf (&option_name, "-layer_y_%d", i);
 		ierr = PetscOptionsGetReal(MODEL_NAME, option_name, &YLayer[i], &flg);CHKERRQ(ierr);
 		if (flg == PETSC_FALSE) {
-			/* NOTE - these error messages are useless if you don't include "model_GENE3D_" in the statement. I added &name[1] so that the "-" is skipped */
-			SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option -model_GENE3D_%s \n",&option_name[1]);
+			/* NOTE - these error messages are useless if you don't include "model_Gene3D_" in the statement. I added &name[1] so that the "-" is skipped */
+			SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option -model_Gene3D_%s \n",&option_name[1]);
 		}
 		free (option_name);
 
@@ -413,7 +413,7 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_GENE3D (pTatinCtx c,void *ctx)
 			ierr = PetscOptionsGetInt(MODEL_NAME, option_name, &phaseLayer[i-1],&flg);CHKERRQ(ierr);
 			
 			if (flg == PETSC_FALSE) {
-				SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option -model_GENE3D_%s \n",&option_name[1]);
+				SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option -model_Gene3D_%s \n",&option_name[1]);
 			}
 			free (option_name);
 		} else {
@@ -453,8 +453,8 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_GENE3D (pTatinCtx c,void *ctx)
 
 //===============================================================================================================================
 #undef __FUNCT__
-#define __FUNCT__ "ModelSetMarkerIndexFromMap_GENE3D"
-PetscErrorCode ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelSetMarkerIndexFromMap_Gene3D"
+PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
@@ -554,8 +554,8 @@ PetscErrorCode ModelSetMarkerIndexFromMap_GENE3D(pTatinCtx c,void *ctx)
 //======================================================================================================================================
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelSetInitialStokesVariableOnMarker_GENE3D"
-PetscErrorCode ModelSetInitialStokesVariableOnMarker_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelSetInitialStokesVariableOnMarker_Gene3D"
+PetscErrorCode ModelSetInitialStokesVariableOnMarker_Gene3D(pTatinCtx c,void *ctx)
 /* define properties on material points */
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
@@ -604,8 +604,8 @@ PetscErrorCode ModelSetInitialStokesVariableOnMarker_GENE3D(pTatinCtx c,void *ct
 //======================================================================================================================================
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelGENE3DInit"
-PetscErrorCode ModelGENE3DInit(DataBucket db)
+#define __FUNCT__ "ModelGene3DInit"
+PetscErrorCode ModelGene3DInit(DataBucket db)
 {
   PetscInt           p,n_mp_points;
   DataField          PField_std;
@@ -634,8 +634,8 @@ PetscErrorCode ModelGENE3DInit(DataBucket db)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelGENE3DCheckPhase"
-PetscErrorCode ModelGENE3DCheckPhase(DataBucket db,RheologyConstants *rheology)
+#define __FUNCT__ "ModelGene3DCheckPhase"
+PetscErrorCode ModelGene3DCheckPhase(DataBucket db,RheologyConstants *rheology)
 {
   PetscInt           p,n_mp_points;
   DataField          PField_std;
@@ -675,32 +675,32 @@ PetscErrorCode ModelGENE3DCheckPhase(DataBucket db,RheologyConstants *rheology)
 /*
 
 These models are required to
- 1) set the value c->rheology_constants->nphases_active => although this seems to be done in ModelInitialize_GENE3D()
+ 1) set the value c->rheology_constants->nphases_active => although this seems to be done in ModelInitialize_Gene3D()
  2) all markers are assigned a phase index between [0 -- nphases_active-1]
  
 */
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_GENE3D"
-PetscErrorCode ModelApplyInitialMaterialGeometry_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Gene3D"
+PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3D(pTatinCtx c,void *ctx)
 {
   PetscErrorCode ierr;
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscFunctionBegin;
 	
 	/* initalize all phase indices to -1 */
-	ierr = ModelGENE3DInit(c->materialpoint_db);CHKERRQ(ierr);
+	ierr = ModelGene3DInit(c->materialpoint_db);CHKERRQ(ierr);
   switch (data->initial_geom)
 	{
       /*Layered cake */
     case 0:
 		{
-			ierr = ModelSetMarkerIndexLayeredCake_GENE3D(c,ctx);CHKERRQ(ierr);
+			ierr = ModelSetMarkerIndexLayeredCake_Gene3D(c,ctx);CHKERRQ(ierr);
 		}
       break;
       /*Extrude from Map along Z */
     case 1:
 		{
-			ierr = ModelSetMarkerIndexFromMap_GENE3D(c,ctx);CHKERRQ(ierr);
+			ierr = ModelSetMarkerIndexFromMap_Gene3D(c,ctx);CHKERRQ(ierr);
 		}
       break;
       /*Read from CAD file */
@@ -711,9 +711,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GENE3D(pTatinCtx c,void *ctx)
       break;
 	}
 	/* check all phase indices are between [0---rheo->max_phases-1] */
-	ierr = ModelGENE3DCheckPhase(c->materialpoint_db,&c->rheology_constants);CHKERRQ(ierr);
+	ierr = ModelGene3DCheckPhase(c->materialpoint_db,&c->rheology_constants);CHKERRQ(ierr);
 	
-  ierr = ModelSetInitialStokesVariableOnMarker_GENE3D(c, ctx);CHKERRQ(ierr);
+  ierr = ModelSetInitialStokesVariableOnMarker_Gene3D(c, ctx);CHKERRQ(ierr);
 	
   PetscFunctionReturn (0);
 }
@@ -721,8 +721,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GENE3D(pTatinCtx c,void *ctx)
 
 //======================================================================================================================================
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_GENE3D"
-PetscErrorCode ModelApplyUpdateMeshGeometry_GENE3D(pTatinCtx c,Vec X,void *ctx)
+#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Gene3D"
+PetscErrorCode ModelApplyUpdateMeshGeometry_Gene3D(pTatinCtx c,Vec X,void *ctx)
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
@@ -735,8 +735,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_GENE3D(pTatinCtx c,Vec X,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelOutput_GENE3D"
-PetscErrorCode ModelOutput_GENE3D(pTatinCtx c,Vec X,const char prefix[],void *ctx)
+#define __FUNCT__ "ModelOutput_Gene3D"
+PetscErrorCode ModelOutput_Gene3D(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
@@ -751,8 +751,8 @@ PetscErrorCode ModelOutput_GENE3D(pTatinCtx c,Vec X,const char prefix[],void *ct
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_GENE3D"
-PetscErrorCode ModelDestroy_GENE3D(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ModelDestroy_Gene3D"
+PetscErrorCode ModelDestroy_Gene3D(pTatinCtx c,void *ctx)
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
@@ -769,8 +769,8 @@ PetscErrorCode ModelDestroy_GENE3D(pTatinCtx c,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_GENE3D"
-PetscErrorCode pTatinModelRegister_GENE3D(void)
+#define __FUNCT__ "pTatinModelRegister_Gene3D"
+PetscErrorCode pTatinModelRegister_Gene3D(void)
 {
   ModelGENE3DCtx *data;
   pTatinModel m, model;
@@ -786,20 +786,20 @@ PetscErrorCode pTatinModelRegister_GENE3D(void)
   ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
 	
   /* Set name, model select via -ptatin_model NAME */
-  ierr = pTatinModelSetName(m,"GENE3D");CHKERRQ(ierr);
+  ierr = pTatinModelSetName(m,"Gene3D");CHKERRQ(ierr);
 	
   /* Set model data */
   ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 	
   /* Set function pointers */
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_INIT,                  (void (*)(void)) ModelInitialize_GENE3D); CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_BC,              (void (*)(void)) ModelApplyBoundaryCondition_GENE3D); CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void)) ModelApplyMaterialBoundaryCondition_GENE3D);CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void)) ModelApplyInitialMeshGeometry_GENE3D);CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void)) ModelApplyInitialMaterialGeometry_GENE3D);CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void)) ModelApplyUpdateMeshGeometry_GENE3D);CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_OUTPUT,                (void (*)(void)) ModelOutput_GENE3D);CHKERRQ(ierr);
-  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_DESTROY,               (void (*)(void)) ModelDestroy_GENE3D); CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_INIT,                  (void (*)(void)) ModelInitialize_Gene3D); CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_BC,              (void (*)(void)) ModelApplyBoundaryCondition_Gene3D); CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void)) ModelApplyMaterialBoundaryCondition_Gene3D);CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void)) ModelApplyInitialMeshGeometry_Gene3D);CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void)) ModelApplyInitialMaterialGeometry_Gene3D);CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void)) ModelApplyUpdateMeshGeometry_Gene3D);CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_OUTPUT,                (void (*)(void)) ModelOutput_Gene3D);CHKERRQ(ierr);
+  ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_DESTROY,               (void (*)(void)) ModelDestroy_Gene3D); CHKERRQ(ierr);
 	
   /* Insert model into list */
   ierr = pTatinModelRegister(m); CHKERRQ(ierr);
