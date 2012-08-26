@@ -1,7 +1,7 @@
 
 ## List source files here
 MODEL_SRC = \
-	model_GENE3D_ops.c \
+	model_ops_gene3d_nueve.c \
 	
 
 ## USER SHOULD NOT NEED TO EDIT ANYTHING BELOW
@@ -23,8 +23,10 @@ all:
 		${MAKE} $$a; \
 	done
 	-@echo "    + adding objects: " ${MODEL_OBJ}
-	-@cp ${MODEL_OBJ} ${TATIN_DIR}/models
-	-@rm ${MODEL_OBJ}
+
+addtolib:
+	ar rcs ${TATIN_MODEL_LIB} ${MODEL_OBJ}
+#	-@rm -f ${MODEL_OBJ}
 
 clean_all:
 	-@rm -f ${MODEL_OBJ}
