@@ -30,7 +30,7 @@ PetscErrorCode ReportOptionMissing(const char optprefix[],const char description
 	} else {
 		PetscPrintf(PETSC_COMM_WORLD,"Missing Option: Expected user to specify \"%s\" via option %s\n",description,fulloptionname);
 	}
-	SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER,"<< Essential User Command Line Option Missing >>\n");	
+	SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_USER,"<< Essential User Command Line Option Missing >>");	
 	PetscFunctionReturn(0);
 }
 
@@ -506,6 +506,142 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MaterialPointSetRegionIndexFromExtrudedMap"
+PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const char map_filename[],PetscInt direction,double c0,double c1)
+{
+  PhaseMap  phasemap;
+  PetscInt  p,n_mp_points,dir_0,dir_1,dir_normal;
+  DataField PField_std;
+  int       phase_init,phase,phase_index,is_valid;
+  
+	PetscFunctionBegin;
+	
+  switch (direction) {
+    case 0:
+		{
+			dir_0 = 2;
+			dir_1 = 1;
+			dir_normal = 0;
+    } 
+			break;  
+			
+    case 1:
+		{
+			dir_0 = 0;
+			dir_1 = 2;
+			dir_normal = 1;
+    } 
+			break;   
+			
+    case 2:
+		{
+			dir_0 = 0;
+			dir_1 = 1;
+			dir_normal = 2;
+    } 
+			break;  
+  } 
+	
+  PhaseMapLoadFromFile(map_filename,&phasemap);
+	
+  /* define properties on material points */
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+  DataFieldGetAccess(PField_std);
+  DataFieldVerifyAccess(PField_std,sizeof (MPntStd));
+	
+  DataBucketGetSizes(db,&n_mp_points,0,0);
+	
+  for (p=0; p<n_mp_points; p++) {
+		MPntStd *material_point;
+		double position2D[2],*pos;
+		
+		DataFieldAccessPoint(PField_std, p, (void **) &material_point);
+		MPntStdGetField_global_coord(material_point,&pos);
+		
+		position2D[0] = pos[dir_0];
+		position2D[1] = pos[dir_1];
+		
+		if (pos[dir_normal] < c0) continue;
+		if (pos[dir_normal] > c1) continue;
+		
+		
+		MPntStdGetField_phase_index(material_point, &phase_init);
+		
+		PhaseMapGetPhaseIndex(phasemap, position2D, &phase_index);
+		
+		PhaseMapCheckValidity(phasemap, phase_index, &is_valid);
+		
+		if (is_valid == 1) {			/* point located in the phase map */
+			phase = phase_index;
+		} else { /* Don't error if the point is outside the phase map - catch this error outside this function */
+			phase = -1;
+		}
+		MPntStdSetField_phase_index(material_point, phase);
+		
+	}
+  DataFieldRestoreAccess(PField_std);
+  PhaseMapDestroy(&phasemap);	
+	
+  PetscFunctionReturn (0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedMap"
+PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedMap(pTatinCtx c,void *ctx)
+{
+  PetscErrorCode ierr;
+  DataBucket     db;
+	PetscInt       n,nmaps,direction;
+  char           opt_name[PETSC_MAX_PATH_LEN],map_file[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN];
+	PetscReal      range[2];
+	PetscInt       nfetched;
+  PetscBool      flg;
+  
+	PetscFunctionBegin;
+  PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+
+  db = c->materialpoint_db;
+	
+	
+  ierr = PetscOptionsGetInt(MODEL_NAME,"-num_map_files",&nmaps,&flg);CHKERRQ(ierr);
+  if (flg == PETSC_FALSE) {
+		ierr = ReportOptionMissing(MODEL_NAME,"Number of pmap files to read","-num_map_files",0);CHKERRQ(ierr);
+	}
+
+  ierr = PetscOptionsGetInt(MODEL_NAME,"-extrude_dir",&direction,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) {
+		ierr = ReportOptionMissing(MODEL_NAME,"Direction to extrude the pmaps","-extrude_dir","0=x, 1=y, 2=z");CHKERRQ(ierr);
+	}
+	
+	for (n=0; n<nmaps; n++) {
+		/* Get file name */
+		sprintf(opt_name,"-map_file_%d",n);
+		ierr = PetscOptionsGetString(MODEL_NAME,opt_name,map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+		if (flg == PETSC_FALSE) {
+			ierr = ReportOptionMissing(MODEL_NAME,"Name of pmap file",opt_name,"HINT: Don't include the extension .pmap in the file name");CHKERRQ(ierr);
+		}
+
+		sprintf(name,"./inputdata/%s.pmap",map_file);
+		
+		/* Get extent of map */
+		sprintf(opt_name,"-map_range_%d",n);
+		nfetched = 2;
+		ierr = PetscOptionsGetRealArray(MODEL_NAME,opt_name,range,&nfetched,&flg);CHKERRQ(ierr);
+		if (!flg) {
+			ierr = ReportOptionMissing(MODEL_NAME,"Range of pmap file in the normal direction",opt_name,"e.g. 0.0,1.0");CHKERRQ(ierr);
+		}
+		if (nfetched != 2) {
+			ierr = ReportOptionMissing(MODEL_NAME,"Two values for pmap range in the normal direction",opt_name,"e.g. 0.0,1.0");CHKERRQ(ierr);
+		}
+		
+		ierr = MaterialPointSetRegionIndexFromExtrudedMap(db,name,direction,range[0],range[1]);CHKERRQ(ierr);
+	}
+	
+	
+  PetscFunctionReturn (0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MaterialPointInitializeRegionIndex"
 PetscErrorCode MaterialPointInitializeRegionIndex(DataBucket db,const int init_region_id)
 {
@@ -607,6 +743,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3DNueve(pTatinCtx c,void *c
 			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Reading region index from CAD is not implemented yet\n");
 		}
       break;
+			
+		case 3:
+		{
+			ierr = ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedMap(c,ctx);CHKERRQ(ierr);
+		}
 	}
 	/* Check all phase indices are between [0---rheo->max_phases-1] */
 	DataBucketGetSizes(c->material_constants,&nregions,0,0);
