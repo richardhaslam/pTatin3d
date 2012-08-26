@@ -25,7 +25,7 @@ all:
 	-@echo "    + adding objects: " ${MODEL_OBJ}
 
 addtolib:
-	ar rcs ${TATIN_MODEL_LIB} ${MODEL_OBJ}
+	-@ar rcs ${TATIN_MODEL_LIB} ${MODEL_OBJ}
 	-@rm -f ${MODEL_OBJ}
 
 clean_all:

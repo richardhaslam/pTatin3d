@@ -44,6 +44,8 @@ typedef struct _p_RheologyConstants RheologyConstants;
 #include "swarm_fields.h"
 #include "data_exchanger.h"
 //#include "rheology.h"
+#include "material_point_load.h"
+#include "material_point_utils.h"
 
 
 PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user);

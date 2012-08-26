@@ -53,6 +53,7 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B);
 PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B);
 
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A);
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12(MatStokesMF Stk,Mat *A12);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21(MatStokesMF Stk,Mat *A21);
 
