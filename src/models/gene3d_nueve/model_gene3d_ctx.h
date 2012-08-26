@@ -4,7 +4,7 @@
 #define __ptatinmodel_GENE3DNUEVE_ctx_h__
 
 typedef enum { GENEBC_FreeSlip=0, GENEBC_NoSlip, GENEBC_FreeSlipFreeSurface, GENEBC_NoSlipFreeSurface } GENE3DBC;
-typedef enum { GENE_LayeredCake=0, GENE_ExtrudeFromMap, GENE_ReadFromCAD} GENE3DINIGEOM;
+typedef enum { GENE_LayeredCake=0, GENE_ExtrudeFromMap, GENE_ReadFromCAD, GENE_ExtrudeByPartsFromMap} GENE3DINIGEOM;
 
 typedef struct {
 	PetscInt  nmaterials;

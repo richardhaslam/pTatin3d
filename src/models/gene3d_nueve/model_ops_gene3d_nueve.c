@@ -241,15 +241,16 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 			
 	}
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Gene3DNueve"
-PetscErrorCode ModelApplyBoundaryCondition_Gene3DNueve(pTatinCtx user,void *ctx)
+#define __FUNCT__ "ModelGene3DNueve_ApplyBoundaryCondition"
+PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,ModelGene3DNueveCtx *data)
 {
-  ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
   PetscScalar zero = 0.0;
+	PetscReal ext_value;
+	PetscBool flg;
   PetscErrorCode ierr;
 	
   PetscFunctionBegin;
@@ -258,73 +259,134 @@ PetscErrorCode ModelApplyBoundaryCondition_Gene3DNueve(pTatinCtx user,void *ctx)
   switch (data->boundary_conditon_type) {
 			
     case GENEBC_FreeSlip:
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
       break;
 			
     case GENEBC_NoSlip:
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
       break;
 			
     case GENEBC_FreeSlipFreeSurface:
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      break;
+
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+			
+
+			/* basement */
+			ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+
+			
+			ierr = PetscOptionsGetReal(PETSC_NULL,"-extension_x",&ext_value,&flg);CHKERRQ(ierr);
+			if (flg) {
+				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
+				ext_value = -1.0 * ext_value;
+				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
+			}
+			
+			ierr = PetscOptionsGetReal(PETSC_NULL,"-extension_z",&ext_value,&flg);CHKERRQ(ierr);
+			if (flg) {
+				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
+				ext_value = -1.0 * ext_value;
+				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMIN_LOC, 2,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
+			}
+			
+			break;
 			
     case GENEBC_NoSlipFreeSurface:
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_IMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 			
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
-      ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav, DMDABCList_JMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 0,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
       break;
 			
     default:
       break;
 	}
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyBoundaryCondition_Gene3DNueve"
+PetscErrorCode ModelApplyBoundaryCondition_Gene3DNueve(pTatinCtx user,void *ctx)
+{
+  ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
+	BCList              u_bclist;
+	DM                  dav;
+  PetscErrorCode      ierr;
+	
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+
+	u_bclist = user->stokes_ctx->u_bclist;
+	dav      = user->stokes_ctx->dav;
+	
+	ierr = ModelGene3DNueve_ApplyBoundaryCondition(dav,u_bclist,data);CHKERRQ(ierr);
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyBoundaryConditionMG_Gene3DNueve"
+PetscErrorCode ModelApplyBoundaryConditionMG_Gene3DNueve(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
+{
+  ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
+	PetscInt n;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	for (n=0; n<nl; n++) {
+		ierr = ModelGene3DNueve_ApplyBoundaryCondition(dav[n],bclist[n],data);CHKERRQ(ierr);
+	}	
+	
+	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -338,7 +400,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Gene3DNueve(pTatinCtx c,void 
   PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
   PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", __FUNCT__);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -353,7 +415,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Gene3DNueve(pTatinCtx c,void *ctx)
 	
   ierr =	DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox, data->Lx, data->Oy, data->Ly, data->Oz, data->Lz); CHKERRQ(ierr);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 /* Define eta,rho on material points */
@@ -408,7 +470,7 @@ PetscErrorCode Gene3DNueve_MaterialPointSetInitialStokesVariables(pTatinCtx c,vo
   DataFieldRestoreAccess(PField_std);
   DataFieldRestoreAccess(PField_stokes);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 /* define phase index on material points from a map file extruded in z direction */
@@ -502,7 +564,7 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
   PhaseMapDestroy(&phasemap);	
   DataFieldRestoreAccess(PField_std);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -582,7 +644,7 @@ PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const ch
   DataFieldRestoreAccess(PField_std);
   PhaseMapDestroy(&phasemap);	
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -638,7 +700,7 @@ PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedM
 	}
 	
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -727,24 +789,24 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3DNueve(pTatinCtx c,void *c
 	ierr = MaterialPointInitializeRegionIndex(c->materialpoint_db,-1);CHKERRQ(ierr);
   switch (data->initial_geom) {
       
-    case 0: /* Layer cake <obsolete> */
+    case GENE_LayeredCake: /* Layer cake <obsolete> */
 		{
 		}
       break;
       
-    case 1: /* Extrude map along x,y,z directions */
+    case GENE_ExtrudeFromMap: /* Extrude map along x,y,z directions */
 		{
 			ierr = MaterialPointSetRegionIndexFromMap(c,ctx);CHKERRQ(ierr);
 		}
       break;
       
-    case 2: /* Read from CAD file */
+    case GENE_ReadFromCAD: /* Read from CAD file */
 		{
 			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Reading region index from CAD is not implemented yet\n");
 		}
       break;
 			
-		case 3:
+		case GENE_ExtrudeByPartsFromMap:
 		{
 			ierr = ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedMap(c,ctx);CHKERRQ(ierr);
 		}
@@ -756,7 +818,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3DNueve(pTatinCtx c,void *c
 	/* Set eta0, rho0 */
   ierr = Gene3DNueve_MaterialPointSetInitialStokesVariables(c,ctx);CHKERRQ(ierr);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -770,7 +832,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Gene3DNueve(pTatinCtx c,Vec X,void *
   PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
   PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", __FUNCT__);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -786,7 +848,7 @@ PetscErrorCode ModelOutput_Gene3DNueve(pTatinCtx c,Vec X,const char prefix[],voi
   ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
   ierr = pTatin3d_ModelOutput_MPntStd(c,prefix); CHKERRQ(ierr);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -804,7 +866,7 @@ PetscErrorCode ModelDestroy_Gene3DNueve(pTatinCtx c,void *ctx)
   /* Free structure */
   ierr = PetscFree(data);CHKERRQ(ierr);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -833,6 +895,7 @@ PetscErrorCode pTatinModelRegister_Gene3DNueve(void)
   /* Set function pointers */
   ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_INIT,                  (void (*)(void)) ModelInitialize_Gene3DNueve); CHKERRQ(ierr);
   ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_BC,              (void (*)(void)) ModelApplyBoundaryCondition_Gene3DNueve); CHKERRQ(ierr);
+	ierr =  pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_BCMG,            (void (*)(void)) ModelApplyBoundaryConditionMG_Gene3DNueve);CHKERRQ(ierr);
   ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void)) ModelApplyMaterialBoundaryCondition_Gene3DNueve);CHKERRQ(ierr);
   ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void)) ModelApplyInitialMeshGeometry_Gene3DNueve);CHKERRQ(ierr);
   ierr =	pTatinModelSetFunctionPointer(m, PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void)) ModelApplyInitialMaterialGeometry_Gene3DNueve);CHKERRQ(ierr);
@@ -843,5 +906,5 @@ PetscErrorCode pTatinModelRegister_Gene3DNueve(void)
   /* Insert model into list */
   ierr = pTatinModelRegister(m); CHKERRQ(ierr);
 	
-  PetscFunctionReturn (0);
+  PetscFunctionReturn(0);
 }
