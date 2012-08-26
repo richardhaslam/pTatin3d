@@ -3,13 +3,17 @@
 TATIN_MODEL_DIR = \
 	template \
 	viscous_sinker \
-	gene3D_orig \
 	indentor \
+	gene3d \
+	gene3d_nueve \
 	sierra
 
 
 ## DONT NOT EDIT LINES BELOW
+export TATIN_MODEL_LIB = ${TATIN_DIR}/models/libptatin3dmodels.a
+
 all:
+	-@rm -f ${TATIN_MODEL_LIB}
 	-@${MAKE} build
 	-@${MAKE} modellib
 
@@ -21,9 +25,10 @@ build:
 modellib:
 	-@echo ""
 	-@echo "  Assembling model library using object files:" 
-	-@ls *.o
-	ar rcs libptatin3dmodels.a *.o
-	-@rm *.o
+	@for m in ${TATIN_MODEL_DIR} ; do \
+		${MAKE} addtolib -C $${m}/; \
+	done
+
 	
 clean_all:
 	@for m in ${TATIN_MODEL_DIR} ; do \
@@ -31,5 +36,5 @@ clean_all:
 	done
 
 	-@rm -f *.o
-	-@rm libptatin3dmodels.a
+	-@rm ${TATIN_MODEL_LIB}
 
