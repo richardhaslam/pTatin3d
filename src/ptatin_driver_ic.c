@@ -18,9 +18,10 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 {
 	DM              multipys_pack,dav,dap;
-	PetscErrorCode ierr;
-	pTatinCtx user;
-
+	PetscErrorCode  ierr;
+	pTatinCtx       user;
+	Vec             X,F;
+	
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
@@ -46,6 +47,9 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
 	
+	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	
+	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
 	/* mesh geometry */
@@ -65,21 +69,22 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
+	{
+		Vec Xu,Xp;
+		ierr = DMCompositeGetAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+		ierr = BCListInsert(user->stokes_ctx->u_bclist,Xu);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	}
+	
 	/* test form function */
 	{
-		Vec  X,F;
 		SNES snes;
-		Mat  JMF;
 		
-		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 		
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
 		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-		ierr = VecDestroy(&X);CHKERRQ(ierr);
-		ierr = VecDestroy(&F);CHKERRQ(ierr);
 	}
 	
 	/* test data bucket viewer */
@@ -88,13 +93,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	
 
 	/* write out the initial condition */
-	{
-		Vec X;
-		
-		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
-
-	}
+	ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
 	
 	/* test generic viewer */
 	{
@@ -115,7 +114,8 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	}
 	
 	
-	
+	ierr = VecDestroy(&X);CHKERRQ(ierr);
+	ierr = VecDestroy(&F);CHKERRQ(ierr);
 	ierr = pTatin3dDestroyContext(&user);
 
 	PetscFunctionReturn(0);
