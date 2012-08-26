@@ -37,6 +37,7 @@ export TATIN_SRC = \
 			ptatin3d.c \
 			ptatin_models.c \
 			rheology.c \
+			material_constants.c \
 			stokes_rheology_viscous.c \
 			stokes_form_function.c \
 			stokes_operators_mf.c \
@@ -47,7 +48,8 @@ export TATIN_SRC = \
 			element_utils_q1.c \
 			stokes_assembly.c \
 			monitors.c \
-			mp_advection.c
+			mp_advection.c \
+			units.c
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
@@ -68,6 +70,7 @@ TATIN_TESTS	=	\
 
 TATIN_MODELS		=
 TATIN_DRIVERS		= \
+			ptatin_driver_ic \
 			ptatin_driver_nostokessolve \
 			ptatin_driver_asmsolve \
 			ptatin_driver_asmsolve_approx \
@@ -98,6 +101,7 @@ all:
 	-@echo ${PWD}
 	
 	-@${MAKE} base_objects
+	-@${MAKE} material_constants
 	-@${MAKE} libs
 	-@${MAKE} models
 	-@${MAKE} tests
@@ -111,12 +115,14 @@ base_objects:
 		${MAKE} $$a; \
 	done
 
+material_constants: base_objects
+	-@${MAKE} -C material_constants
 
 libs: base_objects
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
-	ar rcs libptatin3d.a ${TATIN_OBJ}
+	ar rcs libptatin3d.a ${TATIN_OBJ} material_constants/*.o
 
 
 tests: libs models
@@ -149,6 +155,8 @@ drivers: libs models
 
 clean_all:
 	-@echo ""
+	-@echo "*** Removing material_constants ***"
+	-@${MAKE} clean_all -C material_constants/
 	-@echo "*** Removing models ***"
 	-@${MAKE} clean_all -C models/
 	-@echo "*** Removing base_objects ***"
