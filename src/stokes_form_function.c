@@ -504,7 +504,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 		/* evaluate the viscosity */
 		for (p=0; p<ngp; p++) {
 			el_eta[p] = cell_gausspoints[p].eta;
-			//printf("  [e=%d] eta = %1.4e \n", e, el_eta[p] );
+			//printf("  [e=%d:p=%d] eta = %1.4e \n", e, p,el_eta[p] );
 		}
 		
 		int_P = int_divu = 0.0;
@@ -632,6 +632,8 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 			Fe[3*k  ] = Fe[3*k  ] - Be[3*k  ];
 			Fe[3*k+1] = Fe[3*k+1] - Be[3*k+1];
 			Fe[3*k+2] = Fe[3*k+2] - Be[3*k+2];
+
+			//printf("  [e=%4d] Fe = %+1.4e %+1.4e  %+1.4e\n", e, Fe[3*k  ],Fe[3*k+1],Fe[3*k+2] );
 		}
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 	}
