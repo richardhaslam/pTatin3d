@@ -571,7 +571,16 @@ PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
 	if (de) { *de = ctx->materialpoint_ex; }
 	PetscFunctionReturn(0);
 }
-																			 
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetMaterialConstants"
+PetscErrorCode pTatinGetMaterialConstants(pTatinCtx ctx,DataBucket *db)
+{
+	PetscErrorCode ierr;
+	if (db) { *db = ctx->material_constants; }
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "pTatinGetModel"
 PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m)
