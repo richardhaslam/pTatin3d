@@ -676,6 +676,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 	ierr = VecGetArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
 	
 	/* traverse elements and interpolate */
+	//printf("_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes NEL %d \n", nel );
 	for (e=0;e<nel;e++) {
 		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
 		
@@ -683,23 +684,8 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		
 		ierr = DMDAGetScalarElementField(Ae1,nen,(PetscInt*)&elnidx[nen*e],LA_properties_A1);CHKERRQ(ierr);
 		ierr = DMDAGetScalarElementField(Ae2,nen,(PetscInt*)&elnidx[nen*e],LA_properties_A2);CHKERRQ(ierr);
-		
-		/* zero out the junk */
-		Ae1[1] = Ae1[7] = 0.0;
-		Ae1[3] = Ae1[4] = Ae1[5] = 0.0;
-		
-		Ae2[1] = Ae2[7] = 0.0;
-		Ae2[3] = Ae2[4] = Ae2[5] = 0.0;
-		
-		Ni_p[ 9] = Ni_p[10] = Ni_p[11] = 1.0;
-		Ni_p[12] = Ni_p[13] = Ni_p[14] = 1.0;
-		Ni_p[15] = Ni_p[16] = Ni_p[17] = 1.0;
-		
-		Ni_p[1+18] = Ni_p[7+18] = 0.0;
-		Ni_p[3+18] = Ni_p[4+18] = Ni_p[5+18] = 0.0;
-		
-		
-		/* The Q2 interpolant tends to overshoot / undershoot when you have viscosity jumps */
+				
+		/* The Q2 interpolant tends to overshoot, Q1 shouldn't but we check anyway / undershoot when you have viscosity jumps */
 		range_eta[0] = 1.0e32;  /* min */
 		range_eta[1] = -1.0e32; /* max */
 		range_rho[0] = 1.0e32;
@@ -725,6 +711,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 			if (cell_gausspoints[p].Fu[1] < range_rho[0]) { cell_gausspoints[p].Fu[1] = range_rho[0]; }
 			if (cell_gausspoints[p].Fu[1] > range_rho[1]) { cell_gausspoints[p].Fu[1] = range_rho[1]; }
 			
+			//printf("e=%d: p=%d: eta = %1.4e: Fu1 = %1.4e \n", e, p, cell_gausspoints[p].eta, cell_gausspoints[p].Fu[1] );		
 		}
 	}
 	
@@ -803,6 +790,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_Interp
 																																					DM clone,Vec properties_A1,Vec properties_A2,
 																																					Quadrature Q) 
 {
+	PetscScalar NiQ1_p[8];
 	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
 	PetscScalar Ae1[Q2_NODES_PER_EL_3D], Ae2[Q2_NODES_PER_EL_3D], Be[Q2_NODES_PER_EL_3D];
 	PetscInt el_lidx[U_BASIS_FUNCTIONS];
@@ -851,7 +839,17 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_Interp
 		
 		ierr = PetscMemzero(NIu[p], sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
 		
-		P3D_ConstructNi_Q2_3D(xip,NIu[p]);
+		//P3D_ConstructNi_Q2_3D(xip,NIu[p]);
+		pTatinConstructNI_Q1_3D(xip,NiQ1_p);
+		NIu[p][0] = NiQ1_p[0];
+		NIu[p][2] = NiQ1_p[1];
+		NIu[p][6] = NiQ1_p[2];
+		NIu[p][8] = NiQ1_p[3];
+		
+		NIu[p][0+18] = NiQ1_p[4];
+		NIu[p][2+18] = NiQ1_p[5];
+		NIu[p][6+18] = NiQ1_p[6];
+		NIu[p][8+18] = NiQ1_p[7];
 	}
 	
 	PetscGetTime(&t0);
@@ -871,6 +869,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_Interp
 	ierr = VecGetArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
 	
 	/* traverse elements and interpolate */
+	//printf("_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints NEL %d \n", nel );
 	for (e=0;e<nel;e++) {
 		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
 		
@@ -907,6 +906,8 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_Interp
 			if (cell_gausspoints[p].eta > range_eta[1]) { cell_gausspoints[p].eta = range_eta[1]; }
 			if (cell_gausspoints[p].Fu[1] < range_rho[0]) { cell_gausspoints[p].Fu[1] = range_rho[0]; }
 			if (cell_gausspoints[p].Fu[1] > range_rho[1]) { cell_gausspoints[p].Fu[1] = range_rho[1]; }
+
+			//printf("e=%d: p=%d: eta = %1.4e: Fu1 = %1.4e \n", e, p, cell_gausspoints[p].eta, cell_gausspoints[p].Fu[1] );		
 		}
 	}
 	
@@ -928,6 +929,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 																																					DM clone,Vec properties_A1,Vec properties_A2,Vec properties_B,
 																																					const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[]) 
 {
+	PetscScalar NiQ1_p[8];
 	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
 	PetscScalar Ae1[Q2_NODES_PER_EL_3D], Ae2[Q2_NODES_PER_EL_3D], Be[Q2_NODES_PER_EL_3D];
 	PetscInt el_lidx[U_BASIS_FUNCTIONS];
@@ -968,7 +970,28 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 		ierr = PetscMemzero(Ae2,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
 		ierr = PetscMemzero(Be, sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
 		
-		pTatinConstructNI_Q1_on_Q2_3D(xi_p,Ni_p);
+		pTatinConstructNI_Q1_3D(xi_p,NiQ1_p);
+		
+		Ni_p[0] = NiQ1_p[0];
+		Ni_p[2] = NiQ1_p[1];
+		Ni_p[6] = NiQ1_p[2];
+		Ni_p[8] = NiQ1_p[3];
+		
+		Ni_p[0+18] = NiQ1_p[4];
+		Ni_p[2+18] = NiQ1_p[5];
+		Ni_p[6+18] = NiQ1_p[6];
+		Ni_p[8+18] = NiQ1_p[7];
+		
+		
+		Ni_p[1] = Ni_p[7] = 1.0;
+		Ni_p[3] = Ni_p[4] = Ni_p[5] = 1.0;
+		
+		Ni_p[ 9] = Ni_p[10] = Ni_p[11] = 1.0;
+		Ni_p[12] = Ni_p[13] = Ni_p[14] = 1.0;
+		Ni_p[15] = Ni_p[16] = Ni_p[17] = 1.0;
+		
+		Ni_p[1+18] = Ni_p[7+18] = 1.0;
+		Ni_p[3+18] = Ni_p[4+18] = Ni_p[5+18] = 1.0;
 		
 		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
 			Ae1[i] = Ni_p[i] * eta_p;
