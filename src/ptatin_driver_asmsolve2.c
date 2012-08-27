@@ -769,7 +769,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
 	
+	// activate mffd via -snes_mf_operator
 	ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+	// Force mffd
+	//ierr = SNESSetJacobian(snes,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 	
 	ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 	
@@ -842,7 +845,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+//	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
 	
 	
