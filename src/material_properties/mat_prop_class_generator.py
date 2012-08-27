@@ -429,9 +429,9 @@ def Generate_pTatin3d_MaterialConstant_ViscosityArrhenius():
 	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
-def Generate_pTatin3d_MaterialConstant_RheologyMises():
-	MatPropClass      = 'MaterialConst_RheologyMises'
-	MatPropClassShort = 'RheoMises'
+def Generate_pTatin3d_MaterialConstant_PlasticMises():
+	MatPropClass      = 'MaterialConst_PlasticMises'
+	MatPropClassShort = 'PlasticMises'
 	variable_name_list = [ 'tau_yield',      'tau_yield_inf'  ]
 	variable_type_list = [ 'double', 'double' ]
 	variable_extend_list        = [ 1, 1 ]
@@ -440,9 +440,9 @@ def Generate_pTatin3d_MaterialConstant_RheologyMises():
 	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
-def Generate_pTatin3d_MaterialConstant_RheologyDruckerPrager():
-	MatPropClass      = 'MaterialConst_RheologyDruckerPrager'
-	MatPropClassShort = 'RheoDP'
+def Generate_pTatin3d_MaterialConstant_PlasticDruckerPrager():
+	MatPropClass      = 'MaterialConst_PlasticDruckerPrager'
+	MatPropClassShort = 'PlasticDP'
 	variable_name_list = [ 'Co',      'phi',  'Co_inf', 'phi_inf', 'Hst_cutoff', 'Tst_cutoff'  ]
 	variable_type_list = [ 'double', 'double', 'double', 'double', 'double', 'double' ]
 	variable_extend_list        = [ 1, 1, 1, 1, 1, 1 ]
@@ -451,9 +451,9 @@ def Generate_pTatin3d_MaterialConstant_RheologyDruckerPrager():
 	MATPROP_CLASS_GENERATOR( MatPropClass, MatPropClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
-def Generate_pTatin3d_MaterialConstant_RheologySoftening():
-	MatPropClass      = 'MaterialConst_RheologySoftening'
-	MatPropClassShort = 'RheoSoftening'
+def Generate_pTatin3d_MaterialConstant_Softening():
+	MatPropClass      = 'MaterialConst_Softening'
+	MatPropClassShort = 'Softening'
 	variable_name_list = [ 'min_strain_cutoff',      'max_strain_cutoff'  ]
 	variable_type_list = [ 'double', 'double' ]
 	variable_extend_list        = [ 1, 1 ]
@@ -468,9 +468,9 @@ Generate_pTatin3d_MaterialConstant_ViscosityConst()
 Generate_pTatin3d_MaterialConstant_ViscosityArrhenius()
 
 # plastic
-Generate_pTatin3d_MaterialConstant_RheologyMises()
-Generate_pTatin3d_MaterialConstant_RheologyDruckerPrager()
+Generate_pTatin3d_MaterialConstant_PlasticMises()
+Generate_pTatin3d_MaterialConstant_PlasticDruckerPrager()
 
 # softening
-Generate_pTatin3d_MaterialConstant_RheologySoftening()
+Generate_pTatin3d_MaterialConstant_Softening()
 
