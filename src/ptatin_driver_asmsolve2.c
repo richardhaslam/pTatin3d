@@ -210,7 +210,8 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 	
 	/* nonlinearitiers: markers => quad points */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
-	
+
+#if 1
 	/* interpolate coefficients */
 	{
 		int               npoints;
@@ -228,7 +229,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		
 		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,mlctx->nlevels,mlctx->interpolatation_eta,mlctx->dav_hierarchy,mlctx->volQ);CHKERRQ(ierr);
 	}
-	
+#endif	
 	
 	/* operator */
 	ierr = PetscTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
@@ -283,7 +284,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
   ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	*mstr = DIFFERENT_NONZERO_PATTERN;
-	
+#if 1	
 	/* Buu preconditioner for all other levels in the hierarchy */
 	for (k=mlctx->nlevels-2; k>=0; k--) {
 		
@@ -322,7 +323,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 				break;
 		}
 	}	
-	
+#endif	
 	
 	
 	/* clean up */
@@ -551,7 +552,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
-		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+		//ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 	}
 	
 	/* define boundary conditions */
@@ -657,7 +658,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				}
 				/* should move assembly into jacobian */
 				ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
-				ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
+				//ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
 				
 				operatorA11[k] = Auu;
 				operatorB11[k] = Auu;
@@ -842,13 +843,14 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		}
 	}
+
+	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
+	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = pTatinModel_Output(user->model,user,X,"continuation");CHKERRQ(ierr);
 	
+	user->rheology_constants.rheology_type = RHEOLOGY_VP_STD;
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
-//	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-
-	
-	
 	
 	{
 		char name[100];
