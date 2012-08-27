@@ -10,6 +10,7 @@
 
 #include "rheology.h"
 #include "stokes_rheology_viscous.h"
+#include "stokes_rheology_vp_std.h"
 
 
 #undef __FUNCT__
@@ -112,6 +113,10 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			
 		case RHEOLOGY_VISCO_ELASTIC_PLASTIC:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_ELASTIC_PLASTIC using markers not defined");
+			break;
+
+		case RHEOLOGY_VP_STD:
+			ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
 			break;
 			
 		default:

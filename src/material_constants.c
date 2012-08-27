@@ -17,8 +17,9 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket *_db)
 	PetscFunctionBegin;
 	DataBucketCreate(&db);
 	
-	DataBucketRegisterField(db,MaterialConst_MaterialType_classname,    sizeof(MaterialConst_MaterialType),PETSC_NULL);
-	DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,  sizeof(MaterialConst_ViscosityConst),PETSC_NULL);
+	DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),PETSC_NULL);
+	DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,    sizeof(MaterialConst_ViscosityConst),PETSC_NULL);
+	DataBucketRegisterField(db,MaterialConst_PlasticMises_classname,      sizeof(MaterialConst_PlasticMises),PETSC_NULL);
 
 	DataBucketFinalize(db);
 	
@@ -32,6 +33,7 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket *_db)
 	PetscFunctionReturn(0);
 }
 
+/* MaterialType */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsSetDefault_MaterialType"
 PetscErrorCode MaterialConstantsSetDefault_MaterialType(DataBucket db)
@@ -79,20 +81,6 @@ PetscErrorCode MaterialConstantsSetDefault_ViscosityConst(DataBucket db)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsReportParseError"
-PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region)
-{
-	PetscFunctionBegin;
-	if (model_name) {
-		PetscPrintf(PETSC_COMM_WORLD,"Expected user to provide option for field (%s) in region (%D) via -%s%s_%D \n",field_name,region,  model_name,field_name,region);			
-	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"Expected user to provide option for field (%s) in region (%D) via -%s_%D \n",field_name,region,    field_name,region);			
-	}
-	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Option not found");
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityConst"
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityConst(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
@@ -126,6 +114,90 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityConst(DataBucket db,cons
 	PetscFunctionReturn(0);
 }
 
+/* ViscosityConst */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetDefault_PlasticMises"
+PetscErrorCode MaterialConstantsSetDefault_PlasticMises(DataBucket db)
+{
+	int                          r,nregions;
+	DataField                    PField;
+	MaterialConst_PlasticMises   *data;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
+	DataBucketGetDataFieldByName(db,MaterialConst_PlasticMises_classname,&PField);
+	
+	data = (MaterialConst_PlasticMises*)PField->data; /* should write a function to do this */
+	for (r=0; r<nregions; r++) {
+		data[r].tau_yield     = 1.0e32;
+		data[r].tau_yield_inf = 1.0e32;
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetFromOptions_PlasticMises"
+PetscErrorCode MaterialConstantsSetFromOptions_PlasticMises(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
+{
+	char                         opt_name[256],*field_name;
+	DataField                    PField;
+	MaterialConst_PlasticMises   *data;
+	PetscBool                    found;
+	PetscReal                    value;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_PlasticMises_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* tau_yield */
+	value      = 1.0; /* default - not required is nothing happens if option not found */
+	field_name = MaterialConst_PlasticMises_member_names[0];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_PlasticMisesSetField_yield_stress(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+
+	/* tau_yield_inf */
+	value      = 1.0; /* default - not required is nothing happens if option not found */
+	field_name = MaterialConst_PlasticMises_member_names[1];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_PlasticMisesSetField_yield_stress_inf(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+	
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsReportParseError"
+PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region)
+{
+	PetscFunctionBegin;
+	if (model_name) {
+		PetscPrintf(PETSC_COMM_WORLD,"Expected user to provide option for field (%s) in region (%D) via -%s%s_%D \n",field_name,region,  model_name,field_name,region);			
+	} else {
+		PetscPrintf(PETSC_COMM_WORLD,"Expected user to provide option for field (%s) in region (%D) via -%s_%D \n",field_name,region,    field_name,region);			
+	}
+	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Option not found");
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsSetDefaults"
@@ -136,6 +208,7 @@ PetscErrorCode MaterialConstantsSetDefaults(DataBucket db)
 
 	ierr = MaterialConstantsSetDefault_MaterialType(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_ViscosityConst(db);CHKERRQ(ierr);
+	ierr = MaterialConstantsSetDefault_PlasticMises(db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

@@ -50,35 +50,55 @@ PetscErrorCode ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VISCOUS(DataBuck
 #define __FUNCT__ "ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VP_STD"
 PetscErrorCode ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VP_STD(DataBucket material_constants,const char model_name[],const PetscInt region_id)
 {
-	PetscInt visc_type,plastic_type,softening_type;
-	PetscBool found;
-	char option_name[256];
-	PetscErrorCode ierr;
+	PetscInt                   visc_type,plastic_type,softening_type;
+	PetscBool                  found;
+	char                       option_name[256];
+	MaterialConst_MaterialType *data;
+	DataField                  PField;
+	PetscErrorCode             ierr;
 	
 	PetscFunctionBegin;
+
+
+	/* Load in the material types */
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_MaterialType_classname,&PField);
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
 	/* viscous type */
 	sprintf(option_name,"-viscous_%d",region_id);
   ierr = PetscOptionsGetInt(model_name,option_name,&visc_type,&found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
-		SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for viscous type for region %D; via -viscous_%D\n",region_id,region_id);
+		//SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for viscous type for region %D; via -viscous_%D\n",region_id,region_id);
+		ierr = ReportOptionMissing(model_name,"Viscous type for region",option_name,"0 = CONSTANT, 1 = FRANKK, 2 = ARRHENIUS");CHKERRQ(ierr);
 	}
+
+	MaterialConst_MaterialTypeSetField_visc_type(data,visc_type); /* use setter */
 	
 	/* plastic type */
 	sprintf(option_name,"-plastic_%d",region_id);
   ierr = PetscOptionsGetInt(model_name,option_name,&plastic_type,&found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
-		SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for plastic type for region %D; via -plastic_%D\n",region_id,region_id);
+		//SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for plastic type for region %D; via -plastic_%D\n",region_id,region_id);
+		ierr = ReportOptionMissing(model_name,"Plastic type for region",option_name,"0 = NONE, 1 = MISES, 2 = DP");CHKERRQ(ierr);
 	}
+	
+	MaterialConst_MaterialTypeSetField_plastic_type(data,plastic_type);
 	
   /* softening  type */
 	sprintf(option_name,"-softening_%d",region_id);
   ierr = PetscOptionsGetInt(model_name,option_name,&softening_type,&found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
-		SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for softening type for region %D; via -softening_%D\n",region_id,region_id);
+		//SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for softening type for region %D; via -softening_%D\n",region_id,region_id);
+		ierr = ReportOptionMissing(model_name,"Softening type for region",option_name,"0 = NONE, 1 = LINEAR, 2 = EXPONENTIAL");CHKERRQ(ierr);
 	}
+	
+	MaterialConst_MaterialTypeSetField_softening_type(data,softening_type);
 	
   /* density type */
 
+	
+	DataFieldRestoreAccess(PField);
 	
 	
 	switch (visc_type) {
@@ -88,41 +108,39 @@ PetscErrorCode ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VP_STD(DataBucke
 			break;
 			
 		case VISCOUS_FRANKK:
-			printf("TODO\n");
+			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"-viscous FRANKK currently unsupported");
 			break;
 			
 		case VISCOUS_ARRHENIUS:
-			printf("TODO\n");
+			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"-viscous ARRHENIUS currently unsupported");
 			break;
 	}
 		
 	switch (plastic_type) {
 			
 		case PLASTIC_NONE:
-			printf("TODO\n");
 			break;
 			
 		case PLASTIC_MISES:
-			printf("TODO\n");
+			ierr = MaterialConstantsSetFromOptions_PlasticMises(material_constants,model_name,region_id,PETSC_TRUE);CHKERRQ(ierr);
 			break;
 			
 		case PLASTIC_DP:
-			printf("TODO\n");
+			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"-plastic DP currently unsupported");
 			break;
 	}
 	
 	switch (softening_type) {
 			
 		case SOFTENING_NONE:
-			printf("TODO\n");
 			break;
 			
 		case SOFTENING_LINEAR:
-			printf("TODO\n");
+			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"-softening LINEAR currently unsupported");
 			break;
 			
 		case SOFTENING_EXPONENTIAL:
-			printf("TODO\n");
+			SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"-softening EXPONENTIAL currently unsupported");
 			break;
 	}
 	
@@ -209,7 +227,8 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 	if (found == PETSC_FALSE){
 		ierr = ReportOptionMissing(MODEL_NAME,"Rheology type","-rheol","0=viscous , 4=visco_plastic");CHKERRQ(ierr);
 	}
-	
+	/* This needs to be stored ELSEWHERE */
+	c->rheology_constants.rheology_type = rheol_type;
 	
 	switch  (rheol_type) {
 		
