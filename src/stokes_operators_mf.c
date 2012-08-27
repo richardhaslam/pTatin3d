@@ -260,6 +260,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 		
 		
 		for (p=0; p<ngp; p++) {
+			//printf("[e=%4d,p=%d] %1.4e \n", e,p,cell_gausspoints[p].eta);
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
