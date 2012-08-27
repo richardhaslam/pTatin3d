@@ -39,6 +39,7 @@ export TATIN_SRC = \
 			rheology.c \
 			material_constants.c \
 			stokes_rheology_viscous.c \
+			stokes_rheology_vp_std.c \
 			stokes_form_function.c \
 			stokes_operators_mf.c \
 			stokes_operators.c \
