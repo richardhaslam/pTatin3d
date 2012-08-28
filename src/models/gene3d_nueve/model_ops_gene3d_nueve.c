@@ -483,7 +483,7 @@ PetscErrorCode Gene3DNueve_MaterialPointSetInitialStokesVariables(pTatinCtx c,vo
 		MPntStdGetField_phase_index (mpprop_std, &region_id);
 		
 		MPntPStokesSetField_eta_effective(mpprop_stokes, material_visc_const[region_id].eta0 );
-		MPntPStokesSetField_density(mpprop_stokes,       2.0 );
+		MPntPStokesSetField_density(mpprop_stokes,       0.0 );
 	}
 	
   DataFieldRestoreAccess(PField_std);
