@@ -791,7 +791,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+	//ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
 	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 //	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
@@ -844,13 +844,59 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		}
 	}
 
+	
+#if 0
 	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"continuation");CHKERRQ(ierr);
-	
+
 	user->rheology_constants.rheology_type = RHEOLOGY_VP_STD;
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+#endif
+	
+#if 1
+{
+	PetscInt snes_its,picard_its,newton_its;
 
+	SNESGetTolerances(snes,0,0,0,&snes_its,0);
+
+	/* switch to linear rheology */
+	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
+
+	/* do a linear solve */
+	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,3,PETSC_DEFAULT);
+	PetscPrintf(PETSC_COMM_WORLD,"############## LINEAR STAGE ##############\n");
+	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = pTatinModel_Output(user->model,user,X,"linear_stage");CHKERRQ(ierr);
+	
+	/* switch to non-linear rheology */
+	user->rheology_constants.rheology_type = RHEOLOGY_VP_STD;
+
+	/* do a picard solve */
+	//ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	
+	//SNESGetTolerances(snes,0,0,0,&snes_its,0);
+	picard_its = snes_its;
+	PetscOptionsGetInt(PETSC_NULL,"-picard_its",&picard_its,0);
+	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
+	PetscPrintf(PETSC_COMM_WORLD,"############## PICARD STAGE ##############\n");
+	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = pTatinModel_Output(user->model,user,X,"picard_stage");CHKERRQ(ierr);
+	/*
+	newton_its = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
+	if (newton_its>0) {
+		// Force mffd
+		ierr = SNESSetJacobian(snes,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"############## NEWTON STAGE ##############\n");
+		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = pTatinModel_Output(user->model,user,X,"newton_stage");CHKERRQ(ierr);
+	}
+	*/
+}
+#endif
+	
 	
 	{
 		char name[100];
