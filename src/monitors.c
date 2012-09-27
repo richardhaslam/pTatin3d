@@ -88,8 +88,46 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	ierr = VecDestroy(&v);CHKERRQ(ierr);
 	ierr = VecDestroy(&w);CHKERRQ(ierr);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Residual viwer: wrote file \n");
+	PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Residual: ptatin linear solution viewer wrote file \n",its);
 	
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_SNESMonitor_ParaviewStokesResiduals3d"
+PetscErrorCode pTatin_SNESMonitor_ParaviewStokesResiduals3d(SNES snes,PetscInt n,PetscReal rnorm,void *data)
+{
+	PetscErrorCode ierr;
+	pTatinCtx ctx;
+	DM stokes_pack;
+	Vec X,UP;
+	static char pvdfilename[1000];
+	char vtkfilename[1000];
+	PetscInt its;
+	
+	PetscFunctionBegin;
+	ctx = (pTatinCtx)data;
+
+	ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
+	ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+	
+	if (its==0) {
+		sprintf(pvdfilename,"%s/residualseries_vp_snes_residuals_step%d.pvd",ctx->outputpath,ctx->step);
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+	}
+	sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d.pvts",its,ctx->step);
+	ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename, "");CHKERRQ(ierr);
+	
+	
+	// PVTS + VTS
+	sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d",its,ctx->step);
+	
+	stokes_pack = ctx->stokes_ctx->stokes_pack;
+	UP = X;
+	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"%3D SNES Residual: ptatin non-linear solution viwer wrote file \n",its);
+	
+	PetscFunctionReturn(0);
+}
