@@ -21,6 +21,9 @@
 #include "stokes_q2p1_mf_operators_diag_def.c"
 
 //
+
+//#define PTAT3D_LOG_MF_OP
+
 //#define NO_LOWORDER_OPERATORS
 #define ONEPOINTQ_LOWORDER_OPERATORS
 //#define Q1GEOM_LOWORDER_OPERATORS
@@ -91,8 +94,9 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 	}
 	
 	PetscGetTime(&t1);
-	//PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP
+	PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -187,8 +191,9 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 	}
 	
 	PetscGetTime(&t1);
-	//PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP	
+	PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -271,8 +276,9 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	}
 	
 	PetscGetTime(&t1);
-	//PetscPrintf(PETSC_COMM_WORLD,"MatMultA11, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -413,8 +419,9 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	}
 	
 	PetscGetTime(&t1);
-//	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11PC, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11PC(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -505,8 +512,9 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	}
 	
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -585,8 +593,9 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	}
 	
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA12, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA12(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -672,8 +681,9 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	}
 	
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA21, = %1.4e (sec)\n",t1-t0);
-	
+#ifdef PTAT3D_LOG_MF_OP
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA21(MF): %1.4e (sec)\n",t1-t0);
+#endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);

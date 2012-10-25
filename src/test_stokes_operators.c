@@ -233,8 +233,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	tl = (double)(t1 - t0);
 	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
 	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
-
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF):      time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 
 	/* assembled */
@@ -255,7 +254,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	tl = (double)(t1 - t0);
 	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
 	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
-	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM):     time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	/*
 	PetscPrintf(PETSC_COMM_WORLD,"y_mfo\n");
@@ -643,12 +642,12 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 
 
 	ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
-/*
+
 	ierr = compare_mf_A21(user->stokes_ctx);CHKERRQ(ierr);
 	ierr = compare_mf_A12(user->stokes_ctx);CHKERRQ(ierr);
 	
 	ierr = compare_mf_A(user->stokes_ctx);CHKERRQ(ierr);
-*/
+
 	
 //	ierr = compare_mf_diagA11(user->stokes_ctx);CHKERRQ(ierr);
 	
