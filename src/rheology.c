@@ -85,7 +85,6 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 		case RHEOLOGY_VISCOUS:
 			if (been_here==0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Rheology update for RHEOLOGY_VISCOUS using markers is under development ***\n");
-				been_here = 1;
 			}
 			/* update on markers */
 			ierr = EvaluateRheologyNonlinearitiesMarkers_Viscous(user,dau,u,dap,p);CHKERRQ(ierr);
@@ -94,7 +93,6 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 		case RHEOLOGY_VISCO_PLASTIC:
 			if (been_here==0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Rheology update for RHEOLOGY_VISCO_PLASTIC using markers is under development ***\n");
-				been_here = 1;
 			}
 			/* update on markers */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_PLASTIC using markers not defined");
@@ -104,7 +102,6 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 		case RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING:
 			if (been_here==0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Rheology update for RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING using markers is under development ***\n");
-				been_here = 1;
 			}
 			/* update on markers */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING using markers not defined");
@@ -136,7 +133,10 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 	
 	switch (user->coefficient_projection_type) {
 
-		case 0:			/* Perform P0 projection over Q2 element directly onyo uadrature points */
+		case -1:			/* Perform null projection use the values currently defined on the quadrature points */
+			break;
+
+		case 0:			/* Perform P0 projection over Q2 element directly onto quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 marker->quadrature projection not supported");
 			break;
 			
@@ -147,8 +147,13 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 		case 2: 			/* Perform Q2 projection and interpolate back to quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
 			break;
+
+		case 3: 			/* Perform P1 projection and interpolate back to quadrature points */
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
+			break;
 	}
 
+	been_here = 1;
   PetscFunctionReturn(0);
 }
 
