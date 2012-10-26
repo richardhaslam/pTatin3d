@@ -442,7 +442,7 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 	
 	PetscFunctionBegin;
 	
-	if (user->materialpoint_ex) { ierr = DataExView(user->materialpoint_ex);CHKERRQ(ierr); ierr = DataExDestroy(user->materialpoint_ex);CHKERRQ(ierr); }
+	if (user->materialpoint_ex) { /* ierr = DataExView(user->materialpoint_ex);CHKERRQ(ierr); */ ierr = DataExDestroy(user->materialpoint_ex);CHKERRQ(ierr); }
 	if (user->materialpoint_db) { DataBucketDestroy(&user->materialpoint_db); }
 	
 	if (user->stokes_ctx) { ierr = PhysCompDestroy_Stokes(&user->stokes_ctx);CHKERRQ(ierr); }
