@@ -1,0 +1,258 @@
+
+#include "stdio.h"
+#include "stdlib.h"
+#include "petsc.h"
+#include "petscdm.h"
+
+#include "ptatin3d_defs.h"
+#include "ptatin3d.h"
+#include "private/ptatin_impl.h"
+
+#include "dmda_element_q2p1.h"
+#include "quadrature.h"
+#include "element_utils_q2.h"
+
+#include "mesh_quality_metrics.h"
+
+
+
+#define Q2_CELL_NODE_CENTER 13
+
+#define Q2_FACE_NODE_WEST   12
+#define Q2_FACE_NODE_EAST   14
+#define Q2_FACE_NODE_SOUTH  10
+#define Q2_FACE_NODE_NORTH  16
+#define Q2_FACE_NODE_BACK   4
+#define Q2_FACE_NODE_FRONT  22
+
+void get_node_coordinate(double el_coords[],int index,double pos[])
+{
+	pos[0] = el_coords[3*index+0];
+	pos[1] = el_coords[3*index+1];
+	pos[2] = el_coords[3*index+2];
+}
+
+double compute_seperation(double posA[],double posB[])
+{
+	double val;
+	val = sqrt(  (posA[0]-posB[0])*(posA[0]-posB[0])  +  (posA[1]-posB[1])*(posA[1]-posB[1])  +  (posA[2]-posB[2])*(posA[2]-posB[2])  );
+	return val;
+}
+
+/*
+  max_(over all elements) [  max_face_length_e / min_face_length_e ]
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeMeshQualityMetric_AspectRatio"
+PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
+{
+	DM              cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e;
+	const PetscInt  *el_nidx;
+	PetscInt        *gidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	double          dx,dy,dz,dl_min,dl_max,el_ar,max_ar,max_ar_g;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+	
+	max_ar = -1.0e32;
+	for (e=0;e<nel;e++) {
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		
+		dl_min = 1.0e32;
+		dl_max = 1.0e-32;
+
+		dx = fabs( el_coords[3*Q2_FACE_NODE_EAST +0] - el_coords[3*Q2_FACE_NODE_WEST +0]  );
+		dy = fabs( el_coords[3*Q2_FACE_NODE_NORTH+1] - el_coords[3*Q2_FACE_NODE_SOUTH+1] );
+		dz = fabs( el_coords[3*Q2_FACE_NODE_FRONT+2] - el_coords[3*Q2_FACE_NODE_BACK +2]  );
+		//printf("e=%d: %1.4e %1.4e %1.4e \n", e, dx, dy, dz );
+		
+		if (dx < dl_min) { dl_min = dx; }
+		if (dy < dl_min) { dl_min = dy; }
+		if (dz < dl_min) { dl_min = dz; }
+
+		if (dx > dl_max) { dl_max = dx; }
+		if (dy > dl_max) { dl_max = dy; }
+		if (dz > dl_max) { dl_max = dz; }
+		
+		//printf("dl_min %1.4e \n", dl_min );
+		el_ar = dl_max / dl_min;
+		if (el_ar > max_ar) { max_ar = el_ar; }
+
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+	ierr = MPI_Allreduce(&max_ar,&max_ar_g,1,MPI_DOUBLE,MPI_MAX,((PetscObject)dm)->comm);CHKERRQ(ierr);
+											 
+	*value = (PetscReal)max_ar_g;
+		
+	PetscFunctionReturn(0);
+}
+
+/*
+ min_(over all elements) [  8 x min(|J|_e) / vol_e ]
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeMeshQualityMetric_Distortion"
+PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
+{
+	DM              cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e,p;
+	const PetscInt  *el_nidx;
+	PetscInt        *gidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	double          el_dist,min_dist,min_dist_g,el_vol;
+	PetscInt        ngp;
+	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+	PetscReal       min_detJ,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	/* setup quadrature */
+
+	ngp = 27;
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+	
+	min_dist = 1.0e32;
+	for (e=0;e<nel;e++) {
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+
+		P3D_evaluate_geometry_elementQ2(ngp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
+
+		el_vol = 0.0;
+		min_detJ = 1.0e32;
+		for (p=0; p<ngp; p++) {
+			el_vol = el_vol + 1.0 * WEIGHT[p] * detJ[p];
+			if (detJ[p] < min_detJ) {
+				min_detJ = detJ[p];
+			}
+		}
+		
+		el_dist = 8.0 * min_detJ / el_vol;
+		
+		if (el_dist < min_dist) { min_dist = el_dist; }
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(&min_dist,&min_dist_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	
+	*value = (PetscReal)(min_dist_g);
+	
+	PetscFunctionReturn(0);
+}
+
+/*
+ min_(over all elements) [  min_diagonal_length_e / max_diagonal_length_e ]
+ */
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeMeshQualityMetric_DiagonalRatio"
+PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value)
+{
+	DM              cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e;
+	const PetscInt  *el_nidx;
+	PetscInt        *gidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	double          len,posA[3],posB[3];
+	double          diag,dl_min,dl_min_g;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+	
+	dl_min = 1.0e32;
+	for (e=0;e<nel;e++) {
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		
+		
+		get_node_coordinate(el_coords,0,posA);
+		get_node_coordinate(el_coords,26,posB);
+		diag =	compute_seperation(posA,posB);
+		if (diag < dl_min) { dl_min = diag; }
+
+		get_node_coordinate(el_coords,2,posA);
+		get_node_coordinate(el_coords,24,posB);
+		diag =	compute_seperation(posA,posB);
+		if (diag < dl_min) { dl_min = diag; }
+
+		get_node_coordinate(el_coords,6,posA);
+		get_node_coordinate(el_coords,20,posB);
+		diag =	compute_seperation(posA,posB);
+		if (diag < dl_min) { dl_min = diag; }
+		
+		get_node_coordinate(el_coords,8,posA);
+		get_node_coordinate(el_coords,18,posB);
+		diag =	compute_seperation(posA,posB);
+		if (diag < dl_min) { dl_min = diag; }
+				
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(&dl_min,&dl_min_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	
+	*value = (PetscReal)dl_min_g;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeMeshQualityMetrics"
+PetscErrorCode DMDAComputeMeshQualityMetrics(DM dm,MeshQualityMeasure measure,PetscReal *value)
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	switch (measure) {
+
+		case MESH_QUALITY_ASPECT_RATIO:
+			ierr = DMDAComputeMeshQualityMetric_AspectRatio(dm,value);CHKERRQ(ierr);
+			break;
+		
+		case MESH_QUALITY_DISTORTION:
+			ierr = DMDAComputeMeshQualityMetric_Distortion(dm,value);CHKERRQ(ierr);
+			break;
+			
+		case MESH_QUALITY_DIAGONAL_RATIO:
+			ierr = DMDAComputeMeshQualityMetric_DiagonalRatio(dm,value);CHKERRQ(ierr);
+			break;
+			
+	}
+		
+	PetscFunctionReturn(0);
+}
