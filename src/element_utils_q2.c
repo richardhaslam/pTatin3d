@@ -333,7 +333,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 	}
 	/* flops = [NQP*NPE] * 15 */
 	
-	// TOTAL = 18 + 14 + 58 + 15 = 105
+	// TOTAL = [NQP*NPE]*18 + [NQP]*(14 + 58) + [NQP*NPE]*15
 }
 
 
