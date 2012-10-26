@@ -278,6 +278,21 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	PetscGetTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): %1.4e (sec)\n",t1-t0);
+	{
+		double ops_geom, ops_element_sum, ops_insert, ops, ops_total;
+		double flops;
+		
+		ops_geom        = ( (18.0 + 15.0) * ngp * Q2_NODES_PER_EL_3D   +   (14.0 + 58.0) * ngp ) * nel;
+		ops_element_sum = (double)( (1058 * ngp + ngp ) * nel ); /* extra ngp is for the weight x detJ done prior to MatMultMF_Stokes_MixedFEM3d_B11 */
+		ops_insert      = (double)( (3 * Q2_NODES_PER_EL_3D ) * nel );
+		ops            = ops_geom  +  ops_element_sum  +  ops_insert;
+		MPI_Allreduce(&ops,&ops_total,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);	
+		
+		flops = ((double)ops_total)/(t1-t0);
+		flops = flops * 1.0e-9;
+		
+		PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): %1.4e (GFLOPS)\n",flops);
+	}	
 #endif	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
