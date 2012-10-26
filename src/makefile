@@ -20,6 +20,8 @@ export TATIN_SRC = \
 			dmda_checkpoint.c \
 			dmda_bcs.c \
 			mesh_deformation.c \
+			mesh_quality_metrics.c \
+			mesh_update.c \
 			dmda_element_q2p1.c \
 			element_type_Q2.c \
 			swarm_fields.c \
@@ -101,6 +103,7 @@ all:
 	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
 	-@echo ${PWD}
 	
+
 	-@${MAKE} base_objects
 	-@${MAKE} material_constants
 	-@${MAKE} libs
