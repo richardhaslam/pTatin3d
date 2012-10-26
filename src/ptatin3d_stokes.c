@@ -248,6 +248,26 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDASetValuesLocalStencil_InsertValues_Stokes_Velocity"
+PetscErrorCode DMDASetValuesLocalStencil_InsertValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])
+{
+  PetscInt n,idx;
+	
+  PetscFunctionBegin;
+  for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
+		idx = u_eqn[3*n  ];
+    fields_F[idx] = Fe_u[NSD*n  ];
+		
+		idx = u_eqn[3*n+1];
+    fields_F[idx] = Fe_u[NSD*n+1];
+		
+		idx = u_eqn[3*n+2];
+    fields_F[idx] = Fe_u[NSD*n+2];
+	}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_Pressure"
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(PetscScalar *fields_F,PetscInt p_eqn[],PetscScalar Fe_p[])
 {
