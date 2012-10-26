@@ -11,7 +11,8 @@
 
 #include "dmda_update_coords.h"
 #include "dmda_remesh.h"
-
+#include "dmda_update_coords.h"
+#include "mesh_quality_metrics.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesInPlane_IJ"
@@ -197,7 +198,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 1,2, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = -3.0;
 	x1 = y1 = 3.0;
@@ -230,6 +231,17 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
 	
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d(da,0,P);CHKERRQ(ierr);
+	
+	ierr = DMDABilinearizeQ2Elements(da);CHKERRQ(ierr);
+	
+	/* test metrics */
+	{
+		PetscReal value;
+		
+		ierr = DMDAComputeMeshQualityMetrics(da,MESH_QUALITY_ASPECT_RATIO,&value);CHKERRQ(ierr);     PetscPrintf(PETSC_NULL,"MESH_QUALITY_ASPECT_RATIO    : %1.4e \n", value);
+		ierr = DMDAComputeMeshQualityMetrics(da,MESH_QUALITY_DISTORTION,&value);CHKERRQ(ierr);       PetscPrintf(PETSC_NULL,"MESH_QUALITY_DISTORTION      : %1.4e \n", value);
+		ierr = DMDAComputeMeshQualityMetrics(da,MESH_QUALITY_DIAGONAL_RATIO,&value);CHKERRQ(ierr);   PetscPrintf(PETSC_NULL,"MESH_QUALITY_DIAGONAL_RATIO  : %1.4e \n", value);
+	}
 	
 	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
