@@ -89,7 +89,7 @@ PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 		}
 		
 		/* for each interior point */
-		for (k=0; k<cnt; k++) {
+		for (k=0; k<27; k++) {
 			_constructNi_Q1_3D(&xi_nodal_coordsQ2[3*k],Ni);
 			
 			/* inpterpolate */
@@ -105,7 +105,7 @@ PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 			elcoordsQ2[3*k+0] = x_new[0];
 			elcoordsQ2[3*k+1] = x_new[1];
 			elcoordsQ2[3*k+2] = x_new[2];
-			printf("e-%d: %1.4e  %1.4e  %1.4e \n", e,x_new[0],x_new[1],x_new[2] );
+			//printf("e-%d: %1.4e  %1.4e  %1.4e \n", e,x_new[0],x_new[1],x_new[2] );
 		}
 		
 		/* push modification */
