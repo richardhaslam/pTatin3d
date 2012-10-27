@@ -4,5 +4,6 @@
 
 PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da);
 PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da);
+PetscErrorCode MeshDeformation_ShearXY(DM da);
 
 #endif

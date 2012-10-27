@@ -144,6 +144,62 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACo
 
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDARemeshSetUniformCoordinatesInPlane_IK"
+PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IK(DM da,PetscInt J,DMDACoor3d coords[])
+{
+	PetscErrorCode ierr;
+	PetscInt si,sj,sk,nx,ny,nz,i,k;
+	PetscInt MX,MZ;
+	PetscInt n;
+	PetscReal dxi,dzeta,Ni[4];
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***_coord;
+	
+	PetscFunctionBegin;
+	ierr = DMDAGetInfo(da,0,&MX,0,&MZ, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	if ( (J>=sj) && (J<sj+ny) ) {
+		dxi   = 2.0/(PetscReal)(MX-1);
+		dzeta = 2.0/(PetscReal)(MZ-1);
+		for( k=sk; k<sk+nz; k++ ) {
+			for( i=si; i<si+nx; i++ ) {
+				PetscReal xi,zeta, xn,yn,zn;
+				
+				xi   = -1.0 + i*dxi;
+				zeta = -1.0 + k*dzeta;
+				
+				Ni[0] = 0.25 * (1.0-xi) * (1.0-zeta);
+				Ni[1] = 0.25 * (1.0-xi) * (1.0+zeta);
+				Ni[2] = 0.25 * (1.0+xi) * (1.0+zeta);
+				Ni[3] = 0.25 * (1.0+xi) * (1.0-zeta);
+				
+				xn = yn = zn = 0.0;
+				for (n=0; n<4; n++) {
+					xn = xn + Ni[n] * coords[n].x;
+					yn = yn + Ni[n] * coords[n].y;
+					zn = zn + Ni[n] * coords[n].z;
+				}
+				_coord[k][J][i].x = xn;
+				_coord[k][J][i].y = yn;
+				_coord[k][J][i].z = zn;
+			}
+		}
+	}
+	/* tidy up */
+	ierr = DMDAVecRestoreArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI"
 PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, PetscInt startK, PetscInt endK )
 {

@@ -17,6 +17,8 @@ grid deformation etc.
  gbump_amp * exp(gbump_lambda*(x*x+z*z))+1
  
  */
+#undef __FUNCT__
+#define __FUNCT__ "MeshDeformation_GaussianBump_YMAX"
 PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
 {
 	PetscErrorCode ierr;
@@ -121,3 +123,53 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MeshDeformation_ShearXY"
+PetscErrorCode MeshDeformation_ShearXY(DM da)
+{
+	PetscErrorCode ierr;
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k,MY;
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***_coord;
+	PetscReal Lx,Ly,theta,y_displacement;
+	PetscReal MeshMin[3],MeshMax[3];
+	
+	PetscFunctionBegin;
+	y_displacement = 0.5;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-y_displacement",&y_displacement,PETSC_NULL);CHKERRQ(ierr);
+	
+	
+	//ierr = DMDASetUniformCoordinates(da,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
+	ierr = DMDAGetBoundingBox(da,MeshMin,MeshMax);CHKERRQ(ierr);
+	Lx = (MeshMax[0] - MeshMin[0]);
+	Ly = (MeshMax[1] - MeshMin[1]);
+	theta = atan( y_displacement / Ly );
+	
+	ierr = DMDAGetInfo(da,0,0,&MY,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	for( j=sj; j<sj+ny; j++ ) {
+		for( k=sk; k<sk+nz; k++ ) {
+			for( i=si; i<si+nx; i++ ) {
+				PetscReal xn,yn,zn;
+				
+				xn = _coord[k][j][i].x;
+				yn = _coord[k][j][i].y;
+				zn = _coord[k][j][i].z;
+								
+				_coord[k][j][i].x = xn + tan(theta) * yn;
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	/* update */
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
