@@ -70,3 +70,54 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
 
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshDeformation_Sinusodial_ZMAX"
+PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
+{
+	PetscErrorCode ierr;
+	PetscReal amp,theta,phi;
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k,MZ;
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***_coord;
+	PetscReal y_height,dy;
+	
+	PetscFunctionBegin;
+	amp   = 0.2;
+	theta = 0.7;
+	phi   = 1.2;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-amp",&amp,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-theta",&theta,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-phi",&phi,PETSC_NULL);CHKERRQ(ierr);
+	
+	
+	ierr = DMDAGetInfo(da,0,0,0,&MZ, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	if ((sk+nz) == MZ) {
+		k = MZ - 1;
+		for( j=sj; j<sj+ny; j++ ) {
+			for( i=si; i<si+nx; i++ ) {
+				PetscReal xn,yn,zn;
+				
+				xn = _coord[k][j][i].x;
+				yn = _coord[k][j][i].y;
+				zn = _coord[k][j][i].z;
+				
+				_coord[k][j][i].z = 1.1 + amp * sin( theta * M_PI * xn ) * cos( phi * M_PI * (xn+yn) );
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	/* update */
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
+

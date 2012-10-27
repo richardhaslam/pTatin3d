@@ -64,6 +64,7 @@ TATIN_TESTS	=	\
 			test_dmda_checkpoint \
 			test_dmda_gmg \
 			test_mat_assem \
+			test_q2dmda_remesh \
 			test_stokes_operators \
 			test_stokes_operators_approximations \
 			test_mp_advection \
