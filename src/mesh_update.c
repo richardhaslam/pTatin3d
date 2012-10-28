@@ -13,26 +13,11 @@
 #include "quadrature.h"
 #include "element_utils_q2.h"
 #include "dmda_update_coords.h"
+#include "element_utils_q1.h"
+
 #include "mesh_update.h"
 
 #define Q1_NODES_PER_EL_3D 8
-
-void _constructNi_Q1_3D(double xip[],double Ni[])
-{
-	double xi   = xip[0];
-	double eta  = xip[1];
-	double zeta = xip[2];
-	
-	Ni[0] = 0.125 * (1.0-xi) * (1.0-eta) * (1.0-zeta);
-	Ni[1] = 0.125 * (1.0+xi) * (1.0-eta) * (1.0-zeta);
-	Ni[2] = 0.125 * (1.0-xi) * (1.0+eta) * (1.0-zeta);
-	Ni[3] = 0.125 * (1.0+xi) * (1.0+eta) * (1.0-zeta);
-	
-	Ni[4] = 0.125 * (1.0-xi) * (1.0-eta) * (1.0+zeta);
-	Ni[5] = 0.125 * (1.0+xi) * (1.0-eta) * (1.0+zeta);
-	Ni[6] = 0.125 * (1.0-xi) * (1.0+eta) * (1.0+zeta);
-	Ni[7] = 0.125 * (1.0+xi) * (1.0+eta) * (1.0+zeta);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDABilinearizeQ2Elements"
@@ -90,7 +75,7 @@ PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 		
 		/* for each interior point */
 		for (k=0; k<27; k++) {
-			_constructNi_Q1_3D(&xi_nodal_coordsQ2[3*k],Ni);
+			P3D_ConstructNi_Q1_3D(&xi_nodal_coordsQ2[3*k],Ni);
 			
 			/* inpterpolate */
 			x_new[0] = 0.0;
