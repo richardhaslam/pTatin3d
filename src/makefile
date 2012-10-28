@@ -37,6 +37,7 @@ export TATIN_SRC = \
 			ptatin_utils.c \
 			ptatin3d_stokes.c \
 			ptatin3d.c \
+			ptatin_std_dirichlet_boundary_conditions.c \
 			ptatin_models.c \
 			rheology.c \
 			material_constants.c \
