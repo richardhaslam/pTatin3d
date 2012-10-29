@@ -1,7 +1,10 @@
 
-#include "errno.h"
-#include "sys/types.h"
-#include "sys/stat.h"
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <pwd.h>
+
 
 #include "petsc.h"
 #include "ptatin_utils.h"
@@ -86,3 +89,28 @@ PetscErrorCode pTatinWriteOptionsFile(const char filename[])
 	
 	PetscFunctionReturn(0);
 }
+
+void pTatinGenerateFormattedTimestamp(char date_time[])
+{
+	time_t      currTime;
+	struct tm*  timeInfo;
+	int         adjustedYear;
+	int         adjustedMonth;
+	char        user_name[200];
+	
+	currTime = time( NULL );
+	timeInfo = localtime( &currTime );
+	/* See man localtime() for why to adjust these */
+	adjustedYear = 1900 + timeInfo->tm_year;
+	adjustedMonth = 1 + timeInfo->tm_mon;
+	/* Format; MM(string) DD HH:MM:SS YYYY */	
+	/*
+	 printf( "%s %.2d %.2d:%.2d:%.2d %.4d \n",  
+	 months[adjustedMonth], timeInfo->tm_mday,
+	 timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec, adjustedYear );
+	 */
+	sprintf( date_time, "%.4d.%.2d.%.2d_%.2d:%.2d:%.2d",  
+					adjustedYear, adjustedMonth, timeInfo->tm_mday,
+					timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec );
+}
+

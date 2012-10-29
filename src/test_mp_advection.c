@@ -690,8 +690,6 @@ int main(int argc,char **argv)
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
-	ierr = pTatinWriteOptionsFile(PETSC_NULL);CHKERRQ(ierr);
-	
 	ierr = test_mp_advection(argc,argv);CHKERRQ(ierr);
 
 	

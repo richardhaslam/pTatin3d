@@ -118,8 +118,6 @@ int main(int argc,char **argv)
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
-	ierr = pTatinWriteOptionsFile(PETSC_NULL);CHKERRQ(ierr);
-	
 	ierr = pTatin3d_stokes(argc,argv);CHKERRQ(ierr);
 	
 	ierr = PetscFinalize();CHKERRQ(ierr);

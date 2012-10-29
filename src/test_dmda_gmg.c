@@ -663,8 +663,6 @@ int main(int argc,char **argv)
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
-	ierr = pTatinWriteOptionsFile(PETSC_NULL);CHKERRQ(ierr);
-	
 //	ierr = test_pTatin3d_gmg_galerkin(argc,argv);CHKERRQ(ierr);
 	ierr = test_pTatin3d_gmg_mf(argc,argv);CHKERRQ(ierr);
 //	ierr = test_putatin(argc,argv);CHKERRQ(ierr);

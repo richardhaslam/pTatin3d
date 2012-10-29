@@ -29,6 +29,7 @@ struct _p_pTatinCtx {
 	
   DM  pack; /* all physics gets jammed in here */
 	
+	char       formatted_timestamp[PETSC_MAX_PATH_LEN];
 	char       outputpath[PETSC_MAX_PATH_LEN];
 	/* material points */
 	PetscInt   coefficient_projection_type;

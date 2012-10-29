@@ -4,5 +4,6 @@
 
 PetscErrorCode pTatinCreateDirectory(const char dirname[]);
 PetscErrorCode pTatinWriteOptionsFile(const char filename[]);
+void pTatinGenerateFormattedTimestamp(char date_time[]);
 
 #endif

@@ -385,8 +385,9 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 #define __FUNCT__ "pTatin3dCreateContext"
 PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {
-	PetscInt e;
-	pTatinCtx user;
+	PetscInt       e;
+	pTatinCtx      user;
+	PetscMPIInt    rank;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -427,6 +428,12 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	ierr = MaterialConstantsInitialize(&user->material_constants);CHKERRQ(ierr);
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	if (rank==0) {
+		pTatinGenerateFormattedTimestamp(user->formatted_timestamp);	
+	}
+	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
 	*ctx = user;
 	
 	PetscFunctionReturn(0);
@@ -462,7 +469,18 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 	if (user->material_constants) { DataBucketDestroy(&user->material_constants); }
 	
 	ierr = PetscContainerDestroy(&user->model_data);CHKERRQ(ierr);
-	
+
+	{
+		char  logfile[PETSC_MAX_PATH_LEN];
+		PetscViewer viewer;
+		
+		sprintf(logfile,"%s/ptatin.petsc.log_summary-%s",user->outputpath,user->formatted_timestamp);
+
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&viewer);CHKERRQ(ierr);
+		ierr = PetscLogView(viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
+		
 	ierr = PetscFree(user);CHKERRQ(ierr);
 	
 	*ctx = PETSC_NULL;
@@ -537,9 +555,12 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 	PetscOptionsGetReal(PETSC_NULL,"-time_max",&ctx->time_max,&flg);
 	PetscOptionsGetInt(PETSC_NULL,"-output_frequency",&ctx->output_frequency,&flg);
 	
-	sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
+	sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
 	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
+	sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
+	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
+	
 //	ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
