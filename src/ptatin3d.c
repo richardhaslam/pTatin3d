@@ -505,8 +505,9 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
 #define __FUNCT__ "pTatin3dParseOptions"
 PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 {
-	PetscInt mx,my,mz;
-	PetscBool flg;
+  char           optionsfile[PETSC_MAX_PATH_LEN];
+	PetscInt       mx,my,mz;
+	PetscBool      flg;
 	PetscErrorCode ierr;
 	
 	/* parse options */
@@ -536,6 +537,9 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 	PetscOptionsGetReal(PETSC_NULL,"-time_max",&ctx->time_max,&flg);
 	PetscOptionsGetInt(PETSC_NULL,"-output_frequency",&ctx->output_frequency,&flg);
 	
+	sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
+	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
+
 //	ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
