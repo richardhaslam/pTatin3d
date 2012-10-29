@@ -7,9 +7,9 @@ typedef enum { FRONT_FACE=1, BACK_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, WEST_
 
 PetscErrorCode DirichletBC_FreeSlip(BCList list,DM dav,BoundaryFaceType face);
 PetscErrorCode DirichletBC_ApplyNormalVelocity(BCList list,DM dav,BoundaryFaceType face,PetscReal v_normal);
+PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal Evalue,PetscInt direction);
 PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList list,DM dav,PetscReal exx_bc);
-PetscErrorCode DirichletBC_ApplyStrainRateExy(BCList list,DM dav,PetscReal exy_bc);
-PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningY(BCList list,DM dav,PetscReal vx_bc);
+PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz_bc);
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCList list,DM dav,PetscReal vx_bc);
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionX(BCList list,DM dav,PetscReal vx_bc);
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(BCList list,DM dav,PetscReal beta,PetscReal vx_bc);

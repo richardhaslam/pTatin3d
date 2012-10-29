@@ -10,6 +10,7 @@
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "ptatin_std_dirichlet_boundary_conditions.h"
 
 #include "viscous_sinker_ctx.h"
 
@@ -178,8 +179,62 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 			
 			break;
 
-		default:
+		case VSBC_Test:
+		{
+			BCList bclist = user->stokes_ctx->u_bclist;
+			DM dav = user->stokes_ctx->dav;
+			
+			/* free slip */
+			/*
+			// passed
+			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,FRONT_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,BACK_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,EAST_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,NORTH_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,SOUTH_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,WEST_FACE);CHKERRQ(ierr);
+			 */
+			
+			/* strain rate xx, fixed z boundaries, free slip base and free surface */
+			/*
+			// passed : -model_viscous_sinker_bc_type 4 -model_viscous_sinker_rho0 0.0 -model_viscous_sinker_rho1 0.0
+			ierr = DirichletBC_ApplyStrainRateExx(bclist,dav,2.2);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			*/
+
+			/* strain rate zz, fixed x boundaries, free slip base and free surface */
+			/*
+			// passed
+			ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,3.3,2);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			*/
+			
+			/* shear along north/south faces + free slip base, free surface */
+			/*
+			// passed
+			ierr = DirichletBC_ApplyStrainRateExz(bclist,dav,4.4);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			*/
+			
+			/* extension */
+			/*
+			// passed
+			ierr = DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(bclist,dav,1.0,10.0);CHKERRQ(ierr);
+			*/
+			
+			/* extension in x / compression in y to conserve volume + free slip base, free surface */
+			// passed
+			ierr = DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(bclist,dav,3.5);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			
+		}
+			
 			break;
+			
 	}
 	
 /*	
@@ -279,8 +334,56 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
 
 				break;
 				
-			default:
+			case VSBC_Test:
+				/* free slip */
+				/*
+				// passed
+				ierr = DirichletBC_FreeSlip(bclist[n],dav[n],FRONT_FACE);CHKERRQ(ierr);
+				ierr = DirichletBC_FreeSlip(bclist[n],dav[n],BACK_FACE);CHKERRQ(ierr);
+				ierr = DirichletBC_FreeSlip(bclist[n],dav[n],EAST_FACE);CHKERRQ(ierr);
+				ierr = DirichletBC_FreeSlip(bclist[n],dav[n],NORTH_FACE);CHKERRQ(ierr);
+				ierr = DirichletBC_FreeSlip(bclist[n],dav[n],SOUTH_FACE);CHKERRQ(ierr);
+				ierr = DirichletBC_FreeSlip(bclist[n],dav[n],WEST_FACE);CHKERRQ(ierr);
+				*/
+				
+				/* strain rate xx */
+				/*
+				 // passed 
+				ierr = DirichletBC_ApplyStrainRateExx(bclist[n],dav[n],2.2);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				*/
+
+				/* strain rate zz, fixed x boundaries, free slip base and free surface */
+				/*
+				 // passed
+				ierr = DirichletBC_ApplyDirectStrainRate(bclist[n],dav[n],3.3,2);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				*/
+				
+				/* shear along north/south faces + free slip base, free surface */
+				/*
+				// passed
+				ierr = DirichletBC_ApplyStrainRateExz(bclist[n],dav[n],4.4);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				*/
+				
+				/* extension */
+				/*
+				// passed
+				ierr = DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(bclist[n],dav[n],1.0,10.0);CHKERRQ(ierr);
+				*/
+				
+				/* extension in x / compression in y to conserve volume + free slip base, free surface */
+				// passed
+				ierr = DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(bclist[n],dav[n],3.5);CHKERRQ(ierr);
+				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				
 				break;
+
 		}
 	}	
 	
