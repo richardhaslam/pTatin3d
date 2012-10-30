@@ -77,5 +77,6 @@ PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data
 PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data);
 
 PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X);
+PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[]);
 
 #endif

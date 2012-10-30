@@ -286,6 +286,10 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 {
 	pTatinCtx      user;
 	PetscErrorCode ierr;
+	Vec X;
+	DM        multipys_pack,dav,dap;
+	IS        *is_stokes_field;
+
 	
 	PetscFunctionBegin;
 	
@@ -300,6 +304,57 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	/* Check if model is being restarted from a checkpointed file */
 	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 		
+	
+	/* call model init */
+	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
+	/* Generate physics modules */
+	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
+
+	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
+	/* mesh geometry */
+	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+	
+	
+	/* interpolate material point coordinates (needed if mesh was modified) */
+	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
+	
+	/* material geometry */
+	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+	
+	/* boundary conditions */
+	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
+
+	
+	
+	/* Pack all physics together */
+	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
+	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
+	user->pack = user->stokes_ctx->stokes_pack;
+	/* fetch some local variables */
+	multipys_pack = user->pack;
+	dav           = user->stokes_ctx->dav;
+	/* set up mg */
+	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
+	dap           = user->stokes_ctx->dap;
+	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
+	ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
+	
+	
+
+	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	
+	
+	
+	
+	
+	
+	
+	ierr = ISDestroy(&is_stokes_field[0]);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_stokes_field[1]);CHKERRQ(ierr);
+	ierr = PetscFree(is_stokes_field);CHKERRQ(ierr);
+	ierr = VecDestroy(&X);CHKERRQ(ierr);
 	ierr = pTatin3dDestroyContext(&user);
 	
 	PetscFunctionReturn(0);

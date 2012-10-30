@@ -24,42 +24,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMCoarsenHierarchy2_DA"
-PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
-{
-  PetscErrorCode ierr;
-  PetscInt       i,n,*refx,*refy,*refz;
-	
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nlevels < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
-  if (nlevels == 0) PetscFunctionReturn(0);
-  PetscValidPointer(dac,3);
-	
-  /* Get refinement factors, defaults taken from the coarse DMDA */
-  ierr = PetscMalloc3(nlevels,PetscInt,&refx,nlevels,PetscInt,&refy,nlevels,PetscInt,&refz);CHKERRQ(ierr);
-  for (i=0; i<nlevels; i++) {
-    ierr = DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
-  }
-  n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
-  n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
-  n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
-	
-	
-	ierr = DMDASetRefinementFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
-  ierr = DMCoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);
-  for (i=1; i<nlevels; i++) {
-    ierr = DMDASetRefinementFactor(dac[i-1],refx[nlevels-1-i],refy[nlevels-1-i],refz[nlevels-1-i]);CHKERRQ(ierr);
-    ierr = DMCoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
