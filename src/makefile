@@ -79,7 +79,8 @@ TATIN_DRIVERS		= \
 			ptatin_driver_nostokessolve \
 			ptatin_driver_asmsolve \
 			ptatin_driver_asmsolve_approx \
-			ptatin_driver_asmsolve2 
+			ptatin_driver_asmsolve2 \
+			ptatin_driver_basic
 
 
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}

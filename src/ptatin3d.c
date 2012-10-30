@@ -810,32 +810,11 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 		char command[256];
 		char file[256];
 		
-		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every]: Checking for files\n");
 
 		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
-		FileExists(filetocheck,&exists);
-		if (exists==0) {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
-			// call checkpoint routine //
-			ierr = pTatin3dCheckpoint(ctx,X,PETSC_NULL);CHKERRQ(ierr);
-		}
-	}
-	
-	/* ----------------------------------------------------------------- */
-	/* check two - these files have a file name related to the time step */
-	if (step%checkpoint_every_nsteps==0) {
-		char command[256];
-		char file[256];
-		
-		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files\n");
-
-		sprintf(filetocheck,"%s/ptat3dcpf.ctx_%1.4d",ctx->outputpath,step);
-		FileExists(filetocheck,&exists);
-		if (exists==0) {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
-			// call checkpoint routine //
-			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-		}
+		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+		// call checkpoint routine //
+		ierr = pTatin3dCheckpoint(ctx,X,PETSC_NULL);CHKERRQ(ierr);
 	}
 	
 	/* -------------------------------------------------------------------- */
@@ -847,18 +826,36 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 		char command[256];
 		char file[256];
 		
-		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files\n");
-
-		sprintf(filetocheck,"%s/ptat3dcpf.ctx_%1.4d",ctx->outputpath,step);
+		sprintf(filetocheck,"%s/ptat3dcpf.ctx_step%1.6d",ctx->outputpath,step);
 		FileExists(filetocheck,&exists);
+		//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files %s\n",filetocheck);
 		if (exists==0) {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
 			// call checkpoint routine //
 			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
 		}
 		
 		last_cpu_time = max_current_cpu_time;
 	}
+
+	
+	/* ----------------------------------------------------------------- */
+	/* check two - these files have a file name related to the time step */
+	if (step%checkpoint_every_nsteps==0) {
+		char command[256];
+		char file[256];
+		
+		sprintf(filetocheck,"%s/ptat3dcpf.ctx_step%1.6d",ctx->outputpath,step);
+		FileExists(filetocheck,&exists);
+		//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files %s\n",filetocheck);
+		if (exists==0) {
+			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
+			// call checkpoint routine //
+			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
+		}
+	}
+	
+	
 	
 	PetscFunctionReturn(0);
 }

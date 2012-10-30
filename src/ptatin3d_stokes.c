@@ -412,3 +412,35 @@ PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinStokesKSPMonitorBlocks"
+PetscErrorCode pTatinStokesKSPMonitorBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
+{
+	PetscErrorCode ierr;
+	pTatinCtx ctx;
+	PetscReal norms[4];
+	Vec X,Xu,Xp,v,w;
+	Mat A;
+	
+	PetscFunctionBegin;
+	ctx = (pTatinCtx)data;
+	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+	
+	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	
+	ierr = VecStrideNorm(Xu,0,NORM_2,&norms[0]);CHKERRQ(ierr);
+	ierr = VecStrideNorm(Xu,1,NORM_2,&norms[1]);CHKERRQ(ierr);
+	ierr = VecStrideNorm(Xu,2,NORM_2,&norms[2]);CHKERRQ(ierr);
+	ierr = VecNorm(Xp,NORM_2,&norms[3]);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	ierr = VecDestroy(&v);CHKERRQ(ierr);
+	ierr = VecDestroy(&w);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);
+	
+	PetscFunctionReturn(0);
+}
+

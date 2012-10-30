@@ -22,38 +22,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinKSPMonitorStokesBlocks"
-PetscErrorCode pTatinKSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
-{
-	PetscErrorCode ierr;
-	pTatinCtx ctx;
-	PetscReal norms[4];
-	Vec X,Xu,Xp,v,w;
-	Mat A;
-	
-	PetscFunctionBegin;
-	ctx = (pTatinCtx)data;
-	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
-	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
-	
-	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-	
-	ierr = VecStrideNorm(Xu,0,NORM_2,&norms[0]);CHKERRQ(ierr);
-	ierr = VecStrideNorm(Xu,1,NORM_2,&norms[1]);CHKERRQ(ierr);
-	ierr = VecStrideNorm(Xu,2,NORM_2,&norms[2]);CHKERRQ(ierr);
-	ierr = VecNorm(Xp,NORM_2,&norms[3]);CHKERRQ(ierr);
-	
-	ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-	ierr = VecDestroy(&v);CHKERRQ(ierr);
-	ierr = VecDestroy(&w);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);
-	
-	PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
@@ -240,7 +208,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinKSPMonitorStokesBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -467,7 +435,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinKSPMonitorStokesBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 	
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -785,7 +753,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinKSPMonitorStokesBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 	
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

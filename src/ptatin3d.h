@@ -76,4 +76,6 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx);
 PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data);
 PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data);
 
+PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X);
+
 #endif
