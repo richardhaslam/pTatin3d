@@ -551,6 +551,11 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 	}
 	ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
 	
+	/* checkpointing */
+	PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);
+	PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);
+	
 	/* time stepping */
 	PetscOptionsGetInt(PETSC_NULL,"-nsteps",&ctx->nsteps,&flg);
 	PetscOptionsGetReal(PETSC_NULL,"-dt_min",&ctx->dt_min,&flg);
