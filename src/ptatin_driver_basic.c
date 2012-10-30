@@ -303,13 +303,15 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 
 	/* Check if model is being restarted from a checkpointed file */
 	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
-		
 	
 	/* call model init */
 	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
 	/* Generate physics modules */
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
-
+	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
+	dav                                          = user->stokes_ctx->dav;
+	dap                                          = user->stokes_ctx->dap;
+	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
@@ -332,10 +334,6 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	user->pack = user->stokes_ctx->stokes_pack;
 	/* fetch some local variables */
 	multipys_pack = user->pack;
-	dav           = user->stokes_ctx->dav;
-	/* set up mg */
-	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
-	dap           = user->stokes_ctx->dap;
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
@@ -346,6 +344,37 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	
 	
+	while (user->step < user->nsteps) {
+		char prefix[256];
+		
+		/* UPDATE */
+		
+		/* SOLVE */
+		
+		/* increment time step */
+		user->time += user->dt;
+		user->step++;
+		
+		PetscPrintf(PETSC_COMM_WORLD,"[Step %1.6d:] time = %1.4e dt = %1.4e \n",user->step,user->time,user->dt);
+		
+		
+		/* COMPUTE DT */
+		
+		
+		/* ------------------- */
+		/* OUTPUT */
+		if (user->step%user->output_frequency==0) {
+			sprintf(prefix,"step%1.6d",user->step);
+			ierr = pTatinModel_Output(user->model,user,X,prefix);CHKERRQ(ierr);
+		}
+		/* CHECKPOINT */
+		ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
+		
+		/* Terminate time stepping */
+		if (user->time >= user->time_max) {
+			break;
+		}
+	}
 	
 	
 	

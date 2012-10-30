@@ -59,16 +59,16 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 
 	if (user->restart_from_file) {
 		/* load from file */
-		char vname[1257];
-		char pname[1257];		
+		char vname[PETSC_MAX_PATH_LEN];
+		char pname[PETSC_MAX_PATH_LEN];		
 		
 		/* dav,dap */
 		if (user->restart_prefix) {
-			sprintf(vname,"%s/ptat3dcpf.dmda-velocity_%s",user->outputpath,user->restart_prefix);
-			sprintf(pname,"%s/ptat3dcpf.dmda-pressure_%s",user->outputpath,user->restart_prefix);
+			sprintf(vname,"%s/ptat3dcpf.dmda-velocity_%s",user->restart_dir,user->restart_prefix);
+			sprintf(pname,"%s/ptat3dcpf.dmda-pressure_%s",user->restart_dir,user->restart_prefix);
 		} else {
-			sprintf(vname,"%s/ptat3dcpf.dmda-velocity",user->outputpath);
-			sprintf(pname,"%s/ptat3dcpf.dmda-pressure",user->outputpath);
+			sprintf(vname,"%s/ptat3dcpf.dmda-velocity",user->restart_dir);
+			sprintf(pname,"%s/ptat3dcpf.dmda-pressure",user->restart_dir);
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", vname );
 		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", pname );
@@ -731,10 +731,10 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscViewer viewer;
 	PetscErrorCode ierr;
-	char start[1256];
-	char f1[1256];
-	char f2[1256];
-	char f3[1256];
+	char start[PETSC_MAX_PATH_LEN];
+	char f1[PETSC_MAX_PATH_LEN];
+	char f2[PETSC_MAX_PATH_LEN];
+	char f3[PETSC_MAX_PATH_LEN];
 	
 	PetscFunctionBegin;
 
@@ -801,7 +801,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	double         checkpoint_every_ncpumins, max_current_cpu_time, current_cpu_time;
 	static double  last_cpu_time = 0.0;
 	int            exists;
-	char           prefix[1256],filetocheck[1256];
+	char           prefix[PETSC_MAX_PATH_LEN],filetocheck[PETSC_MAX_PATH_LEN];
 	
 	PetscFunctionBegin;
 
@@ -881,11 +881,11 @@ PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 #define __FUNCT__ "pTatinRestart_ApplyInitialMeshGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 {
-	char name[1256];
+	char name[PETSC_MAX_PATH_LEN];
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 
-	sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->outputpath,ctx->restart_prefix);
+	sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->restart_dir,ctx->restart_prefix);
 	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMeshGeometry] from %s \n", name );
 	ierr = DMDALoadCoordinatesFromFile(ctx->stokes_ctx->dav,name);CHKERRQ(ierr);
 	
@@ -896,7 +896,7 @@ PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 #define __FUNCT__ "pTatinRestart_ApplyInitialMaterialGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *data)
 {
-	char name[1256];
+	char name[PETSC_MAX_PATH_LEN];
 	DataBucket db;
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
@@ -905,7 +905,7 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 			DataBucketDestroy(&ctx->materialpoint_db);
 	}
 	
-	sprintf(name,"%s/ptat3dcpf.markers_%s",ctx->outputpath,ctx->restart_prefix);
+	sprintf(name,"%s/ptat3dcpf.markers_%s",ctx->restart_dir,ctx->restart_prefix);
 	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry] from %s \n", name );
 	DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
 	ctx->materialpoint_db = db;
@@ -917,12 +917,12 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 #define __FUNCT__ "pTatinRestart_ApplyInitialSolution"
 PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data)
 {
-	char name[1256];
+	char name[PETSC_MAX_PATH_LEN];
 	Vec Xt;
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	sprintf(name,"%s/ptat3dcpf.dmda-X_%s",ctx->outputpath,ctx->restart_prefix);
+	sprintf(name,"%s/ptat3dcpf.dmda-X_%s",ctx->restart_dir,ctx->restart_prefix);
 	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialSolution] from %s \n", name );
 	ierr = DMDALoadGlobalVectorFromFile(ctx->pack,name,&Xt);CHKERRQ(ierr);
 	ierr = VecCopy(Xt,X);CHKERRQ(ierr);
@@ -939,17 +939,17 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	pTatinCtx ctx2;
 	PetscViewer viewer;
 	PetscErrorCode ierr;
-	char start[1256];
-	char f1[1256];
-	char f2[1256];
-	char f3[1256];
+	char start[PETSC_MAX_PATH_LEN];
+	char f1[PETSC_MAX_PATH_LEN];
+	char f2[PETSC_MAX_PATH_LEN];
+	char f3[PETSC_MAX_PATH_LEN];
 	pTatinModel model;
 
 	
 	PetscFunctionBegin;
 	
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,1256-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg==PETSC_TRUE) {
 		ctx->restart_from_file = PETSC_TRUE;
 	}	
@@ -959,11 +959,14 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 		PetscFunctionReturn(0);
 	}
 
+	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
+	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	
 	/* context */
 	if (ctx->restart_prefix) {
-		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->outputpath,ctx->restart_prefix);
+		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->restart_dir,ctx->restart_prefix);
 	} else {
-		sprintf(start,"%s/ptat3dcpf.ctx",ctx->outputpath);
+		sprintf(start,"%s/ptat3dcpf.ctx",ctx->restart_dir);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", start );
 	ierr = pTatin3dContextLoad(&ctx2,start);CHKERRQ(ierr);	
@@ -972,9 +975,12 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 //	model = ctx->model;
 	ierr = PetscMemcpy(ctx,ctx2,sizeof(struct _p_pTatinCtx));CHKERRQ(ierr);
 //	ctx->model = model;
-	
+
+	/* force these again */
 	ctx->restart_from_file = PETSC_TRUE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,1256-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
+	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	
 	
 	ierr = pTatin3dParseOptions(ctx);CHKERRQ(ierr);
