@@ -114,3 +114,16 @@ void pTatinGenerateFormattedTimestamp(char date_time[])
 					timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec );
 }
 
+void FileExists(const char *fname,int *exists)
+{
+	FILE *file;
+	
+	if (file = fopen(fname, "r")) {
+		fclose(file);
+		*exists = 1;
+	} else {
+		*exists = 0;
+	}
+}
+
+

@@ -402,8 +402,11 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	user->pack     = PETSC_NULL; /* DM composite for velocity and pressure */
 	
 	/* set defaults */
-	user->restart_from_file = PETSC_FALSE;
-	
+	user->restart_from_file         = PETSC_FALSE;
+	user->checkpoint_every          = 1000;
+	user->checkpoint_every_nsteps   = 1000;
+	user->checkpoint_every_ncpumins = 90.0;
+		
 	user->mx               = 4;
 	user->my               = 4;
 	user->mz               = 4;
@@ -770,6 +773,87 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
 	DataBucketView(PETSC_COMM_WORLD,ctx->materialpoint_db,start,DATABUCKET_VIEW_BINARY);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3dCheckpointManager"
+PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
+{
+	PetscErrorCode ierr;
+	PetscInt       checkpoint_every;
+	PetscInt       checkpoint_every_nsteps,step;
+	double         checkpoint_every_ncpumins, max_current_cpu_time, current_cpu_time;
+	static double  last_cpu_time = 0.0;
+	int            exists;
+	char           prefix[1256],filetocheck[1256];
+	
+	PetscFunctionBegin;
+
+	step                      = ctx->step;
+	checkpoint_every          = ctx->checkpoint_every;
+	checkpoint_every_nsteps   = ctx->checkpoint_every_nsteps;
+	checkpoint_every_ncpumins = ctx->checkpoint_every_ncpumins;
+	
+	sprintf(prefix,"step%1.6d",step);
+
+	
+	/* -------------------------------------- */
+	/* check one - this file has a fixed name */
+	if (step%checkpoint_every==0) {
+		char command[256];
+		char file[256];
+		
+		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every]: Checking for files\n");
+
+		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
+		FileExists(filetocheck,&exists);
+		if (exists==0) {
+			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+			// call checkpoint routine //
+			ierr = pTatin3dCheckpoint(ctx,X,PETSC_NULL);CHKERRQ(ierr);
+		}
+	}
+	
+	/* ----------------------------------------------------------------- */
+	/* check two - these files have a file name related to the time step */
+	if (step%checkpoint_every_nsteps==0) {
+		char command[256];
+		char file[256];
+		
+		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files\n");
+
+		sprintf(filetocheck,"%s/ptat3dcpf.ctx_%1.4d",ctx->outputpath,step);
+		FileExists(filetocheck,&exists);
+		if (exists==0) {
+			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+			// call checkpoint routine //
+			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
+		}
+	}
+	
+	/* -------------------------------------------------------------------- */
+	/* check three - look at cpu time and decide if we need to write or not */
+	PetscGetTime(&current_cpu_time);
+	ierr = MPI_Allreduce(&current_cpu_time,&max_current_cpu_time,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	if (current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
+		char command[256];
+		char file[256];
+		
+		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files\n");
+
+		sprintf(filetocheck,"%s/ptat3dcpf.ctx_%1.4d",ctx->outputpath,step);
+		FileExists(filetocheck,&exists);
+		if (exists==0) {
+			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+			// call checkpoint routine //
+			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
+		}
+		
+		last_cpu_time = max_current_cpu_time;
+	}
 	
 	PetscFunctionReturn(0);
 }
