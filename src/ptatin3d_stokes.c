@@ -136,15 +136,16 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	ierr = PetscFree(lzv);CHKERRQ(ierr);
 #endif
 
+
+	/* velocity */
 	vbasis_dofs = 3;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,2, PETSC_NULL,PETSC_NULL,PETSC_NULL, &dav );CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
 	
-	
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
 	
-	
+	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
@@ -346,9 +347,26 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	ierr = PetscFree(lzv);CHKERRQ(ierr);
 #endif
 	
-	/* load an initial geometry */
-//	ierr = DMDALoadCoordinatesFromFile(dav,"coord-data.dat");CHKERRQ(ierr);
-	ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
+	
+	/* velocity */
+	vbasis_dofs = 3;
+	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
+	/* the above function call will load the initial geometry */
+	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+	
+	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
+	
+	/* pressure */
+	pbasis_dofs = P_BASIS_FUNCTIONS;
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
+	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
+	
+	ierr = PetscFree(lxv);CHKERRQ(ierr);
+	ierr = PetscFree(lyv);CHKERRQ(ierr);
+	ierr = PetscFree(lzv);CHKERRQ(ierr);
+	
 	
 	/* stokes */
 	ierr = DMCompositeCreate(PETSC_COMM_WORLD,&multipys_pack);CHKERRQ(ierr);
@@ -397,10 +415,10 @@ PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	dav = ctx->dav;
 	dap = ctx->dap;
 
-	/* pressure */
+	/* velocity */
 	ierr = DMDAPackDataToFile(dav,fname_vel);CHKERRQ(ierr);
 
-	/* velocity */
+	/* pressure */
 	ierr = DMDAPackDataToFile(dap,fname_p);CHKERRQ(ierr);
 	
 	/* coords */

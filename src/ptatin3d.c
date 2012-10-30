@@ -666,6 +666,14 @@ PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
 	
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	 
+	/* zero out any pointers */
+	cc->stokes_ctx = PETSC_NULL;
+	cc->materialpoint_db = PETSC_NULL;
+	cc->materialpoint_ex = PETSC_NULL;
+	cc->material_constants = PETSC_NULL;
+	cc->model = PETSC_NULL;
+	cc->model_data = PETSC_NULL;
+	
 	*ctx = cc;
 	PetscFunctionReturn(0);
 }
@@ -855,8 +863,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 		}
 	}
 	
-	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -945,9 +951,10 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,1256-1,&flg);CHKERRQ(ierr);
 	if (flg==PETSC_TRUE) {
 		ctx->restart_from_file = PETSC_TRUE;
-	}
-	
+	}	
 	if (!ctx->restart_from_file) {
+		PetscPrintf(PETSC_COMM_WORLD,"pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix\n");
+		PetscPrintf(PETSC_COMM_WORLD,"pTatin3dRestart: Unable to restart job\n");
 		PetscFunctionReturn(0);
 	}
 

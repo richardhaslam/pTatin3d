@@ -280,16 +280,51 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_material_points_restart"
+PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
+{
+	pTatinCtx      user;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
+	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	
+	/* Register all models */
+	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
+	/* Load model, call an initialization routines */
+	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+
+	/* Check if model is being restarted from a checkpointed file */
+	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
+		
+	ierr = pTatin3dDestroyContext(&user);
+	
+	PetscFunctionReturn(0);
+}
+
+
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
+	PetscBool restart;
 	PetscErrorCode ierr;
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
-	ierr = pTatin3d_material_points(argc,argv);CHKERRQ(ierr);
-
+	restart = PETSC_FALSE;
+	PetscOptionsGetBool(PETSC_NULL,"-test_restart",&restart,0);
+	if (restart) {
+		ierr = pTatin3d_material_points_restart(argc,argv);CHKERRQ(ierr);
+	} else {
+		ierr = pTatin3d_material_points(argc,argv);CHKERRQ(ierr);
+	}
+	
+	
 	ierr = PetscFinalize();CHKERRQ(ierr);
 	return 0;
 }
