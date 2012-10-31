@@ -114,7 +114,7 @@ void pTatinGenerateFormattedTimestamp(char date_time[])
 					timeInfo->tm_hour, timeInfo->tm_min, timeInfo->tm_sec );
 }
 
-void FileExists(const char *fname,int *exists)
+void FileExists(const char fname[],int *exists)
 {
 	FILE *file;
 	
@@ -124,6 +124,18 @@ void FileExists(const char *fname,int *exists)
 	} else {
 		*exists = 0;
 	}
+}
+
+int StringEmpty(const char string[])
+{
+	if (string) { /* AND (or &&) */
+    if (string[0] == '\0') {
+			return 1;
+    }
+	} else {
+		return 1;
+	}
+	return 0;
 }
 
 

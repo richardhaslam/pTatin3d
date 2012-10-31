@@ -63,7 +63,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 		char pname[PETSC_MAX_PATH_LEN];		
 		
 		/* dav,dap */
-		if (user->restart_prefix) {
+		if (!StringEmpty(user->restart_prefix)) {
 			sprintf(vname,"%s/ptat3dcpf.dmda-velocity_%s",user->restart_dir,user->restart_prefix);
 			sprintf(pname,"%s/ptat3dcpf.dmda-pressure_%s",user->restart_dir,user->restart_prefix);
 		} else {
@@ -416,6 +416,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	
 	user->continuation_m   = 1;
 	user->continuation_M   = 1;
+	user->coefficient_projection_type = 1; /* Q1 */
 	
 	/* time step control */
 	user->nsteps           = 1;
@@ -533,17 +534,12 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 	PetscErrorCode ierr;
 	
 	/* parse options */
-	ctx->mx = 4;
-	ctx->my = 4;
-	ctx->mz = 4;
 	PetscOptionsGetInt(PETSC_NULL,"-mx",&ctx->mx,0);
 	PetscOptionsGetInt(PETSC_NULL,"-my",&ctx->my,0);
 	PetscOptionsGetInt(PETSC_NULL,"-mz",&ctx->mz,0);
 	
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
-
-	ctx->coefficient_projection_type = 1; /* Q1 */
 	
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
@@ -885,7 +881,12 @@ PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 
-	sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->restart_dir,ctx->restart_prefix);
+	if (!StringEmpty(ctx->restart_prefix)) {
+		sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->restart_dir,ctx->restart_prefix);
+	} else {
+		sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords",ctx->restart_dir);
+	}
+
 	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMeshGeometry] from %s \n", name );
 	ierr = DMDALoadCoordinatesFromFile(ctx->stokes_ctx->dav,name);CHKERRQ(ierr);
 	
@@ -905,7 +906,11 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 			DataBucketDestroy(&ctx->materialpoint_db);
 	}
 	
-	sprintf(name,"%s/ptat3dcpf.markers_%s",ctx->restart_dir,ctx->restart_prefix);
+	if (!StringEmpty(ctx->restart_prefix)) {
+		sprintf(name,"%s/ptat3dcpf.markers_%s",ctx->restart_dir,ctx->restart_prefix);
+	} else {
+		sprintf(name,"%s/ptat3dcpf.markers",ctx->restart_dir);
+	}
 	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry] from %s \n", name );
 	DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
 	ctx->materialpoint_db = db;
@@ -922,7 +927,11 @@ PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	sprintf(name,"%s/ptat3dcpf.dmda-X_%s",ctx->restart_dir,ctx->restart_prefix);
+	if (!StringEmpty(ctx->restart_prefix)) {
+		sprintf(name,"%s/ptat3dcpf.dmda-X_%s",ctx->restart_dir,ctx->restart_prefix);
+	} else {
+		sprintf(name,"%s/ptat3dcpf.dmda-X",ctx->restart_dir);
+	}
 	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialSolution] from %s \n", name );
 	ierr = DMDALoadGlobalVectorFromFile(ctx->pack,name,&Xt);CHKERRQ(ierr);
 	ierr = VecCopy(Xt,X);CHKERRQ(ierr);
@@ -963,7 +972,7 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	
 	/* context */
-	if (ctx->restart_prefix) {
+	if (!StringEmpty(ctx->restart_prefix)) {
 		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->restart_dir,ctx->restart_prefix);
 	} else {
 		sprintf(start,"%s/ptat3dcpf.ctx",ctx->restart_dir);
