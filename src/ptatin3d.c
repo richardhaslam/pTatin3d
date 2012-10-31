@@ -681,13 +681,17 @@ PetscErrorCode pTatin3dContextSave(pTatinCtx ctx,const char filename[])
 {
 	PetscViewer viewer;
 	PetscErrorCode ierr;
-
+	PetscMPIInt rank;
+	
 	PetscFunctionBegin;
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-	
-	ierr = PetscViewerBinaryWrite(viewer,ctx,sizeof(struct _p_pTatinCtx)/sizeof(char),PETSC_CHAR,PETSC_FALSE);
-	
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	if (rank==0) {
+		ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		
+		ierr = PetscViewerBinaryWrite(viewer,ctx,sizeof(struct _p_pTatinCtx)/sizeof(char),PETSC_CHAR,PETSC_FALSE);
+		
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
 	
 	 
 	PetscFunctionReturn(0);

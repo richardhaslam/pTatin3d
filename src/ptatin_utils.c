@@ -124,6 +124,7 @@ void FileExists(const char fname[],int *exists)
 	} else {
 		*exists = 0;
 	}
+	MPI_Barrier(PETSC_COMM_WORLD);
 }
 
 int StringEmpty(const char string[])
