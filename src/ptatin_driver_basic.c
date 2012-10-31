@@ -20,8 +20,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_project_coords.h"
 #include "monitors.h"
 
-typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
