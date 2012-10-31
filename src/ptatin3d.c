@@ -826,8 +826,9 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	/* check three - look at cpu time and decide if we need to write or not */
 	PetscGetTime(&current_cpu_time);
 	ierr = MPI_Allreduce(&current_cpu_time,&max_current_cpu_time,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 	
-	if (current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
+	if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
 		char command[256];
 		char file[256];
 		
