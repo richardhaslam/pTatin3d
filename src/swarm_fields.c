@@ -65,6 +65,8 @@ gcc -O3 -g -c swarm_fields.c
 
 #include "swarm_fields.h"
 
+#define PTAT3D_LOG_DATA_BUCKET
+
 
 /* string helpers */
 void StringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
@@ -683,8 +685,10 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	if(strL>1){ 
 		field_name[strL-1] = 0;
 	}
-		
+
+#ifdef PTAT3D_LOG_DATA_BUCKET
 	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
+#endif
 	
 	
 	/* check for repeated name */
@@ -703,8 +707,9 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 
 	/* copy contents of file */
 	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
+#ifdef PTAT3D_LOG_DATA_BUCKET
 	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
-	
+#endif	
 	/* finish reading meta data */
 	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
 	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
@@ -766,8 +771,10 @@ void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 	FILE *fp;
 	int L,buffer,f,nfields;
 	
+	
+#ifdef PTAT3D_LOG_DATA_BUCKET
 	printf("** DataBucketLoadFromFile **\n");
-
+#endif
 	
 	/* open file */
 	fp = fopen(filename,"rb");
@@ -807,7 +814,9 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
 	MPI_Comm_size(comm,&nproc);
 	MPI_Comm_rank(comm,&rank);
 		
+#ifdef PTAT3D_LOG_DATA_BUCKET
 	printf("** DataBucketLoadFromFile **\n");
+#endif
 	if(type==DATABUCKET_VIEW_STDOUT) {
 		
 	} else if(type==DATABUCKET_VIEW_ASCII) {
