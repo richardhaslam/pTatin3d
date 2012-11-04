@@ -55,6 +55,8 @@ struct _p_pTatinCtx {
 	/* model function pointers */
 	pTatinModel model;
 	PetscContainer model_data;
+	/* logger */
+	PetscViewer log;
 };
 
 #endif

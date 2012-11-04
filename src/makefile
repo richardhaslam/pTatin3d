@@ -35,6 +35,7 @@ export TATIN_SRC = \
 			material_point_point_location.c \
 			material_point_load.c \
 			ptatin_utils.c \
+			ptatin_log.c \
 			ptatin3d_stokes.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \

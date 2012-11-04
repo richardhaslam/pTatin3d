@@ -15,6 +15,7 @@
 #include "output_paraview.h"
 #include "ptatin_models.h"
 #include "dmda_checkpoint.h"
+#include "ptatin_log.h"
 
 #include "private/ptatin_impl.h"
 
@@ -389,6 +390,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	PetscInt       e;
 	pTatinCtx      user;
 	PetscMPIInt    rank;
+	PetscBool      flg;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -439,6 +441,19 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	}
 	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
+	/* create output directory */
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) { 
+		sprintf(user->outputpath,"./output");
+	}
+	ierr = pTatinCreateDirectory(user->outputpath);CHKERRQ(ierr);
+
+	/* open log file */
+	ierr = pTatinLogOpenFile(user);CHKERRQ(ierr);
+	ierr = pTatinLogHeader(user);CHKERRQ(ierr);
+	
+	
 	*ctx = user;
 	
 	PetscFunctionReturn(0);
@@ -486,6 +501,9 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
 		
+	ierr = PetscLogView(user->log);CHKERRQ(ierr);
+	ierr = pTatinLogCloseFile(user);CHKERRQ(ierr);
+
 	ierr = PetscFree(user);CHKERRQ(ierr);
 	
 	*ctx = PETSC_NULL;

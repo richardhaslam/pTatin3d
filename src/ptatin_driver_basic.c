@@ -11,6 +11,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "material_point_std_utils.h"
 #include "ptatin_models.h"
 #include "ptatin_utils.h"
+#include "ptatin_log.h"
 #include "stokes_form_function.h"
 #include "stokes_operators.h"
 #include "stokes_operators_mf.h"
@@ -163,6 +164,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
+	ierr = pTatinLogBasicDMDA(user,"velDMDA",dav);CHKERRQ(ierr);
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -197,6 +199,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	}
 
 	/* INITIAL CONDITION */
+	ierr = pTatinLogBasic(user);
 	user->step = 0;
 	user->time = 0.0;
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
@@ -215,6 +218,11 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	ierr = PCFieldSplitSetIS(pc,"u",is[0]);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"p",is[1]);CHKERRQ(ierr);
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+
+	ierr = pTatinLogBasicSNES(user,"ic_stk",snes);CHKERRQ(ierr);
+	ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
+	ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
+	
 	/* COMPUTE DT */
 	dt = 0.1;
 	user->dt = dt;
@@ -227,8 +235,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	while (user->step < user->nsteps) {
 		char prefix[256];
 
-		
-		
+				
 		/* UPDATE */
 		
 		/* SOLVE */
@@ -238,6 +245,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 		user->step++;
 		
 		PetscPrintf(PETSC_COMM_WORLD,"[Step %1.6d:] time = %1.4e dt = %1.4e \n",user->step,user->time,user->dt);
+		ierr = pTatinLogBasic(user);
 		
 		
 		/* COMPUTE DT */
