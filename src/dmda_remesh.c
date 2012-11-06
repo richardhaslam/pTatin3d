@@ -341,9 +341,9 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 				PetscInt jj = j + sj;
 				ierr = DMDA_CheckNodeIndex3d(da,PETSC_FALSE,ii,jj,k); CHKERRQ(ierr);
 				if ( (k>=startK) && (k<endK) ){
-					nodes[k][jj][ii].x = surface1_nodes[3*(0+nx*j+i)  ] + ((PetscScalar)k) * DX.x;
-					nodes[k][jj][ii].y = surface1_nodes[3*(0+nx*j+i)+1] + ((PetscScalar)k) * DX.y;
-					nodes[k][jj][ii].z = surface1_nodes[3*(0+nx*j+i)+2] + ((PetscScalar)k) * DX.z;
+					nodes[k][jj][ii].x = surface1_nodes[3*(0+nx*j+i)  ] + ((PetscScalar)(k-startK)) * DX.x;
+					nodes[k][jj][ii].y = surface1_nodes[3*(0+nx*j+i)+1] + ((PetscScalar)(k-startK)) * DX.y;
+					nodes[k][jj][ii].z = surface1_nodes[3*(0+nx*j+i)+2] + ((PetscScalar)(k-startK)) * DX.z;
 				}
 			}
 		}
@@ -355,6 +355,87 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	ierr = VecRestoreArray(surface1_coords,&surface1_nodes);CHKERRQ(ierr);
 	ierr = VecRestoreArray(surface2_coords,&surface2_nodes);CHKERRQ(ierr);
 
+	ierr = DMDestroy(&surface1_da);CHKERRQ(ierr);
+	ierr = DMDestroy(&surface2_da);CHKERRQ(ierr);
+	
+	/* update */
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI"
+PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( DM da, PetscInt startJ, PetscInt endJ )
+{
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k;
+	PetscInt s_si,s_sj,s_sk,s_nx,s_ny,s_nz;
+	DM surface1_da,surface2_da;
+	DM surface1_cda,surface2_cda;
+	Vec surface1_coords,surface2_coords;
+	PetscScalar *surface1_nodes,*surface2_nodes;
+	DM cda;
+	Vec coords;
+	DMDACoor3d ***nodes;
+	DMDACoor3d DX;
+	PetscInt start,end, DL, RANGE;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	/* build top and bottom surface da on my processor */
+	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
+	ierr = DMDACreate3dRedundant( da, si,si+nx, startJ,  startJ+1, sk,sk+nz, 1, &surface1_da );CHKERRQ(ierr);
+	ierr = DMDACreate3dRedundant( da, si,si+nx, endJ-1,  endJ,     sk,sk+nz, 1, &surface2_da );CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinates( surface1_da,&surface1_coords );CHKERRQ(ierr);
+	ierr = VecGetArray(surface1_coords,&surface1_nodes);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinates( surface2_da,&surface2_coords );CHKERRQ(ierr);
+	ierr = VecGetArray(surface2_coords,&surface2_nodes);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA( da, &cda);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinates( da,&coords );CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coords,&nodes);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(surface2_da,&s_si,&s_sj,&s_sk,&s_nx,&s_ny,&s_nz);CHKERRQ(ierr);
+	
+	/* starts won't match as the the surface meshes are sequential */
+	if( nx != s_nx ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"nx on da must match surface da (s1)" );  }
+	if( nz != s_nz ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"nz on da must match surface da (s1)" );  }
+	
+	if( s_sj != 0  ) {  SETERRQ( PETSC_COMM_SELF, PETSC_ERR_USER,"s_sj on surface da should be 0 (s1)" );  }
+	if( s_ny != 1  ) {  SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"s_ny on surface da should be 1 (s1)" );  }
+	
+	RANGE = endJ - startJ;
+	for( k=0; k<nz; k++ ) {
+		for( i=0; i<nx; i++ ) {
+			
+			DX.x = (  surface2_nodes[3*(0+nx*k+i)  ]  -  surface1_nodes[3*(0+nx*k+i)  ]  )/( (PetscScalar)(RANGE-1) );
+			DX.y = (  surface2_nodes[3*(0+nx*k+i)+1]  -  surface1_nodes[3*(0+nx*k+i)+1]  )/( (PetscScalar)(RANGE-1) );
+			DX.z = (  surface2_nodes[3*(0+nx*k+i)+2]  -  surface1_nodes[3*(0+nx*k+i)+2]  )/( (PetscScalar)(RANGE-1) );
+			
+			for( j=sj; j<sj+ny; j++ ) {
+				PetscInt ii = i + si;
+				PetscInt kk = k + sk;
+				ierr = DMDA_CheckNodeIndex3d(da,PETSC_FALSE,ii,j,kk); CHKERRQ(ierr);
+				if ( (j>=startJ) && (j<endJ) ){
+					nodes[kk][j][ii].x = surface1_nodes[3*(0+nx*k+i)  ] + ((PetscScalar)(j-startJ)) * DX.x;
+					nodes[kk][j][ii].y = surface1_nodes[3*(0+nx*k+i)+1] + ((PetscScalar)(j-startJ)) * DX.y;
+					nodes[kk][j][ii].z = surface1_nodes[3*(0+nx*k+i)+2] + ((PetscScalar)(j-startJ)) * DX.z;
+				}
+			}
+		}
+	}
+	
+	/* tidy up */
+	ierr = DMDAVecRestoreArray(cda,coords,&nodes);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(surface1_coords,&surface1_nodes);CHKERRQ(ierr);
+	ierr = VecRestoreArray(surface2_coords,&surface2_nodes);CHKERRQ(ierr);
+	
 	ierr = DMDestroy(&surface1_da);CHKERRQ(ierr);
 	ierr = DMDestroy(&surface2_da);CHKERRQ(ierr);
 	
@@ -380,6 +461,27 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d( DM da, PetscInt 
 	}
 	else {
 		ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( da, startK, endK );CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenJLayers3d"
+PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt startJ, PetscInt endJ )
+{
+	MPI_Comm comm;
+	PetscMPIInt size;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	PetscObjectGetComm( (PetscObject)da, &comm );
+	MPI_Comm_size( comm, &size );
+	if(size==1) {
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( da, startJ, endJ );CHKERRQ(ierr);
+	}
+	else {
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( da, startJ, endJ );CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
