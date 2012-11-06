@@ -237,8 +237,10 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 
 				
 		/* UPDATE */
-		
+		ierr = pTatinModel_UpdateMeshGeometry(user->model,user,X);CHKERRQ(ierr);
+				
 		/* SOLVE */
+		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
 		/* increment time step */
 		user->time += user->dt;
