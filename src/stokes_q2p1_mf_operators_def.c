@@ -1,3 +1,35 @@
+/*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ **
+ **    Copyright (c) 2012, 
+ **        Dave A. May [dave.may@erdw.ethz.ch]
+ **        Geophysical Fluid Dynamics, 
+ **        Department of Earth Sciences,
+ **        ETH Zürich,
+ **        Sonneggstrasse 5,
+ **        CH-8092 Zurich,
+ **        Switzerland
+ **
+ **    Project:       pTatin3d
+ **    Filename:      stokes_q2p1_mf_operators_def.c
+ **
+ **
+ **    pTatin3d is free software: you can redistribute it and/or modify
+ **    it under the terms of the GNU General Public License as published by
+ **    the Free Software Foundation, either version 3 of the License, or
+ **    (at your option) any later version.
+ **
+ **    pTatin3d is distributed in the hope that it will be useful,
+ **    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ **    GNU General Public License for more details.
+ **
+ **    You should have received a copy of the GNU General Public License
+ **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ **
+ **    $Id$
+ **
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
 inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])

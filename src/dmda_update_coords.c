@@ -1,3 +1,35 @@
+/*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ **
+ **    Copyright (c) 2012, 
+ **        Dave A. May [dave.may@erdw.ethz.ch]
+ **        Geophysical Fluid Dynamics, 
+ **        Department of Earth Sciences,
+ **        ETH Zürich,
+ **        Sonneggstrasse 5,
+ **        CH-8092 Zurich,
+ **        Switzerland
+ **
+ **    Project:       pTatin3d
+ **    Filename:      dmda_update_coords.c
+ **
+ **
+ **    pTatin3d is free software: you can redistribute it and/or modify
+ **    it under the terms of the GNU General Public License as published by
+ **    the Free Software Foundation, either version 3 of the License, or
+ **    (at your option) any later version.
+ **
+ **    pTatin3d is distributed in the hope that it will be useful,
+ **    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ **    GNU General Public License for more details.
+ **
+ **    You should have received a copy of the GNU General Public License
+ **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
+ **
+ **
+ **    $Id$
+ **
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,21 +45,6 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAUpdateGhostedCoordinates"
-/*@
-   DMDAUpdateGhostedCoordinates - Performs the scatter from the DA's global coodinate vector
-      to the local coordinate vector. The local coordinate vector includes the ghost value.
-
-   Collective on DA
-
-   Input Parameter:
-.  da - the distributed array
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
-@*/
 PetscErrorCode DMDAUpdateGhostedCoordinates(DM da)
 {
 	PetscErrorCode ierr;
@@ -45,30 +62,6 @@ PetscErrorCode DMDAUpdateGhostedCoordinates(DM da)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetCoordinatesFromLocalVector"
-/*@
-   DMDASetCoordinatesFromLocalVector - Sets into the DA's global coordinate vector
-      the coordinate value stored in a local vector (ghost nodes are ignored).
-      The local vector has the same parallel layout as the one obtained from
-      calling DAGetGhostedCoordinates().
-
-   Not Collective
-
-   Input Parameter:
-+  da - the distributed array
--  local_coords - local coordinate vector
-
-   Note:
-    The coordinates may include those for all ghost points, however ghost values 
-    will be ignored when the local coords are inserted into the global coordinate vector.
-
-     The user is responsible for destroying the vector local_coords.
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DAGetGhostCorners(), DAGetCoordinates(), DAGetGhostCoordinates(), DASetUniformCoordinates(), DAGetCoordinateDA()
-@*/
 PetscErrorCode DMDASetCoordinatesFromLocalVector(DM da,Vec local_coords)
 {
 	PetscErrorCode ierr;
@@ -91,30 +84,6 @@ PetscErrorCode DMDASetCoordinatesFromLocalVector(DM da,Vec local_coords)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetCoordinatesU"
-/*@
-   DMDASetCoordinatesU - Sets into the DA a vector that indicates the 
-      coordinates of the local nodes (NOT including ghost nodes).
-      Following the setting of the new coordinates, the ghost values 
-      stored on the local vector are also updated.
-
-   Not Collective
-
-   Input Parameter:
-+  da - the distributed array
--  c - coordinate vector
-
-   Note:
-    The coordinates should NOT include those for all ghost points
-
-     Does NOT increase the reference count of this vector, so caller should NOT
-  destroy the vector.
-
-  Level: intermediate
-
-.keywords: distributed array, get, corners, nodes, local indices, coordinates
-
-.seealso: DAGetGhostCorners(), DAGetCoordinates(), DASetUniformCoordinates(). DAGetGhostCoordinates(), DAGetCoordinateDA()
-@*/
 PetscErrorCode DMDASetCoordinatesU(DM da,Vec coords)
 {
 	PetscErrorCode ierr;
