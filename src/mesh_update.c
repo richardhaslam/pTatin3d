@@ -105,5 +105,21 @@ PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "UpdateMeshGeometry_FullLagrangian"
+PetscErrorCode UpdateMeshGeometry_FullLagrangian(DM dav,Vec velocity,PetscReal step)
+{
+	Vec            coordinates;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+	ierr = VecAXPY(coordinates,step,velocity);CHKERRQ(ierr); /* x = x + dt.vel_advect_mesh */
+	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 
 
