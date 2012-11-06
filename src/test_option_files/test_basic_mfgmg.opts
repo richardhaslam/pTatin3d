@@ -25,8 +25,10 @@
 -fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_ksp_type chebychev
 -fieldsplit_u_mg_levels_pc_type jacobi
--ksp_max_it 10
--ksp_monitor_true_residual
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-ksp_max_it 10
+#-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
 -model_viscous_sinker_eta0 1.0

@@ -373,6 +373,7 @@ extern PetscErrorCode pTatinModelRegister_Gene3D(void);
 extern PetscErrorCode pTatinModelRegister_Gene3DNueve(void);
 extern PetscErrorCode pTatinModelRegister_Indentor(void);
 extern PetscErrorCode pTatinModelRegister_Sierra(void);
+extern PetscErrorCode pTatinModelRegister_Folding(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -389,6 +390,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Gene3DNueve();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Sierra();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Folding();CHKERRQ(ierr);
 		
 	PetscFunctionReturn(0);
 }

@@ -6,7 +6,8 @@ TATIN_MODEL_DIR = \
 	indentor \
 	gene3d \
 	gene3d_nueve \
-	sierra
+	sierra \
+	folding
 
 
 ## DONT NOT EDIT LINES BELOW
