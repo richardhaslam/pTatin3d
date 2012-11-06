@@ -688,7 +688,8 @@ PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
 	cc->material_constants = PETSC_NULL;
 	cc->model = PETSC_NULL;
 	cc->model_data = PETSC_NULL;
-	
+	cc->log = PETSC_NULL;
+
 	*ctx = cc;
 	PetscFunctionReturn(0);
 }
@@ -1013,6 +1014,9 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
 	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	
+	ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
+	ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
 	
 	
 	ierr = pTatin3dParseOptions(ctx);CHKERRQ(ierr);
