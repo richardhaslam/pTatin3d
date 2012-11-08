@@ -56,6 +56,24 @@ typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } Opera
 
 extern PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[]);
 
+PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
+{
+	Vec vt;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = VecDuplicate(v1,&vt);CHKERRQ(ierr);
+	ierr = VecCopy(v1,vt);CHKERRQ(ierr);
+	
+	ierr = MatMult(mat,v1,vt);CHKERRQ(ierr);
+	ierr = VecAXPY(vt,1.0,v2);
+	ierr = VecCopy(vt,v3);CHKERRQ(ierr);
+	ierr = VecDestroy(&vt);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 typedef struct {
 	PetscInt     nlevels;
 	OperatorType *level_type;
@@ -586,7 +604,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = MatDestroy(&Apu);CHKERRQ(ierr);
 		ierr = MatDestroy(&Spp);CHKERRQ(ierr);
 	}
-	
+	//ierr = MatShellSetOperation(B,MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))MatMultTransposeAdd_generic);CHKERRQ(ierr);
 	
 	
 	/* A11 operator */
@@ -644,6 +662,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
 				mf->daU = PETSC_NULL;				
 				operatorA11[k] = Auu;
+				ierr = MatShellSetOperation(Auu,MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))MatMultTransposeAdd_generic);CHKERRQ(ierr);
 				
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
@@ -658,7 +677,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
 						mf->daU = PETSC_NULL;				
 						operatorB11[k] = Buu;
-						
+						ierr = MatShellSetOperation(Buu,MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))MatMultTransposeAdd_generic);CHKERRQ(ierr);
 					} else {
 						operatorB11[k] = Auu;
 						ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
@@ -758,6 +777,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 
 	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 //	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
@@ -807,6 +827,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		}
 	}
 
+	ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
+	
 	
 #if 0
 	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
@@ -846,6 +868,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscPrintf(PETSC_COMM_WORLD,"############## PICARD STAGE ##############\n");
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"picard_stage");CHKERRQ(ierr);
+
+	
 	/*
 	newton_its = 0;
 	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
@@ -859,15 +883,84 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	*/
 }
 #endif
-	
-	
-	{
-		char name[100];
-		
-		sprintf(name,"ic_step%.6d",user->step);
-		ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
-	}
 
+	{
+		SNES snes_newton;
+		PetscContainer container;
+		PetscInt newton_its;
+		
+		ierr = SNESCreate(PETSC_COMM_WORLD,&snes_newton);CHKERRQ(ierr);
+		ierr = SNESSetOptionsPrefix(snes_newton,"n_");CHKERRQ(ierr);
+		ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		// Force mffd
+		ierr = SNESSetJacobian(snes_newton,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+		
+		ierr = SNESSetFromOptions(snes_newton);CHKERRQ(ierr);
+		
+		ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
+		ierr = PetscContainerSetPointer(container,(void*)&mlctx);CHKERRQ(ierr);
+		ierr = PetscObjectCompose((PetscObject)snes_newton,"AuuMultiLevelCtx",(PetscObject)container);CHKERRQ(ierr);
+		
+		/* configure for fieldsplit */
+		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		
+		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
+		ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
+		
+		/* configure uu split for galerkin multi-grid */
+		{
+			PetscInt nsplits;
+			PC       pc_i;
+			KSP      *sub_ksp,ksp_coarse,ksp_smoother;
+			
+			ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+			ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
+			
+			ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
+			ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
+			ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+			ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
+			ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+			
+			for( k=1; k<nlevels; k++ ){
+				ierr = PCMGSetInterpolation(pc_i,k,interpolatation_v[k]);CHKERRQ(ierr);
+			}
+			
+			/* drop the operators in - i presume this will also need to be performed inside the jacobian each time the operators are modified */
+			/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
+			ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			for( k=1; k<nlevels; k++ ){
+				PetscBool use_low_order_geometry = PETSC_FALSE;
+				
+				ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
+				// use A for smoother, B for residual
+				ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+				if (use_low_order_geometry==PETSC_TRUE) {
+					ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				} else {
+					// Use A for smoother, low
+					ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				}
+			}
+		}
+		
+		newton_its = 0;
+		PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
+		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
+		if (newton_its>0) {
+			PetscPrintf(PETSC_COMM_WORLD,"############## NEWTON STAGE ##############\n");
+			ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
+			ierr = pTatinModel_Output(user->model,user,X,"newton_stage");CHKERRQ(ierr);
+		}
+		ierr = SNESDestroy(&snes_newton);CHKERRQ(ierr);
+	}
+	
+	
+	
 	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%d]: time %lf Myr \n", user->step, user->time );
 	for (kk=0; kk<user->nsteps; kk++) {
 		PetscInt tk = user->step+1;
