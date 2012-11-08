@@ -60,11 +60,10 @@ export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
 export TATIN_F_SRC = \
 			stokes_q2p1_mf_operators_def.f90
-
-export TATIN_F_OBJ	=	$(TATIN_F_SRC:.f90=_f90.o)
-
 # to de-activate fortran kernels
 export TATIN_F_SRC =
+
+export TATIN_F_OBJ	=	$(TATIN_F_SRC:.f90=_f90.o)
 
 TATIN_TESTS	=	\
 			test_dmda_update_coords \
