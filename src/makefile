@@ -64,7 +64,7 @@ export TATIN_F_SRC = \
 export TATIN_F_OBJ	=	$(TATIN_F_SRC:.f90=_f90.o)
 
 # to de-activate fortran kernels
-#export TATIN_F_SRC =
+export TATIN_F_SRC =
 
 TATIN_TESTS	=	\
 			test_dmda_update_coords \
