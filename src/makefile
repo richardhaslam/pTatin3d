@@ -58,6 +58,14 @@ export TATIN_SRC = \
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
+export TATIN_F_SRC = \
+			stokes_q2p1_mf_operators_def.f90
+
+export TATIN_F_OBJ	=	$(TATIN_F_SRC:.f90=_f90.o)
+
+# to de-activate fortran kernels
+export TATIN_F_SRC =
+
 TATIN_TESTS	=	\
 			test_dmda_update_coords \
 			test_dmda_redundant \
@@ -100,8 +108,14 @@ export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qip
 
 export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
 
+export TATIN_FFLAGS_O2_OSX = -O2 -ffree-line-length-4000
+
 export TATIN_CFLAGS		= ${TATIN_CFLAGS_O2_OSX}
-export TATIN_CC			= ${PCC}
+export TATIN_CC				= ${PCC}
+export TATIN_FFLAGS		= ${TATIN_FFLAGS_O2_OSX}
+export TATIN_FC				= ${FC}
+export TATIN_FC				= gfortran -m64
+
 
 all: 
 	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
@@ -109,6 +123,7 @@ all:
 	
 
 	-@${MAKE} base_objects
+	-@${MAKE} base_objects_fortran
 	-@${MAKE} material_constants
 	-@${MAKE} libs
 	-@${MAKE} models
@@ -123,6 +138,14 @@ base_objects:
 		${MAKE} $$a; \
 	done
 
+base_objects_fortran:
+	-@echo ""
+	-@echo "*** Creating ptatin fortran object files ***"
+	@for a in ${TATIN_F_OBJ} ; do \
+		${MAKE} $$a; \
+	done
+
+
 material_constants: base_objects
 	-@${MAKE} -C material_constants
 
@@ -130,7 +153,7 @@ libs: base_objects
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
-	ar rcs libptatin3d.a ${TATIN_OBJ} material_constants/*.o
+	ar rcs libptatin3d.a ${TATIN_OBJ} ${TATIN_F_OBJ} material_constants/*.o
 
 
 tests: libs models
@@ -160,6 +183,10 @@ drivers: libs models
 	-@echo ""
 	${PCC} ${TATIN_CFLAGS} -c $*.c ${TATIN_INC}
 
+%_f90.o: %.f90
+	-@echo ""
+	${TATIN_FC} ${TATIN_FFLAGS} -c $*.f90 ${TATIN_INC} -o $*_f90.o
+
 
 clean_all:
 	-@echo ""
@@ -169,6 +196,7 @@ clean_all:
 	-@${MAKE} clean_all -C models/
 	-@echo "*** Removing base_objects ***"
 	-@rm -f ${TATIN_OBJ}
+	-@rm -f ${TATIN_F_OBJ}
 	-@echo "*** Removing tests object files ***"
 	-@rm -f *.o
 	-@echo "*** Removing ptatin applications ***"
