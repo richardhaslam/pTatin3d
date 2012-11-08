@@ -53,7 +53,9 @@
 #include "stokes_q2p1_mf_operators_diag_def.c"
 
 //
-
+//#define PTAT3D_USE_FORTRAN_MF_KERNELS
+//
+//
 //#define PTAT3D_LOG_MF_OP
 
 //#define NO_LOWORDER_OPERATORS
@@ -231,6 +233,11 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 	PetscFunctionReturn(0);
 }
 
+#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
+extern void f_matmultmf_stokes_mixedfem3d_b11_(double*,double*, double*,double*,double*,double*, double*,double*,double*,double*, double*, double*);
+#endif
+
+
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11"
 PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
@@ -301,7 +308,11 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
+			f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			#else
+                        MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+                        #endif
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
