@@ -133,6 +133,7 @@ PetscErrorCode pTatin_SNESMonitor_ParaviewStokesResiduals3d(SNES snes,PetscInt n
 	pTatinCtx ctx;
 	DM stokes_pack;
 	Vec X,UP;
+	const char *prefix;
 	static char pvdfilename[1000];
 	char vtkfilename[1000];
 	PetscInt its;
@@ -140,26 +141,42 @@ PetscErrorCode pTatin_SNESMonitor_ParaviewStokesResiduals3d(SNES snes,PetscInt n
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
 
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
 	ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
 	ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 	
 	if (its==0) {
-		sprintf(pvdfilename,"%s/residualseries_vp_snes_residuals_step%d.pvd",ctx->outputpath,ctx->step);
+		if (!prefix) {
+			sprintf(pvdfilename,"%s/residualseries_vp_snes_residuals_step%d.pvd",ctx->outputpath,ctx->step);
+		}else {
+			sprintf(pvdfilename,"%s/residualseries_vp_snes_%sresiduals_step%d.pvd",ctx->outputpath,prefix,ctx->step);
+		}
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
-	sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d.pvts",its,ctx->step);
+	if (!prefix) {
+		sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d.pvts",its,ctx->step);
+	} else {
+		sprintf(vtkfilename, "snes_%siteration%d_vp_residuals_step%d.pvts",prefix,its,ctx->step);
+	}
 	ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
-	sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d",its,ctx->step);
+	if (!prefix) {
+		sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d",its,ctx->step);
+	} else {
+		sprintf(vtkfilename, "snes_%siteration%d_vp_residuals_step%d",prefix,its,ctx->step);
+	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
 	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD,"%3D SNES Residual: ptatin non-linear solution viwer wrote file \n",its);
-	
+
+	if (!prefix) {
+		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES Residual: ptatin non-linear solution viwer wrote file \n",its);
+	} else {
+		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES(%s) Residual: ptatin non-linear solution viwer wrote file \n",its,prefix);
+	}	
 	PetscFunctionReturn(0);
 }
