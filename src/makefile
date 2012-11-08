@@ -64,7 +64,7 @@ export TATIN_F_SRC = \
 export TATIN_F_OBJ	=	$(TATIN_F_SRC:.f90=_f90.o)
 
 # to de-activate fortran kernels
-export TATIN_F_SRC =
+#export TATIN_F_SRC =
 
 TATIN_TESTS	=	\
 			test_dmda_update_coords \
@@ -108,13 +108,15 @@ export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qip
 
 export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
 
-export TATIN_FFLAGS_O2_OSX = -O2 -ffree-line-length-4000
+export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
+export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
+export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -march=native -funroll-loops -ffast-math -Wstrict-aliasing -fstrict-aliasing
 
 export TATIN_CFLAGS		= ${TATIN_CFLAGS_O2_OSX}
-export TATIN_CC				= ${PCC}
-export TATIN_FFLAGS		= ${TATIN_FFLAGS_O2_OSX}
-export TATIN_FC				= ${FC}
-export TATIN_FC				= gfortran -m64
+export TATIN_CC			= ${PCC}
+export TATIN_FFLAGS		= ${TATIN_FFLAGS_O3_BRUTUS}
+export TATIN_FC			= ${FC}
+#export TATIN_FC				= gfortran -m64
 
 
 all: 
