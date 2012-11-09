@@ -721,8 +721,9 @@ PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedM
 		ierr = ReportOptionMissing(MODEL_NAME,"Number of pmap files to read","-num_map_files",0);CHKERRQ(ierr);
 	}
 
+	direction = 0;
   ierr = PetscOptionsGetInt(MODEL_NAME,"-extrude_dir",&direction,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_FALSE) {
+	if ( (flg == PETSC_FALSE) || (direction>2) || (direction<0)) {
 		ierr = ReportOptionMissing(MODEL_NAME,"Direction to extrude the pmaps","-extrude_dir","0=x, 1=y, 2=z");CHKERRQ(ierr);
 	}
 	
