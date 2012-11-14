@@ -88,7 +88,8 @@ TATIN_DRIVERS		= \
 			ptatin_driver_asmsolve \
 			ptatin_driver_asmsolve_approx \
 			ptatin_driver_asmsolve2 \
-			ptatin_driver_basic
+			ptatin_driver_basic \
+			ptatin_driver_ic_spm
 
 
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
@@ -111,7 +112,7 @@ export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
 export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
 export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -march=native -funroll-loops -ffast-math -Wstrict-aliasing -fstrict-aliasing
 
-export TATIN_CFLAGS		= ${TATIN_CFLAGS_O2_OSX}
+export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
 export TATIN_CC			= ${PCC}
 export TATIN_FFLAGS		= ${TATIN_FFLAGS_O3_BRUTUS}
 export TATIN_FC			= ${FC}
