@@ -553,6 +553,69 @@ PetscErrorCode Gene3DNueve_MaterialPointSetInitialStokesVariables(pTatinCtx c,vo
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSetRegion_MyFunction"
+PetscErrorCode MaterialPointSetRegion_MyFunction(pTatinCtx c,void *ctx)
+{
+  ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
+  PetscErrorCode ierr;
+  PetscInt p, n_mp_points;
+  DataBucket db;
+  DataField PField_std;
+  int phase_init, phase, phase_index;
+  PetscReal arg,alpha, beta,gamma,delta;
+	
+	PetscFunctionBegin;
+  PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+	
+  /* define properties on material points */
+  db = c->materialpoint_db;
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+  DataFieldGetAccess(PField_std);
+  DataFieldVerifyAccess(PField_std,sizeof (MPntStd));
+	
+  DataBucketGetSizes(db,&n_mp_points,0,0);
+
+	alpha = 1.0;
+	beta = 1.2;
+	gamma = 1.0/6.0;
+	delta = 0.0;
+
+	PetscOptionsGetReal(PETSC_NULL,"-int_alpha",&alpha,0);
+	PetscOptionsGetReal(PETSC_NULL,"-int_beta",&beta,0);
+	PetscOptionsGetReal(PETSC_NULL,"-int_gamma",&gamma,0);
+	PetscOptionsGetReal(PETSC_NULL,"-int_delta",&delta,0);
+	
+  for (p=0; p<n_mp_points; p++) {
+		MPntStd *material_point;
+		double *pos,xp,yp,zp,height;
+		
+		
+		DataFieldAccessPoint(PField_std, p, (void **) &material_point);
+		MPntStdGetField_global_coord(material_point,&pos);
+		
+		MPntStdGetField_phase_index(material_point, &phase_init);
+
+		xp = pos[0] - 6.0;
+		yp = pos[1];
+		zp = pos[2] - 6.0;
+		
+		arg = ( beta * cos(gamma*M_PI*(xp + delta * zp)) - zp );
+		height = 0.5 * exp( -alpha * arg * arg ) + 1.5;
+
+		phase = 0;
+		if (yp >= height ) {
+			phase = 1;
+		}
+		
+		MPntStdSetField_phase_index(material_point, phase);
+	}
+  DataFieldRestoreAccess(PField_std);
+	
+  PetscFunctionReturn(0);
+}
+
+
 /* define phase index on material points from a map file extruded in z direction */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSetRegionIndexFromMap"
@@ -872,6 +935,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3DNueve(pTatinCtx c,void *c
       
     case GENE_LayeredCake: /* Layer cake <obsolete> */
 		{
+			ierr = MaterialPointSetRegion_MyFunction(c,ctx);CHKERRQ(ierr);
 		}
       break;
       
