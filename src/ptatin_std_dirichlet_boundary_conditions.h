@@ -43,6 +43,7 @@ PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal 
 PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList list,DM dav,PetscReal exx_bc);
 PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz_bc);
 PetscErrorCode DirichletBC_ApplyStrainRateExz_b(BCList bclist,DM dav,PetscReal exz_bc);
+PetscErrorCode DirichletBC_ApplyStrainRateExz_c(BCList bclist,DM dav,PetscReal exz_bc);
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCList list,DM dav,PetscReal vx_bc);
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionX(BCList list,DM dav,PetscReal vx_bc);
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(BCList list,DM dav,PetscReal beta,PetscReal vx_bc);

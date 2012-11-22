@@ -39,6 +39,7 @@
 #include "private/ptatin_impl.h"
 
 #include "dmda_bcs.h"
+#include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
@@ -399,11 +400,25 @@ PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,Mo
 			
 			exz_value = 0.25;
 			ierr = PetscOptionsGetReal(PETSC_NULL,"-shear_exz",&exz_value,&flg);CHKERRQ(ierr);
+/*
+			// all sides //
 			ierr = DirichletBC_ApplyStrainRateExz_b(u_bclist,dav,exz_value);CHKERRQ(ierr);
-																						
-			/* basement */
+			// basement //
 			zero = 0.0;
 			ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+*/
+			
+			// east/west sides - y is unconstrained //
+			ierr = DirichletBC_ApplyStrainRateExz_c(u_bclist,dav,exz_value);CHKERRQ(ierr);
+
+			/* front/back sides */
+			ierr = DirichletBC_FreeSlip(u_bclist,dav,FRONT_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(u_bclist,dav,BACK_FACE);CHKERRQ(ierr);
+			
+			// basement //
+			zero = 0.0;
+			ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+			
 		}	
 			break;
 			
