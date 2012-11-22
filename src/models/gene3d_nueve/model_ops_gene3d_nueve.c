@@ -393,6 +393,20 @@ PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,Mo
       ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMAX_LOC, 2,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
       break;
 			
+		case GENEBC_ShearFreeSlipFreeSurface:
+		{
+			PetscReal exz_value,zero;
+			
+			exz_value = 0.25;
+			ierr = PetscOptionsGetReal(PETSC_NULL,"-shear_exz",&exz_value,&flg);CHKERRQ(ierr);
+			ierr = DirichletBC_ApplyStrainRateExz_b(u_bclist,dav,exz_value);CHKERRQ(ierr);
+																						
+			/* basement */
+			zero = 0.0;
+			ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
+		}	
+			break;
+			
     default:
       break;
 	}

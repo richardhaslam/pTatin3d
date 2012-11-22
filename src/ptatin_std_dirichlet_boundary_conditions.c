@@ -540,9 +540,10 @@ PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal 
 }
 
 /* 
- Apply tangential velocity along the north/south faces via a specified shear strain rate, Exz.
- Normal velocity on north/south face is set to be zero
- Along east/west faces we prescribe a velocity in x,z which is consistent with the sense of shear.
+ Apply tangential velocity (vx=0,vz) along the east/west faces via a specified shear strain rate, Exz.
+ Normal velocity on east/west is set to be zero
+ Along front/back faces we prescribe a normal velocity in (vx=0,vz) which is consistent with the sense of shear.
+ x velocity compnent on front/bac is set to be zero
 */
 #undef __FUNCT__
 #define __FUNCT__ "DirichletBC_ApplyStrainRateExz"
@@ -552,6 +553,7 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz
 	PetscScalar     value;
 	StrainRateBCCtx ctx;
 	PetscErrorCode ierr;
+	
 	
 	PetscFunctionBegin;
 	
@@ -568,9 +570,11 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz
 	value = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+
 	
 	ctx.dof_idx = 0;
-	ctx.alpha   = 2.0*exz_bc * (MeshMax[0] - MeshMin[0]);
+	value       = exz_bc * (MeshMax[0] - MeshMin[0]);
+	ctx.alpha   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
 	ctx.beta    = 0.0;
 	ctx.gamma   = 0.0;	
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
@@ -579,6 +583,52 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz
 	value = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);	
+}
+
+/* 
+ Apply tangential velocity (vx,vz=0) along the east/west faces via a specified shear strain rate, Exz.
+ Normal velocity on east/west is set to be zero
+ Along front/back faces we prescribe a normal velocity in (vx,vz=0) which is consistent with the sense of shear.
+ x velocity compnent on front/bac is set to be zero
+ */
+#undef __FUNCT__
+#define __FUNCT__ "DirichletBC_ApplyStrainRateExz_b"
+PetscErrorCode DirichletBC_ApplyStrainRateExz_b(BCList bclist,DM dav,PetscReal exz_bc)
+{
+	PetscReal       MeshMin[3],MeshMax[3];
+	PetscScalar     value;
+	StrainRateBCCtx ctx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+	ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+	ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+	ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+	
+	value = exz_bc * (MeshMax[0] - MeshMin[0]);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+	value = -value;
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+	
+	value = 0.0;
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+	
+	ctx.dof_idx = 2;
+	value       = exz_bc * (MeshMax[0] - MeshMin[0]);
+	ctx.alpha   = 0.0;
+	ctx.beta    = 0.0;
+	ctx.gamma   = 2.0 * value / (MeshMax[0] - MeshMin[0]);	
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+	
+	value = 0.0;
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);	
 }
