@@ -215,6 +215,10 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	ctx->dav  = dav;
 	ctx->dap  = dap;
 	ctx->stokes_pack = multipys_pack;
+
+	ierr = PetscFree(lxv);CHKERRQ(ierr);
+	ierr = PetscFree(lyv);CHKERRQ(ierr);
+	ierr = PetscFree(lzv);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
