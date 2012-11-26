@@ -36,6 +36,7 @@
 #include "petscdm.h"
 #include "ptatin3d_defs.h"
 #include "dmda_update_coords.h"
+#include "dmda_compare.h"
 #include "dmdae.h"
 #include "dmda_element_q2p1.h"
 #include "dmda_element_q1.h"
@@ -153,6 +154,81 @@ PetscErrorCode  DMDASetElementType_Q1(DM da)
 
 
 /* constructors */
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectCoordinatesQ2toOverlappingQ1_3d"
+PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
+{
+	PetscErrorCode ierr;
+	Vec coordsQ2, coordsQ1;
+	DMDACoor3d ***LA_coordsQ2;
+	DMDACoor3d ***LA_coordsQ1;
+	PetscInt si1,sj1,sk1,nx1,ny1,nz1,i,j,k;
+	PetscInt si2,sj2,sk2,nx2,ny2,nz2;
+	DM cdaQ2,cdaQ1;
+	PetscBool overlap;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetGhostedCoordinates(daq2,&coordsQ2);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(daq2,&cdaQ2);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cdaQ2,coordsQ2,&LA_coordsQ2);CHKERRQ(ierr);
+	
+	ierr = DMDASetUniformCoordinates(daq1,-2.0,2.0,-2.0,2.0,-2.0,2.0);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(daq1,&coordsQ1);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(daq1,&cdaQ1);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cdaQ1,coordsQ1,&LA_coordsQ1);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCorners(     daq1,&si1,&sj1,&sk1 , &nx1,&ny1,&nz1);CHKERRQ(ierr);
+	ierr = DMDAGetGhostCorners(daq2,&si2,&sj2,&sk2 , &nx2,&ny2,&nz2);CHKERRQ(ierr);
+
+	/*
+	if ( (2*si1<si2) || (si1+nx1>si2+nx2) ) {
+		printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
+	}
+	if ( (2*sj1<sj2) || (sj1+ny1>sj2+ny2) ) {
+		printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
+	}
+	if ( (2*sk1<sk2) || (sk1+nz1>sk2+nz2) ) {
+		printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
+	}
+*/	
+	for( k=sk1; k<sk1+nz1; k++ ) {
+		if ( (2*k<sk2) || (2*k>sk2+nz2) ) {
+			printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
+		}
+		
+		for( j=sj1; j<sj1+ny1; j++ ) {
+			if ( (2*j<sj2) || (2*j>sj2+ny2) ) {
+				printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
+			}
+			
+			for( i=si1; i<si1+nx1; i++ ) {
+				if ( (2*i<si2) || (2*i>si2+nx2) ) {
+					printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
+				}
+				
+				//printf("(i,j,k-%d,%d,%d) => (I,J,K-%d,%d,%d)\n",i,j,k,2*i,2*j,2*k);
+				LA_coordsQ1[k][j][i].x = LA_coordsQ2[2*k][2*j][2*i].x;
+				LA_coordsQ1[k][j][i].y = LA_coordsQ2[2*k][2*j][2*i].y;
+				LA_coordsQ1[k][j][i].z = LA_coordsQ2[2*k][2*j][2*i].z;
+			}
+		}
+	}
+	
+	ierr = DMDAVecRestoreArray(cdaQ1,coordsQ1,&LA_coordsQ1);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cdaQ2,coordsQ2,&LA_coordsQ2);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(daq1);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMDACreateOverlappingQ1FromQ2"
 PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
@@ -232,6 +308,8 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	ierr = DMDACreate3d(((PetscObject)dmq2)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, Mp,Np,Pp, ndofs,1, lxq1,lyq1,lzq1, &dm );CHKERRQ(ierr);
 	
+	//ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	//ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	/* add the space for the data structure */
 	ierr = DMAttachDMDAE(dm);CHKERRQ(ierr);
@@ -292,16 +370,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	}	
 	
 	/* force coordinate copy */
-	{
-		Vec coordq1,coordq2;
-		
-		ierr = DMDASetUniformCoordinates(dm, 0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
-
-		ierr = DMDAGetCoordinates(dmq2,&coordq2);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(dm,&coordq1);CHKERRQ(ierr);
-		ierr = VecCopy(coordq2,coordq1);CHKERRQ(ierr);
-		ierr = DMDAUpdateGhostedCoordinates(dm);CHKERRQ(ierr);
-	}
+	ierr = DMDAProjectCoordinatesQ2toOverlappingQ1_3d(dmq2,dm);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -404,11 +473,10 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 		}
 	}
 	
-	
 	ierr = DMDACreate3d(((PetscObject)dmq2)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, ndofs,1, lxq2,lyq2,lzq2, &dm );CHKERRQ(ierr);
 	
-	ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-	ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	//ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	//ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	/* add the space for the data structure */
 	ierr = DMAttachDMDAE(dm);CHKERRQ(ierr);
@@ -473,7 +541,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	{
 		Vec coordq1,coordq2;
 		
-		ierr = DMDASetUniformCoordinates(dm, 0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
+		ierr = DMDASetUniformCoordinates(dm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 
 		ierr = DMDAGetCoordinates(dmq2,&coordq2);CHKERRQ(ierr);
 		ierr = DMDAGetCoordinates(dm,&coordq1);CHKERRQ(ierr);
@@ -483,8 +551,6 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 
 	PetscFunctionReturn(0);
 }
-
-
 
 /* element helpers */
 #undef __FUNCT__
