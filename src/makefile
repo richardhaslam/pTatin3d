@@ -24,6 +24,7 @@ export TATIN_SRC = \
 			mesh_update.c \
 			dmda_element_q2p1.c \
 			element_type_Q2.c \
+			dmda_element_q1macrop1.c \
 			swarm_fields.c \
 			data_exchanger.c \
 			MPntStd_def.c \
@@ -37,6 +38,7 @@ export TATIN_SRC = \
 			ptatin_utils.c \
 			ptatin_log.c \
 			ptatin3d_stokes.c \
+			ptatin3d_stokes_q1macrop1.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \
 			ptatin_models.c \
@@ -77,7 +79,8 @@ TATIN_TESTS	=	\
 			test_stokes_operators \
 			test_stokes_operators_approximations \
 			test_mp_advection \
-			test_material_point_load
+			test_material_point_load \
+			test_stokes_q1macrop1
 
 #			test_model
 
