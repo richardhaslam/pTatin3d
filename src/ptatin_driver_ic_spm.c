@@ -46,6 +46,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "stokes_operators.h"
 #include "dmda_redundant.h"
 #include "dmda_update_coords.h"
+#include "dmda_element_q1.h"
 
 /*
  assumed y is the surface
@@ -412,6 +413,22 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 		const int nf = 2;
 		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes }; 
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStd_MPStokes");CHKERRQ(ierr);
+	}
+	
+	
+	/* generate a thermal mesh */
+	// overlapping form
+	{
+		DM daq1;
+		Vec phi;
+		
+		ierr = DMDACreateOverlappingQ1FromQ2(dav,1,&daq1);CHKERRQ(ierr);
+		//ierr = DMDACreateNestedQ1FromQ2(dav,1,&daq1);CHKERRQ(ierr);
+		ierr = DMCreateGlobalVector(daq1,&phi);CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTK(daq1,phi,"phi_overlapping_q1.vtk");CHKERRQ(ierr);
+		
+		ierr = VecDestroy(&phi);CHKERRQ(ierr);
+		ierr = DMDestroy(&daq1);CHKERRQ(ierr);
 	}
 	
 	
