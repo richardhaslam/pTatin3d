@@ -22,7 +22,9 @@ export TATIN_SRC = \
 			mesh_deformation.c \
 			mesh_quality_metrics.c \
 			mesh_update.c \
+			dmdae.c \
 			dmda_element_q2p1.c \
+			dmda_element_q1.c \
 			element_type_Q2.c \
 			dmda_element_q1macrop1.c \
 			swarm_fields.c \
