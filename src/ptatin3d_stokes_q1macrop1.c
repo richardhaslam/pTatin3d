@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      ptatin3d_stokes.c
+ **    Filename:      ptatin3d_stokes_q1macrop1.c
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
  **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
  **
  **
- **    $Id: ptatin3d_stokes.c 3636 2012-11-06 19:14:24Z dmay $
+ **    $Id$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
