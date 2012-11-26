@@ -404,13 +404,13 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	if(n) { *n = pN; }
 	if(p) { *p = pP; }
 	
-	if(si) { *si = olx; }
-	if(sj) { *sj = oly; }
-	if(sk) { *sk = olz; }
+	if(si) { *si = olx; } else { ierr = PetscFree(olx);CHKERRQ(ierr); }
+	if(sj) { *sj = oly; } else { ierr = PetscFree(oly);CHKERRQ(ierr); }
+	if(sk) { *sk = olz; } else { ierr = PetscFree(olz);CHKERRQ(ierr); }
 	
-	if(_mx) { *_mx = lmx; }
-	if(_my) { *_my = lmy; }
-	if(_mz) { *_mz = lmz; }
+	if(_mx) { *_mx = lmx; } else { ierr = PetscFree(lmx);CHKERRQ(ierr); }
+	if(_my) { *_my = lmy; } else { ierr = PetscFree(lmy);CHKERRQ(ierr); }
+	if(_mz) { *_mz = lmz; } else { ierr = PetscFree(lmz);CHKERRQ(ierr); }
 	
 	ierr = PetscFree(tmp);CHKERRQ(ierr);
 	
