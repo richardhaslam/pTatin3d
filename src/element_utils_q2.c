@@ -163,7 +163,7 @@ void P3D_ConstructNi_P1GRel_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]
 	P3D_ConstructNi_P1L_3D( _xg, coords, Ni );
 }
 
-void P3D_prepare_elementQ2_3x3(PetscReal WEIGHT[NQP],PetscReal XI[NQP][3],PetscReal NI[NQP][NPE],PetscReal GNI[NQP][3][NPE])
+void P3D_prepare_elementQ2_3x3(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE])
 {
 	const PetscReal  s   = 0.774596669241483; /* sqrt(3/5) */
 	const PetscReal  w_1 = 0.555555555555556; /* 5/9 */
@@ -225,7 +225,7 @@ void P3D_prepare_elementQ2_3x3(PetscReal WEIGHT[NQP],PetscReal XI[NQP][3],PetscR
 	
 }
 
-void P3D_prepare_elementQ2_2x2(PetscReal WEIGHT[NQP],PetscReal XI[NQP][3],PetscReal NI[NQP][NPE],PetscReal GNI[NQP][3][NPE])
+void P3D_prepare_elementQ2_2x2(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE])
 {
 	const PetscReal  s   = 0.577350269189;
 	const PetscReal  w0 = 1.0;
@@ -282,7 +282,7 @@ void P3D_prepare_elementQ2_2x2(PetscReal WEIGHT[NQP],PetscReal XI[NQP][3],PetscR
 	
 }
 
-void P3D_prepare_elementQ2(PetscInt nqp,PetscReal WEIGHT[NQP],PetscReal XI[NQP][3],PetscReal NI[NQP][NPE],PetscReal GNI[NQP][3][NPE])
+void P3D_prepare_elementQ2(PetscInt nqp,PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE])
 {
 	if (nqp==27) {
 		P3D_prepare_elementQ2_3x3(WEIGHT,XI,NI,GNI);
