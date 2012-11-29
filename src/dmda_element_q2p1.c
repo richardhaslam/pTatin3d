@@ -768,6 +768,23 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDASetValuesLocalStencil_SetValues_DOF"
+PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
+{
+  PetscInt n,d,el_idx,idx;
+	
+  PetscFunctionBegin;
+	for (d=0; d<ndof; d++) {
+		for (n = 0; n<U_BASIS_FUNCTIONS; n++) {
+			el_idx = ndof*n + d;
+			idx    = eqn[el_idx];
+			fields_F[idx] = Fe[el_idx];
+		}
+	}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "Q2GetElementLocalIndicesDOF"
 PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
