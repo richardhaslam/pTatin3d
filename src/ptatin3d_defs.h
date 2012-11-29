@@ -41,6 +41,11 @@
 #define Q2_NODES_PER_EL_2D 9
 #define Q2_NODES_PER_EL_1D 3
 
+#define Q1_NODES_PER_EL_3D 8
+#define Q1_NODES_PER_EL_2D 4
+#define Q1_NODES_PER_EL_1D 2
+
+
 #define NSD    3
 #define U_DOFS NSD
 #define P_DOFS 1

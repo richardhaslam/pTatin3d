@@ -49,7 +49,6 @@
 
 #include "mesh_update.h"
 
-#define Q1_NODES_PER_EL_3D 8
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDABilinearizeQ2Elements"
