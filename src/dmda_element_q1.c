@@ -151,8 +151,6 @@ PetscErrorCode  DMDASetElementType_Q1(DM da)
   PetscFunctionReturn(0);
 }
 
-
-
 /* constructors */
 #undef __FUNCT__
 #define __FUNCT__ "DMDAProjectCoordinatesQ2toOverlappingQ1_3d"
@@ -240,8 +238,10 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	PetscInt *lsip,*lsjp,*lskp;
 	PetscErrorCode ierr;
 	int rank;
+	
 	PetscFunctionBegin;
 	
+	ierr = MPI_Comm_rank(((PetscObject)dmq2)->comm,&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCornersElementQ2(dmq2,&sei,&sej,&sek,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	ierr = DMDAGetSizeElementQ2(dmq2,&MX,&MY,&MZ);CHKERRQ(ierr);
@@ -291,8 +291,6 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	lzq1[Pp-1]++;
 	
 	
-	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
 			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
@@ -350,9 +348,6 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	dae->lsjp = lsjp;
 	dae->lskp = lskp;
 	
-	*dmq1 = dm;
-	
-	
 	PetscFree(siq2);
 	PetscFree(sjq2);
 	PetscFree(skq2);
@@ -371,7 +366,10 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	/* force coordinate copy */
 	ierr = DMDAProjectCoordinatesQ2toOverlappingQ1_3d(dmq2,dm);CHKERRQ(ierr);
+
+	*dmq1 = dm;
 	
+		
 	PetscFunctionReturn(0);
 }
 
@@ -387,6 +385,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	PetscInt *lsip,*lsjp,*lskp;
 	PetscErrorCode ierr;
 	int rank;
+	
 	PetscFunctionBegin;
 	
 	ierr = MPI_Comm_rank(((PetscObject)dmq2)->comm,&rank);CHKERRQ(ierr);
@@ -459,8 +458,6 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 		lzq1[k] = lzq2[k];
 	}
 	
-	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
 			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
@@ -518,9 +515,6 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	dae->lsjp = lsjp;
 	dae->lskp = lskp;
 	
-	*dmq1 = dm;
-	
-	
 	PetscFree(siq2);
 	PetscFree(sjq2);
 	PetscFree(skq2);
@@ -549,6 +543,8 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 		ierr = DMDAUpdateGhostedCoordinates(dm);CHKERRQ(ierr);
 	}
 
+	*dmq1 = dm;
+	
 	PetscFunctionReturn(0);
 }
 
@@ -580,6 +576,7 @@ PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt e
 	}
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1_GetVectorElementField_3D"
 PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
