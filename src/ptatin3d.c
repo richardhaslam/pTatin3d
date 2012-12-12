@@ -829,6 +829,32 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 		ierr = VecView(X,viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
+
+#if 1
+	{
+		PetscViewer viewer;
+		Vec Xu,Xp;
+		
+		ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+
+		if (prefix) { sprintf(f1,"%s/ptat3dcpf.dmda-Xu_%s",ctx->outputpath,prefix); } 
+		else {        sprintf(f1,"%s/ptat3dcpf.dmda-Xu",ctx->outputpath);           }
+		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = VecView(Xu,viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+		
+		if (prefix) { sprintf(f1,"%s/ptat3dcpf.dmda-Xp_%s",ctx->outputpath,prefix); } 
+		else {        sprintf(f1,"%s/ptat3dcpf.dmda-Xp",ctx->outputpath);           }
+		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = VecView(Xp,viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+		ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	}	
+	
+#endif
 	
 	/* material points */
 	if (prefix) {
