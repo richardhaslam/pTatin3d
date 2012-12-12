@@ -51,18 +51,25 @@ PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatinVecFieldRead"
-PetscErrorCode pTatinVecFieldRead(const char name[],Vec x)
+PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
 {
+	char fieldname[PETSC_MAX_PATH_LEN];
 	PetscViewer viewer;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
+	if (zip_file) {
+		sprintf(fieldname,"%s.gz",name);
+	} else {
+		sprintf(fieldname,"%s",name);
+	}
+
   ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-	//ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
-	ierr = PetscViewerFileSetName(viewer,name);CHKERRQ(ierr);
+	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 	
 //	ierr = VecCreate(((PetscObject)viewer)->comm,x);CHKERRQ(ierr);
 	ierr = VecLoad(x,viewer);CHKERRQ(ierr);
@@ -139,8 +146,8 @@ PetscErrorCode test_pTatinVecFieldLoad( void )
 	ierr = DMView(da,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-//	ierr = pTatinVecFieldRead("mesh_ufield.ptatinvec",x);CHKERRQ(ierr);
-	ierr = pTatinVecFieldRead("mesh_ufield.ptatinvec.gz",x);CHKERRQ(ierr);
+//	ierr = pTatinVecFieldRead("mesh_ufield.ptatinvec",PETSC_FALSE,x);CHKERRQ(ierr);
+	ierr = pTatinVecFieldRead("mesh_ufield.ptatinvec",PETSC_TRUE,x);CHKERRQ(ierr);
 
 	ierr = VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );CHKERRQ(ierr);
 	ierr = VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );CHKERRQ(ierr);
@@ -180,6 +187,54 @@ PetscErrorCode test_DMDACheckPoint(void)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompOutput_StokesRawVelocityPressure"
+PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X,PetscBool zip_file,const char outputpath[],const char prefix[])
+{
+	PetscLogDouble t0,t1,tl,tg;
+	char start[PETSC_MAX_PATH_LEN];
+	char f1[PETSC_MAX_PATH_LEN];
+	char f3[PETSC_MAX_PATH_LEN];
+	Vec Xu,Xp;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	PetscGetTime(&t0);
+	/* dav,dap */
+	if (prefix) {
+		sprintf(f1,"%s/pt3d_stokes.dmda-velocity%s",outputpath,prefix);
+		sprintf(f3,"%s/pt3d_stokes.dmda-pressure%s",outputpath,prefix);
+	} else {
+		sprintf(f1,"%s/pt3d_stokes.dmda-velocity",outputpath);
+		sprintf(f3,"%s/pt3d_stokes.dmda-pressure",outputpath);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f3 );
+	
+	ierr = PhysCompSaveMesh_Stokes3d(ctx,f1,f3,PETSC_NULL);CHKERRQ(ierr);
+	
+	
+	ierr = DMCompositeGetAccess(ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+
+	if (prefix) { sprintf(f1,"%s/pt3d_stokes.dmda-Xu%s",outputpath,prefix); } 
+	else {        sprintf(f1,"%s/pt3d_stokes.dmda-Xu",outputpath);           }
+	ierr = pTatinVecFieldWrite(Xu,f1,zip_file);CHKERRQ(ierr);
+
+	if (prefix) { sprintf(f1,"%s/pt3d_stokes.dmda-Xp%s",outputpath,prefix); } 
+	else {        sprintf(f1,"%s/pt3d_stokes.dmda-Xp",outputpath);           }
+	ierr = pTatinVecFieldWrite(Xp,f1,zip_file);CHKERRQ(ierr);
+
+	ierr = DMCompositeRestoreAccess(ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = t1-t0;
+	ierr = MPI_Allreduce(&tl,&tg,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);	
+
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> pt3d_stokes.{dmda.v,dmda,p,dmda.Xu,dmda.Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,tg);
+	
+	PetscFunctionReturn(0);
+}
+
 /* minimal loading from checkpoint file for viz of u,v,w,p fields */
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompStokesLoad_DM"
@@ -198,7 +253,7 @@ PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysC
 
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompStokesLoad_VP"
-PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const char pname[],Vec *VP)
+PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const char pname[],PetscBool zip_file,Vec *VP)
 {
 	Vec            X,Xv,Xp;
 	DM             dav,dap;
@@ -210,8 +265,8 @@ PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const
 	ierr = DMCompositeGetAccess(ctx->stokes_pack,X,&Xv,&Xp);CHKERRQ(ierr);
 	
 	/* load from file */
-	ierr = pTatinVecFieldRead(vname,Xv);CHKERRQ(ierr);
-	ierr = pTatinVecFieldRead(pname,Xp);CHKERRQ(ierr);
+	ierr = pTatinVecFieldRead(vname,zip_file,Xv);CHKERRQ(ierr);
+	ierr = pTatinVecFieldRead(pname,zip_file,Xp);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(ctx->stokes_pack,X,&Xv,&Xp);CHKERRQ(ierr);
 	
@@ -222,7 +277,7 @@ PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const
 
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompStokesLoad_X"
-PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],Vec *VP)
+PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscBool zip_file,Vec *VP)
 {
 	Vec            X;
 	PetscErrorCode ierr;
@@ -231,7 +286,7 @@ PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],Vec *V
 	ierr = DMCreateGlobalVector(ctx->stokes_pack,&X);CHKERRQ(ierr);
 	
 	/* load from file */
-	ierr = pTatinVecFieldRead(xname,X);CHKERRQ(ierr);
+	ierr = pTatinVecFieldRead(xname,zip_file,X);CHKERRQ(ierr);
 	
 	*VP = X;
 	
@@ -299,7 +354,7 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n\t\t(dmda-p) %s\n\t\t(vec-X) %s\n", vname,pname,xname);
 	
 	ierr = PhysCompStokesLoad_DM(vname,pname,&ctx);CHKERRQ(ierr);
-	ierr = PhysCompStokesLoad_X(ctx,xname,&X);CHKERRQ(ierr);
+	ierr = PhysCompStokesLoad_X(ctx,xname,PETSC_TRUE,&X);CHKERRQ(ierr);
 	
 	sprintf(outfilename,"%s",prefix);
 	if (flg) { 
@@ -363,7 +418,7 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n\t\t(dmda-p) %s\n\t\t(vec-u : p) %s : %s\n", vname,pname,xuname,xpname);
 	
 	ierr = PhysCompStokesLoad_DM(vname,pname,&ctx);CHKERRQ(ierr);
-	ierr = PhysCompStokesLoad_VP(ctx,xuname,xpname,&X);CHKERRQ(ierr);
+	ierr = PhysCompStokesLoad_VP(ctx,xuname,xpname,PETSC_TRUE,&X);CHKERRQ(ierr);
 	
 	sprintf(outfilename,"%s",prefix);
 	if (flg) { 
@@ -374,6 +429,8 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 	strlcat(outfilename,"-vp",PETSC_MAX_PATH_LEN-1);
 	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
 	ierr = PhysCompStokesWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
+	
+	//ierr = PhysCompOutput_StokesRawVelocityPressure(ctx,X,PETSC_TRUE,outputpath,suffix);CHKERRQ(ierr);
 	
 	ierr = PhysCompDestroy_Stokes(&ctx);CHKERRQ(ierr);
 	ierr = VecDestroy(&X);CHKERRQ(ierr);
