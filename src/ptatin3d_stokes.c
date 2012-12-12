@@ -464,10 +464,12 @@ PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	ierr = DMDAPackDataToFile(dap,fname_p);CHKERRQ(ierr);
 	
 	/* coords */
-	ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
-	ierr = PetscViewerBinaryOpen( ((PetscObject)dav)->comm,fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-	ierr = VecView(coords,viewer);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	if (fname_coors) {
+		ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+		ierr = PetscViewerBinaryOpen( ((PetscObject)dav)->comm,fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = VecView(coords,viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
 	
 	PetscFunctionReturn(0);
 }
