@@ -393,10 +393,13 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
 	
+	ierr = DMDAGetSizeElementQ2(dav,&ctx->mx,&ctx->my,&ctx->mz);CHKERRQ(ierr);
+	
 	/* pressure */
 	MX = ctx->mx;
 	MY = ctx->my;
 	MZ = ctx->mz;
+	
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
