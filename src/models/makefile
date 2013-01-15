@@ -4,6 +4,7 @@ TATIN_MODEL_DIR = \
 	template \
 	viscous_sinker \
 	indentor \
+	rift3D \
 	gene3d \
 	gene3d_nueve \
 	sierra \
