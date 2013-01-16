@@ -27,7 +27,7 @@
  **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
  **
  **
- **    $Id: model_rift3D_ops.c 3636 2013-01-14 10:36:00Z llepourhiet $
+ **    $Id:$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
@@ -45,6 +45,8 @@
 
 #include "rift3D_ctx.h"
 
+PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
+
 
 
 
@@ -53,150 +55,165 @@
 PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-    RheologyConstants      *rheology;
+	RheologyConstants      *rheology;
 	PetscBool flg;
 	PetscReal max_eta;
-    PetscScalar vx,vy,vz,Sx_bar,Sy_bar,Sz_bar;
+	PetscScalar vx,vy,vz,Sx_bar,Sy_bar,Sz_bar;
 	PetscInt n;
-    PetscErrorCode ierr;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-
-
+	
+	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-    rheology                = &c->rheology_constants;
+	rheology                = &c->rheology_constants;
+//	rheology->rheology_type = RHEOLOGY_VISCOUS;
 	rheology->rheology_type = RHEOLOGY_VP_STD;
-        
+	
 	data->dimensional   = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
-
+	if (data->dimensional) {
+		PetscPrintf(PETSC_COMM_WORLD,"Rift model expects the following dimensions for input\n");
+		PetscPrintf(PETSC_COMM_WORLD," Box geometry: [m] \n");
+		PetscPrintf(PETSC_COMM_WORLD," Viscosity:    [Pa.s] \n");
+		PetscPrintf(PETSC_COMM_WORLD," Velocity:     [cm/yr] \n");
+		PetscPrintf(PETSC_COMM_WORLD," Density:      [kg/m^3] \n");
+	}
+	
 	/*
-	data->density_bar   = 1000.0;
-	data->length_bar    = 100.0 * 1.0e3;
-	data->viscosity_bar = 1.0e22;
-	data->velocity_bar  = 1.0e-10;
-	data->time_bar      = data->length_bar / data->velocity_bar;
-	data->pressure_bar  = data->length_bar * data->density_bar;
- */
-
+	 data->density_bar   = 1000.0;
+	 data->length_bar    = 100.0 * 1.0e3;
+	 data->viscosity_bar = 1.0e22;
+	 data->velocity_bar  = 1.0e-10;
+	 data->time_bar      = data->length_bar / data->velocity_bar;
+	 data->pressure_bar  = data->length_bar * data->density_bar;
+	 */
+	
 	data->length_bar    = 100.0 * 1.0e3;
 	data->viscosity_bar = 1e25;
 	data->velocity_bar  = 1.0e-10;
 	data->time_bar      = data->length_bar / data->velocity_bar;
 	data->pressure_bar  = data->viscosity_bar*data->velocity_bar / data->length_bar;
 	data->density_bar   = data->viscosity_bar*data->velocity_bar / ( data->length_bar * data->length_bar );
+
+	/*
+	if (!data->dimensional) {
+		data->length_bar    = 1.0;
+		data->viscosity_bar = 1.0;
+		data->velocity_bar  = 1.0;
+		data->time_bar      = 1.0;
+		data->pressure_bar  = 1.0;
+		data->density_bar   = 1.0;
+	}
+	*/
 	
-	
-	/* box geometry */
+	/* box geometry, m */
 	data->Lx =  6.0e5;
 	data->Ly =  0.0e5;
 	data->Lz =  6.0e5;
 	data->Ox =  0.0e5;
 	data->Oy =  -1.5e5;
 	data->Oz =  0.0e5;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Lz",&data->Lz,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Ox",&data->Ox,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Oy",&data->Oy,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Oz",&data->Oz,&flg);CHKERRQ(ierr);
-    
-    /* report */
-	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Ox %1.4e [SI] -model_rift3D_Lx : %1.4e [SI]\n", data->Ox ,data->Lx );
-    PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Oy %1.4e [SI] -model_rift3D_Ly : %1.4e [SI]\n", data->Oy ,data->Ly );
-    PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Oz %1.4e [SI] -model_rift3D_Lz : %1.4e [SI]\n", data->Oz ,data->Lz );
-    
-    
-    vx = 0.5;
-    vz = 0.0;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vx",&vx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vz",&vz,&flg);CHKERRQ(ierr);
-    vx = vx*3.15e-10;
-    vz = vz*3.15e-10;
-    Sx_bar = (data->Ly - data->Oy)*(data->Lz - data->Oz);
-    Sz_bar = (data->Ly - data->Oy)*(data->Lx - data->Ox);
-    Sy_bar = (data->Lx - data->Ox)*(data->Lz - data->Oz);
-    vy = (vx*Sx_bar+vz*Sz_bar)*2/Sy_bar;
-    
-    PetscPrintf(PETSC_COMM_WORLD,"  -model_rift3D_vx [m/s]:%e  -model_rift3D_vz [m/s]:%e computed vy [m/s]:%e \n", vx,vz,vy);
-
-    /* parse from command line */
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Lx",&data->Lx,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { data->Lx *= data->length_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Ly",&data->Ly,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { data->Ly *= data->length_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Lz",&data->Lz,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { data->Lz *= data->length_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Ox",&data->Ox,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { data->Ox *= data->length_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Oy",&data->Oy,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { data->Oy *= data->length_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Oz",&data->Oz,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { data->Oz *= data->length_bar; }
+	
+	/* report */
+	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Ox %+1.4e [SI] -model_rift3D_Lx : %+1.4e [SI]\n", data->Ox ,data->Lx );
+	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Oy %+1.4e [SI] -model_rift3D_Ly : %+1.4e [SI]\n", data->Oy ,data->Ly );
+	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Oz %+1.4e [SI] -model_rift3D_Lz : %+1.4e [SI]\n", data->Oz ,data->Lz );
+	
+	
+	/* velocity cm/y */
+	vx = 0.5;
+	vz = 0.0;
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vx",&vx,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { vx *= data->velocity_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vz",&vz,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { vz *= data->velocity_bar; }
+	/* convert to m/s */
+	vx = vx * cm_per_yer2m_per_sec;
+	vz = vz * cm_per_yer2m_per_sec;
+	Sx_bar = (data->Ly - data->Oy)*(data->Lz - data->Oz);
+	Sz_bar = (data->Ly - data->Oy)*(data->Lx - data->Ox);
+	Sy_bar = (data->Lx - data->Ox)*(data->Lz - data->Oz);
+	vy = (vx*Sx_bar+vz*Sz_bar)*2/Sy_bar;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"  -model_rift3D_vx [m/s]:  %+1.4e  -model_rift3D_vz [m/s]:  %+1.4e : computed vy [m/s]:  %+1.4e \n", vx,vz,vy);
+	PetscPrintf(PETSC_COMM_WORLD,"  -model_rift3D_vx [cm/yr]:%+1.4e  -model_rift3D_vz [cm/yr]:%+1.4e : computed vy [cm/yr]:%+1.4e \n", vx/cm_per_yer2m_per_sec,vz/cm_per_yer2m_per_sec,vy/cm_per_yer2m_per_sec);
+	
+	/* parse from command line */
 	rheology->nphases_active = 4;
-
+	
 	/* viscosity */
 	rheology->const_eta0[0] = 2.0*1.0e23; /* crust */
 	rheology->const_eta0[1] = 2.5*1.0e19; /* crust - lower */
 	rheology->const_eta0[2] = 5.0*1.0e22; /* mantle */
 	rheology->const_eta0[3] = 5.0*1.0e20; /* mantle - lower */
-
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr);
 	
-    for (n=0; n<rheology->nphases_active; n++) {
-		PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_eta%d [Pa.s]    : current value %1.4e [Pa.s]\n", n,rheology->const_eta0[n] );
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[0] *= data->viscosity_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[1] *= data->viscosity_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[2] *= data->viscosity_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[3] *= data->viscosity_bar; }
+	
+	for (n=0; n<rheology->nphases_active; n++) {
+		PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_eta%d [Pa.s]    : current value %+1.4e [Pa.s]\n", n,rheology->const_eta0[n] );
 	}
-
+	
 	/* density */
 	rheology->const_rho0[0] = 2700.0; /* crust */
 	rheology->const_rho0[1] = 2700.0; /* crust */
 	rheology->const_rho0[2] = 3300.0; /* mantle */
 	rheology->const_rho0[3] = 3280.0; /* mantle */
-
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr);
+	
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[0] *= data->density_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[0] *= data->density_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[0] *= data->density_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[0] *= data->density_bar; }
 	
 	for (n=0; n<rheology->nphases_active; n++) {
-		PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_rho%d [kg.m^-3] : current value %1.4e [kg.m^-3]\n", n,rheology->const_rho0[n] );
+		PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_rho%d [kg.m^-3] : current value %+1.4e [kg.m^-3]\n", n,rheology->const_rho0[n] );
 	}
-
 	
-	if (data->dimensional==PETSC_FALSE) {
-		PetscPrintf(PETSC_COMM_WORLD,"[rift3D]: using non-dimensional units\n");
-		PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  t*    : %1.4e [s]\n", data->time_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  eta*  : %1.4e [Pa.s]\n", data->viscosity_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  P*    : %1.4e [Pa]\n", data->pressure_bar );
-
-		//scale length 
-        data->Lx = data->Lx / data->length_bar;
-		data->Ly = data->Ly / data->length_bar;
-		data->Lz = data->Lz / data->length_bar;
-		data->Ox = data->Ox / data->length_bar;
-		data->Oy = data->Oy / data->length_bar;
-		data->Oz = data->Oz / data->length_bar;        
-        PetscPrintf(PETSC_COMM_WORLD,"scaled values  -model_rift3D_Ox   :  %1.4e    -model_rift3D_Lx   :  %1.4e  \n", data->Ox ,data->Lx );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled values  -model_rift3D_Oy   :  %1.4e    -model_rift3D_Ly   :  %1.4e \n", data->Oy, data->Ly );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled values  -model_rift3D_Oz   :  %1.4e    -model_rift3D_Lz   :  %1.4e\n", data->Oz , data->Lz );
-        //scale velocity
-        data->vx = vx/data->velocity_bar;
-        data->vy = vy/data->velocity_bar;
-        data->vz = vz/data->velocity_bar;
-        PetscPrintf(PETSC_COMM_WORLD,"scaled values  -model_rift3D_Vx:%1.4e    -model_rift3D_vy:%1.4e    -model_rift3D_vz:  %1.4e \n", data->vx ,data->vy, data->vz);
-        
-        // scale viscosity and density
-		for (n=0; n<rheology->nphases_active; n++) {
-			rheology->const_eta0[n] = rheology->const_eta0[n] / data->viscosity_bar;
-			rheology->const_rho0[n] = rheology->const_rho0[n] / data->density_bar;
-		}
-		
-		
-		for (n=0; n<rheology->nphases_active; n++) {
-			PetscPrintf(PETSC_COMM_WORLD,"  -model_rift3D_eta%d : scaled value %1.4e \n", n,rheology->const_eta0[n] );
-		}
-		
-		for (n=0; n<rheology->nphases_active; n++) {
-			PetscPrintf(PETSC_COMM_WORLD,"  -model_rift3D_rho%d : scaled value %1.4e \n", n,rheology->const_rho0[n] );
-		}
-		
+	PetscPrintf(PETSC_COMM_WORLD,"[rift3D]: using non-dimensional units\n");
+	PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
+	PetscPrintf(PETSC_COMM_WORLD,"  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
+	PetscPrintf(PETSC_COMM_WORLD,"  t*    : %1.4e [s]\n", data->time_bar );
+	PetscPrintf(PETSC_COMM_WORLD,"  eta*  : %1.4e [Pa.s]\n", data->viscosity_bar );
+	PetscPrintf(PETSC_COMM_WORLD,"  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
+	PetscPrintf(PETSC_COMM_WORLD,"  P*    : %1.4e [Pa]\n", data->pressure_bar );
+	
+	//scale length 
+	data->Lx = data->Lx / data->length_bar;
+	data->Ly = data->Ly / data->length_bar;
+	data->Lz = data->Lz / data->length_bar;
+	data->Ox = data->Ox / data->length_bar;
+	data->Oy = data->Oy / data->length_bar;
+	data->Oz = data->Oz / data->length_bar;        
+	//scale velocity
+	data->vx = vx/data->velocity_bar;
+	data->vy = vy/data->velocity_bar;
+	data->vz = vz/data->velocity_bar;
+	// scale viscosity and density
+	for (n=0; n<rheology->nphases_active; n++) {
+		rheology->const_eta0[n] = rheology->const_eta0[n] / data->viscosity_bar;
+		rheology->const_rho0[n] = rheology->const_rho0[n] / data->density_bar;
 	}
-
+	
+	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Ox   :  %+1.4e    -model_rift3D_Lx   :  %+1.4e  \n", data->Ox ,data->Lx );
+	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Oy   :  %+1.4e    -model_rift3D_Ly   :  %+1.4e \n", data->Oy, data->Ly );
+	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Oz   :  %+1.4e    -model_rift3D_Lz   :  %+1.4e\n", data->Oz , data->Lz );
+	
+	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Vx:%+1.4e    -model_rift3D_vy:%+1.4e    -model_rift3D_vz:  %+1.4e \n", data->vx ,data->vy, data->vz);
+	for (n=0; n<rheology->nphases_active; n++) {
+		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_eta%d : %1.4e \n", n,rheology->const_eta0[n] );
+	}
+	for (n=0; n<rheology->nphases_active; n++) {
+		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_rho%d : scaled value %+1.4e \n", n,rheology->const_rho0[n] );
+	}
+	
 	/* set initial values for model parameters */
 	/* material properties */
 	data->nmaterials = rheology->nphases_active;
@@ -216,49 +233,62 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 }
 
 
-/*
+/* 
  
- ---------------
- |             |
- |             |
- |             |
- ---------------
+ 1/ Define boundary conditions in one place for this model.
  
- */
+ 2/ Calling pattern should always be
+   PetscErrorCode ModelRift3D_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRift3DCtx data)
+ where ModelRift3DCtx data is a different type for each model.
+
+ 3/ Re-use this function in 
+	ModelApplyBoundaryCondition_Rift3D();
+	ModelApplyBoundaryConditionMG_Rift3D();
+
+*/
+#undef __FUNCT__
+#define __FUNCT__ "ModelRift3D_DefineBCList"
+PetscErrorCode ModelRift3D_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRift3DCtx *data)
+{
+	PetscScalar    vxl,vxr,vzf,vzb,vy;
+	PetscErrorCode ierr;
+
+	PetscFunctionBegin;
+	
+	vxl = -data->vx;
+	vxr =  data->vx;
+	vy  =  data->vy;
+	vzf = -data->vz;
+	vzb =  data->vz;
+	
+	/* infilling free slip base */
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vy);CHKERRQ(ierr);
+	
+	/* free surface top*/
+	
+	/*extension along face of normal x */ 
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&(vxl));CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&(vxr));CHKERRQ(ierr);
+	
+	/*compression along face of normal z */ 
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&(vzb));CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&(vzf));CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_Rift3D"
 PetscErrorCode ModelApplyBoundaryCondition_Rift3D(pTatinCtx user,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-	PetscScalar vxl,vxr,vzf,vzb,vy;
 	PetscErrorCode ierr;
-
+	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
-    vxl  = - data->vx;
-    vxr =  data->vx;
-    vy = data->vy;
-    vzf = - data->vz;
-    vzb = data->vz;
-        
-	/* infilling free slip base */
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vy);CHKERRQ(ierr);
-	/* free surface top*/
 	
-    
-    /*extension along face of normal x */ 
+	ierr = ModelRift3D_DefineBCList(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,user,data);CHKERRQ(ierr);
 
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&(vxl));CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&(vxr));CHKERRQ(ierr);
-    
-    /*compression along face of normal z */ 
-
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&(vzb));CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&(vzf));CHKERRQ(ierr);
-    
-	
 	PetscFunctionReturn(0);
 }
 
@@ -267,38 +297,15 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D(pTatinCtx user,void *ctx)
 PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-	PetscScalar vxl,vxr,vzf,vzb,vy;
-	PetscInt n;
+	PetscInt       n;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
-    
-    vxl  = - data->vx;
-    vxr =  data->vx;
-    vy = data->vy;
-    vzf = - data->vz;
-    vzb = data->vz;
- 
+	
 	for (n=0; n<nl; n++) {
-		
-        
-        /* infilling free slip base */
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vy);CHKERRQ(ierr);
-        /* free surface top*/
-        
-        
-        /*extension along face of normal x */ 
-        
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&(vxl));CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&(vxr));CHKERRQ(ierr);
-        
-        /*compression along face of normal z */ 
-        
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&(vzb));CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&(vzf));CHKERRQ(ierr);
-    }	
+		ierr = ModelRift3D_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
+	}	
 	
 	PetscFunctionReturn(0);
 }
@@ -327,7 +334,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,data->Ox,data->Lx,data->Oy,data->Ly,data->Oz,data->Lz);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -339,7 +346,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
 	PetscInt               e,p,n_mp_points;
-    PetscScalar            y_lab,y_moho,y_midcrust;
+	PetscScalar            y_lab,y_moho,y_midcrust;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
@@ -360,10 +367,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
 	
 	
-    y_lab      = -120.0e3; 
-    y_moho     = -35.0e3;
-    y_midcrust = -20.0e3;
-    
+	/* m */
+	y_lab      = -120.0e3; 
+	y_moho     = -35.0e3;
+	y_midcrust = -20.0e3;
+	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	for (p=0; p<n_mp_points; p++) {
@@ -378,12 +386,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point,&position);
 		
-		if (data->dimensional == PETSC_FALSE) {
-			ycoord = position[1] * data->length_bar;
-		} else {
-			ycoord = position[1];
-		}
-		
+		/* convert to scaled units */
+		ycoord = position[1] * data->length_bar;
 		
 		if (ycoord<y_lab) {
 			phase = 3;
@@ -403,7 +407,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 			rho =  data->rho[0];
 		}
 		rho = -rho * 10.0;
-
+		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
 		
@@ -441,37 +445,37 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	PhysCompStokes    stokes;
 	DM                stokes_pack;
 	PetscErrorCode ierr;
-
+	
 	PetscFunctionBegin;
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
-
+	
 	
 	ierr = VecDuplicate(X,&Xcopy);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&RHS);CHKERRQ(ierr);
-
+	
 	PetscPrintf(PETSC_COMM_WORLD,"[rift3D]: check scales \n");
-
+	
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-
+	
 	ierr = VecStrideMin(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|P0|   = %+1.4e \n",fp);
 	ierr = VecStrideMax(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|P0|   = %+1.4e \n",fp);
-
+	
 	ierr = VecStrideMin(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdx| = %+1.4e \n",fp);
 	ierr = VecStrideMax(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdx| = %+1.4e \n",fp);
-
+	
 	ierr = VecStrideMin(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdy| = %+1.4e \n",fp);
 	ierr = VecStrideMax(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdy| = %+1.4e \n",fp);
-
+	
 	ierr = VecStrideMin(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdz| = %+1.4e \n",fp);
 	ierr = VecStrideMax(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
@@ -484,26 +488,26 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
 	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
-
+	
 	ierr = DMCompositeGetAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
 	ierr = VecGetSize(velocity,&Nu);CHKERRQ(ierr);
 	ierr = VecGetSize(pressure,&Np);CHKERRQ(ierr);
-
+	
 	ierr = VecNorm(velocity,NORM_2,&fu);CHKERRQ(ierr);
 	ierr = VecNorm(pressure,NORM_2,&fp);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD," |rho.g|    = %1.4e \n",fu/sqrt(Nu));
 	PetscPrintf(PETSC_COMM_WORLD," |cont_rhs| = %1.4e \n",fp/sqrt(Np));
 	ierr = DMCompositeRestoreAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
-
+	
 	
 	
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-
+	
 	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
@@ -514,7 +518,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |div(sigma_ij)| = %1.4e \n",fu/sqrt(Nu));
 	PetscPrintf(PETSC_COMM_WORLD," |div(u_i)|      = %1.4e \n",fp/sqrt(Np));
 	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-
+	
 	
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
@@ -531,7 +535,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |grad(P)| = %1.4e \n",fu/sqrt(Nu));
 	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
 	
-
+	
 	ierr = VecDestroy(&Xcopy);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
 	ierr = VecDestroy(&RHS);CHKERRQ(ierr);
@@ -549,7 +553,7 @@ PetscErrorCode ModelOutput_Rift3D(pTatinCtx c,Vec X,const char prefix[],void *ct
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	ierr = ModelOutput_Rift3D_CheckScales(c,X);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
@@ -592,10 +596,10 @@ PetscErrorCode pTatinModelRegister_Rift3D(void)
 	
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
-
+	
 	/* Set name, model select via -ptatin_model NAME */
 	ierr = pTatinModelSetName(m,"rift3D");CHKERRQ(ierr);
-
+	
 	/* Set model data */
 	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 	

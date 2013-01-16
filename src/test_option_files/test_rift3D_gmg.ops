@@ -31,19 +31,26 @@
 #-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
--output_path t1
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -snes_type ksponly
 -snes_view
 -stk_velocity_da_mat_type aij
-#End of PETSc Option Table entries
--mx 24
--my 8 
--mz 24  
+
+
 -ptatin_model rift3D 
--model_rift3D_eta0 1e25 
--model_rift3D_eta1 1e25 
--model_rift3D_eta2 1e25 
+-output_path t2
+
+-mx 24
+-my 8
+-mz 24
+-dau_nlevels 3
+
+-model_rift3D_dimensional
+-model_rift3D_eta0 1e25
+-model_rift3D_eta1 1e25
+-model_rift3D_eta2 1e25
 -model_rift3D_eta3 1e25
+
+-model_rift3D_vz 0.3

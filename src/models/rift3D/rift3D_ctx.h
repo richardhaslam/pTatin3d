@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      indentor_ctx.h
+ **    Filename:      rift3D_ctx.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,13 +27,13 @@
  **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
  **
  **
- **    $Id: indentor_ctx.h 3636 2012-11-06 19:14:24Z dmay $
+ **    $Id:$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
-#ifndef __ptatinmodel_indendor_ctx_h__
-#define __ptatinmodel_indentor_ctx_h__
+#ifndef __ptatinmodel_rift3d_ctx_h__
+#define __ptatinmodel_rift3d_ctx_h__
 
 
 typedef struct {
@@ -41,12 +41,12 @@ typedef struct {
 	PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz;
 	PetscReal eta[20];
 	PetscReal rho[20];
-    PetscReal phi[20];
+	PetscReal phi[20];
 	PetscReal coh[20];
-    PetscReal arrh_n[20];
-    PetscReal arrh_E[20];
-    PetscReal alpha[20];
-    PetscBool dimensional;
+	PetscReal arrh_n[20];
+	PetscReal arrh_E[20];
+	PetscReal alpha[20];
+	PetscBool dimensional;
 	PetscReal density_bar;
 	PetscReal length_bar;
 	PetscReal viscosity_bar;
