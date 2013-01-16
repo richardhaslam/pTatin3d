@@ -65,3 +65,4 @@ PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt n
 PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[]);
 
 #endif
+

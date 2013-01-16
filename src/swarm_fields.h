@@ -132,3 +132,4 @@ void DataBucketRemovePoint( DataBucket db );
 void DataBucketRemovePointAtIndex( const DataBucket db, const int index );
 
 #endif
+

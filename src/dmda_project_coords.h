@@ -42,3 +42,4 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels);
 PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac);
 
 #endif
+

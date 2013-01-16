@@ -41,3 +41,4 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 
 
 #endif
+

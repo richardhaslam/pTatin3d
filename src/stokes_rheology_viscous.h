@@ -37,3 +37,4 @@
 PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_Viscous(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[]);
 
 #endif
+

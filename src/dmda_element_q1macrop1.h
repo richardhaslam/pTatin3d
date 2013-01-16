@@ -65,3 +65,4 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementLocalIndicesDOF(PetscInt el_loc
 
 
 #endif
+

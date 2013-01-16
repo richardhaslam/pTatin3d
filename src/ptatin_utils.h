@@ -41,3 +41,4 @@ void FileExists(const char *fname,int *exists);
 int StringEmpty(const char string[]);
 
 #endif
+

@@ -123,3 +123,4 @@ void pTatinConstructGNi_Q2_3D( double _xi[], double GNi[3][Q2_NODES_PER_EL_3D] )
 void ElementHelper_matrix_inverse_3x3(double A[3][3],double B[3][3]);
 
 #endif
+
