@@ -21,6 +21,34 @@
 #include "ptatin3d_stokes.h"
 #include "output_paraview.h"
 
+//#define HAVE_STRLCAT
+
+#undef __FUNCT__  
+#define __FUNCT__ "_strlcat"
+PetscErrorCode _strlcat(char orig[],char append[],size_t L)
+{
+#ifdef HAVE_STRLCAT
+	strlcat(orig,append,L);
+#else	
+	char *new;
+	size_t l1,l2;
+	
+	l1 = strlen(orig);
+	l2 = strlen(append);
+	
+	if (l1+l2>=L) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Input string is not long enough");
+	}
+	
+	asprintf(&new,"%s%s",orig,append);
+	strcpy(orig,new);
+	free(new);
+#endif	
+	
+	PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "pTatinVecFieldWrite"
 PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
@@ -410,10 +438,10 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 		//sprintf(pname,"%s%s",pname,suffix);
 		//sprintf(xuname,"%s%s",xuname,suffix);
 		//sprintf(xpname,"%s%s",xpname,suffix);
-		strlcat(vname,suffix,PETSC_MAX_PATH_LEN-1);
-		strlcat(pname,suffix,PETSC_MAX_PATH_LEN-1);
-		strlcat(xuname,suffix,PETSC_MAX_PATH_LEN-1);
-		strlcat(xpname,suffix,PETSC_MAX_PATH_LEN-1);
+		_strlcat(vname,suffix,PETSC_MAX_PATH_LEN-1);
+		_strlcat(pname,suffix,PETSC_MAX_PATH_LEN-1);
+		_strlcat(xuname,suffix,PETSC_MAX_PATH_LEN-1);
+		_strlcat(xpname,suffix,PETSC_MAX_PATH_LEN-1);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n\t\t(dmda-p) %s\n\t\t(vec-u : p) %s : %s\n", vname,pname,xuname,xpname);
 	
@@ -423,10 +451,10 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 	sprintf(outfilename,"%s",prefix);
 	if (flg) { 
 		//sprintf(outfilename,"%s%s",outfilename,suffix);
-		strlcat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);
+		_strlcat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);
 	}
 	//sprintf(outfilename,"%s-vp",outfilename);
-	strlcat(outfilename,"-vp",PETSC_MAX_PATH_LEN-1);
+	_strlcat(outfilename,"-vp",PETSC_MAX_PATH_LEN-1);
 	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
 	ierr = PhysCompStokesWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
 	
