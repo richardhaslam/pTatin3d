@@ -91,12 +91,15 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	 */
 	
 	data->length_bar    = 100.0 * 1.0e3;
-	data->viscosity_bar = 1e25;
+	data->viscosity_bar = 1e23;
 	data->velocity_bar  = 1.0e-10;
-	data->time_bar      = data->length_bar / data->velocity_bar;
+
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vis_bar",&data->viscosity_bar,&flg);CHKERRQ(ierr);
+    flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vel_bar",&data->velocity_bar,&flg);CHKERRQ(ierr);
+    flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_length_bar",&data->length_bar,&flg);CHKERRQ(ierr);
+    data->time_bar      = data->length_bar / data->velocity_bar;
 	data->pressure_bar  = data->viscosity_bar*data->velocity_bar / data->length_bar;
 	data->density_bar   = data->viscosity_bar*data->velocity_bar / ( data->length_bar * data->length_bar );
-
 	/*
 	if (!data->dimensional) {
 		data->length_bar    = 1.0;
@@ -130,7 +133,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	
 	/* velocity cm/y */
 	vx = 0.5;
-	vz = 0.0;
+	vz = 0.1;
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vx",&vx,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { vx *= data->velocity_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vz",&vz,&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { vz *= data->velocity_bar; }
 	/* convert to m/s */
@@ -148,7 +151,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	rheology->nphases_active = 4;
 	
 	/* viscosity */
-	rheology->const_eta0[0] = 2.0*1.0e23; /* crust */
+    rheology->const_eta0[0] = 2.0*1.0e23; /* crust */
 	rheology->const_eta0[1] = 2.5*1.0e19; /* crust - lower */
 	rheology->const_eta0[2] = 5.0*1.0e22; /* mantle */
 	rheology->const_eta0[3] = 5.0*1.0e20; /* mantle - lower */
