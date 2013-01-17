@@ -170,6 +170,8 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 	MPI_Comm_rank(comm,&rank);
 	
 
+	ierr = DMDAGetInfo(da_vol,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+
 	/* determin pieces i need on the volume mesh */
 	ierr = DMDAGetCorners(da_vol,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 
