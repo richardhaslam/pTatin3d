@@ -1059,7 +1059,14 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 //	if (use_low_order_geometry==PETSC_FALSE) {
 //		ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 //	} else {
-		ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+
+		//ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+		
+		// 
+		ierr = MFStokesWrapper_A11PC_2x2x2(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	
+		// totally useless - u solve requires loads of iterations
+		//ierr = MFStokesWrapper_A11PC_1x1x1(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 //	}
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
