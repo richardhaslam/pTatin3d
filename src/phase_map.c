@@ -141,10 +141,9 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	fclose(fp);
 }
 
-void PhaseMapLoadFromFile_ASCII_ZIPPED(const char filename[],PhaseMap *map)
+int PhaseMapLoadFromFile_ASCII_ZIPPED(const char filename[],PhaseMap *map)
 {
 	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Ascii zipped loading is not supported");
-	exit(0);
 }
 
 
@@ -175,7 +174,7 @@ void PhaseMapLoadFromFile(const char filename[],PhaseMap *map)
 	}
 
 	if (is_zipped == 1) {
-		PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
+		int ierr = PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
 	} else {
 		PhaseMapLoadFromFile_ASCII(filename,map);
 	}
@@ -326,3 +325,4 @@ int main(int nargs,char *args[])
 	return EXIT_SUCCESS;
 }
 #endif
+

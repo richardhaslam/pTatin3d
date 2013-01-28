@@ -89,6 +89,7 @@ gcc -O3 -g -c swarm_fields.c
 */
 
 
+#define _GNU_SOURCE
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"

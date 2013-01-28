@@ -47,6 +47,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_redundant.h"
 #include "dmda_update_coords.h"
 #include "dmda_element_q1.h"
+#include "dmda_view_petscvtk.h"
 
 /*
  assumed y is the surface

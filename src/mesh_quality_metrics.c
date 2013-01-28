@@ -288,3 +288,4 @@ PetscErrorCode DMDAComputeMeshQualityMetrics(DM dm,MeshQualityMeasure measure,Pe
 		
 	PetscFunctionReturn(0);
 }
+

@@ -32,6 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
+#define _GNU_SOURCE
 #include "petsc.h"
 #include "swarm_fields.h"
 #include "rheology.h"

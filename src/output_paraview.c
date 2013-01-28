@@ -32,6 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
+#define _GNU_SOURCE
 #include "petsc.h"
 #include "dmda_element_q2p1.h"
 #include "output_paraview.h"
