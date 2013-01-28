@@ -41,6 +41,24 @@ This is added to cause compilation to crash. It is recommended to leave the comm
 
 which serves as a means to track bugs/changes which may arise as the class_generator.py file is modified.
 
+9/ Register your new type.
+
+a) For material constants, open
+  material_constants.c
+and edit the function
+  MaterialConstantsInitialize()
+
+b) For material point properties, open
+  ptatin3d.c
+and edit the function
+  pTatin3dCreateMaterialPoints()  
+
+c) For quadrature point properties, open
+  quadrature.c
+and edit the function
+  VolumeQuadratureCreate_GaussLegendreStokes()
+
+
 
 Example:
 
