@@ -36,6 +36,7 @@
 
 PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx);
 PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx);
+PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx);
 
 #endif
 
