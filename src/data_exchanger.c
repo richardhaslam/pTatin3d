@@ -129,8 +129,8 @@ DataEx DataExCreate( MPI_Comm comm, const PetscInt count )
 	d = (DataEx)malloc( sizeof(struct _p_DataEx) );
 	memset( d, 0, sizeof(struct _p_DataEx) );
 	
-	ierr = MPI_Comm_dup( comm, &d->comm );CHKERRQ(ierr);
-	ierr = MPI_Comm_rank( d->comm, &d->rank );CHKERRQ(ierr);
+	ierr = MPI_Comm_dup( comm, &d->comm );
+	ierr = MPI_Comm_rank( d->comm, &d->rank );
 	
 	d->instance = count;
 	
@@ -388,9 +388,11 @@ Makes the communication map symmetric
 #define __FUNCT__ "_DataExCompleteCommunicationMap"
 PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, PetscMPIInt proc_neighbours[], PetscMPIInt *n_new, PetscMPIInt **proc_neighbours_new )
 {
-	PetscMPIInt       size;
 	Mat               A,redA;
-	PetscInt          offset,index,i,j,nc,rank_i,rank_j;
+	PetscInt          offset,index,i,j,nc;
+	PetscInt          n_, *proc_neighbours_;
+        PetscInt          size_, rank_i_,_rank_j_;
+	PetscMPIInt       size,  rank_i,  rank_j;
 	PetscScalar       *vals, inserter;
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
@@ -400,30 +402,39 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 
 	
 	PetscFunctionBegin;
-	MPI_Comm_size( comm, &size );
-	MPI_Comm_rank( comm, &rank_i );
-	
+
+	n_ = n;
+	ierr = PetscMalloc( sizeof(PetscInt) * n_, &proc_neighbours_ );CHKERRQ(ierr);
+	for (i=0; i<n_; i++) {
+		proc_neighbours_[i] = proc_neighbours[i];
+	}
+
+	ierr = MPI_Comm_size( comm, &size );CHKERRQ(ierr);
+	size_ = size;
+	ierr = MPI_Comm_rank( comm, &rank_i );CHKERRQ(ierr);
+	rank_i_ = rank_i;
+
 	ierr = MatCreate( comm, &A );CHKERRQ(ierr);
 	ierr = MatSetSizes( A, PETSC_DECIDE,PETSC_DECIDE, size,size );CHKERRQ(ierr);
 	ierr = MatSetType( A, MATAIJ );CHKERRQ(ierr);
 	
 	
 	/* Build original map */
-	ierr = PetscMalloc( sizeof(PetscScalar)*n, &vals );CHKERRQ(ierr);
-	for( i=0; i<n; i++ ) {
+	ierr = PetscMalloc( sizeof(PetscScalar)*n_, &vals );CHKERRQ(ierr);
+	for( i=0; i<n_; i++ ) {
 		vals[i] = 1.0;
 	}
-	ierr = MatSetValues( A, 1,&rank_i, n,proc_neighbours, vals, INSERT_VALUES );CHKERRQ(ierr);
+	ierr = MatSetValues( A, 1,&rank_i_, n_,proc_neighbours_, vals, INSERT_VALUES );CHKERRQ(ierr);
 	
 	ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* Now force all other connections if they are not already there */
 	/* It's more efficient to do them all at once */
-	for( i=0; i<n; i++ ) {
+	for( i=0; i<n_; i++ ) {
 		vals[i] = 2.0;
 	}
-	ierr = MatSetValues( A, n,proc_neighbours, 1,&rank_i, vals, INSERT_VALUES );CHKERRQ(ierr);
+	ierr = MatSetValues( A, n_,proc_neighbours_, 1,&rank_i_, vals, INSERT_VALUES );CHKERRQ(ierr);
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -437,7 +448,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	is_seqaij = PETSC_FALSE;
 	ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
 	if (is_seqaij==PETSC_FALSE) {
-		ierr = MatGetRedundantMatrix( A, size, PETSC_COMM_SELF, size, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
+		ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
 	} else {
 		redA = A;
 		ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
@@ -445,7 +456,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	
 	if( (n_new != NULL) && (proc_neighbours_new != NULL) ) {
 	
-		ierr = MatGetRow( redA, rank_i, &nc, &cols, &red_vals );CHKERRQ(ierr);
+		ierr = MatGetRow( redA, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
 		
 		_n_new = (PetscMPIInt)nc;
 		_proc_neighbours_new = (PetscMPIInt*)malloc( sizeof(PetscMPIInt) * _n_new );
@@ -453,7 +464,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 		for( j=0; j<nc; j++ ) {
 			_proc_neighbours_new[j] = (PetscMPIInt)cols[j];
 		}
-		ierr = MatRestoreRow( redA, rank_i, &nc, &cols, &red_vals );CHKERRQ(ierr);
+		ierr = MatRestoreRow( redA, rank_i_, &nc, &cols, &red_vals );CHKERRQ(ierr);
 		
 		*n_new               = (PetscMPIInt)_n_new;
 		*proc_neighbours_new = (PetscMPIInt*)_proc_neighbours_new;
@@ -462,7 +473,8 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	ierr = MatDestroy(&redA);CHKERRQ(ierr);
 	ierr = MatDestroy(&A);CHKERRQ(ierr);
 	ierr = PetscFree(vals);CHKERRQ(ierr);
-	
+	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
+
 	PetscFunctionReturn(0);
 }
 
@@ -493,7 +505,7 @@ PetscErrorCode DataExTopologyFinalize( DataEx d )
 	
 	/* allocates memory */
 	if( d->messages_to_be_sent == NULL ) {
-		d->messages_to_be_sent = (PetscMPIInt*)malloc( sizeof(PetscMPIInt) * d->n_neighbour_procs );
+		d->messages_to_be_sent = (PetscInt*)malloc( sizeof(PetscInt) * d->n_neighbour_procs );
 	}
 	if( d->message_offsets == NULL ) {
 		d->message_offsets = (PetscInt*)malloc( sizeof(PetscInt) * d->n_neighbour_procs );
