@@ -385,14 +385,14 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	ierr = PetscMalloc( sizeof(PetscInt)*(pP+1), &lmz );CHKERRQ(ierr);
 	
 	if (dim >= 1) {
-		MPI_Allgather ( &esi, 1, MPI_INT, tmp, 1, MPI_INT, comm );
+		MPI_Allgather ( &esi, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			olx[i] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &mx, 1, MPI_INT, tmp, 1, MPI_INT, comm );
+		MPI_Allgather ( &mx, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
@@ -401,14 +401,14 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	}
 	
 	if (dim >= 2 ) {
-		MPI_Allgather ( &esj, 1, MPI_INT, tmp, 1, MPI_INT, comm );
+		MPI_Allgather ( &esj, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			oly[j] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &my, 1, MPI_INT, tmp, 1, MPI_INT, comm );
+		MPI_Allgather ( &my, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
@@ -417,14 +417,14 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	}
 	
 	if (dim == 3 ) {
-		MPI_Allgather ( &esk, 1, MPI_INT, tmp, 1, MPI_INT, comm );
+		MPI_Allgather ( &esk, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
 			olz[k] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &mz, 1, MPI_INT, tmp, 1, MPI_INT, comm );
+		MPI_Allgather ( &mz, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
