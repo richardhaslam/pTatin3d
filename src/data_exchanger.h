@@ -88,7 +88,7 @@ DataEx DataExCreate( MPI_Comm comm, const int count );
 PetscErrorCode DataExView( DataEx d );
 PetscErrorCode DataExDestroy( DataEx d );
 PetscErrorCode DataExTopologyInitialize( DataEx d );
-PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const int proc_id );
+PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const PetscMPIInt proc_id );
 PetscErrorCode DataExTopologyFinalize( DataEx d );
 PetscErrorCode DataExInitializeSendCount( DataEx de );
 PetscErrorCode DataExAddToSendCount( DataEx de, const int proc_id, const int count );

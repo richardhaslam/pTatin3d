@@ -180,8 +180,8 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 {
 	DataEx de;
-	const PetscInt *neighborranks;
-	PetscInt neighborranks2[27],neighborcount;
+	const PetscMPIInt *neighborranks;
+	PetscMPIInt neighborranks2[27],neighborcount;
 	PetscInt i;
 	PetscLogDouble t0,t1;
 	PetscMPIInt rank;

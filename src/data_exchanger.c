@@ -285,7 +285,7 @@ PetscErrorCode DataExTopologyInitialize( DataEx d )
 
 #undef __FUNCT__  
 #define __FUNCT__ "DataExTopologyAddNeighbour"
-PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const int proc_id )
+PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const PetscMPIInt proc_id )
 {
 	int n, found;
 	int nproc;
