@@ -119,7 +119,7 @@ export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
 export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
 export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -march=native -funroll-loops -ffast-math -Wstrict-aliasing -fstrict-aliasing
 
-export TATIN_CFLAGS		= ${TATIN_CFLAGS_O3_DIONYSOS}
+export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
 export TATIN_CC			= ${PCC}
 export TATIN_FFLAGS		= ${TATIN_FFLAGS_O3_BRUTUS}
 export TATIN_FC			= ${FC}
