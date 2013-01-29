@@ -5,6 +5,7 @@
 #include "private/ptatin_impl.h"
 #include "ptatin_models.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
+#include "dmda_update_coords.h"
 
 #include "model_folding2d_ctx.h"
 
