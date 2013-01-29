@@ -46,6 +46,7 @@
 #include "dmda_remesh.h"
 #include "dmda_update_coords.h"
 #include "mesh_update.h"
+#include "stokes_form_function.h"
 
 #include "folding_ctx.h"
 
