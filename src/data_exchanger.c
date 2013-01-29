@@ -121,15 +121,16 @@ const char *status_names[] = { "initialized", "finalized", "unknown" };
 
 #undef __FUNCT__  
 #define __FUNCT__ "DataExCreate"
-DataEx DataExCreate( MPI_Comm comm, const int count )
+DataEx DataExCreate( MPI_Comm comm, const PetscInt count )
 {
 	DataEx d;
+	PetscErrorCode ierr;
 	
 	d = (DataEx)malloc( sizeof(struct _p_DataEx) );
 	memset( d, 0, sizeof(struct _p_DataEx) );
 	
-	MPI_Comm_dup( comm, &d->comm );
-	MPI_Comm_rank( d->comm, &d->rank );
+	ierr = MPI_Comm_dup( comm, &d->comm );CHKERRQ(ierr);
+	ierr = MPI_Comm_rank( d->comm, &d->rank );CHKERRQ(ierr);
 	
 	d->instance = count;
 	
@@ -166,7 +167,7 @@ DataEx DataExCreate( MPI_Comm comm, const int count )
 #define __FUNCT__ "DataExView"
 PetscErrorCode DataExView( DataEx d )
 {
-	int p;
+	PetscMPIInt p;
 	
 	PetscFunctionBegin;
 	PetscPrintf( PETSC_COMM_WORLD, "DataEx: instance=%d\n",d->instance);
@@ -210,9 +211,10 @@ PetscErrorCode DataExView( DataEx d )
 #define __FUNCT__ "DataExDestroy"
 PetscErrorCode DataExDestroy( DataEx d )
 {
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	MPI_Comm_free( &d->comm );
+	ierr = MPI_Comm_free( &d->comm );CHKERRQ(ierr);
 	
 	if( d->neighbour_procs != NULL ) {
 		free( d->neighbour_procs );
@@ -287,8 +289,8 @@ PetscErrorCode DataExTopologyInitialize( DataEx d )
 #define __FUNCT__ "DataExTopologyAddNeighbour"
 PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const PetscMPIInt proc_id )
 {
-	int n, found;
-	int nproc;
+	PetscMPIInt n,found;
+	PetscMPIInt nproc;
 	
 	PetscFunctionBegin;
 	if( d->topology_status == DEOBJECT_FINALIZED ) {
@@ -309,7 +311,7 @@ PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const PetscMPIInt proc_id )
 	}
 	
 	if( d->n_neighbour_procs == 0 ) {
-		d->neighbour_procs = (int*)malloc( sizeof(int) );
+		d->neighbour_procs = (PetscMPIInt*)malloc( sizeof(PetscMPIInt) );
 	}
 	
 	/* check for proc_id */
@@ -320,9 +322,9 @@ PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const PetscMPIInt proc_id )
 		}
 	}
 	if( found == 0 ) { /* add it to list */
-		int *tmp;
+		PetscMPIInt *tmp;
 		
-		tmp = (int*)realloc( d->neighbour_procs, sizeof(int)*(d->n_neighbour_procs+1) );
+		tmp = (PetscMPIInt*)realloc( d->neighbour_procs, sizeof(PetscMPIInt)*(d->n_neighbour_procs+1) );
 		d->neighbour_procs = tmp;
 		
 		d->neighbour_procs[ d->n_neighbour_procs ] = proc_id;
@@ -367,9 +369,9 @@ If we require that proc A will receive from proc B, then the RECV tag index will
   N * rank(B) + rank(A) + offset
 
 */
-void _get_tags( int counter, int N, int r0,int r1, int *_st, int *_rt )
+void _get_tags( PetscInt counter, PetscMPIInt N, PetscMPIInt r0,PetscMPIInt r1, PetscMPIInt *_st, PetscMPIInt *_rt )
 {
-	int st,rt;
+	PetscMPIInt st,rt;
 	
 	
 	st = N*r0 + r1   +   N*N*counter;
@@ -384,7 +386,7 @@ Makes the communication map symmetric
 */
 #undef __FUNCT__  
 #define __FUNCT__ "_DataExCompleteCommunicationMap"
-PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, int n, int proc_neighbours[], int *n_new, int **proc_neighbours_new )
+PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, PetscMPIInt proc_neighbours[], PetscMPIInt *n_new, PetscMPIInt **proc_neighbours_new )
 {
 	PetscMPIInt       size;
 	Mat               A,redA;
@@ -392,7 +394,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, int n, int proc_n
 	PetscScalar       *vals, inserter;
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
-	int               _n_new, *_proc_neighbours_new;
+	PetscMPIInt       _n_new, *_proc_neighbours_new;
 	PetscBool         is_seqaij;
 	PetscErrorCode    ierr;
 
@@ -445,16 +447,16 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, int n, int proc_n
 	
 		ierr = MatGetRow( redA, rank_i, &nc, &cols, &red_vals );CHKERRQ(ierr);
 		
-		_n_new = (int)nc;
-		_proc_neighbours_new = (int*)malloc( sizeof(int) * _n_new );
+		_n_new = (PetscMPIInt)nc;
+		_proc_neighbours_new = (PetscMPIInt*)malloc( sizeof(PetscMPIInt) * _n_new );
 		
 		for( j=0; j<nc; j++ ) {
-			_proc_neighbours_new[j] = (int)cols[j];
+			_proc_neighbours_new[j] = (PetscMPIInt)cols[j];
 		}
 		ierr = MatRestoreRow( redA, rank_i, &nc, &cols, &red_vals );CHKERRQ(ierr);
 		
-		*n_new = _n_new;
-		*proc_neighbours_new = _proc_neighbours_new;
+		*n_new               = (PetscMPIInt)_n_new;
+		*proc_neighbours_new = (PetscMPIInt*)_proc_neighbours_new;
 	}
 	
 	ierr = MatDestroy(&redA);CHKERRQ(ierr);
@@ -468,10 +470,10 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, int n, int proc_n
 #define __FUNCT__ "DataExTopologyFinalize"
 PetscErrorCode DataExTopologyFinalize( DataEx d )
 {
-	int            symm_nn;
-	int            *symm_procs;
-	int            r0,n,st,rt;
-	int            nprocs;
+	PetscMPIInt    symm_nn;
+	PetscMPIInt   *symm_procs;
+	PetscMPIInt    r0,n,st,rt;
+	PetscMPIInt    nprocs;
 	PetscErrorCode ierr;
 
 	
@@ -491,17 +493,17 @@ PetscErrorCode DataExTopologyFinalize( DataEx d )
 	
 	/* allocates memory */
 	if( d->messages_to_be_sent == NULL ) {
-		d->messages_to_be_sent = (int*)malloc( sizeof(int) * d->n_neighbour_procs );
+		d->messages_to_be_sent = (PetscMPIInt*)malloc( sizeof(PetscMPIInt) * d->n_neighbour_procs );
 	}
 	if( d->message_offsets == NULL ) {
-		d->message_offsets = (int*)malloc( sizeof(int) * d->n_neighbour_procs );
+		d->message_offsets = (PetscInt*)malloc( sizeof(PetscInt) * d->n_neighbour_procs );
 	}
 	if( d->messages_to_be_recvieved == NULL ) {
-		d->messages_to_be_recvieved = (int*)malloc( sizeof(int) * d->n_neighbour_procs );
+		d->messages_to_be_recvieved = (PetscInt*)malloc( sizeof(PetscInt) * d->n_neighbour_procs );
 	}
 	
 	if( d->pack_cnt == NULL ) {
-		d->pack_cnt = (int*)malloc( sizeof(int) * d->n_neighbour_procs );
+		d->pack_cnt = (PetscInt*)malloc( sizeof(PetscInt) * d->n_neighbour_procs );
 	}
 	
 	if( d->_stats == NULL ) {
@@ -519,15 +521,15 @@ PetscErrorCode DataExTopologyFinalize( DataEx d )
 	}
 	
 	/* compute message tags */
-	MPI_Comm_size( d->comm, &nprocs );
+	ierr = MPI_Comm_size( d->comm, &nprocs );CHKERRQ(ierr);
 	r0 = d->rank;
 	for(n=0; n<d->n_neighbour_procs; n++ ) {
-		int r1 = d->neighbour_procs[n];
+		PetscMPIInt r1 = d->neighbour_procs[n];
 		
 		_get_tags( d->instance, nprocs, r0,r1, &st, &rt );
 		
-		d->send_tags[n] = st;
-		d->recv_tags[n] = rt;
+		d->send_tags[n] = (int)st;
+		d->recv_tags[n] = (int)rt;
 	}
 	
 	d->topology_status = DEOBJECT_FINALIZED;
@@ -538,9 +540,9 @@ PetscErrorCode DataExTopologyFinalize( DataEx d )
 /* === Phase B === */
 #undef __FUNCT__  
 #define __FUNCT__ "_DataExConvertProcIdToLocalIndex"
-PetscErrorCode _DataExConvertProcIdToLocalIndex( DataEx de, int proc_id, int *local )
+PetscErrorCode _DataExConvertProcIdToLocalIndex( DataEx de, PetscMPIInt proc_id, PetscMPIInt *local )
 {
-	int i,np;
+	PetscMPIInt i,np;
 	
 	PetscFunctionBegin;
 	np = de->n_neighbour_procs;
@@ -559,7 +561,7 @@ PetscErrorCode _DataExConvertProcIdToLocalIndex( DataEx de, int proc_id, int *lo
 #define __FUNCT__ "DataExInitializeSendCount"
 PetscErrorCode DataExInitializeSendCount( DataEx de )
 {
-	int i;
+	PetscMPIInt i;
 	
 	
 	PetscFunctionBegin;
@@ -581,10 +583,10 @@ PetscErrorCode DataExInitializeSendCount( DataEx de )
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DataExAddToSendCount"
-PetscErrorCode DataExAddToSendCount( DataEx de, const int proc_id, const int count )
+PetscErrorCode DataExAddToSendCount( DataEx de, const PetscMPIInt proc_id, const PetscInt count )
 {
-	int            i,np, valid_neighbour;
-	int            local_val;
+	PetscMPIInt    i,np, valid_neighbour;
+	PetscMPIInt    local_val;
 	PetscErrorCode ierr;
 	
 
@@ -634,7 +636,7 @@ PetscErrorCode DataExFinalizeSendCount( DataEx de )
 #define __FUNCT__ "_DataExInitializeTmpStorage"
 PetscErrorCode _DataExInitializeTmpStorage( DataEx de )
 {
-	int i,np;
+	PetscMPIInt i,np;
 	
 	PetscFunctionBegin;
 	if( de->n_neighbour_procs < 0 ) {
@@ -673,7 +675,8 @@ PetscErrorCode _DataExInitializeTmpStorage( DataEx de )
 #define __FUNCT__ "DataExPackInitialize"
 PetscErrorCode DataExPackInitialize( DataEx de, size_t unit_message_size )
 {
-	int            i,np,total;
+	PetscMPIInt    i,np;
+	PetscInt       total;
 	PetscErrorCode ierr;
 	
 	
@@ -696,7 +699,7 @@ PetscErrorCode DataExPackInitialize( DataEx de, size_t unit_message_size )
 	total = 0;
 	for( i=0; i<np; i++ ) {
 		if( de->messages_to_be_sent[i] == -1 ) {
-			int proc_neighour = de->neighbour_procs[i];
+			PetscMPIInt proc_neighour = de->neighbour_procs[i];
 			SETERRQ1( de->comm, PETSC_ERR_ORDER, "Messages_to_be_sent[neighbour_proc=%d] is un-initialised. Call DataExSetSendCount() first", proc_neighour );
 		}
 		total = total + de->messages_to_be_sent[i];
@@ -730,11 +733,11 @@ PetscErrorCode DataExPackInitialize( DataEx de, size_t unit_message_size )
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DataExPackData"
-PetscErrorCode DataExPackData( DataEx de, int proc_id, int n, void *data )
+PetscErrorCode DataExPackData( DataEx de, PetscMPIInt proc_id, PetscInt n, void *data )
 {
-	int            i;
-	int            local;
-	int            insert_location;
+	PetscMPIInt    i;
+	PetscMPIInt    local;
+	PetscInt       insert_location;
 	void           *dest;
 	PetscErrorCode ierr;
 	
@@ -786,9 +789,10 @@ PetscErrorCode DataExPackData( DataEx de, int proc_id, int n, void *data )
 #define __FUNCT__ "DataExPackFinalize"
 PetscErrorCode DataExPackFinalize( DataEx de )
 {
-	int        i,np,total;
-	MPI_Status stat;
-	
+	PetscMPIInt i,np;
+	PetscInt    total;
+	MPI_Status  stat;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	if( de->packer_status!=DEOBJECT_INITIALIZED ) {
@@ -812,15 +816,15 @@ PetscErrorCode DataExPackFinalize( DataEx de )
 	/* figure out the recv counts here */
 	for( i=0; i<np; i++ ) {
 	//	MPI_Send( &de->messages_to_be_sent[i], 1, MPI_INT, de->neighbour_procs[i], de->send_tags[i], de->comm );
-		MPI_Isend( &de->messages_to_be_sent[i], 1, MPI_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );
+		ierr = MPI_Isend( &de->messages_to_be_sent[i], 1, MPIU_INT, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );CHKERRQ(ierr);
 	//	MPI_Send( &de->messages_to_be_sent[i], 1, MPI_INT, de->neighbour_procs[i], 0, de->comm );
 	}
 	for( i=0; i<np; i++ ) {
 	//	MPI_Recv( &de->messages_to_be_recvieved[i], 1, MPI_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &stat );
-		MPI_Irecv( &de->messages_to_be_recvieved[i], 1, MPI_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i] );
+		ierr = MPI_Irecv( &de->messages_to_be_recvieved[i], 1, MPIU_INT, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i] );CHKERRQ(ierr);
 	//	MPI_Recv( &de->messages_to_be_recvieved[i], 1, MPI_INT, de->neighbour_procs[i], 0, de->comm, &stat );
 	}
-	MPI_Waitall( 2*np, de->_requests, de->_stats );
+	ierr = MPI_Waitall( 2*np, de->_requests, de->_stats );CHKERRQ(ierr);
 	
 	/* create space for the data to be recvieved */
 	total = 0;
@@ -845,10 +849,11 @@ PetscErrorCode DataExPackFinalize( DataEx de )
 #define __FUNCT__ "DataExBegin"
 PetscErrorCode DataExBegin( DataEx de )
 {
-	int        i,j,np,err;
-	MPI_Status stat;
+	PetscMPIInt i,j,np;
+	MPI_Status  stat;
 	void       *dest;
-	int        length,cnt;
+	PetscInt    length,cnt;
+	PetscErrorCode ierr;
 	
 	
 	PetscFunctionBegin;
@@ -876,7 +881,7 @@ PetscErrorCode DataExBegin( DataEx de )
 	for( i=0; i<np; i++ ) {
 		length = de->messages_to_be_sent[i] * de->unit_message_size;
 		dest = de->send_message + de->unit_message_size * de->message_offsets[i];
-		err = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );
+		ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -887,12 +892,13 @@ PetscErrorCode DataExBegin( DataEx de )
 #define __FUNCT__ "DataExEnd"
 PetscErrorCode DataExEnd( DataEx de )
 {
-	int        i,j,np,total,err;
-	MPI_Status stat;
-	int        *message_recv_offsets;
-	void       *dest;
-	int        length,cnt;
-	
+	PetscMPIInt  i,j,np;
+	PetscInt     total;
+	MPI_Status   stat;
+	PetscInt    *message_recv_offsets;
+	void        *dest;
+	PetscInt     length,cnt;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	if( de->communication_status != DEOBJECT_INITIALIZED ) {
@@ -904,7 +910,7 @@ PetscErrorCode DataExEnd( DataEx de )
 	
 	np = de->n_neighbour_procs;
 	
-	message_recv_offsets = (int*)malloc( sizeof(int) * np );
+	message_recv_offsets = (PetscInt*)malloc( sizeof(PetscInt) * np );
 	message_recv_offsets[0] = 0;
 	total = de->messages_to_be_recvieved[0];
 	for( i=1; i<np; i++ ) {
@@ -916,9 +922,9 @@ PetscErrorCode DataExEnd( DataEx de )
 	for( i=0; i<np; i++ ) {
 		length = de->messages_to_be_recvieved[i] * de->unit_message_size;
 		dest = de->recv_message + de->unit_message_size * message_recv_offsets[i];
-		MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i] );
+		ierr = MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i] );CHKERRQ(ierr);
 	}
-	MPI_Waitall( 2*np, de->_requests, de->_stats );
+	ierr = MPI_Waitall( 2*np, de->_requests, de->_stats );CHKERRQ(ierr);
 	
 	free( message_recv_offsets );
 	
@@ -928,7 +934,7 @@ PetscErrorCode DataExEnd( DataEx de )
 
 #undef __FUNCT__  
 #define __FUNCT__ "DataExGetSendData"
-PetscErrorCode DataExGetSendData( DataEx de, int *length, void **send )
+PetscErrorCode DataExGetSendData( DataEx de, PetscInt *length, void **send )
 {
 	PetscFunctionBegin;
 	if( de->packer_status != DEOBJECT_FINALIZED ) {
@@ -941,7 +947,7 @@ PetscErrorCode DataExGetSendData( DataEx de, int *length, void **send )
 
 #undef __FUNCT__  
 #define __FUNCT__ "DataExGetRecvData"
-PetscErrorCode DataExGetRecvData( DataEx de, int *length, void **recv )
+PetscErrorCode DataExGetRecvData( DataEx de, PetscInt *length, void **recv )
 {
 	PetscFunctionBegin;
 	if( de->communication_status != DEOBJECT_FINALIZED ) {
