@@ -677,6 +677,27 @@ def Generate_pTatin_MaterialConst_PlasticMises():
 
 	PARTICLE_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names )
 
+def Generate_pTatin_MaterialConst_ViscosityZ():
+	ClassName      = 'MaterialConst_ViscosityZ'
+	ClassNameShort = 'ViscZ'
+	variable_names =          [ 'eta0'      ,'zeta'     ,'zref'     ]
+	variable_types =          [ 'double'    ,'double'   ,'double'   ]
+	variable_extents        = [ 1           , 1         ,1          ]
+	variable_textural_names = [ 'eta0'      ,'zeta'     ,'zref'     ]
+    
+	PARTICLE_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names )
+
+def Generate_pTatin_MaterialConst_PlasticDP():
+	ClassName      = 'MaterialConst_PlasticDP'
+	ClassNameShort = 'PlasticDP'
+	variable_names =          [ 'phi'       ,'Co'       ,'phi_inf'      ,'Co_inf'       ]
+	variable_types =          [ 'double'    ,'double'   ,'double'       ,'double'       ]
+	variable_extents        = [ 1           , 1         ,1              ,1              ]
+	variable_textural_names = [ 'friction'  ,'cohesion' ,'friction_inf' ,'cohesion_inf' ]
+    
+	PARTICLE_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names )
+
+
 
 def Generate_pTatin_MaterialConst_MaterialType():
 	ClassName      = 'MaterialConst_MaterialType'
@@ -686,6 +707,16 @@ def Generate_pTatin_MaterialConst_MaterialType():
 	variable_extents        = [ 1          , 1             , 1               , 1              ]
 	variable_textural_names = [ 'visc_type', 'plastic_type', 'softening_type', 'density_type' ]
 
+	PARTICLE_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names )
+
+def Generate_pTatin_MaterialConst_DensityConst():
+	ClassName      = 'MaterialConst_DensityConst'
+	ClassNameShort = 'DensityConst'
+	variable_names =          [ 'density']
+	variable_types =          [ 'double' ]
+	variable_extents        = [ 1        ]
+	variable_textural_names = [ 'density']
+    
 	PARTICLE_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names )
 
 
@@ -698,9 +729,10 @@ Generate_pTatin3d_QuadraturePointSurfaceCoefficientStokes()
 Generate_pTatin3d_MaterialPointStandard()
 Generate_pTatin_MaterialPointStokesData()
 Generate_pTatin_MaterialPointStokesPlastic()
-
-
 Generate_pTatin_MaterialConst_ViscosityConst()
+Generate_pTatin_MaterialConst_DensityConst()
 Generate_pTatin_MaterialConst_PlasticMises()
+Generate_pTatin_MaterialConst_PlasticDP()
+Generate_pTatin_MaterialConst_ViscosityZ()
 Generate_pTatin_MaterialConst_MaterialType()
 

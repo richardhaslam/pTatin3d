@@ -3,7 +3,10 @@
 MATC_SRC = \
 	MaterialConst_MaterialType_def.c \
 	MaterialConst_ViscosityConst_def.c \
-	MaterialConst_PlasticMises_def.c
+	MaterialConst_DensityConst_def.c \
+	MaterialConst_PlasticMises_def.c \
+	MaterialConst_ViscosityZ_def.c \
+	MaterialConst_PlasticDP_def.c
 	
 
 ## USER SHOULD NOT NEED TO EDIT ANYTHING BELOW
