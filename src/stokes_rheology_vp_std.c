@@ -132,9 +132,9 @@ static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
 }
 
 void P3D_evaluate_global_derivatives_Q2(PetscReal el_coords[NPE*3],PetscReal GNI[3][NPE],
-																		 PetscReal dNudx[NPE],
-																		 PetscReal dNudy[NPE],
-																		 PetscReal dNudz[NPE] )
+                                        PetscReal dNudx[NPE],
+                                        PetscReal dNudy[NPE],
+                                        PetscReal dNudz[NPE] )
 {
 	PetscInt k,p;
 	PetscReal t4, t6, t8, t10, t12, t14, t17;
@@ -143,7 +143,7 @@ void P3D_evaluate_global_derivatives_Q2(PetscReal el_coords[NPE*3],PetscReal GNI
 	J[0][0] = J[0][1] = J[0][2] = 0.0;
 	J[1][0] = J[1][1] = J[1][2] = 0.0;
 	J[2][0] = J[2][1] = J[2][2] = 0.0;
-
+    
 	for (k=0; k<NPE; k++) {
 		PetscReal xc = el_coords[3*k+0];
 		PetscReal yc = el_coords[3*k+1];
@@ -207,7 +207,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	DataField      PField_std,PField_stokes;
 	PetscScalar    min_eta,max_eta,min_eta_g,max_eta_g;
 	PetscLogDouble t0,t1;
-
+    
 	DM             cda;
 	Vec            gcoords;
 	PetscReal      *LA_gcoords;
@@ -219,7 +219,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	PetscReal      elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
 	PetscReal      ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscInt       *gidx;
-
+    
 	PetscReal detJ,NI[Q2_NODES_PER_EL_3D],GNI[3][Q2_NODES_PER_EL_3D],NIp[P_BASIS_FUNCTIONS];
 	PetscReal dNudx[Q2_NODES_PER_EL_3D],dNudy[Q2_NODES_PER_EL_3D],dNudz[Q2_NODES_PER_EL_3D];
 	
@@ -228,11 +228,13 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	double         inv2_D_mp,inv2_Tpred_mp;
 	
 	DataField      PField_MatTypes;
-	DataField      PField_ViscConst;
+	DataField      PField_ViscConst,PField_ViscZ;
 	DataField      PField_PlasticMises,PField_PlasticDP;
 	MaterialConst_MaterialType   *MatType_data;
 	MaterialConst_ViscosityConst *ViscConst_data;
+    MaterialConst_ViscosityZ     *ViscZ_data;
 	MaterialConst_PlasticMises   *PlasticMises_data;
+    MaterialConst_PlasticDP      *PlasticDP_data;
 	int            viscous_type,plastic_type,softening_type;
 	int            npoints_yielded,npoints_yielded_g;
 	
@@ -240,7 +242,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	PetscFunctionBegin;
 	
 	PetscGetTime(&t0);
-
+    
 	/* access material point information */
 	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
@@ -256,7 +258,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
 	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
+    
 	/* get u,p element information */
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
 	
@@ -265,13 +267,18 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	
 	/* access material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
-
+    
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_MaterialType_classname,  &PField_MatTypes);
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityConst_classname,&PField_ViscConst);
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_PlasticMises_classname,  &PField_PlasticMises);
+    DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityZ_classname,&PField_ViscZ);
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_PlasticDP_classname,  &PField_PlasticDP);
+    
 	MatType_data      = (MaterialConst_MaterialType*)  PField_MatTypes->data;
 	ViscConst_data    = (MaterialConst_ViscosityConst*)PField_ViscConst->data;
+    ViscZ_data        = (MaterialConst_ViscosityZ*)PField_ViscZ->data;
 	PlasticMises_data = (MaterialConst_PlasticMises*)  PField_PlasticMises->data;
+    PlasticDP_data = (MaterialConst_PlasticDP*)  PField_PlasticDP->data;
 	
 	
 	/* marker loop */
@@ -287,7 +294,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
-
+        
 		/* Get marker types */
 		region_idx = mpprop_std->phase;
 		
@@ -305,13 +312,13 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		
 		/* Get element velocity */
 		ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx],ufield);CHKERRQ(ierr);
-
+        
 		/* Get element pressure */
 		ierr = DMDAGetScalarElementField(elp,nen_p,(PetscInt*)&elnidx_p[nen_p*eidx],pfield);CHKERRQ(ierr);
 		
 		/* Get local coordinate of marker */
 		xi_p = mpprop_std->xi;
-
+        
 		/* Prepare basis functions */
 		/* grad.Ni */
 		P3D_ConstructGNi_Q2_3D(xi_p,GNI);
@@ -320,7 +327,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		
 		/* Get shape function derivatives */
 		P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
-				
+        
 		/* Compute pressure at material point */
 		pressure_mp = 0.0;
 		for (k=0; k<P_BASIS_FUNCTIONS; k++) {
@@ -333,7 +340,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 			uy[k] = elu[3*k+1];
 			uz[k] = elu[3*k+2];
 		}
-				
+        
 		/* get viscosity on marker */
 		//MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);		
 		switch (viscous_type) {
@@ -342,14 +349,19 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				eta_mp = ViscConst_data[ region_idx ].eta0;
 			}
 				break;
-				
+                
+            case VISCOUS_Z: {
+                eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-elcoords[1])*ViscZ_data[ region_idx ].zeta);
+			}
+				break;
+                
 			case VISCOUS_FRANKK: {
-
+                
 			}
 				break;
 				
 			case VISCOUS_ARRHENIUS: {
-
+                
 			}
 				break;
 		}
@@ -374,49 +386,67 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				
 				if (inv2_Tpred_mp > tau_yield_mp) {
 					ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-
+                    
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
 					npoints_yielded++;
 				}
+            }
 				break;
-			}
+                
 				
 			case PLASTIC_DP: {
+                double tau_yield_mp;
 				
-			}
-				break;
-		}
-		
-		
-		
-		/* Global cutoffs for viscosity */
-		/* Here should I store these? */
-		
-		
-		/* update viscosity on marker */
-		MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
-
-		
-		
-		/* monitor bounds */
-		if (eta_mp > max_eta) { max_eta = eta_mp; }
-		if (eta_mp < min_eta) { min_eta = eta_mp; }
-		
-	}
-	DataFieldRestoreAccess(PField_std);
-	DataFieldRestoreAccess(PField_stokes);
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
-  ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
-
-	PetscGetTime(&t1);
-/*	
-	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
-              min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
-*/
-	
-	PetscFunctionReturn(0);
+				tau_yield_mp = sin(PlasticDP_data[ region_idx ].phi)*pressure_mp+cos(PlasticDP_data[ region_idx ].Co);
+				
+				/* strain rate */
+				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+				/* stress */
+				ComputeStressIsotropic3d(eta_mp,D_mp,Tpred_mp);
+				/* second inv stress */
+				ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
+				
+				if (inv2_Tpred_mp > tau_yield_mp) {
+					ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+                    
+					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+					npoints_yielded++;
+                    
+                }
+            }
+                break;
+        }
+        
+        
+        
+        /* Global cutoffs for viscosity */
+        /* Here should I store these? */
+        
+        
+        /* update viscosity on marker */
+        MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
+        
+        
+        
+        /* monitor bounds */
+        if (eta_mp > max_eta) { max_eta = eta_mp; }
+        if (eta_mp < min_eta) { min_eta = eta_mp; }
+    }  
+    
+    DataFieldRestoreAccess(PField_std);
+    DataFieldRestoreAccess(PField_stokes);
+    ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+    
+    ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+    
+    PetscGetTime(&t1);
+    /*	
+     PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
+     min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
+     */
+    
+    PetscFunctionReturn(0);
 }
 
