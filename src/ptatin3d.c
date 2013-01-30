@@ -311,7 +311,8 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 	DM cda;
 	Vec gcoords;
 	PetscScalar *LA_gcoords;
-	PetscInt nel,nen,e,i,p,n_mp_points;
+	PetscInt nel,nen,e,i;
+	int p,n_mp_points;
 	const PetscInt *elnidx;
 	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
 	PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];

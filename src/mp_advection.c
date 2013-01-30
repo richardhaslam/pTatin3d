@@ -827,7 +827,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	DataField      *PField_all;
 	int            f,nfields;
 	size_t         sizeof_marker_contents;
-	PetscInt       p,npoints,npoints_global_init,npoints_global_fin;
+	int            p,npoints,npoints_global_init,npoints_global_fin;
 	void           *recv_data;
 	void           *data_p;
 	int            n,neighborcount, *neighborranks2;
