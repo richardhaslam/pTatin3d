@@ -461,7 +461,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
+	int                    p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
