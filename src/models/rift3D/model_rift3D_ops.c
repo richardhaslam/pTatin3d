@@ -42,6 +42,7 @@
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "stokes_form_function.h"
 
 #include "rift3D_ctx.h"
 
