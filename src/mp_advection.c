@@ -830,8 +830,9 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	int            p,npoints,npoints_global_init,npoints_global_fin;
 	void           *recv_data;
 	void           *data_p;
-	int            n,neighborcount, *neighborranks2;
-	int            recv_length,npoints_accepted;
+	PetscMPIInt    n,neighborcount, *neighborranks2;
+	PetscInt       recv_length;
+	int            npoints_accepted;
 	PetscMPIInt    rank,size;
 	MPntStd        *marker_std;
 	PetscErrorCode ierr;
@@ -968,8 +969,8 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	// receive, if i own them, add new points to list //
 	ierr = DataExGetRecvData( de, &recv_length, (void**)&recv_data );CHKERRQ(ierr);
 	{
-		int totalsent;
-		MPI_Allreduce(&recv_length,&totalsent,1,MPI_INT,MPI_SUM,de->comm);
+		PetscInt totalsent;
+		MPI_Allreduce(&recv_length,&totalsent,1,MPIU_INT,MPI_SUM,de->comm);
 		PetscPrintf(PETSC_COMM_WORLD,"  DataEx: total points sent = %d \n", totalsent);
 	}
 	

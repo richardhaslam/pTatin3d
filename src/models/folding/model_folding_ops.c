@@ -113,7 +113,7 @@ PetscBool BCListEvaluator_Folding( PetscScalar position[], PetscScalar *value, v
 	ierr = pTatinModelGetUserData(user->model,(void**)&model_data_ctx);CHKERRQ(ierr);
 	time = user->time;
 
-
+	vx = 1.0;
 	*value = vx;
 	return impose_dirichlet;
 }
@@ -382,7 +382,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Folding(pTatinCtx c,void *ctx)
 {
 	ModelFoldingCtx *data = (ModelFoldingCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
+	int                    p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
