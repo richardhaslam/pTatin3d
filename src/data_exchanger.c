@@ -785,7 +785,7 @@ PetscErrorCode DataExPackData( DataEx de, PetscMPIInt proc_id, PetscInt n, void 
 	
 	/* copy memory */
 	insert_location = de->message_offsets[local] + de->pack_cnt[local];
-	dest = de->send_message + de->unit_message_size*insert_location;
+	dest = ((char*)de->send_message) + de->unit_message_size*insert_location;
 	memcpy( dest, data, de->unit_message_size * n );
 	
 	/* increment counter */
@@ -892,7 +892,7 @@ PetscErrorCode DataExBegin( DataEx de )
 	/* == NON BLOCKING == */
 	for( i=0; i<np; i++ ) {
 		length = de->messages_to_be_sent[i] * de->unit_message_size;
-		dest = de->send_message + de->unit_message_size * de->message_offsets[i];
+		dest = ((char*)de->send_message) + de->unit_message_size * de->message_offsets[i];
 		ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );CHKERRQ(ierr);
 	}
 	
@@ -933,7 +933,7 @@ PetscErrorCode DataExEnd( DataEx de )
 	/* == NON BLOCKING == */
 	for( i=0; i<np; i++ ) {
 		length = de->messages_to_be_recvieved[i] * de->unit_message_size;
-		dest = de->recv_message + de->unit_message_size * message_recv_offsets[i];
+		dest = ((char*)de->recv_message) + de->unit_message_size * message_recv_offsets[i];
 		ierr = MPI_Irecv( dest, length, MPI_CHAR, de->neighbour_procs[i], de->recv_tags[i], de->comm, &de->_requests[np+i] );CHKERRQ(ierr);
 	}
 	ierr = MPI_Waitall( 2*np, de->_requests, de->_stats );CHKERRQ(ierr);

@@ -297,7 +297,7 @@ void DataFieldSetSize( DataField df, const int new_L )
 		df->data = tmp_data;
 		
 		/* init new contents */
-		memset( (df->data+df->L*df->atomic_size), 0, (new_L-df->L)*df->atomic_size );
+		memset( ( ((char*)df->data)+df->L*df->atomic_size), 0, (new_L-df->L)*df->atomic_size );
 		
 	}
 	else {
@@ -327,7 +327,7 @@ void DataFieldZeroBlock( DataField df, const int start, const int end )
 		ERROR();
 	}
 	
-	memset( (df->data+start*df->atomic_size), 0, (end-start)*df->atomic_size );
+	memset( ( ((char*)df->data)+start*df->atomic_size), 0, (end-start)*df->atomic_size );
 }
 
 /*
