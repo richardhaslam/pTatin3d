@@ -504,7 +504,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Gene3DNueve(pTatinCtx c,void *ctx)
 PetscErrorCode Gene3DNueve_MaterialPointSetInitialStokesVariables(pTatinCtx c,void *ctx)
 {
   ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
-  PetscInt e, p, n_mp_points;
+  PetscInt e;
+  int p, n_mp_points;
   DataBucket material_point_db;
   DataBucket material_constants_db;
   DataField PField_std, PField_stokes, PField_ViscConst;
@@ -559,7 +560,7 @@ PetscErrorCode MaterialPointSetRegion_MyFunction(pTatinCtx c,void *ctx)
 {
   ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
   PetscErrorCode ierr;
-  PetscInt p, n_mp_points;
+  int p, n_mp_points;
   DataBucket db;
   DataField PField_std;
   int phase_init, phase, phase_index;
@@ -624,7 +625,8 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
   ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
   PetscErrorCode ierr;
   PhaseMap phasemap;
-  PetscInt p, n_mp_points,dir_0,dir_1,direction;
+  PetscInt dir_0,dir_1,direction;
+  int p, n_mp_points;
   DataBucket db;
   DataField PField_std;
   int phase_init, phase, phase_index, is_valid;
@@ -715,7 +717,8 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const char map_filename[],PetscInt direction,double c0,double c1)
 {
   PhaseMap  phasemap;
-  PetscInt  p,n_mp_points,dir_0,dir_1,dir_normal;
+  PetscInt  dir_0,dir_1,dir_normal;
+  int p, n_mp_points;
   DataField PField_std;
   int       phase_init,phase,phase_index,is_valid;
   
@@ -851,7 +854,7 @@ PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedM
 #define __FUNCT__ "MaterialPointInitializeRegionIndex"
 PetscErrorCode MaterialPointInitializeRegionIndex(DataBucket db,const int init_region_id)
 {
-  PetscInt           p,n_mp_points;
+  int                p,n_mp_points;
   DataField          PField_std;
   PetscErrorCode     ierr;
 	
@@ -881,7 +884,7 @@ PetscErrorCode MaterialPointInitializeRegionIndex(DataBucket db,const int init_r
 #define __FUNCT__ "MaterialPointCheckRegionIndexBounds"
 PetscErrorCode MaterialPointCheckRegionIndexBounds(DataBucket db,PetscInt lower_regionid,PetscInt upper_regionid)
 {
-  PetscInt           p,n_mp_points;
+  int                p,n_mp_points;
   DataField          PField_std;
   PetscErrorCode     ierr;
   PetscFunctionBegin;
@@ -924,7 +927,7 @@ These models are required to
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Gene3DNueve"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3DNueve(pTatinCtx c,void *ctx)
 {
-	int                 nregions;
+  int                 nregions;
   ModelGene3DNueveCtx *data = (ModelGene3DNueveCtx*)ctx;
   PetscErrorCode      ierr;
   PetscFunctionBegin;

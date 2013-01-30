@@ -349,7 +349,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
+	int                    e,p,n_mp_points;
 	PetscScalar            y_lab,y_moho,y_midcrust;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;

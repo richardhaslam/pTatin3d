@@ -406,7 +406,8 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
-  PetscInt p, n_mp_points, i, nLayer;
+  PetscInt i, nLayer;
+  int p,n_mp_points;
   DataBucket db;
   DataField PField_std;
   int phase_init, phase, phase_index, is_valid;
@@ -492,8 +493,9 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
   PetscErrorCode ierr;
   PhaseMap phasemap;
-  PetscInt p, n_mp_points,dir_0,dir_1,direction;
+  PetscInt dir_0,dir_1,direction;
   DataBucket db;
+  int p,n_mp_points;
   DataField PField_std;
   int phase_init, phase, phase_index, is_valid;
   char map_file[PETSC_MAX_PATH_LEN], *name;
@@ -591,7 +593,8 @@ PetscErrorCode ModelSetInitialStokesVariableOnMarker_Gene3D(pTatinCtx c,void *ct
 /* define properties on material points */
 {
   ModelGENE3DCtx *data = (ModelGENE3DCtx *) ctx;
-  PetscInt e, p, n_mp_points;
+  PetscInt e;
+  int p, n_mp_points;
   DataBucket db;
   DataField PField_std, PField_stokes;
   int phase_index, i;
@@ -639,7 +642,7 @@ PetscErrorCode ModelSetInitialStokesVariableOnMarker_Gene3D(pTatinCtx c,void *ct
 #define __FUNCT__ "ModelGene3DInit"
 PetscErrorCode ModelGene3DInit(DataBucket db)
 {
-  PetscInt           p,n_mp_points;
+  int                p,n_mp_points;
   DataField          PField_std;
   PetscErrorCode     ierr;
   PetscFunctionBegin;
@@ -669,7 +672,7 @@ PetscErrorCode ModelGene3DInit(DataBucket db)
 #define __FUNCT__ "ModelGene3DCheckPhase"
 PetscErrorCode ModelGene3DCheckPhase(DataBucket db,RheologyConstants *rheology)
 {
-  PetscInt           p,n_mp_points;
+  int                p,n_mp_points;
   DataField          PField_std;
   PetscErrorCode     ierr;
   PetscFunctionBegin;

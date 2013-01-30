@@ -398,7 +398,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Indentor(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 {
 	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
+	int                    e,p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;

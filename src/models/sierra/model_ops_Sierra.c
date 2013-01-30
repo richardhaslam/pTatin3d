@@ -146,7 +146,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Sierra(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Sierra"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Sierra(pTatinCtx c,void *ctx)
 {
-	PetscInt               e,p,n_mp_points;
+	int                    e,p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase,f;
