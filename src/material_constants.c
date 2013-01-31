@@ -342,7 +342,7 @@ PetscErrorCode MaterialConstantsScaleValues_DensityConst(DataBucket db,const int
 	DataField                    PField;
 	MaterialConst_DensityConst   *data;
 	PetscErrorCode               ierr;
-	PetscReal density
+	PetscReal density;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_DensityConst_classname,&PField);
