@@ -38,6 +38,7 @@ export TATIN_SRC = \
 			material_point_point_location.c \
 			material_point_load.c \
 			ptatin_utils.c \
+			ptatin_check_compiler_flags.c \
 			ptatin_log.c \
 			ptatin3d_stokes.c \
 			ptatin3d_stokes_q1macrop1.c \
@@ -104,7 +105,7 @@ export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dm
 #export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels
 
 ## or run >make CFLAGS='-g -O0'
-export TATIN_CFLAGS_DEBUG		= -O0 -g -Wall -Wno-unused-variable
+export TATIN_CFLAGS_DEBUG		= -O0 -g
 
 export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
 export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
@@ -130,7 +131,6 @@ all:
 	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
 	-@echo ${PWD}
 	
-
 	-@${MAKE} base_objects
 	-@${MAKE} base_objects_fortran
 	-@${MAKE} material_constants
@@ -186,6 +186,10 @@ drivers: libs models
 		${MAKE} $${t}.o; \
 		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
 	done
+
+ptatin_check_compiler_flags.o: ptatin_check_compiler_flags.c
+	-@echo ""
+	${PCC} ${TATIN_CFLAGS} -c ptatin_check_compiler_flags.c ${TATIN_INC} -DCOMPFLAGS='${TATIN_CFLAGS}'
 
 
 %.o: %.c
