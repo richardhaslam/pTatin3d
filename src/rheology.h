@@ -47,29 +47,6 @@ typedef enum {
 } RheologyType;
 
 
-typedef enum { 
-	VISCOUS_CONSTANT=0,
-	VISCOUS_FRANKK,
-    VISCOUS_Z,
-	VISCOUS_ARRHENIUS
-} ViscousType;
-
-typedef enum { 
-	PLASTIC_NONE=0,
-	PLASTIC_MISES,
-	PLASTIC_DP
-} PlasticType;
-
-typedef enum { 
-	SOFTENING_NONE=0,
-	SOFTENING_LINEAR,
-	SOFTENING_EXPONENTIAL
-} SofteningType;
-
-typedef enum { 
-	DENSITY_CONSTANT=0,
-	DENSITY_BOUSINESQ
-} DensityType;
 
 
 
