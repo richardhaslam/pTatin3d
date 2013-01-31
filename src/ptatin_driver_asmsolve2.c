@@ -375,6 +375,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	BCList         u_bclist[10];
 	PetscInt       kk;
 	AuuMultiLevelCtx mlctx;
+	PetscInt newton_its,picard_its;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -842,7 +843,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 #if 1
 {
-	PetscInt snes_its,picard_its,newton_its;
+	PetscInt snes_its;
 
 	SNESGetTolerances(snes,0,0,0,&snes_its,0);
 
@@ -884,10 +885,11 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 }
 #endif
 
-	{
+	newton_its = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
+	if (newton_its>0) {
 		SNES snes_newton;
 		PetscContainer container;
-		PetscInt newton_its;
 		
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes_newton);CHKERRQ(ierr);
 		ierr = SNESSetOptionsPrefix(snes_newton,"n_");CHKERRQ(ierr);
@@ -948,14 +950,11 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			}
 		}
 		
-		newton_its = 0;
-		PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
 		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
-		if (newton_its>0) {
-			PetscPrintf(PETSC_COMM_WORLD,"############## NEWTON STAGE ##############\n");
-			ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
-			ierr = pTatinModel_Output(user->model,user,X,"newton_stage");CHKERRQ(ierr);
-		}
+		PetscPrintf(PETSC_COMM_WORLD,"############## NEWTON STAGE ##############\n");
+		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = pTatinModel_Output(user->model,user,X,"newton_stage");CHKERRQ(ierr);
+
 		ierr = SNESDestroy(&snes_newton);CHKERRQ(ierr);
 	}
 	
