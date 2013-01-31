@@ -13,7 +13,7 @@
 -da_processors_x 1
 -da_processors_y 1
 -da_processors_z 1
--dau_nlevels 2
+-dau_nlevels 3
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
 -fieldsplit_u_ksp_monitor
@@ -37,20 +37,8 @@
 -snes_type ksponly
 -snes_view
 -stk_velocity_da_mat_type aij
-
-
 -ptatin_model rift3D 
--output_path t2
-
--mx 24
+-output_path test31-01
+-mx 32
 -my 8
--mz 24
--dau_nlevels 3
-
--model_rift3D_dimensional
--model_rift3D_eta0 1e25
--model_rift3D_eta1 1e25
--model_rift3D_eta2 1e25
--model_rift3D_eta3 1e25
-
--model_rift3D_vz 0.3
+-mz 32
