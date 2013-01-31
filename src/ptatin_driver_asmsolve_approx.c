@@ -960,16 +960,16 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* Report mesh sizes */
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 	for (k=0; k<nlevels; k++) {
+		PetscInt lmx,lmy,lmz;
+		ierr = DMDAGetSizeElementQ2(dav_hierarchy[k],&lmx,&lmy,&lmz);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"         level [%2D]: global Q2 elements (%D x %D x %D) \n", k,lmx,lmy,lmz );
+	}		
+	for (k=0; k<nlevels; k++) {
 		PetscInt nels,nen;
 		const PetscInt *els;
 		PetscInt lmx,lmy,lmz,si,sj,sk;
 		
 		ierr = DMDAGetElements_pTatinQ2P1(dav_hierarchy[k],&nels,&nen,&els);CHKERRQ(ierr);
-		
-		
-		ierr = DMDAGetSizeElementQ2(dav_hierarchy[k],&lmx,&lmy,&lmz);CHKERRQ(ierr);
-		PetscPrintf(PETSC_COMM_WORLD,"         level [%2D]: global Q2 elements (%D x %D x %D) \n", k,lmx,lmy,lmz );
-		
 		ierr = DMDAGetLocalSizeElementQ2(dav_hierarchy[k],&lmx,&lmy,&lmz);CHKERRQ(ierr);
 		if (rank<10) {
 			PetscPrintf(PETSC_COMM_SELF,"[r%4D]: level [%2D]: local Q2 elements  (%D x %D x %D) \n", rank, k,lmx,lmy,lmz );
