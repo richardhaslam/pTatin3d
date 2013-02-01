@@ -289,7 +289,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		MPntStd     *mpprop_std;
 		MPntPStokes *mpprop_stokes;
 		double      *xi_p;
-		double      pressure_mp;
+		double      pressure_mp,y_mp;
 		int         region_idx;
 		
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
@@ -341,6 +341,14 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 			uz[k] = elu[3*k+2];
 		}
         
+        pTatin_ConstructNi_Q2_3D( xi_p, NI );
+        /* Compute depth of material point */
+		y_mp = 0.0;
+		for (k=0; k<U_BASIS_FUNCTIONS; k++) {
+			y_mp += NI[k] * elcoords[3*k+1];
+		}
+
+    
 		/* get viscosity on marker */
 		//MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);		
 		switch (viscous_type) {
@@ -351,7 +359,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				break;
                 
             case VISCOUS_Z: {
-                eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-elcoords[1])*ViscZ_data[ region_idx ].zeta);
+                eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-y_mp)/ViscZ_data[ region_idx ].zeta);
 			}
 				break;
                 

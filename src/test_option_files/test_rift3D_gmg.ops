@@ -13,11 +13,11 @@
 -da_processors_x 1
 -da_processors_y 1
 -da_processors_z 1
--dau_nlevels 3
+-dau_nlevels 2
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
 -fieldsplit_u_ksp_monitor
--fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_rtol 5.0e-3
 -fieldsplit_u_ksp_type fgmres
 -fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack #superlu_dist
 -fieldsplit_u_mg_coarse_pc_type lu
@@ -27,6 +27,7 @@
 -fieldsplit_u_mg_levels_pc_type jacobi
 -fieldsplit_u_mg_levels_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-ksp_rtol 1e-3
 #-ksp_max_it 10
 #-ksp_monitor_true_residual
 -ksp_type fgmres
@@ -38,7 +39,7 @@
 -snes_view
 -stk_velocity_da_mat_type aij
 -ptatin_model rift3D 
--output_path test31-01
+-output_path test01-02
 -mx 32
 -my 8
 -mz 32
