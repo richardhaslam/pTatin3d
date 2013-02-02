@@ -32,6 +32,8 @@ export TATIN_SRC = \
 			MPntStd_def.c \
 			MPntPStokes_def.c \
 			QPntVolCoefStokes_def.c \
+			MPntPEnergy_def.c \
+			QPntVolCoefEnergy_def.c \
 			output_paraview.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
