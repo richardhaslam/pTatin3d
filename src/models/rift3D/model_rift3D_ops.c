@@ -556,11 +556,14 @@ PetscErrorCode ModelOutput_Rift3D(pTatinCtx c,Vec X,const char prefix[],void *ct
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
     {
-        //                const int nf=2;
-        //                const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
-        const int nf=1;
-        const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
-        ierr = SwarmViewGeneric_ParaView(c->materialpoint_db,nf,mp_prop_list,c->outputpath,prefix);CHKERRQ(ierr);
+        //                const int nf=1;
+        //                const MaterialPointField mp_prop_list[] = { MPField_Stokes };
+			const int nf=2;
+			const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+			char mp_file_prefix[256];
+			
+			sprintf(mp_file_prefix,"%s_mpoints",prefix);
+			ierr = SwarmViewGeneric_ParaView(c->materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
     }
 	
 	PetscFunctionReturn(0);
