@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      ptatin_impl.h
+ **    Filename:      ptatin3d_energy_impl.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,17 +27,27 @@
  **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
  **
  **
- **    $Id$
+ **    $Id:$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
-#ifndef __private_ptatin_impl_h__
-#define __private_ptatin_impl_h__
+#ifndef __private_ptatin3d_energy_impl_h__
+#define __private_ptatin3d_energy_impl_h__
 
-#include "ptatin3d_ctx_impl.h"
-#include "ptatin3d_stokes_impl.h"
-#include "ptatin3d_energy_impl.h"
-#include "ptatin_models_impl.h"
-#include "quadrature_impl.h"
+#include "petsc.h"
+#include "petscdm.h"
+#include "dmda_bcs.h"
+
+struct _p_PhysCompEnergy {
+	PetscInt                mx,my,mz; /* global mesh size */
+	DM                      daT;
+	BCList                  T_bclist;
+	Vec                     u_minus_V;
+	Quadrature              volQ;
+	//	SurfaceQuadratureEnergy surfQ[QUAD_EDGES]; /* four edges */
+	/* SUPG DATA */
+	Vec                     Told; /* old temperature solution vector */
+	Vec                     Xold; /* old coordinate vector */
+};
 
 #endif
