@@ -616,6 +616,17 @@ def Generate_pTatin3d_QuadraturePointSurfaceCoefficientStokes():
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
+def Generate_pTatin_QuadraturePointVolumeCoefficientEnergy():
+	ParticleClass      = 'QPntVolCoefEnergy'
+	ParticleClassShort = 'QPVCEgy'
+	variable_name_list = [ 'diffusivity',    'heat_source' ]
+	variable_type_list = [ 'double',         'double'      ]
+	variable_extend_list        = [ 1, 1  ]
+	variable_textural_name_list = [ 'diffusivity', 'heat_source' ]
+
+	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
 # ==================================================================================
 # Material point fields
 
@@ -652,6 +663,18 @@ def Generate_pTatin_MaterialPointStokesPlastic():
 
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
+def Generate_pTatin_MaterialPointEnergy():
+	ParticleClass      = 'MPntPEnergy'
+	ParticleClassShort = 'MPPEgy'
+	variable_name_list = [ 'diffusivity',    'heat_source' ]
+	variable_type_list = [ 'double',         'double'      ]
+	variable_extend_list        = [ 1, 1  ]
+	variable_textural_name_list = [ 'diffusivity', 'heat_source' ]
+
+	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
 
 # ==================================================================================
 # Material constants 
@@ -723,12 +746,21 @@ def Generate_pTatin_MaterialConst_DensityConst():
 
 # Call all functions to generate all data types
 
+## quadrature point fields ##
+# Stokes
 Generate_pTatin3d_QuadraturePointVolumeCoefficientStokes()
 Generate_pTatin3d_QuadraturePointSurfaceCoefficientStokes()
 
+# Energy
+Generate_pTatin_QuadraturePointVolumeCoefficientEnergy()
+
+## material point fields ##
 Generate_pTatin3d_MaterialPointStandard()
 Generate_pTatin_MaterialPointStokesData()
 Generate_pTatin_MaterialPointStokesPlastic()
+Generate_pTatin_MaterialPointEnergy()
+
+## material constants ##
 Generate_pTatin_MaterialConst_ViscosityConst()
 Generate_pTatin_MaterialConst_DensityConst()
 Generate_pTatin_MaterialConst_PlasticMises()
