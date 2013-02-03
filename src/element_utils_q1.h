@@ -37,6 +37,8 @@
 #include "petsc.h"
 #include "ptatin3d_defs.h"
 
+#define NODES_PER_EL_Q1_3D 8
+
 void P3D_ConstructNi_Q1_3D(PetscReal _xi[],PetscReal Ni[]);
 void P3D_ConstructGNi_Q1_3D(PetscReal _xi[],PetscReal GNi[3][8]);
 void P3D_evaluate_geometry_elementQ1(PetscInt nqp,PetscReal el_coords[8*3],PetscReal GNI[][3][8],
