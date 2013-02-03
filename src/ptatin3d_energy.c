@@ -4,6 +4,7 @@
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "element_utils_q1.h"
 #include "dmda_element_q1.h"
 #include "quadrature.h"
 #include "dmda_checkpoint.h"
@@ -75,8 +76,39 @@ double AdvDiffResidualForceTerm_UpwindXiCriticalAssumption(double pecletNumber)
   }
 }
 
-#if 0
-
+#undef __FUNCT__
+#define __FUNCT__ "DASUPG3dComputeAverageCellSize"
+PetscErrorCode DASUPG3dComputeAverageCellSize(PetscScalar el_coords[],PetscScalar DX[])
+{
+	PetscInt d,k;
+	PetscReal min_x[NSD],max_x[NSD];
+	PetscReal xc,yc,zc;
+	
+	PetscFunctionBegin;
+	for (d=0; d<NSD; d++) {
+		min_x[d] = 1.0e32;
+		max_x[d] = -1.0e32;
+	}
+	
+	for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
+		xc = el_coords[NSD*k+0];
+		yc = el_coords[NSD*k+1];
+		zc = el_coords[NSD*k+2];
+		
+		if (xc < min_x[0]) { min_x[0] = xc; }
+		if (yc < min_x[1]) { min_x[1] = yc; }
+		if (zc < min_x[2]) { min_x[2] = zc; }
+		
+		if (xc > max_x[0]) { max_x[0] = xc; }
+		if (yc > max_x[1]) { max_x[1] = yc; }
+		if (zc > max_x[2]) { max_x[2] = zc; }
+	}
+	
+	for (d=0; d<NSD; d++) {
+		DX[d] = max_x[d] - min_x[d];
+	}
+	PetscFunctionReturn(0);
+}
 
 /* Eqn 4.3.7 */
 #undef __FUNCT__
@@ -89,19 +121,12 @@ PetscErrorCode DASUPG3dComputeElementPecletNumber_qp( PetscScalar el_coords[],Pe
 	PetscScalar DX[NSD];
   PetscScalar u_xi[NSD],one_dxi2[NSD];
   PetscScalar _alpha,u_norm,dxi[NSD];
+	PetscErrorCode ierr;
 	
   PetscFunctionBegin;
 	
-	/*
-	 2----3
-	 |    |
-	 |    |
-	 0----1 
-	 */
-  DX[0] = el_coords[NSD*1  ] - el_coords[NSD*0  ];
-  DX[1] = el_coords[NSD*2+1] - el_coords[NSD*0+1];
-  DX[2] = ; 
-
+	ierr = DASUPG3dComputeAverageCellSize(el_coords,DX);CHKERRQ(ierr);
+	
 	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
   for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
 		u_xi[0] = 0.125 *  u[NSD*k + 0];
@@ -135,14 +160,7 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	
   PetscFunctionBegin;
 	
-	/*
-	 2----3
-	 |    |
-	 |    |
-	 0----1 
-	 */
-  DX[0] = el_coords[NSD*1  ] - el_coords[NSD*0  ];
-  DX[1] = el_coords[NSD*2+1] - el_coords[NSD*0+1]; 
+	ierr = DASUPG3dComputeAverageCellSize(el_coords,DX);CHKERRQ(ierr);
   
 	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
   for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
@@ -201,18 +219,12 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 	PetscScalar DX[NSD];
   PetscScalar u_xi[NSD];
   PetscScalar kappa_el,alpha_xi[NSD],_khat,dxi[NSD],xi[NSD],vol_el;
+	PetscErrorCode ierr;
 	
   PetscFunctionBegin;
 	
 	/* average velocity - cell centre velocity */
-	/*
-	 2----3
-	 |    |
-	 |    |
-	 0----1 
-	 */
-  DX[0] = el_coords[NSD*1  ] - el_coords[NSD*0  ];
-  DX[1] = el_coords[NSD*2+1] - el_coords[NSD*0+1]; 
+	ierr = DASUPG3dComputeAverageCellSize(el_coords,DX);CHKERRQ(ierr);
 	
 	/* average velocity - cell centre velocity */
 	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
@@ -266,33 +278,36 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
   }
 }
 
-void AElement_SUPG2d_qp( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
+#undef __FUNCT__  
+#define __FUNCT__ "AElement_SUPG3d_qp"
+PetscErrorCode AElement_SUPG3d_qp( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
 											 	 PetscScalar gp_kappa[],
 												 PetscScalar el_V[],
 												 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
 {
   PetscInt    p,i,j;
   PetscReal   Ni_p[NODES_PER_EL_Q1_3D],Ni_supg_p[NODES_PER_EL_Q1_3D];
-  PetscReal   GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D];
+  PetscReal   GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D],gp_detJ[27];
   PetscScalar J_p,fac;
   PetscScalar kappa_p,v_p[NSD];
   PetscScalar kappa_hat;
-	
+	PetscErrorCode ierr;
+
+	PetscFunctionBegin;
   /* compute constants for the element */
   for (p = 0; p < ngp; p++) {
-    P3D_ConstructNi_Q1_3D(&gp_xi[NSD*p],GNi_p);
-    P3D_ConstructGNi_Q1_3D(GNi_p,GNx_p,el_coords,&gp_detJ[p]);
+    P3D_ConstructGNi_Q1_3D(&gp_xi[NSD*p],GNi_p);
+    P3D_evaluate_geometry_elementQ1(1,el_coords,&GNi_p,&gp_detJ[p],&GNx_p[0],&GNx_p[1],&GNx_p[2]);
 	}
 	
-	DASUPG3dComputeElementStreamlineDiffusion_qp(el_coords,el_V,
-																							 ngp,gp_detJ,gp_weight,gp_kappa,
-																							 &kappa_hat);
-	
+	ierr = DASUPG3dComputeElementStreamlineDiffusion_qp(el_coords,el_V,
+																							        ngp,gp_detJ,gp_weight,gp_kappa,
+																							        &kappa_hat);CHKERRQ(ierr);	
   /* evaluate integral */
   for (p = 0; p < ngp; p++) {
     P3D_ConstructNi_Q1_3D(&gp_xi[NSD*p],Ni_p);
-    P3D_ConstructGNi_Q1_3D(&gp_xi[NSD*p],GNi_p[0]);
-    P3D_evaluate_geometry_elementQ1(1,el_coords,&GNi_p[0],&J_p,&GNx_p[0],&GNx_p[1],&GNx_p[2]);
+    P3D_ConstructGNi_Q1_3D(&gp_xi[NSD*p],GNi_p);
+    P3D_evaluate_geometry_elementQ1(1,el_coords,&GNi_p,&J_p,&GNx_p[0],&GNx_p[1],&GNx_p[2]);
 		
     fac = gp_weight[p]*J_p;
 		
@@ -326,6 +341,7 @@ void AElement_SUPG2d_qp( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
 	 }printf("\n");
 	 }
 	 */ 
+	PetscFunctionReturn(0);
 }
 
 /* 
@@ -335,25 +351,28 @@ void AElement_SUPG2d_qp( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
 #define __FUNCT__ "SUPGFormJacobian_qp"
 PetscErrorCode SUPGFormJacobian_qp(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
-  PhysCompEnergyCtx data = (PhysCompEnergyCtx)ctx;
-	PetscInt ngp;
-	PetscScalar *gp_xi,*gp_weight;
-  DM          da,cda;
-	Vec gcoords;
-	PetscScalar *LA_gcoords;
-  PetscInt    p,i,j;
-	PetscScalar ADe[NODES_PER_EL_Q1_3D*NODES_PER_EL_Q1_3D],el_coords[NSD*NODES_PER_EL_Q1_3D],el_V[NSD*NODES_PER_EL_Q1_3D];
-	PetscScalar gp_kappa[27];
-	/**/
-	PetscInt nel,nen,e,n;
-	const PetscInt *elnidx;
-	BCList bclist;
-	PetscInt nxg,Len_local, *gidx_bclocal;
-	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[Q1_NODES_PER_EL_3D];
-	Vec                    V;
-  Vec                    local_V;
-  PetscScalar            *LA_V;
+  PhysCompEnergy data = (PhysCompEnergy)ctx;
+	PetscInt          nqp;
+	PetscScalar       *qp_xi,*qp_weight;
+	Quadrature        volQ;
 	QPntVolCoefEnergy *all_quadpoints,*cell_quadpoints;
+	PetscScalar       qp_kappa[27];
+  DM           da,cda;
+	Vec          gcoords;
+	PetscScalar  *LA_gcoords;
+  PetscInt      p,i,j;
+	PetscScalar   ADe[NODES_PER_EL_Q1_3D*NODES_PER_EL_Q1_3D];
+	PetscScalar   el_coords[NSD*NODES_PER_EL_Q1_3D];
+	PetscScalar   el_V[NSD*NODES_PER_EL_Q1_3D];
+	/**/
+	PetscInt       nel,nen,e,n;
+	const PetscInt *elnidx;
+	BCList         bclist;
+//	PetscInt nxg,Len_local, *gidx_bclocal;
+	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[Q1_NODES_PER_EL_3D];
+	Vec            V;
+  Vec            local_V;
+  PetscScalar    *LA_V;
 	PetscErrorCode ierr;
 	
 	
@@ -361,35 +380,38 @@ PetscErrorCode SUPGFormJacobian_qp(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat 
 	da     = data->daT;
 	V      = data->u_minus_V;
 	bclist = data->T_bclist;
-	volQ   = data->vol_quadrature;
+	volQ   = data->volQ;
 	
 	/* trash old entries */
   ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 	
 	/* quadrature */
-	ngp       = data->Q->ngp;
-	gp_xi     = data->Q->xi;
-	gp_weight = data->Q->weight;
+	volQ      = data->volQ;
+	nqp       = volQ->npoints;
+	qp_xi     = volQ->q_xi_coor;
+	qp_weight = volQ->q_weight;
 	
-  /* setup for coords */
+	ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_quadpoints);CHKERRQ(ierr);
+
+  
+	/* setup for coords */
   ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
+
   /* get acces to the vector V */
   ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DMGetLocalVector(cda,&local_V);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(  cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
   ierr = VecGetArray(local_V,&LA_V);CHKERRQ(ierr);
-	
-	ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_gausspoints);CHKERRQ(ierr);
-	
+		
 	/* stuff for eqnums */
 	ierr = DMDAGetGlobalIndices(da,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
 	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElementsQ1(da,&nel,&nen,&elnidx);CHKERRQ(ierr); // REQUIRES UPDATE //
+
 	for (e=0;e<nel;e++) {
 		/* get coords for the element */
 		ierr = DMDAEQ1_GetVectorElementField_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
@@ -397,18 +419,18 @@ PetscErrorCode SUPGFormJacobian_qp(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat 
 		/* get velocity for the element */
 		ierr = DMDAEQ1_GetVectorElementField_3D(el_V,(PetscInt*)&elnidx[nen*e],LA_V);CHKERRQ(ierr);
 		
-		ierr = VolumeQuadratureGetCellData_Energy(data->Q,all_quadpoints,e,&cell_quadpoints);CHKERRQ(ierr);
+		ierr = VolumeQuadratureGetCellData_Energy(volQ,all_quadpoints,e,&cell_quadpoints);CHKERRQ(ierr);
 		
 		/* copy the diffusivity */
-		for (n=0; n<ngp; n++) {
-			gp_kappa[n] = cell_quadpoints[n].diffusivity;
+		for (n=0; n<nqp; n++) {
+			qp_kappa[n] = cell_quadpoints[n].diffusivity;
 		}
 		
 		/* initialise element stiffness matrix */
 		ierr = PetscMemzero(ADe,sizeof(PetscScalar)*NODES_PER_EL_Q1_3D*NODES_PER_EL_Q1_3D);CHKERRQ(ierr);
 		
 		/* form element stiffness matrix */
-		AElement_SUPG3d_qp( ADe,dt,el_coords, gp_kappa, el_V, ngp,gp_xi,gp_weight );
+		ierr = AElement_SUPG3d_qp( ADe,dt,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
 		
 		/* insert element matrix into global matrix */
 		ierr = DMDAEQ1_GetElementLocalIndicesDOF(ge_eqnums,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
@@ -437,12 +459,8 @@ PetscErrorCode SUPGFormJacobian_qp(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat 
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 	*mstr = SAME_NONZERO_PATTERN;
-	
   PetscFunctionReturn(0);
 }
-
-#endif
-
 
 /* quadrature */
 #undef __FUNCT__
