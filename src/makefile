@@ -43,6 +43,7 @@ export TATIN_SRC = \
 			ptatin_check_compiler_flags.c \
 			ptatin_log.c \
 			ptatin3d_stokes.c \
+			ptatin3d_energy.c \
 			ptatin3d_stokes_q1macrop1.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \
