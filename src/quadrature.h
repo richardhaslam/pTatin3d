@@ -38,5 +38,8 @@ PetscErrorCode QuadratureCreate(Quadrature *quadrature);
 PetscErrorCode QuadratureDestroy(Quadrature *quadrature);
 PetscErrorCode QuadratureView(Quadrature q);
 
+void QuadratureCreateGauss_2pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal **_q_weight);
+void QuadratureCreateGauss_3pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal **_q_weight);
+
 #endif
 
