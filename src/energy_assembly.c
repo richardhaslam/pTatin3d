@@ -333,14 +333,14 @@ PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScala
 			}
 		}
   }
-	/*
+	
 	 printf("e=\n");
 	 for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
 	 for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
 	 printf("%lf ", Re[j+i*NODES_PER_EL_Q1_3D]); 
 	 }printf("\n");
 	 }
-	 */ 
+	 
 	PetscFunctionReturn(0);
 }
 
@@ -582,7 +582,6 @@ PetscErrorCode FormFunctionLocal_SUPG_T(
 	
   PetscScalar  Ni_p[NODES_PER_EL_Q1_3D];
   PetscScalar  GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D];
-	PetscInt     phi_el_lidx[NODES_PER_EL_Q1_3D];
   PetscScalar  J_p,fac;
   PetscScalar  phi_p;
   PetscInt     p,i;
@@ -590,9 +589,12 @@ PetscErrorCode FormFunctionLocal_SUPG_T(
   PetscErrorCode   ierr;
 	
   PetscFunctionBegin;
+	//da     = data->daT;
+	//V      = data->u_minus_V;
+	bclist = data->T_bclist;
+	volQ   = data->volQ;
 	
 	/* quadrature */
-	volQ      = data->volQ;
 	nqp       = volQ->npoints;
 	qp_xi     = volQ->q_xi_coor;
 	qp_weight = volQ->q_weight;
@@ -606,7 +608,6 @@ PetscErrorCode FormFunctionLocal_SUPG_T(
 	
 	/* stuff for eqnums */
 	ierr = DMDAGetGlobalIndices(da,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
-	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElementsQ1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -635,9 +636,9 @@ PetscErrorCode FormFunctionLocal_SUPG_T(
 		ierr = PetscMemzero(Re,sizeof(PetscScalar)*NODES_PER_EL_Q1_3D);CHKERRQ(ierr);
 		
 		/* form element stiffness matrix */
-		//ierr = AElement_FormFunctionLocal_SUPG_T(Re,dt,el_coords,el_V,el_phi,el_philast,gp_kappa,gp_Q,ngp,gp_xi,gp_weight);CHKERRQ(ierr);
+		AElement_FormFunctionLocal_SUPG_T(Re,dt,el_coords,el_V,el_phi,el_philast,qp_kappa,qp_Q,nqp,qp_xi,qp_weight);
 		
-		ierr = DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(LA_R,1,phi_el_lidx,Re);CHKERRQ(ierr);
+		ierr = DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(LA_R,1,ge_eqnums,Re);CHKERRQ(ierr);
 		
 		/* diagnostics */
 		for (p=0; p<nqp; p++) {

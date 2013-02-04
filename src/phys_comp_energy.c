@@ -25,6 +25,7 @@
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "swarm_fields.h"
 #include "dmda_bcs.h"
 #include "element_utils_q1.h"
 #include "dmdae.h"
@@ -58,7 +59,7 @@ PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
 	
 	PetscFunctionBegin;
 	
-	if (!e) {PetscFunctionReturn(0);}
+	if (!E) {PetscFunctionReturn(0);}
 	ctx = *E;
 	
 	//	for (e=0; e<HEX_FACES; e++) {
@@ -183,7 +184,8 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Energy(PhysCompEnergy E)
 PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,PetscInt mesh_generator_type,PhysCompEnergy *E)
 {
 	PetscErrorCode  ierr;
-	PhysCompEnergy energy;
+	PhysCompEnergy  energy;
+	DM              cda;
 	
 	PetscFunctionBegin;
 	
@@ -196,7 +198,9 @@ PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,Pe
 	/* create aux vectors */
 	ierr = DMCreateGlobalVector(energy->daT,&energy->Told);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(energy->daT,&energy->Xold);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(energy->daT,&energy->u_minus_V);CHKERRQ(ierr);
+
+	ierr = DMDAGetCoordinateDA(energy->daT,&cda);CHKERRQ(ierr);
+	ierr = DMCreateGlobalVector(cda,&energy->u_minus_V);CHKERRQ(ierr);
 	
 	*E = energy;
 	
@@ -302,3 +306,14 @@ PetscErrorCode VolumeQuadratureGetCellData_Energy(Quadrature Q,QPntVolCoefEnergy
   PetscFunctionReturn(0);
 }
 
+/* material points */
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompAddMaterialPointCoefficients_Energy"
+PetscErrorCode PhysCompAddMaterialPointCoefficients_Energy(DataBucket db)
+{
+	PetscFunctionBegin;
+	/* register marker structures here */
+	DataBucketRegisterField(db,MPntPEnergy_classname,sizeof(MPntPEnergy),PETSC_NULL);
+
+	PetscFunctionReturn(0);
+}

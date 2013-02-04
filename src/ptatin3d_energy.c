@@ -38,8 +38,8 @@ PetscErrorCode pTatinContextValid_Energy(pTatinCtx ctx,PetscBool *exists)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_PhysCompCreate_Energy"
-PetscErrorCode pTatin3d_PhysCompCreate_Energy(pTatinCtx user)
+#define __FUNCT__ "pTatinPhysCompCreate_Energy"
+PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 {
 	PetscErrorCode ierr;
 	PhysCompStokes stokes_ctx;
@@ -81,8 +81,27 @@ PetscErrorCode pTatin3d_PhysCompCreate_Energy(pTatinCtx user)
 		ierr = PetscOptionsGetInt(PETSC_NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
 		ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
 	}	
+	
+	
+	if (user->restart_from_file) {
 		
+	} else {
+		ierr = PhysCompAddMaterialPointCoefficients_Energy(user->materialpoint_db);CHKERRQ(ierr);
+	}
+	
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompActivate_Energy"
+PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load)
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	if (load) {
+		ierr = pTatinPhysCompCreate_Energy(user);CHKERRQ(ierr);
+	}	
+	PetscFunctionReturn(0);
+}
 
