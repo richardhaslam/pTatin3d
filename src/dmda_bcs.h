@@ -100,8 +100,8 @@ PetscErrorCode BCListFlatInsert(BCList list,Vec y);
 PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y);
 PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F);
 
-
-
+PetscErrorCode BCListApplyDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList list);
+PetscErrorCode BCListRemoveDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList list);
+PetscErrorCode BCListInsertScaling(Mat A,PetscInt N_EQNS, PetscInt gidx[],BCList list);
 
 #endif
-
