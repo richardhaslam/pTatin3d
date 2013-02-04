@@ -128,9 +128,9 @@ PetscErrorCode DASUPG3dComputeElementPecletNumber_qp( PetscScalar el_coords[],Pe
 	
 	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
   for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
-		u_xi[0] = 0.125 *  u[NSD*k + 0];
-		u_xi[1] = 0.125 *  u[NSD*k + 1];
-		u_xi[2] = 0.125 *  u[NSD*k + 2];
+		u_xi[0] += 0.125 *  u[NSD*k + 0];
+		u_xi[1] += 0.125 *  u[NSD*k + 1];
+		u_xi[2] += 0.125 *  u[NSD*k + 2];
 	}
 	
 	for (d=0; d<NSD; d++) {
@@ -140,8 +140,11 @@ PetscErrorCode DASUPG3dComputeElementPecletNumber_qp( PetscScalar el_coords[],Pe
 	
   u_norm = sqrt( u_xi[0]*u_xi[0] + u_xi[1]*u_xi[1] + u_xi[2]*u_xi[2]);
 	
-  _alpha = 0.5 * u_norm / ( (1.0e-32+kappa_el) * sqrt( one_dxi2[0] + one_dxi2[1] + one_dxi2[2]) );
-  *alpha  = _alpha;  
+	_alpha = 0.5 * u_norm;
+	if (kappa_el > 1.0e-30) {
+		_alpha = _alpha / ( (1.0e-32+kappa_el) * sqrt( one_dxi2[0] + one_dxi2[1] + one_dxi2[2]) );
+	}
+  *alpha  = _alpha;
 	
   PetscFunctionReturn(0);
 }
@@ -163,9 +166,9 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
   
 	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
   for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
-		u_xi[0] = 0.125 *  u[NSD*k + 0];
-		u_xi[1] = 0.125 *  u[NSD*k + 1];
-		u_xi[2] = 0.125 *  u[NSD*k + 2];
+		u_xi[0] += 0.125 *  u[NSD*k + 0];
+		u_xi[1] += 0.125 *  u[NSD*k + 1];
+		u_xi[2] += 0.125 *  u[NSD*k + 2];
 	}
 	
 	for (d=0; d<NSD; d++) {
@@ -228,9 +231,9 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 	/* average velocity - cell centre velocity */
 	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
   for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
-		u_xi[0] = 0.125 *  u[NSD*k + 0];
-		u_xi[1] = 0.125 *  u[NSD*k + 1];
-		u_xi[2] = 0.125 *  u[NSD*k + 2];
+		u_xi[0] += 0.125 *  u[NSD*k + 0];
+		u_xi[1] += 0.125 *  u[NSD*k + 1];
+		u_xi[2] += 0.125 *  u[NSD*k + 2];
 	}
 	
 	/* integral average of diffusivity */
@@ -244,7 +247,11 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 	
 	for (d=0; d<NSD; d++) {
 		dxi[d]      = DX[d];
-		alpha_xi[d] = 0.5 * u_xi[d]  * dxi[d]  / kappa_el;
+		if (kappa_el < 1.0e-30) {
+			alpha_xi[d] = 1.0e30;
+		} else {
+			alpha_xi[d] = 0.5 * u_xi[d]  * dxi[d]  / kappa_el;
+		}
 		xi[d]       = AdvDiffResidualForceTerm_UpwindXiExact(alpha_xi[d]);
 	}
 	
@@ -261,10 +268,15 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
   PetscScalar uhat[NSD],unorm;
   PetscInt i;
 	
+	uhat[0] = Up[0];
+	uhat[1] = Up[1];
+	uhat[2] = Up[2];
   unorm = PetscSqrtScalar(Up[0]*Up[0] + Up[1]*Up[1] + Up[2]*Up[2]);
-  uhat[0] = Up[0]/unorm;
-  uhat[1] = Up[1]/unorm;
-  uhat[2] = Up[2]/unorm;
+	if (unorm>1.0e-30) {
+		uhat[0] = Up[0]/unorm;
+		uhat[1] = Up[1]/unorm;
+		uhat[2] = Up[2]/unorm;
+	}
 	
   if (kappa_hat < 1.0e-30) {
     for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
@@ -272,7 +284,7 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
     }
   } else {
     for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
-      Ni_supg[i] = Ni[i] + kappa_hat * ( uhat[0] * GNx[0][i] + uhat[1] * GNx[1][i] + uhat[2] * GNx[2][i] ) / unorm;
+      Ni_supg[i] = Ni[i] + 0.0*kappa_hat * ( uhat[0] * GNx[0][i] + uhat[1] * GNx[1][i] + uhat[2] * GNx[2][i] );
     }
   }
 }
@@ -482,9 +494,8 @@ void AElement_FormFunctionLocal_SUPG_T(
 	}
 	
 	DASUPG3dComputeElementStreamlineDiffusion_qp(el_coords,el_V,
-																							 ngp,gp_detJ,gp_weight,gp_kappa,
-																							 &kappa_hat);
-	
+																							        ngp,gp_detJ,gp_weight,gp_kappa,
+																											&kappa_hat);
 	
   /* evaluate integral */
   for (p = 0; p < ngp; p++) {
