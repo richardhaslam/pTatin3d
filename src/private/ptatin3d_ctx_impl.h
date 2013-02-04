@@ -46,7 +46,7 @@
 
 struct _p_pTatinCtx {
 	PhysCompStokes stokes_ctx;
-	//	PhysCompEnergy energy_ctx;
+	PhysCompEnergy energy_ctx;
 	//	PhysCompCoords coords_ctx;
 
 	PetscBool  restart_from_file;
