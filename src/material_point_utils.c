@@ -43,6 +43,7 @@
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "MPntPEnergy_def.h"
 #include "output_paraview.h"
 #include "quadrature.h"
 #include "element_type_Q2.h"
@@ -89,6 +90,20 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *
 
 					MPntPStokesVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntPStokes*)marker_stokes);
 					DataFieldRestoreAccess(PField_stokes);
+				}
+					break;
+
+				case MPField_Energy:
+				{
+					DataField   PField_energy;
+					MPntPStokes *marker_energy;
+					
+					DataBucketGetDataFieldByName(db, MPntPEnergy_classname ,&PField_energy);
+					DataFieldGetAccess(PField_energy);
+					marker_energy = PField_energy->data;
+					
+					MPntPEnergyVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntPEnergy*)marker_energy);
+					DataFieldRestoreAccess(PField_energy);
 				}
 					break;
 					
@@ -142,6 +157,20 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vt
 				DataFieldRestoreAccess(PField_stokes);
 			}
 				break;
+
+			case MPField_Energy:
+			{
+				DataField   PField_energy;
+				MPntPEnergy *marker_energy;
+				
+				DataBucketGetDataFieldByName(db, MPntPEnergy_classname ,&PField_energy);
+				DataFieldGetAccess(PField_energy);
+				marker_energy = PField_energy->data;
+				
+				MPntPEnergyVTKWriteBinaryAppendedDataAllFields(vtk_fp,(const int)npoints,(const MPntPEnergy*)marker_energy);
+				DataFieldRestoreAccess(PField_energy);
+			}
+				break;
 				
 			default:
 				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point field");
@@ -173,6 +202,10 @@ PetscErrorCode MaterialPointGeneric_PVTUWriteAllPPointDataFields(FILE *vtk_fp,co
 				MPntPStokesPVTUWriteAllPPointDataFields(vtk_fp);
 				break;
 				
+			case MPField_Energy:
+				MPntPEnergyPVTUWriteAllPPointDataFields(vtk_fp);
+				break;
+
 			default:
 				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point field");
 				break;

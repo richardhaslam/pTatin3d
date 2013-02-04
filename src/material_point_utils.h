@@ -38,10 +38,11 @@
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "MPntPEnergy_def.h"
 #include "quadrature.h"
 
 /* add material points into the list */
-typedef enum { MPField_Std=0, MPField_Stokes } MaterialPointField;
+typedef enum { MPField_Std=0, MPField_Stokes, MPField_Energy } MaterialPointField;
 
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int *byte_offset,const int nfields,const MaterialPointField list[]);
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db,const int nfields,const MaterialPointField list[]);
