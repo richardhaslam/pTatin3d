@@ -132,6 +132,33 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetElementsQ1"
+PetscErrorCode DMDAGetElementsQ1(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx)
+{
+	PetscInt dim,sw;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetInfo(dm, &dim, 0,0,0, 0,0,0, 0,&sw, 0,0,0, 0);CHKERRQ(ierr);
+	if (sw != 1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Stencil width must equal 1");
+	}
+	switch (dim) {
+		case 1:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimension width must equal 3. Your DM has dim=1");
+			break;
+		case 2:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimension width must equal 3. Your DM has dim=2");
+			break;
+		case 3:
+			ierr = DMDAGetElements_DA_Q1_3D(dm,nel,npe,eidx);CHKERRQ(ierr);
+			break;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetElementType_Q1"
