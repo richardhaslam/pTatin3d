@@ -19,11 +19,11 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 																														PetscScalar qp_kappa[],
 																														PetscScalar *khat);
 void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni[],PetscScalar GNx[NSD][NODES_PER_EL_Q1_3D],PetscScalar Ni_supg[]);
-PetscErrorCode AElement_SUPG3d_qp( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
+PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
 																	PetscScalar gp_kappa[],
 																	PetscScalar el_V[],
 																	PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
-PetscErrorCode SUPGFormJacobian_qp(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
+PetscErrorCode FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
 
 PetscErrorCode VolumeQuadratureCreate_GaussLegendreEnergy(PetscInt nsd,PetscInt np_per_dim,PetscInt ncells,Quadrature *quadrature);
 PetscErrorCode VolumeQuadratureGetAllCellData_Energy(Quadrature Q,QPntVolCoefEnergy *coeffs[]);
