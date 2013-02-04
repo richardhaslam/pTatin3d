@@ -13,6 +13,8 @@
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
 
+#define SUPG_EPS 1.0e-10
+
 #undef __FUNCT__
 #define __FUNCT__ "AdvDiff_GetElementLocalIndices_Q1"
 PetscErrorCode AdvDiff_GetElementLocalIndices_Q1(PetscInt el_localIndices[],PetscInt elnid[])
@@ -141,8 +143,8 @@ PetscErrorCode DASUPG3dComputeElementPecletNumber_qp( PetscScalar el_coords[],Pe
   u_norm = sqrt( u_xi[0]*u_xi[0] + u_xi[1]*u_xi[1] + u_xi[2]*u_xi[2]);
 	
 	_alpha = 0.5 * u_norm;
-	if (kappa_el > 1.0e-30) {
-		_alpha = _alpha / ( (1.0e-32+kappa_el) * sqrt( one_dxi2[0] + one_dxi2[1] + one_dxi2[2]) );
+	if (kappa_el > SUPG_EPS) {
+		_alpha = _alpha / ( (kappa_el) * sqrt( one_dxi2[0] + one_dxi2[1] + one_dxi2[2]) );
 	}
   *alpha  = _alpha;
 	
@@ -181,7 +183,7 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	
   ierr = DASUPG3dComputeElementPecletNumber_qp(el_coords,u,kappa_el,&alpha);CHKERRQ(ierr);
 	
-  if (U<1.0e-32) {
+  if (U<SUPG_EPS) {
     dt_diffusive = 0.5 * H*H / kappa_el;
     *dtd = dt_diffusive;
     *dta = 1.0e10;
@@ -191,7 +193,7 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
     } else {
       CrFAC = PetscMin(1.0,alpha);
     }
-    dt_optimal = CrFAC * H / (U+1.0e-32);
+    dt_optimal = CrFAC * H / (U+SUPG_EPS);
     *dta = dt_optimal;
     *dtd = 1.0e10;
   }
@@ -201,8 +203,8 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	 printf("        0.5.dx.dx/kappa: %1.4f \n", 0.5*H*H/(kappa_el+1.0e-32) );
 	 */
 	
-	*dta = H/(U+1.0e-32);
-	*dtd = 0.5*H*H/(kappa_el+1.0e-32);
+	*dta = H/(U+SUPG_EPS);
+	*dtd = 0.5*H*H/(kappa_el+SUPG_EPS);
 	
   PetscFunctionReturn(0);
 }
@@ -245,10 +247,11 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 	}
   kappa_el = kappa_el / vol_el;
 	
+	/* could replace with / (1.0e-30 + kappa_el) */
 	for (d=0; d<NSD; d++) {
 		dxi[d]      = DX[d];
-		if (kappa_el < 1.0e-30) {
-			alpha_xi[d] = 1.0e30;
+		if (kappa_el < SUPG_EPS) {
+			alpha_xi[d] = 1.0/SUPG_EPS;
 		} else {
 			alpha_xi[d] = 0.5 * u_xi[d]  * dxi[d]  / kappa_el;
 		}
@@ -272,13 +275,13 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
 	uhat[1] = Up[1];
 	uhat[2] = Up[2];
   unorm = PetscSqrtScalar(Up[0]*Up[0] + Up[1]*Up[1] + Up[2]*Up[2]);
-	if (unorm>1.0e-30) {
+	if (unorm > SUPG_EPS) {
 		uhat[0] = Up[0]/unorm;
 		uhat[1] = Up[1]/unorm;
 		uhat[2] = Up[2]/unorm;
 	}
 	
-  if (kappa_hat < 1.0e-30) {
+  if (kappa_hat < SUPG_EPS) {
     for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
       Ni_supg[i] = Ni[i];
     }
