@@ -46,6 +46,8 @@
 #include "material_point_std_utils.h"
 #include "ptatin_utils.h"
 #include "ptatin3d_stokes.h"
+#include "ptatin3d_energy.h"
+#include "phys_comp_energy.h"
 #include "output_paraview.h"
 #include "ptatin_models.h"
 #include "dmda_checkpoint.h"
@@ -437,7 +439,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	
 	/* init */
 	user->stokes_ctx = PETSC_NULL;
-//	user->energy_ctx = PETSC_NULL;
+	user->energy_ctx = PETSC_NULL;
 //	user->coords_ctx = PETSC_NULL;
   
 	user->pack     = PETSC_NULL; /* DM composite for velocity and pressure */
@@ -510,6 +512,7 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 	if (user->materialpoint_ex) { /* ierr = DataExView(user->materialpoint_ex);CHKERRQ(ierr); */ ierr = DataExDestroy(user->materialpoint_ex);CHKERRQ(ierr); }
 	if (user->materialpoint_db) { DataBucketDestroy(&user->materialpoint_db); }
 	
+	if (user->energy_ctx) { ierr = PhysCompDestroy_Energy(&user->energy_ctx);CHKERRQ(ierr); }
 	if (user->stokes_ctx) { ierr = PhysCompDestroy_Stokes(&user->stokes_ctx);CHKERRQ(ierr); }
 	if (user->pack) {       ierr = DMDestroy(&user->pack);CHKERRQ(ierr); }
 	
@@ -721,6 +724,7 @@ PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
 	 
 	/* zero out any pointers */
 	cc->stokes_ctx = PETSC_NULL;
+	cc->energy_ctx = PETSC_NULL;
 	cc->materialpoint_db = PETSC_NULL;
 	cc->materialpoint_ex = PETSC_NULL;
 	cc->material_constants = PETSC_NULL;
