@@ -379,10 +379,10 @@ PetscErrorCode FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *
 	PetscScalar   el_coords[NSD*NODES_PER_EL_Q1_3D];
 	PetscScalar   el_V[NSD*NODES_PER_EL_Q1_3D];
 	/**/
-	PetscInt       nel,nen,e,n;
+	PetscInt       nel,nen,e,n,ii;
 	const PetscInt *elnidx;
 	BCList         bclist;
-	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[Q1_NODES_PER_EL_3D];
+	PetscInt       NUM_GINDICES,*GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
 	Vec            V;
   Vec            local_V;
   PetscScalar    *LA_V;
@@ -445,9 +445,15 @@ PetscErrorCode FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *
 		/* form element stiffness matrix */
 		ierr = AElement_FormJacobian_T( ADe,dt,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
 		
-		/* insert element matrix into global matrix */
-		ierr = DMDAEQ1_GetElementLocalIndicesDOF(ge_eqnums,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+		/* get indices */
+		ierr = DMDAEQ1_GetElementLocalIndicesDOF(T_el_lidx,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+		for (ii=0; ii<NODES_PER_EL_Q1_3D; ii++) {
+			const PetscInt NID = elnidx[ NODES_PER_EL_Q1_3D * e + ii ];
+
+			ge_eqnums[ii] = GINDICES[ NID ];
+		}
 		
+		/* insert element matrix into global matrix */
 		ierr = MatSetValues(*B,NODES_PER_EL_Q1_3D,ge_eqnums, NODES_PER_EL_Q1_3D,ge_eqnums, ADe, ADD_VALUES );CHKERRQ(ierr);
   }
 	/* tidy up */
