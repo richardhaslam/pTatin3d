@@ -213,11 +213,13 @@ void _DataBucketRegisterField(
 	DataField *field,fp;
 	
 	/* check we haven't finalised the registration of fields */
+	/*
 	if(db->finalised==BTRUE) {
 		printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
 		ERROR();
 	}
-	
+	*/
+	 
 	/* check for repeated name */
 	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
 	if(val == BTRUE ) {
@@ -337,11 +339,12 @@ void DataBucketSetSizes( DataBucket db, const int L, const int buffer )
 {
 	int currentlength,newlength,current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
 	
+	
 	if( db->finalised == BFALSE ) {
 		printf("ERROR: You must call DataBucketFinalize() before DataBucketSetSizes() \n");
 		ERROR();
 	}
-	
+	 
 	current_allocated = db->allocated;
 	
 	new_used   = L;
@@ -695,11 +698,14 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	
 	
 	/* check we haven't finalised the registration of fields */
+	/*
 	if(db->finalised==BTRUE) {
 		printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
 		ERROR();
 	}
-
+	*/
+	
+	
 	/* read file contents */
 	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
 	

@@ -60,7 +60,7 @@ struct _p_DataBucket {
 	int L; /* number in use */
 	int buffer; /* memory buffer used for re-allocation */
 	int allocated;  /* number allocated, this will equal datafield->L */
-	BTruth finalised;
+	BTruth finalised; /* DEPRECIATED */
 	int nfields; /* how many fields of this type */
 	DataField *field; /* the data */
 };
