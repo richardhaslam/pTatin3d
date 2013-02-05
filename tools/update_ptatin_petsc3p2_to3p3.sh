@@ -1,3 +1,6 @@
+svn co --revision 3801 svn+ssh://dmay@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d
+
+cd ptatin3d/src
 perl -p -i -e 's/private\/daimpl.h/petsc\-private\/daimpl.h/g' *.c
 perl -p -i -e 's/private\/daimpl.h/petsc\-private\/daimpl.h/g' *.h
 
