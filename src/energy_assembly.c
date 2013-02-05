@@ -348,13 +348,15 @@ PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScala
 			}
 		}
   }
-	
+
+	/*
 	 printf("e=\n");
 	 for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
 	 for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
 	 printf("%lf ", Re[j+i*NODES_PER_EL_Q1_3D]); 
 	 }printf("\n");
 	 }
+	 */
 	 
 	PetscFunctionReturn(0);
 }
