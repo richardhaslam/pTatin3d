@@ -49,6 +49,8 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_view_petscvtk.h"
 #include "ptatin3d_energy.h"
 
+#include "MPntPEnergy_def.h"
+#include "QPntVolCoefEnergy_def.h"
 
 
 #undef __FUNCT__  
@@ -145,10 +147,54 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		Mat JE;
 		MatStructure mstr;
 		PhysCompEnergy energy;
+		BCList bclist;
+		DM     daT;
+		PetscScalar zero;
+		KSP kspT;
+		
+		
+		/* mash in some diffusivity */
+		{
+			MPntPEnergy *material_point;
+			DataField PField_energy;
+			int p;
+			int npoints;
+
+			DataBucketGetSizes(user->materialpoint_db,&npoints,0,0);
+			DataBucketGetDataFieldByName(user->materialpoint_db,MPntPEnergy_classname,&PField_energy);
+			DataFieldGetAccess(PField_energy);
+			
+			for (p=0; p<npoints; p++) {
+				DataFieldAccessPoint(PField_energy,p,   (void**)&material_point);
+				material_point->diffusivity = 1.0;
+				material_point->heat_source = 0.0;
+			}
+			DataFieldRestoreAccess(PField_energy);
+		}
+		{
+			QPntVolCoefEnergy *quad_point;
+			DataField PField_energy;
+			int p;
+			int npoints;
+
+			DataBucketGetSizes(user->energy_ctx->volQ->properties_db,&npoints,0,0);
+			DataBucketGetDataFieldByName(user->energy_ctx->volQ->properties_db,QPntVolCoefEnergy_classname,&PField_energy);
+			DataFieldGetAccess(PField_energy);
+			
+			for (p=0; p<npoints; p++) {
+				DataFieldAccessPoint(PField_energy,p,   (void**)&quad_point);
+				quad_point->diffusivity = 1.0;
+				quad_point->heat_source = 0.0;
+			}
+			DataFieldRestoreAccess(PField_energy);
+		}
+		
 		
 		/*  THERMAL ENERGY SOLVE  */
 		energy = user->energy_ctx;
 		Told   = energy->Told;
+		bclist = energy->T_bclist;
+		daT    = energy->daT;
 		
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&FE);CHKERRQ(ierr);
@@ -165,15 +211,31 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		 = (dt.u - X_current + X_old)/dt
 		 */
 		
-		user->dt = 1.0;
+		user->dt = 1.0e-3;
 		user->time = 1.0;
 
+		zero = 0.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
 		ierr = FormJacobianEnergy(user->time,T,user->dt,&JE,&JE,&mstr,(void*)energy);CHKERRQ(ierr);
 		ierr = FormFunctionEnergy(user->time,T,user->dt,FE,(void*)energy);CHKERRQ(ierr);
+
+		ierr = VecSetRandom(FE,0);CHKERRQ(ierr);
 		
 		
+		ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
+		ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
+		ierr = KSPSetOperators(kspT,JE,JE,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+		ierr = KSPSetFromOptions(kspT);CHKERRQ(ierr);
 		
-		
+		ierr = KSPSolve(kspT,FE,T);CHKERRQ(ierr);
+
+		ierr = KSPDestroy(&kspT);CHKERRQ(ierr);
 		
 		{
 			const int nf = 2;
