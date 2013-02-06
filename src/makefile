@@ -31,6 +31,7 @@ export TATIN_SRC = \
 			data_exchanger.c \
 			MPntStd_def.c \
 			MPntPStokes_def.c \
+			MPntPStokesPl_def.c \
 			QPntVolCoefStokes_def.c \
 			MPntPEnergy_def.c \
 			QPntVolCoefEnergy_def.c \
@@ -115,7 +116,8 @@ export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dm
 export TATIN_CFLAGS_DEBUG		= -O0 -g -fno-nested-functions -Wno-unused-variable -Wall
 
 export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops 
+
 
 export TATIN_CFLAGS_O3_DIONYSOS = -std=gnu99 -O3 -g -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
 export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
@@ -129,7 +131,7 @@ export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -marc
 
 export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
 export TATIN_CC			= ${PCC}
-export TATIN_FFLAGS		= ${TATIN_FFLAGS_O3_BRUTUS}
+export TATIN_FFLAGS		= ${TATIN_FFLAGS_DEBUG}
 export TATIN_FC			= ${FC}
 #export TATIN_FC				= gfortran -m64
 

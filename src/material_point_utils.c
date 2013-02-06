@@ -44,6 +44,7 @@
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "MPntPEnergy_def.h"
+#include "MPntPStokesPl_def.h"
 #include "output_paraview.h"
 #include "quadrature.h"
 #include "element_type_Q2.h"
@@ -106,7 +107,20 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *
 					DataFieldRestoreAccess(PField_energy);
 				}
 					break;
+				case MPField_StokesPl:
+				{
+					DataField   PField_stokesPl;
+					MPntPStokesPl *marker_stokespl;
 					
+					DataBucketGetDataFieldByName(db, MPntPStokesPl_classname ,&PField_stokesPl);
+					DataFieldGetAccess(PField_stokesPl);
+					marker_stokespl = PField_stokesPl->data;
+                    
+					MPntPStokesPlVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntPStokesPl*)marker_stokespl);
+					DataFieldRestoreAccess(PField_stokesPl);
+				}
+					break;
+                    
 				default:
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point field");
 					break;
@@ -171,6 +185,19 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vt
 				DataFieldRestoreAccess(PField_energy);
 			}
 				break;
+            case MPField_StokesPl:
+			{
+				DataField   PField_stokesPl;
+				MPntPStokesPl *marker_stokespl;
+				
+				DataBucketGetDataFieldByName(db, MPntPStokesPl_classname ,&PField_stokesPl);
+				DataFieldGetAccess(PField_stokesPl);
+				marker_stokespl = PField_stokesPl->data;
+				
+				MPntPStokesVTKWriteBinaryAppendedDataAllFields(vtk_fp,(const int)npoints,(const MPntPStokes*)marker_stokespl);
+				DataFieldRestoreAccess(PField_stokesPl);
+			}
+				break;    
 				
 			default:
 				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point field");
@@ -204,6 +231,9 @@ PetscErrorCode MaterialPointGeneric_PVTUWriteAllPPointDataFields(FILE *vtk_fp,co
 				
 			case MPField_Energy:
 				MPntPEnergyPVTUWriteAllPPointDataFields(vtk_fp);
+				break;
+            case MPField_StokesPl:
+				MPntPStokesPlPVTUWriteAllPPointDataFields(vtk_fp);
 				break;
 
 			default:
