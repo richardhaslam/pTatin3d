@@ -89,7 +89,7 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticMises(DataBucket db,const int
 PetscErrorCode MaterialConstantsPrintValues_PlasticMises(DataBucket db,const int region_id);
 
 PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
-PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int region_id,PetscReal friction,PetscReal friction_inf,PetscReal cohesion,PetscReal cohesion_inf);
+PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int region_id,PetscReal friction,PetscReal friction_inf,PetscReal cohesion,PetscReal cohesion_inf,PetscReal tens_cutoff,PetscReal hst_cutoff);
 PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int region_id, PetscReal stress_star);
 PetscErrorCode MaterialConstantsPrintValues_PlasticDP(DataBucket db,const int region_id);
 

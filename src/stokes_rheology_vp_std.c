@@ -204,7 +204,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	
 	int            pidx,n_mp_points;
 	DataBucket     db,material_constants;
-	DataField      PField_std,PField_stokes;
+	DataField      PField_std,PField_stokes,PField_pls;
 	PetscScalar    min_eta,max_eta,min_eta_g,max_eta_g;
 	PetscLogDouble t0,t1;
     
@@ -250,7 +250,10 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
-	
+
+    DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	DataFieldGetAccess(PField_pls);
+    
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	
@@ -286,14 +289,18 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	max_eta = 1.0e-100;
 	npoints_yielded = 0;
 	for (pidx=0; pidx<n_mp_points; pidx++) {
-		MPntStd     *mpprop_std;
-		MPntPStokes *mpprop_stokes;
+		MPntStd       *mpprop_std;
+		MPntPStokes   *mpprop_stokes;
+        MPntPStokesPl *mpprop_pls;
+        
 		double      *xi_p;
 		double      pressure_mp,y_mp;
 		int         region_idx;
 		
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
+        DataFieldAccessPoint(PField_pls,   pidx,(void**)&mpprop_pls);
+
         
 		/* Get marker types */
 		region_idx = mpprop_std->phase;
@@ -382,9 +389,9 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				
 			case PLASTIC_MISES: {
 				double tau_yield_mp;
-				
+				//MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
 				tau_yield_mp = PlasticMises_data[ region_idx ].tau_yield;
-				
+                				
 				/* strain rate */
 				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
 				/* stress */
@@ -397,6 +404,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
                     
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
 					npoints_yielded++;
+                  //  MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
 				}
             }
 				break;
@@ -404,8 +412,19 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				
 			case PLASTIC_DP: {
                 double tau_yield_mp;
-				
+				char    yield_type;
+                MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
 				tau_yield_mp = sin(PlasticDP_data[ region_idx ].phi)*pressure_mp+cos(PlasticDP_data[ region_idx ].Co);
+                    yield_type = 1;
+                if ( tau_yield_mp < PlasticDP_data[region_idx].tens_cutoff){
+                    /* failure in tension cutoff */
+                    tau_yield_mp = PlasticDP_data[region_idx].tens_cutoff;
+                    yield_type = 2;
+                } else if (tau_yield_mp >PlasticDP_data[region_idx].hst_cutoff){   
+                    /* failure at High stress cut off à la boris */
+                    tau_yield_mp = PlasticDP_data[region_idx].hst_cutoff;
+                    yield_type = 3;
+                } 
 				
 				/* strain rate */
 				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
@@ -419,6 +438,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
                     
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
 					npoints_yielded++;
+                   MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield_type);
                     
                 }
             }
@@ -443,6 +463,8 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
     
     DataFieldRestoreAccess(PField_std);
     DataFieldRestoreAccess(PField_stokes);
+    DataFieldRestoreAccess(PField_pls);
+    
     ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     
     ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -450,11 +472,98 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
     ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
     
     PetscGetTime(&t1);
-    /*	
+    	
      PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
      min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
-     */
+     
     
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ApplyViscosityCutOffMarkers_VPSTD"
+PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
+{
+	PetscErrorCode ierr;
+	
+	int            pidx,n_mp_points;
+	DataBucket     db;
+	DataField      PField_std,PField_stokes;
+	PetscScalar    min_eta,max_eta,min_eta_g,max_eta_g,min_cutoff,max_cutoff;
+	PetscLogDouble t0,t1;
+    RheologyConstants *rheology;
+    
+	
+	double         eta_mp;
+	int            npoints_cutoff,npoints_cutoff_g;
+	
+	
+	PetscFunctionBegin;
+	
+	PetscGetTime(&t0);
+    
+	/* access material point information */
+	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	
+	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+	DataFieldGetAccess(PField_stokes);
+	
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+	rheology = &user->rheology_constants;
+	/* marker loop */
+	min_eta = 1.0e100;
+	max_eta = 1.0e-100;
+	npoints_cutoff = 0;
+    
+    min_cutoff = rheology->eta_lower_cutoff_global;
+    max_cutoff = rheology->eta_upper_cutoff_global;
+    
+	for (pidx=0; pidx<n_mp_points; pidx++) {
+		MPntStd     *mpprop_std;
+		MPntPStokes *mpprop_stokes;
+        PetscInt region_idx;
+		PetscScalar min_cutoff_l,max_cutoff_l;
+        
+        DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
+		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
+        
+		/* Get marker types */
+		region_idx   = mpprop_std->phase;
+        
+        min_cutoff_l = rheology->eta_lower_cutoff[region_idx];
+        if (min_cutoff_l < min_cutoff) { min_cutoff_l = min_cutoff;}
+        
+        max_cutoff_l = rheology->eta_upper_cutoff[region_idx];
+        if (max_cutoff_l > max_cutoff) { max_cutoff_l = max_cutoff;}
+        
+        MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);
+        
+        if (eta_mp > max_cutoff_l) { eta_mp = max_cutoff_l;npoints_cutoff+=1; }
+        if (eta_mp < min_cutoff_l) { eta_mp = min_cutoff_l; npoints_cutoff+=1;}
+        
+        /* update viscosity on marker */
+        MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
+
+        /* monitor bounds */
+        if (eta_mp > max_eta) { max_eta = eta_mp;}
+        if (eta_mp < min_eta) { min_eta = eta_mp;}
+    }  
+    
+    DataFieldRestoreAccess(PField_std);
+    DataFieldRestoreAccess(PField_stokes);
+    
+    
+    ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&npoints_cutoff,&npoints_cutoff_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+    
+    PetscGetTime(&t1);
+    	
+     PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity Cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %d; cpu time %1.2e (sec)\n",
+     min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g, t1-t0 );
+    
+    
+    PetscFunctionReturn(0);
+}

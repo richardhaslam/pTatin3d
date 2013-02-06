@@ -841,6 +841,8 @@ PetscErrorCode MaterialConstantsSetDefault_PlasticDP(DataBucket db)
 		data[r].Co_inf  = 1.0e32;
 		data[r].phi     = 0.6;
 		data[r].phi_inf = 0.6;
+        data[r].tens_cutoff = 1.0;
+		data[r].hst_cutoff = 1.0e32;
 	}	
 	
 	PetscFunctionReturn(0);
@@ -878,7 +880,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
     
 	/* friction_inf */
 	value      = 1.0; /* default - not required as nothing happens if option not found */
-	field_name = (char*)MaterialConst_PlasticDP_member_names[1];
+	field_name = (char*)MaterialConst_PlasticDP_member_names[2];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -888,7 +890,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	}
 	/* Cohesion */
 	value      = 1.0; /* default - not required as nothing happens if option not found */
-	field_name = (char*)MaterialConst_PlasticDP_member_names[2];
+	field_name = (char*)MaterialConst_PlasticDP_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -904,6 +906,28 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
 		MaterialConst_PlasticDPSetField_cohesion_inf(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+    
+    /* tension_cutoff */
+	value      = 1.0; /* default - not required as nothing happens if option not found */
+	field_name = (char*)MaterialConst_PlasticDP_member_names[4];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_PlasticDPSetField_tens_cutoff(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+    
+    /* high stress cutoff */
+	value      = 1.0; /* default - not required as nothing happens if option not found */
+	field_name = (char*)MaterialConst_PlasticDP_member_names[5];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_PlasticDPSetField_hst_cutoff(data,value); /* use setter */
 	} else if ( (!found)  && (essential) ) {
 		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
 	}
@@ -938,12 +962,12 @@ PetscErrorCode MaterialConstantsPrintValues_PlasticDP(DataBucket db,const int re
 PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
     
 	/* friction_inf */
-	field_name = (char*)MaterialConst_PlasticDP_member_names[1];
+	field_name = (char*)MaterialConst_PlasticDP_member_names[2];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
     MaterialConst_PlasticDPGetField_friction_inf(data,&value); /* use setter */
 PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	/* Cohesion */
-	field_name = (char*)MaterialConst_PlasticDP_member_names[2];
+	field_name = (char*)MaterialConst_PlasticDP_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 		MaterialConst_PlasticDPGetField_cohesion(data,&value); /* use setter */
     PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
@@ -953,6 +977,21 @@ PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value)
 	MaterialConst_PlasticDPGetField_cohesion_inf(data,&value); /* use setter */
 PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
+    
+    /* tension_cutoff */
+	field_name = (char*)MaterialConst_PlasticDP_member_names[4];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+    MaterialConst_PlasticDPGetField_tens_cutoff(data,&value); /* use setter */
+PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);	
+    
+    /* high stress cutoff */
+	field_name = (char*)MaterialConst_PlasticDP_member_names[5];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+    MaterialConst_PlasticDPGetField_hst_cutoff(data,&value); /* use setter */
+    PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+    
+    
+    
 	DataFieldRestoreAccess(PField);
 	
 	PetscFunctionReturn(0);
@@ -960,7 +999,7 @@ PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value)
 
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsSetValues_PlasticDP"
-PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int region_id,PetscReal friction,PetscReal friction_inf,PetscReal cohesion,PetscReal cohesion_inf)
+PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int region_id,PetscReal friction,PetscReal friction_inf,PetscReal cohesion,PetscReal cohesion_inf,PetscReal tens_cutoff,PetscReal hst_cutoff)
 {
 	DataField                    PField;
 	MaterialConst_PlasticDP      *data;
@@ -985,6 +1024,12 @@ PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int regi
 	if (cohesion_inf != PETSC_DEFAULT) {
 		MaterialConst_PlasticDPSetField_cohesion_inf(data,cohesion_inf); /* use setter */
 	}
+	if (tens_cutoff != PETSC_DEFAULT) {
+		MaterialConst_PlasticDPSetField_tens_cutoff(data,tens_cutoff); /* use setter */
+	}
+	if (hst_cutoff != PETSC_DEFAULT) {
+		MaterialConst_PlasticDPSetField_hst_cutoff(data,hst_cutoff); /* use setter */
+	}    
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -999,7 +1044,7 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int re
 	DataField                    PField;
 	MaterialConst_PlasticDP      *data;
 	PetscErrorCode               ierr;
-	PetscReal cohesion,cohesion_inf;
+	PetscReal cohesion,cohesion_inf,tens_cutoff,hst_cutoff;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_PlasticDP_classname,&PField);
@@ -1014,6 +1059,14 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int re
 	MaterialConst_PlasticDPGetField_cohesion_inf(data,&cohesion_inf); /* use setter */
 	cohesion_inf = cohesion_inf/stress_star;
     MaterialConst_PlasticDPSetField_cohesion_inf(data,cohesion_inf); /* use setter */
+    
+    MaterialConst_PlasticDPGetField_tens_cutoff(data,&tens_cutoff); /* use setter */
+	tens_cutoff = tens_cutoff/stress_star;
+    MaterialConst_PlasticDPSetField_tens_cutoff(data,tens_cutoff); /* use setter */
+    
+    MaterialConst_PlasticDPGetField_hst_cutoff(data,&hst_cutoff); /* use setter */
+	hst_cutoff = hst_cutoff/stress_star;
+    MaterialConst_PlasticDPSetField_hst_cutoff(data,hst_cutoff); /* use setter */
 
 	DataFieldRestoreAccess(PField);
 	

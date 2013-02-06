@@ -729,10 +729,10 @@ def Generate_pTatin_MaterialConst_ViscosityZ():
 def Generate_pTatin_MaterialConst_PlasticDP():
 	ClassName      = 'MaterialConst_PlasticDP'
 	ClassNameShort = 'PlasticDP'
-	variable_names =          [ 'phi'       ,'Co'       ,'phi_inf'      ,'Co_inf'       ]
-	variable_types =          [ 'double'    ,'double'   ,'double'       ,'double'       ]
-	variable_extents        = [ 1           , 1         ,1              ,1              ]
-	variable_textural_names = [ 'friction'  ,'cohesion' ,'friction_inf' ,'cohesion_inf' ]
+	variable_names =          [ 'phi'       ,'Co'       ,'phi_inf'      ,'Co_inf'       ,'tens_cutoff'  ,'hst_cutoff']
+	variable_types =          [ 'double'    ,'double'   ,'double'       ,'double'       ,'double'       ,'double'    ]
+	variable_extents        = [ 1           , 1         ,1              ,1              , 1             ,   1        ]
+	variable_textural_names = [ 'friction'  ,'cohesion' ,'friction_inf' ,'cohesion_inf' ,'tens_cutoff'  ,'hst_cutoff']
     
 	PARTICLE_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names )
 
