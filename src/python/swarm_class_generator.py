@@ -164,8 +164,8 @@ def write_out_viewer( prototype, ParticleClass, ParticleClassShortName, variable
 	l = 'void '+ParticleClass+'View('+ParticleClass+' *point)\n{'
 	print l
 	
-	type   = [ 'float', 'double', 'char', 'int', 'long int' ]
-	format = [ '%1.6e', '%1.6e' ,   '%c',  '%d', '%ld' ]
+	type   = [ 'float', 'double', 'char', 'int', 'long int', 'short' ]
+	format = [ '%1.6e', '%1.6e' ,   '%c',  '%d', '%ld',      '%d' ]
 	
 	
 	for f in xrange(L):
@@ -251,6 +251,10 @@ def write_vtk_viewer( prototype, ParticleClass, ParticleClassShortName, variable
 				vtk_type = 'Int8'
 				cast     = '(int)'
 				format   = '%d'
+			elif variable_type_list[f] == 'short':
+				vtk_type = 'Int8'
+				cast     = '(short)'
+				format   = '%d'
 			else:
 				print 'Unknown type: Cannot find equivalent VTKType'
 				exit()
@@ -312,6 +316,10 @@ def write_vtk_viewer_binary_appended_header( prototype, ParticleClass, ParticleC
 				vtk_type = 'Int8'
 				cast     = '(int)'
 				format   = '%d'
+			elif variable_type_list[f] == 'short':
+				vtk_type = 'Int8'
+				cast     = '(short)'
+				format   = '%d'
 			else:
 				print 'Unknown type: Cannot find equivalent VTKType'
 				exit()
@@ -372,6 +380,10 @@ def write_vtk_viewer_binary_appended_data( prototype, ParticleClass, ParticleCla
 			elif variable_type_list[f] == 'char':
 				vtk_type = 'Int8'
 				cast     = '(int)'
+				format   = '%d'
+			elif variable_type_list[f] == 'short':
+				vtk_type = 'Int8'
+				cast     = '(short)'
 				format   = '%d'
 			else:
 				print 'Unknown type: Cannot find equivalent VTKType'
@@ -435,6 +447,10 @@ def write_pvtu_viewerPPointData( prototype, ParticleClass, ParticleClassShortNam
 				vtk_type = 'Int64'
 			elif variable_type_list[f] == 'char':
 				vtk_type = 'Int8'
+			elif variable_type_list[f] == 'short':
+				vtk_type = 'Int8'
+				cast     = '(short)'
+				format   = '%d'
 			else:
 				print 'Unknown type: Cannot find equivalent VTKType'
 				exit()
@@ -657,7 +673,7 @@ def Generate_pTatin_MaterialPointStokesPlastic():
 	ParticleClass      = 'MPntPStokesPl'
 	ParticleClassShort = 'MPPStkPl'
 	variable_name_list = [ 'e_plastic', 'is_yielding'    ]
-	variable_type_list = [ 'float',   'char' ]
+	variable_type_list = [ 'float',   'short' ]
 	variable_extend_list        = [ 1, 1 ]
 	variable_textural_name_list = [ 'plastic_strain', 'yield_indicator' ]
 
