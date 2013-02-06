@@ -792,6 +792,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 		
 	}
 	
+	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	
 	
