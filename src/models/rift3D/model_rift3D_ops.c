@@ -76,7 +76,9 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	rheology->rheology_type = RHEOLOGY_VP_STD;
     /* I REALLY DONT LIKE THE FOLLOWING ONE, SHOULD BE  in model data */
     rheology->nphases_active = 4;
-    
+    rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
+    rheology->eta_upper_cutoff_global = 1.e+25;
+    rheology->eta_lower_cutoff_global = 1.e+19;
     
     /* set the deffault values of the material constant for this particular model */
 	/*scaling */ 
@@ -97,22 +99,25 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
     /* Material constant */
     MaterialConstantsSetDefaults(materialconstants);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+    MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_Z,PLASTIC_DP,SOFTENING_NONE,DENSITY_CONSTANT);
     MaterialConstantsSetValues_ViscosityZ(materialconstants,0,1.0e28,2000.,10000.);
     MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,0,0.6,0.6,2.e7,2.e7,1e6,3e8);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);    
+    MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_Z,PLASTIC_DP,SOFTENING_NONE,DENSITY_CONSTANT);    
     MaterialConstantsSetValues_ViscosityZ(materialconstants,1,1.0e28,2000.,10000.);
     MaterialConstantsSetValues_DensityConst(materialconstants,1,2700);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,1,0.6,0.6,2.e7,2.e7,1e6,3e8);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);    
-    MaterialConstantsSetValues_ViscosityZ(materialconstants,2,1.0e25,12000.,10000.);
-    MaterialConstantsSetValues_DensityConst(materialconstants,3,3300);
+    MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_Z,PLASTIC_DP,SOFTENING_NONE,DENSITY_CONSTANT);    
+    MaterialConstantsSetValues_ViscosityZ(materialconstants,2,1.0e26,12000.,10000.);
+    MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.6,0.6,2.e7,2.e7,1e6,3e8);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
-    MaterialConstantsSetValues_ViscosityZ(materialconstants,3,1.0e25,12000.,10000.);
+    MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_Z,PLASTIC_DP,SOFTENING_NONE,DENSITY_CONSTANT);
+    MaterialConstantsSetValues_ViscosityZ(materialconstants,3,1.0e26,12000.,10000.);
     MaterialConstantsSetValues_DensityConst(materialconstants,3,3280);
-    
+    MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.6,0.6,2.e7,2.e7,1e6,3e8);
    /* 
     MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
     MaterialConstantsSetValues_ViscosityConst(materialconstants,0,2.0*1.0e23);
@@ -131,7 +136,11 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
     MaterialConstantsSetValues_DensityConst(materialconstants,3,3280);
 */
     /* Read the options */
-	
+	/*cutoff */
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
+    
     /*scaling */     
     ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
 	if (nondim){
@@ -176,7 +185,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
     } 
     
 	if (data->dimensional) {
-        /*Compute additionale scaling parameters*/
+        /*Compute additional scaling parameters*/
         data->time_bar      = data->length_bar / data->velocity_bar;
         data->pressure_bar  = data->viscosity_bar*data->velocity_bar / data->length_bar;
         data->density_bar   = data->viscosity_bar*data->velocity_bar / ( data->length_bar * data->length_bar );
@@ -188,7 +197,9 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
         PetscPrintf(PETSC_COMM_WORLD,"  eta*  : %1.4e [Pa.s]\n", data->viscosity_bar );
         PetscPrintf(PETSC_COMM_WORLD,"  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
         PetscPrintf(PETSC_COMM_WORLD,"  P*    : %1.4e [Pa]\n", data->pressure_bar );
-		
+        //scale viscosity cutoff
+        rheology->eta_lower_cutoff_global = rheology->eta_lower_cutoff_global / data->viscosity_bar;
+        rheology->eta_upper_cutoff_global = rheology->eta_upper_cutoff_global / data->viscosity_bar;
         //scale length 
         data->Lx = data->Lx / data->length_bar;
         data->Ly = data->Ly / data->length_bar;
@@ -340,12 +351,13 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	int                    e,p,n_mp_points;
 	PetscScalar            y_lab,y_moho,y_midcrust;
 	DataBucket             db;
-	DataField              PField_std,PField_stokes,PField_DensConst;
+	DataField              PField_std,PField_stokes,PField_DensConst,PField_pls,PField_ViscZ;
 	int                    phase;
 	PetscErrorCode ierr;
     DataBucket materialconstants = c->material_constants;
     MaterialConst_DensityConst *DensConst_data;
-	
+	MaterialConst_ViscosityZ *ViscZ_data;
+    
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -360,9 +372,16 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	DataFieldGetAccess(PField_stokes);
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
     
+    DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	DataFieldGetAccess(PField_pls);
+	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
+    
+    
 	DataBucketGetDataFieldByName(materialconstants,MaterialConst_DensityConst_classname,  &PField_DensConst);
     DensConst_data    = (MaterialConst_DensityConst*)PField_DensConst->data;
     
+    DataBucketGetDataFieldByName(materialconstants,MaterialConst_ViscosityZ_classname,  &PField_ViscZ);
+    ViscZ_data    = (MaterialConst_DensityConst*)PField_ViscZ->data;
 	
 	/* m */
 	y_lab      = -120.0e3; 
@@ -374,46 +393,64 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
     
     
 	for (p=0; p<n_mp_points; p++) {
-		MPntStd     *material_point;
-		MPntPStokes *mpprop_stokes;
-		double      *position,ycoord;
-		double      rho;
-		
+		MPntStd       *material_point;
+		MPntPStokes   *mpprop_stokes;
+        MPntPStokesPl *mpprop_pls;
+		double        *position,ycoord,xcoord,zcoord;
+		double        rho,eta;
+		float         pls;
+        char          yield;
+        
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
+        DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point,&position);
 		
 		/* convert to scaled units */
 		ycoord = position[1] * data->length_bar;
-		
+		xcoord=position[0] * data->length_bar;
+        zcoord=position[2] * data->length_bar;
+        y_moho     = -30.0e3;
+        if (abs(data->Lx * data->length_bar/2 - xcoord)<40.e3  & abs(data->Lz * data->length_bar/2 - zcoord) < 40e3){ 
+            y_moho     = -50.0e3;
+        }
 		if (ycoord<y_lab) {
 			phase = 3;
             rho   = DensConst_data[3].density;
+            eta   = ViscZ_data[ 3 ].eta0*exp(-(ViscZ_data[ 3 ].zref-position[1])/ViscZ_data[ 3 ].zeta);
 		} else if (ycoord<y_moho) {
 			phase = 2;
             rho   = DensConst_data[2].density;
+                        eta   = ViscZ_data[ 2 ].eta0*exp(-(ViscZ_data[ 2 ].zref-position[1])/ViscZ_data[ 2 ].zeta);
         } else if (ycoord<y_midcrust) {
 			phase = 1;
+                        eta   = ViscZ_data[ 1 ].eta0*exp(-(ViscZ_data[ 1 ].zref-position[1])/ViscZ_data[ 1 ].zeta);
             rho   = DensConst_data[1].density;
 		} else {
 			phase = 0;
             rho   = DensConst_data[0].density;
+            eta   = ViscZ_data[ 0 ].eta0*exp(-(ViscZ_data[ 0 ].zref-position[1])/ViscZ_data[ 0 ].zeta);
+            
         }
-		rho = -rho * 10.0;
+        
+        //eta = 1.0; 
+		pls = 0.0;
+        yield = 0; 
+        rho = -rho * 10.0;
 		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
-		
-		//MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
+		MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield);
+        MPntPStokesPlSetField_plastic_strain(mpprop_pls,pls);
+		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
 		MPntPStokesSetField_density(mpprop_stokes,rho);
 	}
 	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-    
-
+    DataFieldRestoreAccess(PField_pls);
 	
 	PetscFunctionReturn(0);
 }
@@ -551,7 +588,7 @@ PetscErrorCode ModelOutput_Rift3D(pTatinCtx c,Vec X,const char prefix[],void *ct
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = ModelOutput_Rift3D_CheckScales(c,X);CHKERRQ(ierr);
+	//ierr = ModelOutput_Rift3D_CheckScales(c,X);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
@@ -559,7 +596,8 @@ PetscErrorCode ModelOutput_Rift3D(pTatinCtx c,Vec X,const char prefix[],void *ct
         //                const int nf=1;
         //                const MaterialPointField mp_prop_list[] = { MPField_Stokes };
 			const int nf=2;
-			const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+			const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
+            //const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes};
 			char mp_file_prefix[256];
 			
 			sprintf(mp_file_prefix,"%s_mpoints",prefix);
