@@ -109,15 +109,15 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *
 					break;
 				case MPField_StokesPl:
 				{
-					DataField   PField_stokesPl;
-					MPntPStokesPl *marker_stokespl;
+					DataField     PField_mp_prop;
+					MPntPStokesPl *marker_prop;
 					
-					DataBucketGetDataFieldByName(db, MPntPStokesPl_classname ,&PField_stokesPl);
-					DataFieldGetAccess(PField_stokesPl);
-					marker_stokespl = PField_stokesPl->data;
+					DataBucketGetDataFieldByName(db, MPntPStokesPl_classname ,&PField_mp_prop);
+					DataFieldGetAccess(PField_mp_prop);
+					marker_prop = PField_mp_prop->data;
                     
-					MPntPStokesPlVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntPStokesPl*)marker_stokespl);
-					DataFieldRestoreAccess(PField_stokesPl);
+					MPntPStokesPlVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,byte_offset,(const int)npoints,(const MPntPStokesPl*)marker_prop);
+					DataFieldRestoreAccess(PField_mp_prop);
 				}
 					break;
                     
@@ -185,17 +185,18 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vt
 				DataFieldRestoreAccess(PField_energy);
 			}
 				break;
-            case MPField_StokesPl:
+            
+			case MPField_StokesPl:
 			{
-				DataField   PField_stokesPl;
-				MPntPStokesPl *marker_stokespl;
+				DataField     PField_mp_prop;
+				MPntPStokesPl *marker_prop;
 				
-				DataBucketGetDataFieldByName(db, MPntPStokesPl_classname ,&PField_stokesPl);
-				DataFieldGetAccess(PField_stokesPl);
-				marker_stokespl = PField_stokesPl->data;
+				DataBucketGetDataFieldByName(db, MPntPStokesPl_classname ,&PField_mp_prop);
+				DataFieldGetAccess(PField_mp_prop);
+				marker_prop = PField_mp_prop->data;
 				
-				MPntPStokesVTKWriteBinaryAppendedDataAllFields(vtk_fp,(const int)npoints,(const MPntPStokes*)marker_stokespl);
-				DataFieldRestoreAccess(PField_stokesPl);
+				MPntPStokesPlVTKWriteBinaryAppendedDataAllFields(vtk_fp,(const int)npoints,(const MPntPStokesPl*)marker_prop);
+				DataFieldRestoreAccess(PField_mp_prop);
 			}
 				break;    
 				
@@ -232,7 +233,8 @@ PetscErrorCode MaterialPointGeneric_PVTUWriteAllPPointDataFields(FILE *vtk_fp,co
 			case MPField_Energy:
 				MPntPEnergyPVTUWriteAllPPointDataFields(vtk_fp);
 				break;
-            case MPField_StokesPl:
+            
+			case MPField_StokesPl:
 				MPntPStokesPlPVTUWriteAllPPointDataFields(vtk_fp);
 				break;
 
