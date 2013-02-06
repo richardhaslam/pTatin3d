@@ -43,6 +43,7 @@
 #include "dmda_element_q2p1.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "MPntPStokesPl_def.h"
 #include "material_point_std_utils.h"
 #include "ptatin_utils.h"
 #include "ptatin3d_stokes.h"
@@ -238,6 +239,8 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 	DataBucketCreate(&db);
 	DataBucketRegisterField(db,MPntStd_classname,    sizeof(MPntStd),PETSC_NULL);
 	DataBucketRegisterField(db,MPntPStokes_classname,sizeof(MPntPStokes),PETSC_NULL);
+	DataBucketFinalize(db);
+    DataBucketRegisterField(db,MPntPStokesPl_classname,sizeof(MPntPStokesPl),PETSC_NULL);
 	DataBucketFinalize(db);
 	
 	/* Choose type of projection (for eta and rho) */
@@ -471,7 +474,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
   user->step             = 0;
   user->dt_adv           = user->dt_min;
   
-  ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
+    ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
 	ierr = MaterialConstantsInitialize(&user->material_constants);CHKERRQ(ierr);
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   

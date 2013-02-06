@@ -851,7 +851,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
 
 	/* do a linear solve */
-	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,3,PETSC_DEFAULT);
+	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 	PetscPrintf(PETSC_COMM_WORLD,"############## LINEAR STAGE ##############\n");
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"linear_stage");CHKERRQ(ierr);
