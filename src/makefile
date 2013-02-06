@@ -19,6 +19,7 @@ export TATIN_SRC = \
 			dmda_view_petscvtk.c \
 			dmda_checkpoint.c \
 			dmda_bcs.c \
+			dmda_iterator.c \
 			mesh_deformation.c \
 			mesh_quality_metrics.c \
 			mesh_update.c \
