@@ -43,6 +43,7 @@
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
+#include "dmda_iterator.h"
 
 #include "viscous_sinker_ctx.h"
 
@@ -576,6 +577,50 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelInitialCondition_ViscousSinker"
+PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
+{
+	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+	DM stokes_pack,dau,dap;
+	Vec velocity,pressure;
+	PetscReal rho0;
+	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
+	DMDAVecTraverse3d_InterpCtx IntpCtx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	stokes_pack = c->stokes_ctx->stokes_pack;
+	
+	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+
+	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
+	/* apply -5 < vx 5 across the domain x \in [0,1] */
+	//ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,10.0,-5.0,0.0);CHKERRQ(ierr);
+	//ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+	
+	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
+
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_rho0",&rho0,0);CHKERRQ(ierr);
+//	
+	HPctx.surface_pressure = 0.0;
+	HPctx.ref_height = data->Ly;
+	HPctx.ref_N = c->stokes_ctx->my-1;
+	HPctx.grav = 1.0;
+	HPctx.rho = rho0;
+	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,(void*)&HPctx);
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
+//	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelDestroy_ViscousSinker"
 PetscErrorCode ModelDestroy_ViscousSinker(pTatinCtx c,void *ctx)
 {
@@ -618,6 +663,7 @@ PetscErrorCode pTatinModelRegister_ViscousSinker(void)
 	
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_ViscousSinker);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelInitialCondition_ViscousSinker);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_ViscousSinker);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_ViscousSinker);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_ViscousSinker);CHKERRQ(ierr);
