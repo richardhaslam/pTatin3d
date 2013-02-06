@@ -146,6 +146,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 
 		case RHEOLOGY_VP_STD:
 			ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+            ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
 			break;
 			
 		default:
