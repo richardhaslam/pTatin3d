@@ -424,7 +424,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Gene3DNueve();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_Rift3D();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Rift3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Sierra();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Folding();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Folding2d();CHKERRQ(ierr);
