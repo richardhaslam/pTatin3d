@@ -38,18 +38,23 @@
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
 
-#include "dmda_duplicate.h"
-#include "dmda_element_q2p1.h"
-#include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "MPntPEnergy_def.h"
 #include "MPntPStokesPl_def.h"
+
+#include "QPntVolCoefStokes_def.h"
+#include "QPntVolCoefEnergy_def.h"
+
+#include "dmda_duplicate.h"
+#include "dmda_element_q2p1.h"
+#include "swarm_fields.h"
 #include "output_paraview.h"
 #include "quadrature.h"
 #include "element_type_Q2.h"
 #include "material_point_utils.h"
 #include "element_utils_q2.h"
+#include "element_utils_q1.h"
 
 
 #undef __FUNCT__
@@ -1265,6 +1270,684 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	for (k=0; k<nlevels; k++) {
 		ierr = DMDestroy(&clone[k]);CHKERRQ(ierr);
 	}
+	PetscFunctionReturn(0);
+}
+
+/* generic projection for stokes */
+#undef __FUNCT__
+#define __FUNCT__ "_compute_memory_offsets"
+PetscErrorCode _compute_memory_offsets(void *ref,void *target,size_t *size)
+{
+	int i;
+	size_t len;
+	void *stride;
+	
+	PetscFunctionBegin;
+	*size = -1;
+	len = 0;
+	for (i=0; i<64; i++) {
+		stride = (char*)ref + len;
+		if (stride == target) {
+			*size = len;
+		}
+		len = len + sizeof(char);
+	}
+	if ( (*size) == -1 ) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot determine memory offset");
+	}	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntPStokesComputeMemberOffsets"
+PetscErrorCode MPntPStokesComputeMemberOffsets(size_t property_offsets[])
+{
+	MPntPStokes stokes;
+	size_t s;
+	int i,N;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	N = MPntPStokes_nmembers;
+	PetscMemzero(property_offsets,sizeof(size_t)*N);
+	
+	ierr = _compute_memory_offsets(&stokes,&stokes.eta,&s); CHKERRQ(ierr);
+	property_offsets[0] = s;
+	ierr = _compute_memory_offsets(&stokes,&stokes.rho,&s); CHKERRQ(ierr);
+	property_offsets[1] = s;
+
+	for (i=0; i<N; i++) {
+		PetscPrintf(PETSC_COMM_WORLD,"MPntPStokes field offset[%d] %zu \n", i,property_offsets[i]);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntPStokesPlComputeMemberOffsets"
+PetscErrorCode MPntPStokesPlComputeMemberOffsets(size_t property_offsets[])
+{
+	MPntPStokesPl stokespl;
+	size_t s;
+	int i,N;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	N = MPntPStokesPl_nmembers;
+	PetscMemzero(property_offsets,sizeof(size_t)*N);
+
+	ierr = _compute_memory_offsets(&stokespl,&stokespl.e_plastic,&s); CHKERRQ(ierr);
+	property_offsets[0] = s;
+	ierr = _compute_memory_offsets(&stokespl,&stokespl.is_yielding,&s); CHKERRQ(ierr);
+	property_offsets[1] = s;
+	
+	for (i=0; i<N; i++) {
+		PetscPrintf(PETSC_COMM_WORLD,"MPntPStokesPl field offset[%d] %zu \n", i,property_offsets[i]);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntPEnergyComputeMemberOffsets"
+PetscErrorCode MPntPEnergyComputeMemberOffsets(size_t property_offsets[])
+{
+	MPntPEnergy energy;
+	size_t s;
+	int i,N;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	N = MPntPEnergy_nmembers;
+	PetscMemzero(property_offsets,sizeof(size_t)*N);
+
+	ierr = _compute_memory_offsets(&energy,&energy.diffusivity,&s); CHKERRQ(ierr);
+	property_offsets[0] = s;
+	ierr = _compute_memory_offsets(&energy,&energy.heat_source,&s); CHKERRQ(ierr);
+	property_offsets[1] = s;
+
+	for (i=0; i<N; i++) {
+		PetscPrintf(PETSC_COMM_WORLD,"MPntPEnergy field offset[%d] %zu \n", i,property_offsets[i]);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "QPntVolCoefStokesComputeMemberOffsets"
+PetscErrorCode QPntVolCoefStokesComputeMemberOffsets(size_t property_offsets[])
+{
+	QPntVolCoefStokes stokes;
+	size_t s;
+	int i,N;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	N = QPntVolCoefStokes_nmembers;
+	PetscMemzero(property_offsets,sizeof(size_t)*N);
+
+	ierr = _compute_memory_offsets(&stokes,&stokes.eta,&s); CHKERRQ(ierr);
+	property_offsets[0] = s;
+	ierr = _compute_memory_offsets(&stokes,&stokes.rho,&s); CHKERRQ(ierr);
+	property_offsets[1] = s;
+	ierr = _compute_memory_offsets(&stokes,&stokes.Fu[0],&s); CHKERRQ(ierr);
+	property_offsets[2] = s;
+	ierr = _compute_memory_offsets(&stokes,&stokes.Fp,&s); CHKERRQ(ierr);
+	property_offsets[3] = s;
+	
+	for (i=0; i<N; i++) {
+		PetscPrintf(PETSC_COMM_WORLD,"QPntVolCoefStokes field offset[%d] %zu \n", i,property_offsets[i]);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "QPntVolCoefEnergyComputeMemberOffsets"
+PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[])
+{
+	QPntVolCoefEnergy energy;
+	size_t s;
+	int i,N;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	N = QPntVolCoefEnergy_nmembers;
+	PetscMemzero(property_offsets,sizeof(size_t)*N);
+
+	ierr = _compute_memory_offsets(&energy,&energy.diffusivity,&s); CHKERRQ(ierr);
+	property_offsets[0] = s;
+	ierr = _compute_memory_offsets(&energy,&energy.heat_source,&s); CHKERRQ(ierr);
+	property_offsets[1] = s;
+	
+	for (i=0; i<N; i++) {
+		PetscPrintf(PETSC_COMM_WORLD,"QPntVolCoefEnergy field offset[%d] %zu \n", i,property_offsets[i]);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointQuadraturePointProjectionC0_Q2Stokes"
+PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q)
+{
+	PetscInt  dof;
+	DM        clone;
+	Vec       properties_A,properties_B;
+	int               npoints;
+	DataField         PField_std;
+	DataField         PField_material_point_property;
+  MPntStd           *mp_std;
+	void              *material_point_property;
+	size_t            mp_field_offset, mp_offset, qp_field_offset, qp_offset;
+	size_t            mp_stokes_property_offsets[MPntPStokes_nmembers];
+	size_t            qp_stokes_property_offsets[QPntVolCoefStokes_nmembers];
+	PetscBool view;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	
+	if (field == MPField_StokesPl) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"MPField_StokesPl cannot be mapped quadrature points");
+	}
+	
+	if (field != MPField_Stokes) {
+		/* error - these is only valid for stokes fields defined on Q2 */
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either properties which are to be projected onto a Q2 space");
+	}
+
+	DataBucketGetDataFieldByName(materialpoint_db, MPntStd_classname,&PField_std);
+	DataBucketGetSizes(materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+	mp_std  = PField_std->data;
+	
+	
+	ierr = MPntPStokesComputeMemberOffsets(mp_stokes_property_offsets);CHKERRQ(ierr);
+	ierr = QPntVolCoefStokesComputeMemberOffsets(qp_stokes_property_offsets);CHKERRQ(ierr);
+	
+	/* setup */
+	dof = 1;
+	ierr = DMDADuplicateLayout(da,dof,2,DMDA_STENCIL_BOX,&clone);CHKERRQ(ierr);
+	
+	ierr = DMGetGlobalVector(clone,&properties_A);CHKERRQ(ierr);  
+	ierr = DMGetGlobalVector(clone,&properties_B);CHKERRQ(ierr);
+	
+	ierr = VecZeroEntries(properties_A);CHKERRQ(ierr);
+	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
+	
+	
+	switch (field) {
+
+		case MPField_Stokes:
+		{
+			MPntPStokes stokes;
+			MPntPStokesTypeName stokes_member = (MPntPStokesTypeName)member;
+			
+			mp_offset = sizeof(MPntPStokes);
+			qp_offset = sizeof(QPntVolCoefStokes);
+			
+			DataBucketGetDataFieldByName(materialpoint_db, MPntPStokes_classname,&PField_material_point_property);
+			material_point_property = PField_material_point_property->data;
+			
+			switch (stokes_member) {
+				case MPPStk_eta_effective:
+					ierr = PetscObjectSetName( (PetscObject)properties_A, "eta");CHKERRQ(ierr);
+					mp_field_offset = mp_stokes_property_offsets[ MPPStk_eta_effective ];
+					qp_field_offset = qp_stokes_property_offsets[ QPVCStk_eta_effective ];
+				break;
+				/* ----------------------------------- */
+				case MPPStk_density:
+					ierr = PetscObjectSetName( (PetscObject)properties_A, "rho");CHKERRQ(ierr);
+					mp_field_offset = mp_stokes_property_offsets[ MPPStk_density ];
+					qp_field_offset = qp_stokes_property_offsets[ QPVCStk_rho_effective ];
+				break;
+				/* ----------------------------------- */
+				default:
+					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either {MPPStk_eta_effective, MPPStk_density}");
+				break;
+			}
+		}
+		break;
+
+/*
+		case MPField_StokesPl:
+		{
+			MPntPStokesPlTypeName stokespl_member = (MPntPStokesPlTypeName)member;
+
+			DataBucketGetDataFieldByName(materialpoint_db, MPntPStokesPl_classname,&PField_material_point_property);
+			material_point_property = PField_material_point_property->data;
+			
+			switch (stokespl_member) {
+				case MPPStkPl_plastic_strain:
+					ierr = PetscObjectSetName( (PetscObject)properties_A, "plastic_strain");CHKERRQ(ierr);
+					
+				break;
+
+				case MPPStkPl_yield_indicator:
+					ierr = PetscObjectSetName( (PetscObject)properties_A, "yield_indicator");CHKERRQ(ierr);
+
+				break;
+					
+				default:
+					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either {MPPStkPl_plastic_strain, MPPStkPl_yield_indicator}");
+				break;
+			}
+		}
+		break;
+*/			
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either {MPField_Stokes, MPField_StokesPl}");
+		break;
+	}
+	
+	/* compute */
+	//
+	ierr = _MaterialPointProjection_MapOntoQ2Mesh(
+							clone,properties_A,properties_B,
+							//CoefAvgHARMONIC,
+							CoefAvgARITHMETIC,
+							npoints,mp_std,
+							mp_field_offset,mp_offset,material_point_property);CHKERRQ(ierr);
+	//
+	
+	/*
+	ierr = _MaterialPointProjection_MapOntoNestedQ1Mesh(
+																								clone,properties_A,properties_B,
+																								//CoefAvgHARMONIC,
+																								CoefAvgARITHMETIC,
+																								npoints,mp_std,
+																								mp_field_offset,mp_offset,material_point_property);CHKERRQ(ierr);
+	*/
+	
+	/* view */
+	view = PETSC_FALSE;
+	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,PETSC_NULL);
+	if (view) {
+		char filename[256];
+		PetscViewer viewer;
+		
+		sprintf(filename,"MaterialPointProjection_stokes_member_%d.vtk",(int)member );
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = DMView(clone, viewer);CHKERRQ(ierr);
+		ierr = VecView(properties_A, viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
+	
+	/* destroy */
+	ierr = DMRestoreGlobalVector(clone,&properties_B);CHKERRQ(ierr);
+	ierr = DMRestoreGlobalVector(clone,&properties_A);CHKERRQ(ierr);
+	
+	ierr = DMDestroy(&clone);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_MaterialPointProjection_MapOntoQ2Mesh"
+PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
+													 DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
+													 const int npoints,MPntStd mp_std[],
+													 size_t member_offset,size_t point_offset,void *point_data) 
+{
+	PetscScalar NiQ1_p[8];
+	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
+	PetscScalar Ae[Q2_NODES_PER_EL_3D], Be[Q2_NODES_PER_EL_3D];
+	PetscInt el_lidx[U_BASIS_FUNCTIONS];
+	Vec Lproperties_A, Lproperties_B;
+	PetscScalar *LA_properties_A, *LA_properties_B;
+	PetscLogDouble t0,t1;
+	PetscInt p,i;
+	PetscInt nel,nen,e_p;
+	const PetscInt *elnidx;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	
+	ierr = DMGetLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
+	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_B, &LA_properties_B);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	PetscGetTime(&t0);
+	for (p=0; p<npoints; p++) {
+		double *xi_p;
+		void   *point_data_p;
+		double field_p;
+		
+		xi_p = &mp_std[p].xi[0];
+		e_p  = mp_std[p].wil;
+		
+		point_data_p = (void*) ( (char*)point_data + p * point_offset );
+		field_p = *( (double*) ( (char*)point_data_p + member_offset) );
+		
+		if (avg_type == CoefAvgHARMONIC) {
+			field_p = 1.0/field_p;
+		}
+		
+		ierr = PetscMemzero(Ae,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		ierr = PetscMemzero(Be, sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		
+		P3D_ConstructNi_Q1_3D(xi_p,NiQ1_p);
+		
+		Ni_p[0] = NiQ1_p[0];
+		Ni_p[2] = NiQ1_p[1];
+		Ni_p[6] = NiQ1_p[2];
+		Ni_p[8] = NiQ1_p[3];
+		
+		Ni_p[0+18] = NiQ1_p[4];
+		Ni_p[2+18] = NiQ1_p[5];
+		Ni_p[6+18] = NiQ1_p[6];
+		Ni_p[8+18] = NiQ1_p[7];
+		
+		
+		Ni_p[1] = Ni_p[7] = 1.0;
+		Ni_p[3] = Ni_p[4] = Ni_p[5] = 1.0;
+		
+		Ni_p[ 9] = Ni_p[10] = Ni_p[11] = 1.0;
+		Ni_p[12] = Ni_p[13] = Ni_p[14] = 1.0;
+		Ni_p[15] = Ni_p[16] = Ni_p[17] = 1.0;
+		
+		Ni_p[1+18] = Ni_p[7+18] = 1.0;
+		Ni_p[3+18] = Ni_p[4+18] = Ni_p[5+18] = 1.0;
+		
+		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+			Ae[i] = Ni_p[i] * field_p;
+			Be[i] = Ni_p[i];
+		}
+		
+		/* sum into local vectors */
+		ierr = Q2GetElementLocalIndicesDOF(el_lidx,1,(PetscInt*)&elnidx[nen*e_p]);CHKERRQ(ierr);
+		
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A, 1, el_lidx,Ae);CHKERRQ(ierr);
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_B, 1, el_lidx,Be);CHKERRQ(ierr);
+		
+	}
+	PetscGetTime(&t1);
+	//PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
+	
+  ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	
+	
+	/* scatter to quadrature points */
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
+	
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+	
+	/* scale */
+	ierr = VecPointwiseDivide( properties_A, properties_A, properties_B );CHKERRQ(ierr);
+	/* ========================================= */
+	
+	if (avg_type == CoefAvgHARMONIC) {
+		ierr = VecReciprocal(properties_A);CHKERRQ(ierr);
+	}
+	
+	
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+	
+	ierr = DMRestoreLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_MaterialPointProjection_MapOntoNestedQ1Mesh"
+PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
+																											DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
+																											const int npoints,MPntStd mp_std[],
+																											size_t member_offset,size_t point_offset,void *point_data) 
+{
+	PetscScalar NiQ1_p[8];
+	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
+	PetscScalar Ae[Q2_NODES_PER_EL_3D], Be[Q2_NODES_PER_EL_3D];
+	PetscScalar AeQ1[8], BeQ1[8];
+	PetscInt el_lidx[U_BASIS_FUNCTIONS];
+	Vec Lproperties_A, Lproperties_B;
+	PetscScalar *LA_properties_A, *LA_properties_B;
+	PetscLogDouble t0,t1;
+	PetscInt p,i;
+	PetscInt nel,nen,e_p;
+	const PetscInt *elnidx;
+	PetscInt SIDX,I,J,K;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	
+	ierr = DMGetLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
+	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_B, &LA_properties_B);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	PetscGetTime(&t0);
+	for (p=0; p<npoints; p++) {
+		double *xi_p,xi_scaled_p[3];
+		void   *point_data_p;
+		double field_p;
+		
+		xi_p = &mp_std[p].xi[0];
+		e_p  = mp_std[p].wil;
+		
+		if (xi_p[0] < 0.0) {
+			I = 0;
+			xi_scaled_p[0] =  2.0 * xi_p[0] + 1.0;
+		} else {
+			I = 1;
+			xi_scaled_p[0] =  2.0 * xi_p[0] - 1.0;
+		}
+
+		if (xi_p[1] < 0.0) {
+			J = 0;
+			xi_scaled_p[1] =  2.0 * xi_p[1] + 1.0;
+		} else {
+			J = 1;
+			xi_scaled_p[1] =  2.0 * xi_p[1] - 1.0;
+		}
+
+		if (xi_p[2] < 0.0) {
+			K = 0;
+			xi_scaled_p[2] =  2.0 * xi_p[2] + 1.0;
+		} else {
+			K = 1;
+			xi_scaled_p[2] =  2.0 * xi_p[2] - 1.0;
+		}
+		SIDX = I + J * 2 + K * 4;
+		
+		
+		point_data_p = (void*) ( (char*)point_data + p * point_offset );
+		field_p = *( (double*) ( (char*)point_data_p + member_offset) );
+		
+		if (avg_type == CoefAvgHARMONIC) {
+			field_p = 1.0/field_p;
+		}
+		
+		P3D_ConstructNi_Q1_3D(xi_scaled_p,NiQ1_p);
+
+		for (i=0; i<8; i++) {
+			AeQ1[i] = NiQ1_p[i] * field_p;
+			BeQ1[i] = NiQ1_p[i];
+		}
+		
+
+		{
+			PetscInt map[8],ii,jj,kk;
+		
+			for (kk=0; kk<2; kk++) {
+				for (jj=0; jj<2; jj++) {
+					for (ii=0; ii<2; ii++) {
+						PetscInt sidx = (I + ii) + (J + jj)*3 + (K + kk)*9;
+						map[ii+jj*2+kk*4] = sidx;
+						//printf("IJK: %d %d %d : sidx = %d \n", I,J,K,sidx);
+					}
+				}
+			}
+			
+			ierr = PetscMemzero(Ae,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+			ierr = PetscMemzero(Be, sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+			
+			for (i=0; i<8; i++) {
+				PetscInt idx = map[i];
+				
+				Ae[idx] = AeQ1[i];
+				Be[idx] = BeQ1[i];
+			}
+		}
+		
+		/* sum into local vectors */
+		ierr = Q2GetElementLocalIndicesDOF(el_lidx,1,(PetscInt*)&elnidx[nen*e_p]);CHKERRQ(ierr);
+		
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A, 1, el_lidx,Ae);CHKERRQ(ierr);
+		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_B, 1, el_lidx,Be);CHKERRQ(ierr);
+		
+	}
+	PetscGetTime(&t1);
+	//PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
+	
+  ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	
+	
+	/* scatter to quadrature points */
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
+	
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+	
+	/* scale */
+	ierr = VecPointwiseDivide( properties_A, properties_A, properties_B );CHKERRQ(ierr);
+	/* ========================================= */
+	
+	if (avg_type == CoefAvgHARMONIC) {
+		ierr = VecReciprocal(properties_A);CHKERRQ(ierr);
+	}
+	
+	
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+	
+	ierr = DMRestoreLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint"
+PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
+												DM clone,Vec properties_A,
+												size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) 
+{
+	PetscScalar NiQ1_p[8];
+	PetscScalar Ae[Q2_NODES_PER_EL_3D];
+	PetscInt el_lidx[U_BASIS_FUNCTIONS];
+	Vec Lproperties_A;
+	PetscScalar *LA_properties_A;
+	PetscLogDouble t0,t1;
+	PetscInt p,i;
+	PetscInt nel,nen,e;
+	const PetscInt *elnidx;
+	
+	PetscInt ngp;
+	PetscScalar *xi_mp;
+	PetscScalar NIu[MAX_QUAD_PNTS][U_BASIS_FUNCTIONS];
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	
+	ierr = DMGetLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);
+	ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
+	ierr = VecGetArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	/* scatter to quadrature points */
+	ierr = DMLocalToGlobalBegin(clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
+	
+	/* ========================================= */
+	
+	/* scatter result back to local array and do the interpolation onto the quadrature points */
+	ngp       = Q->npoints;
+	xi_mp     = Q->q_xi_coor;
+	for (p=0; p<ngp; p++) {
+		PetscScalar *xip = &xi_mp[3*p];
+		
+		ierr = PetscMemzero(NIu[p], sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+		
+		P3D_ConstructNi_Q1_3D(xip,NiQ1_p);
+		NIu[p][0] = NiQ1_p[0];
+		NIu[p][2] = NiQ1_p[1];
+		NIu[p][6] = NiQ1_p[2];
+		NIu[p][8] = NiQ1_p[3];
+		
+		NIu[p][0+18] = NiQ1_p[4];
+		NIu[p][2+18] = NiQ1_p[5];
+		NIu[p][6+18] = NiQ1_p[6];
+		NIu[p][8+18] = NiQ1_p[7];
+	}
+	
+	PetscGetTime(&t0);
+	ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
+	
+	ierr = DMGlobalToLocalBegin(clone,properties_A,INSERT_VALUES,Lproperties_A);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd(  clone,properties_A,INSERT_VALUES,Lproperties_A);CHKERRQ(ierr);
+	
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (scatter): %1.4lf ]\n",t1-t0);
+	
+	PetscGetTime(&t0);
+	ierr = VecGetArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	
+	/* traverse elements and interpolate */
+	for (e=0;e<nel;e++) {
+		ierr = Q2GetElementLocalIndicesDOF(el_lidx,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+		
+		ierr = DMDAGetScalarElementField(Ae,nen,(PetscInt*)&elnidx[nen*e],LA_properties_A);CHKERRQ(ierr);
+		
+		for (p=0; p<ngp; p++) {
+			PetscScalar value;
+			
+			value = 0.0;
+			for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+				value += NIu[p][i] * Ae[i];
+			}
+			
+			/* map value into qpoint array */
+			*((char*)qpoint_data + ngp*e*qpoint_offset + p*qpoint_offset + member_offset) = value;
+			
+		}
+	}
+	
+  ierr = VecRestoreArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
+	
+	PetscGetTime(&t1);
+	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+	
+	ierr = DMRestoreLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
 
