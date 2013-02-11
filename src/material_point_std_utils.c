@@ -151,8 +151,8 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	DataFieldGetAccess(PField);
 	DataFieldVerifyAccess( PField,sizeof(MPntStd));
 	
-	dxi   = 2.0/(PetscReal)Nxp[0];
-	deta  = 2.0/(PetscReal)Nxp[1];
+	dxi    = 2.0/(PetscReal)Nxp[0];
+	deta   = 2.0/(PetscReal)Nxp[1];
 	dzeta  = 2.0/(PetscReal)Nxp[2];
 	
 	p = 0;
@@ -164,20 +164,20 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 			for (pj=0; pj<Nxp[1]; pj++) {
 				for (pi=0; pi<Nxp[0]; pi++) {
 					MPntStd *marker;
-					double xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+					double xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
 					
-					/* random between -1 <= xi,eta,zeta <= 1 */
-					xip_rand[0] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
-					xip_rand[1] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
-					xip_rand[2] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
+					xip[0] = -1.0 + dxi    * (pi + 0.5);
+					xip[1] = -1.0 + deta   * (pj + 0.5);
+					xip[2] = -1.0 + dzeta  * (pk + 0.5);
 					
-					xip_rand[0] = perturb * dxi    * xip_rand[0];
-					xip_rand[1] = perturb * deta   * xip_rand[1];
-					xip_rand[2] = perturb * dzeta  * xip_rand[2];
+					/* random between -0.5 <= shift <= 0.5 */
+					xip_shift[0] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+					xip_shift[1] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+					xip_shift[2] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
 					
-					xip_rand[0] += -1.0 + dxi    * (pi + 0.5);
-					xip_rand[1] += -1.0 + deta   * (pj + 0.5);
-					xip_rand[2] += -1.0 + dzeta  * (pk + 0.5);
+					xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
+					xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
+					xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
 					
 					if (fabs(xip_rand[0]) > 1.0) {
 						SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
