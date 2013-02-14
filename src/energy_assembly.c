@@ -13,6 +13,41 @@
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
 
+/*
+ 
+ Advection-diffusion implementation for ALE mesh.
+ 
+ We solve
+ 
+ dS/dt + u.grad(S) = div( kappa grad(S) ) + f
+ 
+ A stabilized formulation (SUPG) is used to discretise the above equation.
+ We adopt a backward Euler time discretisation.
+ Backward Euler is adopted as it doesn't oscillate, in contrast with Crank-Nicolson.
+ 
+ (1/dt) ( M(x^k+1) T^k+1 - M(x^k) T^k ) + C(x^k+1) = K(x^k+1) T^k+1 + F(x^k+1)
+ 
+ ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 = dt F(x^k+1) + M(x^k) T^k
+ 
+ We indicate the discrete operators are evaluated using particular coordinates
+ which are time depenedent. 
+ x^k+1 are the updated coords, x^k are the previous coordinates.
+ 
+ In non-linear residual form, we will have
+ 
+ F := ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 - dt F(x^k+1) - M(x^k) T^k
+ 
+ 
+ 
+ LLP on SUPG:
+ "Well it fucked up everythng like love..., always too fast or too slow never on time..., 
+ always trying to make tiny correction to make the result better..., 
+ but the correction are never in the right direction so it creates instabilities."
+ - February 14, 2013 (Valentines day)
+ 
+ */
+
+
 #define SUPG_EPS 1.0e-10
 
 /* SUPG business */
@@ -323,7 +358,8 @@ PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScala
     }
     ConstructNiSUPG_Q1_3D(v_p,kappa_hat,Ni_p,GNx_p,Ni_supg_p);
 		
-    /* R = f - m phi_dot - c phi*/
+		// F := ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 - dt F(x^k+1) - M(x^k) T^k
+		// J = dF/d(T^k+1) = M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) 
 		for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
 			for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
 				Re[j+i*NODES_PER_EL_Q1_3D] += fac * ( 
@@ -544,21 +580,21 @@ void AElement_FormFunctionLocal_SUPG_T(
 			M_dotT_p += Ni_supg_p[j] * el_phi_last[j];
 		}
 		
-    /* R = f - m phi_dot - c phi*/
+		// F := ( M(x^k+1) + dt C(x^k+1) - dt K(x^k+1) ) T^k+1 - dt F(x^k+1) - M(x^k) T^k
     for (i = 0; i < NODES_PER_EL_Q1_3D; i++) {
       Re[ i ] += fac * (
-												// -f - M T^k
+												// -dt.F 
 												- dt * Ni_p[i] * f_p 
-												// (C+L) T^k+1
+												// + dt.(C + L) T^k+1
 												+ dt * kappa_p * ( GNx_p[0][i]*gradphi_p[0] + GNx_p[1][i]*gradphi_p[1] + GNx_p[2][i]*gradphi_p[2] )
 												+ dt * Ni_supg_p[i] * ( v_p[0]*gradphi_p[0] + v_p[1]*gradphi_p[1] + v_p[2]*gradphi_p[2] ) 
-												// M T^k+1
+												// + M T^k+1
                         + Ni_supg_p[i] * phi_p 
-                        //+ Ni_p[i] * phi_p 
-                        //- Ni_p[i] * phi_last_p 
+                        // + Ni_p[i] T^k+1 
 												)
 			             + fac_old * (
-												// M(x^k) T^k
+												// - M(x^k) T^k
+ 											  // - Ni_p[i] T^k 
 												- Ni_supg_p[i] * phi_last_p 
 									      );
     }
@@ -774,6 +810,13 @@ PetscErrorCode FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *
 	
   PetscFunctionReturn(0);
 }
+
+
+
+/* alternative implementation of supg in terms of stabilization parameter */
+
+
+
 
 
 
