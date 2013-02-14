@@ -4,8 +4,6 @@
 
 #include "QPntVolCoefEnergy_def.h"
 
-PetscErrorCode AdvDiff_GetElementLocalIndices_Q1(PetscInt el_localIndices[],PetscInt elnid[]);
-
 double AdvDiffResidualForceTerm_UpwindXiExact(double pecletNumber);
 double AdvDiffResidualForceTerm_UpwindXiDoublyAsymptoticAssumption(double pecletNumber);
 double AdvDiffResidualForceTerm_UpwindXiCriticalAssumption(double pecletNumber);
