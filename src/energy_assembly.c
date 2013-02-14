@@ -812,11 +812,353 @@ PetscErrorCode FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *
 }
 
 
+/*
+	Stabilized adv-diff written in terms of tau
+ 
+ */
 
-/* alternative implementation of supg in terms of stabilization parameter */
+/* compute tau */
+#undef __FUNCT__  
+#define __FUNCT__ "AdvDiffComputeTau_BrooksHughes"
+PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_el,PetscScalar *tau)
+{
+	PetscInt p,k,d;
+	PetscScalar DX[NSD];
+  PetscScalar u_xi[NSD];
+  PetscScalar alpha_xi[NSD],_khat,dxi[NSD],xi[NSD];
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	
+	/* average velocity - cell centre velocity */
+	ierr = DASUPG3dComputeAverageCellSize(el_coords,DX);CHKERRQ(ierr);
+	
+	/* average velocity - cell centre velocity */
+	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
+  for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
+		u_xi[0] += 0.125 *  el_vel[NSD*k + 0];
+		u_xi[1] += 0.125 *  el_vel[NSD*k + 1];
+		u_xi[2] += 0.125 *  el_vel[NSD*k + 2];
+	}
+	
+	/* could replace with / (1.0e-30 + kappa_el) */
+	for (d=0; d<NSD; d++) {
+		dxi[d]      = DX[d];
+		if (kappa_el < SUPG_EPS) {
+			alpha_xi[d] = 1.0/SUPG_EPS;
+		} else {
+			alpha_xi[d] = 0.5 * u_xi[d]  * dxi[d]  / kappa_el;
+		}
+		xi[d] = AdvDiffResidualForceTerm_UpwindXiExact(alpha_xi[d]);
+	}
+	
+	//  khat = 0.5*(xi*u_xi*dxi + eta*v_eta*deta); /* steady state */
+  _khat = 1.0 * 0.258198889747161 * ( xi[0]*u_xi[0]*dxi[0] + xi[1]*u_xi[1]*dxi[1] + xi[2]*u_xi[2]*dxi[2] ); /* transient case, sqrt(1/15) */
+  *tau = _khat;
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AdvDiffComputeTau_TezduyarOsawa"
+PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_cell,PetscScalar theta,PetscScalar dt,PetscScalar *tau)
+{
+	PetscErrorCode ierr;
+	PetscScalar h_cell,v_cell;
+	PetscScalar tau1,tau2,tau3;
+	PetscScalar t,DX[NSD],u_xi[NSD];
+	PetscInt k;
+	const PetscScalar r = 1.0; /* or 0.5 */
+
+	PetscFunctionBegin;
+	
+	ierr = DASUPG3dComputeAverageCellSize(el_coords,DX);CHKERRQ(ierr);
+	h_cell = sqrt( DX[0]*DX[0] + DX[1]*DX[1] + DX[2]*DX[2] );
+
+	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
+  for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
+		u_xi[0] += 0.125 *  el_vel[NSD*k + 0];
+		u_xi[1] += 0.125 *  el_vel[NSD*k + 1];
+		u_xi[2] += 0.125 *  el_vel[NSD*k + 2];
+	}
+	v_cell = sqrt( u_xi[0]*u_xi[0] + u_xi[1]*u_xi[1] + u_xi[2]*u_xi[2] );
+	
+	t = 0.0;
+
+	if (v_cell > SUPG_EPS) {
+		tau1 = 0.5 * h_cell / v_cell;
+		t = t + 1.0/pow(tau1,r);
+	}
+	
+	tau2 = theta * dt;
+	t = t + 1.0/pow(tau2,r);
+
+	if (kappa_cell > SUPG_EPS) {
+		tau3 = (h_cell * h_cell ) / kappa_cell;
+		t = t + 1.0/pow(tau3,r);
+	}
+	
+	t = pow( t, -1.0/r );
+	*tau = t;
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AdvDiffComputeTau_UserDefinedConstant"
+PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscScalar *tau)
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	*tau = const_t;
+  PetscFunctionReturn(0);
+}
 
 
+/*
+ 
+ Alternative implementation of SUPG in terms of stabilization parameter 
+ 
+ R(S) = dS/dt + div[ u , grad(S) ] - div( kappa grad(S) ) - f
+ 
+ \int R(S) ( W + \tau div[ u, grad(S)) ] = 0
+ 
+ M'(S,W) = \int S ( W + \tau div[ u, grad(S) ] )
+ G(S,W)  = \int ( div[u,grad(S)] ) W
+ K'(S,W) = \int grad(S) . ( I + \tau u \cross u ) . grad(W)
+ F(S,W)    = \int ( W + \tau div[ u, grad(S) ] ) f
+ 
+ R(S,W) := M'(S,W) ( dS/dt ) + (G(S,W) + K'(S,W) )S - F(S,W)
 
+ R'(S) := M'(x^k+1) S^k+1 - M'(x^k) S^k + dt.G(x^k+1)S^k+1 + dt.K'(x^k+1)S^k+1 - dt.F(x^k+1)
+        = [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
+
+
+ */
+
+
+/*
+ 
+ R'(S) := [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
+ J := M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) 
+
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "AElement_FormJacobian_T_tau"
+PetscErrorCode AElement_FormJacobian_T_tau( 
+																			 PetscScalar Re[],
+																			 PetscReal dt,
+																			 PetscScalar tau,
+																			 PetscScalar el_coords[],
+																			 PetscScalar gp_kappa[],
+																			 PetscScalar el_V[],
+																			 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
+{
+  PetscInt    p,i,j,di,dj;
+  PetscReal   Ni_p[NODES_PER_EL_Q1_3D];
+  PetscReal   GNi_p[NSD][NODES_PER_EL_Q1_3D];
+	PetscReal   GNx_p[NSD][NODES_PER_EL_Q1_3D];
+	PetscReal   v_dot_gradW_j, S_j;
+  PetscScalar J_p,fac;
+  PetscScalar kappa_p,v_p[NSD];
+  PetscScalar kappa_3[NSD][NSD],u_cross_u[NSD][NSD],d_dx_kappa_d_dx,grad_i[NSD],grad_j[NSD];
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+  /* evaluate integral */
+  for (p = 0; p < ngp; p++) {
+    P3D_ConstructNi_Q1_3D(&gp_xi[NSD*p],Ni_p);
+    P3D_ConstructGNi_Q1_3D(&gp_xi[NSD*p],GNi_p);
+    P3D_evaluate_geometry_elementQ1(1,el_coords,&GNi_p,&J_p,&GNx_p[0],&GNx_p[1],&GNx_p[2]);
+		
+    fac = gp_weight[p] * J_p;
+		
+		kappa_p = gp_kappa[p];
+    v_p[0] = 0.0;
+		v_p[1] = 0.0;
+		v_p[2] = 0.0;
+    for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
+      v_p[0]     += Ni_p[j] * el_V[NSD*j+0];      /* compute vx on the particle */
+      v_p[1]     += Ni_p[j] * el_V[NSD*j+1];      /* compute vy on the particle */
+      v_p[2]     += Ni_p[j] * el_V[NSD*j+2];      /* compute vy on the particle */
+    }
+		
+		for (di=0; di<NSD; di++) {
+			for (dj=0; dj<NSD; dj++) {
+				u_cross_u[di][dj] = v_p[di] * v_p[dj];
+			}
+		}
+		
+		
+		kappa_3[0][0] = kappa_p + tau * u_cross_u[0][0];
+		kappa_3[0][1] =           tau * u_cross_u[0][1];
+		kappa_3[0][2] =           tau * u_cross_u[0][2];
+
+		kappa_3[1][0] =           tau * u_cross_u[1][0];
+		kappa_3[1][1] = kappa_p + tau * u_cross_u[1][1];
+		kappa_3[1][2] =           tau * u_cross_u[1][2];
+
+		kappa_3[2][0] =           tau * u_cross_u[2][0];
+		kappa_3[2][1] =           tau * u_cross_u[2][1];
+		kappa_3[2][2] = kappa_p + tau * u_cross_u[2][2];
+		
+		
+		for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
+			grad_i[0] = GNx_p[0][i];
+			grad_i[1] = GNx_p[1][i];
+			grad_i[2] = GNx_p[2][i];
+
+			for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
+				grad_j[0] = GNx_p[0][j];
+				grad_j[1] = GNx_p[1][j];
+				grad_j[2] = GNx_p[2][j];
+				
+				v_dot_gradW_j = v_p[0]*grad_j[0] + v_p[1]*grad_j[1] + v_p[2]*grad_j[2];
+				S_j = tau * v_dot_gradW_j;
+				
+				d_dx_kappa_d_dx = 0.0;
+				for (di=0; di<NSD; di++) {
+					for (dj=0; dj<NSD; dj++) {
+						d_dx_kappa_d_dx = d_dx_kappa_d_dx + grad_i[di] * kappa_3[di][dj] * grad_j[dj];
+					}
+				}
+				
+				Re[j+i*NODES_PER_EL_Q1_3D] += fac * ( 
+																						 Ni_p[i] * ( Ni_p[j] + S_j )
+																						 + dt * Ni_p[i] * v_dot_gradW_j
+																						 + dt * d_dx_kappa_d_dx
+																						 );
+			}
+		}
+  }
+	
+	/*
+	 printf("e=\n");
+	 for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
+	 for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
+	 printf("%lf ", Re[j+i*NODES_PER_EL_Q1_3D]); 
+	 }printf("\n");
+	 }
+	 */
+	
+	PetscFunctionReturn(0);
+}
+
+
+void AElement_FormFunctionLocal_SUPG_T_tau(
+																			 PetscScalar Re[],
+																			 PetscReal dt,
+																			 PetscReal tau,
+																			 PetscScalar el_coords[],
+																			 PetscScalar el_coords_old[],
+																			 PetscScalar el_V[],
+																			 PetscScalar el_phi[],PetscScalar el_phi_old[],
+																			 PetscScalar gp_kappa[],PetscScalar gp_Q[],
+																			 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
+{
+  PetscInt    p,i,j,di,dj;
+  PetscScalar Ni_p[NODES_PER_EL_Q1_3D],Ni_tau_p[NODES_PER_EL_Q1_3D];
+  PetscScalar GNi_p[NSD][NODES_PER_EL_Q1_3D];
+	PetscScalar GNx_p[NSD][NODES_PER_EL_Q1_3D], GNx_p_old[NSD][NODES_PER_EL_Q1_3D];
+  PetscScalar phi_p,phi_p_old,f_p,v_p[NSD],kappa_p,gradphi_p[NSD],gradphiold_p[NSD],k_gradphi_p[NSD];
+  PetscScalar J_p,J_p_old,fac,fac_old;
+  PetscScalar kappa_3[NSD][NSD],u_cross_u[NSD][NSD],grad_i[NSD],v_dot_gradphi,v_dot_gradphi_old,S_j,S_j_old;
+	
+  /* evaluate integral */
+  for (p = 0; p < ngp; p++) {
+    P3D_ConstructNi_Q1_3D(&gp_xi[NSD*p],Ni_p);
+		P3D_ConstructGNi_Q1_3D(&gp_xi[NSD*p],GNi_p);
+		
+		P3D_evaluate_geometry_elementQ1(1,el_coords,    &GNi_p,&J_p,    &GNx_p[0],    &GNx_p[1],    &GNx_p[2]);
+		P3D_evaluate_geometry_elementQ1(1,el_coords_old,&GNi_p,&J_p_old,&GNx_p_old[0],&GNx_p_old[1],&GNx_p_old[2]);
+		
+    fac     = gp_weight[p] * J_p;
+    fac_old = gp_weight[p] * J_p_old;
+		
+		kappa_p   = gp_kappa[p];
+		f_p       = gp_Q[p];
+    phi_p     = 0.0;
+    phi_p_old = 0.0;
+		for (di=0; di<NSD; di++) {
+			v_p[di] = 0.0;
+			gradphi_p[di] = 0.0;
+			gradphiold_p[di] = 0.0;
+		}
+    for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
+      phi_p       += Ni_p[j] * el_phi[j];      /* compute phi on the particle */
+      phi_p_old   += Ni_p[j] * el_phi_old[j];  /* compute phi_dot on the particle */
+
+      gradphi_p[0] += GNx_p[0][j] * el_phi[j];
+      gradphi_p[1] += GNx_p[1][j] * el_phi[j];
+      gradphi_p[2] += GNx_p[2][j] * el_phi[j];
+
+      gradphiold_p[0] += GNx_p_old[0][j] * el_phi_old[j];
+      gradphiold_p[1] += GNx_p_old[1][j] * el_phi_old[j];
+      gradphiold_p[2] += GNx_p_old[2][j] * el_phi_old[j];
+			
+      v_p[0]     += Ni_p[j] * el_V[NSD*j+0];      /* compute vx on the particle */
+      v_p[1]     += Ni_p[j] * el_V[NSD*j+1];      /* compute vy on the particle */
+      v_p[2]     += Ni_p[j] * el_V[NSD*j+2];      /* compute vz on the particle */
+    }
+
+		for (di=0; di<NSD; di++) {
+			for (dj=0; dj<NSD; dj++) {
+				u_cross_u[di][dj] = v_p[di] * v_p[dj];
+			}
+		}
+		
+		kappa_3[0][0] = kappa_p + tau * u_cross_u[0][0];
+		kappa_3[0][1] =           tau * u_cross_u[0][1];
+		kappa_3[0][2] =           tau * u_cross_u[0][2];
+		
+		kappa_3[1][0] =           tau * u_cross_u[1][0];
+		kappa_3[1][1] = kappa_p + tau * u_cross_u[1][1];
+		kappa_3[1][2] =           tau * u_cross_u[1][2];
+		
+		kappa_3[2][0] =           tau * u_cross_u[2][0];
+		kappa_3[2][1] =           tau * u_cross_u[2][1];
+		kappa_3[2][2] = kappa_p + tau * u_cross_u[2][2];
+		
+    k_gradphi_p[0] = kappa_3[0][0]*gradphi_p[0] + kappa_3[0][1]*gradphi_p[1] + kappa_3[0][2]*gradphi_p[2];
+    k_gradphi_p[1] = kappa_3[1][0]*gradphi_p[0] + kappa_3[1][1]*gradphi_p[1] + kappa_3[1][2]*gradphi_p[2];
+    k_gradphi_p[2] = kappa_3[2][0]*gradphi_p[0] + kappa_3[2][1]*gradphi_p[1] + kappa_3[2][2]*gradphi_p[2];
+		
+		v_dot_gradphi = v_p[0]*gradphi_p[0] + v_p[1]*gradphi_p[1] + v_p[2]*gradphi_p[2];
+		S_j = tau * v_dot_gradphi;
+
+		v_dot_gradphi_old = v_p[0]*gradphiold_p[0] + v_p[1]*gradphiold_p[1] + v_p[2]*gradphiold_p[2];
+		S_j_old = tau * v_dot_gradphi_old;
+		
+    for (i = 0; i < NODES_PER_EL_Q1_3D; i++) {
+			Ni_tau_p[i] = Ni_p[i] + v_p[0]*GNx_p[0][i] + v_p[1]*GNx_p[1][i] + v_p[2]*GNx_p[2][i];
+		}
+		
+		
+		// R'(S) = [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1 - M'(x^k) S^k - dt.F(x^k+1)
+    for (i = 0; i < NODES_PER_EL_Q1_3D; i++) {
+			
+			grad_i[0] = GNx_p[0][i];
+			grad_i[1] = GNx_p[1][i];
+			grad_i[2] = GNx_p[2][i];
+			
+      Re[i] += fac * (
+											// - dt.F(x^k+1) 
+											- dt * Ni_tau_p[i] * f_p
+											// [ M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1) ] S^k+1
+											+ Ni_tau_p[i] * phi_p
+											+ dt * Ni_p[i] * v_dot_gradphi
+											+ dt * ( grad_i[0]*k_gradphi_p[0] + grad_i[1]*k_gradphi_p[1] + grad_i[2]*k_gradphi_p[2] ) 
+											);
+      Re[i] += fac * (
+											//- M'(x^k) S^k
+											- Ni_tau_p[i] * phi_p_old 
+											);
+    }
+  }
+	
+}
 
 
 
