@@ -604,8 +604,9 @@ PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 
+/*
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_rho0",&rho0,0);CHKERRQ(ierr);
-//	
+
 	HPctx.surface_pressure = 0.0;
 	HPctx.ref_height = data->Ly;
 	HPctx.ref_N = c->stokes_ctx->my-1;
@@ -615,7 +616,7 @@ PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-//	
+*/	
 	
 	PetscFunctionReturn(0);
 }
