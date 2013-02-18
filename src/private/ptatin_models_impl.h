@@ -52,6 +52,7 @@ struct _p_pTatinModel {
 	PetscErrorCode (*FP_pTatinModel_UpdateMeshGeometry)(pTatinCtx,Vec,void*);
 	PetscErrorCode (*FP_pTatinModel_Output)(pTatinCtx,Vec,const char*,void*);
 	PetscErrorCode (*FP_pTatinModel_Destroy)(pTatinCtx,void*);
+	PetscBool disable_output;
 };
 
 #endif

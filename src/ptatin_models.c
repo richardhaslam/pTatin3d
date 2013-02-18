@@ -229,6 +229,12 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	registered_model_list[list_length  ] = model;
 	registered_model_list[list_length+1] = PETSC_NULL;
 	
+	model->disable_output = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_output_disable",&model->disable_output,0);CHKERRQ(ierr);
+	if (model->disable_output) {
+		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Output functionality for \"%s\" has been deactivated\n",model->model_name);
+	}
+	
 	PetscFunctionReturn(0);
 }
 
@@ -278,7 +284,9 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 	PetscFunctionBegin;
 	
 	if (model->FP_pTatinModel_Output) {
-		ierr = model->FP_pTatinModel_Output(ctx,X,name,model->model_data);CHKERRQ(ierr);
+		if (!model->disable_output) {
+			ierr = model->FP_pTatinModel_Output(ctx,X,name,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
