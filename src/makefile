@@ -105,7 +105,8 @@ TATIN_DRIVERS		= \
 			ptatin_driver_basic \
 			ptatin_driver_ic_spm \
 			ptatin_write_pvts \
-			ptatin_driver_energy
+			ptatin_driver_energy \
+			ptatin_driver_linear_ts
 
 
 export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
