@@ -4,9 +4,15 @@
 
 /* define user model */
 typedef struct {
-	PetscReal eta1,eta2,eta3;
-	PetscReal rho1,rho2,rho3;
+	PetscInt  max_layers;
+	PetscInt  n_interfaces;
+	PetscReal interface_heights[100];
+	PetscInt  layer_res_j[100];
+	PetscReal eta[100];
+	PetscReal rho[100];
+	PetscInt  bc_type;
 	PetscReal exx;
+	PetscReal vx_commpression;
 } ModelFolding2dCtx;
 
 #endif

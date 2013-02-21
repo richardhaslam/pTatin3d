@@ -15,6 +15,7 @@
 PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 {
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	PetscInt n_int,n;
 	PetscBool flg;
 	PetscErrorCode ierr;
 	
@@ -23,23 +24,64 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	/* assign defaults */
-	data->eta1 = 1.0;
-	data->eta2 = 400.0;
-	data->eta3 = 1.0;
-
-	data->rho1 = data->rho2 = data->rho3 = 1.0;
-	data->exx = 1.0e-3;
+	data->max_layers = 100;
+	
+	data->n_interfaces = 1;
+	PetscOptionsGetInt(PETSC_NULL,"-model_folding2d_n_interfaces",&data->n_interfaces,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces (-model_folding2d_n_interfaces)");
+	}
+	
+	n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_folding2d_interface_heights",data->interface_heights,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model (-model_folding2d_interface_heights)");
+	}
+	if (n_int != data->n_interfaces) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d interface heights relative from the base of the model (-model_folding2d_interface_heights)",data->n_interfaces);
+	}
+	
+	n_int = data->max_layers;
+	PetscOptionsGetIntArray(PETSC_NULL,"-model_folding2d_layer_res_j",data->layer_res_j,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_folding2d_layer_res_j)");
+	}
+	if (n_int != data->n_interfaces+1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_folding2d_layer_res_j)",data->n_interfaces+1);
+	}
+	
+	n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_folding2d_layer_eta",data->eta,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list (-model_folding2d_layer_eta)");
+	}
+	if (n_int != data->n_interfaces+1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity (-model_folding2d_layer_eta)",data->n_interfaces+1);
+	}
+	
+	n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_folding2d_layer_rho",data->rho,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list (-model_folding2d_layer_rho)");
+	}
+	if (n_int != data->n_interfaces+1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_folding2d_layer_rho)",data->n_interfaces+1);
+	}
+	
+	/* define the mesh size the y-direction for the global problem */
+	c->my = 0;
+	for (n=0; n<data->n_interfaces+1; n++) {
+		c->my += data->layer_res_j[n];
+	}
+	
+	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
+	data->exx             = 1.0e-3;
+	data->vx_commpression = 1.0;
 	
 	/* parse from command line or input file */
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_eta1",&data->eta1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_eta2",&data->eta2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_eta3",&data->eta3,&flg);CHKERRQ(ierr);
-
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_rho1",&data->rho1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_rho2",&data->rho2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_rho3",&data->rho3,&flg);CHKERRQ(ierr);
-
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_folding2d_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_exx",&data->exx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
 		
 	PetscFunctionReturn(0);
 }
@@ -354,11 +396,6 @@ PetscErrorCode pTatinModelRegister_Folding2d(void)
 	/* Allocate memory for the data structure for this model */
 	ierr = PetscMalloc(sizeof(ModelFolding2dCtx),&data);CHKERRQ(ierr);
 	ierr = PetscMemzero(data,sizeof(ModelFolding2dCtx));CHKERRQ(ierr);
-	
-	/* set initial values for model parameters */
-	data->eta1 = data->eta2 = data->eta3 = 0.0;
-	data->rho1 = data->rho2 = data->rho3 = 0.0;
-	data->exx = 0.0;
 	
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
