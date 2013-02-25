@@ -399,11 +399,14 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	const PetscScalar *red_vals;
 	PetscMPIInt       _n_new, *_proc_neighbours_new;
 	PetscBool         is_seqaij;
+	PetscLogDouble    t0,t1;
 	PetscErrorCode    ierr;
 
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");
+	PetscGetTime(&t0);
+
 	n_ = n;
 	ierr = PetscMalloc( sizeof(PetscInt) * n_, &proc_neighbours_ );CHKERRQ(ierr);
 	for (i=0; i<n_; i++) {
@@ -478,8 +481,11 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	ierr = MatDestroy(&A);CHKERRQ(ierr);
 	ierr = PetscFree(vals);CHKERRQ(ierr);
 	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
-	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap ************************** \n");
 
+	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap (setup time = %1.4e) ************************** \n",t1-t0);
+	
 	PetscFunctionReturn(0);
 }
 
