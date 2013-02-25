@@ -26,19 +26,34 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	/* assign defaults */
 	data->max_layers = 100;
 	
-	data->n_interfaces = 1;
+	data->n_interfaces = 2;
 	PetscOptionsGetInt(PETSC_NULL,"-model_folding2d_n_interfaces",&data->n_interfaces,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces (-model_folding2d_n_interfaces)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_folding2d_n_interfaces)");
 	}
 	
+	PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_Lx",&data->Lx,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_folding2d_Lx)");
+	}
+	
+	/*PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_Ly",&data->Ly,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the y direction (-model_folding2d_Ly)");
+	}
+	
+	PetscOptionsGetInt(PETSC_NULL,"-model_folding2d_Lz",&data->Lz,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_folding2d_Lz)");
+	}*/
+
 	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_folding2d_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model (-model_folding2d_interface_heights)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries (-model_folding2d_interface_heights)");
 	}
 	if (n_int != data->n_interfaces) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d interface heights relative from the base of the model (-model_folding2d_interface_heights)",data->n_interfaces);
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d interface heights relative from the base of the model including the top and bottom boundaries (-model_folding2d_interface_heights)",data->n_interfaces);
 	}
 	
 	n_int = data->max_layers;
@@ -46,8 +61,8 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_folding2d_layer_res_j)");
 	}
-	if (n_int != data->n_interfaces+1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_folding2d_layer_res_j)",data->n_interfaces+1);
+	if (n_int != data->n_interfaces-1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_folding2d_layer_res_j)",data->n_interfaces-1);
 	}
 	
 	n_int = data->max_layers;
@@ -55,8 +70,8 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list (-model_folding2d_layer_eta)");
 	}
-	if (n_int != data->n_interfaces+1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity (-model_folding2d_layer_eta)",data->n_interfaces+1);
+	if (n_int != data->n_interfaces-1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity (-model_folding2d_layer_eta)",data->n_interfaces-1);
 	}
 	
 	n_int = data->max_layers;
@@ -64,13 +79,13 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list (-model_folding2d_layer_rho)");
 	}
-	if (n_int != data->n_interfaces+1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_folding2d_layer_rho)",data->n_interfaces+1);
+	if (n_int != data->n_interfaces-1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_folding2d_layer_rho)",data->n_interfaces-1);
 	}
 	
 	/* define the mesh size the y-direction for the global problem */
 	c->my = 0;
-	for (n=0; n<data->n_interfaces+1; n++) {
+	for (n=0; n<data->n_interfaces-1; n++) {
 		c->my += data->layer_res_j[n];
 	}
 	
@@ -82,7 +97,9 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_folding2d_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_exx",&data->exx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
-		
+	
+	data->Ly = data->interface_heights[data->n_interfaces-1];
+	
 	PetscFunctionReturn(0);
 }
 
@@ -121,6 +138,10 @@ PetscErrorCode ModelApplyBoundaryCondition_Folding2d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
+
+
+
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryConditionMG_Folding2d"
 PetscErrorCode ModelApplyBoundaryConditionMG_Folding2d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
@@ -153,25 +174,18 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Folding2d(pTatinCtx c,void *c
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Folding2dPerturbInterfaces"
-PetscErrorCode Folding2dPerturbInterfaces(DM dav,PetscReal dy,PetscInt *jb,PetscInt *jt)
+#define __FUNCT__ "Folding2dSetPerturbedInterfaces"
+PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces)
 {
 	PetscErrorCode ierr;
-	PetscReal Ly1,Ly2;
-	PetscInt j_max_layer_top, j_max_layer_bottom;
-	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P;
+	PetscInt i,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
+	PetscScalar *random, amp = 1./4., dy;
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal min_sep_bottom,min_sep_top,sep,amp;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
-	Ly1 = 1.0; /* height of layer (bottom) */
-	Ly2 = 2.0; /* height of layer (top) */
-
 
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -179,124 +193,152 @@ PetscErrorCode Folding2dPerturbInterfaces(DM dav,PetscReal dy,PetscInt *jb,Petsc
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-	j_max_layer_bottom = -1;
-	j_max_layer_top    = -1;
-	min_sep_bottom = 1.0e32;
-	min_sep_top = 1.0e32;
 	
-	ierr = DMDAGetLocalBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);	
-	
-	if ( (Ly1 >= MeshMin[1]) && (Ly1 < MeshMax[1]) ) {
-		k = sk;
-		i = si;
-		for (j=sj; j<sj+ny; j++) {
-			PetscReal x,y,z;
-			
-			x = LA_coord[k][j][i].x;
-			y = LA_coord[k][j][i].y;
-			z = LA_coord[k][j][i].z;
-			
-			sep = sqrt( (Ly1-y) * (Ly1-y) );
-			if (sep < min_sep_bottom) {
-				min_sep_bottom = sep;
-				j_max_layer_bottom = j;
-			}
+	/*Perturbes the interface for cylindrical folding*/
+	ierr = PetscMalloc(M*sizeof(PetscScalar), &random);CHKERRQ(ierr);
+	jinter = sj;
+	for(interf = 1; interf < n_interfaces-1; ++interf){
+		jinter += 2*layer_res_j[interf-1];
+		srand(interf+2);//The seed changes with the interface but we have the same seed for each process.
+		for(i = 0; i<M; ++i){
+			random[i] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
 		}
-	}
-
-	if ( (Ly2 >= MeshMin[1]) && (Ly2 < MeshMax[1]) ) {
-		k = sk;
-		i = si;
-		for (j=sj; j<sj+ny; j++) {
-			PetscReal x,y,z;
-			
-			x = LA_coord[k][j][i].x;
-			y = LA_coord[k][j][i].y;
-			z = LA_coord[k][j][i].z;
-			
-			sep = sqrt( (Ly2-y) * (Ly2-y) );
-			if (sep < min_sep_top) {
-				min_sep_top = sep;
-				j_max_layer_top= j;
+		dy = ((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(2*layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(2*layer_res_j[interf-1]) )/2.0;
+	    for(i = si; i<si+nx; ++i) {
+			LA_coord[sk][jinter][i].y += amp * dy * random[i];
+			for(k = sk+1; k<sk+nz; ++k) {
+				LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
 			}
 		}
 	}
 	
-
-	/* NOTES:
-	 Reset set on each z level.
-	 Use a different seed for upper and lower layers
-	 */
-	amp = 1.0e-1 * 1; /* make this 5 to see the perturb visible for testing */
-	if (j_max_layer_bottom != -1) {
-		j = j_max_layer_bottom;
-		
-		for (k=sk; k<sk+nz; k++) {
-			srand(0);
-			for (i=0; i<M; i++) {	
-				PetscReal y;
-				double random;
-
-				random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-				if ( (i>=si) && (i<si+nx) ) {
-					y = LA_coord[k][j][i].y;
-					y = y + amp * dy * random;
-					LA_coord[k][j][i].y = y;
-				}
-			}
-		}
-	}
-	
-
-	if (j_max_layer_top != -1) {
-		j = j_max_layer_top;
-		
-		for (k=sk; k<sk+nz; k++) {
-			srand(1);
-			for (i=0; i<M; i++) {
-				PetscReal y;
-				double random;
-				
-				random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-				if ( (i>=si) && (i<si+nx) ) {
-					y = LA_coord[k][j][i].y;
-					y = y + amp * dy * random;
-					LA_coord[k][j][i].y = y;
-				}
-			}
-		}
-	}
-	
+	ierr = PetscFree(random);CHKERRQ(ierr);
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
-	
-	*jb = j_max_layer_bottom;
-	*jt = j_max_layer_top;
-
-	printf("Ly1 = %1.4e => j = %d \n", Ly1,*jb);
-	printf("Ly2 = %1.4e => j = %d \n", Ly2,*jt);
-
 	
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MPntGetField_global_element_IJKindex"
+PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K){
+	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localrank;	
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	MPntStdGetField_local_element_index(material_point,&localrank);
+	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+	si = si/2; 
+	sj = sj/2;
+	sk = sk/2;
+	lmx -= si;
+	lmy -= sj;
+	lmz -= sk;
+	//global/localrank = mx*my*k + mx*j + i;
+	lk = (PetscInt)localrank/(lmx*lmy);
+	lj = (PetscInt)(localrank - lk*(lmx*lmy))/lmx;
+	li = localrank - lk*(lmx*lmy) - lj*lmx;
+	
+	*K = lk + sk;
+	*J = lj + sj;
+	*I = li + si;
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Folding2d"
+PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx)
+{
+	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	int                    p,n_mp_points;
+	DataBucket             db;
+	DataField              PField_std,PField_stokes;
+	PetscErrorCode ierr;
+			
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+			
+			
+	/* define properties on material points */
+	db = c->materialpoint_db;
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+			
+	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+	DataFieldGetAccess(PField_stokes);
+	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
+			
+			
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+			
+	for (p=0; p<n_mp_points; p++) {
+		MPntStd     *material_point;
+		MPntPStokes *mpprop_stokes;
+		//double      *position;
+		PetscReal      eta,rho;
+		PetscInt    phase;
+		PetscInt    layer, jmaxlayer, jminlayer;
+		PetscInt    I, J, K;
+		
+		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
+		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
+		/* Access using the getter function provided for you (recommeneded for beginner user) */
+		//MPntStdGetField_global_coord(material_point,&position)
+
+        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+		phase = -1;
+		eta =  0.0;
+		rho = 0.0;
+		jmaxlayer = jminlayer = 0;
+		layer = 0;
+		// gets the global element index (i,j,k)
+		//....
+		
+		//Set the properties
+		while( (phase == -1) && (layer < data->n_interfaces-1) ){
+		    jmaxlayer += data->layer_res_j[layer];
+			if( (J<jmaxlayer) && (J>=jminlayer) ){
+				phase = layer +1;
+				eta = data->eta[layer];
+				rho = data->rho[layer];
+			}
+			jminlayer += data->layer_res_j[layer];
+			++layer;
+		}
+				
+		/* user the setters provided for you */
+		MPntStdSetField_phase_index(material_point,phase);
+		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
+		MPntPStokesSetField_density(mpprop_stokes,rho);
+	}
+			
+	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_stokes);
+			
+	PetscFunctionReturn(0);
+}
+		
+		
+		
+		
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_Folding2d"
 PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 {
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
 	PetscReal Lx,Ly,dx,dy,dz,Lz;
-	PetscInt mx,my,mz;
-	PetscInt j_int1,j_int2;
+	PetscInt mx,my,mz, itf;
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	/* step 1 - create structured grid */
-	Lx = 50.0;
-	Ly = 3.0;
+	Lx = data->Lx;
+	Ly = data->Ly;
 	
 	/*
 	 The length of the model in z-direction is determined by the grid spacing in x and y.
@@ -304,9 +346,17 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	 if we hard coded Lz to a constant number which is independnet of the grid resolution in x and y.
 	 We choose Lz to be mz * min(dx,dy).
 	 */
+	
+	
 	mx = c->mx; 
 	my = c->my; 
 	mz = c->mz; 
+	
+	my=0;
+	for(itf = 0; itf<data->n_interfaces -1; ++itf){
+		my += data->layer_res_j[itf];
+	}
+
 	
 	dx = Lx / ((PetscReal)mx);
 	dy = Ly / ((PetscReal)my);
@@ -320,23 +370,12 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = Folding2dPerturbInterfaces(c->stokes_ctx->dav,dy, &j_int1,&j_int2);CHKERRQ(ierr);
+	ierr = Folding2dSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Folding2d"
-PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx)
-{
-	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Folding2d"
@@ -347,7 +386,51 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Folding2d(pTatinCtx c,Vec X,void *ct
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	/*Remeshing*/
+	/*remeshfunction(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces){
+	jinter = sj;
+	 for(interf = 0; interf < n_interfaces-1; ++interf){
+	 dy = (interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(2*layer_res_j[interf]);
+	 for(i = si; i<si+nx; i++) {
+	 for(k = sk; k<sk+nz; k++) {
+	 for(j = jinter + 2*layer_res_j[interf]-1; j >jinter; --j){
+	 LA_coord[k][j][i].y = LA_coord[k][j+1][i].y - dy;
+	 }	
+	 }
+	 }
+	 jinter += 2*layer_res_j[interf];
+	 }
+	 
+	 }*/	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelInitialCondition_Foldinf2D"
+PetscErrorCode ModelInitialCondition_Foldinf2D(pTatinCtx c,Vec X,void *ctx)
+{
+    /*
+	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	DM stokes_pack,dau,dap;
+	Vec velocity,pressure;
+	PetscReal rho0;
+	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
+	DMDAVecTraverse3d_InterpCtx IntpCtx;*/
+	PetscErrorCode ierr;
 	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	/*
+	
+	stokes_pack = c->stokes_ctx->stokes_pack;
+	
+	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
+	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
+	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    */
 	PetscFunctionReturn(0);
 }
 
