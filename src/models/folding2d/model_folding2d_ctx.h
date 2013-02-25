@@ -13,6 +13,7 @@ typedef struct {
 	PetscInt  bc_type;
 	PetscReal exx;
 	PetscReal vx_commpression;
+	PetscReal Lx, Ly;
 } ModelFolding2dCtx;
 
 #endif
