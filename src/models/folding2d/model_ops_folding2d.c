@@ -196,19 +196,32 @@ PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 	
 	/*Perturbes the interface for cylindrical folding*/
 	ierr = PetscMalloc(M*sizeof(PetscScalar), &random);CHKERRQ(ierr);
-	jinter = sj;
-	for(interf = 1; interf < n_interfaces-1; ++interf){
+	jinter = 0;
+	for(interf = 1; interf < n_interfaces-1; interf++){
 		jinter += 2*layer_res_j[interf-1];
+		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", jinter,N-1 );
+
 		srand(interf+2);//The seed changes with the interface but we have the same seed for each process.
-		for(i = 0; i<M; ++i){
+		for(i = 0; i<M; i++){
 			random[i] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
 		}
-		dy = ((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(2*layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(2*layer_res_j[interf-1]) )/2.0;
-	    for(i = si; i<si+nx; ++i) {
-			LA_coord[sk][jinter][i].y += amp * dy * random[i];
-			for(k = sk+1; k<sk+nz; ++k) {
-				LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
+
+		if ( (jinter>=sj) && (jinter<sj+ny) ) {
+			
+			dy = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_j[interf-1]) );
+			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
+									interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
+									interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
+			//dy = ( (interface_heights[interf] - interface_heights[interf-1]) )/( (PetscScalar)(layer_res_j[interf-1]) );
+			//PetscPrintf(PETSC_COMM_WORLD," interface %d: using dy computed %1.4e->%1.4e and my=%d \n", interf,interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1]);
+			
+			for(i = si; i<si+nx; i++) {
+				LA_coord[sk][jinter][i].y += amp * dy * random[i];
+				for(k = sk; k<sk+nz; k++) {
+					LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
+				}
 			}
+			
 		}
 	}
 	
@@ -221,24 +234,30 @@ PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 
 #undef __FUNCT__
 #define __FUNCT__ "MPntGetField_global_element_IJKindex"
-PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K){
-	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localrank;	
+PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K)
+{
+	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localeid;	
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	MPntStdGetField_local_element_index(material_point,&localrank);
+	MPntStdGetField_local_element_index(material_point,&localeid);
 	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
 	si = si/2; 
 	sj = sj/2;
 	sk = sk/2;
-	lmx -= si;
-	lmy -= sj;
-	lmz -= sk;
+//	lmx -= si;
+//	lmy -= sj;
+//	lmz -= sk;
 	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localrank/(lmx*lmy);
-	lj = (PetscInt)(localrank - lk*(lmx*lmy))/lmx;
-	li = localrank - lk*(lmx*lmy) - lj*lmx;
+	lk = (PetscInt)localeid/(lmx*lmy);
+	lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+	li = localeid - lk*(lmx*lmy) - lj*lmx;
+
+	if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+	if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+	if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+	//printf("li,lj,lk %d %d %d \n", li,lj,lk );
 	
 	*K = lk + sk;
 	*J = lj + sj;
@@ -288,7 +307,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		//MPntStdGetField_global_coord(material_point,&position)
 
-        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
@@ -299,16 +318,28 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx
 		
 		//Set the properties
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-		    jmaxlayer += data->layer_res_j[layer];
+			jmaxlayer += data->layer_res_j[layer];
+			
 			if( (J<jmaxlayer) && (J>=jminlayer) ){
-				phase = layer +1;
+				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 			}
 			jminlayer += data->layer_res_j[layer];
-			++layer;
+			layer++;
 		}
-				
+
+/*		
+		start_j = 0;
+		for ( l=0; l<data->n_interfaces-2; l++) {
+			if ( (J >=start_j) && (J<start_j+data->layer_res_j[]) ) {
+				break;
+			}
+			start_j = start_j + data->layer_res_j[l];
+		}
+*/		
+		
+		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
@@ -366,7 +397,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	}
 	Lz = mz * dz;
 	
-	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, 0.0,Lz);CHKERRQ(ierr);
+	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
 
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
