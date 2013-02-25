@@ -391,8 +391,9 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	Mat               A,redA;
 	PetscInt          offset,index,i,j,nc;
 	PetscInt          n_, *proc_neighbours_;
-        PetscInt          size_, rank_i_,_rank_j_;
+  PetscInt          size_, rank_i_,_rank_j_;
 	PetscMPIInt       size,  rank_i,  rank_j;
+	PetscInt          max_nnz;
 	PetscScalar       *vals, inserter;
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
@@ -402,7 +403,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 
 	
 	PetscFunctionBegin;
-
+	PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");
 	n_ = n;
 	ierr = PetscMalloc( sizeof(PetscInt) * n_, &proc_neighbours_ );CHKERRQ(ierr);
 	for (i=0; i<n_; i++) {
@@ -418,6 +419,9 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	ierr = MatSetSizes( A, PETSC_DECIDE,PETSC_DECIDE, size,size );CHKERRQ(ierr);
 	ierr = MatSetType( A, MATAIJ );CHKERRQ(ierr);
 	
+	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
+	ierr = MatSeqAIJSetPreallocation(A,max_nnz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatMPIAIJSetPreallocation(A,max_nnz,PETSC_NULL,max_nnz,PETSC_NULL);CHKERRQ(ierr);
 	
 	/* Build original map */
 	ierr = PetscMalloc( sizeof(PetscScalar)*n_, &vals );CHKERRQ(ierr);
@@ -474,6 +478,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	ierr = MatDestroy(&A);CHKERRQ(ierr);
 	ierr = PetscFree(vals);CHKERRQ(ierr);
 	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
+	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap ************************** \n");
 
 	PetscFunctionReturn(0);
 }
