@@ -9,6 +9,7 @@
 
 #include "model_folding2d_ctx.h"
 
+const double gravity = 9.8;
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Folding2d"
@@ -90,7 +91,7 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	}
 	
 	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
-	data->exx             = 1.0e-3;
+	data->exx             = -1.0e-3;
 	data->vx_commpression = 1.0;
 	
 	/* parse from command line or input file */
@@ -102,6 +103,48 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	
 	PetscFunctionReturn(0);
 }
+
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "BoundaryCondition_Folding2d"
+PetscErrorCode BoundaryCondition_Folding2d(DM dav,BCList bclist,pTatinCtx c,ModelFolding2dCtx *data)
+{
+	PetscReal         exx;
+	PetscErrorCode    ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	exx = data->exx;
+	
+	if (data->bc_type == 0) {
+		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
+		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_commpression);CHKERRQ(ierr);
+		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_commpression);CHKERRQ(ierr);
+	} else if (data->bc_type == 1) {
+		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
+		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
+	} else {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type");
+	}
+	
+	/* free slip south (base) */
+	ierr = DirichletBC_FreeSlip(bclist,dav,SOUTH_FACE);CHKERRQ(ierr);
+	
+	/* free surface north */
+	/* do nothing! */
+	
+	/* free slip front/back to mimic 2d behaviour */
+	ierr = DirichletBC_FreeSlip(bclist,dav,FRONT_FACE);CHKERRQ(ierr);
+	ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_Folding2d"
@@ -121,31 +164,16 @@ PetscErrorCode ModelApplyBoundaryCondition_Folding2d(pTatinCtx c,void *ctx)
 
 	bclist = c->stokes_ctx->u_bclist;
 	dav    = c->stokes_ctx->dav;
-	
-	/* extension/compression east/west in the x-direction (0) */
-	ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
-	
-	/* free slip south */
-	ierr = DirichletBC_FreeSlip(bclist,dav,SOUTH_FACE);CHKERRQ(ierr);
-	
-	/* free surface north */
-	/* do nothing! */
-	
-	/* free slip front/back to mimic 2d behaviour */
-	ierr = DirichletBC_FreeSlip(bclist,dav,FRONT_FACE);CHKERRQ(ierr);
-	ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
+	ierr = BoundaryCondition_Folding2d(dav,bclist,c,data);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
-
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryConditionMG_Folding2d"
 PetscErrorCode ModelApplyBoundaryConditionMG_Folding2d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
+	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
 	PetscInt n;
 	PetscErrorCode ierr;
 	
@@ -154,7 +182,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Folding2d(PetscInt nl,BCList bclist
 	
 	for (n=0; n<nl; n++) {
 		/* Define boundary conditions for each level in the MG hierarchy */
-		
+		ierr = BoundaryCondition_Folding2d(dav[n],bclist[n],user,data);CHKERRQ(ierr);
 	}	
 	
 	PetscFunctionReturn(0);
@@ -216,9 +244,10 @@ PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 			//PetscPrintf(PETSC_COMM_WORLD," interface %d: using dy computed %1.4e->%1.4e and my=%d \n", interf,interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1]);
 			
 			for(i = si; i<si+nx; i++) {
-				LA_coord[sk][jinter][i].y += amp * dy * random[i];
+				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
 				for(k = sk; k<sk+nz; k++) {
-					LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
+					//LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
+					LA_coord[k][jinter][i].y += amp * dy * random[i];;
 				}
 			}
 			
@@ -267,8 +296,8 @@ PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_poi
 
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Folding2d"
-PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx)
+#define __FUNCT__ "InitialMaterialGeometryMaterialPoints_Folding2d"
+PetscErrorCode InitialMaterialGeometryMaterialPoints_Folding2d(pTatinCtx c,void *ctx)
 {
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
 	int                    p,n_mp_points;
@@ -324,22 +353,13 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
+
+				rho = - rho * gravity;
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
 		}
 
-/*		
-		start_j = 0;
-		for ( l=0; l<data->n_interfaces-2; l++) {
-			if ( (J >=start_j) && (J<start_j+data->layer_res_j[]) ) {
-				break;
-			}
-			start_j = start_j + data->layer_res_j[l];
-		}
-*/		
-		
-		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
@@ -351,7 +371,118 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx
 			
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "InitialMaterialGeometryQuadraturePoints_Folding2d"
+PetscErrorCode InitialMaterialGeometryQuadraturePoints_Folding2d(pTatinCtx c,void *ctx)
+{
+	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	int                    p,n_mp_points;
+	DataBucket             db;
+	DataField              PField_std,PField_stokes;
+	PhysCompStokes         user;
+	QPntVolCoefStokes      *all_gausspoints,*cell_gausspoints;
+	PetscInt               nqp,qp;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	/* define properties on material points */
+	db = c->materialpoint_db;
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+	
+	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+	DataFieldGetAccess(PField_stokes);
+	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
+	
+	
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+	
+
+	/* get the quadrature points */
+	user = c->stokes_ctx;
+	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
+	nqp = user->volQ->npoints;
+	
+	for (p=0; p<n_mp_points; p++) {
+		MPntStd     *material_point;
+		MPntPStokes *mpprop_stokes;
+		//double      *position;
+		PetscReal      eta,rho;
+		PetscInt    phase;
+		PetscInt    layer, jmaxlayer, jminlayer, localeid_p;
+		PetscInt    I, J, K;
 		
+		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
+		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
+		
+    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+
+		//Set the properties
+		phase = -1;
+		eta =  0.0;
+		rho = 0.0;
+		jmaxlayer = jminlayer = 0;
+		layer = 0;
+		while( (phase == -1) && (layer < data->n_interfaces-1) ){
+			jmaxlayer += data->layer_res_j[layer];
+			
+			if( (J<jmaxlayer) && (J>=jminlayer) ){
+				phase = layer + 1;
+				eta = data->eta[layer];
+				rho = data->rho[layer];
+			}
+			jminlayer += data->layer_res_j[layer];
+			layer++;
+		}
+
+		
+		MPntStdGetField_local_element_index(material_point,&localeid_p);
+		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,localeid_p,&cell_gausspoints);CHKERRQ(ierr);
+		
+		for (qp=0; qp<nqp; qp++) {
+			cell_gausspoints[qp].eta  = eta;
+			cell_gausspoints[qp].rho  = rho;
+
+			cell_gausspoints[qp].Fu[0] = 0.0;
+			cell_gausspoints[qp].Fu[1] = -rho * gravity;
+			cell_gausspoints[qp].Fu[2] = 0.0;
+
+			cell_gausspoints[qp].Fp = 0.0;
+		}		
+		
+	}
+	
+	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_stokes);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Folding2d"
+PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx)
+{
+	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	int                    p,n_mp_points;
+	DataBucket             db;
+	DataField              PField_std,PField_stokes;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	ierr = InitialMaterialGeometryMaterialPoints_Folding2d(c,ctx);CHKERRQ(ierr);
+	ierr = InitialMaterialGeometryQuadraturePoints_Folding2d(c,ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 		
 		
 		
