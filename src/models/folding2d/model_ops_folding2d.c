@@ -247,7 +247,7 @@ PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
 				for(k = sk; k<sk+nz; k++) {
 					//LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
-					LA_coord[k][jinter][i].y += amp * dy * random[i];;
+					LA_coord[k][jinter][i].y += amp * dy * random[i];
 				}
 			}
 			
