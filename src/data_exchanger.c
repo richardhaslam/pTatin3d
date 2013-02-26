@@ -423,9 +423,14 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	ierr = MatSetType( A, MATAIJ );CHKERRQ(ierr);
 	
 	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
-	ierr = MatSeqAIJSetPreallocation(A,max_nnz,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatMPIAIJSetPreallocation(A,max_nnz,PETSC_NULL,max_nnz,PETSC_NULL);CHKERRQ(ierr);
-	
+	ierr = MatSeqAIJSetPreallocation(A,n_,PETSC_NULL);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %d \n", max_nnz );
+	printf("[%d]: nnz = %d \n", rank_i,n_ );
+	{
+		ierr = MatMPIAIJSetPreallocation(A,1,PETSC_NULL,n_,PETSC_NULL);CHKERRQ(ierr);
+	}
+		
+		
 	/* Build original map */
 	ierr = PetscMalloc( sizeof(PetscScalar)*n_, &vals );CHKERRQ(ierr);
 	for( i=0; i<n_; i++ ) {
@@ -445,6 +450,9 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+	ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+	ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	/* Duplicate the entire matrix on ALL cpu's */
 	/* 
