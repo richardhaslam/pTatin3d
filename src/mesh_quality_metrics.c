@@ -91,7 +91,7 @@ double compute_seperation(double posA[],double posB[])
  
  area( trianlge [0,1,2] ) + area( triangle[0,2,3] )
  */
-void compute_quadralaterial_area_approximate(double quad_coords[],double *area)
+void compute_quadrilateral_area_approximate(double quad_coords[],double *area)
 {
 	double triangle_012[3][3];
 	double triangle_023[3][3];
