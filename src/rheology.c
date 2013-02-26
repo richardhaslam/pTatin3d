@@ -80,7 +80,7 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
     R->eta_upper_cutoff_global       = vis;
   }
   
-  PetscPrintf(PETSC_COMM_WORLD," global viscosity cut-off, min= %1.6e, max = %1.6e  \n", R->eta_lower_cutoff_global, R->eta_upper_cutoff_global );
+  PetscPrintf(PETSC_COMM_WORLD,"RheologyConstantsInitialise: global viscosity cut-off, min= %1.6e, max = %1.6e  \n", R->eta_lower_cutoff_global, R->eta_upper_cutoff_global );
   
   
   /* phase cutoff is equal to global cutoff and for the moment there is no options to enforce it 
