@@ -102,7 +102,48 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	data->rho0 = 3300.0;
 	/* Material constant */
 	MaterialConstantsSetDefaults(materialconstants);
+
+    /*
+    MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,0,1.0e28,2000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
 	
+	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);    
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,1,1.0e28,2000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,1,2700);
+	
+	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);    
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,2,1.0e26,12000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
+	
+    MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_Z,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,3,1.0e26,12000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,3,3280);
+    */
+    
+    
+	
+    MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_Z,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,0,1.0e28,2000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,0,1.e8,1.e8);
+	
+	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_Z,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);    
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,1,1.0e28,2000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,1,2700);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
+	
+	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_Z,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);    
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,2,1.0e26,12000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
+    MaterialConstantsSetValues_PlasticMises(materialconstants,2,1.e8,1.e8);
+	
+    MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_Z,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_ViscosityZ(materialconstants,3,1.0e26,12000.,10000.);
+	MaterialConstantsSetValues_DensityConst(materialconstants,3,3280);
+    MaterialConstantsSetValues_PlasticMises(materialconstants,3,1.e8,1.e8);
+    
+     /*
 	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_Z,PLASTIC_DP,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityZ(materialconstants,0,1.0e28,2000.,10000.);
 	MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
@@ -122,7 +163,8 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_ViscosityZ(materialconstants,3,1.0e26,12000.,10000.);
 	MaterialConstantsSetValues_DensityConst(materialconstants,3,3280);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.6,0.6,2.e7,2.e7,1e6,3e8);
-	/* 
+	*/
+     /* 
 	 MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	 MaterialConstantsSetValues_ViscosityConst(materialconstants,0,2.0*1.0e23);
 	 MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
@@ -368,6 +410,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	MaterialConst_DensityConst *DensConst_data;
 	MaterialConst_ViscosityZ *ViscZ_data;
 	
+		
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -461,7 +504,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
 	DataFieldRestoreAccess(PField_pls);
+
 	
+	
+    
+    
 	PetscFunctionReturn(0);
 }
 
@@ -637,11 +684,45 @@ PetscErrorCode ModelDestroy_Rift3D(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Rift3D"
+PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D(pTatinCtx user,Vec X,void *ctx)
+{
+
+    DM                stokes_pack,dau,dap;
+	PhysCompStokes    stokes;
+    Vec               Uloc,Ploc;
+    PetscScalar       *LA_Uloc,*LA_Ploc;
+	PetscErrorCode    ierr;
+	
+    PetscFunctionBegin;
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+    ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+
+    ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+    ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+    
+    
+    	
+	PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelInitialCondition_Rift3D"
-PetscErrorCode ModelInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
+#define __FUNCT__ "ModelApplyInitialCondition_Rift3D"
+PetscErrorCode ModelApplyInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
 	DM stokes_pack,dau,dap;
@@ -659,8 +740,9 @@ PetscErrorCode ModelInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	vxl = -data->vx;
+    ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
+    vxl = -data->vx;
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
@@ -679,7 +761,7 @@ PetscErrorCode ModelInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	
 	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
-	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
 	
 	ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
 	domain_height = MeshMax[1] - MeshMin[1];
@@ -690,7 +772,7 @@ PetscErrorCode ModelInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	HPctx.grav       = 10.0;
 	HPctx.rho        = data->rho0;
 	
-	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
 	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,(void*)&HPctx);
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
@@ -725,7 +807,8 @@ PetscErrorCode pTatinModelRegister_Rift3D(void)
 	
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Rift3D);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelInitialCondition_Rift3D);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialCondition_Rift3D);CHKERRQ(ierr);
+    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_Rift3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D);CHKERRQ(ierr);

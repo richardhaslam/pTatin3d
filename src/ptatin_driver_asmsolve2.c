@@ -95,8 +95,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
   DM                stokes_pack,dau,dap;
 	IS                *is;
 	PhysCompStokes    stokes;
-  Vec               Uloc,Ploc;
-  PetscScalar       *LA_Uloc,*LA_Ploc;
+    Vec               Uloc,Ploc;
+    PetscScalar       *LA_Uloc,*LA_Ploc;
 	PetscBool         is_mffd = PETSC_FALSE;
 	PetscBool         is_nest = PETSC_FALSE;
 	PetscBool         is_shell = PETSC_FALSE;
@@ -422,8 +422,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 	
-	/* material geometry */
-	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
@@ -731,10 +730,15 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* work vector for solution and residual */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-
+    /* material geometry */
+	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+    
 	/* initial condition */
 	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
-		
+    
+    /* initial viscosity  */
+	ierr = pTatinModel_ApplyInitialStokesVariableMarkers(user->model,user,X);CHKERRQ(ierr);
+    
 	/* boundary condition */
 	{
 		Vec velocity,pressure;
@@ -846,7 +850,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscInt snes_its;
 
 	SNESGetTolerances(snes,0,0,0,&snes_its,0);
-
+    
 	/* switch to linear rheology */
 
 	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;

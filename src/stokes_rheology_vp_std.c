@@ -371,7 +371,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				break;
                 
 			case VISCOUS_FRANKK: {
-                
+              
 			}
 				break;
 				
@@ -391,7 +391,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				double tau_yield_mp;
 				//MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
 				tau_yield_mp = PlasticMises_data[ region_idx ].tau_yield;
-                				
+              
 				/* strain rate */
 				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
 				/* stress */
@@ -403,6 +403,9 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 					ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
                     
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+                    if 	(eta_mp < 1.e-10) {
+                        PetscPrintf(PETSC_COMM_WORLD," inv2_D_mp = %e ux = %e,uy = %e,uz = %e \n",inv2_D_mp,ux,uy,uz);
+                    }
 					npoints_yielded++;
                   //  MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
 				}
@@ -414,7 +417,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
                 double tau_yield_mp;
 				char    yield_type;
                 MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
-				tau_yield_mp = sin(PlasticDP_data[ region_idx ].phi)*pressure_mp+cos(PlasticDP_data[ region_idx ].Co);
+				tau_yield_mp = sin(PlasticDP_data[ region_idx ].phi)*pressure_mp+PlasticDP_data[ region_idx ].Co*cos(PlasticDP_data[ region_idx ].phi);
                     yield_type = 1;
                 if ( tau_yield_mp < PlasticDP_data[region_idx].tens_cutoff){
                     /* failure in tension cutoff */

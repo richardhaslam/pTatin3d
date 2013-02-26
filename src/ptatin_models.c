@@ -142,6 +142,9 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 		case PTATIN_MODEL_APPLY_INIT_SOLUTION:
 			model->FP_pTatinModel_ApplyInitialSolution = ( PetscErrorCode(*)(pTatinCtx,Vec,void*) )func;
 			break;
+        case PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS:
+			model->FP_pTatinModel_ApplyInitialStokesVariableMarkers = ( PetscErrorCode(*)(pTatinCtx,Vec,void*) )func;
+			break;
 		case PTATIN_MODEL_APPLY_INIT_MESH_GEOM:
 			model->FP_pTatinModel_ApplyInitialMeshGeometry = ( PetscErrorCode(*)(pTatinCtx,void*) )func;
 			break;
@@ -305,6 +308,22 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModel_ApplyInitialStokesVariableMarkers"
+PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,pTatinCtx ctx,Vec X)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	if (model->FP_pTatinModel_ApplyInitialStokesVariableMarkers) {
+		ierr = model->FP_pTatinModel_ApplyInitialStokesVariableMarkers(ctx,X,model->model_data);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModel_UpdateMeshGeometry"
