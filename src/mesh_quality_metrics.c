@@ -66,7 +66,6 @@
 #define Q2_VERTEX_6   24
 #define Q2_VERTEX_7   26
 
-
 void get_node_coordinate(double el_coords[],int index,double pos[])
 {
 	pos[0] = el_coords[3*index+0];
@@ -80,6 +79,47 @@ double compute_seperation(double posA[],double posB[])
 	val = sqrt(  (posA[0]-posB[0])*(posA[0]-posB[0])  +  (posA[1]-posB[1])*(posA[1]-posB[1])  +  (posA[2]-posB[2])*(posA[2]-posB[2])  );
 	return val;
 }
+
+/*
+ Compute area of quadrilateral defined in 3 space. 
+ 
+ 3------ 2
+ |       | 
+ |       |
+ |       |
+ 0 ----- 1
+ 
+ area( trianlge [0,1,2] ) + area( triangle[0,2,3] )
+ */
+void compute_quadralaterial_area_approximate(double quad_coords[],double *area)
+{
+	double triangle_012[3][3];
+	double triangle_023[3][3];
+	double b,l,h,a_012,a_023,theta;
+	
+	get_node_coordinate( quad_coords, 0, triangle_012[0] );
+	get_node_coordinate( quad_coords, 1, triangle_012[1] );
+	get_node_coordinate( quad_coords, 2, triangle_012[2] );
+	
+	b = compute_seperation( triangle_012[1], triangle_012[0] ); /* length(01) */
+	l = compute_seperation( triangle_012[2], triangle_012[0] ); /* length(02) */
+	theta = acos(b/l);
+	h = b * tan(theta);
+	a_012 = 0.5 * b * h;
+	
+	get_node_coordinate( quad_coords, 0, triangle_023[0] );
+	get_node_coordinate( quad_coords, 2, triangle_023[1] );
+	get_node_coordinate( quad_coords, 3, triangle_023[2] );
+	
+	b = compute_seperation( triangle_023[1], triangle_023[0] ); /* length(02) */
+	l = compute_seperation( triangle_023[2], triangle_023[0] ); /* length(03) */
+	theta = acos(b/l);
+	h = b * tan(theta);
+	a_023 = 0.5 * b * h;
+	
+	*area = a_012 + a_023;
+}
+
 
 /*
   max_(over all elements) [  max_face_length_e / min_face_length_e ]
