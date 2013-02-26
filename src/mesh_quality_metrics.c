@@ -57,6 +57,16 @@
 #define Q2_FACE_NODE_BACK   4
 #define Q2_FACE_NODE_FRONT  22
 
+#define Q2_VERTEX_0   0
+#define Q2_VERTEX_1   2
+#define Q2_VERTEX_2   6
+#define Q2_VERTEX_3   8
+#define Q2_VERTEX_4   18
+#define Q2_VERTEX_5   20
+#define Q2_VERTEX_6   24
+#define Q2_VERTEX_7   26
+
+
 void get_node_coordinate(double el_coords[],int index,double pos[])
 {
 	pos[0] = el_coords[3*index+0];
