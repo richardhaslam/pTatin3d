@@ -98,8 +98,8 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	/* velocity cm/y */
 	vx = 0.5*cm_per_yer2m_per_sec;
 	vz = 0.1*cm_per_yer2m_per_sec;
-    /* rho0 for initial pressure*/ 
-    data->rho0 = 3300.0;
+	/* rho0 for initial pressure*/ 
+	data->rho0 = 3300.0;
 	/* Material constant */
 	MaterialConstantsSetDefaults(materialconstants);
 	
@@ -165,8 +165,8 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	/* velocity cm/y */    
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vx",&vx,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vz",&vz,PETSC_NULL);CHKERRQ(ierr); 
-    
-    /* rho0 for initial pressure */
+	
+	/* rho0 for initial pressure */
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho0",&data->rho0,PETSC_NULL);CHKERRQ(ierr); 
 	
 	/* Material constant */
@@ -186,7 +186,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Oy %+1.4e [SI] -model_rift3D_Ly : %+1.4e [SI]\n", data->Oy ,data->Ly );
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_Oz %+1.4e [SI] -model_rift3D_Lz : %+1.4e [SI]\n", data->Oz ,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD,"  -model_rift3D_vx [m/s]:  %+1.4e  -model_rift3D_vz [m/s]:  %+1.4e : computed vy [m/s]:  %+1.4e \n", vx,vz,vy);
-    PetscPrintf(PETSC_COMM_WORLD,"-model_rift3D_rho0 [kg/m^3] :%+1.4e \n", data->rho0 );
+	PetscPrintf(PETSC_COMM_WORLD,"-model_rift3D_rho0 [kg/m^3] :%+1.4e \n", data->rho0 );
 	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) { 
 		MaterialConstantsPrintAll(materialconstants,regionidx);
 	} 
@@ -235,7 +235,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Oz   :  %+1.4e    -model_rift3D_Lz   :  %+1.4e\n", data->Oz , data->Lz );
 		
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Vx:%+1.4e    -model_rift3D_vy:%+1.4e    -model_rift3D_vz:  %+1.4e \n", data->vx ,data->vy, data->vz);
-        PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_rho0:%+1.4e \n", data->rho0 );
+		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_rho0:%+1.4e \n", data->rho0 );
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value for material parameters\n");
 		for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) { 
 			MaterialConstantsPrintAll(materialconstants,regionidx);
@@ -649,6 +649,7 @@ PetscErrorCode ModelInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	PetscReal vxl,vxr,vzb,vzf,vy;
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
 	DMDAVecTraverse3d_InterpCtx IntpCtx;
+	PetscReal MeshMin[3],MeshMax[3],domain_height;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -659,40 +660,42 @@ PetscErrorCode ModelInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    vxl = -data->vx;
+	vxl = -data->vx;
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
 	vzb =  data->vz;
-    
+	
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	/* apply -5 < vx 5 across the domain x \in [0,1] */
-    
+	
 	ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(data->Lx-data->Ox),vxl,0.0);CHKERRQ(ierr);
 	ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-    ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
+	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
 	ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-    
-    ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
+	
+	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
 	ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-    
+	
 	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    
-     
-     HPctx.surface_pressure = 0.0;
-     HPctx.ref_height = data->Ly;
-     HPctx.ref_N      = c->stokes_ctx->my-1;
-     HPctx.grav       = 10.0;
-     HPctx.rho        = data->rho0;
-     
-     ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-     ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v1,(void*)&HPctx);
-     ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-     
-     ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-     
+	
+	ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
+	domain_height = MeshMax[1] - MeshMin[1];
+	
+	HPctx.surface_pressure = 0.0;
+	HPctx.ref_height = domain_height;
+	HPctx.ref_N      = c->stokes_ctx->my-1;
+	HPctx.grav       = 10.0;
+	HPctx.rho        = data->rho0;
+	
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,(void*)&HPctx);
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
+	
 	
 	PetscFunctionReturn(0);
 }
@@ -722,7 +725,7 @@ PetscErrorCode pTatinModelRegister_Rift3D(void)
 	
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Rift3D);CHKERRQ(ierr);
-    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelInitialCondition_Rift3D);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelInitialCondition_Rift3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D);CHKERRQ(ierr);
