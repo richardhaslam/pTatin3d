@@ -263,8 +263,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetrics"
-PetscErrorCode DMDAComputeMeshQualityMetrics(DM dm,MeshQualityMeasure measure,PetscReal *value)
+#define __FUNCT__ "DMDAComputeMeshQualityMetric"
+PetscErrorCode DMDAComputeMeshQualityMetric(DM dm,MeshQualityMeasure measure,PetscReal *value)
 {
 	PetscErrorCode ierr;
 	
@@ -288,4 +288,21 @@ PetscErrorCode DMDAComputeMeshQualityMetrics(DM dm,MeshQualityMeasure measure,Pe
 		
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeMeshQualityMetricList"
+PetscErrorCode DMDAComputeMeshQualityMetricList(DM dm,const PetscInt nmeasures,MeshQualityMeasure measure[],PetscReal value[])
+{
+	PetscInt       i;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	for (i=0; i<nmeasures; i++) {
+		ierr = DMDAComputeMeshQualityMetric(dm,measure[i],&value[i]);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
 
