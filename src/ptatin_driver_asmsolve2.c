@@ -774,7 +774,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	//ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
 	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
 //	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
@@ -848,6 +848,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	SNESGetTolerances(snes,0,0,0,&snes_its,0);
 
 	/* switch to linear rheology */
+
 	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
 
 	/* do a linear solve */
