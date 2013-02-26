@@ -101,12 +101,16 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
+	/* initial condition */
+	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
 	{
 		Vec Xu,Xp;
 		ierr = DMCompositeGetAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 		ierr = BCListInsert(user->stokes_ctx->u_bclist,Xu);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	}
+	
+	
 	
 	/* test form function */
 	{
