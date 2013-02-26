@@ -424,8 +424,8 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	
 	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
 	ierr = MatSeqAIJSetPreallocation(A,n_,PETSC_NULL);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %d \n", max_nnz );
-	printf("[%d]: nnz = %d \n", rank_i,n_ );
+	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %D \n", max_nnz );
+	//printf("[%d]: nnz = %d \n", rank_i,n_ );
 	{
 		ierr = MatMPIAIJSetPreallocation(A,1,PETSC_NULL,n_,PETSC_NULL);CHKERRQ(ierr);
 	}
@@ -453,7 +453,13 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 
 	ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
 	ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-	
+
+	/* 
+	What the fuck is this? Is this necessary at all?
+	Why cannot I just use MatGetRow on the single row living on the current rank??
+	Seems like a fine thing to do provided the operation MatGetRow() is supported for MATMPIAIJ
+	~ DAM, Feb 26, 2013 (using petsc 3.2)		
+	*/
 	/* Duplicate the entire matrix on ALL cpu's */
 	/* 
 	 MatGetRedundantMatrix is not supported for SEQAIJ, thus we
@@ -462,12 +468,12 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 	 */
 	is_seqaij = PETSC_FALSE;
 	ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
-	if (is_seqaij==PETSC_FALSE) {
-		ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
-	} else {
+//	if (is_seqaij==PETSC_FALSE) {
+//		ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
+//	} else {
 		redA = A;
 		ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-	}
+//	}
 	
 	if( (n_new != NULL) && (proc_neighbours_new != NULL) ) {
 	
@@ -492,7 +498,7 @@ PetscErrorCode _DataExCompleteCommunicationMap( MPI_Comm comm, PetscMPIInt n, Pe
 
 	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap (setup time = %1.4e) ************************** \n",t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] ************************** \n",t1-t0);
 	
 	PetscFunctionReturn(0);
 }
