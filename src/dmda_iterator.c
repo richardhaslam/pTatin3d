@@ -270,16 +270,34 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v2(PetscScalar pos[],PetscInt g
 {
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
 	PetscScalar z,P;
+	PetscReal dz;
 	PetscBool impose;
 	PetscErrorCode ierr;
 	
+	dz = c->ref_height / ((PetscReal)( c->ref_N+1 ) );
 	z = (PetscScalar)(c->ref_N - global_index[1]);
 	z = z / ((PetscScalar)( c->ref_N ));
-	z = z * c->ref_height;
-	
-	P = c->surface_pressure + c->rho * c->grav * z;
+	z = z * c->ref_height + 0.5*dz;
+	//printf("z = %1.4e \n",z);
+	P = c->surface_pressure + c->rho * c->grav * (z);
 	
 	*val = P;
+	impose = PETSC_TRUE;
+	return impose;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2"
+PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
+{
+	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
+	PetscScalar dPdy;
+	PetscBool impose;
+	PetscErrorCode ierr;
+	
+	dPdy = c->rho * c->grav;
+	
+	*val = dPdy;
 	impose = PETSC_TRUE;
 	return impose;
 }
