@@ -27,19 +27,13 @@
 -fieldsplit_u_mg_levels_pc_type jacobi
 -fieldsplit_u_mg_levels_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
--ksp_rtol 1e-3
-#-ksp_max_it 10
-#-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
-#-snes_type ksponly
 -snes_view
 -snes_monitor
--snes_rtol 1e-2
--snes_max_it 10
 -stk_velocity_da_mat_type aij
 -ptatin_model rift3D 
 -output_path test01-02
@@ -47,4 +41,9 @@
 -my 8 
 -mz 32
 -newton_its 0 
--ksp_rtol 5e-2
+-ksp_rtol 1e-2
+-model_rift3D_vis_bar 1.e23 
+-dau_nlevels 2 
+-snes_rtol 1e-4 
+-picard_its 5 
+-fieldsplit_u_ksp_max_it 10

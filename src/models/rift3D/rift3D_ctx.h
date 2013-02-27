@@ -38,6 +38,7 @@
 
 typedef struct {
 	PetscInt  nmaterials;
+    PetscBool runmises;
 	PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz,rho0;
 	PetscReal eta[20];
 	PetscReal rho[20];

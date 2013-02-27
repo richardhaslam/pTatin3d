@@ -836,13 +836,11 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	
 #if 0
-	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+          
+	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);        
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"continuation");CHKERRQ(ierr);
-
-	user->rheology_constants.rheology_type = RHEOLOGY_VP_STD;
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+        
 #endif
 	
 #if 1
@@ -851,7 +849,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 
 	SNESGetTolerances(snes,0,0,0,&snes_its,0);
     
-	/* switch to linear rheology */
+	/* switch to linear rheology to use the viscosity set on marker by the initialStokeVariables */
 
 	user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
 
