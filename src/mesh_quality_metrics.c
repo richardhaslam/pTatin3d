@@ -122,26 +122,27 @@ void get_face_coordinates(double el_coords[],Q2Face face,double coords[])
 	switch (face) {
 			
 		case Q2_FACE_WEST:
-			nodes[0] = 0; nodes[1] = 18; nodes[2] = 24; nodes[3] = 6;
+			nodes[0] = 0;  nodes[1] = 18;  nodes[2] = 24;  nodes[3] = 6;
 			break;
 			
 		case Q2_FACE_EAST:
-			nodes[0] = 2; nodes[1] = 8; nodes[2] = 26; nodes[3] = 20;
+			nodes[0] = 2;  nodes[1] = 8;   nodes[2] = 26;  nodes[3] = 20;
 			break;
 			
 		case Q2_FACE_SOUTH:
-			nodes[0] = 0; nodes[1] = 2; nodes[2] = 20; nodes[3] = 18;
+			nodes[0] = 0;  nodes[1] = 2;   nodes[2] = 20;  nodes[3] = 18;
 			break;
+
 		case Q2_FACE_NORTH:
-			nodes[0] = 6; nodes[1] = 24; nodes[2] = 26; nodes[3] = 8;
+			nodes[0] = 6;  nodes[1] = 24;  nodes[2] = 26;  nodes[3] = 8;
 			break;
 			
 		case Q2_FACE_FRONT:
-			nodes[0] = 18; nodes[1] = 20; nodes[2] = 26; nodes[3] = 24;
+			nodes[0] = 18; nodes[1] = 20;  nodes[2] = 26;  nodes[3] = 24;
 			break;
 			
 		case Q2_FACE_BACK:
-			nodes[0] = 0; nodes[1] = 6; nodes[2] = 8; nodes[3] = 2;
+			nodes[0] = 0;  nodes[1] = 6;   nodes[2] = 8;   nodes[3] = 2;
 			break;			
 	}
 	
@@ -171,32 +172,35 @@ void get_corner_vectors(double el_coords[],int corner,double vectors[])
 	switch (corner) {
 			
 		case 0:
-			nodes[0] = 0; nodes[1] = 18; nodes[2] = 2; nodes[3] = 6;
+			nodes[0] = 0;   nodes[1] = 18;  nodes[2] = 2;   nodes[3] = 6;
 			break;
 			
 		case 2:
-			nodes[0] = 2; nodes[1] = 0; nodes[2] = 20; nodes[3] = 18;
+			nodes[0] = 2;   nodes[1] = 0;   nodes[2] = 20;  nodes[3] = 18;
 			break;
 			
 		case 8:
-			nodes[0] = 8; nodes[1] = 26; nodes[2] = 6; nodes[3] = 2;
+			nodes[0] = 8;   nodes[1] = 26;  nodes[2] = 6;   nodes[3] = 2;
 			break;
+	
 		case 6:
-			nodes[0] = 6; nodes[1] = 8; nodes[2] = 24; nodes[3] = 0;
+			nodes[0] = 6;   nodes[1] = 8;   nodes[2] = 24;  nodes[3] = 0;
 			break;
 			
 		case 18:
-			nodes[0] = 18; nodes[1] = 20; nodes[2] = 0; nodes[3] = 24;
+			nodes[0] = 18;  nodes[1] = 20;  nodes[2] = 0;   nodes[3] = 24;
 			break;
 			
 		case 20:
-			nodes[0] = 20; nodes[1] = 2; nodes[2] = 18; nodes[3] = 26;
+			nodes[0] = 20;  nodes[1] = 2;   nodes[2] = 18;  nodes[3] = 26;
 			break;
+		
 		case 24:
-			nodes[0] = 24; nodes[1] = 6; nodes[2] = 26; nodes[3] = 18;
+			nodes[0] = 24;  nodes[1] = 6;   nodes[2] = 26;  nodes[3] = 18;
 			break;		
+		
 		case 26:
-			nodes[0] = 26; nodes[1] = 24; nodes[2] = 8; nodes[3] = 20;
+			nodes[0] = 26;  nodes[1] = 24;  nodes[2] = 8;   nodes[3] = 20;
 			break;					
 	}
 	for(i = 0; i < 3; i++){
