@@ -91,9 +91,10 @@ void get_corner_vectors(double el_coords[],int corner,double vectors[]);
 double compute_quadrilateral_area_(double coners[]);
 void compute_cossin(double vectors[], double cossin[]);
 double compute_distance3(double posA[],double posB[]);
+double compute_norm3(double a[]);
+double compute_dot_product3(double a[],double b[]);
 void compute_quadrilateral_area_approximate(double quad_coords[],double *area);
-double compute_cross_product(double a[],double b[],double crossprod[]);
-
+void compute_cross_product3(double a[],double b[],double crossprod[]);
 
 
 void get_node_coordinate(double el_coords[],int index,double pos[])
@@ -215,7 +216,7 @@ void get_corner_vectors(double el_coords[],int corner,double vectors[])
 /* 
  Compute a x b
 */
-double compute_cross_product(double a[],double b[],double crossprod[])
+void compute_cross_product3(double a[],double b[],double crossprod[])
 {
 	crossprod[0] =    a[1]*b[2] - a[2]*b[1];
 	crossprod[1] = -( a[0]*b[2] - a[2]*b[0] );
@@ -283,6 +284,21 @@ double compute_distance3(double posA[],double posB[])
 	val = sqrt(  (posA[0]-posB[0])*(posA[0]-posB[0])  +  (posA[1]-posB[1])*(posA[1]-posB[1])  +  (posA[2]-posB[2])*(posA[2]-posB[2])  );
 	return val;
 }
+
+double compute_norm3(double a[])
+{
+	double val;
+	val = sqrt( a[0]*a[0] + a[1]*a[1] + a[2]*a[2] );
+	return val;
+}
+
+double compute_dot_product3(double a[],double b[])
+{
+	double val;
+	val = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+	return val;
+}
+
 
 /*
  Compute area of quadrilateral defined in 3 space. 
