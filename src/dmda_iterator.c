@@ -295,7 +295,7 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],Petsc
 	PetscBool impose;
 	PetscErrorCode ierr;
 	
-	dPdy = c->rho * c->grav;
+	dPdy = -c->rho * c->grav;
 	
 	*val = dPdy;
 	impose = PETSC_TRUE;
