@@ -174,35 +174,35 @@ void get_vertex_vectors(double el_coords[],int vertex,double vectors[][3])
 	
 	switch (vertex) {
 			
-		case 0:
+		case Q2_VERTEX_0:
 			nodes[0] = 0;   nodes[1] = 18;  nodes[2] = 2;   nodes[3] = 6;
 			break;
 			
-		case 2:
-			nodes[0] = 2;   nodes[1] = 0;   nodes[2] = 20;  nodes[3] = 18;
+		case Q2_VERTEX_1:
+			nodes[0] = 2;   nodes[1] = 0;   nodes[2] = 20;  nodes[3] = 8;
 			break;
 			
-		case 8:
+		case Q2_VERTEX_2:
 			nodes[0] = 8;   nodes[1] = 26;  nodes[2] = 6;   nodes[3] = 2;
 			break;
 	
-		case 6:
+		case Q2_VERTEX_3:
 			nodes[0] = 6;   nodes[1] = 8;   nodes[2] = 24;  nodes[3] = 0;
 			break;
 			
-		case 18:
+		case Q2_VERTEX_4:
 			nodes[0] = 18;  nodes[1] = 20;  nodes[2] = 0;   nodes[3] = 24;
 			break;
 			
-		case 20:
+		case Q2_VERTEX_5:
 			nodes[0] = 20;  nodes[1] = 2;   nodes[2] = 18;  nodes[3] = 26;
 			break;
 		
-		case 24:
+		case Q2_VERTEX_6:
 			nodes[0] = 24;  nodes[1] = 6;   nodes[2] = 26;  nodes[3] = 18;
 			break;		
 		
-		case 26:
+		case Q2_VERTEX_7:
 			nodes[0] = 26;  nodes[1] = 24;  nodes[2] = 8;   nodes[3] = 20;
 			break;					
 	}
@@ -271,6 +271,11 @@ void compute_cossin(double vectors[][3], double cossin[])
     scalarprod = compute_dot_product3(crossprod,c);
 	cossin[1] = ncross/(n0*n1);
 	cossin[0] = scalarprod/(n0*n1*n2*cossin[1]); 
+    PetscErrorCode ierr;
+//    ierr = PetscPrintf(PETSC_COMM_SELF,"---> scalarprod: %f ncross:%f n0:%f n1:%f n2:%f cossin0:%f cossin1:%f   c(%f, %f, %f) cross(%f, %f, %f)\n", scalarprod, ncross, n0, n1, n2, cossin[0], cossin[1], c[0],c[1],c[2],  crossprod[0],crossprod[1],crossprod[2]);CHKERRQ(ierr);
+//    ierr = PetscPrintf(PETSC_COMM_SELF,"---> scalarprod: %f c(%f, %f, %f) cross(%f, %f, %f)  a(%f, %f, %f)  b(%f, %f, %f)\n", scalarprod,c[0],c[1],c[2],  crossprod[0],crossprod[1],crossprod[2], a[0],a[1],a[2], b[0],b[1],b[2]);CHKERRQ(ierr);
+
+
 }
 
 double compute_distance3(double posA[],double posB[])
@@ -611,7 +616,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
-	
 	val_min = 2.0; 
 	for (e=0;e<nel;e++) {
 	    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
@@ -672,7 +676,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric(DM dm,MeshQualityMeasure measure,Pet
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-
 	switch (measure) {
 
 		case MESH_QUALITY_ASPECT_RATIO:

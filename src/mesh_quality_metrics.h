@@ -37,9 +37,10 @@ typedef enum {
 	MESH_QUALITY_ASPECT_RATIO = 1,
 	MESH_QUALITY_DISTORTION,
 	MESH_QUALITY_DIAGONAL_RATIO,
-  MESH_QUALITY_VERTEX_ANGLE,
-  MESH_QUALITY_FACE_AREA_RATIO
+    MESH_QUALITY_VERTEX_ANGLE,
+    MESH_QUALITY_FACE_AREA_RATIO
 } MeshQualityMeasure;
+
 
 
 PetscErrorCode DMDAComputeMeshQualityMetrics(DM dm,MeshQualityMeasure measure,PetscReal *value);
