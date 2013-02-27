@@ -252,7 +252,7 @@ def write_vtk_viewer( prototype, ParticleClass, ParticleClassShortName, variable
 				cast     = '(int)'
 				format   = '%d'
 			elif variable_type_list[f] == 'short':
-				vtk_type = 'Int8'
+				vtk_type = 'Int16'
 				cast     = '(short)'
 				format   = '%d'
 			else:
@@ -317,7 +317,7 @@ def write_vtk_viewer_binary_appended_header( prototype, ParticleClass, ParticleC
 				cast     = '(int)'
 				format   = '%d'
 			elif variable_type_list[f] == 'short':
-				vtk_type = 'Int8'
+				vtk_type = 'Int16'
 				cast     = '(short)'
 				format   = '%d'
 			else:
@@ -382,7 +382,7 @@ def write_vtk_viewer_binary_appended_data( prototype, ParticleClass, ParticleCla
 				cast     = '(int)'
 				format   = '%d'
 			elif variable_type_list[f] == 'short':
-				vtk_type = 'Int8'
+				vtk_type = 'Int16'
 				cast     = '(short)'
 				format   = '%d'
 			else:
@@ -448,7 +448,7 @@ def write_pvtu_viewerPPointData( prototype, ParticleClass, ParticleClassShortNam
 			elif variable_type_list[f] == 'char':
 				vtk_type = 'Int8'
 			elif variable_type_list[f] == 'short':
-				vtk_type = 'Int8'
+				vtk_type = 'Int16'
 				cast     = '(short)'
 				format   = '%d'
 			else:
