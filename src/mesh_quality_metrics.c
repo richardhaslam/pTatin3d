@@ -92,6 +92,8 @@ double compute_quadrilateral_area_(double coners[]);
 void compute_cossin(double vectors[], double cossin[]);
 double compute_distance3(double posA[],double posB[]);
 void compute_quadrilateral_area_approximate(double quad_coords[],double *area);
+double compute_cross_product(double a[],double b[],double crossprod[]);
+
 
 
 void get_node_coordinate(double el_coords[],int index,double pos[])
@@ -208,6 +210,16 @@ void get_corner_vectors(double el_coords[],int corner,double vectors[])
 		vectors[i*3 + 1] = el_coords[3*nodes[i+1] + 1] - el_coords[3*nodes[0] + 1];
 		vectors[i*3 + 2] = el_coords[3*nodes[i+1] + 2] - el_coords[3*nodes[0] + 2];
 	}  
+}
+
+/* 
+ Compute a x b
+*/
+double compute_cross_product(double a[],double b[],double crossprod[])
+{
+	crossprod[0] =    a[1]*b[2] - a[2]*b[1];
+	crossprod[1] = -( a[0]*b[2] - a[2]*b[0] );
+	crossprod[2] =    a[0]*b[1] - a[1]*b[0];
 }
 
 double compute_quadrilateral_area_(double coners[])
