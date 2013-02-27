@@ -129,21 +129,25 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
 PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 {
 	PetscErrorCode ierr;
-	PetscReal amp,theta,phi;
-	PetscInt si,sj,sk,nx,ny,nz,i,j,k,MZ;
-	DM cda;
-	Vec coord;
-	DMDACoor3d ***_coord;
-	PetscReal y_height,dy;
+	PetscReal      amp,theta,phi,offset;
+	PetscInt       si,sj,sk,nx,ny,nz,i,j,k,MZ;
+	DM             cda;
+	Vec            coord;
+	DMDACoor3d     ***_coord;
+	PetscReal      MeshMin[3],MeshMax[3];
 	
 	PetscFunctionBegin;
-	amp   = 0.2;
-	theta = 0.7;
-	phi   = 1.2;
+	amp    = 0.2;
+	theta  = 0.7;
+	phi    = 1.2;
+	offset = 0.1;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-offset",&offset,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-amp",&amp,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-theta",&theta,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-phi",&phi,PETSC_NULL);CHKERRQ(ierr);
 	
+	ierr = DMDAGetBoundingBox(da,MeshMin,MeshMax);CHKERRQ(ierr);
+
 	
 	ierr = DMDAGetInfo(da,0,0,0,&MZ, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
@@ -161,7 +165,7 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 				yn = _coord[k][j][i].y;
 				zn = _coord[k][j][i].z;
 				
-				_coord[k][j][i].z = 1.1 + amp * sin( theta * M_PI * xn ) * cos( phi * M_PI * (xn+yn) );
+				_coord[k][j][i].z = MeshMax[2] + offset + amp * sin( theta * M_PI * xn ) * cos( phi * M_PI * (xn+yn) );
 			}
 		}
 	}
