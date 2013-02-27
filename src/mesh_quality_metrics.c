@@ -31,6 +31,39 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
+/*
+
+ ## Mesh quality metric guidlines ##
+ 
+ MESH_QUALITY_ASPECT_RATIO (AR)
+ * Possible range of values:  1.0 < AR < \infinty 
+ * Recommended bounds:        1.0 < AR < 10
+ 
+ MESH_QUALITY_DISTORTION (D)
+ * Possible range of values:  -\infinty < D < \infinty 
+ * Recommended bounds:        0.7 < D < 1.0
+ 
+ MESH_QUALITY_DIAGONAL_RATIO (DR)
+ * Possible range of values:  0.0 < DR < 1.0
+ * Recommended bounds:        0.5 < DR < 1.0
+
+ MESH_QUALITY_VERTEX_ANGLE (VA)
+ * Possible range of values:  -1.0 < VA < 1.0 
+ * Recommended bounds:         0.5 < VA < 1.0
+ 
+ MESH_QUALITY_FACE_AREA_RATIO (FAR)
+ * Possible range of values:  0.0 < FAR < 1.0 
+ * Recommended bounds:        0.5 < FAR < 1.0
+
+*/ 
+ 
+/*  
+ Functions contributed by Thomas Philippe [phthomas@student.ethz.ch] 
+
+ DMDAComputeMeshQualityMetric_FaceAreaRatio()
+ DMDAComputeMeshQualityMetric_VertexAngle()
+*/
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "petsc.h"
@@ -255,9 +288,9 @@ void compute_cossin(double vectors[][3], double cossin[])
 {
 	double crossprod[3], a[3], b[3], c[3], scalarprod, ncross, n0, n1, n2;
 	
-    a[0] = vectors[0][0]; a[1] = vectors[0][1]; a[2] = vectors[0][2];
-    b[0] = vectors[1][0]; b[1] = vectors[1][1]; b[2] = vectors[1][2];
-    c[0] = vectors[2][0]; c[1] = vectors[2][1]; c[2] = vectors[2][2];
+  a[0] = vectors[0][0]; a[1] = vectors[0][1]; a[2] = vectors[0][2];
+  b[0] = vectors[1][0]; b[1] = vectors[1][1]; b[2] = vectors[1][2];
+  c[0] = vectors[2][0]; c[1] = vectors[2][1]; c[2] = vectors[2][2];
     
 	compute_cross_product3(a,b,crossprod);    
 
@@ -268,14 +301,11 @@ void compute_cossin(double vectors[][3], double cossin[])
     
 	//scalarprod = |c|.|a|.|b| sin(theta)*cos(alpha)
 	
-    scalarprod = compute_dot_product3(crossprod,c);
+	scalarprod = compute_dot_product3(crossprod,c);
 	cossin[1] = ncross/(n0*n1);
 	cossin[0] = scalarprod/(n0*n1*n2*cossin[1]); 
-    PetscErrorCode ierr;
 //    ierr = PetscPrintf(PETSC_COMM_SELF,"---> scalarprod: %f ncross:%f n0:%f n1:%f n2:%f cossin0:%f cossin1:%f   c(%f, %f, %f) cross(%f, %f, %f)\n", scalarprod, ncross, n0, n1, n2, cossin[0], cossin[1], c[0],c[1],c[2],  crossprod[0],crossprod[1],crossprod[2]);CHKERRQ(ierr);
 //    ierr = PetscPrintf(PETSC_COMM_SELF,"---> scalarprod: %f c(%f, %f, %f) cross(%f, %f, %f)  a(%f, %f, %f)  b(%f, %f, %f)\n", scalarprod,c[0],c[1],c[2],  crossprod[0],crossprod[1],crossprod[2], a[0],a[1],a[2], b[0],b[1],b[2]);CHKERRQ(ierr);
-
-
 }
 
 double compute_distance3(double posA[],double posB[])
@@ -482,7 +512,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	PetscInt        *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	double          posA[3],posB[3];
-	double          diag,dl_min,dl_min_g;
+	double          diag,dl_min,dl_max,dr,dr_min,dr_min_g;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
@@ -496,41 +526,52 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 	
-	dl_min = 1.0e32;
+	dr_min = 1.0e32;
 	for (e=0;e<nel;e++) {
 		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
 		
+		dl_min = 1.0e32;
+		dl_max = -1.0e32;
 		
-		get_node_coordinate(el_coords,0,posA);
-		get_node_coordinate(el_coords,26,posB);
+		get_node_coordinate(el_coords,Q2_VERTEX_0,posA);
+		get_node_coordinate(el_coords,Q2_VERTEX_7,posB);
 		diag =	compute_distance3(posA,posB);
 		if (diag < dl_min) { dl_min = diag; }
+		if (diag > dl_max) { dl_max = diag; }
 
-		get_node_coordinate(el_coords,2,posA);
-		get_node_coordinate(el_coords,24,posB);
+		get_node_coordinate(el_coords,Q2_VERTEX_1,posA);
+		get_node_coordinate(el_coords,Q2_VERTEX_6,posB);
 		diag =	compute_distance3(posA,posB);
 		if (diag < dl_min) { dl_min = diag; }
+		if (diag > dl_max) { dl_max = diag; }
 
-		get_node_coordinate(el_coords,6,posA);
-		get_node_coordinate(el_coords,20,posB);
+		get_node_coordinate(el_coords,Q2_VERTEX_5,posA);
+		get_node_coordinate(el_coords,Q2_VERTEX_2,posB);
 		diag =	compute_distance3(posA,posB);
 		if (diag < dl_min) { dl_min = diag; }
+		if (diag > dl_max) { dl_max = diag; }
 		
-		get_node_coordinate(el_coords,8,posA);
-		get_node_coordinate(el_coords,18,posB);
+		get_node_coordinate(el_coords,Q2_VERTEX_4,posA);
+		get_node_coordinate(el_coords,Q2_VERTEX_3,posB);
 		diag =	compute_distance3(posA,posB);
 		if (diag < dl_min) { dl_min = diag; }
-				
+		if (diag > dl_max) { dl_max = diag; }
+
+		dr = dl_min / dl_max;
+		if (dr < dr_min) { dr_min = dr; }
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&dl_min,&dl_min_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&dr_min,&dr_min_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
 	
-	*value = (PetscReal)dl_min_g;
+	*value = (PetscReal)dr_min_g;
 	
 	PetscFunctionReturn(0);
 }
 
+/*
+ min_(over all elements) [  min_{each face pair} area_1/area_0  ]
+ */
 #undef __FUNCT__
 #define __FUNCT__ "DMDAComputeMeshQualityMetric_FaceAreaRatio"
 PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value)
@@ -542,7 +583,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	const PetscInt  *el_nidx;
 	PetscInt        *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	double          a1,a2,vertexes[4][3];
+	double          a1,a2,vertices[4][3];
 	double          ratio,ratio_min,ratio_min_g;
 	PetscErrorCode  ierr;
 	
@@ -562,26 +603,26 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	for (e=0;e<nel;e++) {
 		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
         //Loops through face pairs.
-		get_face_coordinates(el_coords, Q2_FACE_WEST, vertexes);
-        a1 = compute_quadrilateral_area_(vertexes);
-        get_face_coordinates(el_coords, Q2_FACE_EAST, vertexes);
-		a2 = compute_quadrilateral_area_(vertexes);
-        ratio = (a1<a2)?a1/a2:a2/a1;
-        ratio_min = (ratio<ratio_min)?ratio:ratio_min;
+		get_face_coordinates(el_coords, Q2_FACE_WEST, vertices);
+		a1 = compute_quadrilateral_area_(vertices);
+    get_face_coordinates(el_coords, Q2_FACE_EAST, vertices);
+		a2 = compute_quadrilateral_area_(vertices);
+    ratio = (a1<a2)?a1/a2:a2/a1;
+    ratio_min = (ratio<ratio_min)?ratio:ratio_min;
 
-		get_face_coordinates(el_coords, Q2_FACE_SOUTH, vertexes);
-        a1 = compute_quadrilateral_area_(vertexes);
-        get_face_coordinates(el_coords, Q2_FACE_NORTH, vertexes);
-		a2 = compute_quadrilateral_area_(vertexes);
-        ratio = (a1<a2)?a1/a2:a2/a1;
-        ratio_min = (ratio<ratio_min)?ratio:ratio_min;        
-        
-		get_face_coordinates(el_coords, Q2_FACE_BACK, vertexes);
-        a1 = compute_quadrilateral_area_(vertexes);
-        get_face_coordinates(el_coords, Q2_FACE_FRONT, vertexes);
-		a2 = compute_quadrilateral_area_(vertexes);
-        ratio = (a1<a2)?a1/a2:a2/a1;
-        ratio_min = (ratio<ratio_min)?ratio:ratio_min;            
+		get_face_coordinates(el_coords, Q2_FACE_SOUTH, vertices);
+		a1 = compute_quadrilateral_area_(vertices);
+		get_face_coordinates(el_coords, Q2_FACE_NORTH, vertices);
+		a2 = compute_quadrilateral_area_(vertices);
+		ratio = (a1<a2)?a1/a2:a2/a1;
+		ratio_min = (ratio<ratio_min)?ratio:ratio_min;        
+		
+		get_face_coordinates(el_coords, Q2_FACE_BACK, vertices);
+		a1 = compute_quadrilateral_area_(vertices);
+		get_face_coordinates(el_coords, Q2_FACE_FRONT, vertices);
+		a2 = compute_quadrilateral_area_(vertices);
+		ratio = (a1<a2)?a1/a2:a2/a1;
+		ratio_min = (ratio<ratio_min)?ratio:ratio_min;            
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
@@ -719,4 +760,56 @@ PetscErrorCode DMDAComputeMeshQualityMetricList(DM dm,const PetscInt nmeasures,M
 	PetscFunctionReturn(0);
 }
 
+/*
+ Output:
+ 
+ range[]:       contains lower and upper bounds for the given metric
+ valid_range[]: contains recommended lower and upper bounds for the given metric
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDMeshQualityMetricGetInfo"
+PetscErrorCode DMDMeshQualityMetricGetInfo(DM dm,MeshQualityMeasure measure,PetscReal range[],PetscReal valid_range[])
+{	
+	PetscFunctionBegin;
+	switch (measure) {
+			
+		case MESH_QUALITY_ASPECT_RATIO:
+			range[0] = 1.0;
+			range[1] = FP_INFINITE;
+			valid_range[0] = 1.0;
+			valid_range[1] = 10.0;
+			break;
+			
+		case MESH_QUALITY_DISTORTION:
+			range[0] = -FP_INFINITE;
+			range[1] =  FP_INFINITE;
+			valid_range[0] = 0.7;
+			valid_range[1] = 1.0;
+			break;
+			
+		case MESH_QUALITY_DIAGONAL_RATIO:
+			range[0] = 0.0;
+			range[1] = 1.0;
+			valid_range[0] = 0.5;
+			valid_range[1] = 1.0;
+			break;
+			
+		case MESH_QUALITY_VERTEX_ANGLE:
+			range[0] = -1.0;
+			range[1] =  1.0;
+			valid_range[0] = 0.5;
+			valid_range[1] = 1.0;
+			break;
+			
+    case MESH_QUALITY_FACE_AREA_RATIO:
+			range[0] = 0.0;
+			range[1] = 1.0;
+			valid_range[0] = 0.5;
+			valid_range[1] = 1.0;
+			break;            
+			
+	}
+	
+	PetscFunctionReturn(0);
+}
 
