@@ -1,0 +1,78 @@
+# ------------------------
+#   Model specification
+# ------------------------
+-ptatin_model rift3D
+-model_rift3D_vis_bar 1.e23
+-mx 48
+-my 12
+-mz 48
+-output_path rift-t5
+
+# ------------------------------------
+#   Nonlinear solver specification
+# ------------------------------------
+-snes_rtol  1e-4
+-newton_its 0
+-picard_its 5 
+
+# ---------------------------------
+#   Stokes solver specification
+# ---------------------------------
+-ksp_type  fgmres
+-ksp_rtol  1e-2
+-pc_type   fieldsplit
+
+-pc_fieldsplit_type                     schur
+-pc_fieldsplit_schur_factorization_type upper
+
+-fieldsplit_u_ksp_type    fgmres
+-fieldsplit_u_ksp_max_it  10
+-fieldsplit_u_ksp_rtol    1.0e-1
+-fieldsplit_u_pc_type     mg
+
+-fieldsplit_p_ksp_type    preonly
+-fieldsplit_p_pc_type     jacobi
+
+-stk_velocity_da_mat_type baij
+
+# ---------------------------------
+#   GMG solver specification
+# ---------------------------------
+# *** IMPORTANT - IF YOU WANT TO PROFILE GMG dau_nlevels and fieldsplit_u_pc_mg_levels MUST MATCH ***
+-dau_nlevels               2
+-fieldsplit_u_pc_mg_levels 2
+
+-A11_operator_type 0,1,1,1,1
+
+-stk_velocity_da_refine_hierarchy_x 4
+-stk_velocity_da_refine_hierarchy_y 4
+-stk_velocity_da_refine_hierarchy_z 4
+
+-use_low_order_geometry
+
+-fieldsplit_u_mg_levels_ksp_type      chebychev
+-fieldsplit_u_mg_levels_ksp_max_it    10
+-fieldsplit_u_mg_levels_pc_type       jacobi
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+
+-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+
+-fieldsplit_u_mg_coarse_ksp_type       cg
+-fieldsplit_u_mg_coarse_ksp_max_it     25
+-fieldsplit_u_mg_coarse_ksp_rtol       1.0e-4
+-fieldsplit_u_mg_coarse_pc_type        asm
+#-fieldsplit_u_mg_coarse_pc_asm_blocks 4
+-fieldsplit_u_mg_coarse_pc_asm_overlap 4
+-fieldsplit_u_mg_coarse_sub_pc_type    ilu
+
+# --------------
+#   Monitoring
+# --------------
+-fieldsplit_u_pc_mg_log
+-fieldsplit_u_mg_coarse_ksp_converged_reason
+-fieldsplit_u_ksp_monitor
+-snes_monitor
+-snes_view
+-log_summary
+-options_left 1
