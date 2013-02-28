@@ -957,11 +957,11 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   Vec               XUloc,YUloc;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
-	PetscBool         use_low_order_geometry = PETSC_FALSE;
+//	PetscBool         use_low_order_geometry = PETSC_FALSE;
 	
   PetscFunctionBegin;
   
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+//	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1027,11 +1027,11 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
   Vec               XUloc,YUloc;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
-	PetscBool         use_low_order_geometry = PETSC_FALSE;
+	PetscInt          low_order_geometry_type = 1; /* 0 - none; 1 - 1gp on Jac; 2 - 2x2x2 quad; 3 - 1x1x1 quad */
 	
   PetscFunctionBegin;
   
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetInt(PETSC_NULL,"-low_order_geometry_type",&low_order_geometry_type,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1056,22 +1056,27 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* momentum */
-//	if (use_low_order_geometry==PETSC_FALSE) {
-//		ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-//	} else {
+	switch (low_order_geometry_type) {
+		case 0:
+			ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+			break;
 
-		//ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-		
-		// 
-		ierr = MFStokesWrapper_A11PC_2x2x2(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-	
-		// totally useless - u solve requires loads of iterations
-		//ierr = MFStokesWrapper_A11PC_1x1x1(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-//	}
+		case 1:
+			ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+			break;
+
+		case 2:
+			ierr = MFStokesWrapper_A11PC_2x2x2(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+			break;
+
+		case 3:
+			// totally useless - u solve requires loads of iterations
+			ierr = MFStokesWrapper_A11PC_1x1x1(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+			break;
+	}
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
-	//	printf("yin\n");VecView(YUloc,PETSC_VIEWER_STDOUT_SELF);
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
@@ -1086,10 +1091,6 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	/* This has the affect of zeroing out rows when the mat-mult is performed */
 	ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
 	
-	//	{
-	//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
-	//		ierr = VecCopy(X,Y);CHKERRQ(ierr);
-	//	}
   PetscFunctionReturn(0);
 }
 
