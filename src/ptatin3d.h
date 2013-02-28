@@ -93,6 +93,7 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx);
 PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx);
 PetscErrorCode pTatinModelLoad(pTatinCtx ctx);
 
+PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt);
 PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de);
 PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m);
 PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r);

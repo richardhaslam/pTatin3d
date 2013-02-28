@@ -660,6 +660,14 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetTimestep"
+PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt)
+{
+	PetscErrorCode ierr;
+	if (dt) { *dt = ctx->dt; }
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinGetMaterialPoints"
