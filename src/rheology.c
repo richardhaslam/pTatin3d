@@ -116,41 +116,22 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 
 		case RHEOLOGY_VISCOUS:
 			if (been_here==0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Rheology update for RHEOLOGY_VISCOUS using markers is under development ***\n");
+				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS selected ***\n");
 			}
 			/* update on markers */
 			ierr = EvaluateRheologyNonlinearitiesMarkers_Viscous(user,dau,u,dap,p);CHKERRQ(ierr);
 			break;
 			
-		case RHEOLOGY_VISCO_PLASTIC:
-			if (been_here==0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Rheology update for RHEOLOGY_VISCO_PLASTIC using markers is under development ***\n");
-			}
-			/* update on markers */
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_PLASTIC using markers not defined");
-			//ierr = EvaluateRheologyNonlinearitiesMarkers_ViscoPlastic(user,dau,u,dap,p);CHKERRQ(ierr);
-			break;
-			
-		case RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING:
-			if (been_here==0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Rheology update for RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING using markers is under development ***\n");
-			}
-			/* update on markers */
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_PLASTIC_STRAIN_WEAKENING using markers not defined");
-			//ierr = EvaluateRheologyNonlinearitiesMarkers_ViscoPlasticStrainWeakening(user,dau,u,dap,p);CHKERRQ(ierr);
-			break;
-			
-		case RHEOLOGY_VISCO_ELASTIC_PLASTIC:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update for RHEOLOGY_VISCO_ELASTIC_PLASTIC using markers not defined");
-			break;
-
 		case RHEOLOGY_VP_STD:
+			if (been_here==0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VP_STD selected ***\n");
+			}
 			ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
-            ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
+      ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
 			break;
 			
 		default:
-			
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update is not defined");
 			break;
 	}
 
@@ -198,6 +179,47 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,Petsc
 	PetscFunctionBegin;
 	
 	ierr = pTatin_EvaluateRheologyNonlinearitiesMarkers(user,dau,u,dap,p);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_StokesCoefficient_UpdateTimeDependentQuantities"
+PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
+{
+  RheologyConstants *rheo;
+	int               npoints;
+	DataField         PField_std;
+	DataField         PField_stokes;
+  MPntStd           *mp_std;
+	MPntPStokes       *mp_stokes;
+  static int        been_here=0;
+	PhysCompStokes    stokes;
+	PetscErrorCode    ierr;
+	
+	PetscFunctionBegin;
+  rheo = &user->rheology_constants;
+	switch (rheo->rheology_type) {
+			
+		case RHEOLOGY_VISCOUS:
+			if (been_here==0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***\n");
+			}
+			break;
+			
+		case RHEOLOGY_VP_STD:
+			if (been_here==0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VP_STD is NULL ***\n");
+			}
+			break;
+			
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"StokesCoefficientUpdate is not defined");
+			break;
+	}
+	
+	
+	been_here = 1;
 	
 	PetscFunctionReturn(0);
 }
