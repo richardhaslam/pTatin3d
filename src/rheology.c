@@ -205,8 +205,8 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 			
 		case RHEOLOGY_VP_STD: 
 		{
-			DataBucket db;
-			BTruth     found;
+			DataBucket     db;
+			static BTruth  found;
 			
 			if (been_here==0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VP_STD is NULL ***\n");
@@ -216,12 +216,14 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 				/* check plastic marker type is loaded */
 				DataBucketQueryDataFieldByName(db,MPntPStokesPl_classname,&found);
 				if (found == BFALSE) {
-					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"You must register the marker field: %s \n", MPntPStokesPl_classname);
+					PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Update of plastic strain requires you register the marker field: %s. Ignoring update of plastic strain.\n", MPntPStokesPl_classname);
 				}
 			}
 		
 			/* call */
-			ierr = StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+			if (found == BTRUE) {
+				ierr = StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+			}
 		}
 			break;
 			
