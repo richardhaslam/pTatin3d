@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      ptatin_driver_asmsolve.c
+ **    Filename:      ptatin_driver_linear_ts.c
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
  **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
  **
  **
- **    $Id: ptatin_driver_asmsolve.c 3855 2013-02-06 21:16:44Z dmay $
+ **    $Id:$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
