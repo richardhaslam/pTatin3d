@@ -188,17 +188,13 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,Petsc
 PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
   RheologyConstants *rheo;
-	int               npoints;
-	DataField         PField_std;
-	DataField         PField_stokes;
-  MPntStd           *mp_std;
-	MPntPStokes       *mp_stokes;
   static int        been_here=0;
-	PhysCompStokes    stokes;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
-  rheo = &user->rheology_constants;
+
+	ierr = pTatinGetRheology(user,&rheo);
+
 	switch (rheo->rheology_type) {
 			
 		case RHEOLOGY_VISCOUS:
@@ -207,10 +203,26 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 			}
 			break;
 			
-		case RHEOLOGY_VP_STD:
+		case RHEOLOGY_VP_STD: 
+		{
+			DataBucket db;
+			BTruth     found;
+			
 			if (been_here==0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VP_STD is NULL ***\n");
+
+				/* access material point information */
+				ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+				/* check plastic marker type is loaded */
+				DataBucketQueryDataFieldByName(db,MPntPStokesPl_classname,&found);
+				if (found == BFALSE) {
+					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"You must register the marker field: %s \n", MPntPStokesPl_classname);
+				}
 			}
+		
+			/* call */
+			ierr = StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+		}
 			break;
 			
 		default:

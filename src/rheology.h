@@ -82,6 +82,7 @@ struct _p_RheologyConstants {
 
 PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R);
 PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[]);
+PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[]);
 
 #endif
 

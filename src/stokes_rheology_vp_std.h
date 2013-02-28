@@ -36,6 +36,7 @@
 
 PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[]);
 PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user);
+PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[]);
 
 #endif
 
