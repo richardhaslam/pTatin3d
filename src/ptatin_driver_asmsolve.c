@@ -1033,6 +1033,25 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
 		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+		/* alternative hierachy construction */
+		/*
+		// a  
+		for (k=0; k<nlevels; k++) {
+			ierr = MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(npoints,mp_std,mp_stokes,nlevels,dav_hierarchy,k,volQ[k]);CHKERRQ(ierr);
+		}
+		*/
+		/*
+		// b  
+		for (k=0; k<nlevels; k++) {
+			ierr = MProjection_P0Projection_onto_Q2_MPntPStokes_Level(npoints,mp_std,mp_stokes,nlevels,dav_hierarchy,k,volQ[k]);CHKERRQ(ierr);
+		}
+		*/
+		/*
+		// 
+		for (k=nlevels-1; k<nlevels; k++) {
+			ierr = MProjection_P0Projection_onto_Q2_MPntPStokes_Level(npoints,mp_std,mp_stokes,nlevels,dav_hierarchy,k,volQ[k]);CHKERRQ(ierr);
+		}
+		*/
 	}
 	
 	/* define boundary conditions - HARDCODED */
