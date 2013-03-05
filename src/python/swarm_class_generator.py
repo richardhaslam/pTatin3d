@@ -692,6 +692,17 @@ def Generate_pTatin_MaterialPointEnergy():
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
+def Generate_pTatin_MaterialPointViscoElasticity():
+	ParticleClass      = 'MPntPStokesVE'
+	ParticleClassShort = 'MPPStkVE'
+	variable_name_list = [ 'tau',      'mu' ]
+	variable_type_list = [ 'double',   'double'      ]
+	variable_extend_list        = [ 6, 1  ]
+	variable_textural_name_list = [ 'deviatoric_stress', 'shear_modulus' ]
+
+	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
 # ==================================================================================
 # Material constants 
 
@@ -775,6 +786,7 @@ Generate_pTatin3d_MaterialPointStandard()
 Generate_pTatin_MaterialPointStokesData()
 Generate_pTatin_MaterialPointStokesPlastic()
 Generate_pTatin_MaterialPointEnergy()
+Generate_pTatin_MaterialPointViscoElasticity()
 
 ## material constants ##
 Generate_pTatin_MaterialConst_ViscosityConst()
