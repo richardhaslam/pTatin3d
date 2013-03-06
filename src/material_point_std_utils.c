@@ -519,6 +519,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 				p++;
 			}
 		}		
+
 	}
 	
 	DataFieldRestoreAccess(PField);
