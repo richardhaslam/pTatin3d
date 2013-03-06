@@ -75,6 +75,11 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v2(PetscScalar pos[],PetscInt g
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx);
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx);
 
+PetscBool DMDAVecTraverse3d_GaussianXY(PetscScalar pos[],PetscScalar *val,void *ctx);
+PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void *ctx);
+PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx);
+PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx);
+PetscBool DMDAVecTraverse3d_StepXYZ(PetscScalar pos[],PetscScalar *val,void *ctx);
 
 
 #endif

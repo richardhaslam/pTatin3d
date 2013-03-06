@@ -361,5 +361,95 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt glob
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_GaussianXY"
+PetscBool DMDAVecTraverse3d_GaussianXY(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscBool impose;
+	PetscScalar x,y,z;
+	
+	impose = PETSC_TRUE;
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	*val = exp( -100.0*( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) )); 
 
+	return impose;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_GaussianXYZ"
+PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscBool impose;
+	PetscScalar x,y,z;
+	
+	impose = PETSC_TRUE;
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	*val = exp( -100.0*( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) + (z-0.5)*(z-0.5) )); 
+	
+	return impose;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_StepX"
+PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscBool impose;
+	PetscScalar x,y,z;
+	
+	impose = PETSC_TRUE;
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	if (x < 0.5) {
+		*val = 2.0;
+	} else {
+		*val = 1.0;
+	}
+	
+	return impose;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_StepXY"
+PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscBool impose;
+	PetscScalar x,y,z;
+	
+	impose = PETSC_TRUE;
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	if ( (x < 0.5) && (y < 0.5) ) {
+		*val = 2.0;
+	} else {
+		*val = 1.0;
+	}
+	
+	return impose;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_StepXYZ"
+PetscBool DMDAVecTraverse3d_StepXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscBool impose;
+	PetscScalar x,y,z;
+	
+	impose = PETSC_TRUE;
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	if ( (x < 0.5) && (y < 0.5) && (z < 0.5) ) {
+		*val = 2.0;
+	} else {
+		*val = 1.0;
+	}
+	
+	return impose;
+}
 

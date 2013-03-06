@@ -229,10 +229,10 @@ PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,Pe
 	
 	/* create aux vectors */
 	ierr = DMCreateGlobalVector(energy->daT,&energy->Told);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(energy->daT,&energy->Xold);CHKERRQ(ierr);
 
 	ierr = DMDAGetCoordinateDA(energy->daT,&cda);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(cda,&energy->u_minus_V);CHKERRQ(ierr);
+	ierr = DMCreateGlobalVector(cda,&energy->Xold);CHKERRQ(ierr);
 	
 	*E = energy;
 	
