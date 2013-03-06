@@ -40,6 +40,7 @@ export TATIN_SRC = \
 			material_point_utils.c \
 			material_point_std_utils.c \
 			material_point_point_location.c \
+                        material_point_popcontrol.c \
 			material_point_load.c \
 			ptatin_utils.c \
 			ptatin_check_compiler_flags.c \
