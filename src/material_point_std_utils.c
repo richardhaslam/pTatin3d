@@ -106,7 +106,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 {
 	DataField    PField;
 	PetscInt     e,mE,nE,pE;
-  DM           cda;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
@@ -142,10 +141,8 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	}
 	
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
-	
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
 	DataFieldGetAccess(PField);
@@ -217,11 +214,11 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 		}		
 	}
 	DataFieldRestoreAccess(PField);
+  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	np_local = np_per_cell * ncells;
 	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,np_local);CHKERRQ(ierr);
 	
-  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -232,7 +229,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 {
 	DataField    PField;
 	PetscInt     e,mE,nE,pE;
-  DM           cda;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
@@ -255,10 +251,8 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 	DataBucketSetSizes(db,np_per_cell*ncells,-1);
 	
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
-	
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
 	DataFieldGetAccess(PField);
@@ -305,11 +299,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 		
 	}
 	DataFieldRestoreAccess(PField);
+  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	np_local = np_per_cell * ncells;
 	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,np_local);CHKERRQ(ierr);
-	
-	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -320,7 +313,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 {
 	DataField    PField;
 	PetscInt     e,ei,ej,ek,eij2d;
-  DM           cda;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
@@ -383,7 +375,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 	}
 	
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
   ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
@@ -521,10 +512,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 
 	}
 	DataFieldRestoreAccess(PField);
+  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,np_current,np_new);CHKERRQ(ierr);
-	
-  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
