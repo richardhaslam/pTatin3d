@@ -298,7 +298,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 			marker->xi[2] = xip_rand[2];
 			
 			marker->wil    = e;
-			marker->pid    = p;
+			marker->pid    = 0;
 			
 			p++;
 		}
