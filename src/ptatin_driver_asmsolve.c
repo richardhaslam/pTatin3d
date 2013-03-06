@@ -932,6 +932,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	/* material geometry */
 	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+	//ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
