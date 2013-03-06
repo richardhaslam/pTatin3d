@@ -283,7 +283,7 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 		PetscInt   Nxp[] = {2,2,2}; /* change with -lattice_layout_N{x,y,z} */
 		PetscReal  perturb = 0.1;   /* change with -lattice_layout_perturb */
 		/* defaults for random layout */
-		PetscInt   nPerCell = 3*3*3; /* change with -random_layout_Np */
+		PetscInt   nPerCell = 2 * 2 * 2; /* change with -random_layout_Np */
 		
 		PetscInt mplayout = 0;
 		
