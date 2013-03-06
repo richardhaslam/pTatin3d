@@ -46,6 +46,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_redundant.h"
 #include "dmda_update_coords.h"
 #include "dmda_element_q1.h"
+#include "dmda_iterator.h"
 #include "dmda_view_petscvtk.h"
 #include "ptatin3d_energy.h"
 
@@ -221,6 +222,13 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
+//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
+//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
+//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTK(daT,T,"phiIC_overlapping_q1.vtk");CHKERRQ(ierr);
 		
 		ierr = FormJacobianEnergy(user->time,T,user->dt,&JE,&JE,&mstr,(void*)energy);CHKERRQ(ierr);
 		ierr = FormFunctionEnergy(user->time,T,user->dt,FE,(void*)energy);CHKERRQ(ierr);
