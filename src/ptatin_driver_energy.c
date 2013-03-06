@@ -234,6 +234,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = FormFunctionEnergy(user->time,T,user->dt,FE,(void*)energy);CHKERRQ(ierr);
 
 		ierr = VecSetRandom(FE,0);CHKERRQ(ierr);
+		ierr = VecSet(FE,12.1);CHKERRQ(ierr);
 		
 		
 		ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
