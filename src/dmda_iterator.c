@@ -173,7 +173,7 @@ PetscBool DMDAVecTraverse3d_Constant(PetscScalar pos[],PetscScalar *val,void *ct
 	return impose;
 }
 #undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_Constant"
+#define __FUNCT__ "DMDAVecTraverseIJK_Constant"
 PetscBool DMDAVecTraverseIJK_Constant(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	PetscScalar c = *( (PetscScalar*)ctx );
