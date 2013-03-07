@@ -131,7 +131,7 @@ PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (load) {
+	if (load && (user->energy_ctx == PETSC_NULL)) {
 		ierr = pTatinPhysCompCreate_Energy(user);CHKERRQ(ierr);
 	}	
 	PetscFunctionReturn(0);
