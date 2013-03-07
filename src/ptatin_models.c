@@ -436,6 +436,7 @@ extern PetscErrorCode pTatinModelRegister_Rift3D(void);
 extern PetscErrorCode pTatinModelRegister_Sierra(void);
 extern PetscErrorCode pTatinModelRegister_Folding(void);
 extern PetscErrorCode pTatinModelRegister_Folding2d(void);
+extern PetscErrorCode pTatinModelRegister_AdvDiffExample(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -455,6 +456,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Sierra();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Folding();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Folding2d();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
 		
 	PetscFunctionReturn(0);
 }
