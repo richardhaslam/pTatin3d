@@ -39,6 +39,7 @@
 #include "dmda_bcs.h"
 
 struct _p_PhysCompEnergy {
+	PetscReal               time,dt;
 	PetscInt                energy_mesh_type; /* 0-std dmda, 1-overlap, 2-nested */
 	PetscInt                mx,my,mz; /* global mesh size */
 	DM                      daT;

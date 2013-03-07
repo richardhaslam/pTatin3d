@@ -34,6 +34,13 @@
 #ifndef __energy_assembly_h__
 #define __energy_assembly_h__
 
+#include "petsc.h"
+#include "petscvec.h"
+#include "petscmat.h"
+#include "petscsnes.h"
+#include "ptatin3d_defs.h"
+#include "element_utils_q2.h"
+#include "element_utils_q1.h"
 #include "QPntVolCoefEnergy_def.h"
 
 double AdvDiffResidualForceTerm_UpwindXiExact(double pecletNumber);
@@ -53,7 +60,11 @@ PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScala
 																			 PetscScalar gp_kappa[],
 																			 PetscScalar el_V[],
 																			 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
-PetscErrorCode FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
 
+PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
+PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx);
+
+PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
+PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx);
 
 #endif

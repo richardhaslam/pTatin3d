@@ -420,8 +420,8 @@ PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScala
  Computes M + dt.(L + A)
  */
 #undef __FUNCT__  
-#define __FUNCT__ "FormJacobianEnergy"
-PetscErrorCode FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+#define __FUNCT__ "TS_FormJacobianEnergy"
+PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
   PhysCompEnergy data = (PhysCompEnergy)ctx;
 	PetscInt          nqp;
@@ -536,6 +536,19 @@ PetscErrorCode FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *
   }
 	*mstr = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_FormJacobianEnergy"
+PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+{
+  PhysCompEnergy data  = (PhysCompEnergy)ctx;
+  PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = TS_FormJacobianEnergy(data->time,X,data->dt,A,B,mstr,ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
 }
 
 void AElement_FormFunctionLocal_SUPG_T(
@@ -761,8 +774,8 @@ PetscErrorCode FormFunctionLocal_SUPG_T(
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "FormFunctionEnergy"
-PetscErrorCode FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx)
+#define __FUNCT__ "TS_FormFunctionEnergy"
+PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx)
 {
   PhysCompEnergy data  = (PhysCompEnergy)ctx;
   DM             da,cda;
@@ -843,6 +856,18 @@ PetscErrorCode FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_FormFunctionEnergy"
+PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
+{
+  PhysCompEnergy data  = (PhysCompEnergy)ctx;
+  PetscErrorCode ierr;
+	PetscFunctionBegin;
+
+	ierr = TS_FormFunctionEnergy(data->time,X,data->dt,F,ctx);CHKERRQ(ierr);
+
+	PetscFunctionReturn(0);
+}
 
 /*
 	Stabilized adv-diff written in terms of tau
