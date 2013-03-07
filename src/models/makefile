@@ -9,7 +9,8 @@ TATIN_MODEL_DIR = \
 	gene3d_nueve \
 	sierra \
 	folding \
-	folding2d
+	folding2d \
+	advdiff_example
 
 
 ## DONT NOT EDIT LINES BELOW
