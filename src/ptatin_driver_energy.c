@@ -58,10 +58,16 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #define __FUNCT__ "pTatin3d_energy_tester"
 PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 {
+	pTatinModel     model;
+	PhysCompStokes  stokes;
+	PhysCompEnergy  energy;
+	DataBucket      materialpoint_db,materialconstants_db;
 	DM              multipys_pack,dav,dap;
 	PetscErrorCode  ierr;
 	pTatinCtx       user;
 	Vec             X,F;
+	Mat             JE;
+	Vec             T,f;
 	PetscBool       active_energy;
 	
 	PetscFunctionBegin;
@@ -73,54 +79,77 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+	ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
 	
-	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
+	ierr = pTatinModel_Initialize(model,user);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialConstants(user,&materialconstants_db);CHKERRQ(ierr);
 	
 	/* Generate physics modules */
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
-
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	
 	/* Pack all physics together */
 	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
-	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
-	user->pack = user->stokes_ctx->stokes_pack;
+	ierr = PetscObjectReference((PetscObject)stokes->stokes_pack);CHKERRQ(ierr);
+	user->pack = stokes->stokes_pack;
 
 	/* fetch some local variables */
 	multipys_pack = user->pack;
-	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
+	dav           = stokes->dav;
+	dap           = stokes->dap;
 	
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 	
 	/* mesh geometry */
-	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
 
 	/* generate energy solver */
-	/* NOTE - Generating the thermal solver here will ensure that the initial geom on the mechanical model is copied */
+	/* NOTE - Generating the thermal solver here will ensure that the initial geometry on the mechanical model is copied */
 	/* NOTE - Calling pTatinPhysCompActivate_Energy() after pTatin3dCreateMaterialPoints() is essential */
 	{
-		PetscBool activate_energy;
+		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&activate_energy,0);
-		ierr = pTatinPhysCompActivate_Energy(user,activate_energy);CHKERRQ(ierr);
+		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,0);
+		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
+		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
-	ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
+	if (active_energy) {
+		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+
+		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
+		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
+		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+
+		ierr = pTatinPhysCompAttachData_Energy(user,T,JE);CHKERRQ(ierr);
+		{
+			Vec x1;
+			Mat A1;
+			ierr = pTatinPhysCompGetData_Energy(user,&x1,&A1);CHKERRQ(ierr);
+		}
+	}
 	
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 	
 	/* material geometry */
-	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+	ierr = pTatinModel_ApplyInitialMaterialGeometry(model,user);CHKERRQ(ierr);
+
+	/* test data bucket viewer */
+	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"materialpoints",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(((PetscObject)multipys_pack)->comm, materialconstants_db,"materialconstants",DATABUCKET_VIEW_STDOUT);
 	
 	/* boundary conditions */
-	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
+	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 
 	{
 		Vec Xu,Xp;
+
 		ierr = DMCompositeGetAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-		ierr = BCListInsert(user->stokes_ctx->u_bclist,Xu);CHKERRQ(ierr);
+		ierr = BCListInsert(stokes->u_bclist,Xu);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	}
 	
@@ -128,32 +157,29 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	{
 		SNES snes;
 		
-		
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
 		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 	}
 	
-	/* test data bucket viewer */
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
-	DataBucketView(PETSC_COMM_SELF, user->material_constants,"material_constants",DATABUCKET_VIEW_STDOUT);
+	
+	/* FORCE VELOCITY FIELD TO BE ZERO */
+	ierr = VecSet(X,0.0);CHKERRQ(ierr);
 	
 	/* write out the initial condition */
-	ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
+	ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
 	
-	/* test generic viewer */
 	if (active_energy) {
-		Vec T,FE,Told;
-		Mat JE;
+		Vec          Told;
 		MatStructure mstr;
-		PhysCompEnergy energy;
-		BCList bclist;
-		DM     daT;
-		PetscScalar zero;
-		KSP kspT;
+		BCList       bclist;
+		DM           daT;
+		PetscScalar  zero;
+		KSP          kspT;
 		
 		
+		/* FORCE DIFFUSIVITU TO BE ONE ON MP AND QP */
 		/* mash in some diffusivity */
 		{
 			MPntPEnergy *material_point;
@@ -161,8 +187,8 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			int p;
 			int npoints;
 
-			DataBucketGetSizes(user->materialpoint_db,&npoints,0,0);
-			DataBucketGetDataFieldByName(user->materialpoint_db,MPntPEnergy_classname,&PField_energy);
+			DataBucketGetSizes(materialpoint_db,&npoints,0,0);
+			DataBucketGetDataFieldByName(materialpoint_db,MPntPEnergy_classname,&PField_energy);
 			DataFieldGetAccess(PField_energy);
 			
 			for (p=0; p<npoints; p++) {
@@ -178,8 +204,8 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			int p;
 			int npoints;
 
-			DataBucketGetSizes(user->energy_ctx->volQ->properties_db,&npoints,0,0);
-			DataBucketGetDataFieldByName(user->energy_ctx->volQ->properties_db,QPntVolCoefEnergy_classname,&PField_energy);
+			DataBucketGetSizes(energy->volQ->properties_db,&npoints,0,0);
+			DataBucketGetDataFieldByName(energy->volQ->properties_db,QPntVolCoefEnergy_classname,&PField_energy);
 			DataFieldGetAccess(PField_energy);
 			
 			for (p=0; p<npoints; p++) {
@@ -192,14 +218,9 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		
 		
 		/*  THERMAL ENERGY SOLVE  */
-		energy = user->energy_ctx;
 		Told   = energy->Told;
 		bclist = energy->T_bclist;
 		daT    = energy->daT;
-		
-		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
-		ierr = DMCreateGlobalVector(energy->daT,&FE);CHKERRQ(ierr);
-		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
 		
 		/* map velocity vector from Q2 space onto Q1 space */
 		//ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -231,38 +252,37 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = DMDAViewPetscVTK(daT,T,"phiIC_overlapping_q1.vtk");CHKERRQ(ierr);
 		
 		ierr = FormJacobianEnergy(user->time,T,user->dt,&JE,&JE,&mstr,(void*)energy);CHKERRQ(ierr);
-		ierr = FormFunctionEnergy(user->time,T,user->dt,FE,(void*)energy);CHKERRQ(ierr);
+		ierr = FormFunctionEnergy(user->time,T,user->dt,f,(void*)energy);CHKERRQ(ierr);
 
-		ierr = VecSetRandom(FE,0);CHKERRQ(ierr);
-		ierr = VecSet(FE,12.1);CHKERRQ(ierr);
-		
-		
+		ierr = VecSetRandom(f,0);CHKERRQ(ierr);
+		ierr = VecSet(f,12.1);CHKERRQ(ierr);
+				
 		ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
 		ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
 		ierr = KSPSetOperators(kspT,JE,JE,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 		ierr = KSPSetFromOptions(kspT);CHKERRQ(ierr);
 		
-		ierr = KSPSolve(kspT,FE,T);CHKERRQ(ierr);
+		ierr = KSPSolve(kspT,f,T);CHKERRQ(ierr);
 
 		ierr = KSPDestroy(&kspT);CHKERRQ(ierr);
 		
+		/* test generic viewer */
 		{
 			const int nf = 2;
 			const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Energy }; 
-			ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStd_MPEnergy");CHKERRQ(ierr);
+			ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStd_MPEnergy");CHKERRQ(ierr);
 		}
 
 		/* output energy mesh */
-		ierr = DMDAViewPetscVTK(user->energy_ctx->daT,user->energy_ctx->Told,"phiOld_overlapping_q1.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTK(energy->daT,user->energy_ctx->Told,"phiOld_overlapping_q1.vtk");CHKERRQ(ierr);
 
 	
-		ierr = VecDestroy(&T);CHKERRQ(ierr);
-		ierr = MatDestroy(&JE);CHKERRQ(ierr);
-		ierr = VecDestroy(&FE);CHKERRQ(ierr);
 	}	
 	
 	
-	
+	ierr = VecDestroy(&T);CHKERRQ(ierr);
+	ierr = MatDestroy(&JE);CHKERRQ(ierr);
+	ierr = VecDestroy(&f);CHKERRQ(ierr);
 	
 	ierr = VecDestroy(&X);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
