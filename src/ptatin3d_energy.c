@@ -137,3 +137,45 @@ PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompAttachData_Energy"
+PetscErrorCode pTatinPhysCompAttachData_Energy(pTatinCtx user,Vec T,Mat A)
+{
+	PhysCompEnergy e;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	ierr = pTatinGetContext_Energy(user,&e);CHKERRQ(ierr);
+	
+	if (T) {
+		ierr = pTatinCtxAttachModelData(user,"PhysCompEnergy_T",(void*)T);CHKERRQ(ierr);
+	}
+	if (A) {
+		ierr = pTatinCtxAttachModelData(user,"PhysCompEnergy_JE",(void*)A);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompGetData_Energy"
+PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A)
+{
+	PhysCompEnergy e;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = pTatinGetContext_Energy(user,&e);CHKERRQ(ierr);
+	
+	if (T) {
+		ierr = pTatinCtxGetModelData(user,"PhysCompEnergy_T",(void**)T);CHKERRQ(ierr);
+	}
+	if (A) { 
+		ierr = pTatinCtxGetModelData(user,"PhysCompEnergy_JE",(void**)A);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+

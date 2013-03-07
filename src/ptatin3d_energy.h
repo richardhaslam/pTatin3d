@@ -39,4 +39,7 @@ PetscErrorCode pTatinContextValid_Energy(pTatinCtx ctx,PetscBool *exists);
 PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user);
 PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load);
 
+PetscErrorCode pTatinPhysCompAttachData_Energy(pTatinCtx user,Vec T,Mat A);
+PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A);
+
 #endif
