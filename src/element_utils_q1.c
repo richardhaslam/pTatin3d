@@ -40,14 +40,14 @@ void P3D_ConstructNi_Q1_3D(PetscReal _xi[],PetscReal Ni[])
 	PetscReal zeta = _xi[2];
 	
 	Ni[0] = 0.125 * ( 1.0 - xi ) * ( 1.0 - eta ) * ( 1.0 - zeta );
+	Ni[1] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta ) * ( 1.0 - zeta );
 	Ni[2] = 0.125 * ( 1.0 - xi ) * ( 1.0 + eta ) * ( 1.0 - zeta );
 	Ni[3] = 0.125 * ( 1.0 + xi ) * ( 1.0 + eta ) * ( 1.0 - zeta );
-	Ni[1] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta ) * ( 1.0 - zeta );
 	
 	Ni[4] = 0.125 * ( 1.0 - xi ) * ( 1.0 - eta ) * ( 1.0 + zeta );
+	Ni[5] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta ) * ( 1.0 + zeta );
 	Ni[6] = 0.125 * ( 1.0 - xi ) * ( 1.0 + eta ) * ( 1.0 + zeta );
 	Ni[7] = 0.125 * ( 1.0 + xi ) * ( 1.0 + eta ) * ( 1.0 + zeta );
-	Ni[5] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta ) * ( 1.0 + zeta );
 }
 
 void P3D_ConstructGNi_Q1_3D(PetscReal _xi[],PetscReal GNi[3][8])
@@ -57,34 +57,34 @@ void P3D_ConstructGNi_Q1_3D(PetscReal _xi[],PetscReal GNi[3][8])
 	PetscReal zeta = _xi[2];
 	
 	GNi[0][0] = - 0.125 * ( 1.0 - eta ) * ( 1.0 - zeta );
+	GNi[0][1] =   0.125 * ( 1.0 - eta ) * ( 1.0 - zeta );
 	GNi[0][2] = - 0.125 * ( 1.0 + eta ) * ( 1.0 - zeta );
 	GNi[0][3] =   0.125 * ( 1.0 + eta ) * ( 1.0 - zeta );
-	GNi[0][1] =   0.125 * ( 1.0 - eta ) * ( 1.0 - zeta );
 	
 	GNi[0][4] = - 0.125 * ( 1.0 - eta ) * ( 1.0 + zeta );
+	GNi[0][5] =   0.125 * ( 1.0 - eta ) * ( 1.0 + zeta );
 	GNi[0][6] = - 0.125 * ( 1.0 + eta ) * ( 1.0 + zeta );
 	GNi[0][7] =   0.125 * ( 1.0 + eta ) * ( 1.0 + zeta );
-	GNi[0][5] =   0.125 * ( 1.0 - eta ) * ( 1.0 + zeta );
 	//
 	GNi[1][0] = - 0.125 * ( 1.0 - xi ) * ( 1.0 - zeta );
+	GNi[1][1] = - 0.125 * ( 1.0 + xi ) * ( 1.0 - zeta );
 	GNi[1][2] =   0.125 * ( 1.0 - xi ) * ( 1.0 - zeta );
 	GNi[1][3] =   0.125 * ( 1.0 + xi ) * ( 1.0 - zeta );
-	GNi[1][1] = - 0.125 * ( 1.0 + xi ) * ( 1.0 - zeta );
 	
 	GNi[1][4] = - 0.125 * ( 1.0 - xi ) * ( 1.0 + zeta );
+	GNi[1][5] = - 0.125 * ( 1.0 + xi ) * ( 1.0 + zeta );
 	GNi[1][6] =   0.125 * ( 1.0 - xi ) * ( 1.0 + zeta );
 	GNi[1][7] =   0.125 * ( 1.0 + xi ) * ( 1.0 + zeta );
-	GNi[1][5] = - 0.125 * ( 1.0 + xi ) * ( 1.0 + zeta );
 	//
 	GNi[2][0] = -0.125 * ( 1.0 - xi ) * ( 1.0 - eta );
+	GNi[2][1] = -0.125 * ( 1.0 + xi ) * ( 1.0 - eta );
 	GNi[2][2] = -0.125 * ( 1.0 - xi ) * ( 1.0 + eta );
 	GNi[2][3] = -0.125 * ( 1.0 + xi ) * ( 1.0 + eta );
-	GNi[2][1] = -0.125 * ( 1.0 + xi ) * ( 1.0 - eta );
 	
 	GNi[2][4] = 0.125 * ( 1.0 - xi ) * ( 1.0 - eta );
+	GNi[2][5] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta );
 	GNi[2][6] = 0.125 * ( 1.0 - xi ) * ( 1.0 + eta );
 	GNi[2][7] = 0.125 * ( 1.0 + xi ) * ( 1.0 + eta );
-	GNi[2][5] = 0.125 * ( 1.0 + xi ) * ( 1.0 - eta );
 }
 
 
