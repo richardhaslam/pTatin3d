@@ -103,6 +103,7 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 					nid[6] = (i  ) + (j+1) *X  + (k+1) *X*Y;
 					nid[7] = (i+1) + (j+1) *X  + (k+1) *X*Y;
 
+					//printf("e=%d: [%d %d %d %d] [%d %d %d %d] \n",elcnt,nid[0],nid[1],nid[2],nid[3],nid[0+4],nid[1+4],nid[2+4],nid[3+4] );
 					
 					for (n=0; n<_npe; n++) {
 						if (nid[n]>M*N*P) { 
