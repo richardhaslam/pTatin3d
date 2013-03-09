@@ -56,10 +56,44 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 																														PetscScalar qp_kappa[],
 																														PetscScalar *khat);
 void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni[],PetscScalar GNx[NSD][NODES_PER_EL_Q1_3D],PetscScalar Ni_supg[]);
-PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
+
+
+PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
 																			 PetscScalar gp_kappa[],
 																			 PetscScalar el_V[],
 																			 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
+
+PetscErrorCode AElement_FormFunction_T_supg(
+																	PetscScalar Re[],
+																	PetscReal dt,
+																	PetscScalar el_coords[],
+																	PetscScalar el_coords_old[],
+																	PetscScalar el_V[],
+																	PetscScalar el_phi[],PetscScalar el_phi_last[],
+																	PetscScalar gp_kappa[],PetscScalar gp_Q[],
+																	PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
+
+PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_el,PetscScalar *tau);
+PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_cell,PetscScalar theta,PetscScalar dt,PetscScalar *tau);
+PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscScalar *tau);
+
+PetscErrorCode AElement_FormJacobian_T_tau( 
+																					 PetscScalar Re[],PetscReal dt,
+																					 PetscScalar tau,
+																					 PetscScalar el_coords[], 
+																					 PetscScalar gp_kappa[],
+																					 PetscScalar el_V[],
+																					 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
+
+PetscErrorCode AElement_FormFunction_T_tau(
+																 PetscScalar Re[],PetscReal dt,
+																 PetscReal tau,
+																 PetscScalar el_coords[],
+																 PetscScalar el_coords_old[],
+																 PetscScalar el_V[],
+																 PetscScalar el_phi[],PetscScalar el_phi_old[],
+																 PetscScalar gp_kappa[],PetscScalar gp_Q[],
+																 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
 
 PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
 PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx);

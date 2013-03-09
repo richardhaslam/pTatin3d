@@ -44,6 +44,7 @@
 #include "QPntVolCoefEnergy_def.h"
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
+#include "energy_assembly.h"
 
 /*
  
@@ -79,8 +80,13 @@
  
  */
 
+#define SUPG_STAB 1
+#define TAU_STAB  2
 
-#define SUPG_EPS 1.0e-10
+#define ADV_DIFF_STABILIZATION_TYPE SUPG_STAB
+//#define ADV_DIFF_STABILIZATION_TYPE TAU_STAB
+
+#define ADV_DIFF_STAB_EPS 1.0e-10
 
 /* SUPG business */
 /** AdvectionDiffusion_UpwindXiExact - Brooks, Hughes 1982 equation 2.4.2
@@ -197,7 +203,7 @@ PetscErrorCode DASUPG3dComputeElementPecletNumber_qp( PetscScalar el_coords[],Pe
   u_norm = sqrt( u_xi[0]*u_xi[0] + u_xi[1]*u_xi[1] + u_xi[2]*u_xi[2]);
 	
 	_alpha = 0.5 * u_norm;
-	if (kappa_el > SUPG_EPS) {
+	if (kappa_el > ADV_DIFF_STAB_EPS) {
 		_alpha = _alpha / ( (kappa_el) * sqrt( one_dxi2[0] + one_dxi2[1] + one_dxi2[2]) );
 	}
   *alpha  = _alpha;
@@ -237,7 +243,7 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	
   ierr = DASUPG3dComputeElementPecletNumber_qp(el_coords,u,kappa_el,&alpha);CHKERRQ(ierr);
 	
-  if (U<SUPG_EPS) {
+  if (U<ADV_DIFF_STAB_EPS) {
     dt_diffusive = 0.5 * H*H / kappa_el;
     *dtd = dt_diffusive;
     *dta = 1.0e10;
@@ -247,7 +253,7 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
     } else {
       CrFAC = PetscMin(1.0,alpha);
     }
-    dt_optimal = CrFAC * H / (U+SUPG_EPS);
+    dt_optimal = CrFAC * H / (U+ADV_DIFF_STAB_EPS);
     *dta = dt_optimal;
     *dtd = 1.0e10;
   }
@@ -257,8 +263,8 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	 printf("        0.5.dx.dx/kappa: %1.4f \n", 0.5*H*H/(kappa_el+1.0e-32) );
 	 */
 	
-	*dta = H/(U+SUPG_EPS);
-	*dtd = 0.5*H*H/(kappa_el+SUPG_EPS);
+	*dta = H/(U+ADV_DIFF_STAB_EPS);
+	*dtd = 0.5*H*H/(kappa_el+ADV_DIFF_STAB_EPS);
 	
   PetscFunctionReturn(0);
 }
@@ -304,8 +310,8 @@ PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coord
 	/* could replace with / (1.0e-30 + kappa_el) */
 	for (d=0; d<NSD; d++) {
 		dxi[d]      = DX[d];
-		if (kappa_el < SUPG_EPS) {
-			alpha_xi[d] = 1.0/SUPG_EPS;
+		if (kappa_el < ADV_DIFF_STAB_EPS) {
+			alpha_xi[d] = 1.0/ADV_DIFF_STAB_EPS;
 		} else {
 			alpha_xi[d] = 0.5 * u_xi[d]  * dxi[d]  / kappa_el;
 		}
@@ -329,13 +335,13 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
 	uhat[1] = Up[1];
 	uhat[2] = Up[2];
   unorm = PetscSqrtScalar(Up[0]*Up[0] + Up[1]*Up[1] + Up[2]*Up[2]);
-	if (unorm > SUPG_EPS) {
+	if (unorm > ADV_DIFF_STAB_EPS) {
 		uhat[0] = Up[0]/unorm;
 		uhat[1] = Up[1]/unorm;
 		uhat[2] = Up[2]/unorm;
 	}
 	
-  if (kappa_hat < SUPG_EPS) {
+  if (kappa_hat < ADV_DIFF_STAB_EPS) {
     for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
       Ni_supg[i] = Ni[i];
     }
@@ -347,8 +353,8 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AElement_FormJacobian_T"
-PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
+#define __FUNCT__ "AElement_FormJacobian_T_supg"
+PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
 																			 PetscScalar gp_kappa[],
 																			 PetscScalar el_V[],
 																			 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] )
@@ -523,7 +529,30 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 		ierr = PetscMemzero(ADe,sizeof(PetscScalar)*NODES_PER_EL_Q1_3D*NODES_PER_EL_Q1_3D);CHKERRQ(ierr);
 		
 		/* form element stiffness matrix */
-		ierr = AElement_FormJacobian_T( ADe,dt,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
+#if (ADV_DIFF_STABILIZATION_TYPE == SUPG_STAB)		
+		ierr = AElement_FormJacobian_T_supg( ADe,dt,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
+#elif (ADV_DIFF_STABILIZATION_TYPE == TAU_STAB)	
+		{
+			PetscReal tau;
+			PetscReal theta = 0.5;
+			PetscReal kappa_cell;
+			
+			kappa_cell = 0.0;
+			for (n=0; n<nqp; n++) {
+				kappa_cell = kappa_cell + qp_kappa[n];
+			}
+			kappa_cell = kappa_cell / ((PetscReal)nqp);
+			
+			ierr = AdvDiffComputeTau_BrooksHughes(el_coords,el_V,kappa_cell,&tau);CHKERRQ(ierr);
+			//printf("AdvDiffComputeTau_BrooksHughes : tau = %1.4e\n",tau);
+			ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
+			//printf("AdvDiffComputeTau_TezduyarOsawa : tau = %1.4e\n",tau);
+			ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
+			//printf("AdvDiffComputeTau_UserDefinedConstant : tau = %1.4e\n",tau);
+			
+			ierr = AElement_FormJacobian_T_tau( ADe,dt,tau,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
+		}
+#endif
 		
 		/* get indices */
 		ierr = DMDAEQ1_GetElementLocalIndicesDOF(T_el_lidx,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
@@ -576,7 +605,9 @@ PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat *A,Mat *B,MatStructur
 	PetscFunctionReturn(0);
 }
 
-void AElement_FormFunctionLocal_SUPG_T(
+#undef __FUNCT__  
+#define __FUNCT__ "AElement_FormFunction_T_supg"
+PetscErrorCode AElement_FormFunction_T_supg(
 																			 PetscScalar Re[],
 																			 PetscReal dt,
 																			 PetscScalar el_coords[],PetscScalar el_coords_old[],
@@ -682,11 +713,12 @@ void AElement_FormFunctionLocal_SUPG_T(
     }
   }
 	
+	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "FormFunctionLocal_SUPG_T"
-PetscErrorCode FormFunctionLocal_SUPG_T(
+#define __FUNCT__ "FormFunctionLocal_T"
+PetscErrorCode FormFunctionLocal_T(
 																				PhysCompEnergy data,
 																				PetscReal dt,
 																				DM da,
@@ -779,7 +811,30 @@ PetscErrorCode FormFunctionLocal_SUPG_T(
 		ierr = PetscMemzero(Re,sizeof(PetscScalar)*NODES_PER_EL_Q1_3D);CHKERRQ(ierr);
 		
 		/* form element stiffness matrix */
-		AElement_FormFunctionLocal_SUPG_T(Re,dt,el_coords,el_coords_old,el_V,el_phi,el_philast,qp_kappa,qp_Q,nqp,qp_xi,qp_weight);
+#if (ADV_DIFF_STABILIZATION_TYPE == SUPG_STAB)				
+		ierr = AElement_FormFunction_T_supg(Re,dt,el_coords,el_coords_old,el_V,el_phi,el_philast,qp_kappa,qp_Q,nqp,qp_xi,qp_weight);CHKERRQ(ierr);
+#elif (ADV_DIFF_STABILIZATION_TYPE == TAU_STAB)
+		{
+			PetscReal tau;
+			PetscReal theta = 0.5;
+			PetscReal kappa_cell;
+			
+			kappa_cell = 0.0;
+			for (n=0; n<nqp; n++) {
+				kappa_cell = kappa_cell + qp_kappa[n];
+			}
+			kappa_cell = kappa_cell / ((PetscReal)nqp);
+			
+			ierr = AdvDiffComputeTau_BrooksHughes(el_coords,el_V,kappa_cell,&tau);CHKERRQ(ierr);
+			//printf("AdvDiffComputeTau_BrooksHughes : tau = %1.4e\n",tau);
+			ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
+			//printf("AdvDiffComputeTau_TezduyarOsawa : tau = %1.4e\n",tau);
+			ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
+			//printf("AdvDiffComputeTau_UserDefinedConstant : tau = %1.4e\n",tau);
+			
+			ierr = AElement_FormFunction_T_tau(Re,dt,tau,el_coords,el_coords_old,el_V,el_phi,el_philast,qp_kappa,qp_Q,nqp,qp_xi,qp_weight);CHKERRQ(ierr);
+		}
+#endif
 		
 		ierr = DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(LA_R,1,ge_eqnums,Re);CHKERRQ(ierr);
 		
@@ -863,7 +918,7 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
   ierr = DMGlobalToLocalEnd(  cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
   ierr = VecGetArray(Vloc,&LA_V);CHKERRQ(ierr);
 	
-	ierr = FormFunctionLocal_SUPG_T(data,dt,da,LA_V, LA_philoc,LA_philastloc,LA_Fphiloc);CHKERRQ(ierr);
+	ierr = FormFunctionLocal_T(data,dt,da,LA_V, LA_philoc,LA_philastloc,LA_Fphiloc);CHKERRQ(ierr);
 	
   ierr = VecRestoreArray(Vloc,&LA_V);CHKERRQ(ierr);
 	
@@ -936,8 +991,8 @@ PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScala
 	/* could replace with / (1.0e-30 + kappa_el) */
 	for (d=0; d<NSD; d++) {
 		dxi[d]      = DX[d];
-		if (kappa_el < SUPG_EPS) {
-			alpha_xi[d] = 1.0/SUPG_EPS;
+		if (kappa_el < ADV_DIFF_STAB_EPS) {
+			alpha_xi[d] = 1.0/ADV_DIFF_STAB_EPS;
 		} else {
 			alpha_xi[d] = 0.5 * u_xi[d]  * dxi[d]  / kappa_el;
 		}
@@ -977,7 +1032,7 @@ PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScal
 	
 	t = 0.0;
 
-	if (v_cell > SUPG_EPS) {
+	if (v_cell > ADV_DIFF_STAB_EPS) {
 		tau1 = 0.5 * h_cell / v_cell;
 		t = t + 1.0/pow(tau1,r);
 	}
@@ -985,7 +1040,7 @@ PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScal
 	tau2 = theta * dt;
 	t = t + 1.0/pow(tau2,r);
 
-	if (kappa_cell > SUPG_EPS) {
+	if (kappa_cell > ADV_DIFF_STAB_EPS) {
 		tau3 = (h_cell * h_cell ) / kappa_cell;
 		t = t + 1.0/pow(tau3,r);
 	}
@@ -1000,10 +1055,21 @@ PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScal
 #define __FUNCT__ "AdvDiffComputeTau_UserDefinedConstant"
 PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscScalar *tau)
 {
+	static int been_here;
+	static PetscReal user_tau=0.0;
+	PetscBool flg;
+	
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	*tau = const_t;
+
+	if (been_here==0) {
+		flg = PETSC_FALSE;
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
+		been_here = 1;
+	}
+	
+	*tau = user_tau;
   PetscFunctionReturn(0);
 }
 
@@ -1138,8 +1204,9 @@ PetscErrorCode AElement_FormJacobian_T_tau(
 	PetscFunctionReturn(0);
 }
 
-
-void AElement_FormFunctionLocal_SUPG_T_tau(
+#undef __FUNCT__  
+#define __FUNCT__ "AElement_FormFunction_T_tau"
+PetscErrorCode AElement_FormFunction_T_tau(
 																			 PetscScalar Re[],
 																			 PetscReal dt,
 																			 PetscReal tau,
@@ -1250,7 +1317,5 @@ void AElement_FormFunctionLocal_SUPG_T_tau(
     }
   }
 	
+	PetscFunctionReturn(0);	
 }
-
-
-
