@@ -71,6 +71,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	Mat             JE;
 	Vec             T,f;
 	PetscBool       active_energy;
+	PetscBool       use_JFNK_T = PETSC_FALSE;
 	
 	PetscFunctionBegin;
 	
@@ -115,16 +116,23 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,0);
+		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 
+		ierr = PetscOptionsGetBool(PETSC_NULL,"-use_jfnk_energy",&use_JFNK_T,PETSC_NULL);CHKERRQ(ierr);
+		
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+
+		JE = PETSC_NULL;
+		if (!use_JFNK_T) {
+			ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+			ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
+		}
 
 		ierr = pTatinPhysCompAttachData_Energy(user,T,JE);CHKERRQ(ierr);
 	}
@@ -182,12 +190,12 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		MatStructure mstr;
 		BCList       bclist;
 		DM           daT;
-		PetscScalar  zero;
+		PetscReal    dx;
 		KSP          kspT;
 		SNES         snesT;
+		PetscInt     tk;
 		
-		
-		/* FORCE DIFFUSIVITU TO BE ONE ON MP AND QP */
+		/* FORCE DIFFUSIVITY TO BE ONE ON MP AND QP */
 		/* mash in some diffusivity */
 #if 0
 		{
@@ -232,8 +240,6 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		bclist = energy->T_bclist;
 		daT    = energy->daT;
 		
-		/* MAP Tin into Told */
-		ierr = VecCopy(T,Told);CHKERRQ(ierr);
 		
 		/* MAP V into adv_diff_v TODO */
 		/* map velocity vector from Q2 space onto Q1 space */
@@ -247,81 +253,68 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		 = (dt.u - X_current + X_old)/dt
 		 */
 		
-		user->dt   = 1.0e-3;
-		user->time = 1.0;
+		dx = 1.0/((PetscReal)(user->mx));
+		user->dt   = 0.5 * (dx * dx) / 1.0;
+		user->time = 0.0;
 		
 		energy->dt   = user->dt;
 		energy->time = user->time;
 		
-		
-		
-#if 0
-		zero = 0.0;
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		
-//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
-//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
-//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
-//		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
-		ierr = DMDAVecTraverse3d(daT,T,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
-		ierr = DMDAViewPetscVTK(daT,T,"phiIC_overlapping_q1.vtk");CHKERRQ(ierr);
-#endif
+		for (tk=1; tk<user->nsteps; tk++) {
+			char stepname[256];
+			
+			/* MAP Tin into Told */
+			ierr = VecCopy(T,Told);CHKERRQ(ierr);
+			ierr = VecZeroEntries(T);CHKERRQ(ierr);
+			
+			// crappy way - make it non-linear
+	#if 0		
+			ierr = TS_FormJacobianEnergy(user->time,T,user->dt,&JE,&JE,&mstr,(void*)energy);CHKERRQ(ierr);
+			ierr = TS_FormFunctionEnergy(user->time,T,user->dt,f,(void*)energy);CHKERRQ(ierr);
 
-		// crappy way - make it non-linear
-#if 0		
-		ierr = TS_FormJacobianEnergy(user->time,T,user->dt,&JE,&JE,&mstr,(void*)energy);CHKERRQ(ierr);
-		ierr = TS_FormFunctionEnergy(user->time,T,user->dt,f,(void*)energy);CHKERRQ(ierr);
+			//ierr = VecSetRandom(f,0);CHKERRQ(ierr);
+			//ierr = VecSet(f,12.1);CHKERRQ(ierr);
+					
+			ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
+			ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
+			ierr = KSPSetOperators(kspT,JE,JE,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetFromOptions(kspT);CHKERRQ(ierr);
+			
+			ierr = KSPSolve(kspT,f,T);CHKERRQ(ierr);
 
-		//ierr = VecSetRandom(f,0);CHKERRQ(ierr);
-		//ierr = VecSet(f,12.1);CHKERRQ(ierr);
-				
-		ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
-		ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
-		ierr = KSPSetOperators(kspT,JE,JE,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-		ierr = KSPSetFromOptions(kspT);CHKERRQ(ierr);
-		
-		ierr = KSPSolve(kspT,f,T);CHKERRQ(ierr);
+			ierr = KSPDestroy(&kspT);CHKERRQ(ierr);
+	#endif
+			
+	#if 1
+			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
+			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
 
-		ierr = KSPDestroy(&kspT);CHKERRQ(ierr);
-#endif
-		
-#if 1
-		ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
-		ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
+			if (use_JFNK_T) {
+				ierr = SNESSetJacobian(snesT,PETSC_NULL,PETSC_NULL,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			} else {
+				ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			}
+					
+			ierr = SNESSetType(snesT,SNESKSPONLY);
+			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 
-		ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);  
-		ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
+			
+			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
+	#endif
+			
+			user->time = user->time + user->dt;
+			
+			sprintf(stepname,"step%.4d",tk);
+			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
 		
-		ierr = SNESSetType(snesT,SNESKSPONLY);
-		ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
-
-		ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
-		
-		ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
-#endif
-		
-#if 0
-		/* test generic viewer */
-		{
-			const int nf = 2;
-			const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Energy }; 
-			ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,user->outputpath,"test_MPStd_MPEnergy");CHKERRQ(ierr);
 		}
-		/* output energy mesh */
-		ierr = DMDAViewPetscVTK(energy->daT,energy->Told,"phiOld_overlapping_q1.vtk");CHKERRQ(ierr);
-#endif
-
-		ierr = pTatinModel_Output(model,user,X,"step1");CHKERRQ(ierr);
 	}	
 	
 	
 	ierr = VecDestroy(&T);CHKERRQ(ierr);
-	ierr = MatDestroy(&JE);CHKERRQ(ierr);
+	if (JE) { ierr = MatDestroy(&JE);CHKERRQ(ierr); }
 	ierr = VecDestroy(&f);CHKERRQ(ierr);
 	
 	ierr = VecDestroy(&X);CHKERRQ(ierr);

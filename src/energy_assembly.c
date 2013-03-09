@@ -397,8 +397,8 @@ PetscErrorCode AElement_FormJacobian_T( PetscScalar Re[],PetscReal dt,PetscScala
 				Re[j+i*NODES_PER_EL_Q1_3D] += fac * ( 
 																						 //Ni_p[i] * Ni_p[j]
 																						 Ni_supg_p[i] * Ni_p[j]
-																						 + dt * Ni_supg_p[i] * ( v_p[0] * GNx_p[0][j] + v_p[1] * GNx_p[1][j] + v_p[2] * GNx_p[2][j] )
-																						 + dt * kappa_p * ( GNx_p[0][i] * GNx_p[0][j] + GNx_p[1][i] * GNx_p[1][j] + GNx_p[2][i] * GNx_p[2][j] )
+																						 + dt * Ni_supg_p[i] * ( v_p[0]*GNx_p[0][j] + v_p[1]*GNx_p[1][j] + v_p[2]*GNx_p[2][j] )
+																						 + dt * kappa_p * ( GNx_p[0][i]*GNx_p[0][j] + GNx_p[1][i]*GNx_p[1][j] + GNx_p[2][i]*GNx_p[2][j] )
 																						 );
 			}
 		}
@@ -443,6 +443,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	Vec            V;
   Vec            local_V;
   PetscScalar    *LA_V;
+	PetscBool      mat_mffd;
 	PetscErrorCode ierr;
 	
 	
@@ -452,8 +453,30 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	bclist = data->T_bclist;
 	volQ   = data->volQ;
 	
+		
 	/* trash old entries */
-  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+	ierr = PetscTypeCompare((PetscObject)(*A),MATMFFD,&mat_mffd);CHKERRQ(ierr);
+
+	if (!mat_mffd) {
+		ierr = MatZeroEntries(*A);CHKERRQ(ierr);
+	} else {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	}
+
+	if (*B) {
+		ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+	}
+
+	*mstr = DIFFERENT_NONZERO_PATTERN;
+	if ((*A) == (*B)) {
+		*mstr = SAME_NONZERO_PATTERN;
+	}
+
+	if (*B==PETSC_NULL) {
+		PetscFunctionReturn(0);
+	}
+	
 	
 	/* quadrature */
 	volQ      = data->volQ;
@@ -530,11 +553,13 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	/* assemble */
 	ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*A != *B) {
+ 
+	if (*A != *B) {
+		*mstr = DIFFERENT_NONZERO_PATTERN;
     ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
-	*mstr = SAME_NONZERO_PATTERN;
+	
   PetscFunctionReturn(0);
 }
 
@@ -588,23 +613,29 @@ void AElement_FormFunctionLocal_SUPG_T(
 		
     fac     = gp_weight[p] * J_p;
     fac_old = gp_weight[p] * J_p_old;
+		//printf("p=%d: J_p %1.4e ; j_p_old %1.4e ; fac %1.4e ; fac_old %1.4e \n", p,J_p,J_p_old,fac,fac_old);
 		
 		kappa_p      = gp_kappa[p];
 		f_p          = gp_Q[p];
     phi_p        = 0.0;
     phi_last_p   = 0.0;
+
     gradphi_p[0] = 0.0;
 		gradphi_p[1] = 0.0;
 		gradphi_p[2] = 0.0;
-    gradphiold_p[0] = 0.0;
+    
+		gradphiold_p[0] = 0.0;
 		gradphiold_p[1] = 0.0;
 		gradphiold_p[2] = 0.0;
-    v_p[0] = 0.0;
+    
+		v_p[0] = 0.0;
 		v_p[1] = 0.0;
 		v_p[2] = 0.0;
-    for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
+    
+		for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
       phi_p        += Ni_p[j] * el_phi[j];      /* compute phi on the particle */
       phi_last_p   += Ni_p[j] * el_phi_last[j];  /* compute phi_dot on the particle */
+
       gradphiold_p[0] += GNx_p[0][j] * el_phi_last[j];
       gradphiold_p[1] += GNx_p[1][j] * el_phi_last[j];
       gradphiold_p[2] += GNx_p[2][j] * el_phi_last[j];
@@ -618,7 +649,13 @@ void AElement_FormFunctionLocal_SUPG_T(
       v_p[2]     += Ni_p[j] * el_V[NSD*j+2];      /* compute vz on the particle */
     }
     ConstructNiSUPG_Q1_3D(v_p,kappa_hat,Ni_p,GNx_p,Ni_supg_p);
-		
+	
+		/*
+		printf("qp=%d : v_p = %1.4e %1.4e %1.4e : kappa = %1.4e : kappa_hat = %1.4e : phi = %1.4e : phi_last = %1.4e \n",
+					 p,v_p[0],v_p[1],v_p[2],kappa_p,kappa_hat,phi_p,phi_last_p);
+		printf("Ni/Ni_supg 0(%1.4e %1.4e) 3(%1.4e %1.4e) 7(%1.4e %1.4e) \n",
+					 Ni_p[0],Ni_supg_p[0],Ni_p[3],Ni_supg_p[3],Ni_p[7],Ni_supg_p[7]);
+		*/
 		
 		M_dotT_p = 0.0;
 		for (j=0; j<NODES_PER_EL_Q1_3D; j++) {
@@ -637,7 +674,7 @@ void AElement_FormFunctionLocal_SUPG_T(
                         + Ni_supg_p[i] * phi_p 
                         // + Ni_p[i] T^k+1 
 												)
-			             + fac_old * (
+							+ fac * (
 												// - M(x^k) T^k
  											  // - Ni_p[i] T^k 
 												- Ni_supg_p[i] * phi_last_p 
@@ -807,8 +844,6 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 	
 	/* insert boundary conditions into local vectors */
 	ierr = BCListInsertLocal(data->T_bclist,philoc);CHKERRQ(ierr);
-	
-	/* what do i do with the phi_dot */
 	
 	/* init residual */
 	ierr = VecZeroEntries(Fphiloc);CHKERRQ(ierr);
