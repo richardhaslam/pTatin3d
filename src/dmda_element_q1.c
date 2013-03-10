@@ -54,7 +54,7 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
 	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,d,X,Y,Z,width;
 	PetscInt *el;
-	int rank;
+	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -265,7 +265,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	PetscInt *siq2,*sjq2,*skq2,*lmxq2,*lmyq2,*lmzq2,*lxq1,*lyq1,*lzq1;
 	PetscInt *lsip,*lsjp,*lskp;
 	PetscErrorCode ierr;
-	int rank;
+	PetscMPIInt rank;
 	
 	PetscFunctionBegin;
 	
@@ -412,7 +412,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	const PetscInt *lxq2,*lyq2,*lzq2;
 	PetscInt *lsip,*lsjp,*lskp;
 	PetscErrorCode ierr;
-	int rank;
+	PetscMPIInt rank;
 	
 	PetscFunctionBegin;
 	
@@ -652,3 +652,144 @@ PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],Pets
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectVectorQ2toOverlappingQ1_3d"
+PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
+{
+	PetscErrorCode ierr;
+	PetscInt d,ndofq2,ndofq1;
+	PetscScalar ****LA_fieldQ2;
+	PetscScalar ****LA_fieldQ1;
+	PetscInt si1,sj1,sk1,nx1,ny1,nz1,i,j,k;
+	PetscInt si2,sj2,sk2,nx2,ny2,nz2;
+	
+	PetscFunctionBegin;
+
+	ierr = DMDAGetInfo(daq2,0, 0,0,0, 0,0,0, &ndofq2,0, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(daq1,0, 0,0,0, 0,0,0, &ndofq1,0, 0,0,0, 0);CHKERRQ(ierr);
+	
+	ierr = DMDAVecGetArrayDOF(daq2,x2,&LA_fieldQ2);CHKERRQ(ierr);
+	ierr = DMDAVecGetArrayDOF(daq1,x1,&LA_fieldQ1);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCorners(     daq1,&si1,&sj1,&sk1 , &nx1,&ny1,&nz1);CHKERRQ(ierr);
+	ierr = DMDAGetGhostCorners(daq2,&si2,&sj2,&sk2 , &nx2,&ny2,&nz2);CHKERRQ(ierr);
+	
+	for( k=sk1; k<sk1+nz1; k++ ) {
+		if ( (2*k<sk2) || (2*k>sk2+nz2) ) {
+			printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
+		}
+		
+		for( j=sj1; j<sj1+ny1; j++ ) {
+			if ( (2*j<sj2) || (2*j>sj2+ny2) ) {
+				printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
+			}
+			
+			for( i=si1; i<si1+nx1; i++ ) {
+				if ( (2*i<si2) || (2*i>si2+nx2) ) {
+					printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
+				}
+				
+				//printf("(i,j,k-%d,%d,%d) => (I,J,K-%d,%d,%d)\n",i,j,k,2*i,2*j,2*k);
+				for (d=0; d<ndofq2; d++) {
+					LA_fieldQ1[k][j][i][d] = LA_fieldQ2[2*k][2*j][2*i][d];
+				}
+			}
+		}
+	}
+	
+	ierr = DMDAVecRestoreArrayDOF(daq1,x1,&LA_fieldQ1);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArrayDOF(daq2,x2,&LA_fieldQ2);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectVectorQ2toNestedQ1_3d"
+PetscErrorCode DMDAProjectVectorQ2toNestedQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
+{
+	PetscErrorCode ierr;
+	PetscInt si1,sj1,sk1,nx1,ny1,nz1;
+	PetscInt si2,sj2,sk2,nx2,ny2,nz2;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetCorners(daq1,&si1,&sj1,&sk1 , &nx1,&ny1,&nz1);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(daq2,&si2,&sj2,&sk2 , &nx2,&ny2,&nz2);CHKERRQ(ierr);
+
+	if (si1 != si2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (si)"); }
+	if (sj1 != sj2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (sj)"); }
+	if (sk1 != sk2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (sk)"); }
+
+	if (nx1 != nz2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (nx)"); }
+	if (ny1 != ny2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (ny)"); }
+	if (nz1 != nz2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (nz)"); }
+		
+	ierr = VecCopy(x2,x1);CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectVectorQ2toQ1"
+PetscErrorCode DMDAProjectVectorQ2toQ1(DM daq2,Vec x2,DM daq1,Vec x1,PetscInt mesh_type)
+{
+	PetscErrorCode ierr;
+	PetscInt dim,ndofq2,ndofq1;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetInfo(daq2,&dim, 0,0,0, 0,0,0, &ndofq2,0, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(daq1,0, 0,0,0, 0,0,0, &ndofq1,0, 0,0,0, 0);CHKERRQ(ierr);
+	if (ndofq1 != ndofq2) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"ndof on DM's do not match");
+	}
+	
+	switch (dim) {
+		case 1:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 3d supported");
+			break;
+		case 2:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 3d supported");
+			break;
+		case 3:
+			if (mesh_type == 0) {
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"mesh type must be 1 or 2");
+			} else if (mesh_type == 1) {
+				ierr = DMDAProjectVectorQ2toOverlappingQ1_3d(daq2,x2,daq1,x1);CHKERRQ(ierr);
+			} else if (mesh_type == 2) {
+				ierr = DMDAProjectVectorQ2toNestedQ1_3d(daq2,x2,daq1,x1);CHKERRQ(ierr);
+			} else {
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown mesh type");
+			}
+			break;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAProjectCoordinatesQ2toQ1"
+PetscErrorCode DMDAProjectCoordinatesQ2toQ1(DM daq2,DM daq1,PetscInt mesh_type)
+{
+	PetscErrorCode ierr;
+	DM cdaq2,cdaq1;
+	Vec coordq2,coordq1;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetCoordinateDA(daq2,&cdaq2);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(daq1,&cdaq1);CHKERRQ(ierr);
+
+	ierr = DMDAGetCoordinates(daq2,&coordq2);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(daq1,&coordq1);CHKERRQ(ierr);
+	
+	ierr = DMDAProjectVectorQ2toQ1(cdaq2,coordq2,cdaq1,coordq1,mesh_type);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(daq1);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
