@@ -38,11 +38,13 @@
 #include "ptatin3d.h"
 #include "ptatin3d_defs.h"
 #include "private/ptatin_impl.h"
+#include "QPntVolCoefEnergy_def.h"
 
 #include "dmdae.h"
 #include "dmda_element_q1.h"
 #include "quadrature.h"
 #include "output_paraview.h"
+#include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
 #include "energy_output.h"
 
@@ -67,7 +69,7 @@ PetscErrorCode _apply_threshold(PetscScalar x[],const PetscInt N,const PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinOutputMeshEnergyVTS_ascii"
-PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Vec X,const char name[])
+PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(Quadrature Q,DM daT,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
   PetscScalar    *LA_fields;
@@ -79,6 +81,9 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Vec X,const char name[])
 	FILE           *vtk_fp = NULL;
 	PetscInt       gsi,gsj,gsk,gm,gn,gp;
 	PetscInt       line_count;
+	PetscInt       ei,ej,ek;
+	PetscInt       p,nqp;
+	QPntVolCoefEnergy *all_quadrature_points,*cell_quadrature_points;
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
@@ -97,6 +102,9 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Vec X,const char name[])
   ierr = DMGlobalToLocalEnd(daT,X,INSERT_VALUES,local_fields);CHKERRQ(ierr);
   ierr = VecGetArray(local_fields,&LA_fields);CHKERRQ(ierr);
 	ierr = _apply_threshold(LA_fields,gm*gn*gp,1.0e-12,0.0);CHKERRQ(ierr);
+	
+	//printf("gsi: (%d,%d,%d): gm: (%d,%d,%d) \n", gsi,gsj,gsk,gm,gn,gp);
+	//printf("esi: (%d,%d,%d): mx: (%d,%d,%d) \n", esi,esj,esk,mx,my,mz);
 	
 	/* VTS HEADER - OPEN */	
 #ifdef WORDSIZE_BIGENDIAN
@@ -123,34 +131,81 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Vec X,const char name[])
 			}
 		}
 	}
+	fprintf(vtk_fp,"\n");
 	fprintf(vtk_fp, "      </DataArray>\n");
 	fprintf(vtk_fp, "    </Points>\n");
 	
 	/* VTS CELL DATA */	
 	fprintf(vtk_fp, "    <CellData>\n");
 	
+	
+	nqp  = Q->npoints;
+	ierr = VolumeQuadratureGetAllCellData_Energy(Q,&all_quadrature_points);CHKERRQ(ierr);
+	
 	/* average diffusivity and heat sources */
-/*	
 	fprintf(vtk_fp, "      <DataArray Name=\"diffusivity_qp_avg\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
 	fprintf(vtk_fp,"      ");
+	line_count = 0;
 	for (ek=0; ek<mz; ek++) {
 		for (ej=0; ej<my; ej++) {
 			for (ei=0; ei<mx; ei++) {
-				PetscScalar avg = 0.0;
+				double prop,avg;
+				PetscInt eidx;
 				
- 
-				fprintf(vtk_fp,"%1.6e ", pressure_0 );
+				eidx = ei + ej*mx + ek*mx*my;
+				ierr = VolumeQuadratureGetCellData_Energy(Q,all_quadrature_points,eidx,&cell_quadrature_points);CHKERRQ(ierr);
+				avg = 0.0;
+				for (p=0; p<nqp; p++) {
+					QPntVolCoefEnergyGetField_diffusivity(&cell_quadrature_points[p],&prop);
+					avg = avg + prop;
+				}
+				avg = avg / ( (double)nqp );
+				
+				fprintf(vtk_fp,"%1.6e ", avg );
+				if (line_count%10==0) {
+					fprintf(vtk_fp,"\n");
+				}
+				line_count++;
 			}
 		}
 	}
 	fprintf(vtk_fp,"\n");
 	fprintf(vtk_fp, "      </DataArray>\n");
-*/	
+
+	fprintf(vtk_fp, "      <DataArray Name=\"heatsource_qp_avg\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+	fprintf(vtk_fp,"      ");
+	line_count = 0;
+	for (ek=0; ek<mz; ek++) {
+		for (ej=0; ej<my; ej++) {
+			for (ei=0; ei<mx; ei++) {
+				double prop,avg;
+				PetscInt eidx;
+				
+				eidx = ei + ej*mx + ek*mx*my;
+				ierr = VolumeQuadratureGetCellData_Energy(Q,all_quadrature_points,eidx,&cell_quadrature_points);CHKERRQ(ierr);
+				avg = 0.0;
+				for (p=0; p<nqp; p++) {
+					QPntVolCoefEnergyGetField_heat_source(&cell_quadrature_points[p],&prop);
+					avg = avg + prop;
+				}
+				avg = avg / ( (double)nqp );
+				
+				fprintf(vtk_fp,"%1.6e ", avg );
+				if (line_count%10==0) {
+					fprintf(vtk_fp,"\n");
+				}
+				line_count++;
+			}
+		}
+	}
+	fprintf(vtk_fp,"\n");
+	fprintf(vtk_fp, "      </DataArray>\n");
+
 	fprintf(vtk_fp, "    </CellData>\n");
 	
 	/* VTS NODAL DATA */
 	fprintf( vtk_fp, "    <PointData>\n");
-	/* temperatur */
+	/* temperature */
 	fprintf( vtk_fp, "      <DataArray Name=\"temperature\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
 	line_count = 0;
 	for (k=esk; k<esk+mz+1; k++) {
@@ -165,6 +220,7 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Vec X,const char name[])
 			}
 		}
 	}
+	fprintf(vtk_fp,"\n");
 	fprintf(vtk_fp, "      </DataArray>\n");
 	fprintf(vtk_fp, "    </PointData>\n");
 	
@@ -265,7 +321,7 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
 	
 	/* VTS NODAL DATA */
 	fprintf( vtk_fp, "    <PointData>\n");
-	/* temperatur */
+	/* temperature */
 	fprintf( vtk_fp, "      <DataArray Name=\"temperature\" type=\"Float64\" NumberOfComponents=\"1\" format=\"binary\">\n");
 	for (k=esk; k<esk+mz+1; k++) {
 		for (j=esj; j<esj+my+1; j++) {
@@ -293,7 +349,9 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
 	PetscFunctionReturn(0);
 }
 
-PetscErrorCode pTatinOutputMeshEnergyVTS(PetscBool binary,DM daT,Vec X,const char name[])
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputMeshEnergyVTS"
+PetscErrorCode pTatinOutputMeshEnergyVTS(PetscBool binary,Quadrature Q,DM daT,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
 	
@@ -302,7 +360,7 @@ PetscErrorCode pTatinOutputMeshEnergyVTS(PetscBool binary,DM daT,Vec X,const cha
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Binary writer not supported");
 		ierr = pTatinOutputMeshEnergyVTS_binary(daT,X,name);CHKERRQ(ierr);
 	} else {
-		ierr = pTatinOutputMeshEnergyVTS_ascii(daT,X,name);CHKERRQ(ierr);
+		ierr = pTatinOutputMeshEnergyVTS_ascii(Q,daT,X,name);CHKERRQ(ierr);
 	}
 	PetscFunctionReturn(0);
 }
@@ -410,13 +468,13 @@ PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char 
 	if(vtk_fp) fprintf(vtk_fp, "    <PPoints>\n");
 	if(vtk_fp) fprintf(vtk_fp, "      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
 	if(vtk_fp) fprintf(vtk_fp, "    </PPoints>\n");
-	
-	
+		
 	/* VTS CELL DATA */	
 	if(vtk_fp) fprintf(vtk_fp, "    <PCellData>\n");
+	if(vtk_fp) fprintf(vtk_fp, "      <PDataArray type=\"Float64\" Name=\"diffusivity_qp_avg\" NumberOfComponents=\"1\"/>\n");
+	if(vtk_fp) fprintf(vtk_fp, "      <PDataArray type=\"Float64\" Name=\"heatsource_qp_avg\" NumberOfComponents=\"1\"/>\n");
 	if(vtk_fp) fprintf(vtk_fp, "    </PCellData>\n");
-	
-	
+
 	/* VTS NODAL DATA */
 	if(vtk_fp) fprintf(vtk_fp, "    <PPointData>\n");
 	if(vtk_fp) fprintf(vtk_fp, "      <PDataArray type=\"Float64\" Name=\"temperature\" NumberOfComponents=\"1\"/>\n");
@@ -436,7 +494,7 @@ PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char 
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatinOutputParaViewMeshEnergy"
-PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Vec X,const char path[],const char prefix[])
+PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const char path[],const char prefix[])
 {
 	char           *vtkfilename,*filename;
 	PetscMPIInt    rank;
@@ -450,7 +508,7 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Vec X,const char path[],con
 		asprintf(&filename,"./%s",vtkfilename);
 	}
 	
-	//ierr = pTatinOutputMeshEnergyVTS(PETSC_FALSE,daT,X,filename);CHKERRQ(ierr);
+	ierr = pTatinOutputMeshEnergyVTS(PETSC_FALSE,Q,daT,X,filename);CHKERRQ(ierr);
 	free(filename);
 	free(vtkfilename);
 	
@@ -475,16 +533,17 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	PetscErrorCode ierr;
 	char           *name;
 	PhysCompEnergy energy;
-	DM              daT;
-	PetscLogDouble  t0,t1;
-	static int      beenhere=0;
-	static char     *pvdfilename;
+	DM             daT;
+	PetscLogDouble t0,t1;
+	static int     beenhere=0;
+	static char    *pvdfilename;
+	Quadrature     volQ;
 
 	PetscFunctionBegin;
 	
 	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
-	daT = energy->daT;
-	
+	daT  = energy->daT;
+	volQ = energy->volQ;
 	
 	PetscGetTime(&t0);
 	// PVD
@@ -515,7 +574,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 		asprintf(&name,"energy");
 	}
 	
-	ierr = pTatinOutputParaViewMeshEnergy(daT,X,ctx->outputpath,name);CHKERRQ(ierr);
+	ierr = pTatinOutputParaViewMeshEnergy(volQ,daT,X,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
 	PetscGetTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
