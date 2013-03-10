@@ -124,3 +124,57 @@ PetscErrorCode DMDestroyDMDAE(DM dm)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMDAEGetOwnershipRanges"
+PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
+																			 PetscInt *m,PetscInt *n,PetscInt *p,
+																			 PetscInt **si,PetscInt **sj,PetscInt **sk,
+																			 PetscInt **mx,PetscInt **my,PetscInt **mz)
+{
+	DMDAE dae;
+	PetscInt pM,pN,pP;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
+	
+	ierr = DMDAGetInfo(dm,0,0,0,0,&pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
+	if (m) { *m = pM; }
+	if (n) { *n = pN; }
+	if (p) { *p = pP; }
+
+	if (si) { *si = dae->lsip; }
+	if (sj) { *sj = dae->lsjp; }
+	if (sk) { *sk = dae->lskp; }
+
+	if (mx) { *mx = dae->lmxp; }
+	if (my) { *my = dae->lmyp; }
+	if (mz) { *mz = dae->lmzp; }
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDAEGetCornersElement"
+PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt *esk,PetscInt *mx,PetscInt *my,PetscInt *mz)
+{
+	DMDAE dae;
+	PetscInt pM,pN,pP;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
+	if (esi) { *esi = dae->sgi; }
+	if (esj) { *esj = dae->sgj; }
+	if (esk) { *esk = dae->sgk; }
+
+	if (mx) { *mx = dae->lmx; }
+	if (my) { *my = dae->lmy; }
+	if (mz) { *mz = dae->lmz; }
+	
+	PetscFunctionReturn(0);	
+}
+
+
+
+

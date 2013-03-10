@@ -59,5 +59,12 @@ PetscErrorCode DMAttachDMDAE(DM dm);
 PetscErrorCode DMGetDMDAE(DM dm,DMDAE *dae);
 PetscErrorCode DMDestroyDMDAE(DM dm);
 
+/* helpers */
+PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
+																			 PetscInt *m,PetscInt *n,PetscInt *p,
+																			 PetscInt **si,PetscInt **sj,PetscInt **sk,
+																			 PetscInt **mx,PetscInt **my,PetscInt **mz);
+PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt *esk,PetscInt *mx,PetscInt *my,PetscInt *mz);
+
 #endif
 
