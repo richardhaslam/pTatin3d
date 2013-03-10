@@ -229,12 +229,15 @@ PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,Phy
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatinPhysCompEnergy_Update"
-PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,Vec T)
+PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T)
 {
 	Vec            coords;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
+	
+	/* update coords */
+	ierr = DMDAProjectCoordinatesQ2toQ1(dav,e->daT,e->energy_mesh_type);CHKERRQ(ierr);
 	
 	/* update solution */
 	ierr = VecCopy(T,e->Told);CHKERRQ(ierr);
