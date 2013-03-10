@@ -40,7 +40,7 @@
 
 #include "dmda_iterator.h"
 #include "dmda_view_petscvtk.h"
-
+#include "energy_output.h"
 
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
@@ -251,7 +251,7 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	
 	ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-	vx_const = 1.0;
+	vx_const = 0.0;
 	vy_const = 0.0;
 	vz_const = 0.0;
 	ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
@@ -323,17 +323,22 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 	
 	ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
-	
+
+	/* standard viewer */
+	ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
+
+	/* debugging adv-diff solver */
+#if 0	
 	sprintf(name,"%s/%s_T.vtk",c->outputpath,prefix);
 	ierr = DMDAViewPetscVTK(energy->daT,temperature,name);CHKERRQ(ierr);
-
+	
 	sprintf(name,"%s/%s_Tlast.vtk",c->outputpath,prefix);
 	ierr = DMDAViewPetscVTK(energy->daT,energy->Told,name);CHKERRQ(ierr);
 	
 	sprintf(name,"%s/%s_advdiff_u.vtk",c->outputpath,prefix);
 	ierr = DMDAViewPetscVTK(energy->daT,energy->u_minus_V,name);CHKERRQ(ierr);
+#endif
 	
-
 	/* stokes + energy material points */
 	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 	{
