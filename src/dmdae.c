@@ -164,9 +164,9 @@ PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt
 	
   PetscFunctionBegin;
 	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
-	if (esi) { *esi = dae->sgi; }
-	if (esj) { *esj = dae->sgj; }
-	if (esk) { *esk = dae->sgk; }
+	if (esi) { *esi = dae->si; }
+	if (esj) { *esj = dae->sj; }
+	if (esk) { *esk = dae->sk; }
 
 	if (mx) { *mx = dae->lmx; }
 	if (my) { *my = dae->lmy; }
