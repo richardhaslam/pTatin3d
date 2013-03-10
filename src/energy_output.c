@@ -240,7 +240,7 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(Quadrature Q,DM daT,Vec X,const c
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinOutputMeshEnergyVTS_binary"
-PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
+PetscErrorCode pTatinOutputMeshEnergyVTS_binary(Quadrature Q,DM daT,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
   PetscScalar    *LA_fields;
@@ -251,6 +251,10 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
 	PetscInt       i,j,k,esi,esj,esk;
 	FILE           *vtk_fp = NULL;
 	PetscInt       gsi,gsj,gsk,gm,gn,gp;
+	PetscInt       ei,ej,ek;
+	PetscInt       p,nqp;
+	int            offset,bytes;
+	QPntVolCoefEnergy *all_quadrature_points,*cell_quadrature_points;
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
@@ -270,24 +274,69 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
   ierr = VecGetArray(local_fields,&LA_fields);CHKERRQ(ierr);
 	ierr = _apply_threshold(LA_fields,gm*gn*gp,1.0e-12,0.0);CHKERRQ(ierr);
 	
+	//printf("gsi: (%d,%d,%d): gm: (%d,%d,%d) \n", gsi,gsj,gsk,gm,gn,gp);
+	//printf("esi: (%d,%d,%d): mx: (%d,%d,%d) \n", esi,esj,esk,mx,my,mz);
+	
 	/* VTS HEADER - OPEN */	
 #ifdef WORDSIZE_BIGENDIAN
 	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
 	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
-
+	
 	fprintf(vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
 	fprintf(vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+
+	offset = 0;
 	
 	/* VTS COORD DATA */	
 	fprintf(vtk_fp, "    <Points>\n");
-	fprintf(vtk_fp, "      <DataArray Name=\"coords\" type=\"Float64\" NumberOfComponents=\"3\" format=\"binary\">\n");
+	
+	fprintf(vtk_fp, "      <DataArray Name=\"coords\" type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",offset);
+	offset += sizeof(int) + sizeof(double)*3*(mx+1)*(my+1)*(mz+1);
+	
+	fprintf(vtk_fp, "    </Points>\n");
+	
+	/* VTS CELL DATA */	
+	fprintf(vtk_fp, "    <CellData>\n");
+	
+	nqp  = Q->npoints;
+	ierr = VolumeQuadratureGetAllCellData_Energy(Q,&all_quadrature_points);CHKERRQ(ierr);
+	
+	/* average diffusivity and heat sources */
+	fprintf(vtk_fp, "      <DataArray Name=\"diffusivity_qp_avg\" type=\"Float64\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%d\" />\n",offset);
+	offset += sizeof(int) + sizeof(double)*1*(mx)*(my)*(mz);
+	
+	fprintf(vtk_fp, "      <DataArray Name=\"heatsource_qp_avg\" type=\"Float64\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%d\" />\n",offset);
+	offset += sizeof(int) + sizeof(double)*1*(mx)*(my)*(mz);
+	
+	fprintf(vtk_fp, "    </CellData>\n");
+	
+	/* VTS NODAL DATA */
+	fprintf( vtk_fp, "    <PointData>\n");
+
+	/* temperature */
+	fprintf( vtk_fp, "      <DataArray Name=\"temperature\" type=\"Float64\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%d\" />\n",offset);
+	offset += sizeof(int) + sizeof(double)*1*(mx+1)*(my+1)*(mz+1);
+
+	fprintf(vtk_fp, "    </PointData>\n");
+	
+	/* VTS HEADER - CLOSE */	
+	fprintf(vtk_fp, "    </Piece>\n");
+	fprintf(vtk_fp, "  </StructuredGrid>\n");
+	fprintf(vtk_fp, "  <AppendedData encoding=\"raw\">\n");
+	
+	/* write tag */
+	fprintf(vtk_fp, "_");
+	
+	/* write node coords */
+	bytes = sizeof(double)*3*(mx+1)*(my+1)*(mz+1);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
+	
 	for (k=esk; k<esk+mz+1; k++) {
 		for (j=esj; j<esj+my+1; j++) {
 			for (i=esi; i<esi+mx+1; i++) {
 				double pos[3];
-				
 				pos[0] = LA_gcoords[k][j][i].x;
 				pos[1] = LA_gcoords[k][j][i].y;
 				pos[2] = LA_gcoords[k][j][i].z;
@@ -295,49 +344,72 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
 			}
 		}
 	}
-	fprintf(vtk_fp, "      </DataArray>\n");
-	fprintf(vtk_fp, "    </Points>\n");
 	
-	/* VTS CELL DATA */	
-	fprintf(vtk_fp, "    <CellData>\n");
+	/* write cell diff */
+	bytes = sizeof(double)*1*(mx)*(my)*(mz);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
 	
-	/* average diffusivity and heat sources */
-	/*	
-	 fprintf(vtk_fp, "      <DataArray Name=\"pressure0\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
-	 fprintf(vtk_fp,"      ");
-	 for (ek=0; ek<mz; ek++) { for (k=0; k<2; k++) {
-	 for (ej=0; ej<my; ej++) { for (j=0; j<2; j++) {
-	 for (ei=0; ei<mx; ei++) { for (i=0; i<2; i++) {
-	 PetscScalar pressure_0 = LA_fieldsP[ ndof_pressure * (ei + ej*mx + ek*mx*my) + 0 ];
-	 
-	 fprintf(vtk_fp,"%1.6e ", pressure_0 );
-	 }}
-	 }}
-	 }}
-	 fprintf(vtk_fp,"\n");
-	 fprintf(vtk_fp, "      </DataArray>\n");
-	 */	
-	fprintf(vtk_fp, "    </CellData>\n");
-	
-	/* VTS NODAL DATA */
-	fprintf( vtk_fp, "    <PointData>\n");
-	/* temperature */
-	fprintf( vtk_fp, "      <DataArray Name=\"temperature\" type=\"Float64\" NumberOfComponents=\"1\" format=\"binary\">\n");
-	for (k=esk; k<esk+mz+1; k++) {
-		for (j=esj; j<esj+my+1; j++) {
-			for (i=esi; i<esi+mx+1; i++) {
-				cnt = (i-gsi) + (j-gsj)*gm + (k-gsk)*gm*gn;
+	for (ek=0; ek<mz; ek++) {
+		for (ej=0; ej<my; ej++) {
+			for (ei=0; ei<mx; ei++) {
+				double prop,avg;
+				PetscInt eidx;
 				
-				fwrite(&LA_fields[cnt],sizeof(double),1,vtk_fp);
+				eidx = ei + ej*mx + ek*mx*my;
+				ierr = VolumeQuadratureGetCellData_Energy(Q,all_quadrature_points,eidx,&cell_quadrature_points);CHKERRQ(ierr);
+				avg = 0.0;
+				for (p=0; p<nqp; p++) {
+					QPntVolCoefEnergyGetField_diffusivity(&cell_quadrature_points[p],&prop);
+					avg = avg + prop;
+				}
+				avg = avg / ( (double)nqp );
+				
+				fwrite(&avg,sizeof(double),1,vtk_fp);
 			}
 		}
 	}
-	fprintf(vtk_fp, "      </DataArray>\n");
-	fprintf(vtk_fp, "    </PointData>\n");
 	
-	/* VTS HEADER - CLOSE */	
-	fprintf(vtk_fp, "    </Piece>\n");
-	fprintf(vtk_fp, "  </StructuredGrid>\n");
+	/* write cell heatsources */
+	bytes = sizeof(double)*1*(mx)*(my)*(mz);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
+
+	for (ek=0; ek<mz; ek++) {
+		for (ej=0; ej<my; ej++) {
+			for (ei=0; ei<mx; ei++) {
+				double prop,avg;
+				PetscInt eidx;
+				
+				eidx = ei + ej*mx + ek*mx*my;
+				ierr = VolumeQuadratureGetCellData_Energy(Q,all_quadrature_points,eidx,&cell_quadrature_points);CHKERRQ(ierr);
+				avg = 0.0;
+				for (p=0; p<nqp; p++) {
+					QPntVolCoefEnergyGetField_heat_source(&cell_quadrature_points[p],&prop);
+					avg = avg + prop;
+				}
+				avg = avg / ( (double)nqp );
+				
+				fwrite(&avg,sizeof(double),1,vtk_fp);
+			}
+		}
+	}
+	
+	/* write node temperature */
+	bytes = sizeof(double)*1*(mx+1)*(my+1)*(mz+1);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
+		
+	for (k=esk; k<esk+mz+1; k++) {
+		for (j=esj; j<esj+my+1; j++) {
+			for (i=esi; i<esi+mx+1; i++) {
+				double val;
+				
+				cnt = (i-gsi) + (j-gsj)*gm + (k-gsk)*gm*gn;
+				val = LA_fields[cnt];
+				fwrite(&val,sizeof(double),1,vtk_fp);
+			}
+		}
+	}
+	
+	fprintf(vtk_fp, "\n  </AppendedData>\n");
 	fprintf(vtk_fp, "</VTKFile>\n");
 	
   ierr = VecRestoreArray(local_fields,&LA_fields);CHKERRQ(ierr);
@@ -357,8 +429,7 @@ PetscErrorCode pTatinOutputMeshEnergyVTS(PetscBool binary,Quadrature Q,DM daT,Ve
 	
 	PetscFunctionBegin;
 	if (binary) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Binary writer not supported");
-		ierr = pTatinOutputMeshEnergyVTS_binary(daT,X,name);CHKERRQ(ierr);
+		ierr = pTatinOutputMeshEnergyVTS_binary(Q,daT,X,name);CHKERRQ(ierr);
 	} else {
 		ierr = pTatinOutputMeshEnergyVTS_ascii(Q,daT,X,name);CHKERRQ(ierr);
 	}
@@ -508,7 +579,8 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const ch
 		asprintf(&filename,"./%s",vtkfilename);
 	}
 	
-	ierr = pTatinOutputMeshEnergyVTS(PETSC_FALSE,Q,daT,X,filename);CHKERRQ(ierr);
+	ierr = pTatinOutputMeshEnergyVTS(PETSC_TRUE,Q,daT,X,filename);CHKERRQ(ierr); /* binary */
+//	ierr = pTatinOutputMeshEnergyVTS(PETSC_FALSE,Q,daT,X,filename);CHKERRQ(ierr); /* ascii */
 	free(filename);
 	free(vtkfilename);
 	
