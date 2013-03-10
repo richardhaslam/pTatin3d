@@ -189,7 +189,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		Vec          Told,velocity,pressure;
 		MatStructure mstr;
 		BCList       bclist;
-		DM           daT;
+		DM           daT,cdaT;
 		PetscReal    dx;
 		KSP          kspT;
 		SNES         snesT;
@@ -240,12 +240,14 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		bclist = energy->T_bclist;
 		daT    = energy->daT;
 		
-		
 		/* MAP V into adv_diff_v TODO */
 		/* map velocity vector from Q2 space onto Q1 space */
-		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		//ierr = DMDAProjectVelocityQ2toQ1_2d(dav,velocity,daT,energy->u_minus_V);CHKERRQ(ierr);
-		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		//ierr = DMDAGetCoordinateDA(daT,&cdaT);CHKERRQ(ierr);   
+		//ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		//ierr = DMDAProjectVectorQ2toQ1(dav,velocity,cdaT,energy->u_minus_V,energy->energy_mesh_type);CHKERRQ(ierr);
+		//ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		//ierr = DMDAProjectCoordinatesQ2toQ1(dav,daT,energy->energy_mesh_type);CHKERRQ(ierr);
+		//ierr = DMDAProjectCoordinatesQ2toOverlappingQ1_3d(dav,daT);CHKERRQ(ierr);
 		
 		/* update V */
 		/*
@@ -259,13 +261,16 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		
 		energy->dt   = user->dt;
 		energy->time = user->time;
-		
+
+		ierr = pTatinPhysCompEnergy_Initialise(energy,T);CHKERRQ(ierr);
 		for (tk=1; tk<user->nsteps; tk++) {
 			char stepname[256];
 			
 			/* MAP Tin into Told */
-			ierr = VecCopy(T,Told);CHKERRQ(ierr);
-			ierr = VecZeroEntries(T);CHKERRQ(ierr);
+			//ierr = VecCopy(T,Told);CHKERRQ(ierr);
+			//ierr = VecZeroEntries(T);CHKERRQ(ierr);
+			
+			ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X,energy,energy->dt);CHKERRQ(ierr);
 			
 			// crappy way - make it non-linear
 	#if 0		
@@ -303,6 +308,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
 	#endif
+			ierr = pTatinPhysCompEnergy_Update(energy,dav,T);CHKERRQ(ierr);
 			
 			user->time = user->time + user->dt;
 			
