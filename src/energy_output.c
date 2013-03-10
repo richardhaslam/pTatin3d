@@ -569,6 +569,7 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const ch
 {
 	char           *vtkfilename,*filename;
 	PetscMPIInt    rank;
+	PetscBool      binary = PETSC_TRUE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -579,8 +580,7 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const ch
 		asprintf(&filename,"./%s",vtkfilename);
 	}
 	
-	ierr = pTatinOutputMeshEnergyVTS(PETSC_TRUE,Q,daT,X,filename);CHKERRQ(ierr); /* binary */
-//	ierr = pTatinOutputMeshEnergyVTS(PETSC_FALSE,Q,daT,X,filename);CHKERRQ(ierr); /* ascii */
+	ierr = pTatinOutputMeshEnergyVTS(binary,Q,daT,X,filename);CHKERRQ(ierr); /* binary */
 	free(filename);
 	free(vtkfilename);
 	
