@@ -46,6 +46,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char path[],const char prefix[]);
 PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char name[]);
 PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const char name[]);
+PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,const char name[]);
 PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],const char name[]);
 PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level, DM dau, const char local_file_prefix[] );
 
