@@ -657,18 +657,24 @@ PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],Pets
 PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
 {
 	PetscErrorCode ierr;
-	PetscInt d,ndofq2,ndofq1;
-	PetscScalar ****LA_fieldQ2;
-	PetscScalar ****LA_fieldQ1;
-	PetscInt si1,sj1,sk1,nx1,ny1,nz1,i,j,k;
-	PetscInt si2,sj2,sk2,nx2,ny2,nz2;
+	PetscInt       d,ndofq2,ndofq1;
+	PetscScalar    ****LA_fieldQ2;
+	PetscScalar    ****LA_fieldQ1;
+	PetscInt       si1,sj1,sk1,nx1,ny1,nz1,i,j,k;
+	PetscInt       si2,sj2,sk2,nx2,ny2,nz2;
+	Vec            x2_local;
 	
 	PetscFunctionBegin;
 
 	ierr = DMDAGetInfo(daq2,0, 0,0,0, 0,0,0, &ndofq2,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(daq1,0, 0,0,0, 0,0,0, &ndofq1,0, 0,0,0, 0);CHKERRQ(ierr);
 	
-	ierr = DMDAVecGetArrayDOF(daq2,x2,&LA_fieldQ2);CHKERRQ(ierr);
+	/* scatter Q2 (ghosted field) */
+	ierr = DMGetLocalVector(daq2,&x2_local);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalBegin(daq2,x2,INSERT_VALUES,x2_local);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd  (daq2,x2,INSERT_VALUES,x2_local);CHKERRQ(ierr);
+	
+	ierr = DMDAVecGetArrayDOF(daq2,x2_local,&LA_fieldQ2);CHKERRQ(ierr);
 	ierr = DMDAVecGetArrayDOF(daq1,x1,&LA_fieldQ1);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCorners(     daq1,&si1,&sj1,&sk1 , &nx1,&ny1,&nz1);CHKERRQ(ierr);
@@ -701,7 +707,8 @@ PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec 
 	}
 	
 	ierr = DMDAVecRestoreArrayDOF(daq1,x1,&LA_fieldQ1);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArrayDOF(daq2,x2,&LA_fieldQ2);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArrayDOF(daq2,x2_local,&LA_fieldQ2);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(daq2,&x2_local);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
