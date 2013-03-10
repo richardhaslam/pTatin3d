@@ -30,3 +30,495 @@
  **    $Id$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
+
+#define _GNU_SOURCE
+#include "petsc.h"
+#include "petscvec.h"
+#include "petscdm.h"
+#include "ptatin3d.h"
+#include "ptatin3d_defs.h"
+#include "private/ptatin_impl.h"
+
+#include "dmdae.h"
+#include "dmda_element_q1.h"
+#include "quadrature.h"
+#include "output_paraview.h"
+#include "ptatin3d_energy.h"
+#include "energy_output.h"
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "_apply_threshold"
+PetscErrorCode _apply_threshold(PetscScalar x[],const PetscInt N,const PetscScalar threshold,const PetscScalar value)
+{
+	PetscInt i;
+	PetscFunctionBegin;
+	for (i=0; i<N; i++) {
+		PetscScalar abs;
+		
+		abs = PetscAbsScalar(x[i]);
+		if (abs < threshold) {
+			x[i] = value;
+		}
+	}
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputMeshEnergyVTS_ascii"
+PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Vec X,const char name[])
+{
+	PetscErrorCode ierr;
+  PetscScalar    *LA_fields;
+	DM             cda;
+	Vec            local_fields,gcoords;
+	DMDACoor3d     ***LA_gcoords;	
+	PetscInt       mx,my,mz,cnt;
+	PetscInt       i,j,k,esi,esj,esk;
+	FILE           *vtk_fp = NULL;
+	PetscInt       gsi,gsj,gsk,gm,gn,gp;
+	PetscInt       line_count;
+	
+	PetscFunctionBegin;
+	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+	}
+	
+	ierr = DMDAGetGhostCorners(daT,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
+	ierr = DMDAEGetCornersElement(daT,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA(daT,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(daT,&gcoords);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+  ierr = DMGetLocalVector(daT,&local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(daT,X,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(daT,X,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = VecGetArray(local_fields,&LA_fields);CHKERRQ(ierr);
+	ierr = _apply_threshold(LA_fields,gm*gn*gp,1.0e-12,0.0);CHKERRQ(ierr);
+	
+	/* VTS HEADER - OPEN */	
+#ifdef WORDSIZE_BIGENDIAN
+	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
+	fprintf(vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	fprintf(vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	
+	/* VTS COORD DATA */	
+	fprintf(vtk_fp, "    <Points>\n");
+	fprintf(vtk_fp, "      <DataArray Name=\"coords\" type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+	line_count = 0;
+	for (k=esk; k<esk+mz+1; k++) {
+		for (j=esj; j<esj+my+1; j++) {
+			for (i=esi; i<esi+mx+1; i++) {
+				fprintf(vtk_fp,"%1.6e %1.6e %1.6e ", LA_gcoords[k][j][i].x, LA_gcoords[k][j][i].y, LA_gcoords[k][j][i].z );
+				if (line_count%3==0) {
+					fprintf(vtk_fp,"\n");
+				}
+				line_count++;
+			}
+		}
+	}
+	fprintf(vtk_fp, "      </DataArray>\n");
+	fprintf(vtk_fp, "    </Points>\n");
+	
+	/* VTS CELL DATA */	
+	fprintf(vtk_fp, "    <CellData>\n");
+	
+	/* average diffusivity and heat sources */
+/*	
+	fprintf(vtk_fp, "      <DataArray Name=\"diffusivity_qp_avg\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+	fprintf(vtk_fp,"      ");
+	for (ek=0; ek<mz; ek++) {
+		for (ej=0; ej<my; ej++) {
+			for (ei=0; ei<mx; ei++) {
+				PetscScalar avg = 0.0;
+				
+ 
+				fprintf(vtk_fp,"%1.6e ", pressure_0 );
+			}
+		}
+	}
+	fprintf(vtk_fp,"\n");
+	fprintf(vtk_fp, "      </DataArray>\n");
+*/	
+	fprintf(vtk_fp, "    </CellData>\n");
+	
+	/* VTS NODAL DATA */
+	fprintf( vtk_fp, "    <PointData>\n");
+	/* temperatur */
+	fprintf( vtk_fp, "      <DataArray Name=\"temperature\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+	line_count = 0;
+	for (k=esk; k<esk+mz+1; k++) {
+		for (j=esj; j<esj+my+1; j++) {
+			for (i=esi; i<esi+mx+1; i++) {
+				cnt = (i-gsi) + (j-gsj)*gm + (k-gsk)*gm*gn;
+				fprintf(vtk_fp,"%1.6e ", LA_fields[cnt] );
+				if (line_count%10==0) {
+					fprintf(vtk_fp,"\n");
+				}
+				line_count++;
+			}
+		}
+	}
+	fprintf(vtk_fp, "      </DataArray>\n");
+	fprintf(vtk_fp, "    </PointData>\n");
+	
+	/* VTS HEADER - CLOSE */	
+	fprintf(vtk_fp, "    </Piece>\n");
+	fprintf(vtk_fp, "  </StructuredGrid>\n");
+	fprintf(vtk_fp, "</VTKFile>\n");
+	
+  ierr = VecRestoreArray(local_fields,&LA_fields);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(daT,&local_fields);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	fclose(vtk_fp);
+
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputMeshEnergyVTS_binary"
+PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Vec X,const char name[])
+{
+	PetscErrorCode ierr;
+  PetscScalar    *LA_fields;
+	DM             cda;
+	Vec            local_fields,gcoords;
+	DMDACoor3d     ***LA_gcoords;	
+	PetscInt       mx,my,mz,cnt;
+	PetscInt       i,j,k,esi,esj,esk;
+	FILE           *vtk_fp = NULL;
+	PetscInt       gsi,gsj,gsk,gm,gn,gp;
+	
+	PetscFunctionBegin;
+	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+	}
+	
+	ierr = DMDAGetGhostCorners(daT,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
+	ierr = DMDAEGetCornersElement(daT,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA(daT,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(daT,&gcoords);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+  ierr = DMGetLocalVector(daT,&local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(daT,X,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(daT,X,INSERT_VALUES,local_fields);CHKERRQ(ierr);
+  ierr = VecGetArray(local_fields,&LA_fields);CHKERRQ(ierr);
+	ierr = _apply_threshold(LA_fields,gm*gn*gp,1.0e-12,0.0);CHKERRQ(ierr);
+	
+	/* VTS HEADER - OPEN */	
+#ifdef WORDSIZE_BIGENDIAN
+	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+
+	fprintf(vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	fprintf(vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	
+	/* VTS COORD DATA */	
+	fprintf(vtk_fp, "    <Points>\n");
+	fprintf(vtk_fp, "      <DataArray Name=\"coords\" type=\"Float64\" NumberOfComponents=\"3\" format=\"binary\">\n");
+	for (k=esk; k<esk+mz+1; k++) {
+		for (j=esj; j<esj+my+1; j++) {
+			for (i=esi; i<esi+mx+1; i++) {
+				double pos[3];
+				
+				pos[0] = LA_gcoords[k][j][i].x;
+				pos[1] = LA_gcoords[k][j][i].y;
+				pos[2] = LA_gcoords[k][j][i].z;
+				fwrite(pos,sizeof(double),3,vtk_fp);
+			}
+		}
+	}
+	fprintf(vtk_fp, "      </DataArray>\n");
+	fprintf(vtk_fp, "    </Points>\n");
+	
+	/* VTS CELL DATA */	
+	fprintf(vtk_fp, "    <CellData>\n");
+	
+	/* average diffusivity and heat sources */
+	/*	
+	 fprintf(vtk_fp, "      <DataArray Name=\"pressure0\" type=\"Float64\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+	 fprintf(vtk_fp,"      ");
+	 for (ek=0; ek<mz; ek++) { for (k=0; k<2; k++) {
+	 for (ej=0; ej<my; ej++) { for (j=0; j<2; j++) {
+	 for (ei=0; ei<mx; ei++) { for (i=0; i<2; i++) {
+	 PetscScalar pressure_0 = LA_fieldsP[ ndof_pressure * (ei + ej*mx + ek*mx*my) + 0 ];
+	 
+	 fprintf(vtk_fp,"%1.6e ", pressure_0 );
+	 }}
+	 }}
+	 }}
+	 fprintf(vtk_fp,"\n");
+	 fprintf(vtk_fp, "      </DataArray>\n");
+	 */	
+	fprintf(vtk_fp, "    </CellData>\n");
+	
+	/* VTS NODAL DATA */
+	fprintf( vtk_fp, "    <PointData>\n");
+	/* temperatur */
+	fprintf( vtk_fp, "      <DataArray Name=\"temperature\" type=\"Float64\" NumberOfComponents=\"1\" format=\"binary\">\n");
+	for (k=esk; k<esk+mz+1; k++) {
+		for (j=esj; j<esj+my+1; j++) {
+			for (i=esi; i<esi+mx+1; i++) {
+				cnt = (i-gsi) + (j-gsj)*gm + (k-gsk)*gm*gn;
+				
+				fwrite(&LA_fields[cnt],sizeof(double),1,vtk_fp);
+			}
+		}
+	}
+	fprintf(vtk_fp, "      </DataArray>\n");
+	fprintf(vtk_fp, "    </PointData>\n");
+	
+	/* VTS HEADER - CLOSE */	
+	fprintf(vtk_fp, "    </Piece>\n");
+	fprintf(vtk_fp, "  </StructuredGrid>\n");
+	fprintf(vtk_fp, "</VTKFile>\n");
+	
+  ierr = VecRestoreArray(local_fields,&LA_fields);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(daT,&local_fields);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	fclose(vtk_fp);
+	
+	PetscFunctionReturn(0);
+}
+
+PetscErrorCode pTatinOutputMeshEnergyVTS(PetscBool binary,DM daT,Vec X,const char name[])
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	if (binary) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Binary writer not supported");
+		ierr = pTatinOutputMeshEnergyVTS_binary(daT,X,name);CHKERRQ(ierr);
+	} else {
+		ierr = pTatinOutputMeshEnergyVTS_ascii(daT,X,name);CHKERRQ(ierr);
+	}
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAQ1PieceExtendForGhostLevelZero"
+PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level, DM da, const char local_file_prefix[] )
+{
+	PetscMPIInt    nproc,rank;
+	MPI_Comm       comm;
+	PetscInt       M,N,P,pM,pN,pP;
+	PetscInt       i,j,k,II,dim;
+	PetscInt       *olx,*oly,*olz;
+	PetscInt       *lmx,*lmy,*lmz;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	/* create file name */
+	PetscObjectGetComm( (PetscObject)da, &comm );
+	MPI_Comm_size( comm, &nproc );
+	MPI_Comm_rank( comm, &rank );
+	
+	ierr = DMDAGetInfo( da, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
+	ierr = DMDAEGetOwnershipRanges(da,&pM,&pN,&pP,&olx,&oly,&olz,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+	
+	if (dim==3) {
+		for( k=0;k<pP;k++ ) {
+			for( j=0;j<pN;j++ ) {
+				for( i=0;i<pM;i++ ) {
+					char *name;
+					PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
+					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid );
+					for( II=0; II<indent_level; II++ ) {
+						if(vtk_fp) fprintf(vtk_fp,"  ");
+					}
+					if(vtk_fp) fprintf(vtk_fp, "<Piece Extent=\"%d %d %d %d %d %d\"      Source=\"%s\"/>\n",
+														 olx[i],olx[i]+lmx[i],
+														 oly[j],oly[j]+lmy[j],
+														 olz[k],olz[k]+lmz[k],
+														 name);
+					free(name);
+				}
+			}
+		}
+	} else if (dim==2) {
+		for( j=0;j<pN;j++ ) {
+			for( i=0;i<pM;i++ ) {
+				char *name;
+				PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
+				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid );
+				for( II=0; II<indent_level; II++ ) {
+					if(vtk_fp) fprintf(vtk_fp,"  ");
+				}
+				if(vtk_fp) fprintf(vtk_fp, "<Piece Extent=\"%d %d %d %d 0 0\"      Source=\"%s\"/>\n",
+													 olx[i],olx[i]+lmx[i],
+													 oly[j],oly[j]+lmy[j],
+													 name);
+				free(name);
+			}
+		}
+	}
+	//ierr = PetscFree(olx);CHKERRQ(ierr);
+	//ierr = PetscFree(oly);CHKERRQ(ierr);
+	//ierr = PetscFree(olz);CHKERRQ(ierr);
+	
+	//ierr = PetscFree(lmx);CHKERRQ(ierr);
+	//ierr = PetscFree(lmy);CHKERRQ(ierr);
+	//ierr = PetscFree(lmz);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputMeshEnergyPVTS"
+PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char name[])
+{
+	PetscErrorCode ierr;
+	FILE           *vtk_fp = NULL;
+	PetscInt       M,N,P,swidth;
+	PetscMPIInt    rank;
+	
+	PetscFunctionBegin;
+	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	vtk_fp = NULL;
+	if (rank==0) {
+		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		}
+	}
+	
+	
+	/* VTS HEADER - OPEN */	
+	if(vtk_fp) fprintf(vtk_fp, "<?xml version=\"1.0\"?>\n");
+
+#ifdef WORDSIZE_BIGENDIAN
+	if(vtk_fp) fprintf(vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	if(vtk_fp) fprintf(vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
+	DMDAGetInfo( daT, 0, &M,&N,&P, 0,0,0, 0,&swidth, 0,0,0, 0 );
+	if(vtk_fp) fprintf(vtk_fp, "  <PStructuredGrid GhostLevel=\"%d\" WholeExtent=\"%d %d %d %d %d %d\">\n", swidth, 0,M-1, 0,N-1, 0,P-1 ); /* note overlap = 1 for Q1 */
+	
+	/* VTS COORD DATA */	
+	if(vtk_fp) fprintf(vtk_fp, "    <PPoints>\n");
+	if(vtk_fp) fprintf(vtk_fp, "      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
+	if(vtk_fp) fprintf(vtk_fp, "    </PPoints>\n");
+	
+	
+	/* VTS CELL DATA */	
+	if(vtk_fp) fprintf(vtk_fp, "    <PCellData>\n");
+	if(vtk_fp) fprintf(vtk_fp, "    </PCellData>\n");
+	
+	
+	/* VTS NODAL DATA */
+	if(vtk_fp) fprintf(vtk_fp, "    <PPointData>\n");
+	if(vtk_fp) fprintf(vtk_fp, "      <PDataArray type=\"Float64\" Name=\"temperature\" NumberOfComponents=\"1\"/>\n");
+	if(vtk_fp) fprintf(vtk_fp, "    </PPointData>\n");
+	
+	/* write out the parallel information */
+	ierr = DAQ1PieceExtendForGhostLevelZero(vtk_fp,2,daT,prefix);CHKERRQ(ierr);
+	
+	/* VTS HEADER - CLOSE */	
+	if(vtk_fp) fprintf( vtk_fp, "  </PStructuredGrid>\n");
+	if(vtk_fp) fprintf( vtk_fp, "</VTKFile>\n");
+	
+	if(vtk_fp) fclose(vtk_fp);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinOutputParaViewMeshEnergy"
+PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Vec X,const char path[],const char prefix[])
+{
+	char           *vtkfilename,*filename;
+	PetscMPIInt    rank;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
+	if (path) {
+		asprintf(&filename,"%s/%s",path,vtkfilename);
+	} else {
+		asprintf(&filename,"./%s",vtkfilename);
+	}
+	
+	//ierr = pTatinOutputMeshEnergyVTS(PETSC_FALSE,daT,X,filename);CHKERRQ(ierr);
+	free(filename);
+	free(vtkfilename);
+	
+	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+	if (path) {
+		asprintf(&filename,"%s/%s",path,vtkfilename);
+	} else {
+		asprintf(&filename,"./%s",vtkfilename);
+	}
+	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = pTatinOutputMeshEnergyPVTS(daT,prefix,filename);CHKERRQ(ierr);
+	free(filename);
+	free(vtkfilename);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_ModelOutput_Temperature_Energy"
+PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const char prefix[])
+{
+	PetscErrorCode ierr;
+	char           *name;
+	PhysCompEnergy energy;
+	DM              daT;
+	PetscLogDouble  t0,t1;
+	static int      beenhere=0;
+	static char     *pvdfilename;
+
+	PetscFunctionBegin;
+	
+	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+	daT = energy->daT;
+	
+	
+	PetscGetTime(&t0);
+	// PVD
+	if (beenhere==0) {
+		asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
+	}
+	{
+		char *vtkfilename;
+		
+		if (prefix) {
+			asprintf(&vtkfilename, "%s_energy.pvts",prefix);
+		} else {
+			asprintf(&vtkfilename, "energy.pvts");
+		}
+		
+		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+		free(vtkfilename);
+	}
+	
+	// PVTS + VTS
+	if (prefix) {
+		asprintf(&name,"%s_energy",prefix);
+	} else {
+		asprintf(&name,"energy");
+	}
+	
+	ierr = pTatinOutputParaViewMeshEnergy(daT,X,ctx->outputpath,name);CHKERRQ(ierr);
+	free(name);
+	PetscGetTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	
+	PetscFunctionReturn(0);
+}
