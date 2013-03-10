@@ -265,7 +265,12 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 	
 	
 	/* VTS HEADER - OPEN */	
+#ifdef WORDSIZE_BIGENDIAN
+	fprintf( vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
 	fprintf( vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
 	fprintf( vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+2*mx+1-1, esj,esj+2*my+1-1, esk,esk+2*mz+1-1);
 	fprintf( vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+2*mx+1-1, esj,esj+2*my+1-1, esk,esk+2*mz+1-1);
 	
@@ -374,7 +379,12 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
 	
 	/* VTS HEADER - OPEN */	
 	if(vtk_fp) fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
+
+#ifdef WORDSIZE_BIGENDIAN
+	if(vtk_fp) fprintf( vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
 	if(vtk_fp) fprintf( vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
 	
 	DMDAGetInfo( dau, 0, &M,&N,&P, 0,0,0, 0,&swidth, 0,0,0, 0 );
 	if(vtk_fp) fprintf( vtk_fp, "  <PStructuredGrid GhostLevel=\"%d\" WholeExtent=\"%d %d %d %d %d %d\">\n", swidth, 0,M-1, 0,N-1, 0,P-1 ); /* note overlap = 1 for Q1 */
