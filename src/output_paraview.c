@@ -182,8 +182,9 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 #define __FUNCT__ "pTatinOutputParaViewMeshVelocityPressure"
 PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char path[],const char prefix[])
 {
-	char *vtkfilename,*filename;
-	PetscMPIInt rank;
+	char           *vtkfilename,*filename;
+	PetscMPIInt    rank;
+	PetscBool      binary = PETSC_TRUE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -194,7 +195,12 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 		asprintf(&filename,"./%s",vtkfilename);
 	}
 	
-	ierr = pTatinOutputMeshVelocityPressureVTS_v0(pack,X,filename);CHKERRQ(ierr);
+	if (binary) {
+		ierr = pTatinOutputMeshVelocityPressureVTS_v0_binary(pack,X,filename);CHKERRQ(ierr);
+	} else {
+		ierr = pTatinOutputMeshVelocityPressureVTS_v0(pack,X,filename);CHKERRQ(ierr);
+	}
+	
 	free(filename);
 	free(vtkfilename);
 	
@@ -344,8 +350,8 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshVelocityPressurePVTS"
-PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],const char name[])
+#define __FUNCT__ "pTatinOutputMeshVelocityPressureVTS_v0_binary"
+PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
 	DM dau,dap;
@@ -356,14 +362,164 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
   PetscScalar *LA_fieldsP;
 	DM cda;
 	Vec gcoords;
-	DMDACoor2d **LA_gcoords;	
-	PetscInt mx,my,cnt;
-	PetscInt ei,ej,i,j,esi,esj;
-  PetscScalar *LA_cell_data;
+	DMDACoor3d ***LA_gcoords;	
+	PetscInt mx,my,mz,cnt;
+	PetscInt ei,ej,ek,i,j,k,esi,esj,esk;
 	FILE*	vtk_fp = NULL;
-	PetscInt M,N,P,swidth;
-	PetscMPIInt rank;
+	PetscInt gsi,gsj,gsk,gm,gn,gp;
+	PetscInt ndof_pressure;
+	int offset,bytes;
 	
+	
+	PetscFunctionBegin;
+	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+	}
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	
+	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
+	
+	ierr = DMDAGetInfo(dap,0,0,0,0,0,0,0,&ndof_pressure,0, 0,0,0, 0);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
+	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+  ierr = DMGetLocalVector(dau,&local_fieldsU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dau,velocity,INSERT_VALUES,local_fieldsU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dau,velocity,INSERT_VALUES,local_fieldsU);CHKERRQ(ierr);
+  ierr = VecGetArray(local_fieldsU,&LA_fieldsU);CHKERRQ(ierr);
+	
+  ierr = DMGetLocalVector(dap,&local_fieldsP);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dap,pressure,INSERT_VALUES,local_fieldsP);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dap,pressure,INSERT_VALUES,local_fieldsP);CHKERRQ(ierr);
+  ierr = VecGetArray(local_fieldsP,&LA_fieldsP);CHKERRQ(ierr);
+	
+	
+	/* VTS HEADER - OPEN */	
+#ifdef WORDSIZE_BIGENDIAN
+	fprintf( vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	fprintf( vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
+	fprintf( vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+2*mx+1-1, esj,esj+2*my+1-1, esk,esk+2*mz+1-1);
+	fprintf( vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+2*mx+1-1, esj,esj+2*my+1-1, esk,esk+2*mz+1-1);
+	
+	offset = 0;
+	
+	/* VTS COORD DATA */	
+	fprintf( vtk_fp, "    <Points>\n");
+	
+	fprintf( vtk_fp, "      <DataArray Name=\"coords\" type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\"  />\n",offset);
+	offset += sizeof(int) + sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
+
+	fprintf( vtk_fp, "    </Points>\n");
+	
+	/* VTS CELL DATA */	
+	fprintf( vtk_fp, "    <CellData>\n");
+	
+	fprintf( vtk_fp, "      <DataArray Name=\"pressure0\" type=\"Float64\" NumberOfComponents=\"1\" format=\"appended\" offset=\"%d\" />\n",offset);
+	offset += sizeof(int) + sizeof(double)*1*(2*mx)*(2*my)*(2*mz);
+	
+	fprintf( vtk_fp, "    </CellData>\n");
+	
+	/* VTS NODAL DATA */
+	fprintf( vtk_fp, "    <PointData>\n");
+	
+	/* velocity */
+	fprintf( vtk_fp, "      <DataArray Name=\"velocity\" type=\"Float64\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",offset);
+	offset += sizeof(int) + sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
+
+	fprintf( vtk_fp, "    </PointData>\n");
+	
+	/* VTS HEADER - CLOSE */	
+	fprintf( vtk_fp, "    </Piece>\n");
+	fprintf( vtk_fp, "  </StructuredGrid>\n");
+	fprintf(vtk_fp, "  <AppendedData encoding=\"raw\">\n");
+	/* write tag */
+	fprintf(vtk_fp, "_");
+
+	/* write node coords */
+	bytes = sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
+	for (k=esk; k<esk+2*mz+1; k++) {
+		for (j=esj; j<esj+2*my+1; j++) {
+			for (i=esi; i<esi+2*mx+1; i++) {
+				double pos[3];
+				
+				pos[0] = LA_gcoords[k][j][i].x;
+				pos[1] = LA_gcoords[k][j][i].y;
+				pos[2] = LA_gcoords[k][j][i].z;
+				fwrite(pos,sizeof(double),3,vtk_fp);
+			}
+		}
+	}
+	
+	/* write cell pressure */
+	bytes = sizeof(double)*1*(2*mx+1)*(2*my+1)*(2*mz+1);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
+	for (ek=0; ek<mz; ek++) { for (k=0; k<2; k++) {
+		for (ej=0; ej<my; ej++) { for (j=0; j<2; j++) {
+			for (ei=0; ei<mx; ei++) { for (i=0; i<2; i++) {
+				double P0;
+				
+				/* ONLY print the P0 component of pressure */
+				P0 = LA_fieldsP[ ndof_pressure * (ei + ej*mx + ek*mx*my) + 0 ];
+				
+				fwrite(&P0,sizeof(double),1,vtk_fp);
+			}}
+		}}
+	}}
+	
+	/* write node velocity */
+	bytes = sizeof(double)*3*(2*mx+1)*(2*my+1)*(2*mz+1);
+	fwrite(&bytes,sizeof(int),1,vtk_fp);
+	for (k=esk; k<esk+2*mz+1; k++) {
+		for (j=esj; j<esj+2*my+1; j++) {
+			for (i=esi; i<esi+2*mx+1; i++) {
+				double vel[3];
+				
+				cnt = (i-gsi) + (j-gsj)*gm + (k-gsk)*gm*gn;
+				vel[0] = LA_fieldsU[3*cnt+0];
+				vel[1] = LA_fieldsU[3*cnt+1];
+				vel[2] = LA_fieldsU[3*cnt+2];
+				fwrite(vel,sizeof(double),3,vtk_fp);
+			}
+		}
+	}
+	
+	fprintf(vtk_fp, "\n  </AppendedData>\n");
+	fprintf( vtk_fp, "</VTKFile>\n");
+	
+  ierr = VecRestoreArray(local_fieldsU,&LA_fieldsU);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(dau,&local_fieldsU);CHKERRQ(ierr);
+	
+  ierr = VecRestoreArray(local_fieldsP,&LA_fieldsP);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(dap,&local_fieldsP);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	fclose( vtk_fp );
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputMeshVelocityPressurePVTS"
+PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],const char name[])
+{
+	PetscErrorCode ierr;
+	DM             dau,dap;
+	FILE           *vtk_fp = NULL;
+	PetscInt       M,N,P,swidth;
+	PetscMPIInt    rank;
 	
 	PetscFunctionBegin;
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -373,7 +529,6 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
 			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
 		}
 	}
-	
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -426,11 +581,10 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 {
 	PetscMPIInt nproc,rank;
 	MPI_Comm comm;
-	const PetscInt *lx,*ly,*lz;
-	PetscInt M,N,P,pM,pN,pP,sum;
-	PetscInt i,j,k,II,dim,esi,esj,esk,mx,my,mz;
+	PetscInt M,N,P,pM,pN,pP;
+	PetscInt i,j,k,II,dim;
 	PetscInt *olx,*oly,*olz;
-	PetscInt *lmx,*lmy,*lmz,*tmp;
+	PetscInt *lmx,*lmy,*lmz;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
