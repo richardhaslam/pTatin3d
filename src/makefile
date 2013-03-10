@@ -109,9 +109,12 @@ TATIN_DRIVERS		= \
 			ptatin_driver_energy \
 			ptatin_driver_linear_ts
 
+export LIBZ_LIB = -lz
+export LIBZ_INC = -I/usr/include
 
-export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES}
-export EXTERNAL_LIBS	=	${PETSC_LIB}
+
+export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES} ${LIBZ_INC}
+export EXTERNAL_LIBS	=	${PETSC_LIB} ${LIBZ_LIB}
 export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmodels -lptatin3d ${EXTERNAL_LIBS}
 #export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels
 
