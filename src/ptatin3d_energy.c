@@ -179,3 +179,92 @@ PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A)
 	PetscFunctionReturn(0);
 }
 
+
+/* update V */
+/*
+ u - V = u - (X_current - X_old)/dt
+			 = (dt.u - X_current + X_old)/dt
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "_pTatinPhysCompEnergy_UpdateALEVelocity"
+PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,PetscReal dt)
+{
+	Vec            coordinates;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = VecScale(energy->u_minus_V,dt);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(energy->daT,&coordinates);CHKERRQ(ierr);
+	ierr = VecAXPY(energy->u_minus_V,-1.0,coordinates);CHKERRQ(ierr);
+	ierr = VecAXPY(energy->u_minus_V, 1.0,energy->Xold);CHKERRQ(ierr);
+	ierr = VecScale(energy->u_minus_V,1.0/dt);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompEnergy_UpdateALEVelocity"
+PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,PhysCompEnergy energy,PetscReal dt)
+{
+	DM             cdaT;
+	Vec            velocity,pressure;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetCoordinateDA(energy->daT,&cdaT);CHKERRQ(ierr);   
+	
+	/* Project fluid velocity from Q2 space into Q1 space */
+	ierr = DMCompositeGetAccess(s->stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	ierr = DMDAProjectVectorQ2toQ1(s->dav,velocity,cdaT,energy->u_minus_V,energy->energy_mesh_type);CHKERRQ(ierr);
+	ierr = DMCompositeRestoreAccess(s->stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	/* Compute ALE velocity in Q1 space */
+	ierr = _pTatinPhysCompEnergy_UpdateALEVelocity(energy,dt);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompEnergy_Update"
+PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,Vec T)
+{
+	Vec            coords;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	/* update solution */
+	ierr = VecCopy(T,e->Told);CHKERRQ(ierr);
+	
+	/* update coordinates */
+	ierr = DMDAGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
+	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
+	//ierr = DMDAUpdateGhostedCoordinates(daq1);CHKERRQ(ierr);
+
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompEnergy_Initialise"
+PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T)
+{
+	Vec            coords;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	/* update solution */
+	ierr = VecCopy(T,e->Told);CHKERRQ(ierr);
+	
+	/* update coordinates */
+	ierr = DMDAGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
+	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
+
+	ierr = VecZeroEntries(T);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
