@@ -142,6 +142,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	
 	/* material geometry */
 	ierr = pTatinModel_ApplyInitialMaterialGeometry(model,user);CHKERRQ(ierr);
+	ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 
 	/* test data bucket viewer */
 	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"materialpoints",DATABUCKET_VIEW_STDOUT);
@@ -165,18 +166,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	
 	}
 	
-	/* test form function */
-#if 0
-	{
-		SNES snes;
-		
-		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
-		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-	}
-#endif	
-	
+
 	/* FORCE VELOCITY FIELD TO BE ZERO */
 #if 0	
 	ierr = VecSet(X,0.0);CHKERRQ(ierr);
@@ -194,46 +184,6 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		KSP          kspT;
 		SNES         snesT;
 		PetscInt     tk;
-		
-		/* FORCE DIFFUSIVITY TO BE ONE ON MP AND QP */
-		/* mash in some diffusivity */
-#if 0
-		{
-			MPntPEnergy *material_point;
-			DataField PField_energy;
-			int p;
-			int npoints;
-
-			DataBucketGetSizes(materialpoint_db,&npoints,0,0);
-			DataBucketGetDataFieldByName(materialpoint_db,MPntPEnergy_classname,&PField_energy);
-			DataFieldGetAccess(PField_energy);
-			
-			for (p=0; p<npoints; p++) {
-				DataFieldAccessPoint(PField_energy,p,   (void**)&material_point);
-				material_point->diffusivity = 1.0;
-				material_point->heat_source = 0.0;
-			}
-			DataFieldRestoreAccess(PField_energy);
-		}
-#endif		
-		{
-			QPntVolCoefEnergy *quad_point;
-			DataField PField_energy;
-			int p;
-			int npoints;
-
-			DataBucketGetSizes(energy->volQ->properties_db,&npoints,0,0);
-			DataBucketGetDataFieldByName(energy->volQ->properties_db,QPntVolCoefEnergy_classname,&PField_energy);
-			DataFieldGetAccess(PField_energy);
-			
-			for (p=0; p<npoints; p++) {
-				DataFieldAccessPoint(PField_energy,p,   (void**)&quad_point);
-				quad_point->diffusivity = 1.0;
-				quad_point->heat_source = 0.0;
-			}
-			DataFieldRestoreAccess(PField_energy);
-		}
-		
 		
 		/*  THERMAL ENERGY SOLVE  */
 		Told   = energy->Told;
