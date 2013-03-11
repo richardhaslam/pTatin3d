@@ -163,15 +163,8 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 
 		ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
-	
 	}
-	
 
-	/* FORCE VELOCITY FIELD TO BE ZERO */
-#if 0	
-	ierr = VecSet(X,0.0);CHKERRQ(ierr);
-#endif
-	
 	/* write out the initial condition */
 	ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
 	
@@ -206,14 +199,15 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		 */
 		
 		dx = 1.0/((PetscReal)(user->mx));
-		user->dt   = 0.5 * (dx * dx) / 1.0;
+		user->dt   = 0.8 * (dx * dx) / 1.0;
+		user->dt   = 0.1 * (dx) / 1.0;
 		user->time = 0.0;
 		
 		energy->dt   = user->dt;
 		energy->time = user->time;
 
 		ierr = pTatinPhysCompEnergy_Initialise(energy,T);CHKERRQ(ierr);
-		for (tk=1; tk<user->nsteps; tk++) {
+		for (tk=1; tk<=user->nsteps; tk++) {
 			char stepname[256];
 			
 			/* MAP Tin into Told */
