@@ -46,6 +46,9 @@
 #include "ptatin3d_energy.h"
 #include "MPntPEnergy_def.h"
 
+PetscInt model_setup = 0;
+PetscReal vel_scale       = 1.0;
+PetscReal diffusion_scale = 1.0;
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_AdvDiffExample"
@@ -58,7 +61,41 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
+	PetscOptionsGetInt(PETSC_NULL,"-advdiff_setup",&model_setup,0);
+	PetscOptionsGetReal(PETSC_NULL,"-advdiff_vel_scale",&vel_scale,0);
+	PetscOptionsGetReal(PETSC_NULL,"-advdiff_diff_scale",&diffusion_scale,0);
+
+	switch (model_setup) {
+		case 0:
+			PetscPrintf(PETSC_COMM_WORLD,"AdvDiff test: Pure diffusion of Gaussian hill.\n");
+			break;
+		case 1:
+			PetscPrintf(PETSC_COMM_WORLD,"AdvDiff test: Advection of Gaussian hill in x-direction.\n");
+			break;
+		case 2:
+			PetscPrintf(PETSC_COMM_WORLD,"AdvDiff test: Skew advection test of Hughes.\n");
+			break;
+		case 3:
+			PetscPrintf(PETSC_COMM_WORLD,"AdvDiff test: Step advection in x-direction.\n");
+			break;
+	}
+	
 	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "BCListEvaluator_HughesSkewTest"
+PetscBool BCListEvaluator_HughesSkewTest( PetscScalar position[], PetscScalar *value, void *ctx ) 
+{
+	PetscBool impose_dirichlet = PETSC_TRUE;
+	PetscScalar dv = *((PetscScalar*)ctx);
+
+	if (position[1] < 0.2) {
+		*value = dv;
+	} else {
+		*value = 0.0;
+	}
+	return impose_dirichlet;
 }
 
 #undef __FUNCT__
@@ -87,14 +124,40 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 	daT    = energy->daT;
 	bclist = energy->T_bclist;
 	
-	val = 2.0;
-	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
-	
-	//ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
-	//ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+	if (model_setup == 0) {
+		val = 2.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+	}	
+
+	if (model_setup == 1) {
+		val = 2.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		// outflow
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+	}
+
+	if (model_setup == 2) {
+		val = 1.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_HughesSkewTest,(void*)&val);CHKERRQ(ierr);
+		// outflow IMAX,JMAX		
+	}
+
+	if (model_setup == 3) {
+		/*
+		val = 2.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		//val = 1.0;
+		//ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+		*/
+		val = 2.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
+	}
 	
 	
 	PetscFunctionReturn(0);
@@ -217,8 +280,24 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 			MPntStdGetField_global_coord(material_point,&position);
 			
 			/* user the setters provided for you */
-			MPntPEnergySetField_diffusivity(mpprop_energy,1.0);
-			MPntPEnergySetField_heat_source(mpprop_energy,0.0);
+			if (model_setup == 0) {
+				MPntPEnergySetField_diffusivity(mpprop_energy,1.0);
+				MPntPEnergySetField_heat_source(mpprop_energy,0.0);
+			}
+			if (model_setup == 1) {
+				//MPntPEnergySetField_diffusivity(mpprop_energy,position[0]*position[1]+position[2]*position[2]+1.0);
+				MPntPEnergySetField_diffusivity(mpprop_energy,1.0e-6);
+				MPntPEnergySetField_heat_source(mpprop_energy,0.0);
+			}
+			if (model_setup == 2) {
+				MPntPEnergySetField_diffusivity(mpprop_energy,1.0e-6);
+				MPntPEnergySetField_heat_source(mpprop_energy,0.0);
+			}
+			if (model_setup == 3) {
+				MPntPEnergySetField_diffusivity(mpprop_energy,1.0e-6*diffusion_scale);
+				MPntPEnergySetField_heat_source(mpprop_energy,0.0);
+			}
+			
 		}
 		DataFieldRestoreAccess(PField_std);
 		DataFieldRestoreAccess(PField_energy);
@@ -251,12 +330,48 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	
 	ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-	vx_const = 0.0;
-	vy_const = 0.0;
-	vz_const = 0.0;
-	ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
+	if (model_setup == 0) {
+		vx_const = 0.0;
+		vy_const = 0.0;
+		vz_const = 0.0;
+		ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
+	}
+	if (model_setup == 1) {
+		vx_const = 1.0;
+		vy_const = 0.0;
+		vz_const = 0.0;
+		ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
+	}
+	if (model_setup == 2) {
+		vx_const = 1.0;
+		vy_const = 1.0;
+		vz_const = 0.0;
+		ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
+	}
+	if (model_setup == 3) {
+		/*
+		vx_const = 1.0 * vel_scale;
+		vy_const = 0.0;
+		vz_const = 0.0;
+		ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
+		 */
+		vx_const = 0.0;
+		vy_const = 1.0 * vel_scale;
+		vz_const = 0.0;
+		ierr = DMDAVecTraverse3d(dav,velocity,0,DMDAVecTraverse3d_Constant,(void*)&vx_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Constant,(void*)&vy_const);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dav,velocity,2,DMDAVecTraverse3d_Constant,(void*)&vz_const);CHKERRQ(ierr);
+		
+	}
+	
 	
 	/* note - pressure has no coordinates set, so use ijk traversal */
 	p_init = 0.0;
@@ -269,7 +384,6 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	if (active_energy == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"energy must be activated");
 	}
-	
 
 	/* define initial temperature field for advection test */
 	/* a) fetch the energy context */
@@ -279,14 +393,42 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	/* c) fetch the temp vector */
 	ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
 
-
-	ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
-	//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
-	//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
-	//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
-	//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
-	ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
-	
+	if (model_setup == 0) {
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
+	}	
+	if (model_setup == 1) {
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
+	}	
+	if (model_setup == 2) {
+		ierr = VecZeroEntries(temperature);CHKERRQ(ierr);
+	}	
+	if (model_setup == 3) {
+		int direction;
+		
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
+		/*
+		direction = 0;
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepWithDirection,(void*)&direction);CHKERRQ(ierr);
+		*/
+		//
+		direction = 1;
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepWithDirection,(void*)&direction);CHKERRQ(ierr);
+		//
+		/*
+		direction = 2;
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepWithDirection,(void*)&direction);CHKERRQ(ierr);
+		 */
+	}	
 	
 	PetscFunctionReturn(0);
 }
@@ -310,8 +452,11 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	PetscErrorCode ierr;
 	DataBucket     materialpoint_db;
 	PhysCompEnergy energy;
-	Vec temperature;
-	char name[256];
+	Vec            temperature;
+	char           name[256];
+	PetscBool      write_markers,output_markers_once = PETSC_FALSE;
+	static int     been_here = 0;
+	
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -340,16 +485,21 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 #endif
 	
 	/* stokes + energy material points */
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
-	{
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-advdiff_output_markers_once",&output_markers_once,PETSC_NULL);CHKERRQ(ierr);
+	write_markers = PETSC_TRUE;
+	if ((output_markers_once) && (been_here != 0)) {
+		write_markers = PETSC_FALSE;
+	}
+	if (write_markers) {
 		const int                  nf = 2;
 		const MaterialPointField   mp_prop_list[] = { MPField_Std, MPField_Energy }; 
 
-		
-		sprintf(name,"%s_advdiff_mpoints.vtk",prefix);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		sprintf(name,"%s_advdiff_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 	}
-	
+
+	been_here = 1;
 	PetscFunctionReturn(0);
 }
 
