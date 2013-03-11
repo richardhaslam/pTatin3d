@@ -50,12 +50,23 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket *_db)
 	DataBucketCreate(&db);
 	
 	DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),PETSC_NULL);
+    
 	DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,    sizeof(MaterialConst_ViscosityConst),PETSC_NULL);
 	DataBucketRegisterField(db,MaterialConst_ViscosityZ_classname,    sizeof(MaterialConst_ViscosityZ),PETSC_NULL);
+	DataBucketRegisterField(db,MaterialConst_ViscosityArrh_classname,      sizeof(MaterialConst_ViscosityArrh),PETSC_NULL);
+    DataBucketRegisterField(db,MaterialConst_ViscosityFK_classname,      sizeof(MaterialConst_ViscosityFK),PETSC_NULL);
+    
 	DataBucketRegisterField(db,MaterialConst_PlasticMises_classname,      sizeof(MaterialConst_PlasticMises),PETSC_NULL);
 	DataBucketRegisterField(db,MaterialConst_PlasticDP_classname,      sizeof(MaterialConst_PlasticDP),PETSC_NULL);
-	DataBucketRegisterField(db,MaterialConst_DensityConst_classname,      sizeof(MaterialConst_DensityConst),PETSC_NULL);
-	DataBucketFinalize(db);
+	
+    DataBucketRegisterField(db,MaterialConst_DensityConst_classname,      sizeof(MaterialConst_DensityConst),PETSC_NULL);
+    DataBucketRegisterField(db,MaterialConst_DensityBoussinesq_classname,      sizeof(MaterialConst_DensityBoussinesq),PETSC_NULL);
+    
+    DataBucketRegisterField(db,MaterialConst_SoftLin_classname,      sizeof(MaterialConst_SoftLin),PETSC_NULL);
+    DataBucketRegisterField(db,MaterialConst_SoftExpo_classname,      sizeof(MaterialConst_SoftExpo),PETSC_NULL);
+    
+    
+    DataBucketFinalize(db);
 	
 	DataBucketSetInitialSizes(db,200,0);
 	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
@@ -359,6 +370,157 @@ PetscErrorCode MaterialConstantsScaleValues_DensityConst(DataBucket db,const int
 	PetscFunctionReturn(0);
 }
 
+
+/* DensityBoussinesq */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetDefault_DensityBoussinesq"
+PetscErrorCode MaterialConstantsSetDefault_DensityBoussinesq(DataBucket db)
+{
+	int                            r,nregions;
+	DataField                      PField;
+	MaterialConst_DensityBoussinesq *data;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
+	DataBucketGetDataFieldByName(db,MaterialConst_DensityBoussinesq_classname,&PField);
+	
+	data = (MaterialConst_DensityBoussinesq*)PField->data; /* should write a function to do this */
+	for (r=0; r<nregions; r++) {
+		data[r].density = 1.0;
+        	data[r].alpha = 0.0;
+        	data[r].beta = 0.0;
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetFromOptions_DensityBoussinesq"
+PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
+{
+	char                            opt_name[256];
+	DataField                       PField;
+	MaterialConst_DensityBoussinesq *data;
+	PetscBool                       found;
+	PetscReal                       value;
+	PetscErrorCode                  ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_DensityBoussinesq_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* eta0 */
+    
+	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[0],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_DensityBoussinesqSetField_density(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[0],region_id);CHKERRQ(ierr);
+	}
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsPrintValues_DensityBoussinesq"
+PetscErrorCode MaterialConstantsPrintValues_DensityBoussinesq(DataBucket db,const int region_id)
+{
+	char                         opt_name[256];
+	DataField                    PField;
+	MaterialConst_DensityBoussinesq   *data;
+	PetscReal                    value;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_DensityBoussinesq_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[0],region_id);
+	MaterialConst_DensityBoussinesqGetField_density(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[1],region_id);
+	MaterialConst_DensityBoussinesqGetField_thermalexpension(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+    sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[2],region_id);
+	MaterialConst_DensityBoussinesqGetField_compressibility(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+    
+    
+	DataFieldRestoreAccess(PField);
+    
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetValues_DensityBoussinesq"
+PetscErrorCode MaterialConstantsSetValues_DensityBoussinesq(DataBucket db,const int region_id,PetscReal density,PetscReal alpha,PetscReal beta)
+{
+	DataField                       PField;
+	MaterialConst_DensityBoussinesq *data;
+	PetscErrorCode                  ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_DensityBoussinesq_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	if (density != PETSC_DEFAULT) {
+		MaterialConst_DensityBoussinesqSetField_density(data,density);
+	}
+	if (alpha != PETSC_DEFAULT) {
+		MaterialConst_DensityBoussinesqSetField_thermalexpension(data,alpha);
+	}	
+    if (beta != PETSC_DEFAULT) {
+		MaterialConst_DensityBoussinesqSetField_compressibility(data,beta);
+	}	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsScaleValues_DensityBoussinesq"
+PetscErrorCode MaterialConstantsScaleValues_DensityBoussinesq(DataBucket db,const int region_id,PetscReal rho_star,PetscReal sigma_star)
+{
+	DataField                       PField;
+	MaterialConst_DensityBoussinesq *data;
+	PetscReal                       density,beta;
+	PetscErrorCode                  ierr;
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_DensityBoussinesq_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	MaterialConst_DensityBoussinesqGetField_density(data,&density);
+	density=density/rho_star;
+	MaterialConst_DensityBoussinesqSetField_density(data,density);
+    
+    MaterialConst_DensityBoussinesqGetField_compressibility(data,&beta);
+	beta=beta/sigma_star;
+	MaterialConst_DensityBoussinesqSetField_compressibility(data,beta);
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+/*############################################################################*/
+
+
+
 /* ViscosityConst */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsSetDefault_ViscosityConst"
@@ -495,16 +657,18 @@ PetscErrorCode MaterialConstantsSetDefault_ViscosityZ(DataBucket db)
 {
 	int                          r,nregions;
 	DataField                    PField;
-	MaterialConst_ViscosityConst *data;
+	MaterialConst_ViscosityZ *data;
 	
 	PetscFunctionBegin;
 	
 	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
-	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityConst_classname,&PField);
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityZ_classname,&PField);
 	
-	data = (MaterialConst_ViscosityConst*)PField->data; /* should write a function to do this */
+	data = (MaterialConst_ViscosityZ*)PField->data; /* should write a function to do this */
 	for (r=0; r<nregions; r++) {
 		data[r].eta0 = 1.0;
+        data[r].zeta = 1.0;
+        data[r].zref = 0.0;
 	}	
 	
 	PetscFunctionReturn(0);
@@ -659,6 +823,377 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityZ(DataBucket db,const int r
 }
 
 
+/* Viscosity Arrhenius */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetDefault_ViscosityArrh"
+PetscErrorCode MaterialConstantsSetDefault_ViscosityArrh(DataBucket db)
+{
+	int                          r,nregions;
+	DataField                    PField;
+	MaterialConst_ViscosityArrh  *data;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityArrh_classname,&PField);
+	
+	data = (MaterialConst_ViscosityArrh*)PField->data; /* should write a function to do this */
+	for (r=0; r<nregions; r++) {
+		data[r].preexpA   = 6.5e-6;
+        data[r].Ascale    = 1.0e6;
+        data[r].entalpy   = 150.0e3;
+        data[r].Vmol      = 0.0;
+        data[r].nexp      = 3.0;
+        data[r].Tref      = 273.0;
+        data[r].Eta_scale = 1.0;
+        data[r].P_scale   = 1.0;
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityArrh"
+PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
+{
+	char                         opt_name[256];
+	DataField                    PField;
+	MaterialConst_ViscosityArrh  *data;
+	PetscBool                    found;
+	PetscReal                    value;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityArrh_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* eta0 */
+	value = 1.0; /* default - not required is nothing happens if option not found */
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[0],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_ViscosityArrhSetField_preexpA(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityArrh_member_names[0],region_id);CHKERRQ(ierr);
+	}
+    
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[1],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_ViscosityArrhSetField_Ascale(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityArrh_member_names[1],region_id);CHKERRQ(ierr);
+	}
+	
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[2],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    if (found) {
+		MaterialConst_ViscosityArrhSetField_entalpy(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityArrh_member_names[2],region_id);CHKERRQ(ierr);
+	}
+    
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    if (found) {
+		MaterialConst_ViscosityArrhSetField_Vmol(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityArrh_member_names[3],region_id);CHKERRQ(ierr);
+	}
+    
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[4],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    if (found) {
+		MaterialConst_ViscosityArrhSetField_nexp(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityArrh_member_names[4],region_id);CHKERRQ(ierr);
+	}
+    
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[5],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    if (found) {
+		MaterialConst_ViscosityArrhSetField_Tref(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityArrh_member_names[5],region_id);CHKERRQ(ierr);
+	}
+    
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsPrintValues_ViscosityArrh"
+PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const int region_id)
+{
+	char                         opt_name[256];
+	DataField                    PField;
+	MaterialConst_ViscosityArrh     *data;
+	PetscReal                    value;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityArrh_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[0],region_id);
+	MaterialConst_ViscosityArrhGetField_preexpA(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[1],region_id);
+	MaterialConst_ViscosityArrhGetField_Ascale(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[2],region_id);
+	MaterialConst_ViscosityArrhGetField_entalpy(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+	MaterialConst_ViscosityArrhGetField_Vmol(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+	MaterialConst_ViscosityArrhGetField_nexp(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+	MaterialConst_ViscosityArrhGetField_Tref(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+    
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetValues_ViscosityArrh"
+PetscErrorCode MaterialConstantsSetValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal preexpA,PetscReal Ascale,PetscReal entalpy,PetscReal Vmol,PetscReal nexp,PetscReal Tref)
+{
+	DataField                    PField;
+	MaterialConst_ViscosityArrh  *data;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityArrh_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	if (preexpA != PETSC_DEFAULT) {
+		MaterialConst_ViscosityArrhSetField_preexpA(data,preexpA);
+	}
+
+    if (Ascale != PETSC_DEFAULT) {
+		MaterialConst_ViscosityArrhSetField_Ascale(data,Ascale);
+	}
+    
+    if (entalpy != PETSC_DEFAULT) {
+		MaterialConst_ViscosityArrhSetField_entalpy(data,entalpy);
+	}
+
+    if (Vmol != PETSC_DEFAULT) {
+		MaterialConst_ViscosityArrhSetField_Vmol(data,Vmol);
+	}
+
+    if (nexp != PETSC_DEFAULT) {
+		MaterialConst_ViscosityArrhSetField_nexp(data,nexp);
+	}
+
+    if (Tref != PETSC_DEFAULT) {
+		MaterialConst_ViscosityArrhSetField_Tref(data,Tref);
+	}
+
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsScaleValues_ViscosityArrh"
+PetscErrorCode MaterialConstantsScaleValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal eta_star,PetscReal sigma_star)
+{
+	DataField                    PField;
+	MaterialConst_ViscosityArrh  *data;
+	PetscReal                    eta0,P0;
+	PetscErrorCode               ierr;
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityArrh_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	MaterialConst_ViscosityArrhSetField_Eta_scale(data,eta_star);
+
+	MaterialConst_ViscosityArrhSetField_P_scale(data,sigma_star);
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+/* ViscosityFK */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetDefault_ViscosityFK"
+PetscErrorCode MaterialConstantsSetDefault_ViscosityFK(DataBucket db)
+{
+	int                          r,nregions;
+	DataField                    PField;
+	MaterialConst_ViscosityFK    *data;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityFK_classname,&PField);
+	
+	data = (MaterialConst_ViscosityFK*)PField->data; /* should write a function to do this */
+	for (r=0; r<nregions; r++) {
+		data[r].eta0  = 1.0;
+        data[r].theta = 1.0;
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityFK"
+PetscErrorCode MaterialConstantsSetFromOptions_ViscosityFK(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
+{
+	char                         opt_name[256];
+	DataField                    PField;
+	MaterialConst_ViscosityFK     *data;
+	PetscBool                    found;
+	PetscReal                    value;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityFK_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* eta0 */
+	value = 1.0; /* default - not required is nothing happens if option not found */
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[0],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_ViscosityFKSetField_eta0(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityFK_member_names[0],region_id);CHKERRQ(ierr);
+	}
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[1],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_ViscosityFKSetField_theta(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_ViscosityFK_member_names[1],region_id);CHKERRQ(ierr);
+	}
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsPrintValues_ViscosityFK"
+PetscErrorCode MaterialConstantsPrintValues_ViscosityFK(DataBucket db,const int region_id)
+{
+	char                         opt_name[256];
+	DataField                    PField;
+	MaterialConst_ViscosityFK    *data;
+	PetscReal                    value;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityFK_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* eta0 */
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[0],region_id);
+	MaterialConst_ViscosityFKGetField_eta0(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[1],region_id);
+	MaterialConst_ViscosityFKGetField_theta(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetValues_ViscosityFK"
+PetscErrorCode MaterialConstantsSetValues_ViscosityFK(DataBucket db,const int region_id,PetscReal eta0,PetscReal theta)
+{
+	DataField                    PField;
+	MaterialConst_ViscosityFK    *data;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityFK_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	if (eta0 != PETSC_DEFAULT) {
+		MaterialConst_ViscosityFKSetField_eta0(data,eta0);
+	}
+	if (theta != PETSC_DEFAULT) {
+		MaterialConst_ViscosityFKSetField_theta(data,theta);
+	}
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsScaleValues_ViscosityFK"
+PetscErrorCode MaterialConstantsScaleValues_ViscosityFK(DataBucket db,const int region_id,PetscReal eta_star)
+{
+	DataField                    PField;
+	MaterialConst_ViscosityFK    *data;
+	PetscReal                    eta0,zeta,zref;
+	PetscErrorCode               ierr;
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityFK_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	MaterialConst_ViscosityFKGetField_eta0(data,&eta0);
+	eta0=eta0/eta_star;
+	MaterialConst_ViscosityFKSetField_eta0(data,eta0);
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+/*##########################################################################*/
 
 /* PlasticMises */
 #undef __FUNCT__
@@ -1073,7 +1608,282 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int re
 	PetscFunctionReturn(0);
 }
 
+/*######################       SOFTENING LAWS        ########################*/
+/*  NONE OF THEM NEED SCALING FOR THE MOMENT  BUT I AM THINKING ABOUT ONE    */
 
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetDefault_SoftLin"
+PetscErrorCode MaterialConstantsSetDefault_SoftLin(DataBucket db)
+{
+	int                          r,nregions;
+	DataField                    PField;
+	MaterialConst_SoftLin        *data;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftLin_classname,&PField);
+	
+	data = (MaterialConst_SoftLin*)PField->data; /* should write a function to do this */
+	for (r=0; r<nregions; r++) {
+		data[r].eps_min      = 0.0;
+		data[r].eps_max      = 1.0;
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetFromOptions_SoftLin"
+PetscErrorCode MaterialConstantsSetFromOptions_SoftLin(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
+{
+	char                         opt_name[256],*field_name;
+	DataField                    PField;
+	MaterialConst_SoftLin        *data;
+	PetscBool                    found;
+	PetscReal                    value;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftLin_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* minimum strain */
+	value      = 1.0; /* default - not required as nothing happens if option not found */
+	field_name = (char*)MaterialConst_SoftLin_member_names[0];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_SoftLinSetField_eps_min(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+	
+	/* maximum strain */
+	value      = 1.0; /* default - not required as nothing happens if option not found */
+	field_name = (char*)MaterialConst_SoftLin_member_names[1];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_SoftLinSetField_eps_max(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+    
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsPrintValues_SoftLin"
+PetscErrorCode MaterialConstantsPrintValues_SoftLin(DataBucket db,const int region_id)
+{
+	char                         opt_name[256],*field_name;
+	DataField                    PField;
+	MaterialConst_SoftLin        *data;
+	PetscReal                    value;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftLin_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	
+	/* minimum strain */
+	field_name = (char*)MaterialConst_SoftLin_member_names[0];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	MaterialConst_SoftLinGetField_eps_min(data,&value); /* use setter */
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+	/* exponential fold */
+	field_name = (char*)MaterialConst_SoftLin_member_names[1];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	MaterialConst_SoftLinGetField_eps_max(data,&value); /* use setter */
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetValues_SoftLin"
+PetscErrorCode MaterialConstantsSetValues_SoftLin(DataBucket db,const int region_id,PetscReal emin,PetscReal emax)
+{
+	DataField                    PField;
+	MaterialConst_SoftLin      *data;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftLin_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	if (emin  != PETSC_DEFAULT) {
+		MaterialConst_SoftLinSetField_eps_min(data,emin); /* use setter */
+	}
+	if (emax != PETSC_DEFAULT) {
+		MaterialConst_SoftLinSetField_eps_max(data,emax); /* use setter */
+	}
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetDefault_SoftExpo"
+PetscErrorCode MaterialConstantsSetDefault_SoftExpo(DataBucket db)
+{
+	int                          r,nregions;
+	DataField                    PField;
+	MaterialConst_SoftExpo      *data;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetSizes(db,&nregions,PETSC_NULL,PETSC_NULL);
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftExpo_classname,&PField);
+	
+	data = (MaterialConst_SoftExpo*)PField->data; /* should write a function to do this */
+	for (r=0; r<nregions; r++) {
+		data[r].eps_min      = 0.0;
+		data[r].eps_fold     = 1.0;
+	}	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetFromOptions_SoftExpo"
+PetscErrorCode MaterialConstantsSetFromOptions_SoftExpo(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
+{
+	char                         opt_name[256],*field_name;
+	DataField                    PField;
+	MaterialConst_SoftExpo      *data;
+	PetscBool                    found;
+	PetscReal                    value;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftExpo_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	/* insert options */
+	/* minimum strain */
+	value      = 1.0; /* default - not required as nothing happens if option not found */
+	field_name = (char*)MaterialConst_SoftExpo_member_names[0];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_SoftExpoSetField_eps_min(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+	
+	/* exponential fold */
+	value      = 1.0; /* default - not required as nothing happens if option not found */
+	field_name = (char*)MaterialConst_SoftExpo_member_names[1];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_SoftExpoSetField_eps_fold(data,value); /* use setter */
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,field_name,region_id);CHKERRQ(ierr);
+	}
+
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsPrintValues_SoftExpo"
+PetscErrorCode MaterialConstantsPrintValues_SoftExpo(DataBucket db,const int region_id)
+{
+	char                         opt_name[256],*field_name;
+	DataField                    PField;
+	MaterialConst_SoftExpo      *data;
+	PetscReal                    value;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftExpo_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	
+	/* minimum strain */
+	field_name = (char*)MaterialConst_SoftExpo_member_names[0];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	MaterialConst_SoftExpoGetField_eps_min(data,&value); /* use setter */
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+	/* exponential fold */
+	field_name = (char*)MaterialConst_SoftExpo_member_names[1];
+	sprintf(opt_name,"-%s_%d",field_name,region_id);
+	MaterialConst_SoftExpoGetField_eps_fold(data,&value); /* use setter */
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsSetValues_SoftExpo"
+PetscErrorCode MaterialConstantsSetValues_SoftExpo(DataBucket db,const int region_id,PetscReal emin,PetscReal efold)
+{
+	DataField                    PField;
+	MaterialConst_SoftExpo      *data;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(db,MaterialConst_SoftExpo_classname,&PField);
+	
+	DataFieldGetAccess(PField);
+	DataFieldAccessPoint(PField,region_id,(void**)&data);
+	
+	if (emin != PETSC_DEFAULT) {
+		MaterialConst_SoftExpoSetField_eps_min(data,emin); /* use setter */
+	}
+	if (efold != PETSC_DEFAULT) {
+		MaterialConst_SoftExpoSetField_eps_fold(data,efold); /* use setter */
+	}
+	
+	DataFieldRestoreAccess(PField);
+	
+	PetscFunctionReturn(0);
+}
+
+
+
+
+
+
+
+
+
+/*###################### GENERAL STUFF FOR CONSTANTS ########################*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsReportParseError"
@@ -1099,9 +1909,14 @@ PetscErrorCode MaterialConstantsSetDefaults(DataBucket db)
 	ierr = MaterialConstantsSetDefault_MaterialType(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_ViscosityConst(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_ViscosityZ(db);CHKERRQ(ierr);
+    	ierr = MaterialConstantsSetDefault_ViscosityFK(db);CHKERRQ(ierr);
+    	ierr = MaterialConstantsSetDefault_ViscosityArrh(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_PlasticMises(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_PlasticDP(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_DensityConst(db);CHKERRQ(ierr);
+    	ierr = MaterialConstantsSetDefault_DensityBoussinesq(db);CHKERRQ(ierr);
+    	ierr = MaterialConstantsSetDefault_SoftLin(db);CHKERRQ(ierr);
+    	ierr = MaterialConstantsSetDefault_SoftExpo(db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -1131,13 +1946,13 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 			ierr= MaterialConstantsSetFromOptions_ViscosityConst(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break;
 		case VISCOUS_FRANKK:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Rheology FRANKK NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr= MaterialConstantsSetFromOptions_ViscosityFK(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break;        
 		case VISCOUS_Z:
 			ierr= MaterialConstantsSetFromOptions_ViscosityZ(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break; 
 		case VISCOUS_ARRHENIUS:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Rheology ARRHENIUS NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr= MaterialConstantsSetFromOptions_ViscosityArrh(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break; 
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
@@ -1165,13 +1980,13 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 			
 			break;
 		case SOFTENING_LINEAR:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING_LINEAR NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr= MaterialConstantsSetFromOptions_SoftLin(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break;
 		case SOFTENING_EXPONENTIAL:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING_EXPONENTIAL NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr= MaterialConstantsSetFromOptions_SoftExpo(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break;        
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"DENSITY TYPE UNDEFINED");
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING TYPE UNDEFINED");
 			break;
 	}
 	
@@ -1180,8 +1995,8 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 		case DENSITY_CONSTANT:
 			ierr= MaterialConstantsSetFromOptions_DensityConst(db,model_name,region_id,essential);CHKERRQ(ierr);            
 			break;
-		case DENSITY_BOUSINESQ:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Density BOUSSINESQ NOT IMPLEMENTED CHECK YOUR OPTIONS");
+		case DENSITY_BOUSSINESQ:
+			ierr= MaterialConstantsSetFromOptions_DensityBoussinesq(db,model_name,region_id,essential);CHKERRQ(ierr);            
 			break;    
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"DENSITY TYPE UNDEFINED");
@@ -1219,13 +2034,13 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 			ierr = MaterialConstantsScaleValues_ViscosityConst(db,region_id,eta_star);CHKERRQ(ierr);
 			break;
 		case VISCOUS_FRANKK:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Rheology FRANKK NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr = MaterialConstantsScaleValues_ViscosityFK(db,region_id,eta_star);CHKERRQ(ierr);
 			break;        
 		case VISCOUS_Z:
 			ierr = MaterialConstantsScaleValues_ViscosityZ(db,region_id,eta_star,L_star);CHKERRQ(ierr);
 			break; 
 		case VISCOUS_ARRHENIUS:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Rheology ARRHENIUS NOT IMPLEMENTED CHECK YOUR OPTIONS");
+            ierr = MaterialConstantsScaleValues_ViscosityArrh(db,region_id,eta_star,P_star);CHKERRQ(ierr);
 			break; 
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
@@ -1253,13 +2068,13 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 			
 			break;
 		case SOFTENING_LINEAR:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING_LINEAR NOT IMPLEMENTED CHECK YOUR OPTIONS");
-			break;
+			
+            break;
 		case SOFTENING_EXPONENTIAL:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING_EXPONENTIAL NOT IMPLEMENTED CHECK YOUR OPTIONS");
+
 			break;        
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"DENSITY TYPE UNDEFINED");
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING TYPE UNDEFINED");
 			break;
 	}
 	
@@ -1268,8 +2083,8 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 		case DENSITY_CONSTANT:
 			ierr = MaterialConstantsScaleValues_DensityConst(db,region_id,rho_star);CHKERRQ(ierr);            
 			break;
-		case DENSITY_BOUSINESQ:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Density BOUSSINESQ NOT IMPLEMENTED CHECK YOUR OPTIONS");
+		case DENSITY_BOUSSINESQ:
+			ierr = MaterialConstantsScaleValues_DensityBoussinesq(db,region_id,rho_star,P_star);CHKERRQ(ierr);
 			break;    
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"DENSITY TYPE UNDEFINED");
@@ -1304,13 +2119,13 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 			ierr = MaterialConstantsPrintValues_ViscosityConst(db,region_id);CHKERRQ(ierr);
 			break;
 		case VISCOUS_FRANKK:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Rheology FRANKK NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr = MaterialConstantsPrintValues_ViscosityFK(db,region_id);CHKERRQ(ierr);
 			break;        
 		case VISCOUS_Z:
 			ierr = MaterialConstantsPrintValues_ViscosityZ(db,region_id);CHKERRQ(ierr);
 			break; 
 		case VISCOUS_ARRHENIUS:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Rheology ARRHENIUS NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr = MaterialConstantsPrintValues_ViscosityArrh(db,region_id);CHKERRQ(ierr);
 			break; 
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
@@ -1338,10 +2153,10 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 			
 			break;
 		case SOFTENING_LINEAR:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING_LINEAR NOT IMPLEMENTED CHECK YOUR OPTIONS");
+            ierr = MaterialConstantsPrintValues_SoftLin(db,region_id);CHKERRQ(ierr);
 			break;
 		case SOFTENING_EXPONENTIAL:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"SOFTENING_EXPONENTIAL NOT IMPLEMENTED CHECK YOUR OPTIONS");
+			ierr = MaterialConstantsPrintValues_SoftExpo(db,region_id);CHKERRQ(ierr);
 			break;        
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"DENSITY TYPE UNDEFINED");
@@ -1353,8 +2168,8 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 		case DENSITY_CONSTANT:
 			ierr = MaterialConstantsPrintValues_DensityConst(db,region_id);CHKERRQ(ierr);            
 			break;
-		case DENSITY_BOUSINESQ:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Density BOUSSINESQ NOT IMPLEMENTED CHECK YOUR OPTIONS");
+		case DENSITY_BOUSSINESQ:
+            ierr = MaterialConstantsPrintValues_DensityBoussinesq(db,region_id);CHKERRQ(ierr);
 			break;    
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"DENSITY TYPE UNDEFINED");

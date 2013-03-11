@@ -221,7 +221,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 			MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
 		}
 		
-		
+
 		/*Reports scaled values*/ 
 		
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_rift3D_Ox   :  %+1.4e    -model_rift3D_Lx   :  %+1.4e  \n", data->Ox ,data->Lx );
