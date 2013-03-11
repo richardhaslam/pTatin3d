@@ -36,13 +36,18 @@
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+
 #include "ptatin_utils.h"
 #include "dmda_bcs.h"
+#include "dmda_duplicate.h"
+#include "dmdae.h"
 #include "element_utils_q1.h"
 #include "dmda_element_q1.h"
 #include "quadrature.h"
 #include "dmda_checkpoint.h"
+#include "material_point_utils.h"
 
+#include "MPntPEnergy_def.h"
 #include "QPntVolCoefEnergy_def.h"
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
@@ -175,6 +180,182 @@ PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A)
 	if (A) { 
 		ierr = pTatinCtxGetModelData(user,"PhysCompEnergy_JE",(void**)A);CHKERRQ(ierr);
 	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointQuadraturePointProjectionC0_Q2Energy"
+PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q)
+{
+	DMDAE          dae,dae_clone;
+	PetscInt       dof;
+	DM             clone;
+	Vec            properties_A,properties_B;
+	int            npoints;
+	DataField      PField_std;
+	DataField      PField_material_point_property;
+  MPntStd        *mp_std;
+	void           *material_point_property;
+	size_t         mp_field_offset, mp_offset, qp_field_offset, qp_offset;
+	size_t         mp_property_offsets[MPntPEnergy_nmembers];
+	size_t         qp_property_offsets[QPntVolCoefEnergy_nmembers];
+	QPntVolCoefEnergy *all_quadpoints;
+	PetscBool      view;
+	PetscInt       nel,nen;
+	const PetscInt *els;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	
+	if (field != MPField_Energy) {
+		/* error - these is only valid for energy fields defined on Q2 */
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either properties from MPntPEnergy which are to be projected onto a Q2 space");
+	}
+	
+	DataBucketGetDataFieldByName(materialpoint_db, MPntStd_classname,&PField_std);
+	DataBucketGetSizes(materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+	mp_std  = PField_std->data;
+	
+	
+	ierr = MPntPEnergyComputeMemberOffsets(mp_property_offsets);CHKERRQ(ierr);
+	ierr = QPntVolCoefEnergyComputeMemberOffsets(qp_property_offsets);CHKERRQ(ierr);
+	
+	/* setup */
+	dof = 1;
+	ierr = DMDADuplicateLayout(da,dof,1,DMDA_STENCIL_BOX,&clone);CHKERRQ(ierr);
+	ierr = DMGetDMDAE(da,&dae);CHKERRQ(ierr);
+	
+	ierr = DMAttachDMDAE(clone);CHKERRQ(ierr);
+	ierr = DMGetDMDAE(clone,&dae_clone);CHKERRQ(ierr);
+	/*
+	{
+		PetscInt NP[3];
+
+		ierr = DMDAGetInfo(da,0,0,0,0,&NP[0],&NP[1],&NP[2],0,0, 0,0,0, 0);CHKERRQ(ierr);		
+		ierr = DMDAEDeepCopy(dae,NP,dae_clone);CHKERRQ(ierr);
+	}*/
+	ierr = DMDAECopy(dae,dae_clone);CHKERRQ(ierr);
+
+	ierr = DMDASetElementType_Q1(clone);CHKERRQ(ierr);
+	ierr = DMDAGetElements_DA_Q1_3D(clone,&nel,&nen,&els);CHKERRQ(ierr);
+	
+	
+	ierr = DMGetGlobalVector(clone,&properties_A);CHKERRQ(ierr);  
+	ierr = DMGetGlobalVector(clone,&properties_B);CHKERRQ(ierr);
+	
+	ierr = VecZeroEntries(properties_A);CHKERRQ(ierr);
+	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
+	
+	
+	switch (field) {
+			
+		case MPField_Energy:
+		{
+			MPntPEnergyTypeName member_name = (MPntPEnergyTypeName)member;
+			
+			mp_offset = sizeof(MPntPEnergy);
+			qp_offset = sizeof(QPntVolCoefEnergy);
+			
+			DataBucketGetDataFieldByName(materialpoint_db, MPntPEnergy_classname,&PField_material_point_property);
+			material_point_property = PField_material_point_property->data;
+			
+			switch (member_name) {
+				case MPPEgy_diffusivity:
+					ierr = PetscObjectSetName( (PetscObject)properties_A, "kappa");CHKERRQ(ierr);
+					mp_field_offset = mp_property_offsets[ MPPEgy_diffusivity ];
+					qp_field_offset = qp_property_offsets[ QPVCEgy_diffusivity ];
+					break;
+					/* ----------------------------------- */
+				case MPPEgy_heat_source:
+					ierr = PetscObjectSetName( (PetscObject)properties_A, "H");CHKERRQ(ierr);
+					mp_field_offset = mp_property_offsets[ MPPEgy_heat_source ];
+					qp_field_offset = qp_property_offsets[ QPVCEgy_heat_source ];
+					break;
+					/* ----------------------------------- */
+				default:
+					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either {MPPEgy_diffusivity, MPPEgy_heat_source}");
+					break;
+			}
+		}
+			break;
+			
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"User must choose either {MPntPEnergy}");
+			break;
+	}
+	
+	/* compute */
+	//
+	ierr = DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
+																								clone,properties_A,properties_B,
+																								//CoefAvgHARMONIC,
+																								CoefAvgARITHMETIC,
+																								npoints,mp_std,
+																								mp_field_offset,mp_offset,material_point_property);CHKERRQ(ierr);
+	//
+	
+	/*
+	 ierr = _MaterialPointProjection_MapOntoNestedQ1Mesh(
+	 clone,properties_A,properties_B,
+	 //CoefAvgHARMONIC,
+	 CoefAvgARITHMETIC,
+	 npoints,mp_std,
+	 mp_field_offset,mp_offset,material_point_property);CHKERRQ(ierr);
+	 */
+	
+	/* interpolate to quad points */
+	ierr = VolumeQuadratureGetAllCellData_Energy(Q,&all_quadpoints);CHKERRQ(ierr);
+	ierr = DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
+												clone,properties_A,
+												qp_field_offset,qp_offset,(void*)all_quadpoints,Q);CHKERRQ(ierr); 
+	
+	
+	/* view */
+	view = PETSC_FALSE;
+	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,PETSC_NULL);
+	if (view) {
+		char filename[256];
+		PetscViewer viewer;
+		
+		sprintf(filename,"MaterialPointProjection_energy_member_%d.vtk",(int)member );
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+		ierr = DMView(clone, viewer);CHKERRQ(ierr);
+		ierr = VecView(properties_A, viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	}
+	
+	/* destroy */
+	ierr = DMRestoreGlobalVector(clone,&properties_B);CHKERRQ(ierr);
+	ierr = DMRestoreGlobalVector(clone,&properties_A);CHKERRQ(ierr);
+	
+	ierr = DMDestroyDMDAE(clone);CHKERRQ(ierr);
+	ierr = DMDestroy(&clone);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinPhysCompEnergy_MPProjectionQ1"
+PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
+{
+	PhysCompEnergy energy;
+	DM             daT;
+	DataBucket     materialpoint_db;
+	Quadrature     volQ;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+	daT  = energy->daT;
+	volQ = energy->volQ;
+	ierr = pTatinGetMaterialPoints(ctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	
+	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_diffusivity,volQ);
+	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_heat_source,volQ);
 	
 	PetscFunctionReturn(0);
 }

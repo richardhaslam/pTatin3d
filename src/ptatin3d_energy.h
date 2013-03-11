@@ -46,4 +46,7 @@ PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,Phy
 PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T);
 PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T);
 
+PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q);
+PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx);
+
 #endif
