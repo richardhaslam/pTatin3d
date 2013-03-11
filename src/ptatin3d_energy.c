@@ -558,7 +558,8 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 		}
 		el_kappa_const = el_kappa_const / el_volume;
 		
-		ierr = DASUPG3dComputeElementTimestep_qp(el_coords,el_V,el_kappa_const,&dt_adv,&dt_diff);CHKERRQ(ierr);
+		//ierr = DASUPG3dComputeElementTimestep_qp(el_coords,el_V,el_kappa_const,&dt_adv,&dt_diff);CHKERRQ(ierr);
+		ierr = AdvDiff3dComputeElementTimestep_qp(el_coords,el_V,el_kappa_const,&dt_adv,&dt_diff);CHKERRQ(ierr);
 		if (dt_adv < min_dt_adv) {
 			min_dt_adv = dt_adv; 
 		}
