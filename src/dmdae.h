@@ -53,6 +53,8 @@ struct _p_DMDAE {
 	PetscInt sgi,sgj,sgk;
 };
 
+PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2);
+PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2);
 PetscErrorCode DMDAECreate(DMDAE *dae);
 PetscErrorCode DMDAEDestroy(DMDAE *dae);
 PetscErrorCode DMAttachDMDAE(DM dm);

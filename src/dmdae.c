@@ -69,6 +69,94 @@ PetscErrorCode DMDAEDestroy(DMDAE *dae)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMDAEDeepCopy"
+PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2)
+{
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	dae2->ne  = dae1->ne;
+	dae2->lne = dae1->lne;
+
+	dae2->mx = dae1->mx;
+	dae2->my = dae1->my;
+	dae2->mz = dae1->mz;
+
+	dae2->lmx = dae1->lmx;
+	dae2->lmy = dae1->lmy;
+	dae2->lmz = dae1->lmz;
+
+	dae2->si = dae1->si;
+	dae2->sj = dae1->sj;
+	dae2->sk = dae1->sk;
+	
+	dae2->npe = dae1->npe;
+	dae2->nps = dae1->nps;
+	dae2->overlap = dae1->overlap;
+
+	dae2->sgi = dae1->sgi;
+	dae2->sgj = dae1->sgj;
+	dae2->sgk = dae1->sgk;
+	
+	ierr = PetscMalloc(sizeof(PetscInt)*NP[0],&dae2->lsip);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*NP[1],&dae2->lsjp);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*NP[2],&dae2->lskp);CHKERRQ(ierr);
+	ierr = PetscMemcpy(dae2->lsip,dae1->lsip,sizeof(PetscInt)*NP[0]);CHKERRQ(ierr);
+	ierr = PetscMemcpy(dae2->lsjp,dae1->lsjp,sizeof(PetscInt)*NP[1]);CHKERRQ(ierr);
+	ierr = PetscMemcpy(dae2->lskp,dae1->lskp,sizeof(PetscInt)*NP[2]);CHKERRQ(ierr);
+	
+	ierr = PetscMalloc(sizeof(PetscInt)*NP[0],&dae2->lmxp);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*NP[1],&dae2->lmyp);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*NP[2],&dae2->lmzp);CHKERRQ(ierr);
+	ierr = PetscMemcpy(dae2->lsip,dae1->lmxp,sizeof(PetscInt)*NP[0]);CHKERRQ(ierr);
+	ierr = PetscMemcpy(dae2->lsjp,dae1->lmyp,sizeof(PetscInt)*NP[1]);CHKERRQ(ierr);
+	ierr = PetscMemcpy(dae2->lskp,dae1->lmzp,sizeof(PetscInt)*NP[2]);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDAECopy"
+PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2)
+{
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	dae2->ne  = dae1->ne;
+	dae2->lne = dae1->lne;
+	
+	dae2->mx = dae1->mx;
+	dae2->my = dae1->my;
+	dae2->mz = dae1->mz;
+	
+	dae2->lmx = dae1->lmx;
+	dae2->lmy = dae1->lmy;
+	dae2->lmz = dae1->lmz;
+	
+	dae2->si = dae1->si;
+	dae2->sj = dae1->sj;
+	dae2->sk = dae1->sk;
+	
+	dae2->npe = dae1->npe;
+	dae2->nps = dae1->nps;
+	dae2->overlap = dae1->overlap;
+	
+	dae2->sgi = dae1->sgi;
+	dae2->sgj = dae1->sgj;
+	dae2->sgk = dae1->sgk;
+	
+	dae2->lsip = dae1->lsip;
+	dae2->lsjp = dae1->lsjp;
+	dae2->lskp = dae1->lskp;
+	
+	dae2->lmxp = dae1->lmxp;
+	dae2->lmyp = dae1->lmyp;
+	dae2->lmzp = dae1->lmzp;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMAttachDMDAE"
 PetscErrorCode DMAttachDMDAE(DM dm)
 {
