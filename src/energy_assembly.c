@@ -83,8 +83,8 @@
 #define SUPG_STAB 1
 #define TAU_STAB  2
 
-//#define ADV_DIFF_STABILIZATION_TYPE SUPG_STAB
-#define ADV_DIFF_STABILIZATION_TYPE TAU_STAB
+#define ADV_DIFF_STABILIZATION_TYPE SUPG_STAB
+//#define ADV_DIFF_STABILIZATION_TYPE TAU_STAB
 
 #define ADV_DIFF_STAB_EPS 1.0e-10
 
@@ -545,9 +545,11 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 			
 			//ierr = AdvDiffComputeTau_BrooksHughes(el_coords,el_V,kappa_cell,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_BrooksHughes : tau = %1.4e\n",tau);
-			//ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
+			
+			ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_TezduyarOsawa : tau = %1.4e\n",tau);
-			ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
+			
+			//ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_UserDefinedConstant : tau = %1.4e\n",tau);
 			
 			ierr = AElement_FormJacobian_T_tau( ADe,dt,tau,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
@@ -830,9 +832,11 @@ PetscErrorCode FormFunctionLocal_T(
 			
 			//ierr = AdvDiffComputeTau_BrooksHughes(el_coords,el_V,kappa_cell,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_BrooksHughes : tau = %1.4e\n",tau);
-			//ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
+			
+			ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_TezduyarOsawa : tau = %1.4e\n",tau);
-			ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
+			
+			//ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_UserDefinedConstant : tau = %1.4e\n",tau);
 			
 			ierr = AElement_FormFunction_T_tau(Re,dt,tau,el_coords,el_coords_old,el_V,el_phi,el_philast,qp_kappa,qp_Q,nqp,qp_xi,qp_weight);CHKERRQ(ierr);
