@@ -50,6 +50,7 @@ PetscErrorCode AdvDiff3dComputeAverageCellSize( PetscScalar el_coords[], PetscSc
 PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],PetscScalar u[],
 																										 PetscScalar kappa_el,
 																										 PetscScalar *alpha);
+PetscErrorCode AdvDiff3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd);
 PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd);
 PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coords[],PetscScalar u[],
 																														PetscInt nqp, PetscScalar qp_detJ[], PetscScalar qp_w[],

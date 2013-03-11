@@ -243,11 +243,12 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	
   ierr = AdvDiff3dComputeElementPecletNumber_qp(el_coords,u,kappa_el,&alpha);CHKERRQ(ierr);
 	
-  if (U<ADV_DIFF_STAB_EPS) {
+  if (U < ADV_DIFF_STAB_EPS) {
     dt_diffusive = 0.5 * H*H / kappa_el;
     *dtd = dt_diffusive;
     *dta = 1.0e10;
-  } else {
+  }
+	else if (kappa_el < ADV_DIFF_STAB_EPS) {
     if (alpha >= 100.0 ) {
       CrFAC = 0.4;
     } else {
@@ -256,7 +257,18 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
     dt_optimal = CrFAC * H / (U+ADV_DIFF_STAB_EPS);
     *dta = dt_optimal;
     *dtd = 1.0e10;
-  }
+  } else {
+    dt_diffusive = 0.5 * H*H / kappa_el;
+    *dtd = dt_diffusive;
+		
+    if (alpha >= 100.0 ) {
+      CrFAC = 0.4;
+    } else {
+      CrFAC = PetscMin(1.0,alpha);
+    }
+    dt_optimal = CrFAC * H / (U+ADV_DIFF_STAB_EPS);
+    *dta = dt_optimal;
+	}
 	/*
 	 printf("Element Pe:              %1.4f \n", alpha );
 	 printf("        dx/dv:           %1.4f \n", H/(U+1.0e-32) );
@@ -265,6 +277,42 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	
 	//*dta = H/(U+ADV_DIFF_STAB_EPS);
 	//*dtd = 0.5*H*H/(kappa_el+ADV_DIFF_STAB_EPS);
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "AdvDiff3dComputeElementTimestep_qp"
+PetscErrorCode AdvDiff3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd)
+{
+	PetscInt    d,k;
+	PetscScalar DX[NSD];
+  PetscScalar u_xi[NSD],one_dxi2[NSD],dxi[NSD];
+  PetscScalar CrFAC,dt_optimal,alpha;
+  PetscScalar U,H,dt_diffusive;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	
+	ierr = AdvDiff3dComputeAverageCellSize(el_coords,DX);CHKERRQ(ierr);
+  
+	u_xi[0] = u_xi[1] = u_xi[2] = 0.0;
+  for (k=0; k<NODES_PER_EL_Q1_3D; k++) {
+		u_xi[0] += 0.125 *  u[NSD*k + 0];
+		u_xi[1] += 0.125 *  u[NSD*k + 1];
+		u_xi[2] += 0.125 *  u[NSD*k + 2];
+	}
+	
+	for (d=0; d<NSD; d++) {
+		dxi[d]      = DX[d];
+		one_dxi2[d] = 1.0/dxi[d]/dxi[d];
+	}
+	
+  U = sqrt( u_xi[0]*u_xi[0] + u_xi[1]*u_xi[1] + u_xi[2]*u_xi[2] );
+  H = 1.0 / sqrt( one_dxi2[0] + one_dxi2[1] + one_dxi2[2] );
+	
+	*dta = H/(U+ADV_DIFF_STAB_EPS);
+	*dtd = 0.5*H*H/(kappa_el+ADV_DIFF_STAB_EPS);
 	
   PetscFunctionReturn(0);
 }
