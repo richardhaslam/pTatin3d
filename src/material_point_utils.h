@@ -43,7 +43,7 @@
 #include "quadrature.h"
 
 /* add material points into the list */
-typedef enum { MPField_Std=0, MPField_Stokes, MPField_Energy,MPField_StokesPl } MaterialPointField;
+typedef enum { MPField_Std=0, MPField_Stokes, MPField_Energy, MPField_StokesPl } MaterialPointField;
 
 typedef enum { CoefAvgARITHMETIC=0, CoefAvgHARMONIC } CoefficientAveragingType;
 
@@ -64,6 +64,28 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 
 PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level);
 PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level);
+
+PetscErrorCode MPntPStokesPlComputeMemberOffsets(size_t property_offsets[]);
+PetscErrorCode MPntPEnergyComputeMemberOffsets(size_t property_offsets[]);
+PetscErrorCode QPntVolCoefStokesComputeMemberOffsets(size_t property_offsets[]);
+PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[]);
+
+PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
+																											DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
+																											const int npoints,MPntStd mp_std[],
+																											size_t member_offset,size_t point_offset,void *point_data);
+PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
+																											DM clone,Vec properties_A,
+																											size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) ;
+
+PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
+																											DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
+																											const int npoints,MPntStd mp_std[],
+																											size_t member_offset,size_t point_offset,void *point_data);
+PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
+																																									 DM clone,Vec properties_A,
+																																									 size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) ;
+
 
 #endif
 
