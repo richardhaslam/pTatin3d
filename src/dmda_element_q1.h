@@ -38,6 +38,8 @@
 #include "petscdm.h"
 #include "private/daimpl.h" 
 
+PetscErrorCode DMDASetElementType_Q1(DM da);
+PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx);
 
 PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1);
 PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1);
