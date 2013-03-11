@@ -213,7 +213,7 @@ PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],P
 
 #undef __FUNCT__
 #define __FUNCT__ "DASUPG3dComputeElementTimestep_qp"
-PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscScalar kappa_el,PetscScalar *dta,PetscScalar *dtd)
+PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd)
 {
 	PetscInt    d,k;
 	PetscScalar DX[NSD];
@@ -263,8 +263,8 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
 	 printf("        0.5.dx.dx/kappa: %1.4f \n", 0.5*H*H/(kappa_el+1.0e-32) );
 	 */
 	
-	*dta = H/(U+ADV_DIFF_STAB_EPS);
-	*dtd = 0.5*H*H/(kappa_el+ADV_DIFF_STAB_EPS);
+	//*dta = H/(U+ADV_DIFF_STAB_EPS);
+	//*dtd = 0.5*H*H/(kappa_el+ADV_DIFF_STAB_EPS);
 	
   PetscFunctionReturn(0);
 }
@@ -846,6 +846,7 @@ PetscErrorCode FormFunctionLocal_T(
 		ierr = DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(LA_R,1,ge_eqnums,Re);CHKERRQ(ierr);
 		
 		/* diagnostics */
+		/*
 		for (p=0; p<nqp; p++) {
 			P3D_ConstructNi_Q1_3D(&qp_xi[NSD*p],Ni_p);
 			P3D_ConstructGNi_Q1_3D(&qp_xi[NSD*p],GNi_p);
@@ -859,10 +860,10 @@ PetscErrorCode FormFunctionLocal_T(
 			fac = qp_weight[p]*J_p;
 			c = c + phi_p * fac;
 		}
-		
+		*/
 	}
-  ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
+  //ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
+	//PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
 	
   /* tidy up local arrays (input) */
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
