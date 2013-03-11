@@ -198,15 +198,24 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		 = (dt.u - X_current + X_old)/dt
 		 */
 		
+
+
+		ierr = pTatinPhysCompEnergy_Initialise(energy,T);CHKERRQ(ierr);
+		energy->dt = 1.0;
+		ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X,energy,energy->dt);CHKERRQ(ierr);
+
 		dx = 1.0/((PetscReal)(user->mx));
 		user->dt   = 0.8 * (dx * dx) / 1.0;
 		user->dt   = 0.1 * (dx) / 1.0;
-		user->time = 0.0;
-		
+		{ 
+			PetscReal timestep;
+			ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,energy->Told,&timestep);CHKERRQ(ierr);
+		}
 		energy->dt   = user->dt;
+		
+		user->time = 0.0;
 		energy->time = user->time;
-
-		ierr = pTatinPhysCompEnergy_Initialise(energy,T);CHKERRQ(ierr);
+		
 		for (tk=1; tk<=user->nsteps; tk++) {
 			char stepname[256];
 			
