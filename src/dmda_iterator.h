@@ -80,6 +80,6 @@ PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void 
 PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx);
 PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx);
 PetscBool DMDAVecTraverse3d_StepXYZ(PetscScalar pos[],PetscScalar *val,void *ctx);
-
+PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val,void *ctx);
 
 #endif

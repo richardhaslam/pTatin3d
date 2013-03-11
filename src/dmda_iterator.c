@@ -414,6 +414,48 @@ PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_StepWithDirection"
+PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	int dir = *((int*)ctx);
+	PetscBool impose;
+	PetscScalar x,y,z;
+	
+	impose = PETSC_TRUE;
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	
+	switch (dir) {
+		case 0:
+			if (x < 0.5) {
+				*val = 2.0;
+			} else {
+				*val = 1.0;
+			}
+			break;
+
+		case 1:
+			if (y < 0.5) {
+				*val = 2.0;
+			} else {
+				*val = 1.0;
+			}
+			break;
+
+		case 2:
+			if (z < 0.5) {
+				*val = 2.0;
+			} else {
+				*val = 1.0;
+			}
+			break;
+	}
+	
+	return impose;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDAVecTraverse3d_StepXY"
 PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
