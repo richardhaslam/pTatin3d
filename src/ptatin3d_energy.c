@@ -50,6 +50,7 @@
 #include "MPntPEnergy_def.h"
 #include "QPntVolCoefEnergy_def.h"
 #include "phys_comp_energy.h"
+#include "energy_assembly.h"
 #include "ptatin3d_energy.h"
 
 
@@ -448,6 +449,142 @@ PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T)
 	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
 
 	ierr = VecZeroEntries(T);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinPhysCompEnergy_ComputeTimestep"
+PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,PetscReal *timestep)
+{
+	Vec         philoc,Vloc,coordsloc;
+	DM          da,cda;
+	PetscScalar *LA_philoc,*LA_Vloc,*LA_coordsloc;
+	PetscReal   el_volume,el_kappa_const,dt_adv,dt_diff,g_dt_adv,g_dt_diff,min_dt_adv,min_dt_diff;
+	PetscReal   el_coords[NSD*NODES_PER_EL_Q1_3D],el_V[NSD*NODES_PER_EL_Q1_3D],el_phi[NODES_PER_EL_Q1_3D];
+	PetscInt    ge_eqnums[NODES_PER_EL_Q1_3D];
+	Quadrature        volQ;
+	QPntVolCoefEnergy *all_quadpoints,*cell_quadpoints;
+	PetscInt          nqp;
+	PetscScalar       *qp_xi,*qp_weight;
+	PetscScalar       qp_kappa[27],qp_Q[27];
+  PetscScalar       Ni_p[NODES_PER_EL_Q1_3D];
+  PetscScalar       GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D];
+  PetscScalar       J_p,fac;
+	PetscInt          i,p,e,nel,nen;
+	const PetscInt    *elnidx;
+	PetscReal         phi_p,cg,c = 0.0;
+	PetscErrorCode    ierr;
+	
+	PetscFunctionBegin;
+	
+	da   = energy->daT;
+	volQ = energy->volQ;
+
+	/* quadrature */
+	nqp       = volQ->npoints;
+	qp_xi     = volQ->q_xi_coor;
+	qp_weight = volQ->q_weight;
+	ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_quadpoints);CHKERRQ(ierr);
+	
+	ierr = DMGetLocalVector(da,&philoc);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
+	
+	ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
+
+  ierr = DMGlobalToLocalBegin(cda,energy->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(  cda,energy->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
+
+  ierr = DMDAGetGhostedCoordinates(da,&coordsloc);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(philoc,   &LA_philoc);CHKERRQ(ierr);
+  ierr = VecGetArray(Vloc,     &LA_Vloc);CHKERRQ(ierr);
+  ierr = VecGetArray(coordsloc,&LA_coordsloc);CHKERRQ(ierr);
+
+	ierr = DMDAGetElementsQ1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+
+	c = 0.0;
+	min_dt_adv  = 1.0e32;
+	min_dt_diff = 1.0e32;
+	for (e=0; e<nel; e++) {
+		
+		ierr = DMDAEQ1_GetElementLocalIndicesDOF(ge_eqnums,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+		
+		/* get coords for the element */
+		ierr = DMDAEQ1_GetVectorElementField_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coordsloc);CHKERRQ(ierr);
+		/* get current temperature */
+		ierr = DMDAEQ1_GetScalarElementField_3D(el_phi,(PetscInt*)&elnidx[nen*e],LA_philoc);CHKERRQ(ierr);
+		/* get velocity for the element */
+		ierr = DMDAEQ1_GetVectorElementField_3D(el_V,(PetscInt*)&elnidx[nen*e],LA_Vloc);CHKERRQ(ierr);
+		//printf("el_v %1.4e %1.4e %1.4e \n", el_V[0],el_V[1],el_V[2]);
+		
+		ierr = VolumeQuadratureGetCellData_Energy(volQ,all_quadpoints,e,&cell_quadpoints);CHKERRQ(ierr);
+		
+		/* copy the diffusivity and force */
+		for (p=0; p<nqp; p++) {
+			qp_kappa[p] = cell_quadpoints[p].diffusivity;
+			qp_Q[p]     = cell_quadpoints[p].heat_source;
+		}
+		
+		/*
+		el_kappa_const = 0.0;
+		for (n=0; n<nqp; n++) {
+			el_kappa_const += qp_kappa[n];
+		}
+		el_kappa_const = el_kappa_const / ((PetscReal)nqp);
+		*/
+		
+		/* diagnostics */
+		
+		el_volume = 0.0;
+		el_kappa_const = 0.0;
+		for (p=0; p<nqp; p++) {
+			P3D_ConstructNi_Q1_3D(&qp_xi[NSD*p],Ni_p);
+			P3D_ConstructGNi_Q1_3D(&qp_xi[NSD*p],GNi_p);
+			P3D_evaluate_geometry_elementQ1(1,el_coords,&GNi_p,&J_p,&GNx_p[0],&GNx_p[1],&GNx_p[2]);
+			
+			fac = qp_weight[p]*J_p;
+
+			phi_p = 0.0;
+			for (i=0; i<NODES_PER_EL_Q1_3D; i++) {
+				phi_p = phi_p + Ni_p[i] * el_phi[i];
+			}
+			
+			el_volume      = el_volume      + 1.0 * fac;
+			el_kappa_const = el_kappa_const + qp_kappa[p] * fac;
+			c              = c              + phi_p * fac;
+		}
+		el_kappa_const = el_kappa_const / el_volume;
+		
+		ierr = DASUPG3dComputeElementTimestep_qp(el_coords,el_V,el_kappa_const,&dt_adv,&dt_diff);CHKERRQ(ierr);
+		if (dt_adv < min_dt_adv) {
+			min_dt_adv = dt_adv; 
+		}
+		if (dt_diff < min_dt_diff) {
+			min_dt_diff = dt_diff; 
+		}
+	}
+  ierr = MPI_Allreduce(&min_dt_adv, &g_dt_adv, 1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&min_dt_diff,&g_dt_diff,1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
+
+	ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"Diffusion dt = %1.12e \n", g_dt_diff );
+	PetscPrintf(PETSC_COMM_WORLD,"Advective dt = %1.12e \n", g_dt_adv );
+	PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
+	
+	*timestep = g_dt_adv;
+	if (g_dt_diff < g_dt_adv) {
+		*timestep = g_dt_diff;
+	}
+	
+  ierr = VecRestoreArray(Vloc,     &LA_coordsloc);CHKERRQ(ierr);
+  ierr = VecRestoreArray(coordsloc,&LA_Vloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(philoc,   &LA_philoc);CHKERRQ(ierr);
+	
+  ierr = DMRestoreLocalVector(cda,&Vloc);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da, &philoc);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

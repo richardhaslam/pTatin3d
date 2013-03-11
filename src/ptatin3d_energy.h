@@ -48,5 +48,6 @@ PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T);
 
 PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q);
 PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx);
+PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,PetscReal *timestep);
 
 #endif
