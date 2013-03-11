@@ -46,8 +46,8 @@
 double AdvDiffResidualForceTerm_UpwindXiExact(double pecletNumber);
 double AdvDiffResidualForceTerm_UpwindXiDoublyAsymptoticAssumption(double pecletNumber);
 double AdvDiffResidualForceTerm_UpwindXiCriticalAssumption(double pecletNumber);
-PetscErrorCode DASUPG3dComputeAverageCellSize( PetscScalar el_coords[], PetscScalar DX[]);
-PetscErrorCode DASUPG3dComputeElementPecletNumber_qp( PetscScalar el_coords[],PetscScalar u[],
+PetscErrorCode AdvDiff3dComputeAverageCellSize( PetscScalar el_coords[], PetscScalar DX[]);
+PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],PetscScalar u[],
 																										 PetscScalar kappa_el,
 																										 PetscScalar *alpha);
 PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscScalar kappa_el,PetscScalar *dta,PetscScalar *dtd);
