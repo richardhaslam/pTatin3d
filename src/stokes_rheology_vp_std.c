@@ -238,7 +238,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	DM             cda;
 	Vec            gcoords,gcoords_T;
 	PetscReal      *LA_gcoords,*LA_gcoords_T;
-	PetscInt       nel,nen_u,nen_p,eidx,k,e;
+	PetscInt       nel,nen_u,nen_p,eidx,k;
 	PetscInt       nel_T,nen_T;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
@@ -403,7 +403,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 		
 		if (daT) {
 			/* Get element temperature */
-			ierr = DMDAEQ1_GetScalarElementField_3D(elT,(PetscInt*)&elnidx_T[nen_T*e],Tfield);CHKERRQ(ierr);
+			ierr = DMDAEQ1_GetScalarElementField_3D(elT,(PetscInt*)&elnidx_T[nen_T*eidx],Tfield);CHKERRQ(ierr);
 		}
 		
 		/* Get local coordinate of marker */
