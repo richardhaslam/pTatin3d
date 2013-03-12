@@ -37,7 +37,6 @@
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
-
 #include "dmda_bcs.h"
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
@@ -679,7 +678,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Ve
 	
     ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
-    if (~data->runmises) {
+    if (!data->runmises) {
         for (regionidx=0; regionidx<user->rheology_constants.nphases_active;regionidx++) {
             MaterialConstantsSetValues_MaterialType(user->material_constants,regionidx,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_NONE,DENSITY_BOUSSINESQ);
         }
