@@ -2708,7 +2708,6 @@ PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point
 #define __FUNCT__ "MaterialPointGet_viscosity"
 PetscErrorCode MaterialPointGet_viscosity(MPAccess X,const int p,double *var)
 {
-	DataField      PField;
 	MPntPStokes    *point;
 	PetscErrorCode ierr;	
 	PetscFunctionBegin;
@@ -2722,7 +2721,6 @@ PetscErrorCode MaterialPointGet_viscosity(MPAccess X,const int p,double *var)
 #define __FUNCT__ "MaterialPointGet_density"
 PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
 {
-	DataField      PField;
 	MPntPStokes    *point;
 	PetscErrorCode ierr;	
 	PetscFunctionBegin;
@@ -2737,7 +2735,6 @@ PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
 #define __FUNCT__ "MaterialPointGet_plastic_strain"
 PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var)
 {
-	DataField      PField;
 	MPntPStokesPl  *point;
 	PetscErrorCode ierr;	
 	PetscFunctionBegin;
@@ -2751,7 +2748,6 @@ PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var
 #define __FUNCT__ "MaterialPointGet_yield_indicator"
 PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *var)
 {
-	DataField      PField;
 	MPntPStokesPl  *point;
 	PetscErrorCode ierr;	
 	PetscFunctionBegin;
@@ -2766,7 +2762,6 @@ PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *va
 #define __FUNCT__ "MaterialPointGet_diffusivity"
 PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var)
 {
-	DataField      PField;
 	MPntPEnergy    *point;
 	PetscErrorCode ierr;	
 	PetscFunctionBegin;
@@ -2780,7 +2775,6 @@ PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var)
 #define __FUNCT__ "MaterialPointGet_heat_source"
 PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var)
 {
-	DataField      PField;
 	MPntPEnergy    *point;
 	PetscErrorCode ierr;	
 	PetscFunctionBegin;
