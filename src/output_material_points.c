@@ -420,6 +420,131 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "_compute_cell_composition"
+PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBucket db,const PetscInt mx,const PetscInt my,const PetscInt mz,int LA_cell[])
+{
+	int *closest_point;
+	int e,ueid,ueid2,umx,umy,umz,uei,uej,uek,i,j,k,li,lj,lk;
+	double *xi_p,*x_p;
+	int ei,ej,ek,eidx;
+	float var;
+	int p,n_mp;
+	MPAccess X;
+	PetscInt nel,nen;
+	const PetscInt *elnidx;
+	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	umx = mx/2;
+	umy = my/2;
+	umz = mz/2;
+	
+	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&closest_point);CHKERRQ(ierr);
+	for (e=0; e<mx*my*mz; e++) {
+		closest_point[e] = -1;
+	}
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	
+	DataBucketGetSizes(db,&n_mp,PETSC_NULL,PETSC_NULL);	
+	ierr = MaterialPointGetAccess(db,&X);CHKERRQ(ierr);
+	
+	for (p=0; p<n_mp; p++) {
+		ierr = MaterialPointGet_local_element_index(X,p,&ueid);CHKERRQ(ierr);
+		ierr = MaterialPointGet_local_coord(X,p,&xi_p);CHKERRQ(ierr);
+		ierr = MaterialPointGet_global_coord(X,p,&x_p);CHKERRQ(ierr);
+		uek   = ueid/(umx*umy);
+		
+		ueid2 = ueid - uek * (umx*umy);
+		uej   = ueid2/umx;
+		uei   = ueid2 - uej * umx;
+		
+		ei = 2*uei;
+		ej = 2*uej;
+		ek = 2*uek;
+		
+		li = lj = lk = 0;
+		if (xi_p[0] > 0.0) { ei++; li++; }
+		if (xi_p[1] > 0.0) { ej++; lj++; }
+		if (xi_p[2] > 0.0) { ek++; lk++; }
+		
+		eidx = ei + ej*mx + ek*mx*my;
+		if (eidx >= mx*my*mz) {
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"eidx is too large");
+		}
+
+		
+		if (closest_point[eidx] == -1) {
+			/* cell unclaimed */
+			closest_point[eidx] = p;
+		} else {
+			/* someone else claimed it */
+			double *x_p_closest;
+			int p_closest;
+			double x_center[3];
+			double xc[3*8];
+			double dist_p_closest,dist_p;
+			
+			ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*ueid],LA_gcoords);CHKERRQ(ierr);
+			for (k=lk; k<lk+2; k++) {
+				for (j=lj; j<lj+2; j++) {
+					for (i=li; i<li+2; i++) {
+						int idx,gidx;
+						
+						gidx = i + j*3 + k*3*3;
+						idx  = (i-li) + (j-lj)*2 + (k-lk)*2*2;
+						
+						xc[3*idx+0] = elcoords[3*gidx+0];
+						xc[3*idx+1] = elcoords[3*gidx+1];
+						xc[3*idx+2] = elcoords[3*gidx+2];
+					}
+				}
+			}
+			
+			x_center[0] = x_center[1] = x_center[2] = 0.0;
+			for (i=0; i<8; i++) {
+				x_center[0] += 0.125 * xc[3*i+0];
+				x_center[1] += 0.125 * xc[3*i+1];
+				x_center[2] += 0.125 * xc[3*i+2];
+			}
+			
+			p_closest = closest_point[eidx];
+			ierr = MaterialPointGet_global_coord(X,p_closest,&x_p_closest);CHKERRQ(ierr);
+
+			dist_p_closest = (x_center[0]-x_p_closest[0])*(x_center[0]-x_p_closest[0]) 
+										 + (x_center[1]-x_p_closest[1])*(x_center[1]-x_p_closest[1])
+										 + (x_center[2]-x_p_closest[2])*(x_center[2]-x_p_closest[2]);
+			dist_p         = (x_center[0]-x_p[0])*(x_center[0]-x_p[0]) 
+										 + (x_center[1]-x_p[1])*(x_center[1]-x_p[1])
+										 + (x_center[2]-x_p[2])*(x_center[2]-x_p[2]);
+			
+			if (dist_p < dist_p_closest) {
+				closest_point[eidx] = p;
+			}
+		}
+	}
+	/* check cells if empty */
+	
+	
+	/* assign phase based on nearest point */
+	for (e=0; e<mx*my*mz; e++) {
+		int pid,phase;
+		
+		pid = closest_point[e];
+		ierr = MaterialPointGet_phase_index(X,pid,&phase);CHKERRQ(ierr);
+		LA_cell[e] = phase;
+	}
+	
+	ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
+	ierr = PetscFree(closest_point);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinOutputParaViewMarkerFields_VTS"
 PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_points,const int nvars,const MaterialPointVariable vars[],const char name[])
 {
@@ -427,6 +552,7 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 	DM cda;
 	Vec gcoords;
 	DMDACoor3d ***LA_gcoords;	
+	PetscScalar *LA_gc;
 	PetscInt mx,my,mz;
 	PetscInt i,j,k,esi,esj,esk;
 	FILE*	vtk_fp = NULL;
@@ -468,6 +594,8 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 	}
 	fprintf( vtk_fp, "      </DataArray>\n");
 	fprintf( vtk_fp, "    </Points>\n");
+	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+
 	
 	/* VTS CELL DATA */	
 	fprintf( vtk_fp, "    <CellData>\n");
@@ -486,8 +614,14 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 				case MPV_region:
 					ierr = PetscMalloc(sizeof(int)*2*mx*2*my*2*mz,&i_LA_cell);CHKERRQ(ierr);
 					ierr = PetscMemzero(i_LA_cell,sizeof(int)*2*mx*2*my*2*mz);CHKERRQ(ierr);
-					PetscPrintf(PETSC_COMM_WORLD,"MPV_region -> writer not yet completed\n");
+					
+					ierr = VecGetArray(gcoords,&LA_gc);CHKERRQ(ierr);
+					ierr = _compute_cell_composition(dau,LA_gc,material_points,2*mx,2*my,2*mz,i_LA_cell);CHKERRQ(ierr);
+					ierr = VecRestoreArray(gcoords,&LA_gc);CHKERRQ(ierr);
+
 					ierr = _write_int(vtk_fp,2*mx,2*my,2*mz,i_LA_cell);CHKERRQ(ierr);
+					
+					
 					ierr = PetscFree(i_LA_cell);CHKERRQ(ierr);
 					break;
 					
@@ -568,8 +702,14 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 				case MPV_region:
 					ierr = PetscMalloc(sizeof(int)*2*mx*2*my*2*mz,&i_LA_cell);CHKERRQ(ierr);
 					ierr = PetscMemzero(i_LA_cell,sizeof(int)*2*mx*2*my*2*mz);CHKERRQ(ierr);
-					PetscPrintf(PETSC_COMM_WORLD,"MPV_region -> writer not yet completed\n");
+					
+					ierr = VecGetArray(gcoords,&LA_gc);CHKERRQ(ierr);
+					ierr = _compute_cell_composition(dau,LA_gc,material_points,2*mx,2*my,2*mz,i_LA_cell);CHKERRQ(ierr);
+					ierr = VecRestoreArray(gcoords,&LA_gc);CHKERRQ(ierr);
+					
 					ierr = _write_int(vtk_fp,2*mx,2*my,2*mz,i_LA_cell);CHKERRQ(ierr);
+					
+					
 					ierr = PetscFree(i_LA_cell);CHKERRQ(ierr);
 					break;
 					
@@ -651,7 +791,6 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 	fprintf( vtk_fp, "  </StructuredGrid>\n");
 	fprintf( vtk_fp, "</VTKFile>\n");
 	
-	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	fclose( vtk_fp );
 	
