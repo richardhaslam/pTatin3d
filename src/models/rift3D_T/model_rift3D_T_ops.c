@@ -41,9 +41,14 @@
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "MPntPStokesPl_def.h"
+#include "MPntPEnergy_def.h"
 #include "stokes_form_function.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "dmda_iterator.h"
+#include "energy_output.h"
+#include "ptatin3d_stokes.h"
+#include "ptatin3d_energy.h"
 
 #include "rift3D_T_ctx.h"
 
@@ -245,6 +250,9 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 		}    
 	}
 	
+	/* force energy equation to be introduced */
+	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -298,12 +306,32 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	PetscBool active_energy;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = ModelRift3D_T_DefineBCList(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,user,data);CHKERRQ(ierr);
+	
+	/* set boundary conditions for temperature */
+	ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
+	if (active_energy) {
+		PetscReal      val_T;
+		PhysCompEnergy energy;
+		BCList         bclist;
+		DM             daT;
+		
+		ierr   = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+		daT    = energy->daT;
+		bclist = energy->T_bclist;
+		
+		/* eg */
+		/*
+		val_T = 0.0;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
+		*/		
+	}
 	
 	PetscFunctionReturn(0);
 }
@@ -352,6 +380,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,data->Ox,data->Lx,data->Oy,data->Ly,data->Oz,data->Lz);CHKERRQ(ierr);
+	
+	/* note - Don't access the energy mesh here, its not yet created */
+	/* note - The initial velocity mesh geometry will be copied into the energy mesh */
 	
 	PetscFunctionReturn(0);
 }
@@ -595,6 +626,7 @@ PetscErrorCode ModelOutput_Rift3D_T_CheckScales(pTatinCtx c,Vec X)
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	PetscBool active_energy;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -616,6 +648,18 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 		
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(c->materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+	}
+		
+	/* standard viewer */
+	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
+	if (active_energy) {
+		PhysCompEnergy energy;
+		Vec            temperature;
+		
+		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+
+		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -643,48 +687,48 @@ PetscErrorCode ModelDestroy_Rift3D_T(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Rift3D_T"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Vec X,void *ctx)
 {
-
-    DM                stokes_pack,dau,dap;
+	
+	DM                stokes_pack,dau,dap;
 	PhysCompStokes    stokes;
-    Vec               Uloc,Ploc;
-    PetscScalar       *LA_Uloc,*LA_Ploc;
-    ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	Vec               Uloc,Ploc;
+	PetscScalar       *LA_Uloc,*LA_Ploc;
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
 	PetscErrorCode    ierr;
-    PetscInt regionidx;	
-    PetscFunctionBegin;
-    
-    
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
-    if (!data->runmises) {
-        for (regionidx=0; regionidx<user->rheology_constants.nphases_active;regionidx++) {
-            MaterialConstantsSetValues_MaterialType(user->material_constants,regionidx,VISCOUS_FRANKK,PLASTIC_MISES,SOFTENING_NONE,DENSITY_BOUSSINESQ);
-        }
-    }
-       
+	PetscInt regionidx;	
+	PetscFunctionBegin;
+	
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	if (!data->runmises) {
+		for (regionidx=0; regionidx<user->rheology_constants.nphases_active;regionidx++) {
+			MaterialConstantsSetValues_MaterialType(user->material_constants,regionidx,VISCOUS_FRANKK,PLASTIC_MISES,SOFTENING_NONE,DENSITY_BOUSSINESQ);
+		}
+	}
+	
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
-    
-    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-    ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 	
 	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
 	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
-
-    ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	
-    ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
-
-    if (!data->runmises) {
-        for (regionidx=0; regionidx<user->rheology_constants.nphases_active;regionidx++) {
-            MaterialConstantsSetValues_MaterialType(user->material_constants,regionidx,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_NONE,DENSITY_BOUSSINESQ);
-        }
-    }
-    
-    	
+	ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	if (!data->runmises) {
+		for (regionidx=0; regionidx<user->rheology_constants.nphases_active;regionidx++) {
+			MaterialConstantsSetValues_MaterialType(user->material_constants,regionidx,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_NONE,DENSITY_BOUSSINESQ);
+		}
+	}
+	
+	
 	PetscFunctionReturn(0);
 }
 
@@ -700,6 +744,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
 	DMDAVecTraverse3d_InterpCtx IntpCtx;
 	PetscReal MeshMin[3],MeshMax[3],domain_height;
+	PetscBool active_energy;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -742,12 +787,31 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	HPctx.rho        = data->rho0;
 	
 	
-    ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
-    ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
-    ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
+  ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
+  ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
 	
+	
+	/* initial condition for temperature */
+	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
+	if (active_energy) {
+		PhysCompEnergy energy;
+		Vec            temperature;
+		DM             daT;
+		PetscReal      coeffs[4];
+		
+		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		daT  = energy->daT;
+		
+		coeffs[0] = 0.0;
+		coeffs[1] = 0.0;
+		coeffs[2] = -933.0;
+		coeffs[3] = 0.0;
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_LinearFunctionXYZ,(void*)coeffs);CHKERRQ(ierr);
+	}
 	
 	PetscFunctionReturn(0);
 }
