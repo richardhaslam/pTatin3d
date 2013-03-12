@@ -52,6 +52,10 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_project_coords.h"
 #include "monitors.h"
 
+#include "ptatin3d_energy.h"
+#include "energy_assembly.h"
+
+
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
 extern PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[]);
@@ -376,6 +380,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscInt       kk;
 	AuuMultiLevelCtx mlctx;
 	PetscInt newton_its,picard_its;
+	PhysCompEnergy  energy;
+	PetscBool active_energy;
+	Vec T;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -419,10 +426,25 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
 	
+	/* generate energy solver */
+	/* NOTE - Generating the thermal solver here will ensure that the initial geometry on the mechanical model is copied */
+	/* NOTE - Calling pTatinPhysCompActivate_Energy() after pTatin3dCreateMaterialPoints() is essential */
+	{
+		PetscBool load_energy = PETSC_FALSE;
+		
+		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
+		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
+	}
+	if (active_energy) {
+		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+		
+		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+	}
+	
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
-	
-
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
@@ -732,7 +754,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
     /* material geometry */
 	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
-    
+	if (active_energy) {
+		ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
+	}
+	
 	/* initial condition */
 	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
     
@@ -746,6 +771,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+
+		if (active_energy) {
+			ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
+		}
 	}
 	
 	
