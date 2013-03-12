@@ -495,3 +495,42 @@ PetscBool DMDAVecTraverse3d_StepXYZ(PetscScalar pos[],PetscScalar *val,void *ctx
 	return impose;
 }
 
+/*
+ Example usage:
+ 
+ PetscReal vals[4];
+ 
+ // will create gradients T = -933.0 * y //
+ vals[0] = 0.0;    // offset
+ vals[1] = 0.0;    // x grad
+ vals[2] = -933.0; // y grad
+ vals[3] = 0.0;    // z grad
+ 
+ ierr = DMDAVecTraverse3d(daT,temperature,0, DMDAVecTraverse3d_LinearFunctionXYZ, (void*)vals);CHKERRQ(ierr);
+ 
+ */
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_LinearFunctionXYZ"
+PetscBool DMDAVecTraverse3d_LinearFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscScalar x,y,z;
+	PetscReal  *coeffA;
+	PetscBool  impose;
+	
+	/* get coordinates */
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+
+	/* fetch user data */
+	coeffA = (PetscReal*)ctx;
+
+	/* define value you want to set into the vector */
+	*val = coeffA[0] + coeffA[1]*x + coeffA[2]*y + coeffA[3]*z; 
+	
+	/* indicate you want to set this value into the vector */
+	impose = PETSC_TRUE;
+
+	return impose;
+}
+
