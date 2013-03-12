@@ -41,6 +41,7 @@
 #include "dmda_iterator.h"
 #include "dmda_view_petscvtk.h"
 #include "energy_output.h"
+#include "output_material_points.h"
 
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
@@ -252,6 +253,17 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 		MPntStdSetField_phase_index(material_point,0);
 		MPntPStokesSetField_eta_effective(mpprop_stokes,1.0);
 		MPntPStokesSetField_density(mpprop_stokes,1.0);
+		
+		if (position[0] < 0.5) {
+			MPntStdSetField_phase_index(material_point,1);
+		}
+		if (position[1] < 0.7) {
+			MPntStdSetField_phase_index(material_point,2);
+		}
+		if (position[2] < 0.9) {
+			MPntStdSetField_phase_index(material_point,3);
+		}
+		
 	}
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
@@ -295,6 +307,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 			}
 			if (model_setup == 3) {
 				MPntPEnergySetField_diffusivity(mpprop_energy,1.0e-6*diffusion_scale);
+				//MPntPEnergySetField_diffusivity(mpprop_energy,position[0]*position[1]+position[2]*position[2]+1.0);
 				MPntPEnergySetField_heat_source(mpprop_energy,0.0);
 			}
 			
@@ -499,6 +512,16 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 	}
 
+	if (write_markers) {
+		const int                   nf = -1;
+		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
+		
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		sprintf(name,"%s_mpoints_cell",prefix);
+		ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
+	}
+	
+	
 	been_here = 1;
 	PetscFunctionReturn(0);
 }
