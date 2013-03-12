@@ -142,7 +142,9 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	
 	/* material geometry */
 	ierr = pTatinModel_ApplyInitialMaterialGeometry(model,user);CHKERRQ(ierr);
-	ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
+	if (active_energy) {
+		ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
+	}
 
 	/* test data bucket viewer */
 	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"materialpoints",DATABUCKET_VIEW_STDOUT);
@@ -162,7 +164,9 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = BCListInsert(stokes->u_bclist,Xu);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 
-		ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
+		if (active_energy) {
+			ierr = BCListInsert(energy->T_bclist,T);CHKERRQ(ierr);
+		}
 	}
 
 	/* write out the initial condition */
