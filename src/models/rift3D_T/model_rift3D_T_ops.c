@@ -657,7 +657,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Ve
     
     PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
     
-    if (~data->runmises) {
+    if (!data->runmises) {
         for (regionidx=0; regionidx<user->rheology_constants.nphases_active;regionidx++) {
             MaterialConstantsSetValues_MaterialType(user->material_constants,regionidx,VISCOUS_FRANKK,PLASTIC_MISES,SOFTENING_NONE,DENSITY_BOUSSINESQ);
         }

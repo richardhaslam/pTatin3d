@@ -42,7 +42,7 @@
 -mz 32
 -newton_its 0 
 -ksp_rtol 1e-2
--model_rift3D_vis_bar 1.e23 
+-model_rift3D_T_vis_bar 1.e22 
 -dau_nlevels 2 
 -snes_rtol 1e-4 
 -picard_its 5 
