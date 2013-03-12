@@ -41,9 +41,15 @@
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
 #include "element_utils_q2.h"
+#include "dmdae.h"
+#include "dmda_element_q1.h"
+#include "element_utils_q1.h"
+#include "phys_comp_energy.h"
+#include "ptatin3d_energy.h"
 
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
+#include "MPntPStokesPl_def.h"
 
 #include "material_constants.h"
 
@@ -51,23 +57,23 @@ typedef enum { YTYPE_NONE=0, YTYPE_MISES=1, YTYPE_DP=2, YTYPE_TENSILE_FAILURE=3 
 
 static inline void ComputeLinearSoft(float eplast,PetscReal emin,PetscReal emax, PetscReal X0, PetscReal Xinf, PetscReal *Xeff)
 {
-    *Xeff = X0;
-    if (eplast > emin) {
-        if (eplast > emax) {
-            *Xeff = Xinf;
-        } else {
-            float X  = (eplast-emin)/(emax-emin);
-            *Xeff  = X0 - (eplast-emin)/(emax-emin)*(X0-Xinf);
-        }
-    }
+	*Xeff = X0;
+	if (eplast > emin) {
+		if (eplast > emax) {
+			*Xeff = Xinf;
+		} else {
+			float X  = (eplast-emin)/(emax-emin);
+			*Xeff  = X0 - (eplast-emin)/(emax-emin)*(X0-Xinf);
+		}
+	}
 }
 
 static inline void ComputeExponentialSoft(float eplast,PetscReal emin,PetscReal efold, PetscReal X0, PetscReal Xinf, PetscReal *Xeff)
 {
-    *Xeff = X0;
-    if (eplast > emin) {
-        *Xeff  = Xinf + (X0-Xinf) * exp(-(eplast-emin)/efold);
-    }
+	*Xeff = X0;
+	if (eplast > emin) {
+		*Xeff  = Xinf + (X0-Xinf) * exp(-(eplast-emin)/efold);
+	}
 }
 
 
@@ -218,8 +224,8 @@ void P3D_evaluate_global_derivatives_Q2(PetscReal el_coords[NPE*3],PetscReal GNI
 
 
 #undef __FUNCT__
-#define __FUNCT__ "EvaluateRheologyNonlinearitiesMarkers_VPSTD"
-PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[])
+#define __FUNCT__ "private_EvaluateRheologyNonlinearitiesMarkers_VPSTD"
+PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM daT,PetscScalar Tfield[])
 {
 	PetscErrorCode ierr;
 	
@@ -230,18 +236,22 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	PetscLogDouble t0,t1;
 	
 	DM             cda;
-	Vec            gcoords;
-	PetscReal      *LA_gcoords;
-	PetscInt       nel,nen_u,nen_p,eidx,k;
+	Vec            gcoords,gcoords_T;
+	PetscReal      *LA_gcoords,*LA_gcoords_T;
+	PetscInt       nel,nen_u,nen_p,eidx,k,e;
+	PetscInt       nel_T,nen_T;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
+	const PetscInt *elnidx_T;
 	PetscInt       vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal      elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
+	PetscReal      elT[Q1_NODES_PER_EL_3D];
 	PetscReal      ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscInt       *gidx;
 	
-	PetscReal detJ,NI[Q2_NODES_PER_EL_3D],GNI[3][Q2_NODES_PER_EL_3D],NIp[P_BASIS_FUNCTIONS];
+	PetscReal NI_T[Q1_NODES_PER_EL_3D];
+	PetscReal NI[Q2_NODES_PER_EL_3D],GNI[3][Q2_NODES_PER_EL_3D],NIp[P_BASIS_FUNCTIONS];
 	PetscReal dNudx[Q2_NODES_PER_EL_3D],dNudy[Q2_NODES_PER_EL_3D],dNudz[Q2_NODES_PER_EL_3D];
 	
 	double         eta_mp;
@@ -249,22 +259,22 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	double         inv2_D_mp,inv2_Tpred_mp;
 	
 	DataField      PField_MatTypes;
-    DataField      PField_DensityConst,PField_DensityBoussinesq;
+	DataField      PField_DensityConst,PField_DensityBoussinesq;
 	DataField      PField_ViscConst,PField_ViscZ,PField_ViscFK,PField_ViscArrh;
 	DataField      PField_PlasticMises,PField_PlasticDP;
-    DataField      PField_SoftLin,PField_SoftExpo;
+	DataField      PField_SoftLin,PField_SoftExpo;
 	MaterialConst_MaterialType      *MatType_data;
-    MaterialConst_DensityConst      *DensityConst_data;
-    MaterialConst_DensityBoussinesq *DensityBoussinesq_data;
+	MaterialConst_DensityConst      *DensityConst_data;
+	MaterialConst_DensityBoussinesq *DensityBoussinesq_data;
 	MaterialConst_ViscosityConst    *ViscConst_data;
 	MaterialConst_ViscosityZ        *ViscZ_data;
 	MaterialConst_ViscosityFK       *ViscFK_data;
-    MaterialConst_ViscosityArrh     *ViscArrh_data;
-    MaterialConst_PlasticMises      *PlasticMises_data;
+	MaterialConst_ViscosityArrh     *ViscArrh_data;
+	MaterialConst_PlasticMises      *PlasticMises_data;
 	MaterialConst_PlasticDP         *PlasticDP_data;
-    MaterialConst_SoftLin           *SoftLin_data;
+	MaterialConst_SoftLin           *SoftLin_data;
 	MaterialConst_SoftExpo          *SoftExpo_data;
-    
+	
 	int            viscous_type,plastic_type,softening_type,density_type;
 	int            npoints_yielded,npoints_yielded_g;
 	
@@ -298,38 +308,58 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
+	if (daT) {
+		/* access the energy variables stored on the markers */
+		//DataBucketGetDataFieldByName(db,MPntPEnergy_classname,&PField_energy);
+		//DataFieldGetAccess(PField_energy);
+		
+		/* access the coordinates for the temperature mesh */ /* THIS IS NOT ACTUALLY NEEDED */
+		ierr = DMDAGetGhostedCoordinates(daT,&gcoords_T);CHKERRQ(ierr);
+		ierr = VecGetArray(gcoords_T,&LA_gcoords_T);CHKERRQ(ierr);
+		
+		ierr = DMDAGetElementsQ1(daT,&nel_T,&nen_T,&elnidx_T);CHKERRQ(ierr);
+		
+		if (nel_T != nel) {
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require code update to utilize nested Q1 mesh for temperature");
+		}
+	}
+	
+	
 	/* access material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_MaterialType_classname,  &PField_MatTypes);
-	MatType_data      = (MaterialConst_MaterialType*)PField_MatTypes->data;
-    
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_DensityConst_classname,  &PField_DensityConst);
+	MatType_data           = (MaterialConst_MaterialType*)PField_MatTypes->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_DensityConst_classname,  &PField_DensityConst);
 	DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
-    
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_DensityBoussinesq_classname,  &PField_DensityBoussinesq);
-	DensityBoussinesq_data      = (MaterialConst_DensityBoussinesq*)PField_DensityBoussinesq->data;
-    
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityConst_classname,&PField_ViscConst);
-	ViscConst_data    = (MaterialConst_ViscosityConst*)PField_ViscConst->data;
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityArrh_classname,&PField_ViscArrh);
-    ViscArrh_data        = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data;
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityFK_classname,&PField_ViscFK);
-    ViscFK_data        = (MaterialConst_ViscosityFK*)PField_ViscFK->data;
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityZ_classname,&PField_ViscZ);
-    ViscZ_data        = (MaterialConst_ViscosityZ*)PField_ViscZ->data;
-    
-    DataBucketGetDataFieldByName(material_constants,MaterialConst_PlasticMises_classname,  &PField_PlasticMises);
-	PlasticMises_data = (MaterialConst_PlasticMises*)  PField_PlasticMises->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_DensityBoussinesq_classname,  &PField_DensityBoussinesq);
+	DensityBoussinesq_data = (MaterialConst_DensityBoussinesq*)PField_DensityBoussinesq->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityConst_classname,&PField_ViscConst);
+	ViscConst_data         = (MaterialConst_ViscosityConst*)PField_ViscConst->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityArrh_classname,&PField_ViscArrh);
+	ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityFK_classname,&PField_ViscFK);
+	ViscFK_data            = (MaterialConst_ViscosityFK*)PField_ViscFK->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityZ_classname,&PField_ViscZ);
+	ViscZ_data             = (MaterialConst_ViscosityZ*)PField_ViscZ->data;
+	
+	DataBucketGetDataFieldByName(material_constants,MaterialConst_PlasticMises_classname,  &PField_PlasticMises);
+	PlasticMises_data      = (MaterialConst_PlasticMises*)  PField_PlasticMises->data;
+	
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_PlasticDP_classname,  &PField_PlasticDP);
-	PlasticDP_data = (MaterialConst_PlasticDP*)  PField_PlasticDP->data;
+	PlasticDP_data         = (MaterialConst_PlasticDP*)  PField_PlasticDP->data;
 	
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_SoftLin_classname,  &PField_SoftLin);
-	SoftLin_data = (MaterialConst_SoftLin*)  PField_SoftLin->data;
+	SoftLin_data           = (MaterialConst_SoftLin*)  PField_SoftLin->data;
+	
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_SoftExpo_classname,  &PField_SoftExpo);
-	SoftExpo_data = (MaterialConst_SoftExpo*)  PField_SoftExpo->data;
-	
-	
+	SoftExpo_data          = (MaterialConst_SoftExpo*)  PField_SoftExpo->data;
 	
 	
 	/* marker loop */
@@ -340,15 +370,13 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		MPntStd       *mpprop_std;
 		MPntPStokes   *mpprop_stokes;
 		MPntPStokesPl *mpprop_pls;
-		
-		double      *xi_p;
-		double      pressure_mp,y_mp,T_mp;
-		int         region_idx;
+		double        *xi_p;
+		double        pressure_mp,y_mp,T_mp;
+		int           region_idx;
 		
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
 		DataFieldAccessPoint(PField_pls,   pidx,(void**)&mpprop_pls);
-		
 		
 		/* Get marker types */
 		region_idx = mpprop_std->phase;
@@ -356,8 +384,8 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		viscous_type   = MatType_data[ region_idx ].visc_type;
 		plastic_type   = MatType_data[ region_idx ].plastic_type;
 		density_type   = MatType_data[ region_idx ].density_type;
-        softening_type = MatType_data[ region_idx ].softening_type;
-        
+		softening_type = MatType_data[ region_idx ].softening_type;
+		
 		/* Get index of element containing this marker */
 		eidx = mpprop_std->wil;
 		
@@ -372,6 +400,11 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		
 		/* Get element pressure */
 		ierr = DMDAGetScalarElementField(elp,nen_p,(PetscInt*)&elnidx_p[nen_p*eidx],pfield);CHKERRQ(ierr);
+		
+		if (daT) {
+			/* Get element temperature */
+			ierr = DMDAEQ1_GetScalarElementField_3D(elT,(PetscInt*)&elnidx_T[nen_T*e],Tfield);CHKERRQ(ierr);
+		}
 		
 		/* Get local coordinate of marker */
 		xi_p = mpprop_std->xi;
@@ -390,7 +423,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		for (k=0; k<P_BASIS_FUNCTIONS; k++) {
 			pressure_mp += NIp[k] * elp[k];
 		}
-        		/* get velocity components */
+		/* get velocity components */
 		for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 			ux[k] = elu[3*k  ];
 			uy[k] = elu[3*k+1];
@@ -398,12 +431,25 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		}
 		
 		pTatin_ConstructNi_Q2_3D( xi_p, NI );
+		
 		/* Compute depth of material point */
 		y_mp = 0.0;
 		for (k=0; k<U_BASIS_FUNCTIONS; k++) {
 			y_mp += NI[k] * elcoords[3*k+1];
 		}
-        T_mp = -y_mp*933.333333333333;
+		T_mp = -y_mp*933.333333333333;
+		
+		if (daT) {
+			/* Interpolate the temperature */
+			/* NOTE: scaling is requred of xi_p if nested mesh is used */
+			P3D_ConstructNi_Q1_3D(xi_p,NI_T);
+
+			T_mp = 0.0;
+			for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
+				T_mp += NI_T[k] * elT[k];
+			}
+		}
+		
 		/* get viscosity on marker */
 		//MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);		
 		switch (viscous_type) {
@@ -415,22 +461,22 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				
 			case VISCOUS_Z: {
 				eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-y_mp)/ViscZ_data[ region_idx ].zeta);
-                if 	(eta_mp < 1.e-10) {
-                    PetscPrintf(PETSC_COMM_WORLD," region_idx %d  y_mp %e \n",region_idx,y_mp);
-                }
+				if 	(eta_mp < 1.e-10) {
+					PetscPrintf(PETSC_COMM_WORLD," region_idx %d  y_mp %e \n",region_idx,y_mp);
+				}
 			}
 				break;
 				
 			case VISCOUS_FRANKK: {
-                eta_mp  = ViscFK_data[ region_idx ].eta0*exp(-ViscFK_data[ region_idx ].theta*T_mp);
+				eta_mp  = ViscFK_data[ region_idx ].eta0*exp(-ViscFK_data[ region_idx ].theta*T_mp);
 				if 	(eta_mp < 1.e-10) {
-                    PetscPrintf(PETSC_COMM_WORLD," region_idx %d  T_mp %e  theta %e eta0 %e \n",region_idx,T_mp,ViscFK_data[ region_idx ].theta,ViscFK_data[ region_idx ].eta0);
-                }
+					PetscPrintf(PETSC_COMM_WORLD," region_idx %d  T_mp %e  theta %e eta0 %e \n",region_idx,T_mp,ViscFK_data[ region_idx ].theta,ViscFK_data[ region_idx ].eta0);
+				}
 			}
 				break;
 				
 			case VISCOUS_ARRHENIUS: {
-                PetscScalar R       = 8.31440;
+				PetscScalar R       = 8.31440;
 				PetscReal nexp      = ViscArrh_data[ region_idx ].nexp;
 				PetscReal entalpy   = ViscArrh_data[ region_idx ].entalpy;
 				PetscReal preexpA   = ViscArrh_data[ region_idx ].preexpA;
@@ -439,20 +485,19 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				PetscReal Ascale    = ViscArrh_data[ region_idx ].Ascale;
 				PetscReal T_arrh    = T_mp + Tref ;
 				PetscReal sr, eta, pressure; 
-                
+				
 				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-                
-                
+				
+				
 				if (sr < 1.0e-17) {
 					sr = 1.0e-17;
 				}
-
+				
 				pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
-                
+				
 				entalpy = entalpy + pressure*Vmol;
 				eta  = Ascale*0.25*pow(sr,1.0/nexp - 1.0)*pow(0.75*preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
 				eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
-                
 				
 			}
 				break;
@@ -465,36 +510,34 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				break;
 				
 			case PLASTIC_MISES: {
-                
-				double tau_yield_mp     = PlasticMises_data[ region_idx ].tau_yield;
-                double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield;
-                
-                switch (MatType_data[ region_idx ].softening_type) {
-                    case SOFTENING_NONE: {
-                        
-                    }
-                        break;
-                    case SOFTENING_LINEAR: {
-                        float eplastic;
-                        PetscReal emin    = SoftLin_data[ region_idx ].eps_min;
-                        PetscReal emax    = SoftLin_data[ region_idx ].eps_max; 
-                        MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-                        ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
-                    }
-                        break;    
-                        
-                    case SOFTENING_EXPONENTIAL: {
-                        float eplastic;
-                        PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
-                        PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold; 
-                        MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-                        ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
-                    }
-                        break;
-                }
+				double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
+				double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield;
 				
+				switch (MatType_data[ region_idx ].softening_type) {
+					case SOFTENING_NONE: {
+						
+					}
+						break;
 
-                
+					case SOFTENING_LINEAR: {
+						float     eplastic;
+						PetscReal emin = SoftLin_data[ region_idx ].eps_min;
+						PetscReal emax = SoftLin_data[ region_idx ].eps_max;
+						
+						MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+						ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
+					}
+						break;    
+						
+					case SOFTENING_EXPONENTIAL: {
+						float eplastic;
+						PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
+						PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold; 
+						MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+						ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
+					}
+						break;
+				}
 				
 				//MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
 				
@@ -509,9 +552,9 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 					ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
 					
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
-                    if 	(eta_mp < 1.e-10) {
-                        PetscPrintf(PETSC_COMM_WORLD," region_idx %d tau_yield_mp = %e inv2_D_mp = %e ux = %e,uy = %e,uz = %e \n",region_idx,tau_yield_mp,inv2_D_mp,ux,uy,uz);
-                    }
+					if 	(eta_mp < 1.e-10) {
+						PetscPrintf(PETSC_COMM_WORLD," region_idx %d tau_yield_mp = %e inv2_D_mp = %e ux = %e,uy = %e,uz = %e \n",region_idx,tau_yield_mp,inv2_D_mp,ux,uy,uz);
+					}
 					npoints_yielded++;
 					//  MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
 				}
@@ -520,50 +563,53 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 				
 				
 			case PLASTIC_DP: {
-				double  tau_yield_mp;
-				short    yield_type;
-				PetscReal phi = PlasticDP_data[ region_idx ].phi;
-                PetscReal Co  = PlasticDP_data[ region_idx ].Co;
-                PetscReal phi_inf = PlasticDP_data[ region_idx ].phi_inf;
-                PetscReal Co_inf  = PlasticDP_data[ region_idx ].Co_inf;         
-                
-                
-                
-                switch (MatType_data[ region_idx ].softening_type) {
-                    case SOFTENING_NONE: {
-                        
-                    }
-                        break;
-                    case SOFTENING_LINEAR: {
-                        float eplastic;
-                        PetscReal emin    = SoftLin_data[ region_idx ].eps_min;
-                        PetscReal emax    = SoftLin_data[ region_idx ].eps_max; 
-                        MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-                        ComputeLinearSoft(eplastic,emin,emax,Co , Co_inf, &Co);
-                        ComputeLinearSoft(eplastic,emin,emax,phi, phi_inf, &phi);
-                    }
-                        break;    
-                        
-                    case SOFTENING_EXPONENTIAL: {
-                        float eplastic;
-                        PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
-                        PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold; 
-                        MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
-                        ComputeExponentialSoft(eplastic,emin,efold,Co , Co_inf, &Co);
-                        ComputeExponentialSoft(eplastic,emin,efold,phi, phi_inf, &phi);
-                    }
-                        break;
-                } 
-               
+				double    tau_yield_mp;
+				short     yield_type;
+				PetscReal phi     = PlasticDP_data[ region_idx ].phi;
+				PetscReal Co      = PlasticDP_data[ region_idx ].Co;
+				PetscReal phi_inf = PlasticDP_data[ region_idx ].phi_inf;
+				PetscReal Co_inf  = PlasticDP_data[ region_idx ].Co_inf;         
+				
+				
+				switch (MatType_data[ region_idx ].softening_type) {
+
+					case SOFTENING_NONE: {
+						
+					}
+						break;
+						
+					case SOFTENING_LINEAR: {
+						float     eplastic;
+						PetscReal emin = SoftLin_data[ region_idx ].eps_min;
+						PetscReal emax = SoftLin_data[ region_idx ].eps_max; 
+						
+						MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+						ComputeLinearSoft(eplastic,emin,emax,Co , Co_inf, &Co);
+						ComputeLinearSoft(eplastic,emin,emax,phi, phi_inf, &phi);
+					}
+						break;    
+						
+					case SOFTENING_EXPONENTIAL: {
+						float     eplastic;
+						PetscReal emin  = SoftExpo_data[ region_idx ].eps_min;
+						PetscReal efold = SoftExpo_data[ region_idx ].eps_fold; 
+						
+						MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+						ComputeExponentialSoft(eplastic,emin,efold,Co , Co_inf, &Co);
+						ComputeExponentialSoft(eplastic,emin,efold,phi, phi_inf, &phi);
+					}
+						break;
+				} 
+				
 				/* mark all markers as not yielding */
 				MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
 				
 				/* compute yield surface */
 				tau_yield_mp = sin(phi) * pressure_mp + Co * cos(phi);
-
+				
 				/* identify yield type */
 				yield_type = 1;
-                
+				
 				if ( tau_yield_mp < PlasticDP_data[region_idx].tens_cutoff) {
 					/* failure in tension cutoff */
 					tau_yield_mp = PlasticDP_data[region_idx].tens_cutoff;
@@ -586,69 +632,119 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 					
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
 					npoints_yielded++;
-                    MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield_type);
-                    
-                }
-            }
-                break;
-        }
-        
-        
-        /* update viscosity on marker */
-        MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
-        /* monitor bounds */
-        if (eta_mp > max_eta) { max_eta = eta_mp; }
-        if (eta_mp < min_eta) { min_eta = eta_mp; }
-
-        
-        
-        switch (density_type) {
-        
-            case DENSITY_CONSTANT:{
-               PetscReal rho_mp;
-               rho_mp = -10.0*DensityConst_data[region_idx].density;
-               MPntPStokesSetField_density(mpprop_stokes,rho_mp);
+					MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield_type);
+					
+				}
 			}
 				break;
-                
-			case DENSITY_BOUSSINESQ:{	
-                PetscReal rho_mp;
-				PetscReal rho0 = DensityBoussinesq_data[region_idx].density;
-                PetscReal alpha = DensityBoussinesq_data[region_idx].alpha;
-                PetscReal beta = DensityBoussinesq_data[region_idx].beta;
+		}
+		
+		
+		/* update viscosity on marker */
+		MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
+		/* monitor bounds */
+		if (eta_mp > max_eta) { max_eta = eta_mp; }
+		if (eta_mp < min_eta) { min_eta = eta_mp; }
+		
+		
+		
+		switch (density_type) {
+        
+			case DENSITY_CONSTANT: {
+				PetscReal rho_mp;
+				
+				rho_mp = -10.0*DensityConst_data[region_idx].density;
+				MPntPStokesSetField_density(mpprop_stokes,rho_mp);
+			}
+				break;
+				
+			case DENSITY_BOUSSINESQ: {	
+				PetscReal rho_mp;
+				PetscReal rho0  = DensityBoussinesq_data[region_idx].density;
+				PetscReal alpha = DensityBoussinesq_data[region_idx].alpha;
+				PetscReal beta  = DensityBoussinesq_data[region_idx].beta;
+				
 				rho_mp = -10.0*rho0*(1-alpha*T_mp+beta*pressure_mp);
-                MPntPStokesSetField_density(mpprop_stokes,rho_mp);         
+				MPntPStokesSetField_density(mpprop_stokes,rho_mp);         
 			}
 				break;                 
 				
 		}
-        
-                 
-        
-        /* Global cutoffs for viscosity */
-        /* Here should I store these? */
-        
-        
-            }  
-    
-    DataFieldRestoreAccess(PField_std);
-    DataFieldRestoreAccess(PField_stokes);
-    DataFieldRestoreAccess(PField_pls);
-    
-    ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-    
-    ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
-    
-    PetscGetTime(&t1);
-    	
-     PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
-     min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
-     
-    
-    PetscFunctionReturn(0);
+		
+		
+		
+		/* Global cutoffs for viscosity */
+		/* Here should I store these? */
+		
+		
+	}  
+	
+	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_stokes);
+	DataFieldRestoreAccess(PField_pls);
+
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	if (daT) {
+		//DataFieldRestoreAccess(PField_energy);
+		
+		ierr = VecRestoreArray(gcoords_T,&LA_gcoords_T);CHKERRQ(ierr);
+	}
+	
+	
+	
+	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	PetscGetTime(&t1);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
+							min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
+	
+	
+	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "EvaluateRheologyNonlinearitiesMarkers_VPSTD"
+PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[])
+{
+	PhysCompEnergy energy;
+	PetscBool found;
+	DM daT;
+	Vec temperature,temperature_l;
+	PetscScalar *LA_temperature_l;
+	PetscErrorCode ierr;
+
+	PetscFunctionBegin;
+	
+	ierr = pTatinContextValid_Energy(user,&found);CHKERRQ(ierr);
+	if (found) {
+		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(user,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		daT  = energy->daT;
+
+		ierr = DMGetLocalVector(daT,&temperature_l);CHKERRQ(ierr);
+		ierr = VecZeroEntries(temperature_l);CHKERRQ(ierr);
+		ierr = DMGlobalToLocalBegin(daT,temperature,INSERT_VALUES,temperature_l);CHKERRQ(ierr);
+		ierr = DMGlobalToLocalEnd  (daT,temperature,INSERT_VALUES,temperature_l);CHKERRQ(ierr);
+		ierr = VecGetArray(temperature_l,&LA_temperature_l);CHKERRQ(ierr);
+
+		ierr = private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,ufield,dap,pfield,daT,LA_temperature_l);CHKERRQ(ierr);
+		
+		ierr = VecRestoreArray(temperature_l,&LA_temperature_l);CHKERRQ(ierr);
+		ierr = DMRestoreLocalVector(daT,&temperature_l);CHKERRQ(ierr);
+		
+	} else {
+		ierr = private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,ufield,dap,pfield,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	}
+	
+	
+	PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ApplyViscosityCutOffMarkers_VPSTD"
@@ -770,19 +866,19 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 	
 	/* access material point information */
 	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
-
+	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField);
 	DataFieldGetAccess(PField);
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-
+	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
 	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
+	
 	/* setup for elements */
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	
@@ -793,7 +889,7 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 		
 		DataFieldAccessPoint(PField_std, pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField,     pidx,(void**)&mpprop);
-
+		
 		eidx_mp = mpprop_std->wil;
 		
 		/* Get element coordinates */
@@ -829,6 +925,6 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField);
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
+	
 	PetscFunctionReturn(0);
 }
