@@ -101,8 +101,12 @@ PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadra
 
 PetscErrorCode MaterialPointGetAccess(DataBucket materialpoint_db,MPAccess *helper);
 PetscErrorCode MaterialPointRestoreAccess(DataBucket matpoint_db,MPAccess *helper);
+
+PetscErrorCode MaterialPointGet_global_coord(MPAccess X,const int p,double *var[]);
 PetscErrorCode MaterialPointGet_local_coord(MPAccess X,const int p,double *var[]);
 PetscErrorCode MaterialPointGet_local_element_index(MPAccess X,const int p,int *var);
+PetscErrorCode MaterialPointGet_phase_index(MPAccess X,const int p,int *var);
+
 PetscErrorCode MaterialPointGet_viscosity(MPAccess X,const int p,double *var);
 PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var);
 PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var);

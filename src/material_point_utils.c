@@ -2705,6 +2705,19 @@ PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point
 
 /* std */
 #undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_global_coord"
+PetscErrorCode MaterialPointGet_global_coord(MPAccess X,const int p,double *var[])
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdGetField_global_coord(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_local_coord"
 PetscErrorCode MaterialPointGet_local_coord(MPAccess X,const int p,double *var[])
 {
@@ -2730,6 +2743,20 @@ PetscErrorCode MaterialPointGet_local_element_index(MPAccess X,const int p,int *
 	
 	PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_phase_index"
+PetscErrorCode MaterialPointGet_phase_index(MPAccess X,const int p,int *var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdGetField_phase_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
 /* stokes */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_viscosity"
