@@ -48,6 +48,18 @@ typedef enum { MPField_Std=0, MPField_Stokes, MPField_Energy, MPField_StokesPl }
 typedef enum { CoefAvgARITHMETIC=0, CoefAvgHARMONIC } CoefficientAveragingType;
 
 
+typedef struct _p_MPAccess *MPAccess;
+struct _p_MPAccess {
+	DataBucket db;
+	DataField  *PField;
+	int        nfields;
+	/* USER: add reference to all possible material point types here */
+	int mp_std_field_idx;
+	int mp_stokes_field_idx;
+	int mp_stokespl_field_idx;
+	int mp_energy_field_idx;
+};
+
 
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int *byte_offset,const int nfields,const MaterialPointField list[]);
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db,const int nfields,const MaterialPointField list[]);

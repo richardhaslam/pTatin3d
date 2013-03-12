@@ -2534,3 +2534,260 @@ PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(const int npoi
 	
 	PetscFunctionReturn(0);
 }
+
+
+
+/* MATERIAL POINT ACCESS HELPERS */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGetAccess"
+PetscErrorCode MaterialPointGetAccess(DataBucket materialpoint_db,MPAccess *helper)
+{
+	MPAccess   X;
+	int        Lfields,cnt;
+	BTruth     found;
+	DataField  PField;
+	PetscErrorCode ierr;	
+	
+	PetscFunctionBegin;
+	
+	ierr = PetscMalloc(sizeof(struct _p_MPAccess),&X);CHKERRQ(ierr);
+	
+	X->db = materialpoint_db;
+	
+	DataBucketGetDataFields(materialpoint_db,&Lfields,PETSC_NULL);
+	ierr = PetscMalloc(sizeof(DataField)*Lfields,&X->PField);CHKERRQ(ierr);
+	ierr = PetscMemzero(X->PField,sizeof(DataField)*Lfields);CHKERRQ(ierr);
+	
+	cnt = 0;
+	
+	/* USER: add reference to all possible material point types here */
+	
+	/* init all idx for material point fields */
+	X->mp_std_field_idx      = -1;
+	X->mp_stokes_field_idx   = -1;
+	X->mp_stokespl_field_idx = -1;
+	X->mp_energy_field_idx   = -1;
+	
+	/* MPntStd */
+	DataBucketQueryDataFieldByName(materialpoint_db,MPntStd_classname,&found);
+	if (found) {
+		DataBucketGetDataFieldByName(materialpoint_db,MPntStd_classname,&PField);
+		DataFieldGetAccess(PField);
+		DataFieldVerifyAccess(PField,sizeof(MPntStd));
+		
+		X->PField[cnt] = PField;
+		X->mp_std_field_idx = cnt;
+		
+		cnt++;
+	}
+	
+	/* MPntPStokes */
+	DataBucketQueryDataFieldByName(materialpoint_db,MPntPStokes_classname,&found);
+	if (found) {
+		DataBucketGetDataFieldByName(materialpoint_db,MPntPStokes_classname,&PField);
+		DataFieldGetAccess(PField);
+		DataFieldVerifyAccess(PField,sizeof(MPntPStokes));
+		
+		X->PField[cnt] = PField;
+		X->mp_stokes_field_idx = cnt;
+		
+		cnt++;
+	}
+	
+	/* MPntPStokesPl */
+	DataBucketQueryDataFieldByName(materialpoint_db,MPntPStokesPl_classname,&found);
+	if (found) {
+		DataBucketGetDataFieldByName(materialpoint_db,MPntPStokesPl_classname,&PField);
+		DataFieldGetAccess(PField);
+		DataFieldVerifyAccess(PField,sizeof(MPntPStokesPl));
+		
+		X->PField[cnt] = PField;
+		X->mp_stokespl_field_idx = cnt;
+		
+		cnt++;
+	}
+	
+	/* MPntPEnergy_classname */
+	DataBucketQueryDataFieldByName(materialpoint_db,MPntPEnergy_classname,&found);
+	if (found) {
+		DataBucketGetDataFieldByName(materialpoint_db,MPntPEnergy_classname,&PField);
+		DataFieldGetAccess(PField);
+		DataFieldVerifyAccess(PField,sizeof(MPntPEnergy));
+		
+		X->PField[cnt] = PField;
+		X->mp_energy_field_idx = cnt;
+		
+		cnt++;
+	}
+	
+	X->nfields = cnt;
+	
+	*helper = X;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointRestoreAccess"
+PetscErrorCode MaterialPointRestoreAccess(DataBucket matpoint_db,MPAccess *helper)
+{
+	MPAccess X;
+	int      i;
+	PetscErrorCode ierr;	
+	
+	PetscFunctionBegin;
+	
+	X = *helper;
+	
+	for (i=0; i<X->nfields; i++) {
+		DataFieldRestoreAccess(X->PField[i]);
+	}
+	ierr = PetscFree(X->PField);CHKERRQ(ierr);
+	ierr = PetscFree(X);CHKERRQ(ierr);
+	
+	*helper = PETSC_NULL;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_get_field_MPntStd"
+PetscErrorCode _get_field_MPntStd(MPAccess X,const int p,MPntStd **point)
+{
+	DataField  PField;
+	if (X->mp_std_field_idx == -1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntStd must be registered");
+	}
+	PField = X->PField[ X->mp_std_field_idx ];
+	DataFieldAccessPoint(PField,p,(void**)point);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "_get_field_MPntPStokes"
+PetscErrorCode _get_field_MPntPStokes(MPAccess X,const int p,MPntPStokes **point)
+{
+	DataField  PField;
+	if (X->mp_stokes_field_idx == -1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPStokes must be registered");
+	}
+	PField = X->PField[ X->mp_stokes_field_idx ];
+	DataFieldAccessPoint(PField,p,(void**)point);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "_get_field_MPntPStokesPl"
+PetscErrorCode _get_field_MPntPStokesPl(MPAccess X,const int p,MPntPStokesPl **point)
+{
+	DataField  PField;
+	if (X->mp_stokespl_field_idx == -1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPStokesPl must be registered");
+	}
+	PField = X->PField[ X->mp_stokespl_field_idx ];
+	DataFieldAccessPoint(PField,p,(void**)point);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "_get_field_MPntPEnergy"
+PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point)
+{
+	DataField  PField;
+	if (X->mp_energy_field_idx == -1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPEnergy must be registered");
+	}
+	PField = X->PField[ X->mp_energy_field_idx ];
+	DataFieldAccessPoint(PField,p,(void**)point);
+	
+	PetscFunctionReturn(0);
+}
+
+/* stokes */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_viscosity"
+PetscErrorCode MaterialPointGet_viscosity(MPAccess X,const int p,double *var)
+{
+	DataField      PField;
+	MPntPStokes    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesGetField_eta_effective(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_density"
+PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
+{
+	DataField      PField;
+	MPntPStokes    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesGetField_density(point,var);
+	
+	PetscFunctionReturn(0);
+}
+/* stokespl */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_plastic_strain"
+PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var)
+{
+	DataField      PField;
+	MPntPStokesPl  *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokesPl(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesPlGetField_plastic_strain(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_yield_indicator"
+PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *var)
+{
+	DataField      PField;
+	MPntPStokesPl  *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokesPl(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesPlGetField_yield_indicator(point,var);
+	
+	PetscFunctionReturn(0);
+}
+/* energy */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_diffusivity"
+PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var)
+{
+	DataField      PField;
+	MPntPEnergy    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPEnergy(X,p,&point);CHKERRQ(ierr);
+	MPntPEnergyGetField_diffusivity(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_heat_source"
+PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var)
+{
+	DataField      PField;
+	MPntPEnergy    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPEnergy(X,p,&point);CHKERRQ(ierr);
+	MPntPEnergyGetField_heat_source(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
