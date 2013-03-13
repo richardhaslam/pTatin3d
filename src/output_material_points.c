@@ -153,11 +153,15 @@ PetscErrorCode _check_for_empty_cells_double(const PetscInt mx,const PetscInt my
 					for (ii=0; ii<2; ii++) {
 						int cidx,ci,cj,ck;
 						
-						ci = 2*ei + ii;
-						cj = 2*ej + jj;
-						ck = 2*ek + kk;
+						ci = 2*uei + ii;
+						cj = 2*uej + jj;
+						ck = 2*uek + kk;
 						
 						cidx = ci + cj*mx + ck*mx*my;
+						if (cidx >= mx*my*mz) {
+							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"cidx is too large");
+						}
+
 						local_LA_cell += LA_cell[cidx];
 						local_cell_count += cell_count[cidx];
 					}
@@ -169,9 +173,9 @@ PetscErrorCode _check_for_empty_cells_double(const PetscInt mx,const PetscInt my
 					for (ii=0; ii<2; ii++) {
 						int cidx,ci,cj,ck;
 						
-						ci = 2*ei + ii;
-						cj = 2*ej + jj;
-						ck = 2*ek + kk;
+						ci = 2*uei + ii;
+						cj = 2*uej + jj;
+						ck = 2*uek + kk;
 
 						cidx = ci + cj*mx + ck*mx*my;
 						LA_cell[cidx]    = local_LA_cell;
@@ -186,7 +190,7 @@ PetscErrorCode _check_for_empty_cells_double(const PetscInt mx,const PetscInt my
 	
 	if (constant_conversion_occurred == 1) {
 		for (e=0; e<mx*my*mz; e++) {
-			if (LA_cell[e] == 0) {
+			if (cell_count[e] == 0) {
 				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell contains zero markers");
 			}
 		}
@@ -229,11 +233,15 @@ PetscErrorCode _check_for_empty_cells_float(const PetscInt mx,const PetscInt my,
 					for (ii=0; ii<2; ii++) {
 						int cidx,ci,cj,ck;
 						
-						ci = 2*ei + ii;
-						cj = 2*ej + jj;
-						ck = 2*ek + kk;
+						ci = 2*uei + ii;
+						cj = 2*uej + jj;
+						ck = 2*uek + kk;
 						
 						cidx = ci + cj*mx + ck*mx*my;
+						if (cidx >= mx*my*mz) {
+							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"cidx is too large");
+						}
+						
 						local_LA_cell += LA_cell[cidx];
 						local_cell_count += cell_count[cidx];
 					}
@@ -245,9 +253,9 @@ PetscErrorCode _check_for_empty_cells_float(const PetscInt mx,const PetscInt my,
 					for (ii=0; ii<2; ii++) {
 						int cidx,ci,cj,ck;
 						
-						ci = 2*ei + ii;
-						cj = 2*ej + jj;
-						ck = 2*ek + kk;
+						ci = 2*uei + ii;
+						cj = 2*uej + jj;
+						ck = 2*uek + kk;
 						
 						cidx = ci + cj*mx + ck*mx*my;
 						LA_cell[cidx]    = local_LA_cell;
@@ -262,7 +270,7 @@ PetscErrorCode _check_for_empty_cells_float(const PetscInt mx,const PetscInt my,
 	
 	if (constant_conversion_occurred == 1) {
 		for (e=0; e<mx*my*mz; e++) {
-			if (LA_cell[e] == 0) {
+			if (cell_count[e] == 0) {
 				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cell contains zero markers");
 			}
 		}
@@ -424,15 +432,16 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBucket db,const PetscInt mx,const PetscInt my,const PetscInt mz,int LA_cell[])
 {
 	int *closest_point;
-	int e,ueid,ueid2,umx,umy,umz,uei,uej,uek,i,j,k,li,lj,lk;
+	int e,ueid,ueid2,umx,umy,umz,uei,uej,uek,i,j,k,li,lj,lk,ii,jj,kk;
 	double *xi_p,*x_p;
-	int ei,ej,ek,eidx;
+	int ei,ej,ek,eidx,idx;
 	float var;
 	int p,n_mp;
 	MPAccess X;
 	PetscInt nel,nen;
 	const PetscInt *elnidx;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
+	long int empty,gempty;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -443,6 +452,7 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 	
 	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&closest_point);CHKERRQ(ierr);
 	for (e=0; e<mx*my*mz; e++) {
+		//LA_cell[e]       = -1;
 		closest_point[e] = -1;
 	}
 	
@@ -526,20 +536,143 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 			}
 		}
 	}
+
+#if 1
+	printf("Scanning \n");
 	/* check cells if empty */
-	
+	for (ek=0; ek<mz; ek++) {
+		for (ej=0; ej<my; ej++) {
+			for (ei=0; ei<mx; ei++) {
+				int eidx;
+				
+				eidx = ei + ej*mx + ek*mx*my;
+				
+				if (closest_point[eidx] != -1) { continue; }
+				
+				//printf("** cell %d is empty **\n", eidx);
+				
+				/* else take action */
+				{
+					double x_center[3];
+					double xc[3*8];
+					double min_sep;
+					int p_closest;
+					double *x_p_closest;
+					double dist_p_closest;
+					
+					/* compute cell centroid */
+					uei = ei/2;
+					uej = ej/2;
+					uek = ek/2;
+					ueid = uei + uej*(umx) + uek*(umx)*(umy);
+					//printf("i,j,k %d %d %d : uei %d %d %d : ueid = %d : %d \n", ei,ej,ek,uei,uej,uej,ueid,umx*umy*umz);
+					
+					li = ei - 2*uei;
+					lj = ej - 2*uej;
+					lk = ek - 2*uek;
+					//printf("  li = %d %d %d \n", li,lj,lk);
+					
+					ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*ueid],LA_gcoords);CHKERRQ(ierr);
+					for (kk=lk; kk<lk+2; kk++) {
+						for (jj=lj; jj<lj+2; jj++) {
+							for (ii=li; ii<li+2; ii++) {
+								int idx,gidx;
+								
+								gidx = ii + jj*3 + kk*3*3;
+								idx  = (ii-li) + (jj-lj)*2 + (kk-lk)*2*2;
+								
+								xc[3*idx+0] = elcoords[3*gidx+0];
+								xc[3*idx+1] = elcoords[3*gidx+1];
+								xc[3*idx+2] = elcoords[3*gidx+2];
+							}
+						}
+					}
+					
+					x_center[0] = x_center[1] = x_center[2] = 0.0;
+					for (ii=0; ii<8; ii++) {
+						x_center[0] += 0.125 * xc[3*ii+0];
+						x_center[1] += 0.125 * xc[3*ii+1];
+						x_center[2] += 0.125 * xc[3*ii+2];
+					}
+					//printf("  %1.4e %1.4e %1.4e \n", x_center[0],x_center[1],x_center[2]);
+					
+					/* scan neighbours */
+					min_sep = 1.0e32;
+					for (k=ek-2; k<=ek+2; k++) {
+						if (k < 0)  { continue; }
+						if (k >= mz) { continue; }
+						
+						for (j=ej-2; j<=ej+2; j++) {
+							if (j < 0)  { continue; }
+							if (j >= my) { continue; }
+							
+							for (i=ei-2; i<=ei+2; i++) {
+								if (i < 0)  { continue; }
+								if (i >= mx) { continue; }
+							 	
+								idx = i + j*mx + k*mx*my;
+								//printf("  checking cell %d \n", idx );
+								if ( idx >= mx*my*mz ) {
+									SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"idx too large");
+								}
+								
+								p_closest = closest_point[ idx ];
+								if (p_closest == -1) { continue; } /* skip if neighbour cell is also empty */
+								//printf("  found neighbour with owner\n");
+								
+								ierr = MaterialPointGet_global_coord(X,p_closest,&x_p_closest);CHKERRQ(ierr);
+								
+								/* compute dist from p1 to x_center */
+								dist_p_closest = (x_center[0]-x_p_closest[0])*(x_center[0]-x_p_closest[0]) 
+															 + (x_center[1]-x_p_closest[1])*(x_center[1]-x_p_closest[1])
+								               + (x_center[2]-x_p_closest[2])*(x_center[2]-x_p_closest[2]);
+								
+								if (dist_p_closest < min_sep) {
+									min_sep = dist_p_closest;
+									closest_point[ eidx ] = p_closest;
+									//printf(" asssigning cell %d the value from cell %d which associated with marker %d \n", eidx,idx,p_closest);
+								}
+								
+							}
+						}
+					}
+					
+					
+				}
+				
+			}
+		}
+	}
+	/* report cells if empty */
+	empty = 0;
+	for (e=0; e<mx*my*mz; e++) {
+		if (closest_point[e] == -1) {
+			empty++;
+		}
+	}
+	ierr = MPI_Allreduce(&empty,&gempty,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	if (gempty != 0) {
+		PetscPrintf(PETSC_COMM_WORLD,"WARNING(_compute_cell_composition): Detected %ld cells which could not assigned a composition\n",gempty);
+	}
+#endif
 	
 	/* assign phase based on nearest point */
+#if 1
 	for (e=0; e<mx*my*mz; e++) {
 		int pid,phase;
 		
 		pid = closest_point[e];
-		ierr = MaterialPointGet_phase_index(X,pid,&phase);CHKERRQ(ierr);
-		LA_cell[e] = phase;
+		if (pid == -1) {
+			LA_cell[e] = -1;
+		} else {
+			ierr = MaterialPointGet_phase_index(X,pid,&phase);CHKERRQ(ierr);
+			LA_cell[e] = phase;
+		}
 	}
-	
+#endif	
 	ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
 	ierr = PetscFree(closest_point);CHKERRQ(ierr);
+
 	
 	PetscFunctionReturn(0);
 }
