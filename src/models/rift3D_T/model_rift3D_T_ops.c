@@ -46,6 +46,8 @@
 #include "stokes_form_function.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "dmda_iterator.h"
+#include "output_material_points.h"
+#include "material_point_utils.h"
 #include "energy_output.h"
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
@@ -625,9 +627,10 @@ PetscErrorCode ModelOutput_Rift3D_T_CheckScales(pTatinCtx c,Vec X)
 #define __FUNCT__ "ModelOutput_Rift3D_T"
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-	PetscBool active_energy;
-	PetscErrorCode ierr;
+	ModelRift3D_TCtx  *data = (ModelRift3D_TCtx*)ctx;
+	PetscBool         active_energy;
+	DataBucket        materialpoint_db;
+	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -636,6 +639,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 	{
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
@@ -647,9 +651,17 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 		char mp_file_prefix[256];
 		
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
-		ierr = SwarmViewGeneric_ParaView(c->materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
 		
+	{
+		const int                   nf = 2;
+		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain }; 
+		
+		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
+	}	
+	
+	
 	/* standard viewer */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	if (active_energy) {
