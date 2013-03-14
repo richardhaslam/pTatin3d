@@ -668,6 +668,7 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 	ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&dt_min_local,&dt_min,1,MPI_DOUBLE,MPI_MIN,comm);CHKERRQ(ierr);
 	
+	/*
 	{
 		PetscScalar min,max;
 		PetscInt lmin,lmax;
@@ -675,7 +676,7 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 		ierr = VecMax(velocity,&lmax,&max);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  vel: min %lf(%d): max %lf(%d)\n", min,lmin,max,lmax);
 	}
-	
+	*/
 	*step = dt_min;
 	
 	PetscFunctionReturn(0);
@@ -1085,7 +1086,7 @@ PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM d
 	PetscFunctionBegin;
 	PetscLogDouble t0,t1,tl,tg,tgmn;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"\n\n=========== MaterialPointStd_UpdateCoordinates ============= \n");
+	PetscPrintf(PETSC_COMM_WORLD,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
 	PetscGetTime(&t0);
 	ierr = MaterialPointStd_UpdateLocalCoordinates(materialpoints,dav);CHKERRQ(ierr);
 	PetscGetTime(&t1);
@@ -1110,7 +1111,7 @@ PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM d
 	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_Removal                  %10.2e (sec) efficiency %1.1lf%%\n", tg, 100.0 - 100.0*(tg-tgmn)/tg );
 	
-	PetscPrintf(PETSC_COMM_WORLD,"=========== ================================== ============= \n\n");
+	PetscPrintf(PETSC_COMM_WORLD,"=========== ================================== ============= \n");
 
 	
 	PetscFunctionReturn(0);
