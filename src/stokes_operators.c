@@ -577,10 +577,10 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		ierr = ISEqual(isr,ctx->isUVW,&f1);CHKERRQ(ierr);
 		ierr = ISEqual(isc,ctx->isP,&f2);CHKERRQ(ierr);
 		if ( (f1==PETSC_TRUE) && (f2==PETSC_TRUE) ) {
-			PetscPrintf(PETSC_COMM_WORLD,"Fetching UP block\n");
+			//PetscPrintf(PETSC_COMM_WORLD,"Fetching UP block\n");
 			
 			if (cll==MAT_INITIAL_MATRIX) {
-				PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
+				//PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
 				ierr = MatStokesMFCopy(ctx,&copyA);CHKERRQ(ierr);
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A12(copyA,B);CHKERRQ(ierr);
 				ierr = MatStokesMFDestroy(&copyA);CHKERRQ(ierr);
@@ -595,10 +595,10 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		ierr = ISEqual(isr,ctx->isP,&f1);CHKERRQ(ierr);
 		ierr = ISEqual(isc,ctx->isUVW,&f2);CHKERRQ(ierr);
 		if ( (f1==PETSC_TRUE) && (f2==PETSC_TRUE) ) {
-			PetscPrintf(PETSC_COMM_WORLD,"Fetching PU block\n");
+			//PetscPrintf(PETSC_COMM_WORLD,"Fetching PU block\n");
 			
 			if (cll==MAT_INITIAL_MATRIX) {
-				PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
+				//PetscPrintf(PETSC_COMM_WORLD,"  defining matrix free operator\n");
 				ierr = MatStokesMFCopy(ctx,&copyA);CHKERRQ(ierr);
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A21(copyA,B);CHKERRQ(ierr);
 				ierr = MatStokesMFDestroy(&copyA);CHKERRQ(ierr);
