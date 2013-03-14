@@ -1,0 +1,61 @@
+# ===============================
+# model specifictions 
+# ===============================
+-ptatin_model folding2d 
+-model_folding2d_n_interfaces 4 
+-model_folding2d_interface_heights 0.0,1.0,2.0,3.0
+-model_folding2d_layer_res_j 3,3,3 
+-model_folding2d_layer_eta 1.0,400.0,1.0
+-model_folding2d_layer_rho 0.0,0.0,0.0
+-model_folding2d_Lx 50.0 
+
+-model_folding2d_bc_type 0
+-model_folding2d_vx 0.05
+-output_path testseq 
+
+
+-coefficient_projection_type -1
+
+# ======================================
+# geometry and multigrid specifications
+# =========================================
+-mx 50
+-mz 50
+# my is determined from the model description, so any value will be ignored
+#-my 16
+
+-dau_nlevels 3
+
+# ===============================
+# summaries and monitors
+# ===============================
+-fieldsplit_u_ksp_monitor
+#-ksp_monitor_true_residual
+-log_summary
+-snes_view
+
+
+# ===============================
+# solver specifications
+# ===============================
+-A11_operator_type 0,1,1,1,1
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+-fieldsplit_u_mg_coarse_pc_type lu
+-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-ksp_max_it 10
+-ksp_type fgmres
+-ksp_rtol 1.0e-8
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-snes_type ksponly
+-stk_velocity_da_mat_type aij
