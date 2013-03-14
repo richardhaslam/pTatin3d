@@ -38,6 +38,11 @@
 #include "ptatin_models.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "dmda_update_coords.h"
+#include "dmda_element_q2p1.h"
+#include "mesh_update.h"
+#include "dmda_remesh.h"
+#include "output_material_points.h"
+#include "mesh_quality_metrics.h"
 
 #include "model_folding2d_ctx.h"
 
@@ -132,6 +137,19 @@ PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
 	
 	data->Ly = data->interface_heights[data->n_interfaces-1];
+	
+	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Folding2d\"\n");
+	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , *] ---> (*) z will be scaled to keep x-z aspect ratio one \n", data->Lx,data->Ly );
+	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
+	for (n=data->n_interfaces-1; n>=1; n--) {
+		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
+		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
+		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		PetscPrintf(PETSC_COMM_WORLD,"|\n");
+	}
+	//PetscPrintf(PETSC_COMM_WORLD,"|\n");
+	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
+	
 	
 	PetscFunctionReturn(0);
 }
@@ -235,11 +253,11 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Folding2d(pTatinCtx c,void *c
 
 #undef __FUNCT__
 #define __FUNCT__ "Folding2dSetPerturbedInterfaces"
-PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces)
+PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces,PetscReal amp)
 {
 	PetscErrorCode ierr;
 	PetscInt i,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-	PetscScalar *random, amp = 1./4., dy;
+	PetscScalar *random, dy;
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
@@ -523,9 +541,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Folding2d(pTatinCtx c,void *ctx
 PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 {
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
-	PetscReal Lx,Ly,dx,dy,dz,Lz;
-	PetscInt mx,my,mz, itf;
-	PetscErrorCode ierr;
+	PetscReal         Lx,Ly,dx,dy,dz,Lz;
+	PetscInt          mx,my,mz, itf;
+	PetscReal         amp,factor;
+	PetscErrorCode   ierr;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -561,47 +580,93 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	Lz = mz * dz;
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
-
+	factor = 0.1;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_folding2d_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
+	amp = factor * 1.0; /* this is internal scaled by dy inside Folding2dSetPerturbedInterfaces() */
+	if ( (amp < 0.0) || (amp >1.0) ) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_folding2d_amp_factor must be 0 < amp < 1");
+	}
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = Folding2dSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces);CHKERRQ(ierr);
+	ierr = Folding2dSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces,amp);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
 
+/*
 
-
+0/ Full lagrangian update
+1/ Check mesh quality metrics
+2/ If mesh quality metrics are not satisfied (on the first failure only)
+ a) set projection type to Q1
+ 
+3/ set advection vel = 0
+4/ remesh
+5/ Check mesh quality metrics
+ 
+ 
+*/
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Folding2d"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Folding2d(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	PetscReal      step;
+	PhysCompStokes stokes;
+	DM             stokes_pack,dav,dap;
+	Vec            velocity,pressure;
+	PetscInt       M,N,P;
+	PetscInt           metric_L = 2; 
+	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION };
+	PetscReal          value[100];
+	PetscBool          remesh;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	/*Remeshing*/
-	/*remeshfunction(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces){
-	jinter = sj;
-	 for(interf = 0; interf < n_interfaces-1; ++interf){
-	 dy = (interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(2*layer_res_j[interf]);
-	 for(i = si; i<si+nx; i++) {
-	 for(k = sk; k<sk+nz; k++) {
-	 for(j = jinter + 2*layer_res_j[interf]-1; j >jinter; --j){
-	 LA_coord[k][j][i].y = LA_coord[k][j+1][i].y - dy;
-	 }	
-	 }
-	 }
-	 jinter += 2*layer_res_j[interf];
-	 }
-	 
-	 }*/	
+
+	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,step);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	/* check mesh quality */
+	ierr = DMDAComputeMeshQualityMetricList(dav,metric_L,metric_list,value);CHKERRQ(ierr);
+	remesh = PETSC_FALSE;
+	if (value[0] > 2.0) {
+		remesh = PETSC_TRUE;
+	}
+	if ( (value[1] < 0.7) || (value[1] > 1.0)) {
+		remesh = PETSC_TRUE;
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_ASPECT_RATIO\" %1.4e \n", value[0]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DISTORTION\"   %1.4e \n", value[1]);
+	
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Remeshing currently deactivated \n", __FUNCT__);
+	
+#if 0
+	/* activate marker interpolation */	
+	if (remesh) {
+		c->coefficient_projection_type = 1;
+		
+		ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
+	}
+#endif	
+	
 	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelInitialCondition_Foldinf2D"
-PetscErrorCode ModelInitialCondition_Foldinf2D(pTatinCtx c,Vec X,void *ctx)
+#define __FUNCT__ "ModelInitialCondition_Folding2D"
+PetscErrorCode ModelInitialCondition_Folding2D(pTatinCtx c,Vec X,void *ctx)
 {
     /*
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
@@ -633,12 +698,24 @@ PetscErrorCode ModelInitialCondition_Foldinf2D(pTatinCtx c,Vec X,void *ctx)
 PetscErrorCode ModelOutput_Folding2d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	//char           name[256];
+	DataBucket     materialpoint_db;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-
+	
+	{
+		const int                   nf = 2;
+		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
+		
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		//sprintf(name,"%s_mpoints_cell",prefix);
+		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
+		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
+	}	
+	
 	PetscFunctionReturn(0);
 }
 
