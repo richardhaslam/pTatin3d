@@ -428,7 +428,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 			phase = 2;
 			rho   = DensConst_data[2].density;
             //if (abs(data->Lx * data->length_bar/2 - xcoord)<40.e3  & abs(data->Lz * data->length_bar/2 - zcoord  ) < 40e3 & ycoord > -50.0e3){
-            if (zcoord<150.e3  & abs(data->Lx * data->length_bar/2 - xcoord  ) < 40e3 & ycoord > -50.0e3){    
+            if ((zcoord<150.e3)  && (abs(data->Lx * data->length_bar/2 - xcoord  ) < 40e3) && (ycoord > -50.0e3)){    
             phase = 4;
             rho   = DensConst_data[4].density;   
             }
