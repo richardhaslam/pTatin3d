@@ -1147,7 +1147,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	PetscInt  dof,k;
 	DM        clone[100];
 	Vec       properties_A1[100], properties_A2[100], properties_B;
-	PetscInt  ptype;
+	PetscInt  ptype,coefficient_projection_type;
 	PetscBool view,flg;
 	PetscErrorCode ierr;
 	
@@ -1173,9 +1173,13 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 																																		clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B, 																																	 
 																																		npoints, mp_std,mp_stokes );CHKERRQ(ierr);	
 
-	ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-																																		clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],
-																																		Q[nlevels-1] );CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-coefficient_projection_type",&coefficient_projection_type,&flg);CHKERRQ(ierr);
+	if (coefficient_projection_type == -1) {
+		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
+																																			clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],
+																																			Q[nlevels-1] );CHKERRQ(ierr);
+	}
+	
 	/* view */
 	view = PETSC_FALSE;
 	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,&flg);
