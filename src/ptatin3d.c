@@ -1146,3 +1146,64 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
   PetscFunctionReturn(0);
 }
 
+/*
+ For multiple, decoupled physics, several time scales are likely to be present.
+ In general, we are unlikely to be able to know, from each physics, what all the time scales are going to be.
+ 
+ Probably what we will do is this
+ 
+ Solve physics_1,
+ Compute appropriate time step for physics_1, dt_1
+ 
+ Solve physics_2,
+ Compute appropriate time step for physics_2, dt_2
+ 
+ Solve physics_3,
+ Compute appropriate time step for physics_3, dt_3
+ 
+ dt = min( dt_1, dt_2, dt_3 ) subject to some global min/max cut offs.
+ */
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin_SetTimestep"
+PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial)
+{
+	
+  PetscErrorCode  ierr;
+	Vec coordinates,gcoords;
+	DM dac,dav,dap;
+	Vec Xu,Xp;
+	PetscReal dt_current;
+	
+	PetscFunctionBegin;
+	if (timescale_name) {
+		PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control(%.20s):",timescale_name);
+	} else {
+		PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control:");
+	}
+	
+	dt_current = ctx->dt;
+	if (dt_trial < dt_current) {
+		PetscPrintf(PETSC_COMM_WORLD," | current = %1.4e : trial = %1.4e [accepted]", dt_current, dt_trial);
+		ctx->dt = dt_trial;
+	}
+	else {
+		PetscPrintf(PETSC_COMM_WORLD," | current = %1.4e : trial = %1.4e", dt_current, dt_trial);
+	}
+	dt_current = ctx->dt;
+	
+	/* apply limiters */
+  if (dt_current < ctx->dt_min) {
+		dt_current = ctx->dt_min;
+		PetscPrintf(PETSC_COMM_WORLD," | dt < dt_min : limited to = %1.4e", dt_current );
+	}
+  if (dt_current > ctx->dt_max) {
+		dt_current = ctx->dt_max;
+		PetscPrintf(PETSC_COMM_WORLD," | dt > dt_max : restricted to = %1.4e", dt_current );
+	}
+	ctx->dt = dt_current;
+	PetscPrintf(PETSC_COMM_WORLD," | ==>> dt used = %1.4e |\n", ctx->dt );
+	  
+	PetscFunctionReturn(0);
+}
+
+

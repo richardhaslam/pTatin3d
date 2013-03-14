@@ -113,4 +113,6 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
 PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X);
 PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[]);
 
+PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial);
+
 #endif
