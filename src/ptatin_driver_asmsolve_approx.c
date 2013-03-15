@@ -284,8 +284,6 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[]);
-
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_galerkin_mg_material_points"
 PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
@@ -675,7 +673,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 			mp_std    = PField_std->data; /* should write a function to do this */
 			mp_stokes = PField_stokes->data; /* should write a function to do this */
 			
-			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,R1,dav_hierarchy,volQ);CHKERRQ(ierr);
+			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,R1,dav_hierarchy,volQ);CHKERRQ(ierr);
 		}
 	}
 	
@@ -1036,7 +1034,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
-		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 	}
 
 	
@@ -1055,7 +1053,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
-		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ_2x2x2);CHKERRQ(ierr);
+		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ_2x2x2);CHKERRQ(ierr);
 	}
 	
 	/* define boundary conditions - HARDCODED */

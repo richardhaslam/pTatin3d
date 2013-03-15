@@ -51,6 +51,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_duplicate.h"
 #include "dmda_project_coords.h"
 #include "monitors.h"
+#include "mp_advection.h"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
@@ -245,6 +246,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	DM             dav,dap;
 	PetscInt       k,max;
 	PetscBool      flg;
+	static int     been_here = 0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -319,7 +321,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
-				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
+				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
 				ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
@@ -345,7 +347,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				Mat Auu;
 				MatA11MF mf,A11Ctx;
 				
-				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
+				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
 				ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
 				ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
 				
@@ -362,7 +364,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
-						PetscPrintf(PETSC_COMM_WORLD,"Activiting low order A11 operator \n");
+						if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Activiting low order A11 operator \n");
 						ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
 						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
@@ -388,7 +390,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
 				}	
 				
-				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
+				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
 				
 				/* should move coarse grid assembly into jacobian */
 				ierr = MatPtAP(operatorA11[k+1],interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
@@ -409,7 +411,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 
 	*_A = A;
 	*_B = B;
-	
+
+	been_here = 1;
 	PetscFunctionReturn(0);
 }
 	
@@ -588,7 +591,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
-		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 	}
 	
 	
@@ -641,25 +644,27 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	/* configure uu split for galerkin multi-grid */
 	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 	
+	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
 	/* dump */
 	ierr = pTatinModel_Output(user->model,user,X,"step000000");CHKERRQ(ierr);
 
 	/* compute timestep */
-	user->dt = 1.0e1;
+	user->dt = 1.0e30;
 	{
 		Vec velocity,pressure;
 		PetscReal timestep;
 		
-		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);		
 		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		user->dt = timestep;
-		PetscPrintf(PETSC_COMM_WORLD,"  timestep[] dt_courant = %1.4e \n", timestep );
+		
+		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"  timestep[] dt_courant = %1.4e \n", user->dt );
 	}
 	user->time = user->time + user->dt;
+
 	
 	
 	
@@ -678,8 +683,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		Vec velocity,pressure;
 		PetscReal timestep;
 
-		PetscPrintf(PETSC_COMM_WORLD,"=================================================================\n");
-		PetscPrintf(PETSC_COMM_WORLD,"   EXECUTING TIME STEP : %D \n", step );
+		PetscPrintf(PETSC_COMM_WORLD,"<<----------------------------------------------------------------------------------------------->>\n");
+		PetscPrintf(PETSC_COMM_WORLD,"   [[ EXECUTING TIME STEP : %D ]]\n", step );
 		PetscPrintf(PETSC_COMM_WORLD,"     dt    : %1.4e \n", user->dt );
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time );
 		
@@ -694,9 +699,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 			mp_std = PField->data;
 			
 			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			
 			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			
 			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		}
 		
@@ -728,7 +731,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 			mp_std    = PField_std->data; /* should write a function to do this */
 			mp_stokes = PField_stokes->data; /* should write a function to do this */
 			
-			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 		}
 
 		/* solve */
@@ -754,35 +757,24 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		
 		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 
-/*
-		{
-			Vec F;
-			PetscReal nrm;
-			VecDuplicate(X,&F);CHKERRQ(ierr);
-			ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);			
-			VecNorm(F,NORM_2,&nrm);
-			printf("|F| %1.4e \n",nrm);
-			VecDestroy(&F);
-		}
-*/		
 		/* e) solve */
+		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
 		
-		
-		
 		/* output */
-		sprintf(stepname,"step%1.6d",step);
-		ierr = pTatinModel_Output(user->model,user,X,stepname);CHKERRQ(ierr);
-
+		if ( (step%user->output_frequency == 0) || (step == 1) ) {
+			sprintf(stepname,"step%1.6d",step);
+			ierr = pTatinModel_Output(user->model,user,X,stepname);CHKERRQ(ierr);
+		}
 		
 		/* compute timestep */
-		user->dt = 1.0e1;
+		user->dt = 1.0e32;
 			ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 			ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
 			ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			user->dt = timestep;
-			PetscPrintf(PETSC_COMM_WORLD,"  timestep[] dt_courant = %1.4e \n", timestep );
+			ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+			PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", step,user->dt );
 		
 		user->time = user->time + user->dt;
 		

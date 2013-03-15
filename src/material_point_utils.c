@@ -1142,12 +1142,12 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 
 #undef __FUNCT__
 #define __FUNCT__ "SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy"
-PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[])
+PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(PetscInt coefficient_projection_type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[])
 {
 	PetscInt  dof,k;
 	DM        clone[100];
 	Vec       properties_A1[100], properties_A2[100], properties_B;
-	PetscInt  ptype,coefficient_projection_type;
+	PetscInt  ptype;
 	PetscBool view,flg;
 	PetscErrorCode ierr;
 	
@@ -1173,8 +1173,11 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 																																		clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B, 																																	 
 																																		npoints, mp_std,mp_stokes );CHKERRQ(ierr);	
 
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-coefficient_projection_type",&coefficient_projection_type,&flg);CHKERRQ(ierr);
-	if (coefficient_projection_type == -1) {
+	/* 
+	 If null projection is chosen, then we assume we have defined quadrature point values on the fine mesh already (by some other means), 
+	 thus we do not interpolate the smoothed nodal viscosity onto the quadrature points 
+	 */
+	if (coefficient_projection_type != -1) {
 		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
 																																			clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],
 																																			Q[nlevels-1] );CHKERRQ(ierr);

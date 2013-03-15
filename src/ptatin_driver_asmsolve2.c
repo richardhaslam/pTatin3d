@@ -58,8 +58,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
-extern PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[]);
-
 PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
 {
 	Vec vt;
@@ -248,7 +246,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
-		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,mlctx->nlevels,mlctx->interpolatation_eta,mlctx->dav_hierarchy,mlctx->volQ);CHKERRQ(ierr);
+		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,mlctx->nlevels,mlctx->interpolatation_eta,mlctx->dav_hierarchy,mlctx->volQ);CHKERRQ(ierr);
 	}
 #endif	
 	
@@ -555,7 +553,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
-		//ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+		//ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 	}
 	
 	/* define boundary conditions */
