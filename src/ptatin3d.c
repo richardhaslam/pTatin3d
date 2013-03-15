@@ -627,9 +627,9 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 		
 		PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);
 		if (flg) {
-			user->use_constant_dt = PETSC_TRUE; 
-			user->dt              = constant_dt;
-			user->constant_dt     = constant_dt;
+			ctx->use_constant_dt = PETSC_TRUE; 
+			ctx->dt              = constant_dt;
+			ctx->constant_dt     = constant_dt;
 		}
 	}
 	sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
