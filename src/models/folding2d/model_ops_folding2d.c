@@ -590,6 +590,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	/* step 2 - define two interfaces and perturb coords along the interface */
 	ierr = Folding2dSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces,amp);CHKERRQ(ierr);
 	
+	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -616,8 +618,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Folding2d(pTatinCtx c,Vec X,void *ct
 	DM             stokes_pack,dav,dap;
 	Vec            velocity,pressure;
 	PetscInt       M,N,P;
-	PetscInt           metric_L = 2; 
-	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION };
+	PetscInt           metric_L = 5; 
+	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION, MESH_QUALITY_DIAGONAL_RATIO, MESH_QUALITY_VERTEX_ANGLE, MESH_QUALITY_FACE_AREA_RATIO };
 	PetscReal          value[100];
 	PetscBool          remesh;
 	PetscErrorCode ierr;
@@ -645,8 +647,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Folding2d(pTatinCtx c,Vec X,void *ct
 	if ( (value[1] < 0.7) || (value[1] > 1.0)) {
 		remesh = PETSC_TRUE;
 	}
-	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_ASPECT_RATIO\" %1.4e \n", value[0]);
-	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DISTORTION\"   %1.4e \n", value[1]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_ASPECT_RATIO\"    %1.4e \n", value[0]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DISTORTION\"      %1.4e \n", value[1]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DIAGONAL_RATIO\"  %1.4e \n", value[2]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_VERTEX_ANGLE\"    %1.4e \n", value[3]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_FACE_AREA_RATIO\" %1.4e \n", value[4]);
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Remeshing currently deactivated \n", __FUNCT__);
