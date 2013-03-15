@@ -473,6 +473,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	user->time             = 0.0;
   user->step             = 0;
   user->dt_adv           = user->dt_min;
+	user->use_constant_dt  = PETSC_FALSE;
   
     ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
 	ierr = MaterialConstantsInitialize(&user->material_constants);CHKERRQ(ierr);
@@ -621,7 +622,16 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 	PetscOptionsGetReal(PETSC_NULL,"-dt_max",&ctx->dt_max,&flg);
 	PetscOptionsGetReal(PETSC_NULL,"-time_max",&ctx->time_max,&flg);
 	PetscOptionsGetInt(PETSC_NULL,"-output_frequency",&ctx->output_frequency,&flg);
-	
+	{
+		PetscReal constant_dt;
+		
+		PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);
+		if (flg) {
+			user->use_constant_dt = PETSC_TRUE; 
+			user->dt              = constant_dt;
+			user->constant_dt     = constant_dt;
+		}
+	}
 	sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
 	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
@@ -1179,6 +1189,13 @@ PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],Pets
 		PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control(%.20s):",timescale_name);
 	} else {
 		PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control:");
+	}
+
+	if (ctx->use_constant_dt) {
+		ctx->dt = ctx->constant_dt;
+		PetscPrintf(PETSC_COMM_WORLD," | using constant time step ==>> dt used = %1.4e |\n", ctx->dt );
+		
+		PetscFunctionReturn(0);
 	}
 	
 	dt_current = ctx->dt;

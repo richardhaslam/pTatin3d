@@ -79,6 +79,8 @@ struct _p_pTatinCtx {
 	PetscReal dt,dt_max,dt_min,dt_adv;
 	PetscInt  output_frequency;
 	PetscReal time_max,time;
+	PetscBool use_constant_dt;
+	PetscReal constant_dt;
 	
 	/* rheology */
   RheologyConstants rheology_constants;
