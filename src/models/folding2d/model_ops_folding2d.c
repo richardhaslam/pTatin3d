@@ -48,6 +48,47 @@
 
 const double gravity = 9.8;
 
+
+#undef __FUNCT__
+#define __FUNCT__ "save_mesh"
+PetscErrorCode save_mesh(DM dav,char name[] ){
+	Vec             coord, slice;
+    DM              cda;
+	PetscViewer     viewer;
+    PetscInt        M, N, P, i,j;
+    PetscScalar     *slice_a;
+    DMDACoor3d      ***LA_coord;
+	PetscErrorCode  ierr;
+    
+	PetscFunctionBegin;
+
+    ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,2*M*N,&slice);CHKERRQ(ierr);
+    ierr = VecGetArray(slice, &slice_a);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+    
+    for(j=0; j < N; ++j){
+        for(i = 0; i<M; ++i){
+            slice_a[2*(j*M + i)] = LA_coord[0][j][i].x;
+            slice_a[2*(j*M + i) +1] = LA_coord[0][j][i].y;
+        }
+    }
+    ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+    
+	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	ierr = VecView(slice,viewer);CHKERRQ(ierr);
+    
+    
+	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);	
+	ierr = VecDestroy(&slice);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+}
+
+
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Folding2d"
 PetscErrorCode ModelInitialize_Folding2d(pTatinCtx c,void *ctx)
@@ -290,9 +331,6 @@ PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
 									interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
 									interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
-			//dy = ( (interface_heights[interf] - interface_heights[interf-1]) )/( (PetscScalar)(layer_res_j[interf-1]) );
-			//PetscPrintf(PETSC_COMM_WORLD," interface %d: using dy computed %1.4e->%1.4e and my=%d \n", interf,interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1]);
-			
 			for(i = si; i<si+nx; i++) {
 				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
 				for(k = sk; k<sk+nz; k++) {
@@ -544,6 +582,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	PetscReal         Lx,Ly,dx,dy,dz,Lz;
 	PetscInt          mx,my,mz, itf;
 	PetscReal         amp,factor;
+    char         mesh_outputfile[256], ouputpath[256];
 	PetscErrorCode   ierr;
 
 	PetscFunctionBegin;
@@ -591,7 +630,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	ierr = Folding2dSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces,amp);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
-	
+    
+    ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",ouputpath,256, PETSC_NULL);CHKERRQ(ierr);
+    ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",ouputpath);
+	ierr = save_mesh(c->stokes_ctx->dav, mesh_outputfile);CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }
 
