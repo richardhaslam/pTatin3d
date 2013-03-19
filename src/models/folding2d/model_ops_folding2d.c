@@ -51,39 +51,47 @@ const double gravity = 9.8;
 
 #undef __FUNCT__
 #define __FUNCT__ "save_mesh"
-PetscErrorCode save_mesh(DM dav,char name[] ){
+PetscErrorCode save_mesh(DM dav,const char name[])
+{
 	Vec             coord, slice;
-    DM              cda;
+	DM              cda;
 	PetscViewer     viewer;
-    PetscInt        M, N, P, i,j;
-    PetscScalar     *slice_a;
-    DMDACoor3d      ***LA_coord;
+	PetscInt        M, N, P, i,j;
+	PetscScalar     *slice_a;
+	DMDACoor3d      ***LA_coord;
+	PetscMPIInt     size;
 	PetscErrorCode  ierr;
-    
+	
 	PetscFunctionBegin;
+	
+	ierr = MPI_Comm_size(((PetscObject)dav)->comm,&size);CHKERRQ(ierr);
+	if (size != 1) {
+		PetscPrintf(PETSC_COMM_WORLD,"WARNING: save_mesh() is only valid if nproc == 1\n");
+		PetscFunctionReturn(0);
+	}
 
-    ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-    ierr = VecCreateSeq(PETSC_COMM_SELF,2*M*N,&slice);CHKERRQ(ierr);
-    ierr = VecGetArray(slice, &slice_a);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = VecCreateSeq(PETSC_COMM_SELF,2*M*N,&slice);CHKERRQ(ierr);
+	ierr = VecGetArray(slice, &slice_a);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-    
-    for(j=0; j < N; ++j){
-        for(i = 0; i<M; ++i){
-            slice_a[2*(j*M + i)] = LA_coord[0][j][i].x;
-            slice_a[2*(j*M + i) +1] = LA_coord[0][j][i].y;
-        }
-    }
-    ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-    
+	
+	for(j=0; j < N; ++j){
+		for(i = 0; i<M; ++i){
+			slice_a[2*(j*M + i)] = LA_coord[0][j][i].x;
+			slice_a[2*(j*M + i) +1] = LA_coord[0][j][i].y;
+		}
+	}
+	ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	
 	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 	ierr = VecView(slice,viewer);CHKERRQ(ierr);
-    
-    
+	
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);	
 	ierr = VecDestroy(&slice);CHKERRQ(ierr);
+
 	PetscFunctionReturn(0);
 }
 
@@ -582,8 +590,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	PetscReal         Lx,Ly,dx,dy,dz,Lz;
 	PetscInt          mx,my,mz, itf;
 	PetscReal         amp,factor;
-    char         mesh_outputfile[256], ouputpath[256];
-	PetscErrorCode   ierr;
+  char              mesh_outputfile[PETSC_MAX_PATH_LEN];
+	PetscErrorCode    ierr;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -631,9 +639,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     
-    ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",ouputpath,256, PETSC_NULL);CHKERRQ(ierr);
-    ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",ouputpath);
-	ierr = save_mesh(c->stokes_ctx->dav, mesh_outputfile);CHKERRQ(ierr);
+  ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",c->outputpath);
+	ierr = save_mesh(c->stokes_ctx->dav,mesh_outputfile);CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
 }
