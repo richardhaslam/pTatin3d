@@ -432,12 +432,6 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 		
 		pTatin_ConstructNi_Q2_3D( xi_p, NI );
 		
-		/* Compute depth of material point */
-		y_mp = 0.0;
-		for (k=0; k<U_BASIS_FUNCTIONS; k++) {
-			y_mp += NI[k] * elcoords[3*k+1];
-		}
-		T_mp = -y_mp*933.333333333333;
 		
 		if (daT) {
 			/* Interpolate the temperature */
@@ -461,17 +455,12 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				
 			case VISCOUS_Z: {
 				eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-y_mp)/ViscZ_data[ region_idx ].zeta);
-				if 	(eta_mp < 1.e-10) {
-					PetscPrintf(PETSC_COMM_WORLD," region_idx %d  y_mp %e \n",region_idx,y_mp);
-				}
+				
 			}
 				break;
 				
 			case VISCOUS_FRANKK: {
 				eta_mp  = ViscFK_data[ region_idx ].eta0*exp(-ViscFK_data[ region_idx ].theta*T_mp);
-				if 	(eta_mp < 1.e-10) {
-					PetscPrintf(PETSC_COMM_WORLD," region_idx %d  T_mp %e  theta %e eta0 %e \n",region_idx,T_mp,ViscFK_data[ region_idx ].theta,ViscFK_data[ region_idx ].eta0);
-				}
 			}
 				break;
 				
@@ -487,14 +476,15 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				PetscReal sr, eta, pressure; 
 				
 				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-				
-				
+                ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+                
+                sr = inv2_D_mp/ViscArrh_data[ region_idx ].Eta_scale*ViscArrh_data[ region_idx ].P_scale;
 				if (sr < 1.0e-17) {
 					sr = 1.0e-17;
 				}
-				
+                
 				pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
-				
+                
 				entalpy = entalpy + pressure*Vmol;
 				eta  = Ascale*0.25*pow(sr,1.0/nexp - 1.0)*pow(0.75*preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
 				eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;

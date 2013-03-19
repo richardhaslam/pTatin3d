@@ -534,3 +534,34 @@ PetscBool DMDAVecTraverse3d_LinearFunctionXYZ(PetscScalar pos[],PetscScalar *val
 	return impose;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_ERFC3DFunctionXYZ"
+PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscScalar x,y,z;
+	PetscReal  *coeffs;
+	PetscBool  impose;
+	PetscReal  xc,zc,age0,age_anom,L_bar,Tbot,wx,wz,age;
+	/* get coordinates */
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	/* fetch user data */
+	coeffs = (PetscReal*)ctx;
+    xc       = coeffs[0]; 
+    zc       = coeffs[1]; 
+    age0     = coeffs[2];
+    age_anom = coeffs[3];
+    L_bar    = coeffs[4];
+    Tbot     = coeffs[5];
+    wx       = coeffs[6];
+    wz       = coeffs[7];
+    
+	/* define value you want to set into the vector */ 
+    age = (1-exp(-pow((x-xc)*wx,2))*exp(-pow((z-zc)*wz,2))*(age0-age_anom)/age0)*age0;
+    *val = -Tbot*erfc((-y*L_bar)/sqrt(1e-6*age*3.14e13))+Tbot;
+	/* indicate you want to set this value into the vector */
+	impose = PETSC_TRUE;
+    
+	return impose;
+}

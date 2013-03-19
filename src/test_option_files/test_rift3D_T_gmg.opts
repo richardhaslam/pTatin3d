@@ -44,6 +44,12 @@
 -ksp_rtol 1e-2
 -model_rift3D_T_vis_bar 1.e22 
 -dau_nlevels 2 
--snes_rtol 1e-4 
+-snes_rtol 1e-3 
 -picard_its 5 
 -fieldsplit_u_ksp_max_it 10
+-ksp_rtol 5e-2 
+-model_rift3D_T_wz 0.5 
+-model_rift3D_T_wx 2. 
+-model_rift3D_T_vis_bar 1e22 
+-model_rift3D_Ttheta_0 0.025 
+-model_rift3D_Ttheta_1 0.025

@@ -1,7 +1,7 @@
 # ------------------------
 #   Model specification
 # ------------------------
--ptatin_model rift3D
+-ptatin_model rift3D_T
 -model_rift3D_vis_bar 1.e23
 -mx 48
 -my 12

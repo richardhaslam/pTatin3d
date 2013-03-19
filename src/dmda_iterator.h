@@ -84,4 +84,6 @@ PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val
 
 PetscBool DMDAVecTraverse3d_LinearFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx);
 
+PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx);
+
 #endif

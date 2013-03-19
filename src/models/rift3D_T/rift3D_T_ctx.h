@@ -40,13 +40,8 @@ typedef struct {
 	PetscInt  nmaterials;
     PetscBool runmises;
 	PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz,rho0;
-	PetscReal eta[20];
-	PetscReal rho[20];
-	PetscReal phi[20];
-	PetscReal coh[20];
-	PetscReal arrh_n[20];
-	PetscReal arrh_E[20];
-	PetscReal alpha[20];
+    PetscReal Tbottom,Ttop,thermal_age0;
+    PetscReal thermal_age_anom,wx_anom,wz_anom,cx_anom,cz_anom;
 	PetscBool dimensional;
 	PetscReal density_bar;
 	PetscReal length_bar;
