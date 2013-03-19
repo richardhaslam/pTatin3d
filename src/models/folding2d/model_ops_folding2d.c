@@ -86,7 +86,7 @@ PetscErrorCode save_mesh(DM dav,const char name[])
 	ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 	ierr = VecView(slice,viewer);CHKERRQ(ierr);
 	
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);	
