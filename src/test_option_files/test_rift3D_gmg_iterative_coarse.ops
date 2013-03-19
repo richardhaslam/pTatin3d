@@ -2,16 +2,16 @@
 #   Model specification
 # ------------------------
 -ptatin_model rift3D_T
--model_rift3D_vis_bar 1.e23
--mx 48
--my 12
--mz 48
+-model_rift3D_vis_bar 1.e22
+-mx 64
+-my 16
+-mz 64
 -output_path rift-t5
 
 # ------------------------------------
 #   Nonlinear solver specification
 # ------------------------------------
--snes_rtol  1e-4
+-snes_rtol  1e-3
 -newton_its 0
 -picard_its 5 
 
@@ -19,14 +19,14 @@
 #   Stokes solver specification
 # ---------------------------------
 -ksp_type  fgmres
--ksp_rtol  1e-2
+-ksp_rtol  5e-2
 -pc_type   fieldsplit
 
 -pc_fieldsplit_type                     schur
 -pc_fieldsplit_schur_factorization_type upper
 
 -fieldsplit_u_ksp_type    fgmres
--fieldsplit_u_ksp_max_it  10
+-fieldsplit_u_ksp_max_it  7 
 -fieldsplit_u_ksp_rtol    1.0e-1
 -fieldsplit_u_pc_type     mg
 
@@ -44,9 +44,9 @@
 
 -A11_operator_type 0,1,1,1,1
 
--stk_velocity_da_refine_hierarchy_x 4
--stk_velocity_da_refine_hierarchy_y 4
--stk_velocity_da_refine_hierarchy_z 4
+-stk_velocity_da_refine_hierarchy_x 4,2
+-stk_velocity_da_refine_hierarchy_y 2,1
+-stk_velocity_da_refine_hierarchy_z 4,2
 
 -use_low_order_geometry
 
@@ -70,7 +70,7 @@
 #   Monitoring
 # --------------
 -fieldsplit_u_pc_mg_log
--fieldsplit_u_mg_coarse_ksp_converged_reason
+#-fieldsplit_u_mg_coarse_ksp_converged_reason
 -fieldsplit_u_ksp_monitor
 -snes_monitor
 -snes_view
