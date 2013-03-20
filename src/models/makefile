@@ -11,7 +11,8 @@ TATIN_MODEL_DIR = \
 	sierra \
 	folding \
 	folding2d \
-	advdiff_example
+	advdiff_example\
+	basin_comp
 
 
 ## DONT NOT EDIT LINES BELOW
