@@ -69,7 +69,8 @@ export TATIN_SRC = \
 			stokes_assembly.c \
 			monitors.c \
 			mp_advection.c \
-			units.c
+			units.c \
+			model_utils.c
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
