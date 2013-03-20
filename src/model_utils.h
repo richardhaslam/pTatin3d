@@ -34,4 +34,9 @@
 #ifndef __ptatin3d_model_utils_h__
 #define __ptatin3d_model_utils_h__
 
+#define GRAVITY 9.8
+
+PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K);
+
+
 #endif
