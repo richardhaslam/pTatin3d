@@ -13,8 +13,9 @@
 #include "mesh_quality_metrics.h"
 
 #include "model_basin_comp_ctx.h"
+#include "model_utils.h"
 
-const double gravity_ = 9.8;
+
 
 /*
 #undef __FUNCT__
@@ -413,38 +414,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntGetField_global_element_IJKindex_BasinComp"
-PetscErrorCode MPntGetField_global_element_IJKindex_BasinComp(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K)
-{
-	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localeid;	
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	MPntStdGetField_local_element_index(material_point,&localeid);
-	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-	si = si/2; 
-	sj = sj/2;
-	sk = sk/2;
-//	lmx -= si;
-//	lmy -= sj;
-//	lmz -= sk;
-	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localeid/(lmx*lmy);
-	lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-	li = localeid - lk*(lmx*lmy) - lj*lmx;
-
-	if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
-	if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
-	if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
-	//printf("li,lj,lk %d %d %d \n", li,lj,lk );
-	
-	*K = lk + sk;
-	*J = lj + sj;
-	*I = li + si;
-	PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__
@@ -488,7 +458,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		//MPntStdGetField_global_coord(material_point,&position)
 
-    MPntGetField_global_element_IJKindex_BasinComp(c->stokes_ctx->dav,material_point, &I, &J, &K);
+    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
@@ -506,7 +476,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 
-				rho = - rho * gravity_;
+				rho = - rho * GRAVITY;
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
@@ -572,7 +542,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		
-    MPntGetField_global_element_IJKindex_BasinComp(c->stokes_ctx->dav,material_point, &I, &J, &K);
+    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 
 		//Set the properties
 		phase = -1;
@@ -601,7 +571,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 			cell_gausspoints[qp].rho  = rho;
 
 			cell_gausspoints[qp].Fu[0] = 0.0;
-			cell_gausspoints[qp].Fu[1] = -rho * gravity_;
+			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
 			cell_gausspoints[qp].Fu[2] = 0.0;
 
 			cell_gausspoints[qp].Fp = 0.0;
