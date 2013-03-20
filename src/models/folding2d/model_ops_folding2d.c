@@ -45,8 +45,8 @@
 #include "mesh_quality_metrics.h"
 
 #include "model_folding2d_ctx.h"
+#include "model_utils.h"
 
-const double gravity = 9.8;
 
 
 #undef __FUNCT__
@@ -357,39 +357,6 @@ PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntGetField_global_element_IJKindex"
-PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K)
-{
-	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localeid;	
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	MPntStdGetField_local_element_index(material_point,&localeid);
-	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-
-	si = si/2; 
-	sj = sj/2;
-	sk = sk/2;
-//	lmx -= si;
-//	lmy -= sj;
-//	lmz -= sk;
-	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localeid/(lmx*lmy);
-	lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-	li = localeid - lk*(lmx*lmy) - lj*lmx;
-
-	if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
-	if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
-	if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
-	//printf("li,lj,lk %d %d %d \n", li,lj,lk );
-	
-	*K = lk + sk;
-	*J = lj + sj;
-	*I = li + si;
-	PetscFunctionReturn(0);
-}
-
 
 #undef __FUNCT__
 #define __FUNCT__ "InitialMaterialGeometryMaterialPoints_Folding2d"
@@ -450,7 +417,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_Folding2d(pTatinCtx c,void 
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 
-				rho = - rho * gravity;
+				rho = - rho * GRAVITY;
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
@@ -545,7 +512,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_Folding2d(pTatinCtx c,voi
 			cell_gausspoints[qp].rho  = rho;
 
 			cell_gausspoints[qp].Fu[0] = 0.0;
-			cell_gausspoints[qp].Fu[1] = -rho * gravity;
+			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
 			cell_gausspoints[qp].Fu[2] = 0.0;
 
 			cell_gausspoints[qp].Fp = 0.0;
