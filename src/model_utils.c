@@ -95,3 +95,29 @@ PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_poi
 	*I = li + si;
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModelGetOptionReal"
+PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
+																				const char error[],
+																				const char default_opt[],
+																				PetscBool essential)
+{
+	PetscBool flg;
+	PetscErrorCode ierr;
+
+	PetscFunctionBegin;
+	ierr = PetscOptionsGetReal(PETSC_NULL,option,val,&flg);CHKERRQ(ierr);
+	if (essential) {
+		if (!flg) {
+			if (!default_opt) {
+				SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"ModelOptionMissing(%s): \n\t\t%s ",option,error);
+			} else {
+				SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"ModelOptionMissing(%s): \n\t\t%s : Suggested default values %s ",option,error,default_opt);
+			}
+		}
+	}
+	PetscFunctionReturn(0);
+}
+
+
