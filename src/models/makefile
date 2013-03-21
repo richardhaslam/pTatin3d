@@ -12,7 +12,9 @@ TATIN_MODEL_DIR = \
 	folding \
 	folding2d \
 	advdiff_example\
-	basin_comp
+	basin_comp\
+	wrench_fold\
+	fault_fold
 
 
 ## DONT NOT EDIT LINES BELOW
