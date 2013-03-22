@@ -372,6 +372,7 @@ PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
 PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,PetscReal dt)
 {
 	Vec            coordinates;
+	PetscReal      min,max;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -381,6 +382,10 @@ PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,Pet
 	ierr = VecAXPY(energy->u_minus_V,-1.0,coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(energy->u_minus_V, 1.0,energy->Xold);CHKERRQ(ierr);
 	ierr = VecScale(energy->u_minus_V,1.0/dt);CHKERRQ(ierr);
+	
+	ierr = VecMin(energy->u_minus_V,0,&min);CHKERRQ(ierr);
+	ierr = VecMax(energy->u_minus_V,0,&max);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"ALE(vel) min = %1.4e : max = %1.4e \n", min,max);
 	
 	PetscFunctionReturn(0);
 }
@@ -448,7 +453,7 @@ PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T)
 	ierr = DMDAGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
 
-	ierr = VecZeroEntries(T);CHKERRQ(ierr);
+	//ierr = VecZeroEntries(T);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
