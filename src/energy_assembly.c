@@ -735,6 +735,8 @@ PetscErrorCode AElement_FormFunction_T_supg(
 		/*
 		printf("qp=%d : v_p = %1.4e %1.4e %1.4e : kappa = %1.4e : kappa_hat = %1.4e : phi = %1.4e : phi_last = %1.4e \n",
 					 p,v_p[0],v_p[1],v_p[2],kappa_p,kappa_hat,phi_p,phi_last_p);
+		*/
+		/*
 		printf("Ni/Ni_supg 0(%1.4e %1.4e) 3(%1.4e %1.4e) 7(%1.4e %1.4e) \n",
 					 Ni_p[0],Ni_supg_p[0],Ni_p[3],Ni_supg_p[3],Ni_p[7],Ni_supg_p[7]);
 		*/
@@ -946,12 +948,12 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 	
 	/* get local solution and time derivative */
 	ierr = VecZeroEntries(philoc);CHKERRQ(ierr);
-	ierr = DMGlobalToLocalBegin(da,X,ADD_VALUES,philoc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd  (da,X,ADD_VALUES,philoc);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
 	
 	ierr = VecZeroEntries(philastloc);CHKERRQ(ierr);
-	ierr = DMGlobalToLocalBegin(da,data->Told,ADD_VALUES,philastloc);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd  (da,data->Told,ADD_VALUES,philastloc);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalBegin(da,data->Told,INSERT_VALUES,philastloc);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd  (da,data->Told,INSERT_VALUES,philastloc);CHKERRQ(ierr);
 	
 	/* insert boundary conditions into local vectors */
 	ierr = BCListInsertLocal(data->T_bclist,philoc);CHKERRQ(ierr);
