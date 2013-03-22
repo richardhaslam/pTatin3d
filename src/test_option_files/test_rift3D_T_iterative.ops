@@ -79,16 +79,13 @@
 -model_rift3D_T_wz 0.5 
 -model_rift3D_T_wx 2. 
 -model_rift3D_T_vis_bar 1e22 
--fieldsplit_u_ksp_max_it 7 
 -model_rift3D_Ttheta_0 0.025 
 -model_rift3D_Ttheta_1 0.025 
--fieldsplit_u_mg_coarse_ksp_max_it 30
 -dau_nlevels 4 
 -fieldsplit_u_pc_mg_levels 4 
 -stk_velocity_da_refine_hierarchy_x 4,2,2 
 -stk-velocity_da_refine_hierarchy_y 4,1,1 
 -stk_velocity_da_refine_hierarchy_z 4,2,2 
 -model_rift3D_T_vis_bar 1e22 
--fieldsplit_u_ksp_max_it 10 
--fieldsplit_u_ksp_rtol 1.e-1 
+-fieldsplit_u_ksp_max_it 7  
 -fieldsplit_u_mg_coarse_ksp_max_it 30
