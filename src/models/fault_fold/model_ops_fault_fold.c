@@ -14,58 +14,6 @@
 
 #include "model_fault_fold_ctx.h"
 #include "model_utils.h"
-
-
-
-/*
-#undef __FUNCT__
-#define __FUNCT__ "save_mesh"
-PetscErrorCode save_mesh(DM dav,const char name[])
-{
-	Vec             coord, slice;
-	DM              cda;
-	PetscViewer     viewer;
-	PetscInt        M, N, P, i,j;
-	PetscScalar     *slice_a;
-	DMDACoor3d      ***LA_coord;
-	PetscMPIInt     size;
-	PetscErrorCode  ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = MPI_Comm_size(((PetscObject)dav)->comm,&size);CHKERRQ(ierr);
-	if (size != 1) {
-		PetscPrintf(PETSC_COMM_WORLD,"WARNING: save_mesh() is only valid if nproc == 1\n");
-		PetscFunctionReturn(0);
-	}
-
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = VecCreateSeq(PETSC_COMM_SELF,2*M*N,&slice);CHKERRQ(ierr);
-	ierr = VecGetArray(slice, &slice_a);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
-	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	for(j=0; j < N; ++j){
-		for(i = 0; i<M; ++i){
-			slice_a[2*(j*M + i)] = LA_coord[0][j][i].x;
-			slice_a[2*(j*M + i) +1] = LA_coord[0][j][i].y;
-		}
-	}
-	ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-	ierr = VecView(slice,viewer);CHKERRQ(ierr);
-	
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);	
-	ierr = VecDestroy(&slice);CHKERRQ(ierr);
-
-	PetscFunctionReturn(0);
-}
-*/
-
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_FaultFold"
 PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
@@ -80,41 +28,48 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	/* assign defaults */
-	data->max_layers = 2;
+	data->max_layers = 100;
 	
-	data->n_interfaces = 3;
-	
-	PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_Lx",&data->Lx,&flg);
+	data->n_interfaces = 2;
+	PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_n_interfaces",&data->n_interfaces,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_fault_fold_n_interfaces)");
+	}
+
+	pTatinModelGetOptionReal("-model_fault_fold_Lx", &data->Lx, "User must provide the length along the x direction", PETSC_NULL,PETSC_TRUE);
+	/*PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_Lx",&data->Lx,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_fault_fold_Lx)");
-	}
-	
+	}*/
+
 	PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_Lz",&data->Lz,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_fault_fold_Lz)");
 	}
-    
-	n_int = data->n_interfaces;
+
+        PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_sigma",&data->sigma,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the spreading of the weak zone (-model_fault_fold_sigma)");
+	}
+
+	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries. Interface heights taken from the top of the slope (-model_fault_fold_interface_heights)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries (-model_fault_fold_interface_heights)");
 	}
 	if (n_int != data->n_interfaces) {
-        	    //printf("------>%d %f   %f    %f\n",n_int, data->interface_heights[0], data->interface_heights[1], data->interface_heights[2]);
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d interface heights relative from the base of the model including the top and bottom boundaries (-model_fault_fold_interface_heights)",data->n_interfaces);
-
-    }
-    
-	data->Ly = data->interface_heights[data->n_interfaces-1];
-
-    PetscOptionsGetIntArray(PETSC_NULL,"-model_fault_fold_layer_res_j",data->layer_res_j,&n_int,&flg);
+	}
+	
+	n_int = data->max_layers;
+	PetscOptionsGetIntArray(PETSC_NULL,"-model_fault_fold_layer_res_j",data->layer_res_j,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_fault_fold_layer_res_j)");
 	}
 	if (n_int != data->n_interfaces-1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_fault_fold_layer_res_j)",data->n_interfaces-1);
 	}
-    
+	
 	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_layer_eta",data->eta,&n_int,&flg);
 	if (!flg) {
@@ -125,6 +80,15 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_layer_etaweak",data->etaweak,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list for the weak zone(-model_fault_fold_layer_etaweak)");
+	}
+	if (n_int != data->n_interfaces-1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity for the weak zone (-model_fault_fold_layer_etaweak)",data->n_interfaces-1);
+	}
+
+	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_layer_rho",data->rho,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list (-model_fault_fold_layer_rho)");
@@ -133,48 +97,38 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_fault_fold_layer_rho)",data->n_interfaces-1);
 	}
 	
-    /* define the mesh size the y-direction for the global problem */
+	/* define the mesh size the z-direction for the global problem */
 	c->my = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
 		c->my += data->layer_res_j[n];
 	}
-    
-	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
+
+	/* define the domain size in the z-direction for the global problem */
+	data->Ly = data->interface_heights[data->n_interfaces-1];
+		
+        data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx             = -1.0e-3;
 	data->vx_commpression = 1.0;
 	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Basin Compression\"\n");
-	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ---> (*) z will be scaled to keep x-z aspect ratio one \n", data->Lx,data->Ly,data->Lz );
+
+	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Wrench Fold\"\n");
+	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ", data->Lx,data->Ly,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
-    
-    n=data->n_interfaces-1;
-    
-    PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
-    PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-    PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
-    PetscPrintf(PETSC_COMM_WORLD,"|\n");
-    PetscPrintf(PETSC_COMM_WORLD,"-\n -\n  -\n   -\n    -\n");
-	/*
-    for (n=data->n_interfaces-1; n>=1; n--) {
-		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
+	for (n=data->n_interfaces-1; n>=1; n--) {
+		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[n]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , mz = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	}
 	//PetscPrintf(PETSC_COMM_WORLD,"|\n");
-	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
-	*/
+	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
+	
 	
 	PetscFunctionReturn(0);
 }
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "BoundaryCondition_FaultFold"
@@ -270,91 +224,9 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_FaultFold(pTatinCtx c,void *c
 	PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "FaultFoldSetMeshGeometry"
-PetscErrorCode FaultFoldSetMeshGeometry(DM dav, void *ctx)
-{
-	PetscErrorCode ierr;
-    ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
-	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-    PetscScalar *random, dy_t, dy_b, b,a;
-
-    
-	DM cda;
-	Vec coord;
-	DMDACoor3d ***LA_coord;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
-	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	b = data->interface_heights[1];
-    //a = tan(data->alpha);
-    printf("a,b: %f  %f  \n",a, b);
-
-	ierr = PetscMalloc(M*sizeof(PetscScalar), &random);CHKERRQ(ierr);
-	jinter = 0;
-    
-    for(i=si; i<si+nx; i++){
-        for(k=sk; k<sk+nz; k++){
-            PetscScalar h;
-            h = a*LA_coord[k][0][i].z + b;
-            dy_t = (data->interface_heights[2] - h)/(PetscScalar)(2.*data->layer_res_j[1]);
-            dy_b = (h - data->interface_heights[0])/(PetscScalar)(2.*data->layer_res_j[0]);
-            
-            for(j=sj;j<sj+ny;j++){
-                if(j <= 2*data->layer_res_j[0]+1){
-                    LA_coord[k][j][i].y = data->interface_heights[0] + (PetscScalar)dy_b*j; 
-                }else if(j != N-1){
-                    LA_coord[k][j][i].y = h + (PetscScalar)dy_t*(j-2*data->layer_res_j[0]+1);
-                }
-            }
-        }
-    }
-     
-    /*
-	for(interf = 1; interf < n_interfaces-1; interf++){
-		jinter += 2*layer_res_j[interf-1];
-		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", jinter,N-1 );
-        
-		srand(interf+2);//The seed changes with the interface but we have the same seed for each process.
-		for(i = 0; i<M; i++){
-			random[i] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-		}
-        
-		if ( (jinter>=sj) && (jinter<sj+ny) ) {
-			
-			dy = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_j[interf-1]) );
-			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
-                        interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
-                        interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
-			for(i = si; i<si+nx; i++) {
-				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
-				for(k = sk; k<sk+nz; k++) {
-					//LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
-					LA_coord[k][jinter][i].y += amp * dy * random[i];
-				}
-			}
-			
-		}
-	}
-	*/
-	ierr = PetscFree(random);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "FaultFoldSetPerturbedInterfaces"
-PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces,PetscReal amp)
+PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces,PetscReal amp, PetscReal Lx)
 {
 	PetscErrorCode ierr;
 	PetscInt i,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
@@ -392,10 +264,15 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 									interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
 									interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
 			for(i = si; i<si+nx; i++) {
-				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
-				for(k = sk; k<sk+nz; k++) {
-					//LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
-					LA_coord[k][jinter][i].y += amp * dy * random[i];
+				
+				if(sk+nz == P){
+                                        k=sk+nz-1;
+                                        PetscScalar center = LA_coord[k][jinter][i].x-7.*Lx/8.0;
+					LA_coord[k][jinter][i].y += amp * dy * exp(-center*center/(2.*dy*dy));
+				}else if (sk == 0){
+                                        k=0;
+                                        PetscScalar center = LA_coord[k][jinter][i].x-Lx/8.0;
+					LA_coord[k][jinter][i].y += amp * dy * exp(-center*center/(2.*dy*dy));
 				}
 			}
 			
@@ -408,8 +285,6 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 
 #undef __FUNCT__
@@ -611,7 +486,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	PetscReal         Lx,Ly,dx,dy,dz,Lz;
 	PetscInt          mx,my,mz, itf;
 	PetscReal         amp,factor;
-  char              mesh_outputfile[PETSC_MAX_PATH_LEN];
 	PetscErrorCode    ierr;
 
 	PetscFunctionBegin;
@@ -620,32 +494,32 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	/* step 1 - create structured grid */
 	Lx = data->Lx;
 	Ly = data->Ly;
-    Lz = data->Lz;
+	Lz = data->Lz;
 	
 	mx = c->mx; 
 	my = c->my; 
 	mz = c->mz; 
+
+
 	
 	dx = Lx / ((PetscReal)mx);
 	dy = Ly / ((PetscReal)my);
 	dz = Lz / ((PetscReal)mz);
-
+	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
 	factor = 0.1;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_FaultFold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside FaultFoldSetPerturbedInterfaces() */
 	if ( (amp < 0.0) || (amp >1.0) ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_fault_fold_amp_factor must be 0 < amp < 1");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_FaultFold_amp_factor must be 0 < amp < 1");
 	}
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = FaultFoldSetMeshGeometry(c->stokes_ctx->dav, data);CHKERRQ(ierr);
+	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     
-    ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",c->outputpath);
-	ierr = save_mesh(c->stokes_ctx->dav,mesh_outputfile);CHKERRQ(ierr);
-    
+
 	PetscFunctionReturn(0);
 }
 
@@ -728,7 +602,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_FaultFold(pTatinCtx c,Vec X,void *ct
 PetscErrorCode ModelInitialCondition_FaultFold(pTatinCtx c,Vec X,void *ctx)
 {
     /*
-	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
 	DM stokes_pack,dau,dap;
 	Vec velocity,pressure;
 	PetscReal rho0;
