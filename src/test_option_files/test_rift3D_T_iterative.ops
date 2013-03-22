@@ -3,9 +3,9 @@
 # ------------------------
 -ptatin_model rift3D_T
 -model_rift3D_vis_bar 1.e22
--mx 64
--my 16
--mz 64
+-mx 128
+-my 32
+-mz 128
 -output_path rift-t5
 
 # ------------------------------------
