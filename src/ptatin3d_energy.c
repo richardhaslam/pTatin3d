@@ -418,16 +418,16 @@ PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T)
 	
 	PetscFunctionBegin;
 	
-	/* update coords */
-	ierr = DMDAProjectCoordinatesQ2toQ1(dav,e->daT,e->energy_mesh_type);CHKERRQ(ierr);
-	
-	/* update solution */
-	ierr = VecCopy(T,e->Told);CHKERRQ(ierr);
-	
-	/* update coordinates */
+	/* save current coords before advecting */
 	ierr = DMDAGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
 	//ierr = DMDAUpdateGhostedCoordinates(daq1);CHKERRQ(ierr);
+	
+	/* update solution */
+	ierr = VecCopy(T,e->Told);CHKERRQ(ierr);
+
+	/* update coords */
+	ierr = DMDAProjectCoordinatesQ2toQ1(dav,e->daT,e->energy_mesh_type);CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);
 }
