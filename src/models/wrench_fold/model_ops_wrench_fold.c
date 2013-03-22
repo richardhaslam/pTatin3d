@@ -14,56 +14,9 @@
 
 #include "model_wrench_fold_ctx.h"
 #include "model_utils.h"
+#include "math.h"
 
 
-
-/*
-#undef __FUNCT__
-#define __FUNCT__ "save_mesh"
-PetscErrorCode save_mesh(DM dav,const char name[])
-{
-	Vec             coord, slice;
-	DM              cda;
-	PetscViewer     viewer;
-	PetscInt        M, N, P, i,j;
-	PetscScalar     *slice_a;
-	DMDACoor3d      ***LA_coord;
-	PetscMPIInt     size;
-	PetscErrorCode  ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = MPI_Comm_size(((PetscObject)dav)->comm,&size);CHKERRQ(ierr);
-	if (size != 1) {
-		PetscPrintf(PETSC_COMM_WORLD,"WARNING: save_mesh() is only valid if nproc == 1\n");
-		PetscFunctionReturn(0);
-	}
-
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = VecCreateSeq(PETSC_COMM_SELF,2*M*N,&slice);CHKERRQ(ierr);
-	ierr = VecGetArray(slice, &slice_a);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
-	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	for(j=0; j < N; ++j){
-		for(i = 0; i<M; ++i){
-			slice_a[2*(j*M + i)] = LA_coord[0][j][i].x;
-			slice_a[2*(j*M + i) +1] = LA_coord[0][j][i].y;
-		}
-	}
-	ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-	ierr = VecView(slice,viewer);CHKERRQ(ierr);
-	
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);	
-	ierr = VecDestroy(&slice);CHKERRQ(ierr);
-
-	PetscFunctionReturn(0);
-}
-*/
 
 
 #undef __FUNCT__
@@ -80,46 +33,43 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	/* assign defaults */
-	data->max_layers = 2;
+	data->max_layers = 100;
 	
-	data->n_interfaces = 3;
-	
-	PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Lx",&data->Lx,&flg);
+	data->n_interfaces = 2;
+	PetscOptionsGetInt(PETSC_NULL,"-model_wrench_fold_n_interfaces",&data->n_interfaces,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_wrench_fold_n_interfaces)");
+	}
+
+	pTatinModelGetOptionReal("-model_wrench_fold_Lx", &data->Lx, "User must provide the length along the x direction", PETSC_NULL,PETSC_TRUE);
+	/*PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Lx",&data->Lx,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_wrench_fold_Lx)");
-	}
-	
-	PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Lz",&data->Lz,&flg);
+	}*/
+
+	PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Ly",&data->Ly,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_wrench_fold_Lz)");
-	}
-    
-	PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_alpha",&data->alpha,&flg);
-	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the slope of the basement (-model_wrench_fold_alpha)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the y direction (-model_wrench_fold_Ly)");
 	}
 
-	n_int = data->n_interfaces;
+	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_wrench_fold_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries. Interface heights taken from the top of the slope (-model_wrench_fold_interface_heights)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries (-model_wrench_fold_interface_heights)");
 	}
 	if (n_int != data->n_interfaces) {
-        	    //printf("------>%d %f   %f    %f\n",n_int, data->interface_heights[0], data->interface_heights[1], data->interface_heights[2]);
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d interface heights relative from the base of the model including the top and bottom boundaries (-model_wrench_fold_interface_heights)",data->n_interfaces);
-
-    }
-    
-	data->Ly = data->interface_heights[data->n_interfaces-1];
-
-    PetscOptionsGetIntArray(PETSC_NULL,"-model_wrench_fold_layer_res_j",data->layer_res_j,&n_int,&flg);
+	}
+	
+	n_int = data->max_layers;
+	PetscOptionsGetIntArray(PETSC_NULL,"-model_wrench_fold_layer_res_k",data->layer_res_k,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_wrench_fold_layer_res_j)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_wrench_fold_layer_res_k)");
 	}
 	if (n_int != data->n_interfaces-1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_wrench_fold_layer_res_j)",data->n_interfaces-1);
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_wrench_fold_layer_res_k)",data->n_interfaces-1);
 	}
-    
+	
 	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_wrench_fold_layer_eta",data->eta,&n_int,&flg);
 	if (!flg) {
@@ -138,108 +88,112 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_wrench_fold_layer_rho)",data->n_interfaces-1);
 	}
 	
-    /* define the mesh size the y-direction for the global problem */
-	c->my = 0;
+	/* define the mesh size the z-direction for the global problem */
+	c->mz = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
-		c->my += data->layer_res_j[n];
+		c->mz += data->layer_res_k[n];
 	}
-    
-	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
-	data->exx             = -1.0e-3;
-	data->vx_commpression = 1.0;
+
+	/* define the domain size in the z-direction for the global problem */
+	data->Lz = data->interface_heights[data->n_interfaces-1];
+		
+	data->bc_type = 0; /* 0 for basal shear ; 1 for lateral shear */
+	data->exy             = -1.0e-3;
 	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_wrench_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Basin Compression\"\n");
-	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ---> (*) z will be scaled to keep x-z aspect ratio one \n", data->Lx,data->Ly,data->Lz );
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_exy",&data->exy,&flg);CHKERRQ(ierr);
+
+        /* define the coefficient for the BC.*/
+        if(data->bc_type == 0){
+                data->A = (data->exy * data->Ly/(atan(data->Ly/2.0) - atan(-data->Ly/2.0)))/(M_PI*0.5);
+        }else if(data->bc_type == 1){
+                data->A = data->exy * data->Ly;
+        }
+	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Wrench Fold\"\n");
+	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ", data->Lx,data->Ly,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
-    
-    n=data->n_interfaces-1;
-    
-    PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
-    PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-    PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
-    PetscPrintf(PETSC_COMM_WORLD,"|\n");
-    PetscPrintf(PETSC_COMM_WORLD,"-\n -\n  -\n   -\n    -\n");
-	/*
-    for (n=data->n_interfaces-1; n>=1; n--) {
-		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
+	for (n=data->n_interfaces-1; n>=1; n--) {
+		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[n]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , mz = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_k[n-1]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	}
 	//PetscPrintf(PETSC_COMM_WORLD,"|\n");
-	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
-	*/
+	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_k[0]);
+	
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 
 #undef __FUNCT__
-#define __FUNCT__ "BoundaryCondition_WrenchFold"
-PetscErrorCode BoundaryCondition_WrenchFold(DM dav,BCList bclist,pTatinCtx c,ModelWrenchFoldCtx *data)
+#define __FUNCT__ "BCListEvaluator_WrenchFold"
+PetscBool BCListEvaluator_WrenchFold( PetscScalar position[], PetscScalar *value, void *ctx ) 
 {
-	PetscReal         exx;
-	PetscErrorCode    ierr;
+	PetscBool impose_dirichlet = PETSC_TRUE;
+	pTatinCtx user = (pTatinCtx)ctx;
+	PetscScalar exy;
+	PetscReal A, Ly, vx;
+	ModelWrenchFoldCtx *model_data_ctx;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
-	exx = data->exx;
-	
-	if (data->bc_type == 0) {
-		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
-		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_commpression);CHKERRQ(ierr);
-		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_commpression);CHKERRQ(ierr);
-	} else if (data->bc_type == 1) {
-		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
-		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
-	} else {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type");
-	}
-	
-	/* free slip south (base) */
-	ierr = DirichletBC_FreeSlip(bclist,dav,SOUTH_FACE);CHKERRQ(ierr);
-	
-	/* free surface north */
-	/* do nothing! */
-	
-	/* free slip front/back to mimic 2d behaviour */
-	ierr = DirichletBC_FreeSlip(bclist,dav,FRONT_FACE);CHKERRQ(ierr);
-	ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
+	ierr = pTatinModelGetUserData(user->model,(void**)&model_data_ctx);CHKERRQ(ierr);
+	//time = user->time;
 
+	A = model_data_ctx->A;
+	Ly = model_data_ctx->Ly;
+
+	if (model_data_ctx->bc_type == 0) {
+	    vx = A*atan(position[1] - 0.5*Ly);
+	} else if (model_data_ctx->bc_type == 1){
+	    vx = (position[1] - 0.5*Ly>0)?A:-A;
+	}else{
+             SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknonwn boundary condition type: 0 for basal shear, 1 for lateral shear (-model_wrench_fold_bc_type)");
+	
+        }
+	*value = vx;
+	return impose_dirichlet;
+}
 
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_WrenchFold"
-PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx c,void *ctx)
+PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx user,void *ctx)
 {
 	ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
-	PetscReal         exx;
-	BCList            bclist;
-	DM                dav;
-	PetscErrorCode    ierr;
+	PetscScalar zero = 0.0;
+	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        
+        if(data->bc_type == 0){
+        /* free slip lateral */
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	/* free surface top */
+	/* arctan bottom */
+	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-	
-	exx = data->exx;
+	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-	bclist = c->stokes_ctx->u_bclist;
-	dav    = c->stokes_ctx->dav;
-	ierr = BoundaryCondition_WrenchFold(dav,bclist,c,data);CHKERRQ(ierr);
-	
+	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+        }else if(data->bc_type == 1){
+        /* lateral shear*/
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	/* free surface top */
+        /* free slip bottom */
+	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
+        }
+
+
 	PetscFunctionReturn(0);
 }
 
@@ -248,17 +202,25 @@ PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyBoundaryConditionMG_WrenchFold(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
+	PetscScalar zero = 0.0;
 	PetscInt n;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
+
 	for (n=0; n<nl; n++) {
-		/* Define boundary conditions for each level in the MG hierarchy */
-		ierr = BoundaryCondition_WrenchFold(dav[n],bclist[n],user,data);CHKERRQ(ierr);
-	}	
-	
+		if(data->bc_type == 0){
+                        /* free slip lateral */
+	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	                /* free surface top */
+	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+                        }
+        }
+
 	PetscFunctionReturn(0);
 }
 
@@ -275,95 +237,13 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_WrenchFold(pTatinCtx c,void *
 	PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "WrenchFoldSetMeshGeometry"
-PetscErrorCode WrenchFoldSetMeshGeometry(DM dav, void *ctx)
-{
-	PetscErrorCode ierr;
-    ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
-	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-    PetscScalar *random, dy_t, dy_b, b,a;
-
-    
-	DM cda;
-	Vec coord;
-	DMDACoor3d ***LA_coord;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
-	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	b = data->interface_heights[1];
-    a = tan(data->alpha);
-    printf("a,b: %f  %f  \n",a, b);
-
-	ierr = PetscMalloc(M*sizeof(PetscScalar), &random);CHKERRQ(ierr);
-	jinter = 0;
-    
-    for(i=si; i<si+nx; i++){
-        for(k=sk; k<sk+nz; k++){
-            PetscScalar h;
-            h = a*LA_coord[k][0][i].z + b;
-            dy_t = (data->interface_heights[2] - h)/(PetscScalar)(2.*data->layer_res_j[1]);
-            dy_b = (h - data->interface_heights[0])/(PetscScalar)(2.*data->layer_res_j[0]);
-            
-            for(j=sj;j<sj+ny;j++){
-                if(j <= 2*data->layer_res_j[0]+1){
-                    LA_coord[k][j][i].y = data->interface_heights[0] + (PetscScalar)dy_b*j; 
-                }else if(j != N-1){
-                    LA_coord[k][j][i].y = h + (PetscScalar)dy_t*(j-2*data->layer_res_j[0]+1);
-                }
-            }
-        }
-    }
-     
-    /*
-	for(interf = 1; interf < n_interfaces-1; interf++){
-		jinter += 2*layer_res_j[interf-1];
-		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", jinter,N-1 );
-        
-		srand(interf+2);//The seed changes with the interface but we have the same seed for each process.
-		for(i = 0; i<M; i++){
-			random[i] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-		}
-        
-		if ( (jinter>=sj) && (jinter<sj+ny) ) {
-			
-			dy = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_j[interf-1]) );
-			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
-                        interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
-                        interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
-			for(i = si; i<si+nx; i++) {
-				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
-				for(k = sk; k<sk+nz; k++) {
-					//LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
-					LA_coord[k][jinter][i].y += amp * dy * random[i];
-				}
-			}
-			
-		}
-	}
-	*/
-	ierr = PetscFree(random);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "WrenchFoldSetPerturbedInterfaces"
-PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces,PetscReal amp)
+PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_k[], PetscInt n_interfaces,PetscReal amp)
 {
 	PetscErrorCode ierr;
-	PetscInt i,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-	PetscScalar *random, dy;
+	PetscInt i,j,si,sj,sk,nx,ny,nz, interf, kinter, proc, M,N,P;
+	PetscScalar *random, dz;
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
@@ -378,43 +258,33 @@ PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_he
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
 	
-	/*Perturbes the interface for cylindrical folding*/
-	ierr = PetscMalloc(M*sizeof(PetscScalar), &random);CHKERRQ(ierr);
-	jinter = 0;
+	kinter = 0;
+        ierr = MPI_Comm_size(((PetscObject)dav)->comm,&proc);CHKERRQ(ierr);
+        srand(proc+2);
 	for(interf = 1; interf < n_interfaces-1; interf++){
-		jinter += 2*layer_res_j[interf-1];
-		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", jinter,N-1 );
-
-		srand(interf+2);//The seed changes with the interface but we have the same seed for each process.
-		for(i = 0; i<M; i++){
-			random[i] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-		}
-
-		if ( (jinter>=sj) && (jinter<sj+ny) ) {
+		kinter += 2*layer_res_k[interf-1];
+		PetscPrintf(PETSC_COMM_WORLD,"kinter = %d (max=%d)\n", kinter,P-1 );
+		if ( (kinter>=sk) && (kinter<sk+nz) ) {
 			
-			dy = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_j[interf-1]) );
-			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
-									interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
-									interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
+			dz = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );
+			PetscPrintf(PETSC_COMM_SELF," interface %d: using dz computed from avg %1.4e->%1.4e / mz=%d :: %1.4e->%1.4e / mz=%d \n", interf,
+									interface_heights[interf+1],interface_heights[interf],layer_res_k[interf],
+									interface_heights[interf],interface_heights[interf-1],layer_res_k[interf-1] );
 			for(i = si; i<si+nx; i++) {
-				//LA_coord[sk][jinter][i].y += amp * dy * random[i];
-				for(k = sk; k<sk+nz; k++) {
-					//LA_coord[k][jinter][i].y = LA_coord[sk][jinter][i].y;
-					LA_coord[k][jinter][i].y += amp * dy * random[i];
+				for(j = sj; j<sj+ny; j++) {
+                                        PetscScalar random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+					LA_coord[kinter][j][i].z += amp * dz * random;
 				}
 			}
 			
 		}
 	}
 	
-	ierr = PetscFree(random);CHKERRQ(ierr);
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 
 #undef __FUNCT__
@@ -450,7 +320,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_WrenchFold(pTatinCtx c,void
 		//double      *position;
 		PetscReal      eta,rho;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer;
+		PetscInt    layer, kmaxlayer, kminlayer;
 		PetscInt    I, J, K;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
@@ -462,23 +332,23 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_WrenchFold(pTatinCtx c,void
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
-		jmaxlayer = jminlayer = 0;
+		kmaxlayer = kminlayer = 0;
 		layer = 0;
 		// gets the global element index (i,j,k)
 		//....
 		
 		//Set the properties
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			jmaxlayer += data->layer_res_j[layer];
+			kmaxlayer += data->layer_res_k[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 
 				rho = - rho * GRAVITY;
 			}
-			jminlayer += data->layer_res_j[layer];
+			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
 
@@ -536,7 +406,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_WrenchFold(pTatinCtx c,vo
 		//double      *position;
 		PetscReal      eta,rho;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer, localeid_p;
+		PetscInt    layer, kmaxlayer, kminlayer, localeid_p;
 		PetscInt    I, J, K;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
@@ -548,17 +418,17 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_WrenchFold(pTatinCtx c,vo
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
-		jmaxlayer = jminlayer = 0;
+		kmaxlayer = kminlayer = 0;
 		layer = 0;
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			jmaxlayer += data->layer_res_j[layer];
+			kmaxlayer += data->layer_res_k[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 			}
-			jminlayer += data->layer_res_j[layer];
+			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
 
@@ -625,31 +495,42 @@ PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
 	/* step 1 - create structured grid */
 	Lx = data->Lx;
 	Ly = data->Ly;
-    Lz = data->Lz;
+	Lz = data->Lz;
+	/*
+	 The length of the model in z-direction is determined by the grid spacing in x and y.
+	 We do this so that the elements do not have a large aspect ratio. This would occur
+	 if we hard coded Lz to a constant number which is independnet of the grid resolution in x and y.
+	 We choose Lz to be mz * min(dx,dy).
+	 */
+	
 	
 	mx = c->mx; 
 	my = c->my; 
 	mz = c->mz; 
 	
+	mz=0;
+	for(itf = 0; itf<data->n_interfaces -1; ++itf){
+		mz += data->layer_res_k[itf];
+	}
+
+	
 	dx = Lx / ((PetscReal)mx);
 	dy = Ly / ((PetscReal)my);
 	dz = Lz / ((PetscReal)mz);
 
-	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
+	
+	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx,0.0 ,Ly, data->interface_heights[0],Lz);CHKERRQ(ierr);
 	factor = 0.1;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_WrenchFold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside WrenchFoldSetPerturbedInterfaces() */
 	if ( (amp < 0.0) || (amp >1.0) ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_wrench_fold_amp_factor must be 0 < amp < 1");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_WrenchFold_amp_factor must be 0 < amp < 1");
 	}
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = WrenchFoldSetMeshGeometry(c->stokes_ctx->dav, data);CHKERRQ(ierr);
+	ierr = WrenchFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_k, data->n_interfaces,amp);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
-    
-    ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",c->outputpath);
-	ierr = save_mesh(c->stokes_ctx->dav,mesh_outputfile);CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
 }
@@ -733,7 +614,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_WrenchFold(pTatinCtx c,Vec X,void *c
 PetscErrorCode ModelInitialCondition_WrenchFold(pTatinCtx c,Vec X,void *ctx)
 {
     /*
-	ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
 	DM stokes_pack,dau,dap;
 	Vec velocity,pressure;
 	PetscReal rho0;
