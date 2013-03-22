@@ -45,6 +45,7 @@
 #include "stokes_form_function.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "dmda_iterator.h"
+#include "mesh_update.h"
 #include "output_material_points.h"
 #include "material_point_utils.h"
 #include "energy_output.h"
@@ -493,12 +494,12 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 
 	
 	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mp; p++) {
+	for (p=0; p<n_mp_points; p++) {
 		double kappa,H;
 		
-		ierr = MaterialPointGet_phase_index(mpX,&phase);CHKERRQ(ierr);
+		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
 
-		kappa = 1.0e-6;
+		kappa = 1.0;
 		H     = 0.0;
 		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
 		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
@@ -671,8 +672,8 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
 		//
 		//  Write out just std, stokes and plastic variables
-		const int nf = 3;
-		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
+		const int nf = 4;
+		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
 		char mp_file_prefix[256];
 		
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
