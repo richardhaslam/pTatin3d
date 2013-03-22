@@ -355,8 +355,8 @@ PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
 	volQ = energy->volQ;
 	ierr = pTatinGetMaterialPoints(ctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_diffusivity,volQ);
-	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_heat_source,volQ);
+	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_diffusivity,volQ);CHKERRQ(ierr);
+	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_heat_source,volQ);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
