@@ -920,10 +920,10 @@ void DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType t
 			for( f=0; f<db->nfields; f++ ) {
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 				
-				printf("    [%d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
+				printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
 				memory_usage_total += memory_usage_f;
 			}
-			printf("  Total mem. usage                                                    = %1.2e (MB) \n", memory_usage_total );
+			printf("  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total );
 		}
 			break;
 
@@ -987,10 +987,10 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 				for( f=0; f<db->nfields; f++ ) {
 					double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
 					
-					printf("    [%d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
+					printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
 				}
 				
-				printf("  Total mem. usage                                                    = %1.2e (MB) : collective\n", memory_usage_total );
+				printf("  Total mem. usage                                                      = %1.2e (MB) : collective\n", memory_usage_total );
 			}			
 			
 		}
