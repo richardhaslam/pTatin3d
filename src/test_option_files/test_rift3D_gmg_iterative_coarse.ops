@@ -66,6 +66,14 @@
 -fieldsplit_u_mg_coarse_pc_asm_overlap 4
 -fieldsplit_u_mg_coarse_sub_pc_type    ilu
 
+# -------------------------------
+#   Energy solver specification
+# -------------------------------
+-T_snes_type ksponly
+-T_ksp_type fgmres
+-T_pc_type jacobi
+-T_ksp_monitor
+
 # --------------
 #   Monitoring
 # --------------
@@ -73,6 +81,6 @@
 #-fieldsplit_u_mg_coarse_ksp_converged_reason
 -fieldsplit_u_ksp_monitor
 -snes_monitor
--snes_view
+#-snes_view
 -log_summary
 -options_left 1
