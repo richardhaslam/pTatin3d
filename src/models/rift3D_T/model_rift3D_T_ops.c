@@ -502,11 +502,27 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-	PetscErrorCode ierr;
+	PetscReal        step;
+	PhysCompStokes   stokes;
+	DM               stokes_pack,dav,dap;
+	Vec              velocity,pressure;
+	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
+
+	/* fully lagrangian update */
+	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,step);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
 	
 	PetscFunctionReturn(0);
 }
