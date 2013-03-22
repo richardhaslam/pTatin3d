@@ -422,7 +422,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	DataBucket             db;
 	DataField              PField_std,PField_pls;
 	int                    phase;
-	PetscErrorCode ierr;
+	MPAccess               mpX;
+	PetscErrorCode         ierr;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -491,7 +492,18 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	DataFieldRestoreAccess(PField_pls);
 
 	
-	
+	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mp; p++) {
+		double kappa,H;
+		
+		ierr = MaterialPointGet_phase_index(mpX,&phase);CHKERRQ(ierr);
+
+		kappa = 1.0e-6;
+		H     = 0.0;
+		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
+		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
+	}
+	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
     
     
 	PetscFunctionReturn(0);
@@ -885,7 +897,7 @@ PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialCondition_Rift3D_T);CHKERRQ(ierr);
-    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_Rift3D_T);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T);CHKERRQ(ierr);

@@ -114,7 +114,8 @@ PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *va
 PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var);
 PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var);
 
-
+PetscErrorCode MaterialPointSet_diffusivity(MPAccess X,const int p,double var);
+PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var);
 
 #endif
 

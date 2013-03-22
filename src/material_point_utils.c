@@ -2846,3 +2846,30 @@ PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_diffusivity"
+PetscErrorCode MaterialPointSet_diffusivity(MPAccess X,const int p,double var)
+{
+	MPntPEnergy    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPEnergy(X,p,&point);CHKERRQ(ierr);
+	MPntPEnergySetField_diffusivity(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_heat_source"
+PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var)
+{
+	MPntPEnergy    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPEnergy(X,p,&point);CHKERRQ(ierr);
+	MPntPEnergySetField_heat_source(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
