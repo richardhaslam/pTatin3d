@@ -1001,7 +1001,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatinModel_Output(model,user,X,"step000000");CHKERRQ(ierr);
 	
 	/* compute timestep */
-	user->dt = 1.0e30;
+	user->dt = 1.0e32;
 	{
 		Vec velocity,pressure;
 		PetscReal timestep;
@@ -1012,7 +1012,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		
 		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  timestep[stokes] dt_courant = %1.4e \n", user->dt );
+
 	}
+	/* first time step, enforce to be super small */
+	user->dt = user->dt * 1.0e-3;
 	
 	/* initialise the energy solver */
 	if (active_energy) {
@@ -1023,10 +1026,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		/* first time this is called we REQUIRE that a valid time step is chosen */
 		energy->dt = user->dt;
 		ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X,energy,energy->dt);CHKERRQ(ierr);
-
 		ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,energy->Told,&timestep);CHKERRQ(ierr);
 
-		/* note - we cannot use the time step for energy equation here */
+		/* 
+		 Note - we cannot use the time step for energy equation here.
+		 It seems silly, but to compute the adf-diff time step, we need to the ALE velocity,
+		 however to compute the ALE velocity we need to know the timestep.
+		 */
 		PetscPrintf(PETSC_COMM_WORLD,"  timestep[adv-diff] dt_courant = %1.4e \n", timestep );
 		energy->dt   = user->dt;
 	}
@@ -1082,7 +1088,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
 		
 		/* add / remove points if cells are over populated or depleted of points */
-		//		ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
+		//ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
 		
 		
 		/* update markers = >> gauss points */
@@ -1112,7 +1118,28 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			/* update marker props on new mesh configuration */
 			ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 		}
+		
+		/* solve energy equation */
+		//
+		if (active_energy) {
+			SNES snesT;
 
+			ierr = VecZeroEntries(T);CHKERRQ(ierr);
+
+			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
+			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetType(snesT,SNESKSPONLY);
+			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
+			
+			PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
+			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
+			
+			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
+		}
+		//
+		
 		
 		/* solve stokes */
 		/* a) configure stokes opertors */
@@ -1153,24 +1180,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 		
-		/* solve energy equation */
-		//
-		if (active_energy) {
-			SNES snesT;
-
-			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
-			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetType(snesT,SNESKSPONLY);
-			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
-			
-			PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
-			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
-			
-			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
-		}
-		//
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
