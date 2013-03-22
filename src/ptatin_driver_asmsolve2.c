@@ -1065,6 +1065,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
 	}
 	ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+	if (active_energy) {
+		ierr = VecDestroy(&T);CHKERRQ(ierr);
+	}
 	ierr = VecDestroy(&X);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
 	ierr = pTatin3dDestroyContext(&user);
