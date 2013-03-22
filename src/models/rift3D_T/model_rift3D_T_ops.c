@@ -499,7 +499,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		
 		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
 
-		kappa = 1.0;
+		kappa = 1.0e-6;
 		H     = 0.0;
 		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
 		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
