@@ -109,7 +109,8 @@ TATIN_DRIVERS		= \
 			ptatin_driver_ic_spm \
 			ptatin_write_pvts \
 			ptatin_driver_energy \
-			ptatin_driver_linear_ts
+			ptatin_driver_linear_ts \
+			ptatin_driver_nonlinear_ts
 
 export LIBZ_LIB = -lz
 export LIBZ_INC = -I/usr/include
