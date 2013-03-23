@@ -174,9 +174,9 @@ PetscErrorCode pTatin_SNESMonitor_ParaviewStokesResiduals3d(SNES snes,PetscInt n
 	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
 
 	if (!prefix) {
-		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES Residual: ptatin non-linear solution viwer wrote file \n",its);
+		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES Residual: ptatin non-linear solution viewer wrote file \n",its);
 	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES(%s) Residual: ptatin non-linear solution viwer wrote file \n",its,prefix);
+		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES(%s) Residual: ptatin non-linear solution viewer wrote file \n",its,prefix);
 	}	
 	PetscFunctionReturn(0);
 }
