@@ -44,11 +44,11 @@
 
 -A11_operator_type 0,1,1,1,1
 
--stk_velocity_da_refine_hierarchy_x 4,2
--stk_velocity_da_refine_hierarchy_y 2,1
--stk_velocity_da_refine_hierarchy_z 4,2
+-stk_velocity_da_refine_hierarchy_x 4
+-stk_velocity_da_refine_hierarchy_y 1
+-stk_velocity_da_refine_hierarchy_z 4
 
--use_low_order_geometry
+#-use_low_order_geometry
 
 -fieldsplit_u_mg_levels_ksp_type      chebychev
 -fieldsplit_u_mg_levels_ksp_max_it    10
