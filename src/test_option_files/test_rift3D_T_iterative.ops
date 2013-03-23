@@ -48,7 +48,8 @@
 -stk_velocity_da_refine_hierarchy_y 2,1
 -stk_velocity_da_refine_hierarchy_z 4,2
 
--use_low_order_geometry
+#-use_low_order_geometry
+-lattice_layout_perturb 0.0
 
 -fieldsplit_u_mg_levels_ksp_type      chebychev
 -fieldsplit_u_mg_levels_ksp_max_it    10
@@ -83,9 +84,9 @@
 -model_rift3D_Ttheta_1 0.025 
 -dau_nlevels 3 
 -fieldsplit_u_pc_mg_levels 3  
--stk_velocity_da_refine_hierarchy_x 4,2,2 
--stk-velocity_da_refine_hierarchy_y 2,1,1 
--stk_velocity_da_refine_hierarchy_z 4,2,2 
+-stk_velocity_da_refine_hierarchy_x 4,2 
+-stk-velocity_da_refine_hierarchy_y 4,1 
+-stk_velocity_da_refine_hierarchy_z 4,2 
 -model_rift3D_T_vis_bar 1e22 
 -fieldsplit_u_ksp_max_it 7  
 -fieldsplit_u_mg_coarse_ksp_max_it 30
@@ -93,3 +94,20 @@
 -T_ksp_type fgmres
 -T_pc_type jacobi
 -T_ksp_monitor
+-mx 32 
+-my 8 
+-mz 32  
+-nsteps 10 
+-ksp_rtol  1e-2 
+-dt_max 1e-3 
+-fieldsplit_u_ksp_max_it 10  
+-fieldsplit_u_ksp_rtol 1e-3 
+-snes_rtol 1e-2 
+-snes_max_linear_solve_fail 10 
+-ksp_max_it 10 
+-snes_max_it 5  
+-fieldsplit_u_mg_coarse_ksp_type fgmres 
+-fieldsplit_u_mg_coarse_ksp_max_it 200 
+-fieldsplit_u_mg_coarse_ksp_rtol 1e-7 
+-fieldsplit_u_ksp_max_it 7 
+-snes_converge_reason
