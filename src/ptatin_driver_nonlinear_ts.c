@@ -652,6 +652,20 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 #if 1	
 	/* Buu preconditioner for all other levels in the hierarchy */
 	for (k=mlctx->nlevels-2; k>=0; k--) {
+		KSP ksp,*sub_ksp,ksp_smoother;
+		PC pc,pc_i;
+		PetscInt nsplits;
+		
+		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
+		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
+
+		if (k == 0) {
+			ierr = PCMGGetCoarseSolve(pc_i,&ksp_smoother);CHKERRQ(ierr);
+		} else {
+			ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
+		}
 		
 		switch (mlctx->level_type[k]) {
 				
@@ -659,6 +673,8 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 			{
 				ierr = MatZeroEntries(mlctx->operatorB11[k]);CHKERRQ(ierr);
 				ierr = MatAssemble_StokesA_AUU(mlctx->operatorB11[k],mlctx->dav_hierarchy[k],mlctx->u_bclist[k],mlctx->volQ[k]);CHKERRQ(ierr);
+
+				ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 			}
 				break;
 				
