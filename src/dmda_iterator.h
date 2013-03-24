@@ -86,4 +86,6 @@ PetscBool DMDAVecTraverse3d_LinearFunctionXYZ(PetscScalar pos[],PetscScalar *val
 
 PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx);
 
+PetscBool DMDAVecTraverseIJK_ZeroInteriorMinusNmax(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx);
+
 #endif

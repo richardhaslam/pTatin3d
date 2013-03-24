@@ -565,3 +565,19 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val
     
 	return impose;
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverseIJK_ZeroInteriorMinusNmax"
+PetscBool DMDAVecTraverseIJK_ZeroInteriorMinusNmax(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
+{
+	PetscInt  upper_limit = *((PetscInt*)ctx);
+	PetscBool impose;
+	
+	*val = 0.0;
+	impose = PETSC_TRUE;
+	if (global_index[1] == (upper_limit-1) ) {
+		impose = PETSC_FALSE;
+	}
+	
+	return impose;
+}
