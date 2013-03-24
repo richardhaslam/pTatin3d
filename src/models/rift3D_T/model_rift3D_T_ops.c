@@ -691,7 +691,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	}
 		
 	{
-		const int                   nf = 2;
+		const int                   nf = 3;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain }; 
 		
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
