@@ -38,6 +38,7 @@
 #include "data_exchanger.h"
 #include "MPntStd_def.h"
 
+#define MATERIAL_POINT_PHASE_UNASSIGNED -7
 
 PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucket db,int start_pid,int end_pid);
 PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,DataBucket db);

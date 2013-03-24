@@ -307,6 +307,21 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 	PetscFunctionReturn(0);
 }
 
+/*
+ This is generally likely to be used within a model to define markers on a boundary where inflow/outflow is prescribed.
+ For this reason, for a given data bucket, we APPEND markers into the existing list of markers.
+
+ In practical use, I think one should 
+ (a) create a data bucket ONLY for storing face markers
+ (bi) zero data bucket
+ (bii) traverse edges with inflow/outflow and generate new marker set
+ (biii) insert markers from face bucket into bucket storing the rest of the material points
+ 
+ Marker properties which are newly introduced into the model domain require phase (and some basic properties) defined.
+ This could be done either via
+ (a) a population type routine [need new population control routine for this]
+ (b) direcly via the user specification
+*/
 #undef __FUNCT__
 #define __FUNCT__ "SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d"
 PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,DataBucket db)
