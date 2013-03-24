@@ -2763,6 +2763,19 @@ PetscErrorCode MaterialPointGet_phase_index(MPAccess X,const int p,int *var)
 	
 	PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_phase_index"
+PetscErrorCode MaterialPointSet_phase_index(MPAccess X,const int p,int var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdSetField_phase_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
 
 /* stokes */
 #undef __FUNCT__
@@ -2806,6 +2819,20 @@ PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var
 	PetscFunctionReturn(0);
 }
 #undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_plastic_strain"
+PetscErrorCode MaterialPointSet_plastic_strain(MPAccess X,const int p,float var)
+{
+	MPntPStokesPl  *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokesPl(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesPlSetField_plastic_strain(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_yield_indicator"
 PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *var)
 {
@@ -2818,6 +2845,20 @@ PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *va
 	
 	PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_yield_indicator"
+PetscErrorCode MaterialPointSet_yield_indicator(MPAccess X,const int p,short var)
+{
+	MPntPStokesPl  *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokesPl(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesPlSetField_yield_indicator(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
 /* energy */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_diffusivity"
