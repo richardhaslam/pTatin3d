@@ -47,6 +47,7 @@
 #include "dmda_update_coords.h"
 #include "element_utils_q1.h"
 #include "dmda_remesh.h"
+#include "dmda_iterator.h"
 
 #include "mesh_update.h"
 
@@ -164,18 +165,22 @@ PetscErrorCode UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(DM dav,Vec vel
 	
 	PetscFunctionBegin;
 	
-	ierr = DMGetGlobalVector(dav,&velocity_ale);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
+	ierr = DMGetGlobalVector(dav,&velocity_ale);CHKERRQ(ierr);
+	ierr = VecCopy(velocity,velocity_ale);CHKERRQ(ierr);
+	
 	ierr = VecStrideSet(velocity_ale,0,0.0);CHKERRQ(ierr); /* zero x component */
 	ierr = VecStrideSet(velocity_ale,2,0.0);CHKERRQ(ierr); /* zero y component */
 
+	ierr = DMDAVecTraverseIJK(dav,velocity_ale,1,DMDAVecTraverseIJK_ZeroInteriorMinusNmax,(void*)&N);CHKERRQ(ierr);
+	
 	ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(coordinates,step,velocity_ale);CHKERRQ(ierr); /* x = x + dt.vel_ale */
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
 	ierr = DMRestoreGlobalVector(dav,&velocity_ale);CHKERRQ(ierr);
 
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
