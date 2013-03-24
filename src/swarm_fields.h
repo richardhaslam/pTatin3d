@@ -131,5 +131,8 @@ void DataBucketAddPoint( DataBucket db );
 void DataBucketRemovePoint( DataBucket db );
 void DataBucketRemovePointAtIndex( const DataBucket db, const int index );
 
+void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB);
+void DataBucketInsertValues(DataBucket db1,DataBucket db2);
+
 #endif
 

@@ -1045,3 +1045,51 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucket
 	}
 }
 
+void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
+{
+	DataBucket db2;
+	int f;
+	
+	DataBucketCreate(&db2);
+	
+	/* copy contents from dbA into db2 */
+	for (f=0; f<dbA->nfields; f++) {
+		DataField field;
+		size_t    atomic_size;
+		char      *name;
+		
+		field = dbA->field[f];
+		
+		atomic_size = field->atomic_size;
+		name        = field->name;
+		
+		DataBucketRegisterField(db2,name,atomic_size,PETSC_NULL);
+	}
+	DataBucketFinalize(db2);
+	DataBucketSetInitialSizes(db2,0,1000);
+	
+	/* set pointer */
+	*dbB = db2;
+}
+
+/*
+ Insert points from db2 into db1
+ db1 <<== db2
+ */
+void DataBucketInsertValues(DataBucket db1,DataBucket db2)
+{
+	int n_mp_points1,n_mp_points2;
+	int n_mp_points1_new,p;
+	
+	DataBucketGetSizes(db1,&n_mp_points1,0,0);
+	DataBucketGetSizes(db2,&n_mp_points2,0,0);
+	
+	n_mp_points1_new = n_mp_points1 + n_mp_points2;
+	DataBucketSetSizes(db1,n_mp_points1_new,-1);
+	
+	for (p=0; p<n_mp_points2; p++) {
+		// db1 <<== db2 //
+		DataBucketCopyPoint( db2,p, db1,(n_mp_points1 + p) );
+	}
+}
+
