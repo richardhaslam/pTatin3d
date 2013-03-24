@@ -954,3 +954,363 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	
 	PetscFunctionReturn(0);
 }
+
+
+/*
+ Assign all markers with phase = MATERIAL_POINT_PHASE_UNASSIGNED to closest phase
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "apply_mppc_region_assignment"
+PetscErrorCode apply_mppc_region_assignment(
+																	 PetscInt nel, PetscInt cell_count[], PetscInt pcell_list[],
+																	 PetscInt np, PSortCtx plist[],
+																	 PetscInt patch_extend,DM da,DataBucket db)
+{
+	PetscInt        np_per_cell_max,mx,my,mz;
+	PetscInt        c,i,j,k,cell_index_i,cell_index_j,cell_index_k,cidx2d,point_count;
+	PetscInt        points_per_cell,points_per_patch;
+	PetscInt        p;
+	DataField       PField;
+	double          *patch_point_coords;
+	int             *patch_point_idx;
+	PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
+	int             points_assigned = 0;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	
+	/* get mx,my from the da */
+	ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
+
+	/* find max np_per_cell I will need */
+	np_per_cell_max = 0;
+	for (c=0; c<nel; c++) {
+		
+		points_per_cell = pcell_list[c+1] - pcell_list[c];
+		
+		if (cell_count[c] == 0) { continue; }
+		
+		cell_index_k = c / (mx*my);
+		cidx2d = c - cell_index_k*(mx*my);
+		cell_index_j = cidx2d / mx;
+		cell_index_i = cidx2d - cell_index_j * mx;
+		
+		points_per_patch = 0;
+		for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
+			for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
+				for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+					PetscInt patch_cell_id;
+					
+					if (i >= mx) { continue; }
+					if (j >= my) { continue; }
+					if (k >= mz) { continue; }
+					if (i < 0) { continue; }
+					if (j < 0) { continue; }
+					if (k < 0) { continue; }
+					
+					patch_cell_id = i + j * mx + k * mx*my;
+					
+					points_per_patch = points_per_patch + (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
+				}
+			}
+		}
+		
+		if (points_per_patch > np_per_cell_max) {
+			np_per_cell_max = points_per_patch;
+		}
+	}
+	
+//#if (MPPC_LOG_LEVEL >= 1)
+	printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
+//#endif	
+	
+
+	ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(int)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
+	
+	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+	
+	for (c=0; c<nel; c++) {
+		
+		/* if cell doesn't contain any points which need re-assignment - skip */
+		if (cell_count[c] == 0) { continue; }
+
+		points_per_cell = pcell_list[c+1] - pcell_list[c];
+		
+		cell_index_k = c / (mx*my);
+		cidx2d = c - cell_index_k*(mx*my);
+		cell_index_j = cidx2d / mx;
+		cell_index_i = cidx2d - cell_index_j * mx;
+		
+		/* load points from the patch into a list - only load points with an assigned phase index */
+		ierr = PetscMemzero( patch_point_coords, sizeof(double)*3*np_per_cell_max );CHKERRQ(ierr);
+		ierr = PetscMemzero( patch_point_idx, sizeof(int)*np_per_cell_max );CHKERRQ(ierr);
+		
+		point_count = 0;
+		
+		DataFieldGetAccess(PField);
+		for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
+			for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
+				for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+					PetscInt patch_cell_id;
+					
+					if (i >= mx) { continue; }
+					if (j >= my) { continue; }
+					if (k >= mz) { continue; }
+					if (i < 0) { continue; }
+					if (j < 0) { continue; }
+					if (k < 0) { continue; }
+					
+					patch_cell_id = i + j * mx + k * mx*my;
+					points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
+#if (MPPC_LOG_LEVEL >= 2)
+					printf("[LOG]     patch(%d)-(%d,%d,%d) cell(%d)-(%d,%d,%d)  : ppcell = %d \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
+#endif					
+					for (p=0; p<points_per_patch; p++) {
+						MPntStd *marker_p;
+						PetscInt pid, pid_unsorted;
+						
+						pid = pcell_list[patch_cell_id] + p;
+						pid_unsorted = plist[pid].point_index;
+						
+						DataFieldAccessPoint(PField, pid_unsorted ,(void**)&marker_p);
+						
+						/* skip markers from patch which need to be assigned */
+						if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) { continue; }
+						
+						patch_point_coords[3*point_count+0] = marker_p->coor[0];
+						patch_point_coords[3*point_count+1] = marker_p->coor[1];
+						patch_point_coords[3*point_count+2] = marker_p->coor[2];
+						patch_point_idx[point_count]        = pid_unsorted;
+#if (MPPC_LOG_LEVEL >= 2)
+						printf("[LOG]       patch(%d)/cell(%d) -> p(%d):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
+#endif
+						point_count++;
+					}
+					
+				}
+			}
+		}
+		DataFieldRestoreAccess(PField);
+#if (MPPC_LOG_LEVEL >= 2)
+		printf("[LOG]  cell = %d: total points per patch = %d \n", c,point_count);
+#endif
+		
+		/* traverse points in this cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED and find closest point */
+		points_per_cell = pcell_list[c+1] - pcell_list[c];
+
+		for (p=0; p<points_per_cell; p++) {
+			MPntStd  *marker_p,*marker_nearest;
+			double   *pos_p;
+			int      pid,pid_unsorted,nearest_idx,marker_index;
+			double   xp_orig[3],xip_orig[3];
+			long int pid_orig;
+			
+			pid = pcell_list[c] + p;
+			pid_unsorted = plist[pid].point_index;
+			
+			DataFieldGetAccess(PField);
+			DataFieldAccessPoint(PField,pid_unsorted,(void**)&marker_p);
+			pid_orig    = marker_p->pid;
+			xp_orig[0]  = marker_p->coor[0];
+			xp_orig[1]  = marker_p->coor[1];
+			xp_orig[2]  = marker_p->coor[2];
+			xip_orig[0] = marker_p->xi[0];
+			xip_orig[1] = marker_p->xi[1];
+			xip_orig[2] = marker_p->xi[2];
+			
+			/* if marker is assigned - skip */
+			if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) { 
+				DataFieldRestoreAccess(PField);
+				continue; 
+			}
+			
+#if (MPPC_LOG_LEVEL >= 2)
+			PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell(%d) point(%d) is un-assigned\n",c,pid_unsorted);
+#endif
+			
+			pos_p = marker_p->coor;
+			
+			/* locate nearest point */
+			PetscGetTime(&t0_nn);
+			ierr = _find_min(pos_p, point_count,patch_point_coords, &nearest_idx);CHKERRQ(ierr);
+			PetscGetTime(&t1_nn);
+			time_nn += (t1_nn - t0_nn);
+
+			/* marker index of nearest point */
+			marker_index = patch_point_idx[ nearest_idx ];
+
+			/* fetch nearest with index "marker_index" */
+			DataFieldAccessPoint(PField,marker_index,(void**)&marker_nearest);
+			DataFieldRestoreAccess(PField);
+
+			/* set phase to match the nearest */
+			//marker_p->phase = marker_nearest->phase;
+
+			DataBucketCopyPoint(db,marker_index, db,pid_unsorted);
+
+			/* override unique values */
+			DataFieldGetAccess(PField);
+			DataFieldAccessPoint(PField,pid_unsorted,(void**)&marker_p);
+			marker_p->pid     = pid_orig;
+			marker_p->coor[0] = xp_orig[0];
+			marker_p->coor[1] = xp_orig[1];
+			marker_p->coor[2] = xp_orig[2];
+			marker_p->wil     = c;
+			marker_p->xi[0]   = xip_orig[0];
+			marker_p->xi[1]   = xip_orig[1];
+			marker_p->xi[2]   = xip_orig[2];
+			DataFieldRestoreAccess(PField);
+			
+			points_assigned++;
+			
+#if (MPPC_LOG_LEVEL >= 2)
+			PetscPrintf(PETSC_COMM_SELF,"[LOG]  point(%d) nearest neighbour(%d) -> phase %d\n",pid_unsorted,marker_index,marker_nearest->phase);
+#endif
+			
+			if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) { 
+				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Assigned a region index which is itself un-assigned");
+			}
+			
+		}
+		
+	} /* end loop on elements */
+	
+	ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
+	ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
+	
+	
+//#if (MPPC_LOG_LEVEL >= 1)
+	printf("[LOG]  points assigned   = %d\n", points_assigned);
+	printf("[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
+//#endif
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MaterialPointRegionAssignment_v1"
+PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
+{
+	PetscInt       *pcell_list;
+	PSortCtx       *plist;
+	PetscInt       p,npoints;
+	PetscInt       tmp,c,count;
+	const PetscInt *elnidx;
+	PetscInt       nel,nen;
+	DataField      PField;
+	PetscLogDouble t0,t1;
+	int            cells_needing_reassignment,cells_needing_reassignment_g;
+	int            points_needing_reassignment,points_needing_reassignment_g;
+	PetscInt       *cell_count;
+	PetscInt       patch_extend;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
+#endif	
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	
+	/* compute number of cells with unassigned region index */
+	ierr = PetscMalloc(sizeof(PetscInt)*nel,&cell_count);CHKERRQ(ierr);
+	ierr = PetscMemzero(cell_count,sizeof(PetscInt)*nel);CHKERRQ(ierr);
+	
+	/* count number of points in each cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED */
+	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+	DataFieldGetAccess(PField);
+	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+
+	for (p=0; p<npoints; p++) {
+		MPntStd *marker_p;
+		
+		DataFieldAccessPoint(PField,p,(void**)&marker_p);
+		if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
+			cell_count[ marker_p->wil ]++;
+		}
+	}
+
+	DataFieldRestoreAccess(PField);
+
+	/* scan number of elements need to be re-assigned */
+	points_needing_reassignment = 0;
+	cells_needing_reassignment = 0;
+	for (c=0; c<nel; c++) {
+		points_needing_reassignment += cell_count[c];
+		if (cell_count[c] != 0) {
+			cells_needing_reassignment++;	
+		}
+	}
+
+	/* check if we can exit early */
+	MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
+	if (cells_needing_reassignment_g == 0) {
+		PetscPrintf(PETSC_COMM_WORLD,"!! No region re-assignment equired <global>!!\n");
+		ierr = PetscFree(cell_count);CHKERRQ(ierr);
+		PetscFunctionReturn(0);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"!! Region re-assignment required for %d cells <global>!!\n",cells_needing_reassignment_g);
+	
+	MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
+	PetscPrintf(PETSC_COMM_WORLD,"!! Region re-assignment required for %d points <global>!!\n",points_needing_reassignment_g);
+
+	
+	
+	/* create sorted list */
+	ierr = PetscMalloc( sizeof(PetscInt)*(nel+1),&pcell_list );CHKERRQ(ierr);
+	ierr = PetscMalloc( sizeof(PSortCtx)*(npoints), &plist);CHKERRQ(ierr);
+	
+	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+	DataFieldGetAccess(PField);
+	for (p=0; p<npoints; p++) {
+		MPntStd *marker_p;
+		
+		DataFieldAccessPoint(PField,p,(void**)&marker_p);
+		plist[p].point_index = p;
+		plist[p].cell_index  = marker_p->wil;
+	}
+	DataFieldRestoreAccess(PField);
+	
+	sort_PSortCx(npoints,plist);
+	
+	/* sum points per cell */
+	ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
+	for (p=0; p<npoints; p++) {
+		pcell_list[ plist[p].cell_index ]++;
+	}
+	
+	/* create offset list */
+	count = 0;
+	for (c=0; c<nel; c++) {
+		tmp = pcell_list[c];
+		pcell_list[c] = count;
+		count = count + tmp;
+	}
+	pcell_list[c] = count;
+	
+	patch_extend = 1;
+	
+	PetscGetTime(&t0);
+	ierr = apply_mppc_region_assignment(
+														 nel, cell_count, pcell_list,
+														 npoints, plist,
+														 patch_extend, da,db);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
+#endif
+	
+	
+	ierr = PetscFree(cell_count);CHKERRQ(ierr);
+	ierr = PetscFree(plist);CHKERRQ(ierr);
+	ierr = PetscFree(pcell_list);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+

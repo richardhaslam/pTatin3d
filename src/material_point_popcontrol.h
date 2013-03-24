@@ -35,5 +35,6 @@
 #define __ptatin_material_point_popcontrol_h__
 
 PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx);
+PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da);
 
 #endif
