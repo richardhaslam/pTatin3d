@@ -164,6 +164,27 @@ void FileExists(const char fname[],int *exists)
 	MPI_Barrier(PETSC_COMM_WORLD);
 }
 
+void FileExistsRank(MPI_Comm comm,const char fname[],int *exists)
+{
+	int   rank;
+	char  fname_rank[1024];
+	FILE  *file = NULL;
+
+	
+	MPI_Comm_rank(comm,&rank);
+	sprintf(fname_rank,"%s_p%.5d",fname,rank);
+	printf("%s \n", fname_rank);
+	file = fopen(fname_rank, "r");
+	
+	if (file) {
+		fclose(file);
+		*exists = 1;
+	} else {
+		*exists = 0;
+	}
+	MPI_Barrier(PETSC_COMM_WORLD);
+}
+
 int StringEmpty(const char string[])
 {
 	if (string) { /* AND (or &&) */

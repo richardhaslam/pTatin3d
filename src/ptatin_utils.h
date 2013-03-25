@@ -38,6 +38,7 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[]);
 PetscErrorCode pTatinWriteOptionsFile(const char filename[]);
 void pTatinGenerateFormattedTimestamp(char date_time[]);
 void FileExists(const char *fname,int *exists);
+void FileExistsRank(MPI_Comm comm,const char fname[],int *exists);
 int StringEmpty(const char string[]);
 
 #endif
