@@ -1063,7 +1063,7 @@ void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 		atomic_size = field->atomic_size;
 		name        = field->name;
 		
-		DataBucketRegisterField(db2,name,atomic_size,PETSC_NULL);
+		DataBucketRegisterField(db2,name,atomic_size,NULL);
 	}
 	DataBucketFinalize(db2);
 	DataBucketSetInitialSizes(db2,0,1000);
