@@ -280,7 +280,7 @@ _find_min_fast:  time_nn           = 2.9685e+00 (sec)
 PetscErrorCode apply_mppc_nn_patch(
 														PetscInt ncells, PetscInt pcell_list[],
 														PetscInt np, PSortCtx plist[],
-														PetscInt np_lower, PetscInt np_upper,
+														PetscInt np_lower,
 														PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar perturb,DM da,DataBucket db)
 {
 	PetscInt        np_per_cell_max,mx,my,mz;
@@ -555,7 +555,7 @@ PetscErrorCode apply_mppc_nn_patch(
 PetscErrorCode apply_mppc_nn_patch2(
 																	 PetscInt ncells, PetscInt pcell_list[],
 																	 PetscInt np, PSortCtx plist[],
-																	 PetscInt np_lower, PetscInt np_upper,
+																	 PetscInt np_lower,
 																	 PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar perturb,DM da,DataBucket db)
 {
 	PetscInt        np_per_cell_max,mx,my,mz;
@@ -834,15 +834,15 @@ PetscErrorCode apply_mppc_nn_patch2(
 #define __FUNCT__ "MPPC_NearestNeighbourPatch"
 PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar pertub,DM da,DataBucket db)
 {
-	PetscInt *pcell_list;
-	PSortCtx *plist;
-	PetscInt p,npoints;
-	PetscErrorCode ierr;
-	PetscInt tmp,c,count,cells_np_lower,cells_np_upper;
+	PetscInt        *pcell_list;
+	PSortCtx        *plist;
+	PetscInt        p,npoints;
+	PetscInt        tmp,c,count,cells_np_lower,cells_np_upper;
 	const PetscInt  *elnidx;
 	PetscInt        nel,nen;
-	DataField    PField;
-	PetscLogDouble t0,t1;
+	DataField       PField;
+	PetscLogDouble  t0,t1;
+	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
@@ -875,11 +875,6 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	for (p=0; p<npoints; p++) {
 		pcell_list[ plist[p].cell_index ]++;
 	}
-	/*
-	 for (c=0; c<nel; c++) {
-	 printf("pcell_list = %d \n", pcell_list[c] );
-	 }
-	 */
 	
 	/* create offset list */
 	count = 0;
@@ -901,11 +896,13 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  cells with points < np_lower (%d) \n", cells_np_lower );
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  cells with points > np_upper (%d) \n", cells_np_upper );
 #endif
+	
+	/* apply point injection routine */
 	PetscGetTime(&t0);
 	ierr = apply_mppc_nn_patch(
 											nel, pcell_list,
 											npoints, plist,
-											np_lower, np_upper,
+											np_lower,
 											patch_extend, nxp,nyp,nzp, pertub, da,db);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
@@ -920,6 +917,102 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MPPC_SimpleRemoval"
+PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
+{
+	PetscInt        *cell_count,count;
+	PetscInt        p,npoints;
+	PetscInt        c,nel,nen;
+	const PetscInt  *elnidx;
+	DataField       PField;
+	PetscLogDouble  t0,t1;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
+#endif	
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	ierr = PetscMalloc( sizeof(PetscInt)*(nel),&cell_count );CHKERRQ(ierr);
+	ierr = PetscMemzero( cell_count, sizeof(PetscInt)*(nel) );CHKERRQ(ierr);
+	
+	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+
+	/* compute number of points per cell */
+	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+	DataFieldGetAccess(PField);
+	for (p=0; p<npoints; p++) {
+		MPntStd *marker_p;
+
+		DataFieldAccessPoint(PField,p,(void**)&marker_p);
+		if (marker_p->wil < 0) { continue; }
+		
+		cell_count[ marker_p->wil ]++;
+	}
+	DataFieldRestoreAccess(PField);
+
+	
+	count = 0;
+	DataFieldGetAccess(PField);
+	for (c=0; c<nel; c++) {
+		if (cell_count[c] > np_upper) {
+			count++;
+		}
+	}
+	DataFieldRestoreAccess(PField);
+	
+	if (count == 0) {
+		ierr = PetscFree(cell_count);CHKERRQ(ierr);
+		PetscFunctionReturn(0);
+	}
+	
+	/* remove points from cells with excessive number */
+	DataFieldGetAccess(PField);
+	for (p=0; p<npoints; p++) {
+		MPntStd *marker_p;
+		int wil;
+		
+		DataFieldAccessPoint(PField,p,(void**)&marker_p);
+		wil = marker_p->wil;
+		
+		if (cell_count[wil] > np_upper) {
+			DataBucketRemovePointAtIndex(db,p);
+			
+			DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+			p--; /* check replacement point */
+			cell_count[wil]--;
+		}
+	}
+	DataFieldRestoreAccess(PField);
+
+	/* scan in reverse order so that most recent points added to list will be removed as a priority */
+#if 0
+	DataFieldGetAccess(PField);
+	for (p=npoints-1; p>=0; p--) {
+		MPntStd *marker_p;
+		int wil;
+		
+		DataFieldAccessPoint(PField,p,(void**)&marker_p);
+		wil = marker_p->wil;
+		
+		if (cell_count[wil] > np_upper) {
+			DataBucketRemovePointAtIndex(db,p);
+			
+			DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+			cell_count[wil]--;
+		}
+	}
+	DataFieldRestoreAccess(PField);	
+#endif
+	
+	ierr = PetscFree(cell_count);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MaterialPointPopulationControl_v1"
 PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 {
@@ -930,12 +1023,14 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	DataBucket db;
 	
 	PetscFunctionBegin;
-	
+
+	/* options for control number of points per cell */
 	np_lower = 0;
 	np_upper = 100;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
-	
+
+	/* options for injection of markers */
 	nxp = 2;
 	nyp = 2;
 	nzp = 2;
@@ -945,12 +1040,15 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	
 	perturb = 0.1;
 	ierr = PetscOptionsGetScalar(PETSC_NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
-	
 	patch_extent = 1;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
-	
-	ierr = pTatinGetMaterialPoints(ctx,&db,PETSC_NULL);CHKERRQ(ierr);
+
+
+	/* insertion */
 	ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+	
+	/* removal */
+	ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
