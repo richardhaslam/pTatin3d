@@ -248,8 +248,6 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 			static BTruth  found;
 			
 			if (been_here==0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VP_STD is NULL ***\n");
-
 				/* access material point information */
 				ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
 				/* check plastic marker type is loaded */
