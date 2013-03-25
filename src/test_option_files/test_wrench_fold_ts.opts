@@ -14,7 +14,8 @@
 -fieldsplit_u_ksp_monitor
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
--fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist
 -fieldsplit_u_mg_coarse_pc_type lu
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
@@ -48,7 +49,7 @@
 -ptatin_model wrench_fold
 -snes_type ksponly
 -stk_velocity_da_mat_type aij
--stk_velocity_da_refine_hierarchy_x 4,4,5
--stk_velocity_da_refine_hierarchy_y 4,4,5
--stk_velocity_da_refine_hierarchy_z 2,2,4
+-stk_velocity_da_refine_hierarchy_x 4,2,2
+-stk_velocity_da_refine_hierarchy_y 4,2,2
+-stk_velocity_da_refine_hierarchy_z 4,2,2
 #End of PETSc Option Table entries
