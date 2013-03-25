@@ -47,7 +47,9 @@
 #include "dmda_iterator.h"
 #include "mesh_update.h"
 #include "output_material_points.h"
+#include "material_point_std_utils.h"
 #include "material_point_utils.h"
+#include "material_point_popcontrol.h"
 #include "energy_output.h"
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
@@ -55,6 +57,8 @@
 #include "rift3D_T_ctx.h"
 
 
+PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
+PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx);
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Rift3D_T"
@@ -288,6 +292,17 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	
 	/* force energy equation to be introduced */
 	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+
+	data->use_semi_eulerian_mesh = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_use_semi_eulerian",&data->use_semi_eulerian_mesh,PETSC_NULL);CHKERRQ(ierr);
+	if (data->use_semi_eulerian_mesh) {
+		pTatinModel model;
+		
+		PetscPrintf(PETSC_COMM_WORLD,"rift3D_T: activating semi Eulerian mesh advection\n");
+		ierr = pTatinGetModel(c,&model);CHKERRQ(ierr);
+		ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
+		ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
+	}	
 	
 	PetscFunctionReturn(0);
 }
@@ -390,17 +405,120 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D_T"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T(pTatinCtx c,void *ctx)
 {
-	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] - Not implemented \n", __FUNCT__);
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian"
+PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx   *data = (ModelRift3D_TCtx*)ctx;
+	PhysCompStokes     stokes;
+	DM                 stokes_pack,dav,dap;
+	PetscInt           Nxp[2];
+	PetscReal          perturb;
+	DataBucket         material_point_db,material_point_face_db;
+	PetscInt           f, n_face_list=3, face_list[] = { 3, 4, 5 };
+	int                p,n_mp_points;
+	MPAccess           mpX;
+	PetscErrorCode     ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
+
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+
+	
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
+
+#if 0
+	{
+		const int nf = 2;
+		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+		char mp_file_prefix[1024];
+		
+		sprintf(mp_file_prefix,"mpoints_remesh_vol0");
+		ierr = SwarmViewGeneric_ParaView(material_point_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+	}
+#endif
+	
+	/* create face storage for markers */
+	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
+	
+	for (f=0; f<n_face_list; f++) {
+		
+		/* traverse */
+		/* [0,1/east,west] ; [2,3/north,south] ; [4,5/front,back] */
+		Nxp[0]  = 2;
+		Nxp[1]  = 2;
+		perturb = 0.1;
+
+		/* reset size */
+		DataBucketSetSizes(material_point_face_db,0,-1);
+
+		/* assign coords */
+		ierr = SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(dav,Nxp,perturb, face_list[f], material_point_face_db);CHKERRQ(ierr);
+
+		/* assign values */
+		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
+		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		for (p=0; p<n_mp_points; p++) {
+			ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
+		}
+		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		
+		/* output */
+#if 0
+		{
+			const int nf = 2;
+			const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+			char mp_file_prefix[1024];
+			
+			sprintf(mp_file_prefix,"mpoints_remesh_face%d",face_list[f]);
+			ierr = SwarmViewGeneric_ParaView(material_point_face_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+		}
+#endif
+		
+		/* insert into volume bucket */
+		DataBucketInsertValues(material_point_db,material_point_face_db);
+	}	
+
+	/* Copy ALL values from nearest markers to newly inserted markers expect (xi,xip,pid) */
+	ierr = MaterialPointRegionAssignment_v1(material_point_db,dav);CHKERRQ(ierr);
+	
+	/* reset any variables */
+	DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
+	ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mp_points; p++) {
+		ierr = MaterialPointSet_plastic_strain(mpX,p,0.0);CHKERRQ(ierr);
+		ierr = MaterialPointSet_yield_indicator(mpX,p,0);CHKERRQ(ierr);
+	}
+	ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+	
+	/* re-assign pid's for new particles such that they are consistent with the original volume marker set */
+	
+	
+#if 1
+	{
+		const int nf = 2;
+		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+		char mp_file_prefix[1024];
+		
+		sprintf(mp_file_prefix,"mpoints_remesh_vol1");
+		ierr = SwarmViewGeneric_ParaView(material_point_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+	}
+#endif	
+	
+	/* delete */
+	DataBucketDestroy(&material_point_face_db);
 	
 	PetscFunctionReturn(0);
 }
@@ -549,6 +667,36 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian"
+PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
+{
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	PetscReal        step;
+	PhysCompStokes   stokes;
+	DM               stokes_pack,dav,dap;
+	Vec              velocity,pressure;
+	PetscErrorCode   ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	/* fully lagrangian update */
+	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		
+	PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Rift3D_T_CheckScales"
@@ -848,8 +996,8 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	HPctx.rho        = data->rho0;
 	
 	
-  ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
-  ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
+  ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
+  ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
   ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
@@ -911,10 +1059,12 @@ PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift3D_T);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Rift3D_T);CHKERRQ(ierr);
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Rift3D_T);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T);CHKERRQ(ierr);
+	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Rift3D_T);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Rift3D_T);CHKERRQ(ierr);
 	
