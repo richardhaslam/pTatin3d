@@ -6,13 +6,13 @@
 -mx 128
 -my 32
 -mz 128
--output_path rift-t5
--model_rift3D_T_vz -1.e-10
+-output_path rift-t7
+#-model_rift3D_T_vz 1.e-10
 -nsteps 10 
 -dt_max 1e-2
 -model_rift3D_T_wz 0.5 
--model_rift3D_T_wx 2. 
-
+-model_rift3D_T_ageAnom 300
+-model_rift3D_T_age0    300
 # ------------------------------------
 #   Nonlinear solver specification
 # ------------------------------------
@@ -85,8 +85,6 @@
 #-fieldsplit_u_mg_coarse_pc_asm_blocks 4
 -fieldsplit_u_mg_coarse_pc_asm_overlap 4
 -fieldsplit_u_mg_coarse_sub_pc_type    ilu
--fieldsplit_u_mg_coarse_ksp_rtol 1e-7 
--fieldsplit_u_mg_coarse_ksp_max_it 50  
 
 # --------------
 #   Monitoring
@@ -96,3 +94,10 @@
 #-fieldsplit_u_mg_coarse_ksp_converged_reason
 -log_summary
 -options_left 1
+-fieldsplit_u_mg_coarse_ksp_type       cg
+-fieldsplit_u_mg_coarse_ksp_max_it     25
+-fieldsplit_u_mg_coarse_ksp_rtol       1.0e-4
+-fieldsplit_u_mg_coarse_pc_type        asm
+#-fieldsplit_u_mg_coarse_pc_asm_blocks 4
+-fieldsplit_u_mg_coarse_pc_asm_overlap 4
+-fieldsplit_u_mg_coarse_sub_pc_type    ilu

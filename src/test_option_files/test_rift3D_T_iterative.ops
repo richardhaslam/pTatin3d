@@ -2,11 +2,17 @@
 #   Model specification
 # ------------------------
 -ptatin_model rift3D_T
--model_rift3D_vis_bar 1.e22
+-model_rift3D_T_vis_bar 1.e22
 -mx 128
 -my 32
 -mz 128
--output_path rift-t5
+-output_path rift-t6
+-model_rift3D_T_ageAnom 300
+-model_rift3D_T_age0    300
+-model_rift3D_T_wz 0.5 
+-model_rift3D_T_wx 2. 
+-model_rift3D_T_age2. 
+-model_rift3D_T_vis_bar 1e22 
 
 # ------------------------------------
 #   Nonlinear solver specification
@@ -77,11 +83,6 @@
 -snes_view
 -log_summary
 -options_left 1
--model_rift3D_T_wz 0.5 
--model_rift3D_T_wx 2. 
--model_rift3D_T_vis_bar 1e22 
--model_rift3D_Ttheta_0 0.025 
--model_rift3D_Ttheta_1 0.025 
 -dau_nlevels 3 
 -fieldsplit_u_pc_mg_levels 3  
 -stk_velocity_da_refine_hierarchy_x 4,2 

@@ -437,7 +437,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 			/* Interpolate the temperature */
 			/* NOTE: scaling is requred of xi_p if nested mesh is used */
 			P3D_ConstructNi_Q1_3D(xi_p,NI_T);
-
+            
 			T_mp = 0.0;
 			for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
 				T_mp += NI_T[k] * elT[k];
@@ -508,7 +508,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 						
 					}
 						break;
-
+                        
 					case SOFTENING_LINEAR: {
 						float     eplastic;
 						PetscReal emin = SoftLin_data[ region_idx ].eps_min;
@@ -562,7 +562,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				
 				
 				switch (MatType_data[ region_idx ].softening_type) {
-
+                        
 					case SOFTENING_NONE: {
 						
 					}
@@ -639,7 +639,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 		
 		
 		switch (density_type) {
-        
+                
 			case DENSITY_CONSTANT: {
 				PetscReal rho_mp;
 				
@@ -672,7 +672,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
 	DataFieldRestoreAccess(PField_pls);
-
+    
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	if (daT) {
@@ -690,7 +690,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	PetscGetTime(&t1);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
-							min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
+                min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
 	
 	
 	PetscFunctionReturn(0);
@@ -706,7 +706,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	Vec temperature,temperature_l;
 	PetscScalar *LA_temperature_l;
 	PetscErrorCode ierr;
-
+    
 	PetscFunctionBegin;
 	
 	ierr = pTatinContextValid_Energy(user,&found);CHKERRQ(ierr);
@@ -714,13 +714,13 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(user,&temperature,PETSC_NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
-
+        
 		ierr = DMGetLocalVector(daT,&temperature_l);CHKERRQ(ierr);
 		ierr = VecZeroEntries(temperature_l);CHKERRQ(ierr);
 		ierr = DMGlobalToLocalBegin(daT,temperature,INSERT_VALUES,temperature_l);CHKERRQ(ierr);
 		ierr = DMGlobalToLocalEnd  (daT,temperature,INSERT_VALUES,temperature_l);CHKERRQ(ierr);
 		ierr = VecGetArray(temperature_l,&LA_temperature_l);CHKERRQ(ierr);
-
+        
 		ierr = private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,ufield,dap,pfield,daT,LA_temperature_l);CHKERRQ(ierr);
 		
 		ierr = VecRestoreArray(temperature_l,&LA_temperature_l);CHKERRQ(ierr);
@@ -818,7 +818,7 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	PetscGetTime(&t1);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity Cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %d; cpu time %1.2e (sec)\n",
-							min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g, t1-t0 );
+                min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g, t1-t0 );
 	
 	
 	PetscFunctionReturn(0);
@@ -848,6 +848,7 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 	double         *xi_mp;
 	double         D_mp[NSD][NSD];
 	double         inv2_D_mp;
+    short          yield_type;
 	PetscReal      dt;
 	PetscFunctionBegin;
 	
@@ -880,36 +881,40 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 		DataFieldAccessPoint(PField_std, pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField,     pidx,(void**)&mpprop);
 		
-		eidx_mp = mpprop_std->wil;
-		
-		/* Get element coordinates */
-		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
-		/* Get element velocity */
-		ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
-		/* get velocity components */
-		for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-			ux[k] = elu[3*k  ];
-			uy[k] = elu[3*k+1];
-			uz[k] = elu[3*k+2];
-		}
-		
-		/* Get local coordinate of marker */
-		xi_mp = mpprop_std->xi;
-		
-		/* Prepare basis functions */
-		/* grad.Ni */
-		P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
-		/* Get shape function derivatives */
-		P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
-		
-		/* strain rate */
-		ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
-		/* second inv stress */
-		ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
-		
-		MPntPStokesPlGetField_plastic_strain(mpprop,&strain_mp);
-		strain_mp = strain_mp + dt * inv2_D_mp;
-		MPntPStokesPlSetField_plastic_strain(mpprop,strain_mp);
+        
+        MPntPStokesPlGetField_yield_indicator(mpprop,&yield_type);
+        if (yield_type > 0) {
+            eidx_mp = mpprop_std->wil;
+            
+            /* Get element coordinates */
+            ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
+            /* Get element velocity */
+            ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
+            /* get velocity components */
+            for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+                ux[k] = elu[3*k  ];
+                uy[k] = elu[3*k+1];
+                uz[k] = elu[3*k+2];
+            }
+            
+            /* Get local coordinate of marker */
+            xi_mp = mpprop_std->xi;
+            
+            /* Prepare basis functions */
+            /* grad.Ni */
+            P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
+            /* Get shape function derivatives */
+            P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
+            
+            /* strain rate */
+            ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+            /* second inv stress */
+            ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+            
+            MPntPStokesPlGetField_plastic_strain(mpprop,&strain_mp);
+            strain_mp = strain_mp + dt * inv2_D_mp;
+            MPntPStokesPlSetField_plastic_strain(mpprop,strain_mp);
+        }
 	}  
 	
 	DataFieldRestoreAccess(PField_std);
