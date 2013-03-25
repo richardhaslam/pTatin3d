@@ -166,13 +166,19 @@ void FileExists(const char fname[],int *exists)
 
 void FileExistsRank(MPI_Comm comm,const char fname[],int *exists)
 {
-	int   rank;
+	int   rank,size;
 	char  fname_rank[1024];
 	FILE  *file = NULL;
 
 	
+	MPI_Comm_size(comm,&size);
 	MPI_Comm_rank(comm,&rank);
-	sprintf(fname_rank,"%s_p%.5d",fname,rank);
+	if (size == 1) {
+		sprintf(fname_rank,"%s",fname);
+	} else {
+		sprintf(fname_rank,"%s_p%.5d",fname,rank);
+	}
+	
 	printf("%s \n", fname_rank);
 	file = fopen(fname_rank, "r");
 	
