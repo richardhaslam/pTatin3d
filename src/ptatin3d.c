@@ -895,6 +895,18 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
 	DataBucketView(PETSC_COMM_WORLD,ctx->materialpoint_db,start,DATABUCKET_VIEW_BINARY);
+
+	/* quadrature points */
+	/* stokes quadrature points */
+	if (ctx->coefficient_projection_type == -1) {
+		if (prefix) {
+			sprintf(start,"%s/ptat3dcpf.stk_quadrature_%s",ctx->outputpath,prefix);
+		} else {
+			sprintf(start,"%s/ptat3dcpf.stk_quadrature",ctx->outputpath);
+		}
+		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
+		DataBucketView(PETSC_COMM_WORLD,ctx->stokes_ctx->volQ->properties_db,start,DATABUCKET_VIEW_BINARY);
+	}
 	
 	PetscFunctionReturn(0);
 }
@@ -1010,11 +1022,14 @@ PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 #define __FUNCT__ "pTatinRestart_ApplyInitialMaterialGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *data)
 {
-	char name[PETSC_MAX_PATH_LEN];
-	DataBucket db;
+	char           name[PETSC_MAX_PATH_LEN];
+	DataBucket     db;
+	int            load_quadrature_points;
 	PetscErrorCode ierr;
+	
 	PetscFunctionBegin;
 
+	/* material points */
 	if (ctx->materialpoint_db) {
 			DataBucketDestroy(&ctx->materialpoint_db);
 	}
@@ -1024,9 +1039,33 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 	} else {
 		sprintf(name,"%s/ptat3dcpf.markers",ctx->restart_dir);
 	}
-	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry] from %s \n", name );
+	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry: material points] from %s \n", name );
 	DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
 	ctx->materialpoint_db = db;
+	
+	/* quadrature points */
+
+	if (!StringEmpty(ctx->restart_prefix)) {
+		sprintf(name,"%s/ptat3dcpf.stk_quadrature_%s",ctx->restart_dir,ctx->restart_prefix);
+	} else {
+		sprintf(name,"%s/ptat3dcpf.stk_quadrature",ctx->restart_dir);
+	}
+
+	/* check if there is a quadrature point file to load */
+	FileExistsRank(PETSC_COMM_WORLD,name,&load_quadrature_points);
+	
+	if (load_quadrature_points == 1) {
+		DataBucket properties_db;
+		
+		properties_db = ctx->stokes_ctx->volQ->properties_db;
+		if (properties_db) {
+			DataBucketDestroy(&properties_db);
+		}
+		
+		PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry: quadrature points (stokes)] from %s \n", name );
+		DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
+		properties_db = db;
+	}
 	
 	PetscFunctionReturn(0);
 }
