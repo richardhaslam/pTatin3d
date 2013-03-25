@@ -84,5 +84,8 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R);
 PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[]);
 PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[]);
 
+PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,Vec X);
+PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptatin,Vec X);
+
 #endif
 

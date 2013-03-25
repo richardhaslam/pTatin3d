@@ -183,6 +183,45 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,Petsc
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin_EvaluateCoefficientNonlinearities_Stokes"
+PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,Vec X)
+{
+  PetscErrorCode    ierr;
+  DM                stokes_pack,dau,dap;
+  Vec               Uloc,Ploc;
+	Vec               u,p;
+  PetscScalar       *LA_Uloc,*LA_Ploc;
+	PhysCompStokes    stokes;
+	
+  PetscFunctionBegin;
+  
+	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	
+  ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	/* get the local (ghosted) entries for each physics */
+	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+	/* ======================================== */
+	/*         UPDATE NON-LINEARITIES           */
+	/* evaluate rheology and rhs using X        */
+	/* map marker eta to quadrature points */
+	/* map marker force to quadrature points */
+	/* ======================================== */
+	ierr = pTatin_EvaluateRheologyNonlinearities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "pTatin_StokesCoefficient_UpdateTimeDependentQuantities"
 PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
@@ -237,3 +276,37 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin_UpdateCoefficientTemporalDependence_Stokes"
+PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptatin,Vec X)
+{
+  PetscErrorCode    ierr;
+  DM                stokes_pack,dau,dap;
+  Vec               Uloc,Ploc;
+	Vec               u,p;
+  PetscScalar       *LA_Uloc,*LA_Ploc;
+	PhysCompStokes    stokes;
+	
+  PetscFunctionBegin;
+  
+	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	
+  ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	/* get the local (ghosted) entries for each physics */
+	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = pTatin_StokesCoefficient_UpdateTimeDependentQuantities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+  PetscFunctionReturn(0);
+}
+
