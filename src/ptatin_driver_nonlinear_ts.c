@@ -41,6 +41,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
+#include "material_point_popcontrol.h"
 #include "ptatin_models.h"
 #include "ptatin_utils.h"
 #include "stokes_form_function.h"
@@ -1037,7 +1038,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		//}
 		
 		/* add / remove points if cells are over populated or depleted of points */
-		//ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
+		ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 		
 		
 		/* update markers = >> gauss points */
