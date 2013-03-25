@@ -663,10 +663,20 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  timestep[] dt_courant = %1.4e \n", user->dt );
 	}
-	user->time = user->time + user->dt;
-
+	/* checkpoint step 0 */
+	ierr = pTatin3dCheckpoint(user,X,"step000000");CHKERRQ(ierr);
 	
-	
+	/*
+	{
+		Vec velocity,pressure;
+		PetscReal un,pn,Xn;
+		VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+		VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+	*/
 	
 	/* tidy up */
 	for (k=0; k<nlevels; k++) {
@@ -683,10 +693,15 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		Vec velocity,pressure;
 		PetscReal timestep;
 
+		/* update context time information */
+		user->step = step;
+		
 		PetscPrintf(PETSC_COMM_WORLD,"<<----------------------------------------------------------------------------------------------->>\n");
-		PetscPrintf(PETSC_COMM_WORLD,"   [[ EXECUTING TIME STEP : %D ]]\n", step );
+		PetscPrintf(PETSC_COMM_WORLD,"   [[ EXECUTING TIME STEP : %D ]]\n", user->step );
 		PetscPrintf(PETSC_COMM_WORLD,"     dt    : %1.4e \n", user->dt );
-		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time );
+		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time+user->dt );
+		/* update context time information */
+		user->time = user->time + user->dt;
 		
 		/* update markers */
 		{
@@ -761,6 +776,17 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 
+		/*
+		{
+			Vec velocity,pressure;
+			PetscReal un,pn,Xn;
+			VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+			VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+			VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		}
+		*/
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
@@ -770,14 +796,14 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		
 		/* compute timestep */
 		user->dt = 1.0e32;
-			ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
-			ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
-			PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", step,user->dt );
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", step,user->dt );
 		
-		user->time = user->time + user->dt;
-		
+		/* CHECKPOINT */
+		ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
 
 		/* tidy up */
 		for (k=0; k<nlevels; k++) {
@@ -787,13 +813,317 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = MatDestroy(&A);CHKERRQ(ierr);
 		ierr = MatDestroy(&B);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+
+	
+		/* update context time information */
+		//user->time = user->time + user->dt;
+		//user->step = step;
+		/* Terminate time stepping */
+		if (user->time >= user->time_max) {
+			break;
+		}
+		
 	}
 	
 	
+	/* Clean up */
+	for (k=0; k<nlevels-1; k++) {
+		ierr = BCListDestroy(&u_bclist[k]);CHKERRQ(ierr);
+	}
+	for (k=0; k<nlevels-1; k++) {
+		ierr = QuadratureDestroy(&volQ[k]);CHKERRQ(ierr);
+	}
+	for (k=1; k<nlevels; k++) {
+		ierr = MatDestroy(&interpolation_v[k]);CHKERRQ(ierr);
+		ierr = MatDestroy(&interpolation_eta[k]);CHKERRQ(ierr);
+	}
+	for (k=0; k<nlevels; k++) {
+		ierr = DMDestroy(&dav_hierarchy[k]);CHKERRQ(ierr);
+	}
+	
+	ierr = ISDestroy(&is_stokes_field[0]);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_stokes_field[1]);CHKERRQ(ierr);
+	ierr = PetscFree(is_stokes_field);CHKERRQ(ierr);
+	
+	ierr = VecDestroy(&X);CHKERRQ(ierr);
+	ierr = VecDestroy(&F);CHKERRQ(ierr);
+	ierr = pTatin3dDestroyContext(&user);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_linear_viscous_forward_model_driver_RESTART"
+PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,char **argv)
+{
+	DM        multipys_pack,dav,dap;
+	pTatinCtx user;
+	Mat       A,B;
+	Vec       X,F;
+	IS        *is_stokes_field;
+	SNES      snes;
+	KSP       ksp;
+	PC        pc;
+	PetscInt       nlevels,k;
+	Mat            operatorA11[10],operatorB11[10];
+	DM             dav_hierarchy[10];
+	Mat            interpolation_v[10],interpolation_eta[10];
+	Quadrature     volQ[10];
+	BCList         u_bclist[10];
+	
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
+	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	
+	/* Register all models */
+	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
+	/* Load model, call an initialization routines */
+	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+	/* Check if model is being restarted from a checkpointed file */
+	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
+	
+	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
+	
+	/* Generate physics modules */
+	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
+	
+	/* Pack all physics together */
+	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
+	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
+	user->pack = user->stokes_ctx->stokes_pack;
+	
+	/* fetch some local variables */
+	multipys_pack = user->pack;
+	dav           = user->stokes_ctx->dav;
+	dap           = user->stokes_ctx->dap;
+	
+	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
+	{
+		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	}
+	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
+	
+	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
+	
+	/* mesh geometry */
+	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+	
+	/* interpolate point coordinates (needed if mesh was modified) */
+	//for (e=0; e<QUAD_EDGES; e++) {
+	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
+	//}
+	
+	/* interpolate material point coordinates (needed if mesh was modified) */
+	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
+	
+	/* material geometry */
+	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+	
+	/* boundary conditions */
+	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 	
 	
+	/* setup mg */
+	nlevels = 1;
+	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
+	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
+	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	
+	/* Define interpolation operators for velocity space */
+	interpolation_v[0] = PETSC_NULL;
+	for (k=0; k<nlevels-1; k++) {
+		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+	}
+	
+	/* Define interpolation operators for scalar space */
+	interpolation_eta[0] = PETSC_NULL;
+	for (k=1; k<nlevels; k++) {
+		ierr = MatMAIJRedimension(interpolation_v[k],1,&interpolation_eta[k]);CHKERRQ(ierr);
+	}
+	
+	/* define material properties on gauss points on coarse grids */
+	for (k=0; k<nlevels-1; k++) {
+		PetscInt ncells,lmx,lmy,lmz;
+		PetscInt np_per_dim;
+		
+		np_per_dim = 3;
+		ierr = DMDAGetLocalSizeElementQ2(dav_hierarchy[k],&lmx,&lmy,&lmz);CHKERRQ(ierr);
+		ncells = lmx * lmy * lmz;
+		ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,np_per_dim,ncells,&volQ[k]);CHKERRQ(ierr);
+	}
+	volQ[nlevels-1] = user->stokes_ctx->volQ;
 	
 	
+	/* define bounary list on coarse grids */
+	for (k=0; k<nlevels-1; k++) {
+		ierr = DMDABCListCreate(dav_hierarchy[k],&u_bclist[k]);CHKERRQ(ierr);
+	}
+	u_bclist[nlevels-1] = user->stokes_ctx->u_bclist;
+	
+	/* define bc's for hiearchy */
+	ierr = pTatinModel_ApplyBoundaryConditionMG(nlevels,u_bclist,dav_hierarchy,user->model,user);CHKERRQ(ierr);
+	
+	/* configure stokes opertors */
+	ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
+																			 nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+																			 &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+	
+	/* work vector for solution and residual */
+	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+	
+	/* initial condition  */
+	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
+	
+	/* boundary condition */
+	{
+		Vec velocity,pressure;
+		
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+
+	/*
+	{
+		Vec velocity,pressure;
+		PetscReal un,pn,Xn;
+		VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+		VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+	*/
+	
+	/* loaded step N, solving for next step */
+	user->step = user->step + 1;
+	while (user->step <= user->nsteps) {
+		char      stepname[128];
+		Vec       velocity,pressure;
+		PetscReal timestep;
+		
+		
+		PetscPrintf(PETSC_COMM_WORLD,"<<----------------------------------------------------------------------------------------------->>\n");
+		PetscPrintf(PETSC_COMM_WORLD,"   [[ EXECUTING TIME STEP : %D ]]\n", user->step );
+		PetscPrintf(PETSC_COMM_WORLD,"     dt    : %1.4e \n", user->dt );
+		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time + user->dt);
+		/* update context time information */
+		user->time = user->time + user->dt;
+		
+		/* update markers */
+		{
+			int npoints;
+			MPntStd *mp_std;
+			DataField PField;
+			
+			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
+			mp_std = PField->data;
+			
+			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
+			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		}
+		
+		/* update mesh */
+		ierr = pTatinModel_UpdateMeshGeometry(user->model,user,X);CHKERRQ(ierr);
+		
+		/* update mesh coordinate hierarchy */
+		ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
+		
+		/* 3 Update local coordinates and communicate */
+		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
+		
+		/* add / remove points if cells are over populated or depleted of points */
+		//		ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
+		
+		
+		/* update markers = >> gauss points */
+		{
+			int               npoints;
+			DataField         PField_std;
+			DataField         PField_stokes;
+			MPntStd           *mp_std;
+			MPntPStokes       *mp_stokes;
+			
+			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
+			DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
+			
+			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			mp_std    = PField_std->data; /* should write a function to do this */
+			mp_stokes = PField_stokes->data; /* should write a function to do this */
+			
+			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
+		}
+		
+		/* solve */
+		/* a) configure stokes opertors */
+		ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
+																				 nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+																				 &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+		/* b) create solver */
+		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		ierr = SNESSetJacobian(snes,A,B,FormJacobian_Stokes,user);CHKERRQ(ierr);
+		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+		
+		/* c) configure for fieldsplit */
+		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		
+		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+		ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
+		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
+		ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
+		
+		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+		
+		/* e) solve */
+		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", user->step );
+		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		
+		
+		/* output */
+		if ( (user->step%user->output_frequency == 0) || (user->step == 1) ) {
+			sprintf(stepname,"step%1.6d",user->step);
+			ierr = pTatinModel_Output(user->model,user,X,stepname);CHKERRQ(ierr);
+		}
+		
+		/* compute timestep */
+		user->dt = 1.0e32;
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", user->step,user->dt );
+
+		/* CHECKPOINT */
+		ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
+		
+		/* tidy up */
+		for (k=0; k<nlevels; k++) {
+			ierr = MatDestroy(&operatorA11[k]);CHKERRQ(ierr);
+			ierr = MatDestroy(&operatorB11[k]);CHKERRQ(ierr);
+		}
+		ierr = MatDestroy(&A);CHKERRQ(ierr);
+		ierr = MatDestroy(&B);CHKERRQ(ierr);
+		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+
+		
+		/* update context time information */
+		user->step++;
+		/* Terminate time stepping */
+		if (user->time >= user->time_max) {
+			break;
+		}
+	}
 	
 	
 	
@@ -828,10 +1158,17 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
+	PetscBool restart,flg;
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
-	ierr = pTatin3d_linear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
+	restart = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-restart",&restart,&flg);CHKERRQ(ierr);
+	if (!restart) {
+		ierr = pTatin3d_linear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
+	} else {
+		ierr = pTatin3d_linear_viscous_forward_model_driver_RESTART(argc,argv);CHKERRQ(ierr);
+	}
 	
 	ierr = PetscFinalize();CHKERRQ(ierr);
 	return 0;
