@@ -1007,7 +1007,16 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		PetscPrintf(PETSC_COMM_WORLD,"     dt    : %1.4e \n", user->dt );
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time );
 		
-		/* update markers */
+	
+		/* update marker time dependent terms */
+		/* e.g. e_plastic^1 = e_plastic^0 + dt * [ strain_rate_inv(u^0) ] */
+		/* 
+		 NOTE: for a consistent forward difference time integration we evaluate u^0 at x^0 
+		 - thus this update is performed BEFORE we advect the markers 
+		 */
+		ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(user,X);CHKERRQ(ierr);
+		
+		/* update marker positions */
 		{
 			int npoints;
 			MPntStd *mp_std;
