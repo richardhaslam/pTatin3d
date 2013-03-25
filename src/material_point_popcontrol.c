@@ -893,8 +893,8 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 		if (points_per_cell > np_upper) { cells_np_upper++; }
 	}
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  cells with points < np_lower (%d) \n", cells_np_lower );
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  cells with points > np_upper (%d) \n", cells_np_upper );
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  %d cells with points < np_lower (%d) \n", cells_np_lower,np_lower );
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  %d cells with points > np_upper (%d) \n", cells_np_upper,np_upper);
 #endif
 	
 	/* apply point injection routine */
@@ -918,7 +918,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "MPPC_SimpleRemoval"
-PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
+PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBool reverse_order_removal)
 {
 	PetscInt        *cell_count,count;
 	PetscInt        p,npoints;
@@ -962,7 +962,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
 	}
 	
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  cells with points > np_upper (%d) \n", count );
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  %d cells with points > np_upper (%d) \n", count, np_upper);
 #endif
 	
 	
@@ -972,48 +972,47 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
 	}
 
 	PetscGetTime(&t0);
-	/* remove points from cells with excessive number */
-	DataFieldGetAccess(PField);
-	for (p=0; p<npoints; p++) {
-		MPntStd *marker_p;
-		int wil;
-		
-		DataFieldAccessPoint(PField,p,(void**)&marker_p);
-		wil = marker_p->wil;
-		
-		if (cell_count[wil] > np_upper) {
-			DataBucketRemovePointAtIndex(db,p);
-			
-			DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
-			p--; /* check replacement point */
-			cell_count[wil]--;
-		}
-	}
-	DataFieldRestoreAccess(PField);
 
-	/* scan in reverse order so that most recent points added to list will be removed as a priority */
-	/* 
-	 10 : 9,8,7,6,5,...
-	 
-	 */
-#if 0
-	DataFieldGetAccess(PField);
-	for (p=npoints-1; p>=0; p--) {
-		MPntStd *marker_p;
-		int wil;
-		
-		DataFieldAccessPoint(PField,p,(void**)&marker_p);
-		wil = marker_p->wil;
-		
-		if (cell_count[wil] > np_upper) {
-			DataBucketRemovePointAtIndex(db,p);
+	if (!reverse_order_removal) {
+		/* remove points from cells with excessive number */
+		DataFieldGetAccess(PField);
+		for (p=0; p<npoints; p++) {
+			MPntStd *marker_p;
+			int wil;
 			
-			DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
-			cell_count[wil]--;
+			DataFieldAccessPoint(PField,p,(void**)&marker_p);
+			wil = marker_p->wil;
+			
+			if (cell_count[wil] > np_upper) {
+				DataBucketRemovePointAtIndex(db,p);
+				
+				DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+				p--; /* check replacement point */
+				cell_count[wil]--;
+			}
 		}
+		DataFieldRestoreAccess(PField);
 	}
-	DataFieldRestoreAccess(PField);	
-#endif
+	
+	/* scan in reverse order so that most recent points added to list will be removed as a priority */
+	if (reverse_order_removal) {
+		DataFieldGetAccess(PField);
+		for (p=npoints-1; p>=0; p--) {
+			MPntStd *marker_p;
+			int wil;
+			
+			DataFieldAccessPoint(PField,p,(void**)&marker_p);
+			wil = marker_p->wil;
+			
+			if (cell_count[wil] > np_upper) {
+				DataBucketRemovePointAtIndex(db,p);
+				
+				DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+				cell_count[wil]--;
+			}
+		}
+		DataFieldRestoreAccess(PField);	
+	}
 	PetscGetTime(&t1);
 	
 	
@@ -1037,12 +1036,13 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	DataBucket     db;
 	int            npoints;
 	long int       np,np_g;
+	PetscBool      reverse_order_removal;
 	
 	PetscFunctionBegin;
 
 	/* options for control number of points per cell */
 	np_lower = 0;
-	np_upper = 100;
+	np_upper = 60;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
 
@@ -1059,7 +1059,8 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	patch_extent = 1;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
 
-
+	ierr = pTatinGetMaterialPoints(ctx,&db,PETSC_NULL);CHKERRQ(ierr);
+	
 	/* insertion */
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
@@ -1078,7 +1079,8 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 #endif
 	
 	/* removal */
-	ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+	reverse_order_removal = PETSC_TRUE;
+	ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db,reverse_order_removal);CHKERRQ(ierr);
 	
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
@@ -1386,14 +1388,17 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	/* check if we can exit early */
 	MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
 	if (cells_needing_reassignment_g == 0) {
-		PetscPrintf(PETSC_COMM_WORLD,"!! No region re-assignment equired <global>!!\n");
+#if (MPPC_LOG_LEVEL >= 1)
+		PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! No region re-assignment equired <global> !!\n");
+#endif
 		ierr = PetscFree(cell_count);CHKERRQ(ierr);
 		PetscFunctionReturn(0);
 	}
-	PetscPrintf(PETSC_COMM_WORLD,"!! Region re-assignment required for %d cells <global>!!\n",cells_needing_reassignment_g);
-	
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %d cells <global> !!\n",cells_needing_reassignment_g);
 	MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
-	PetscPrintf(PETSC_COMM_WORLD,"!! Region re-assignment required for %d points <global>!!\n",points_needing_reassignment_g);
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %d points <global> !!\n",points_needing_reassignment_g);
+#endif	
 
 	
 	
