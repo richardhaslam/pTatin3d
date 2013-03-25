@@ -955,19 +955,23 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
 
 	
 	count = 0;
-	DataFieldGetAccess(PField);
 	for (c=0; c<nel; c++) {
 		if (cell_count[c] > np_upper) {
 			count++;
 		}
 	}
-	DataFieldRestoreAccess(PField);
+	
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  cells with points > np_upper (%d) \n", count );
+#endif
+	
 	
 	if (count == 0) {
 		ierr = PetscFree(cell_count);CHKERRQ(ierr);
 		PetscFunctionReturn(0);
 	}
-	
+
+	PetscGetTime(&t0);
 	/* remove points from cells with excessive number */
 	DataFieldGetAccess(PField);
 	for (p=0; p<npoints; p++) {
@@ -988,6 +992,10 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
 	DataFieldRestoreAccess(PField);
 
 	/* scan in reverse order so that most recent points added to list will be removed as a priority */
+	/* 
+	 10 : 9,8,7,6,5,...
+	 
+	 */
 #if 0
 	DataFieldGetAccess(PField);
 	for (p=npoints-1; p>=0; p--) {
@@ -1006,6 +1014,12 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
 	}
 	DataFieldRestoreAccess(PField);	
 #endif
+	PetscGetTime(&t1);
+	
+	
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(MPPC_SimpleRemoval): %1.4e (sec)\n", t1-t0);
+#endif
 	
 	ierr = PetscFree(cell_count);CHKERRQ(ierr);
 	
@@ -1017,10 +1031,12 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db)
 PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
-	PetscInt np_lower,np_upper,patch_extent,nxp,nyp,nzp;
-	PetscScalar perturb;
-	PetscBool flg;
-	DataBucket db;
+	PetscInt       np_lower,np_upper,patch_extent,nxp,nyp,nzp;
+	PetscScalar    perturb;
+	PetscBool      flg;
+	DataBucket     db;
+	int            npoints;
+	long int       np,np_g;
 	
 	PetscFunctionBegin;
 
@@ -1045,10 +1061,31 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 
 
 	/* insertion */
+	DataBucketGetSizes(db,&npoints,0,0);
+	np = npoints;
+	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers before population control (%ld) \n", np_g );
+#endif
+	
 	ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+	
+	DataBucketGetSizes(db,&npoints,0,0);
+	np = npoints;
+	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers after INJECTION (%ld) \n", np_g );
+#endif
 	
 	/* removal */
 	ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+	
+	DataBucketGetSizes(db,&npoints,0,0);
+	np = npoints;
+	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+#if (MPPC_LOG_LEVEL >= 1)
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers after DELETION (%ld) \n", np_g );
+#endif
 	
 	PetscFunctionReturn(0);
 }
