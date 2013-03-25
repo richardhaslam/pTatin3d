@@ -42,10 +42,7 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_fault_fold_Lx)");
 	}*/
 
-	PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_Lz",&data->Lz,&flg);
-	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_fault_fold_Lz)");
-	}
+	pTatinModelGetOptionReal("-model_fault_fold_Ly", &data->Ly, "User must provide the length along the y direction", PETSC_NULL,PETSC_TRUE);
 
         PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_sigma",&data->sigma,&flg);
 	if (!flg) {
@@ -62,12 +59,12 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
-	PetscOptionsGetIntArray(PETSC_NULL,"-model_fault_fold_layer_res_j",data->layer_res_j,&n_int,&flg);
+	PetscOptionsGetIntArray(PETSC_NULL,"-model_fault_fold_layer_res_k",data->layer_res_k,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_fault_fold_layer_res_j)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_fault_fold_layer_res_k)");
 	}
 	if (n_int != data->n_interfaces-1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_fault_fold_layer_res_j)",data->n_interfaces-1);
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_fault_fold_layer_res_k)",data->n_interfaces-1);
 	}
 	
 	n_int = data->max_layers;
@@ -98,13 +95,13 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 	}
 	
 	/* define the mesh size the z-direction for the global problem */
-	c->my = 0;
+	c->mz = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
-		c->my += data->layer_res_j[n];
+		c->mz += data->layer_res_k[n];
 	}
 
 	/* define the domain size in the z-direction for the global problem */
-	data->Ly = data->interface_heights[data->n_interfaces-1];
+	data->Lz = data->interface_heights[data->n_interfaces-1];
 		
         data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx             = -1.0e-3;
@@ -120,11 +117,11 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 	for (n=data->n_interfaces-1; n>=1; n--) {
 		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[n]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , mz = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , mz = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_k[n-1]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	}
 	//PetscPrintf(PETSC_COMM_WORLD,"|\n");
-	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
+	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_k[0]);
 	
 	
 	PetscFunctionReturn(0);
@@ -219,18 +216,18 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_FaultFold(pTatinCtx c,void *c
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FaultFoldSetPerturbedInterfaces"
-PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces,PetscReal amp, PetscReal Lx)
+PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_k[], PetscInt n_interfaces,PetscReal amp, PetscReal Lx)
 {
 	PetscErrorCode ierr;
-	PetscInt i,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-	PetscScalar *random, dy;
+	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter;
+	PetscScalar dz;
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
@@ -246,40 +243,36 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 	
 	
 	/*Perturbes the interface for cylindrical folding*/
-	ierr = PetscMalloc(M*sizeof(PetscScalar), &random);CHKERRQ(ierr);
-	jinter = 0;
+    kinter = 0;
 	for(interf = 1; interf < n_interfaces-1; interf++){
-		jinter += 2*layer_res_j[interf-1];
-		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", jinter,N-1 );
+		kinter += 2*layer_res_k[interf-1];
+		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", kinter,N-1 );
 
-		srand(interf+2);//The seed changes with the interface but we have the same seed for each process.
-		for(i = 0; i<M; i++){
-			random[i] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-		}
-
-		if ( (jinter>=sj) && (jinter<sj+ny) ) {
+		if ( (kinter>=sj) && (kinter<sk+nz) ) {
 			
-			dy = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_j[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_j[interf-1]) );
+			dz = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );
 			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
-									interface_heights[interf+1],interface_heights[interf],layer_res_j[interf],
-									interface_heights[interf],interface_heights[interf-1],layer_res_j[interf-1] );
+									interface_heights[interf+1],interface_heights[interf],layer_res_k[interf],
+									interface_heights[interf],interface_heights[interf-1],layer_res_k[interf-1] );
 			for(i = si; i<si+nx; i++) {
 				
-				if(sk+nz == P){
-                                        k=sk+nz-1;
-                                        PetscScalar center = LA_coord[k][jinter][i].x-7.*Lx/8.0;
-					LA_coord[k][jinter][i].y += amp * dy * exp(-center*center/(2.*dy*dy));
-				}else if (sk == 0){
-                                        k=0;
-                                        PetscScalar center = LA_coord[k][jinter][i].x-Lx/8.0;
-					LA_coord[k][jinter][i].y += amp * dy * exp(-center*center/(2.*dy*dy));
+				if((sj+ny == N) && (sj == 0)){
+                    j=sj+ny-1;
+                    PetscScalar center = LA_coord[kinter][j][i].x-7.*Lx/8.0;
+					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
+                    j=0;
+                    center = LA_coord[kinter][j][i].x-1.*Lx/8.0;
+                    LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));                    
+				}else if ((sj+ny == N) && (sj == 0)){
+                    j= (sj == 0)?0:(sj+ny-1);
+                    PetscScalar center = LA_coord[kinter][j][i].x-Lx/8.0;
+					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
 				}
 			}
 			
 		}
 	}
 	
-	ierr = PetscFree(random);CHKERRQ(ierr);
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
@@ -317,38 +310,42 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFold(pTatinCtx c,void 
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
-		//double      *position;
-		PetscReal      eta,rho;
+		double      *position;
+		PetscReal      eta,rho, sigma2, center2;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer;
+		PetscInt    layer, kmaxlayer, kminlayer;
 		PetscInt    I, J, K;
-		
+
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
-		//MPntStdGetField_global_coord(material_point,&position)
-
-    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+		MPntStdGetField_global_coord(material_point,&position);
+        
+		sigma2  = data->sigma*data->sigma;
+        center2 = (position[1]-0.5*data->Ly)*(position[1]-0.5*data->Ly);
+        
+        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
-		jmaxlayer = jminlayer = 0;
+		kmaxlayer = kminlayer = 0;
 		layer = 0;
 		// gets the global element index (i,j,k)
 		//....
 		
 		//Set the properties
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			jmaxlayer += data->layer_res_j[layer];
+			kmaxlayer += data->layer_res_k[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (K<kmaxlayer) && (K>=kminlayer) ){
+
 				phase = layer + 1;
-				eta = data->eta[layer];
+				eta = data->eta[layer]- (data->eta[layer]-data->etaweak[layer])*exp(-center2/(2.0*sigma2));
 				rho = data->rho[layer];
 
 				rho = - rho * GRAVITY;
 			}
-			jminlayer += data->layer_res_j[layer];
+			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
 
@@ -403,32 +400,36 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_FaultFold(pTatinCtx c,voi
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
-		//double      *position;
-		PetscReal      eta,rho;
+		double      *position;
+		PetscReal      eta,rho, center2, sigma2;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer, localeid_p;
+		PetscInt    layer, kmaxlayer, kminlayer, localeid_p;
 		PetscInt    I, J, K;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
-		
-    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+		MPntStdGetField_global_coord(material_point,&position);
+        
+		sigma2  = data->sigma*data->sigma;
+        center2 = (position[1]-0.5*data->Ly)*(position[1]-0.5*data->Ly);        
+        
+        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 
 		//Set the properties
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
-		jmaxlayer = jminlayer = 0;
+		kmaxlayer = kminlayer = 0;
 		layer = 0;
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			jmaxlayer += data->layer_res_j[layer];
+			kmaxlayer += data->layer_res_k[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
-				eta = data->eta[layer];
+				eta = data->eta[layer]- (data->eta[layer]-data->etaweak[layer])*exp(-center2/(2.0*sigma2));
 				rho = data->rho[layer];
 			}
-			jminlayer += data->layer_res_j[layer];
+			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
 
@@ -461,16 +462,16 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_FaultFold(pTatinCtx c,voi
 PetscErrorCode ModelApplyInitialMaterialGeometry_FaultFold(pTatinCtx c,void *ctx)
 {
 	ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
-	int                    p,n_mp_points;
-	DataBucket             db;
-	DataField              PField_std,PField_stokes;
+	//int                    p,n_mp_points;
+	//DataBucket             db;
+	//DataField              PField_std,PField_stokes;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = InitialMaterialGeometryMaterialPoints_FaultFold(c,ctx);CHKERRQ(ierr);
-	ierr = InitialMaterialGeometryQuadraturePoints_FaultFold(c,ctx);CHKERRQ(ierr);
+	ierr = InitialMaterialGeometryMaterialPoints_FaultFold(c,data);CHKERRQ(ierr);
+	ierr = InitialMaterialGeometryQuadraturePoints_FaultFold(c,data);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -506,7 +507,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	dy = Ly / ((PetscReal)my);
 	dz = Lz / ((PetscReal)mz);
 	
-	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
+	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, data->interface_heights[0], Lz);CHKERRQ(ierr);
 	factor = 0.1;
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_FaultFold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside FaultFoldSetPerturbedInterfaces() */
@@ -515,7 +516,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	}
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_j, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
+	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_k, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     
@@ -545,7 +546,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_FaultFold(pTatinCtx c,Vec X,void *ct
 	PhysCompStokes stokes;
 	DM             stokes_pack,dav,dap;
 	Vec            velocity,pressure;
-	PetscInt       M,N,P;
+	//PetscInt       M,N,P;
 	PetscInt           metric_L = 5; 
 	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION, MESH_QUALITY_DIAGONAL_RATIO, MESH_QUALITY_VERTEX_ANGLE, MESH_QUALITY_FACE_AREA_RATIO };
 	PetscReal          value[100];
