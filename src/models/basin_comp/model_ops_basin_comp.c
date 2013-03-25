@@ -89,9 +89,9 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_basin_comp_Lx)");
 	}
 	
-	PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_Lz",&data->Lz,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_Ly",&data->Ly,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_basin_comp_Lz)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the y direction (-model_basin_comp_Ly)");
 	}
     
 	PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_alpha",&data->alpha,&flg);
@@ -110,14 +110,14 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 
     }
     
-	data->Ly = data->interface_heights[data->n_interfaces-1];
+	data->Lz = data->interface_heights[data->n_interfaces-1];
 
-    PetscOptionsGetIntArray(PETSC_NULL,"-model_basin_comp_layer_res_j",data->layer_res_j,&n_int,&flg);
+    PetscOptionsGetIntArray(PETSC_NULL,"-model_basin_comp_layer_res_k",data->layer_res_k,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_basin_comp_layer_res_j)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_basin_comp_layer_res_k)");
 	}
 	if (n_int != data->n_interfaces-1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_basin_comp_layer_res_j)",data->n_interfaces-1);
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_basin_comp_layer_res_k)",data->n_interfaces-1);
 	}
     
 	n_int = data->max_layers;
@@ -138,10 +138,10 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_basin_comp_layer_rho)",data->n_interfaces-1);
 	}
 	
-    /* define the mesh size the y-direction for the global problem */
-	c->my = 0;
+    /* define the mesh size the z-direction for the global problem */
+	c->mz = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
-		c->my += data->layer_res_j[n];
+		c->mz += data->layer_res_k[n];
 	}
     
 	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
@@ -158,13 +158,13 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
     
     n=data->n_interfaces-1;
-    
-    PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
+    	/*
+    PetscPrintf(PETSC_COMM_WORLD," ---------------------------- z = %1.4e ----------------------------\n",data->interface_heights[n]);
     PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-    PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+    PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_k[n-1]);
     PetscPrintf(PETSC_COMM_WORLD,"|\n");
-    PetscPrintf(PETSC_COMM_WORLD,"-\n -\n  -\n   -\n    -\n");
-	/*
+    //PetscPrintf(PETSC_COMM_WORLD,"-\n -\n  -\n   -\n    -\n");
+
     for (n=data->n_interfaces-1; n>=1; n--) {
 		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
@@ -283,7 +283,7 @@ PetscErrorCode BasinCompSetMeshGeometry(DM dav, void *ctx)
 	PetscErrorCode ierr;
     ModelBasinCompCtx *data = (ModelBasinCompCtx*)ctx;
 	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-    PetscScalar *random, dy_t, dy_b, b,a;
+    PetscScalar *random, dz_t, dz_b, b,a;
 
     
 	DM cda;
@@ -307,17 +307,17 @@ PetscErrorCode BasinCompSetMeshGeometry(DM dav, void *ctx)
 	jinter = 0;
     
     for(i=si; i<si+nx; i++){
-        for(k=sk; k<sk+nz; k++){
+        for(j=sj; j<sj+ny; j++){
             PetscScalar h;
-            h = a*LA_coord[k][0][i].z + b;
-            dy_t = (data->interface_heights[2] - h)/(PetscScalar)(2.*data->layer_res_j[1]);
-            dy_b = (h - data->interface_heights[0])/(PetscScalar)(2.*data->layer_res_j[0]);
+            h = a*LA_coord[0][j][i].y + b;
+            dz_t = (data->interface_heights[2] - h)/(PetscScalar)(2.*data->layer_res_k[1]);
+            dz_b = (h - data->interface_heights[0])/(PetscScalar)(2.*data->layer_res_k[0]);
             
-            for(j=sj;j<sj+ny;j++){
-                if(j <= 2*data->layer_res_j[0]+1){
-                    LA_coord[k][j][i].y = data->interface_heights[0] + (PetscScalar)dy_b*j; 
-                }else if(j != N-1){
-                    LA_coord[k][j][i].y = h + (PetscScalar)dy_t*(j-2*data->layer_res_j[0]+1);
+            for(k=sk;j<sk+nz;k++){
+                if(k <= 2*data->layer_res_k[0]+1){
+                    LA_coord[k][j][i].z = data->interface_heights[0] + (PetscScalar)dz_b*k; 
+                }else if(k != N-1){
+                    LA_coord[k][j][i].z = h + (PetscScalar)dz_t*(k-2*data->layer_res_k[0]+1);
                 }
             }
         }
@@ -450,7 +450,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 		//double      *position;
 		PetscReal      eta,rho;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer;
+		PetscInt    layer, kmaxlayer, kminlayer;
 		PetscInt    I, J, K;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
@@ -462,23 +462,23 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
-		jmaxlayer = jminlayer = 0;
+		kmaxlayer = kminlayer = 0;
 		layer = 0;
 		// gets the global element index (i,j,k)
 		//....
 		
 		//Set the properties
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			jmaxlayer += data->layer_res_j[layer];
+			kmaxlayer += data->layer_res_k[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 
-				rho = - rho * GRAVITY;
+				rho = -rho * GRAVITY;
 			}
-			jminlayer += data->layer_res_j[layer];
+			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
 
@@ -536,7 +536,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 		//double      *position;
 		PetscReal      eta,rho;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer, localeid_p;
+		PetscInt    layer, kmaxlayer, kminlayer, localeid_p;
 		PetscInt    I, J, K;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
@@ -548,17 +548,17 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
-		jmaxlayer = jminlayer = 0;
+		kmaxlayer = kminlayer = 0;
 		layer = 0;
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			jmaxlayer += data->layer_res_j[layer];
+			kmaxlayer += data->layer_res_k[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
 			}
-			jminlayer += data->layer_res_j[layer];
+			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
 

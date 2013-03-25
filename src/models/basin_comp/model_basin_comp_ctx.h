@@ -7,7 +7,7 @@ typedef struct {
 	PetscInt  max_layers;
 	PetscInt  n_interfaces;
 	PetscReal interface_heights[3];
-    PetscInt  layer_res_j[2];
+    PetscInt  layer_res_k[2];
 	PetscReal eta[2];
 	PetscReal rho[2];
 	PetscInt  bc_type;
