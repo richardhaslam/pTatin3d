@@ -157,43 +157,62 @@ PetscBool BCListEvaluator_WrenchFold( PetscScalar position[], PetscScalar *value
 	return impose_dirichlet;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "BoundaryCondition_WrenchFold"
+PetscErrorCode BoundaryCondition_WrenchFold(DM dav,BCList bclist,pTatinCtx c,ModelWrenchFoldCtx *data)
+{
+	PetscScalar zero = 0.0;
+	PetscErrorCode ierr;
+    
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    
+    if(data->bc_type == 0){
+        /* free slip lateral */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        /* free surface top */
+        /* arctan bottom */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+    }else if(data->bc_type == 1){
+        /* lateral shear*/
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        /* free surface top */
+        /* free slip bottom */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
+    }
+    
+    
+	PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_WrenchFold"
 PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx user,void *ctx)
 {
 	ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
-	PetscScalar zero = 0.0;
+	BCList            bclist;
+	DM                dav;
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-        
-        if(data->bc_type == 0){
-        /* free slip lateral */
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	/* free surface top */
-	/* arctan bottom */
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-        }else if(data->bc_type == 1){
-        /* lateral shear*/
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	        ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	/* free surface top */
-        /* free slip bottom */
-	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
-        }
-
-
+    
+    bclist = c->stokes_ctx->u_bclist;
+	dav    = c->stokes_ctx->dav;
+    ierr = BoundaryCondition_WrenchFold(dav,bclist,user,data);CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }
 
@@ -202,7 +221,6 @@ PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx user,void *ctx)
 PetscErrorCode ModelApplyBoundaryConditionMG_WrenchFold(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
-	PetscScalar zero = 0.0;
 	PetscInt n;
 	PetscErrorCode ierr;
 	
@@ -210,16 +228,9 @@ PetscErrorCode ModelApplyBoundaryConditionMG_WrenchFold(PetscInt nl,BCList bclis
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	for (n=0; n<nl; n++) {
-		if(data->bc_type == 0){
-                        /* free slip lateral */
-	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	                /* free surface top */
-	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-                        }
-        }
+		/* Define boundary conditions for each level in the MG hierarchy */
+		ierr = BoundaryCondition_WrenchFold(dav[n],bclist[n],user,data);CHKERRQ(ierr);
+	}
 
 	PetscFunctionReturn(0);
 }
