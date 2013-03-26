@@ -50,6 +50,7 @@ typedef struct {
 	PetscReal time_bar;
 	PetscReal pressure_bar;
 	PetscBool use_semi_eulerian_mesh;
+	PetscBool output_markers;
 } ModelRift3D_TCtx;
 
 

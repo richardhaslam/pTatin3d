@@ -31,6 +31,10 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
+/*  
+ Developed by Laetitia Le Pourhiet [laetitia.le_pourhiet@upmc.fr] 
+*/
+
 
 #define _GNU_SOURCE
 #include "petsc.h"
@@ -55,7 +59,6 @@
 #include "ptatin3d_energy.h"
 
 #include "rift3D_T_ctx.h"
-
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx);
@@ -305,6 +308,9 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 		ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
 		ierr = pTatinModelSetFunctionPointer(model,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian);CHKERRQ(ierr);
 	}	
+
+	data->output_markers = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_output_markers",&data->output_markers,PETSC_NULL);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -816,7 +822,7 @@ PetscErrorCode ModelOutput_Rift3D_T_CheckScales(pTatinCtx c,Vec X)
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelRift3D_TCtx  *data = (ModelRift3D_TCtx*)ctx;
-	PetscBool         active_energy,outputmarkers;
+	PetscBool         active_energy;
 	DataBucket        materialpoint_db;
 	PetscErrorCode    ierr;
 	
@@ -827,11 +833,9 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_outputmarkers",&outputmarkers,PETSC_NULL);CHKERRQ(ierr);
-    
-    if (outputmarkers)
-    {
-        ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	if (data->output_markers)
+	{
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
 		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
@@ -844,7 +848,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
-    
+	
 		
 	{
 		const int                   nf = 3;

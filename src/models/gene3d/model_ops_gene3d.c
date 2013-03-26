@@ -31,6 +31,9 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
+/*  
+ Developed by Laetitia Le Pourhiet [laetitia.le_pourhiet@upmc.fr] 
+*/
 
 #define _GNU_SOURCE
 #include "petsc.h"
