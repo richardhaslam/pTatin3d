@@ -16,7 +16,7 @@
 #include "model_utils.h"
 #include "math.h"
 
-
+const PetscReal L_star = 1.0e2;
 
 
 #undef __FUNCT__
@@ -29,9 +29,9 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-
+	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	/* assign defaults */
 	data->max_layers = 100;
 	
@@ -40,18 +40,22 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_wrench_fold_n_interfaces)");
 	}
-
+	
 	pTatinModelGetOptionReal("-model_wrench_fold_Lx", &data->Lx, "User must provide the length along the x direction", PETSC_NULL,PETSC_TRUE);
 	/*PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Lx",&data->Lx,&flg);
-	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_wrench_fold_Lx)");
-	}*/
-
+	 if (!flg) {
+	 SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_wrench_fold_Lx)");
+	 }*/
+	
 	PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Ly",&data->Ly,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the y direction (-model_wrench_fold_Ly)");
 	}
 
+	/* scale length */
+	data->Lx = data->Lx / L_star;
+	data->Ly = data->Ly / L_star;
+	
 	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_wrench_fold_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
@@ -59,6 +63,10 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	}
 	if (n_int != data->n_interfaces) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d interface heights relative from the base of the model including the top and bottom boundaries (-model_wrench_fold_interface_heights)",data->n_interfaces);
+	}
+	/* scale length */
+	for (n=0; n<data->n_interfaces; n++) {
+		data->interface_heights[n] = data->interface_heights[n] / L_star;
 	}
 	
 	n_int = data->max_layers;
@@ -93,23 +101,24 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	for (n=0; n<data->n_interfaces-1; n++) {
 		c->mz += data->layer_res_k[n];
 	}
-
+	
 	/* define the domain size in the z-direction for the global problem */
 	data->Lz = data->interface_heights[data->n_interfaces-1];
-		
+	
+	
 	data->bc_type = 0; /* 0 for basal shear ; 1 for lateral shear */
 	data->exy             = -1.0e-3;
 	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_wrench_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_exy",&data->exy,&flg);CHKERRQ(ierr);
-
-        /* define the coefficient for the BC.*/
-        if(data->bc_type == 0){
-                data->A = (data->exy * data->Ly/(atan(data->Ly/2.0) - atan(-data->Ly/2.0)))/(M_PI*0.5);
-        }else if(data->bc_type == 1){
-                data->A = data->exy * data->Ly;
-        }
+	
+	/* define the coefficient for the BC.*/
+	if(data->bc_type == 0){
+		data->A = (data->exy * data->Ly/(atan(data->Ly/2.0) - atan(-data->Ly/2.0)))/(M_PI*0.5);
+	}else if(data->bc_type == 1){
+		data->A = data->exy * data->Ly;
+	}
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Wrench Fold\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ", data->Lx,data->Ly,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
@@ -141,18 +150,18 @@ PetscBool BCListEvaluator_WrenchFold( PetscScalar position[], PetscScalar *value
 	PetscFunctionBegin;
 	ierr = pTatinModelGetUserData(user->model,(void**)&model_data_ctx);CHKERRQ(ierr);
 	//time = user->time;
-
+	
 	A = model_data_ctx->A;
 	Ly = model_data_ctx->Ly;
-
-	if (model_data_ctx->bc_type == 0) {
-	    vx = A*atan(position[1] - 0.5*Ly);
-	} else if (model_data_ctx->bc_type == 1){
-	    vx = (position[1] - 0.5*Ly>0)?A:-A;
-	}else{
-             SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknonwn boundary condition type: 0 for basal shear, 1 for lateral shear (-model_wrench_fold_bc_type)");
 	
-        }
+	if (model_data_ctx->bc_type == 0) {
+		vx = A*atan(position[1] - 0.5*Ly);
+	} else if (model_data_ctx->bc_type == 1){
+		vx = (position[1] - 0.5*Ly>0)?A:-A;
+	}else{
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknonwn boundary condition type: 0 for basal shear, 1 for lateral shear (-model_wrench_fold_bc_type)");
+		
+	}
 	*value = vx;
 	return impose_dirichlet;
 }
@@ -163,39 +172,52 @@ PetscErrorCode BoundaryCondition_WrenchFold(DM dav,BCList bclist,pTatinCtx user,
 {
 	PetscScalar zero = 0.0;
 	PetscErrorCode ierr;
-    
+	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	if(data->bc_type == 0){
+		/* free slip lateral */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		/* free surface top */
+		
+		/* arctan bottom */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+		
+		/* inflow/outflow faces constrained such that flow has zero y-compoenent */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
     
-    if(data->bc_type == 0){
-        /* free slip lateral */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        /* free surface top */
-        /* arctan bottom */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-    }else if(data->bc_type == 1){
-        /* lateral shear*/
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        /* free surface top */
-        /* free slip bottom */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
-    }
-    
-    
+		
+	}else if(data->bc_type == 1){
+		/* lateral shear*/
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_WrenchFold,(void*)user);CHKERRQ(ierr);
+		
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		/* free surface top */
+
+		/* free slip bottom */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
+
+		/* inflow/outflow faces constrained such that flow has zero y-compoenent */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	}
+	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_WrenchFold"
@@ -205,14 +227,14 @@ PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx user,void *ctx)
 	BCList            bclist;
 	DM                dav;
 	PetscErrorCode ierr;
-
+	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
-    bclist = user->stokes_ctx->u_bclist;
+	
+	bclist = user->stokes_ctx->u_bclist;
 	dav    = user->stokes_ctx->dav;
-    ierr = BoundaryCondition_WrenchFold(dav,bclist,user,data);CHKERRQ(ierr);
-    
+	ierr = BoundaryCondition_WrenchFold(dav,bclist,user,data);CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -226,12 +248,12 @@ PetscErrorCode ModelApplyBoundaryConditionMG_WrenchFold(PetscInt nl,BCList bclis
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	for (n=0; n<nl; n++) {
 		/* Define boundary conditions for each level in the MG hierarchy */
 		ierr = BoundaryCondition_WrenchFold(dav[n],bclist[n],user,data);CHKERRQ(ierr);
 	}
-
+	
 	PetscFunctionReturn(0);
 }
 
@@ -261,7 +283,7 @@ PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_he
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
@@ -270,8 +292,8 @@ PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_he
 	
 	
 	kinter = 0;
-        ierr = MPI_Comm_size(((PetscObject)dav)->comm,&proc);CHKERRQ(ierr);
-        srand(proc+2);
+	ierr = MPI_Comm_size(((PetscObject)dav)->comm,&proc);CHKERRQ(ierr);
+	srand(proc+2);
 	for(interf = 1; interf < n_interfaces-1; interf++){
 		kinter += 2*layer_res_k[interf-1];
 		PetscPrintf(PETSC_COMM_WORLD,"kinter = %d (max=%d)\n", kinter,P-1 );
@@ -283,7 +305,7 @@ PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_he
 									interface_heights[interf],interface_heights[interf-1],layer_res_k[interf-1] );
 			for(i = si; i<si+nx; i++) {
 				for(j = sj; j<sj+ny; j++) {
-                                        PetscScalar random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+					PetscScalar random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
 					LA_coord[kinter][j][i].z += amp * dz * random;
 				}
 			}
@@ -292,6 +314,7 @@ PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_he
 	}
 	
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -307,24 +330,24 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_WrenchFold(pTatinCtx c,void
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	PetscErrorCode ierr;
-			
+	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-			
-			
+	
+	
 	/* define properties on material points */
 	db = c->materialpoint_db;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
-			
+	
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
-			
-			
+	
+	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-			
+	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
@@ -338,7 +361,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_WrenchFold(pTatinCtx c,void
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		//MPntStdGetField_global_coord(material_point,&position)
-
+		
     MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 		phase = -1;
 		eta =  0.0;
@@ -356,22 +379,22 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_WrenchFold(pTatinCtx c,void
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
-
+				
 				rho = - rho * GRAVITY;
 			}
 			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
-
+		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
 		MPntPStokesSetField_density(mpprop_stokes,rho);
 	}
-			
+	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-			
+	
 	PetscFunctionReturn(0);
 }
 
@@ -405,7 +428,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_WrenchFold(pTatinCtx c,vo
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
-
+	
 	/* get the quadrature points */
 	user = c->stokes_ctx;
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
@@ -424,7 +447,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_WrenchFold(pTatinCtx c,vo
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		
     MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
-
+		
 		//Set the properties
 		phase = -1;
 		eta =  0.0;
@@ -442,7 +465,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_WrenchFold(pTatinCtx c,vo
 			kminlayer += data->layer_res_k[layer];
 			layer++;
 		}
-
+		
 		
 		MPntStdGetField_local_element_index(material_point,&localeid_p);
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,localeid_p,&cell_gausspoints);CHKERRQ(ierr);
@@ -450,11 +473,11 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_WrenchFold(pTatinCtx c,vo
 		for (qp=0; qp<nqp; qp++) {
 			cell_gausspoints[qp].eta  = eta;
 			cell_gausspoints[qp].rho  = rho;
-
+			
 			cell_gausspoints[qp].Fu[0] = 0.0;
 			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
 			cell_gausspoints[qp].Fu[2] = 0.0;
-
+			
 			cell_gausspoints[qp].Fp = 0.0;
 		}		
 		
@@ -486,9 +509,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_WrenchFold(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-		
-		
-		
+
+
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_WrenchFold"
 PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
@@ -498,11 +521,12 @@ PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
 	PetscInt          mx,my,mz, itf;
 	PetscReal         amp,factor;
   char              mesh_outputfile[PETSC_MAX_PATH_LEN];
+	Vec               coord;
 	PetscErrorCode    ierr;
-
+	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	/* step 1 - create structured grid */
 	Lx = data->Lx;
 	Ly = data->Ly;
@@ -523,12 +547,12 @@ PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
 	for(itf = 0; itf<data->n_interfaces -1; ++itf){
 		mz += data->layer_res_k[itf];
 	}
-
+	
 	
 	dx = Lx / ((PetscReal)mx);
 	dy = Ly / ((PetscReal)my);
 	dz = Lz / ((PetscReal)mz);
-
+	
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx,0.0 ,Ly, data->interface_heights[0],Lz);CHKERRQ(ierr);
 	factor = 0.1;
@@ -542,23 +566,30 @@ PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
 	ierr = WrenchFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_k, data->n_interfaces,amp);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
-    
+
+	/*
+	ierr = DMDAGetCoordinates(c->stokes_ctx->dav,&coord);CHKERRQ(ierr);
+	ierr = VecScale(coord,1.0e-2);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(c->stokes_ctx->dav,&coord);CHKERRQ(ierr);
+	ierr = VecScale(coord,1.0e-2);CHKERRQ(ierr);
+*/
+	
 	PetscFunctionReturn(0);
 }
 
 /*
-
-0/ Full lagrangian update
-1/ Check mesh quality metrics
-2/ If mesh quality metrics are not satisfied (on the first failure only)
+ 
+ 0/ Full lagrangian update
+ 1/ Check mesh quality metrics
+ 2/ If mesh quality metrics are not satisfied (on the first failure only)
  a) set projection type to Q1
  
-3/ set advection vel = 0
-4/ remesh
-5/ Check mesh quality metrics
+ 3/ set advection vel = 0
+ 4/ remesh
+ 5/ Check mesh quality metrics
  
  
-*/
+ */
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_WrenchFold"
 PetscErrorCode ModelApplyUpdateMeshGeometry_WrenchFold(pTatinCtx c,Vec X,void *ctx)
@@ -577,10 +608,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_WrenchFold(pTatinCtx c,Vec X,void *c
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-
+	
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -624,28 +655,28 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_WrenchFold(pTatinCtx c,Vec X,void *c
 #define __FUNCT__ "ModelInitialCondition_WrenchFold"
 PetscErrorCode ModelInitialCondition_WrenchFold(pTatinCtx c,Vec X,void *ctx)
 {
-    /*
-	ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
-	DM stokes_pack,dau,dap;
-	Vec velocity,pressure;
-	PetscReal rho0;
-	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-	DMDAVecTraverse3d_InterpCtx IntpCtx;*/
+	/*
+	 ModelWrenchFoldCtx *data = (ModelWrenchFoldCtx*)ctx;
+	 DM stokes_pack,dau,dap;
+	 Vec velocity,pressure;
+	 PetscReal rho0;
+	 DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
+	 DMDAVecTraverse3d_InterpCtx IntpCtx;*/
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	/*
-	
-	stokes_pack = c->stokes_ctx->stokes_pack;
-	
-	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    
-	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
-	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
-	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    */
+	 
+	 stokes_pack = c->stokes_ctx->stokes_pack;
+	 
+	 ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	 ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	 
+	 ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
+	 ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
+	 ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	 */
 	PetscFunctionReturn(0);
 }
 
@@ -709,10 +740,10 @@ PetscErrorCode pTatinModelRegister_WrenchFold(void)
 	
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
-
+	
 	/* Set name, model select via -ptatin_model NAME */
 	ierr = pTatinModelSetName(m,"wrench_fold");CHKERRQ(ierr);
-
+	
 	/* Set model data */
 	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 	
