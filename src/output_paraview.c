@@ -220,7 +220,7 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 	} else {
 		asprintf(&filename,"./%s",vtkfilename);
 	}
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputMeshVelocityPressurePVTS(pack,prefix,filename);CHKERRQ(ierr);
 	free(filename);
 	free(vtkfilename);
@@ -732,7 +732,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
 	PetscMPIInt    rank;
 	
 	PetscFunctionBegin;
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
@@ -800,8 +800,8 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 	PetscFunctionBegin;
 	/* create file name */
 	PetscObjectGetComm( (PetscObject)dau, &comm );
-	MPI_Comm_size( comm, &nproc );
-	MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_size( comm, &nproc );CHKERRQ(ierr);
+	ierr = MPI_Comm_rank( comm, &rank );CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo( dau, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRangesElementQ2(dau,&pM,&pN,&pP,&olx,&oly,&olz,&lmx,&lmy,&lmz);CHKERRQ(ierr);
