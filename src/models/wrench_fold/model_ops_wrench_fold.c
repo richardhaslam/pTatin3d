@@ -159,7 +159,7 @@ PetscBool BCListEvaluator_WrenchFold( PetscScalar position[], PetscScalar *value
 
 #undef __FUNCT__
 #define __FUNCT__ "BoundaryCondition_WrenchFold"
-PetscErrorCode BoundaryCondition_WrenchFold(DM dav,BCList bclist,pTatinCtx c,ModelWrenchFoldCtx *data)
+PetscErrorCode BoundaryCondition_WrenchFold(DM dav,BCList bclist,pTatinCtx user,ModelWrenchFoldCtx *data)
 {
 	PetscScalar zero = 0.0;
 	PetscErrorCode ierr;
@@ -209,8 +209,8 @@ PetscErrorCode ModelApplyBoundaryCondition_WrenchFold(pTatinCtx user,void *ctx)
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
     
-    bclist = c->stokes_ctx->u_bclist;
-	dav    = c->stokes_ctx->dav;
+    bclist = user->stokes_ctx->u_bclist;
+	dav    = user->stokes_ctx->dav;
     ierr = BoundaryCondition_WrenchFold(dav,bclist,user,data);CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
