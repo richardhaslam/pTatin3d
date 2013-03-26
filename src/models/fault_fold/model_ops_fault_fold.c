@@ -103,14 +103,15 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 	/* define the domain size in the z-direction for the global problem */
 	data->Lz = data->interface_heights[data->n_interfaces-1];
 		
-        data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
+    data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx             = -1.0e-3;
 	data->vx_commpression = 1.0;
 	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_exx",&data->exx,&flg);CHKERRQ(ierr);
-
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_vx_commpression",&data->exx,&flg);CHKERRQ(ierr);
+    
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Wrench Fold\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ", data->Lx,data->Ly,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
@@ -131,7 +132,7 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 #define __FUNCT__ "BoundaryCondition_FaultFold"
 PetscErrorCode BoundaryCondition_FaultFold(DM dav,BCList bclist,pTatinCtx c,ModelFaultFoldCtx *data)
 {
-	PetscReal         exx;
+	PetscReal         exx, zero = 0.0, vx_E=-data->vx_commpression, vx_W = data->vx_commpression;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
@@ -142,25 +143,40 @@ PetscErrorCode BoundaryCondition_FaultFold(DM dav,BCList bclist,pTatinCtx c,Mode
 	
 	if (data->bc_type == 0) {
 		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
-		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_commpression);CHKERRQ(ierr);
-		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_commpression);CHKERRQ(ierr);
+        
+		/*ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_commpression);CHKERRQ(ierr);
+		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_commpression);CHKERRQ(ierr);*/
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
 	} else if (data->bc_type == 1) {
 		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
-		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Not Implemented yet!");
+
+		//ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
 	} else {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type");
 	}
 	
 	/* free slip south (base) */
-	ierr = DirichletBC_FreeSlip(bclist,dav,SOUTH_FACE);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
+	//ierr = DirichletBC_FreeSlip(bclist,dav,SOUTH_FACE);CHKERRQ(ierr);
 	
 	/* free surface north */
 	/* do nothing! */
 	
 	/* free slip front/back to mimic 2d behaviour */
-	ierr = DirichletBC_FreeSlip(bclist,dav,FRONT_FACE);CHKERRQ(ierr);
-	ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
-	
+	//ierr = DirichletBC_FreeSlip(bclist,dav,FRONT_FACE);CHKERRQ(ierr);
+	//ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
+    
+    /* free slip lateral */
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -258,14 +274,14 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 				
 				if((sj+ny == N) && (sj == 0)){
                     j=sj+ny-1;
-                    PetscScalar center = LA_coord[kinter][j][i].x-7.*Lx/8.0;
+                    PetscScalar center = LA_coord[kinter][j][i].x-4.*Lx/5.0;
 					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
                     j=0;
-                    center = LA_coord[kinter][j][i].x-1.*Lx/8.0;
+                    center = LA_coord[kinter][j][i].x-1.*Lx/5.0;
                     LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));                    
-				}else if ((sj+ny == N) && (sj == 0)){
+				}else if ((sj+ny == N) || (sj == 0)){
                     j= (sj == 0)?0:(sj+ny-1);
-                    PetscScalar center = LA_coord[kinter][j][i].x-Lx/8.0;
+                    PetscScalar center = LA_coord[kinter][j][i].x-Lx/5.0;
 					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
 				}
 			}
