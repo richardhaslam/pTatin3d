@@ -127,19 +127,27 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char *name;
-	DM stokes_pack;
-	Vec UP;
+	char           *name;
+	char           date_time[1024];
+	DM             stokes_pack;
+	Vec            UP;
 	PetscLogDouble t0,t1;
-	static int beenhere=0;
-	static char *pvdfilename;
+	static int     beenhere=0;
+	static char    *pvdfilename;
 	PetscFunctionBegin;
 	
 	PetscGetTime(&t0);
 	// PVD
 	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+
+		if (ctx->restart_from_file) {
+			pTatinGenerateFormattedTimestamp(date_time);
+			asprintf(&pvdfilename,"%s/timeseries_vp_%s.pvd",ctx->outputpath,date_time);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
+		} else {
+			asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 
 		beenhere = 1;
