@@ -959,7 +959,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 	}
 	/* first time step, enforce to be super small */
-	user->dt = user->dt * 1.0e-1;
+	user->dt = user->dt * 1.0e-10;
 	
 	/* initialise the energy solver */
 	if (active_energy) {

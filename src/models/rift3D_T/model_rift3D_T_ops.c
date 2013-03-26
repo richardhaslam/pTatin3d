@@ -123,50 +123,50 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	/* Material constant */
 	MaterialConstantsSetDefaults(materialconstants);
 
-	//MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-    MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+    //MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,0,1.0e27,0.020);
     
     //MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 	//MaterialConstantsSetValues_ViscosityArrh(materialconstants,0,1.0e27,0.05357142857145);
     
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,0,2700,2.e-5,1.e-11);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,0,2700,2.e-5,0.0);
     MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,0,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,0,1.e8,1.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,0,0.0,0.1);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
-	//MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
+    //MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,0.020);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2700,2.e-5, 1.e-11);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2700,5.e-6,3.e-12);
     MaterialConstantsSetValues_DensityConst(materialconstants,1,2800);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,1,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,1,0.0,0.1);    
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
-	//MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
+    //MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,2,1.0e27,0.012);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,2,3300,2.e-5, 1.e-11);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,2,3300,5.e-6,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
     MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.0,0.0,3.e8,2.e8,2.e7,3.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,2,3.e8,3.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,2,0.0,0.1);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
-	//MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+    //MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e27,0.012);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,2.e-5,1.e-11);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,5.e-6,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,3,3300);
     MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.3,0.3,2.e7,2.e7,1.e7,2.e8);
     MaterialConstantsSetValues_PlasticMises(materialconstants,3,3.e8,3.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,3,0.0,0.1);
     
-    MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
-    //MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
+    //MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+    MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,4,1.0e27,0.02);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,4,3300,2.e-5, 1.e-11);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,4,3300,5.e-6,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,4,3300);
     MaterialConstantsSetValues_PlasticDP(materialconstants,4,0.6,0.6,2.e7,2.e7,1.e7,3.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,4,3.e8,3.e8);
@@ -223,7 +223,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	Sx = (data->Ly - data->Oy)*(data->Lz - data->Oz);
 	Sz = (data->Ly - data->Oy)*(data->Lx - data->Ox);
 	Sy = (data->Lx - data->Ox)*(data->Lz - data->Oz);
-	vy = (vx*Sx+vz*Sz)*2/Sy;
+	vy = (2*vx*Sx-vz*Sz)/Sy;
 	
 	/* reports before scaling */
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_T_Ox %+1.4e [SI] -model_rift3D_T_Lx : %+1.4e [SI]\n", data->Ox ,data->Lx );
@@ -242,9 +242,11 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	if (data->dimensional) {
 		/*Compute additional scaling parameters*/
 		data->time_bar      = data->length_bar / data->velocity_bar;
-		data->pressure_bar  = data->viscosity_bar*data->velocity_bar / data->length_bar;
-		data->density_bar   = data->viscosity_bar*data->velocity_bar / ( data->length_bar * data->length_bar );
+		data->pressure_bar  = data->viscosity_bar/data->time_bar;
+		data->density_bar   = data->pressure_bar / data->length_bar;
 		
+        
+        
 		PetscPrintf(PETSC_COMM_WORLD,"[rift3D_T]:  during the solve scaling will be done using \n");
 		PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
 		PetscPrintf(PETSC_COMM_WORLD,"  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
@@ -334,7 +336,7 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
-	vzb =  data->vz;
+	vzb =  0.0;//data->vz;
 	
 	/* infilling free slip base */
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vy);CHKERRQ(ierr);
@@ -607,9 +609,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		} else {
 			phase = 0;
 		}
-		pls   = 0.0;
+		pls   = 0.001;
 		if (xcoord>250.e3 && xcoord < 350.e3 &&  zcoord < 150.e3){
-		pls = rand()/(RAND_MAX+0.5)*0.02;
+		pls = rand()/(RAND_MAX+0.5)*0.1;
         }
         
         yield = 0; 
@@ -814,7 +816,7 @@ PetscErrorCode ModelOutput_Rift3D_T_CheckScales(pTatinCtx c,Vec X)
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelRift3D_TCtx  *data = (ModelRift3D_TCtx*)ctx;
-	PetscBool         active_energy;
+	PetscBool         active_energy,outputmarkers;
 	DataBucket        materialpoint_db;
 	PetscErrorCode    ierr;
 	
@@ -825,8 +827,11 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
-	{
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_outputmarkers",&outputmarkers,PETSC_NULL);CHKERRQ(ierr);
+    
+    if (outputmarkers)
+    {
+        ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
 		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
@@ -839,6 +844,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
+    
 		
 	{
 		const int                   nf = 3;
@@ -971,7 +977,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
-	vzb =  data->vz;
+	vzb =  0.0;//data->vz;
 	
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	/* apply -5 < vx 5 across the domain x \in [0,1] */
