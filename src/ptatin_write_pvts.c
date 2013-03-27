@@ -100,7 +100,7 @@ PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
   ierr = PetscViewerCreate(((PetscObject)x)->comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+	//ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
 	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 	
 	ierr = VecView(x,viewer);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
   ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+	//ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
 	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 	
 //	ierr = VecCreate(((PetscObject)viewer)->comm,x);CHKERRQ(ierr);
@@ -478,7 +478,7 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n\t\t(dmda-p) %s\n\t\t(vec-u : p) %s : %s\n", vname,pname,xuname,xpname);
 	
 	ierr = PhysCompStokesLoad_DM(vname,pname,&ctx);CHKERRQ(ierr);
-	ierr = PhysCompStokesLoad_VP(ctx,xuname,xpname,PETSC_TRUE,&X);CHKERRQ(ierr);
+	ierr = PhysCompStokesLoad_VP(ctx,xuname,xpname,PETSC_FALSE,&X);CHKERRQ(ierr);
 	
 	sprintf(outfilename,"%s",prefix);
 	if (flg) { 
