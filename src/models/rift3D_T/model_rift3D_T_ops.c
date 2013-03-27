@@ -106,6 +106,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	data->Lx =  6.0e5;
 	data->Ly =  0.0e5;
 	data->Lz =  6.0e5;
+    //data->Ox =  -6.0e5;
 	data->Ox =  0.0e5;
 	data->Oy =  -1.5e5;
 	data->Oz =  0.0e5;
@@ -226,7 +227,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	Sx = (data->Ly - data->Oy)*(data->Lz - data->Oz);
 	Sz = (data->Ly - data->Oy)*(data->Lx - data->Ox);
 	Sy = (data->Lx - data->Ox)*(data->Lz - data->Oz);
-	vy = (2*vx*Sx-vz*Sz)/Sy;
+	vy = (vx*Sx-vz*Sz)/Sy;
 	
 	/* reports before scaling */
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_rift3D_T_Ox %+1.4e [SI] -model_rift3D_T_Lx : %+1.4e [SI]\n", data->Ox ,data->Lx );
@@ -338,7 +339,7 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 	
 	PetscFunctionBegin;
 	
-	vxl = -data->vx;
+	vxl = 0.0;//-data->vx;
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
@@ -555,7 +556,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
 	int                    e,p,n_mp_points;
-	PetscScalar            y_lab,y_moho,y_midcrust;
+	PetscScalar            y_lab,y_moho,y_midcrust,notch_l,notch_w2,xc;
 	DataBucket             db;
 	DataField              PField_std,PField_pls;
 	int                    phase;
@@ -582,7 +583,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	y_lab      = -120.0e3; 
 	y_moho     = -40.0e3;
 	y_midcrust = -20.0e3;
-	
+	notch_w2   = 50.e3;
+    notch_l    = 150.e3;
+    xc         = (data->Lx + data->Ox)/2.0* data->length_bar;
+    xc         = 0.0; 
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	srand(0);
@@ -625,8 +629,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
                 pls = 0.05;   
             }    
         }else{
-            pls   = 0.001;
-            if (xcoord>250.e3 && xcoord < 350.e3 &&  zcoord < 150.e3){
+            pls   = rand()/(RAND_MAX+0.5)*0.001;
+            if (abs(xcoord - xc) < notch_w2 &&  zcoord < notch_l){
                 pls = rand()/(RAND_MAX+0.5)*0.1;
             }
             
