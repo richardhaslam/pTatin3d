@@ -251,7 +251,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar i
 {
 	PetscErrorCode ierr;
     ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
-    PetscReal *interface_heights, Lx, amp, *fold_separation; 
+    PetscReal *interface_heights, Ly, amp, *fold_separation; 
     PetscInt *layer_res_k, n_interfaces;
     
 	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter;
