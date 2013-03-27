@@ -305,7 +305,6 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar i
                     PetscScalar center = 0;
                     center = (sj == 0)?(LA_coord[kinter][j][i].x-fold_center_front):(LA_coord[kinter][j][i].x-fold_center_back);
 					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
-                    printf("----> %f, %f,   %d, %f, %f, %f\n", amp * dz * exp(-center*center/(2.*dz*dz)), center, j, dz, fold_center_front, fold_center_back);
 				}
 			}
 			
