@@ -607,37 +607,35 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		MPntStdGetField_global_coord(material_point,&position);
 		
 		/* convert to scaled units */
+		xcoord = position[0] * data->length_bar;
 		ycoord = position[1] * data->length_bar;
-		xcoord=position[0] * data->length_bar;
-		zcoord=position[2] * data->length_bar;
+		zcoord = position[2] * data->length_bar;
 		
-		if (ycoord<y_lab) {
+		if (ycoord < y_lab) {
 			phase = 3;
-		} else if (ycoord<y_moho) {
+		} else if (ycoord < y_moho) {
 			phase = 2;
-		} else if (ycoord<y_midcrust) {
+		} else if (ycoord < y_midcrust) {
 			phase = 1;
 		} else {
 			phase = 0;
 		}
-        norandomiseplastic = PETSC_FALSE;
-        ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
+		norandomiseplastic = PETSC_FALSE;
+		ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
 		if (norandomiseplastic) {
-            
-            pls   = 0.0;
-            if (xcoord>250.e3 && xcoord < 350.e3 &&  zcoord < 150.e3){
-                pls = 0.05;   
-            }    
-        }else{
-            pls   = rand()/(RAND_MAX+0.5)*0.001;
-            if (abs(xcoord - xc) < notch_w2 &&  zcoord < notch_l){
-                pls = rand()/(RAND_MAX+0.5)*0.1;
-            }
-            
-        }
-        
-        yield = 0; 
-			/* user the setters provided for you */
+			pls   = 0.0;
+			if ( (xcoord > 250.0e3) && (xcoord < 350.0e3) &&  (zcoord < 150.0e3) ) {
+				pls = 0.05;   
+			}    
+		} else {
+			pls = 0.001 * rand() / (RAND_MAX + 1.0);
+			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) ) {
+				pls = 0.1 * rand() / (RAND_MAX + 1.0);
+			}			
+		}
+		
+    yield = 0; 
+		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
 		MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield);
 		MPntPStokesPlSetField_plastic_strain(mpprop_pls,pls);
@@ -723,116 +721,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,V
 	PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Rift3D_T_CheckScales"
-PetscErrorCode ModelOutput_Rift3D_T_CheckScales(pTatinCtx c,Vec X)
-{
-	Vec Xcopy,velocity,pressure,F,RHS;
-	PetscReal fu,fp;
-	PetscInt Nu,Np;
-	PhysCompStokes    stokes;
-	DM                stokes_pack;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-	stokes_pack = stokes->stokes_pack;
-	
-	
-	ierr = VecDuplicate(X,&Xcopy);CHKERRQ(ierr);
-	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-	ierr = VecDuplicate(X,&RHS);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD,"[rift3D_T]: check scales \n");
-	
-	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	
-	ierr = VecStrideMin(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," min|P0|   = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," max|P0|   = %+1.4e \n",fp);
-	
-	ierr = VecStrideMin(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," min|dPdx| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," max|dPdx| = %+1.4e \n",fp);
-	
-	ierr = VecStrideMin(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," min|dPdy| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," max|dPdy| = %+1.4e \n",fp);
-	
-	ierr = VecStrideMin(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," min|dPdz| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
-	
-	
-	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
-	
-	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
-	
-	ierr = DMCompositeGetAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
-	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
-	ierr = VecGetSize(velocity,&Nu);CHKERRQ(ierr);
-	ierr = VecGetSize(pressure,&Np);CHKERRQ(ierr);
-	
-	ierr = VecNorm(velocity,NORM_2,&fu);CHKERRQ(ierr);
-	ierr = VecNorm(pressure,NORM_2,&fp);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD," |rho.g|    = %1.4e \n",fu/sqrt(Nu));
-	PetscPrintf(PETSC_COMM_WORLD," |cont_rhs| = %1.4e \n",fp/sqrt(Np));
-	ierr = DMCompositeRestoreAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
-	
-	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
-	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
-	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
-	
-	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
-	ierr = VecNorm(velocity,NORM_2,&fu);CHKERRQ(ierr);
-	ierr = VecNorm(pressure,NORM_2,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," |div(sigma_ij)| = %1.4e \n",fu/sqrt(Nu));
-	PetscPrintf(PETSC_COMM_WORLD," |div(u_i)|      = %1.4e \n",fp/sqrt(Np));
-	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
-	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
-	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
-	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
-	
-	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
-	ierr = VecNorm(velocity,NORM_2,&fu);CHKERRQ(ierr);
-	ierr = VecNorm(pressure,NORM_2,&fp);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD," |grad(P)| = %1.4e \n",fu/sqrt(Nu));
-	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
-	ierr = VecDestroy(&Xcopy);CHKERRQ(ierr);
-	ierr = VecDestroy(&F);CHKERRQ(ierr);
-	ierr = VecDestroy(&RHS);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
-
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Rift3D_T"
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
@@ -844,8 +732,6 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	//ierr = ModelOutput_Rift3D_T_CheckScales(c,X);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
