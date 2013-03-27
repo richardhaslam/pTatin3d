@@ -41,5 +41,9 @@ void FileExists(const char *fname,int *exists);
 void FileExistsRank(MPI_Comm comm,const char fname[],int *exists);
 int StringEmpty(const char string[]);
 
+void ptatin_RandomSetSeed(unsigned seed);
+double ptatin_RandomGetDouble(double min,double max);
+int ptatin_RandomGetInt(int min,int max);
+
 #endif
 

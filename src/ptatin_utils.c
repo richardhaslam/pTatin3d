@@ -202,4 +202,38 @@ int StringEmpty(const char string[])
 	return 0;
 }
 
+void ptatin_RandomSetSeed(unsigned seed)
+{
+	srand(seed);
+}
+void ptatin_RandomSetSeedRank(MPI_Comm comm)
+{
+	int rank,ierr;
+	
+	MPI_Comm_rank(comm,&rank);
+	srand((unsigned)rank);
+}
+
+double ptatin_RandomGetDouble(double min,double max)
+{
+	double r,rr;
+	
+	r = rand()/((double)(RAND_MAX));
+	rr =  min + (max - min) * r;
+	return rr;
+}
+
+int ptatin_RandomGetInt(int min,int max)
+{
+	double r,rr;
+	int ri;
+	
+	r = rand()/((double)(RAND_MAX));
+	rr =  ((double)min) + ((double)(max - min)) * r;
+	ri = (int)rr;
+	return ri;
+}
+
+
+
 
