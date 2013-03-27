@@ -594,7 +594,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		double        *position,ycoord,xcoord,zcoord;
 		float         pls;
 		char          yield;
-		
+		PetscBool     norandomiseplastic;
+        
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
 		
@@ -615,9 +616,20 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		} else {
 			phase = 0;
 		}
-		pls   = 0.001;
-		if (xcoord>250.e3 && xcoord < 350.e3 &&  zcoord < 150.e3){
-		pls = rand()/(RAND_MAX+0.5)*0.1;
+        norandomiseplastic = PETSC_FALSE;
+        ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
+		if (norandomiseplastic) {
+            
+            pls   = 0.0;
+            if (xcoord>250.e3 && xcoord < 350.e3 &&  zcoord < 150.e3){
+                pls = 0.05;   
+            }    
+        }else{
+            pls   = 0.001;
+            if (xcoord>250.e3 && xcoord < 350.e3 &&  zcoord < 150.e3){
+                pls = rand()/(RAND_MAX+0.5)*0.1;
+            }
+            
         }
         
         yield = 0; 
