@@ -11,7 +11,7 @@ typedef struct {
 	PetscReal eta[100];
 	PetscReal etaweak[100];
 	PetscReal rho[100];
-    PetscReal fold_separation[4];
+    PetscReal fold_centers[4];
     PetscReal sigma;
 	PetscInt  bc_type;
 	PetscReal exx, vx_commpression;
