@@ -1,4 +1,3 @@
-
 #define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
@@ -94,6 +93,15 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_fault_fold_layer_rho)",data->n_interfaces-1);
 	}
 	
+    n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_fold_separation",data->fold_separation,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the initial fold separation a,b,c,d (-model_fault_fold_fold_separation). The perturbation is at  the position (a/b).Ly at the front and (c/d).Ly in the back. ");
+	}
+	if (n_int != 4) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_fault_fold_fold_separation)",data->n_interfaces-1);
+	}
+    
 	/* define the mesh size the z-direction for the global problem */
 	c->mz = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
@@ -149,8 +157,8 @@ PetscErrorCode BoundaryCondition_FaultFold(DM dav,BCList bclist,pTatinCtx c,Mode
         ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
         
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
         
         ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
@@ -239,16 +247,31 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_FaultFold(pTatinCtx c,void *c
 
 #undef __FUNCT__
 #define __FUNCT__ "FaultFoldSetPerturbedInterfaces"
-PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_k[], PetscInt n_interfaces,PetscReal amp, PetscReal Lx)
+PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar interface_heights[], PetscInt layer_res_k[], PetscInt n_interfaces,PetscReal amp, PetscReal Lx)
 {
 	PetscErrorCode ierr;
+    ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
+    PetscReal *interface_heights, Lx, amp, *fold_separation; 
+    PetscInt *layer_res_k, n_interfaces;
+    
 	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter;
 	PetscScalar dz;
+    PetscReal fold_center_front, fold_center_back;
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
 	
 	PetscFunctionBegin;
+    
+    interface_heights = data->interface_heights;
+    layer_res_k = data->layer_res_k;
+    n_interfaces = data->n_interfaces;
+    amp = data->amp;
+    Ly = data->Ly;
+    fold_separation = data->fold_separation;
+    fold_center_front = Ly*fold_separation[0]/fold_separation[1];
+    fold_center_back = Ly*fold_separation[2]/fold_separation[3];
+    
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
@@ -256,7 +279,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
+
 	
 	/*Perturbes the interface for cylindrical folding*/
     kinter = 0;
@@ -264,24 +287,25 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_hei
 		kinter += 2*layer_res_k[interf-1];
 		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", kinter,N-1 );
 
-		if ( (kinter>=sj) && (kinter<sk+nz) ) {
+		if ( (kinter>=sk) && (kinter<sk+nz) ) {
 			
 			dz = 0.5*((interface_heights[interf+1] - interface_heights[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights[interf] - interface_heights[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );
 			PetscPrintf(PETSC_COMM_SELF," interface %d: using dy computed from avg %1.4e->%1.4e / my=%d :: %1.4e->%1.4e / my=%d \n", interf,
 									interface_heights[interf+1],interface_heights[interf],layer_res_k[interf],
 									interface_heights[interf],interface_heights[interf-1],layer_res_k[interf-1] );
 			for(i = si; i<si+nx; i++) {
-				
+
 				if((sj+ny == N) && (sj == 0)){
                     j=sj+ny-1;
-                    PetscScalar center = LA_coord[kinter][j][i].x-4.*Lx/5.0;
+                    PetscScalar center = LA_coord[kinter][j][i].x-fold_center_back;
 					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
                     j=0;
-                    center = LA_coord[kinter][j][i].x-1.*Lx/5.0;
+                    center = LA_coord[kinter][j][i].x-fold_center_front;
                     LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));                    
 				}else if ((sj+ny == N) || (sj == 0)){
                     j= (sj == 0)?0:(sj+ny-1);
-                    PetscScalar center = LA_coord[kinter][j][i].x-Lx/5.0;
+                    PetscScalar center = 0;
+                    center = (sj == 0)?(LA_coord[kinter][j][i].x-fold_center_front):(LA_coord[kinter][j][i].x-fold_center_back);
 					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
 				}
 			}
@@ -527,12 +551,13 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	factor = 0.1;
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_FaultFold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside FaultFoldSetPerturbedInterfaces() */
+    data->amp = amp;
 	if ( (amp < 0.0) || (amp >1.0) ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_FaultFold_amp_factor must be 0 < amp < 1");
 	}
 	
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data->interface_heights, data->layer_res_k, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
+	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data);//data->interface_heights, data->layer_res_k, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     

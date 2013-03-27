@@ -11,10 +11,12 @@ typedef struct {
 	PetscReal eta[100];
 	PetscReal etaweak[100];
 	PetscReal rho[100];
+    PetscReal fold_separation[4];
     PetscReal sigma;
 	PetscInt  bc_type;
 	PetscReal exx, vx_commpression;
 	PetscReal Lx, Lz, Ly;
+    PetscReal amp;
 } ModelFaultFoldCtx;
 
 #endif
