@@ -244,6 +244,58 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_FaultFold(pTatinCtx c,void *c
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FaultFoldSetMeshGeometry"
+PetscErrorCode FaultFoldSetMeshGeometry(DM dav, void *ctx)
+{
+	PetscErrorCode ierr;
+    ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
+	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, kinter_max, kinter_min, interf, n_interfaces,*layer_res_k;
+    PetscScalar dz, *interface_heights;
+    
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***LA_coord;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	n_interfaces = data->n_interfaces;
+    layer_res_k = data->layer_res_k;
+    interface_heights = data->interface_heights;
+    
+    
+    kinter_max = 0;
+	for(interf = 0; interf < n_interfaces-1; interf++){ 
+        kinter_min = kinter_max;
+        kinter_max += 2*layer_res_k[interf];
+            dz = (interface_heights[interf+1] - interface_heights[interf])/(PetscReal)(2.0*layer_res_k[interf]);
+            for(i=si; i<si+nx; i++){
+                for(j=sj; j<sj+ny; j++){
+                    PetscScalar h;
+                    h = data->interface_heights[interf];
+                    for(k=sk;k<sk+nz;k++){
+                        if((k <= kinter_max)&&(k >= kinter_min)){
+                            LA_coord[k][j][i].z = h + (PetscReal)dz*(k-kinter_min); 
+                            
+                        }   
+                    }
+                }
+            }
+        
+    }
+    
+	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FaultFoldSetPerturbedInterfaces"
 PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar interface_heights[], PetscInt layer_res_k[], PetscInt n_interfaces,PetscReal amp, PetscReal Lx)
 {
@@ -253,7 +305,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar i
     PetscInt *layer_res_k, n_interfaces;
     
 	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter;
-	PetscScalar dz;
+	PetscScalar dz, dy;
     PetscReal fold_center_front, fold_center_back;
 	DM cda;
 	Vec coord;
@@ -278,7 +330,8 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar i
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 
-	
+	dy = data->Ly/(PetscScalar)(N/2-1);
+    
 	/*Perturbes the interface for cylindrical folding*/
     kinter = 0;
 	for(interf = 1; interf < n_interfaces-1; interf++){
@@ -294,17 +347,27 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar i
 			for(i = si; i<si+nx; i++) {
 
 				if((sj+ny == N) && (sj == 0)){
+                    PetscScalar center = 0;
                     j=sj+ny-1;
-                    PetscScalar center = LA_coord[kinter][j][i].x-fold_center_back;
-					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
+                    center = LA_coord[kinter][j][i].x-fold_center_back;
+					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(6.*dy*dy));
+                    LA_coord[kinter][j-1][i].z += 0.75*amp * dz * exp(-center*center/(6.*dy*dy));
+                    LA_coord[kinter][j-2][i].z += 0.5*amp * dz * exp(-center*center/(6.*dy*dy));
                     j=0;
                     center = LA_coord[kinter][j][i].x-fold_center_front;
-                    LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));                    
+                    LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(6.*dy*dy));
+                    LA_coord[kinter][j+1][i].z += 0.75*amp * dz * exp(-center*center/(6.*dy*dy));
+                    LA_coord[kinter][j+2][i].z += 0.5*amp * dz * exp(-center*center/(6.*dy*dy));
 				}else if ((sj+ny == N) || (sj == 0)){
-                    j= (sj == 0)?0:(sj+ny-1);
                     PetscScalar center = 0;
+                    PetscInt sgn = 1;
+                    j= (sj == 0)?0:(sj+ny-1);
+                    sgn = (sj == 0)?1:-1;
+                    
                     center = (sj == 0)?(LA_coord[kinter][j][i].x-fold_center_front):(LA_coord[kinter][j][i].x-fold_center_back);
-					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(2.*dz*dz));
+					LA_coord[kinter][j][i].z += amp * dz * exp(-center*center/(6.*dy*dy));
+                    LA_coord[kinter][j+sgn*1][i].z += 0.75*amp * dz * exp(-center*center/(6.*dy*dy));
+                    LA_coord[kinter][j+sgn*2][i].z += 0.5*amp * dz * exp(-center*center/(6.*dy*dy));
 				}
 			}
 			
@@ -522,8 +585,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_FaultFold(pTatinCtx c,void *ctx
 PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 {
 	ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
-	PetscReal         Lx,Ly,dx,dy,dz,Lz;
-	PetscInt          mx,my,mz, itf;
+	PetscReal         Lx,Ly,Lz;
+	PetscInt          itf;
 	PetscReal         amp,factor;
 	PetscErrorCode    ierr;
 
@@ -534,16 +597,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	Lx = data->Lx;
 	Ly = data->Ly;
 	Lz = data->Lz;
-	
-	mx = c->mx; 
-	my = c->my; 
-	mz = c->mz; 
 
 
-	
-	dx = Lx / ((PetscReal)mx);
-	dy = Ly / ((PetscReal)my);
-	dz = Lz / ((PetscReal)mz);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, data->interface_heights[0], Lz);CHKERRQ(ierr);
 	factor = 0.1;
@@ -553,9 +608,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFold(pTatinCtx c,void *ctx)
 	if ( (amp < 0.0) || (amp >1.0) ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_FaultFold_amp_factor must be 0 < amp < 1");
 	}
-	
+	ierr = FaultFoldSetMeshGeometry(c->stokes_ctx->dav, data);CHKERRQ(ierr);
 	/* step 2 - define two interfaces and perturb coords along the interface */
-	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data);//data->interface_heights, data->layer_res_k, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
+	ierr = FaultFoldSetPerturbedInterfaces(c->stokes_ctx->dav, data);CHKERRQ(ierr);//data->interface_heights, data->layer_res_k, data->n_interfaces,amp, Lx);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     
