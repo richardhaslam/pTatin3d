@@ -1173,6 +1173,7 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n,*refx,*refy,*refz;
+	PetscBool      view;
 	
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -1200,7 +1201,20 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
     ierr = DMCoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+
+	view = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(((PetscObject)da)->prefix,"-da_view_hierarchy",&view,PETSC_NULL);CHKERRQ(ierr);
+  if (view) {
+		char levelname[128];
+		
+		ierr = DMDAViewPetscVTK(da,PETSC_NULL,"dav_fine.vtk");CHKERRQ(ierr);
+		for (i=0; i<nlevels; i++) {
+			sprintf(levelname,"dav_level%d.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
+			ierr = DMDAViewPetscVTK(dac[i],PETSC_NULL,levelname);CHKERRQ(ierr);
+		}
+	}
+	
+	PetscFunctionReturn(0);
 }
 
 /*
