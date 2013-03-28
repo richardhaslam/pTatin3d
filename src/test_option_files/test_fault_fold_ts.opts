@@ -1,3 +1,6 @@
+
+# Prepared by Thomas
+
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1,1,1
 -coefficient_projection_type -1
