@@ -10,7 +10,7 @@
 #include "MPntPStokesPl_def.h"
 #include "MPntPEnergy_def.h"
 
-
+#include "ptatin_utils.h"
 #include "dmda_duplicate.h"
 #include "dmda_element_q2p1.h"
 #include "swarm_fields.h"
@@ -1050,6 +1050,7 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 {
 	PetscErrorCode ierr;
 	char           *name;
+	char           date_time[1024];
 	DM             stokes_pack;
 	PetscLogDouble t0,t1;
 	static int     beenhere=0;
@@ -1059,9 +1060,16 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 	
 	PetscGetTime(&t0);
 	// PVD
-	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+	if (beenhere == 0) {
+		
+		if (ctx->restart_from_file) {
+			pTatinGenerateFormattedTimestamp(date_time);
+			asprintf(&pvdfilename,"%s/timeseries_mpoints_cell_%s.pvd",ctx->outputpath,date_time);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
+		} else {
+			asprintf(&pvdfilename,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
 		beenhere = 1;
