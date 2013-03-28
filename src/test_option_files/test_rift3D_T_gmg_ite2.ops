@@ -55,10 +55,10 @@
 -fieldsplit_p_pc_type     jacobi
 
 # use baij with coarse (asm)
-#-stk_velocity_da_mat_type baij
+-stk_velocity_da_mat_type baij
 
 # use aij with coarse (diect)
--stk_velocity_da_mat_type aij
+#-stk_velocity_da_mat_type aij
 
 # ---------------------------------
 #   GMG solver specification
