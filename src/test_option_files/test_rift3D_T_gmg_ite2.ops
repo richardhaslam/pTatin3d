@@ -6,9 +6,12 @@
 -mx 128
 -my 32
 -mz 128
--output_path rift-t7
-#-model_rift3D_T_vz 1.e-10
--nsteps 10 
+-output_path 
+-output_path bigonee 
+-model_rift3D_T_vx 3.14e-10 
+-model_rift3D_T_vz -1.57e-10 
+-output_frequency 20 
+-nsteps 1000
 -dt_max 1e-3
 -model_rift3D_T_wz 0.5 
 -model_rift3D_T_ageAnom 300
@@ -72,7 +75,10 @@
 -stk_velocity_da_refine_hierarchy_x 4,2
 -stk_velocity_da_refine_hierarchy_y 2,1
 -stk_velocity_da_refine_hierarchy_z 4,2
-
+-model_rift3D_T_use_semi_eulerian 
+-output_path rift_t8 
+-snes_rtol 1e-4
+-snes_atol 1e-2
 #-use_low_order_geometry
 #-lattice_layout_perturb 0.0
 #-model_rift3D_T_norandom
