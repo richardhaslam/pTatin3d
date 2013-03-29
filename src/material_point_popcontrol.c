@@ -48,7 +48,7 @@
 #include "material_point_std_utils.h"
 
 
-#define MPPC_LOG_LEVEL 1 /* 0 - no logging; 1 - logging per mesh; 2 - logging per cell */
+#define MPPC_LOG_LEVEL 0 /* 0 - no logging; 1 - logging per mesh; 2 - logging per cell */
 
 typedef struct _p_PSortCtx {
 	long int point_index;

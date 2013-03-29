@@ -513,9 +513,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 	ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
 	
 	/* re-assign pid's for new particles such that they are consistent with the original volume marker set */
-	
-	
-#if 1
+#if 0
 	{
 		const int nf = 2;
 		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
@@ -914,8 +912,9 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
   ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
   ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
+/*	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-	
+*/
 	
 	/* initial condition for temperature */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
