@@ -1158,11 +1158,10 @@ PetscErrorCode apply_mppc_region_assignment(
 		}
 	}
 	
-//#if (MPPC_LOG_LEVEL >= 1)
+#if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
-//#endif	
+#endif	
 	
-
 	ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(int)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
 	
@@ -1318,10 +1317,10 @@ PetscErrorCode apply_mppc_region_assignment(
 	ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
 	
 	
-//#if (MPPC_LOG_LEVEL >= 1)
+#if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  points assigned   = %d\n", points_assigned);
 	printf("[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
-//#endif
+#endif
 	
 	PetscFunctionReturn(0);
 }

@@ -667,6 +667,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscBool        active_energy;
 	Vec              T,f;
 	RheologyType     init_rheology_type;
+	PetscBool        monitor_stages = PETSC_FALSE;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
@@ -886,7 +887,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-	ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
+	if (monitor_stages) {
+		ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
+	}
 	
 	/* switch to non-linear rheology */
 	user->rheology_constants.rheology_type = init_rheology_type;
@@ -898,7 +901,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-	ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
+	if (monitor_stages) {
+		ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
+	}
 }
 #endif
 
@@ -935,7 +940,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
 		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
-		ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
+		if (monitor_stages) {
+			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
+		}
 
 		ierr = SNESDestroyMGCtx(snes_newton);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes_newton);CHKERRQ(ierr);
