@@ -740,18 +740,15 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 #define __FUNCT__ "ApplyViscosityCutOffMarkers_VPSTD"
 PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 {
-	PetscErrorCode ierr;
-	
-	int            pidx,n_mp_points;
-	DataBucket     db;
-	DataField      PField_std,PField_stokes;
-	PetscScalar    min_eta,max_eta,min_eta_g,max_eta_g,min_cutoff,max_cutoff;
-	PetscLogDouble t0,t1;
+	PetscErrorCode    ierr;
+	int               pidx,n_mp_points;
+	DataBucket        db;
+	DataField         PField_std,PField_stokes;
+	double            min_eta,max_eta,min_eta_g,max_eta_g,min_cutoff,max_cutoff;
+	PetscLogDouble    t0,t1;
 	RheologyConstants *rheology;
-	
-	
-	double         eta_mp;
-	int            npoints_cutoff,npoints_cutoff_g;
+	double            eta_mp;
+	int               npoints_cutoff,npoints_cutoff_g;
 	
 	
 	PetscFunctionBegin;
@@ -779,14 +776,14 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	for (pidx=0; pidx<n_mp_points; pidx++) {
 		MPntStd     *mpprop_std;
 		MPntPStokes *mpprop_stokes;
-		PetscInt region_idx;
 		PetscScalar min_cutoff_l,max_cutoff_l;
+		int         region_idx;
 		
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
 		
 		/* Get marker types */
-		region_idx   = mpprop_std->phase;
+		region_idx = mpprop_std->phase;
 		
 		min_cutoff_l = rheology->eta_lower_cutoff[region_idx];
 		if (min_cutoff_l < min_cutoff) { min_cutoff_l = min_cutoff;}
@@ -796,20 +793,19 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 		
 		MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);
 		
-		if (eta_mp > max_cutoff_l) { eta_mp = max_cutoff_l;npoints_cutoff+=1; }
-		if (eta_mp < min_cutoff_l) { eta_mp = min_cutoff_l; npoints_cutoff+=1;}
+		if (eta_mp > max_cutoff_l) { eta_mp = max_cutoff_l; npoints_cutoff++; }
+		if (eta_mp < min_cutoff_l) { eta_mp = min_cutoff_l; npoints_cutoff++; }
 		
 		/* update viscosity on marker */
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
 		
 		/* monitor bounds */
-		if (eta_mp > max_eta) { max_eta = eta_mp;}
-		if (eta_mp < min_eta) { min_eta = eta_mp;}
+		if (eta_mp > max_eta) { max_eta = eta_mp; }
+		if (eta_mp < min_eta) { min_eta = eta_mp; }
 	}  
 	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-	
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -817,7 +813,7 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	
 	PetscGetTime(&t1);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity Cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %d; cpu time %1.2e (sec)\n",
+	PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %d; cpu time %1.2e (sec)\n",
                 min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g, t1-t0 );
 	
 	
