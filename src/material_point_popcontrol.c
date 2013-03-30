@@ -995,6 +995,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	}
 	
 	/* scan in reverse order so that most recent points added to list will be removed as a priority */
+/*
 	if (reverse_order_removal) {
 		DataFieldGetAccess(PField);
 		for (p=npoints-1; p>=0; p--) {
@@ -1007,12 +1008,44 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 			if (cell_count[wil] > np_upper) {
 				DataBucketRemovePointAtIndex(db,p);
 				
-				DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+				DataBucketGetSizes(db,&npoints,0,0); // you need to update npoints as the list size decreases! //
 				cell_count[wil]--;
 			}
 		}
 		DataFieldRestoreAccess(PField);	
 	}
+*/
+	if (reverse_order_removal) {
+		int remove;
+
+		remove = 1;
+		while (remove == 1) {
+		
+			remove = 0;
+
+			DataBucketGetSizes(db,&npoints,0,0); // you need to update npoints as the list size decreases! //
+
+			DataFieldGetAccess(PField);
+			for (p=npoints-1; p>=0; p--) {
+				MPntStd *marker_p;
+				int wil;
+				
+				DataFieldAccessPoint(PField,p,(void**)&marker_p);
+				wil = marker_p->wil;
+				
+				if (cell_count[wil] > np_upper) {
+					DataBucketRemovePointAtIndex(db,p);
+					cell_count[wil]--;
+					
+					remove = 1;
+					break;
+				}
+			}
+			DataFieldRestoreAccess(PField);	
+		}
+		
+	}
+	
 	PetscGetTime(&t1);
 	
 	
@@ -1248,6 +1281,13 @@ PetscErrorCode apply_mppc_region_assignment(
 			
 			DataFieldGetAccess(PField);
 			DataFieldAccessPoint(PField,pid_unsorted,(void**)&marker_p);
+			
+			/* if marker is assigned - skip */
+			if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) { 
+				DataFieldRestoreAccess(PField);
+				continue; 
+			}
+
 			pid_orig    = marker_p->pid;
 			xp_orig[0]  = marker_p->coor[0];
 			xp_orig[1]  = marker_p->coor[1];
@@ -1256,11 +1296,6 @@ PetscErrorCode apply_mppc_region_assignment(
 			xip_orig[1] = marker_p->xi[1];
 			xip_orig[2] = marker_p->xi[2];
 			
-			/* if marker is assigned - skip */
-			if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) { 
-				DataFieldRestoreAccess(PField);
-				continue; 
-			}
 			
 #if (MPPC_LOG_LEVEL >= 2)
 			PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell(%d) point(%d) is un-assigned\n",c,pid_unsorted);
@@ -1402,10 +1437,10 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	
 	
 	/* create sorted list */
-	ierr = PetscMalloc( sizeof(PetscInt)*(nel+1),&pcell_list );CHKERRQ(ierr);
-	ierr = PetscMalloc( sizeof(PSortCtx)*(npoints), &plist);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PSortCtx)*(npoints),&plist);CHKERRQ(ierr);
 	
-	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+	DataBucketGetDataFieldByName(db, MPntStd_classname,&PField);
 	DataFieldGetAccess(PField);
 	for (p=0; p<npoints; p++) {
 		MPntStd *marker_p;
