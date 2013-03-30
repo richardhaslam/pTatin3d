@@ -1303,9 +1303,10 @@ PetscErrorCode _compute_memory_offsets(void *ref,void *target,size_t *size)
 #define __FUNCT__ "MPntPStokesComputeMemberOffsets"
 PetscErrorCode MPntPStokesComputeMemberOffsets(size_t property_offsets[])
 {
-	MPntPStokes stokes;
-	size_t s;
-	int i,N;
+	MPntPStokes    stokes;
+	size_t         s;
+	int            i,N;
+	static int     been_here = 0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1318,8 +1319,11 @@ PetscErrorCode MPntPStokesComputeMemberOffsets(size_t property_offsets[])
 	ierr = _compute_memory_offsets(&stokes,&stokes.rho,&s); CHKERRQ(ierr);
 	property_offsets[1] = s;
 
-	for (i=0; i<N; i++) {
-		PetscPrintf(PETSC_COMM_WORLD,"MPntPStokes field offset[%d] %zu \n", i,property_offsets[i]);
+	if (!been_here) {
+		for (i=0; i<N; i++) {
+			PetscPrintf(PETSC_COMM_WORLD,"MPntPStokes field offset[%d] %zu \n", i,property_offsets[i]);
+		}
+		been_here++;
 	}
 	
 	PetscFunctionReturn(0);
@@ -1329,9 +1333,10 @@ PetscErrorCode MPntPStokesComputeMemberOffsets(size_t property_offsets[])
 #define __FUNCT__ "MPntPStokesPlComputeMemberOffsets"
 PetscErrorCode MPntPStokesPlComputeMemberOffsets(size_t property_offsets[])
 {
-	MPntPStokesPl stokespl;
-	size_t s;
-	int i,N;
+	MPntPStokesPl  stokespl;
+	size_t         s;
+	int            i,N;
+	static int     been_here = 0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1344,8 +1349,11 @@ PetscErrorCode MPntPStokesPlComputeMemberOffsets(size_t property_offsets[])
 	ierr = _compute_memory_offsets(&stokespl,&stokespl.is_yielding,&s); CHKERRQ(ierr);
 	property_offsets[1] = s;
 	
-	for (i=0; i<N; i++) {
-		PetscPrintf(PETSC_COMM_WORLD,"MPntPStokesPl field offset[%d] %zu \n", i,property_offsets[i]);
+	if (!been_here) {
+		for (i=0; i<N; i++) {
+			PetscPrintf(PETSC_COMM_WORLD,"MPntPStokesPl field offset[%d] %zu \n", i,property_offsets[i]);
+		}
+		been_here++;
 	}
 	
 	PetscFunctionReturn(0);
@@ -1355,9 +1363,10 @@ PetscErrorCode MPntPStokesPlComputeMemberOffsets(size_t property_offsets[])
 #define __FUNCT__ "MPntPEnergyComputeMemberOffsets"
 PetscErrorCode MPntPEnergyComputeMemberOffsets(size_t property_offsets[])
 {
-	MPntPEnergy energy;
-	size_t s;
-	int i,N;
+	MPntPEnergy    energy;
+	size_t         s;
+	int            i,N;
+	static int     been_here = 0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1370,8 +1379,11 @@ PetscErrorCode MPntPEnergyComputeMemberOffsets(size_t property_offsets[])
 	ierr = _compute_memory_offsets(&energy,&energy.heat_source,&s); CHKERRQ(ierr);
 	property_offsets[1] = s;
 
-	for (i=0; i<N; i++) {
-		PetscPrintf(PETSC_COMM_WORLD,"MPntPEnergy field offset[%d] %zu \n", i,property_offsets[i]);
+	if (!been_here) {
+		for (i=0; i<N; i++) {
+			PetscPrintf(PETSC_COMM_WORLD,"MPntPEnergy field offset[%d] %zu \n", i,property_offsets[i]);
+		}
+		been_here++;
 	}
 	
 	PetscFunctionReturn(0);
@@ -1382,9 +1394,10 @@ PetscErrorCode MPntPEnergyComputeMemberOffsets(size_t property_offsets[])
 PetscErrorCode QPntVolCoefStokesComputeMemberOffsets(size_t property_offsets[])
 {
 	QPntVolCoefStokes stokes;
-	size_t s;
-	int i,N;
-	PetscErrorCode ierr;
+	size_t            s;
+	int               i,N;
+	static int        been_here = 0;
+	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1400,8 +1413,11 @@ PetscErrorCode QPntVolCoefStokesComputeMemberOffsets(size_t property_offsets[])
 	ierr = _compute_memory_offsets(&stokes,&stokes.Fp,&s); CHKERRQ(ierr);
 	property_offsets[3] = s;
 	
-	for (i=0; i<N; i++) {
-		PetscPrintf(PETSC_COMM_WORLD,"QPntVolCoefStokes field offset[%d] %zu \n", i,property_offsets[i]);
+	if (!been_here) {
+		for (i=0; i<N; i++) {
+			PetscPrintf(PETSC_COMM_WORLD,"QPntVolCoefStokes field offset[%d] %zu \n", i,property_offsets[i]);
+		}
+		been_here++;
 	}
 	
 	PetscFunctionReturn(0);
@@ -1412,9 +1428,10 @@ PetscErrorCode QPntVolCoefStokesComputeMemberOffsets(size_t property_offsets[])
 PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[])
 {
 	QPntVolCoefEnergy energy;
-	size_t s;
-	int i,N;
-	PetscErrorCode ierr;
+	size_t            s;
+	int               i,N;
+	static int        been_here = 0;
+	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1426,8 +1443,11 @@ PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[])
 	ierr = _compute_memory_offsets(&energy,&energy.heat_source,&s); CHKERRQ(ierr);
 	property_offsets[1] = s;
 	
-	for (i=0; i<N; i++) {
-		PetscPrintf(PETSC_COMM_WORLD,"QPntVolCoefEnergy field offset[%d] %zu \n", i,property_offsets[i]);
+	if (!been_here) { 
+		for (i=0; i<N; i++) {
+			PetscPrintf(PETSC_COMM_WORLD,"QPntVolCoefEnergy field offset[%d] %zu \n", i,property_offsets[i]);
+		}
+		been_here++;
 	}
 	
 	PetscFunctionReturn(0);
