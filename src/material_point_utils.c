@@ -1453,7 +1453,6 @@ PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[])
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointQuadraturePointProjectionC0_Q2Stokes"
 PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q)
