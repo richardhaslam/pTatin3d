@@ -328,25 +328,25 @@ PetscErrorCode BasinCompSetMeshGeometry(DM dav, void *ctx)
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
     
 
-    ierr = PetscMalloc(N*sizeof(PetscScalar), &dzs);CHKERRQ(ierr);
+    ierr = PetscMalloc(ny*sizeof(PetscScalar), &dzs);CHKERRQ(ierr);
     
     kinter_max = 0;
 	for(interf = 0; interf < n_interfaces-1; interf++){ 
         kinter_min = kinter_max;
         kinter_max += 2*layer_res_k[interf];
-
         for(i=si; i<si+nx; i++){
             a_b = (interf == 0)?0.0:(interface_heights_b[interf] - interface_heights_f[interf])/Ly;
             a_t = (interface_heights_b[interf+1] - interface_heights_f[interf+1])/Ly;
-            for(j = 0; j<N; j++){
-                dzs[j] = ((a_t*LA_coord[0][j][i].y + interface_heights_f[interf+1]) - (a_b*LA_coord[0][j][i].y + interface_heights_f[interf]))/(PetscReal)(2.0*layer_res_k[interf]);
+            for(j = sj; j<ny+sj; j++){
+                
+                dzs[j-sj] = ((a_t*LA_coord[sk][j][i].y + interface_heights_f[interf+1]) - (a_b*LA_coord[sk][j][i].y + interface_heights_f[interf]))/(PetscReal)(2.0*layer_res_k[interf]);
             }
             for(j=sj; j<sj+ny; j++){
                 PetscScalar h;
-                h = (a_b*LA_coord[0][j][i].y + interface_heights_f[interf]);
+                h = (a_b*LA_coord[sk][j][i].y + interface_heights_f[interf]);
                 for(k=sk;k<sk+nz;k++){
                     if((k <= kinter_max)&&(k >= kinter_min)){
-                        LA_coord[k][j][i].z = h + (PetscReal)dzs[j]*(k-kinter_min); 
+                        LA_coord[k][j][i].z = h + (PetscReal)dzs[j-sj]*(k-kinter_min); 
                         
                     }   
                 }
