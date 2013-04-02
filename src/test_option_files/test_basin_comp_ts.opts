@@ -34,14 +34,14 @@
 #-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
--model_basin_comp_Lx 5.0
--model_basin_comp_Ly 2.0
+-model_basin_comp_Lx 30.0
+-model_basin_comp_Ly 12.0
 -model_basin_comp_amp_factor 0.01
 -model_basin_comp_bc_type 0
--model_basin_comp_interface_heights_f 0.0,0.7,1.0
--model_basin_comp_interface_heights_b 0.0,0.8,1.0
+-model_basin_comp_interface_heights_f 0.0,13.5,15.3
+-model_basin_comp_interface_heights_b 0.0,15.1,15.3
 -model_basin_comp_layer_eta 0.025,1.0
--model_basin_comp_layer_res_k 9,9
+-model_basin_comp_layer_res_k 25,7
 -model_basin_comp_layer_rho 0.0,0.0
 -model_basin_comp_n_interfaces 3
 -model_basin_comp_vx_compression -0.005
