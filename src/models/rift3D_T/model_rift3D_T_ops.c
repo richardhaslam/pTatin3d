@@ -316,6 +316,30 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
+/*
+ Returns the parameters and function need to define initial thermal field.
+ The function returned can be used to define either the initial condition for T or the boundary condition for T. 
+*/
+#undef __FUNCT__
+#define __FUNCT__ "ModelRift3D_T_GetDescription_InitialThermalField"
+PetscErrorCode ModelRift3D_T_GetDescription_InitialThermalField(ModelRift3D_TCtx *data,PetscReal coeffs[],PetscBool (**func)(PetscScalar*,PetscScalar*,void*) )
+{
+	PetscFunctionBegin;
+	/* assign params */
+	coeffs[0] = data->cx_anom ; 
+	coeffs[1] = data->cz_anom ; 
+	coeffs[2] = data->thermal_age0;
+	coeffs[3] = data->thermal_age_anom;
+	coeffs[4] = data->length_bar;
+	coeffs[5] = data->Tbottom;
+	coeffs[6] = data->wx_anom;
+	coeffs[7] = data->wz_anom;
+
+	/* assign function to use */
+	*func = DMDAVecTraverse3d_ERFC3DFunctionXYZ;
+	
+	PetscFunctionReturn(0);
+}
 
 /* 
  
@@ -387,11 +411,31 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 		bclist = energy->T_bclist;
 		
 		
-         val_T = 1.3645e+003;
+		val_T = 1.3645e+003;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
 		val_T = data->Ttop;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);		
 	}
+
+#if 0
+	if (active_energy) {
+		PetscReal      val_T;
+		PhysCompEnergy energy;
+		BCList         bclist;
+		DM             daT;
+		PetscBool      (*iterator_initial_thermal_field)(PetscScalar*,PetscScalar*,void*);
+		PetscReal      coeffs[8];
+		
+		ierr   = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+		daT    = energy->daT;
+		bclist = energy->T_bclist;
+		
+		ierr = ModelRift3D_T_GetDescription_InitialThermalField(data,coeffs,&iterator_initial_thermal_field);CHKERRQ(ierr);
+
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,iterator_initial_thermal_field,(void*)coeffs);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,iterator_initial_thermal_field,(void*)coeffs);CHKERRQ(ierr);		
+	}
+#endif	
 	
 	PetscFunctionReturn(0);
 }
@@ -940,6 +984,23 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
         coeffs[7] = data->wz_anom;
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_ERFC3DFunctionXYZ,(void*)coeffs);CHKERRQ(ierr);
 	}
+
+#if 0
+	if (active_energy) {
+		PhysCompEnergy energy;
+		Vec            temperature;
+		DM             daT;
+		PetscBool      (*iterator_initial_thermal_field)(PetscScalar*,PetscScalar*,void*);
+		PetscReal      coeffs[8];
+		
+		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		daT  = energy->daT;
+    
+		ierr = ModelRift3D_T_GetDescription_InitialThermalField(data,coeffs,&iterator_initial_thermal_field);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(daT,temperature,0,iterator_initial_thermal_field,(void*)coeffs);CHKERRQ(ierr);
+	}
+#endif	
 	
 	PetscFunctionReturn(0);
 }
