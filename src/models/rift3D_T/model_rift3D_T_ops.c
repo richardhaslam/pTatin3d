@@ -400,6 +400,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 	
 	/* set boundary conditions for temperature */
 	ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
+#if 0
 	if (active_energy) {
 		PetscReal      val_T;
 		PhysCompEnergy energy;
@@ -416,8 +417,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 		val_T = data->Ttop;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);		
 	}
-
-#if 0
+#endif
+#if 1
 	if (active_energy) {
 		PetscReal      val_T;
 		PhysCompEnergy energy;
@@ -433,7 +434,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 		ierr = ModelRift3D_T_GetDescription_InitialThermalField(data,coeffs,&iterator_initial_thermal_field);CHKERRQ(ierr);
 
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,iterator_initial_thermal_field,(void*)coeffs);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,iterator_initial_thermal_field,(void*)coeffs);CHKERRQ(ierr);		
+		val_T = data->Ttop;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
 	}
 #endif	
 	
@@ -963,6 +965,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	
 	/* initial condition for temperature */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
+#if 0
 	if (active_energy) {
 		PhysCompEnergy energy;
 		Vec            temperature;
@@ -984,8 +987,8 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
         coeffs[7] = data->wz_anom;
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_ERFC3DFunctionXYZ,(void*)coeffs);CHKERRQ(ierr);
 	}
-
-#if 0
+#endif
+#if 1
 	if (active_energy) {
 		PhysCompEnergy energy;
 		Vec            temperature;
