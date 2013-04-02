@@ -15,7 +15,7 @@ typedef struct {
 	PetscReal exx;
 	PetscReal vx_commpression;
 	PetscReal Lx, Lz, Ly;
-    PetscReal amp
+    PetscReal amp;
 } ModelBasinCompCtx;
 
 #endif
