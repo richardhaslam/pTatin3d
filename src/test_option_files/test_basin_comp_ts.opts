@@ -1,55 +1,68 @@
-
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1,1,1
 -coefficient_projection_type -1
--da_processors_x 2
--da_processors_y 2
--da_processors_z 1
+-checkpoint_every 5
 -dau_nlevels 3
--dt_max 1.0
--constant_dt 0.05
+-dt_max 0.05
+#-constant_dt 0.05
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
--fieldsplit_u_ksp_max_it 10
+
+-fieldsplit_u_ksp_max_it 10000
 -fieldsplit_u_ksp_monitor
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
--fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
--fieldsplit_u_mg_coarse_pc_type lu
+
+-fieldsplit_u_mg_coarse_ksp_max_it 1000
+#-fieldsplit_u_mg_coarse_ksp_monitor_true_residual
+-fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
+-fieldsplit_u_mg_coarse_ksp_type cg
+-fieldsplit_u_mg_coarse_pc_type  asm
+-fieldsplit_u_mg_coarse_pc_asm_overlap 3
+ 
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
--fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_max_it 20
 -fieldsplit_u_mg_levels_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_type chebychev
 -fieldsplit_u_mg_levels_pc_type jacobi
 -ksp_atol 1.0e-6
--ksp_monitor_true_residual
+
+## MORE ROBUST ON DEFORMED MESHES? 
+-fieldsplit_u_mg_levels_ksp_type cg
+
+#-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
--model_basin_comp_Lx 500.0
--model_basin_comp_Ly 500.0
+-model_basin_comp_Lx 5.0
+-model_basin_comp_Ly 2.0
 -model_basin_comp_amp_factor 0.01
 -model_basin_comp_bc_type 0
--model_basin_comp_interface_heights 0.0,20.0,60.0
--model_basin_comp_layer_eta 500.0,200.0
--model_basin_comp_layer_res_k 12,12
--model_basin_comp_layer_rho 100.0,50.0
+-model_basin_comp_interface_heights_f 0.0,0.7,1.0
+-model_basin_comp_interface_heights_b 0.0,0.8,1.0
+-model_basin_comp_layer_eta 0.025,1.0
+-model_basin_comp_layer_res_k 9,9
+-model_basin_comp_layer_rho 0.0,0.0
 -model_basin_comp_n_interfaces 3
--model_basin_comp_exx 1.0
--model_basin_comp_alpha 0.2
--mx 80
--my 80
+-model_basin_comp_vx_compression -0.005
+-model_basin_comp_alpha 0.05
+-mx 32
+-my 32
 -mz 1
+-ptatin_model basin_comp
 -nsteps 10000
--output_frequency 50
--output_path testwrenchfold
+-output_frequency 1
+-output_path test-basin_comp
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
--ptatin_model basin_comp
 -snes_type ksponly
--stk_velocity_da_mat_type aij
--stk_velocity_da_refine_hierarchy_x 4,4,5
--stk_velocity_da_refine_hierarchy_y 4,4,5
--stk_velocity_da_refine_hierarchy_z 2,2,4
+-stk_velocity_da_mat_type baij
+-stk_velocity_da_refine_hierarchy_x 4,4
+-stk_velocity_da_refine_hierarchy_y 4,4
+-stk_velocity_da_refine_hierarchy_z 1,2
+
+# dump the geometric multi-grid mesh hierarchy 
+-stk_velocity_da_view_hierarchy
+
 #End of PETSc Option Table entries
