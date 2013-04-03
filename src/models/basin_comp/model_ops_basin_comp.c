@@ -412,15 +412,23 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                     j=sj+ny-1;
                     random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
 					LA_coord[kinter][j][i].z += amp * dz_b * random;
+                    LA_coord[kinter][j-1][i].z += amp * dz_b * random;
+                    LA_coord[kinter][j-2][i].z += amp * dz_b * random;
                     j=0;
                     random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-                    LA_coord[kinter][j][i].z += amp * dz_f * random;                    
+                    LA_coord[kinter][j][i].z += amp * dz_f * random;
+                    LA_coord[kinter][j+1][i].z += amp * dz_f * random; 
+                    LA_coord[kinter][j+2][i].z += amp * dz_f * random;
 				}else if ((sj+ny == N) || (sj == 0)){
                     PetscReal dz = 0.0;
+                    PetscInt sgn = 1;
+                    sgn = (sj == 0)?1:-1;
                     j = (sj == 0)?0:(sj+ny-1);
                     dz = (sj == 0)?dz_f:dz_b;
                     random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
 					LA_coord[kinter][j][i].z += amp * dz * random;
+                    LA_coord[kinter][j+sgn][i].z += amp * dz * random;
+                    LA_coord[kinter][j+sgn*2][i].z += amp * dz * random;
 
 				}
 			}
@@ -765,7 +773,6 @@ PetscErrorCode ModelInitialCondition_BasinComp(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	/*
-	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
