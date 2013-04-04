@@ -23,7 +23,7 @@
 -snes_max_linear_solve_fail 10 
 -snes_max_it 5  
 -snes_monitor
--snes_view
+#-snes_view
 
 # ------------------------------------
 #   thermal solver                  
@@ -31,7 +31,9 @@
 
 -T_snes_type ksponly
 -T_ksp_type fgmres
--T_pc_type jacobi
+-T_ksp_atol 1.0e-4
+-T_ksp_rtol 1.0e-10
+-T_pc_type bjacobi
 -T_ksp_monitor
 # ---------------------------------
 #   Stokes solver specification
@@ -69,6 +71,7 @@
 
 #-use_low_order_geometry
 -lattice_layout_perturb 0.0
+-model_rift3D_T_norandom
 
 -fieldsplit_u_mg_levels_ksp_type      chebychev
 -fieldsplit_u_mg_levels_ksp_max_it    10
@@ -85,6 +88,8 @@
 #-fieldsplit_u_mg_coarse_pc_asm_blocks 4
 -fieldsplit_u_mg_coarse_pc_asm_overlap 4
 -fieldsplit_u_mg_coarse_sub_pc_type    ilu
+
+
 
 # --------------
 #   Monitoring

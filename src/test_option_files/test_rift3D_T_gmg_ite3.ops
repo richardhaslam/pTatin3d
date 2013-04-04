@@ -34,7 +34,9 @@
 
 -T_snes_type ksponly
 -T_ksp_type fgmres
--T_pc_type jacobi
+-T_ksp_atol 1.0e-4
+-T_ksp_rtol 1.0e-10
+-T_pc_type bjacobi
 # ---------------------------------
 #   Stokes solver specification
 # ---------------------------------
