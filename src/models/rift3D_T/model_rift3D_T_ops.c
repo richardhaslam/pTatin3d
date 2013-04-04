@@ -684,7 +684,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 			}    
 		} else {
 			pls = 0.01 * rand() / (RAND_MAX + 1.0);
-			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > ylab) ) {
+			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
 				pls = 1.0 * rand() / (RAND_MAX + 1.0);
 			}			
 		}
