@@ -701,6 +701,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	multipys_pack = user->pack;
 	dav           = stokes->dav;
 	dap           = stokes->dap;
+
+	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
+	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
+	
 	
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	{
@@ -730,6 +734,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 		
+		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
 

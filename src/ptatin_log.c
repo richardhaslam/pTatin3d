@@ -258,14 +258,21 @@ PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 	const char *prefix;
 	PetscReal min[3],max[3];
 	PetscInt M,N,P;
+	Vec coords;
 	PetscErrorCode ierr;
 	
 	//ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0,&M,&N,&P,0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = DMDAGetBoundingBox(dm,min,max);CHKERRQ(ierr);
+	
 	
 	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,PETSC_NULL,M,N,P);
-	PetscViewerASCIIPrintf(ctx->log,"                                     span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);
+
+	coords = PETSC_NULL;
+	ierr = DMDAGetCoordinates(dm,&coords);CHKERRQ(ierr);
+	if (coords) {
+		ierr = DMDAGetBoundingBox(dm,min,max);CHKERRQ(ierr);
+		PetscViewerASCIIPrintf(ctx->log,"                                     span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);
+	}
 	
 	PetscFunctionReturn(0);
 }
