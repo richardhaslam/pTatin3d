@@ -1084,6 +1084,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			/* update marker props on new mesh configuration */
 			ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 		}
+	
+		/* Update boundary conditions */
+		/* Fine level setup */
+		ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
+		/* Coarse grid setup: Configure boundary conditions */
+		ierr = pTatinModel_ApplyBoundaryConditionMG(nlevels,u_bclist,dav_hierarchy,model,user);CHKERRQ(ierr);
+		
 		
 		/* solve energy equation */
 		//
