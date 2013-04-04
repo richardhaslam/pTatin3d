@@ -134,7 +134,7 @@ PetscErrorCode pTatinLogBasicKSP(pTatinCtx ctx,const char kspname[],KSP ksp)
 	ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 	ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
 
-	PetscViewerASCIIPrintf(ctx->log,"  KSP: (%8.8s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  reason %s;  \n", kspname,prefix,rnorm,its,KSPConvergedReasons[reason]);
+	PetscViewerASCIIPrintf(ctx->log,"  KSP: (%18.18s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  reason %s;  \n", kspname,prefix,rnorm,its,KSPConvergedReasons[reason]);
 	
 	PetscFunctionReturn(0);
 }
@@ -155,7 +155,7 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
 	ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
-	PetscViewerASCIIPrintf(ctx->log,"  SNES: (%8.8s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  total linear its. %1.4d;  reason %s;  \n", snesname,prefix,rnorm,its,lits,SNESConvergedReasons[reason]);
+	PetscViewerASCIIPrintf(ctx->log,"  SNES: (%18.18s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  total linear its. %1.4d;  reason %s;  \n", snesname,prefix,rnorm,its,lits,SNESConvergedReasons[reason]);
 
 	ierr = SNESGetLinearSolveFailures(snes,&nkspfails);CHKERRQ(ierr);
 	ierr = SNESGetNonlinearStepFailures(snes,&nstepfails);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 	ierr = DMDAGetInfo(dm,0,&M,&N,&P,0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetBoundingBox(dm,min,max);CHKERRQ(ierr);
 	
-	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%8.8s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,PETSC_NULL,M,N,P);
+	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,PETSC_NULL,M,N,P);
 	PetscViewerASCIIPrintf(ctx->log,"                                     span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);
 	
 	PetscFunctionReturn(0);

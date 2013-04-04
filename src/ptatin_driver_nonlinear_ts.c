@@ -38,6 +38,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_log.h"
 
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
@@ -754,6 +755,11 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	for (k=nlevels-1; k>=0; k--) {
+		char name[128];
+		sprintf(name,"vel_dmda_Lv%d",k);
+		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
+	}
 	
 	/* Coarse grid setup: Define interpolation operators for velocity space */
 	interpolation_v[0] = PETSC_NULL;
@@ -873,6 +879,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
+	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
+	
 #if 1
 {
 	PetscInt snes_its;
@@ -887,6 +895,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = pTatinLogBasicSNES(user,"Stokes: LinearStage",snes);CHKERRQ(ierr);
 	if (monitor_stages) {
 		ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
 	}
@@ -901,6 +910,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = pTatinLogBasicSNES(user,"Stokes: PicardStage",snes);CHKERRQ(ierr);
 	if (monitor_stages) {
 		ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
 	}
@@ -940,6 +950,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
 		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes: NewtonStage",snes_newton);CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
 		}
@@ -988,6 +999,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		energy->dt   = user->dt;
 	}
 	
+	user->step = 1;
 	user->time = user->time + user->dt;
 	if (active_energy) {
 		energy->time = user->time;
@@ -1013,6 +1025,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ EXECUTING TIME STEP : %D ]]\n", step );
 		PetscPrintf(PETSC_COMM_WORLD,"     dt    : %1.4e \n", user->dt );
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time );
+	
+		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 	
 		/* update marker time dependent terms */
@@ -1108,7 +1122,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			
 			PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
 			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
-			
+			ierr = pTatinLogBasicSNES(user,"Energy",snesT);CHKERRQ(ierr);
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
 		}
 		//
@@ -1152,6 +1166,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		/* e) solve mechanical model */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		
 		
 		/* output */
@@ -1181,6 +1196,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		}
 		
 		/* update time */
+		user->step++;
 		user->time = user->time + user->dt;
 		if (active_energy) {
 			energy->time = user->time;
