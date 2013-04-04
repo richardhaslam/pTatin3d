@@ -11,6 +11,8 @@
 #include "dmda_remesh.h"
 #include "output_material_points.h"
 #include "mesh_quality_metrics.h"
+//#include "private/quadrature_impl.h"
+#include "ptatin3d_defs.h"
 
 #include "model_basin_comp_ctx.h"
 #include "model_utils.h"
@@ -548,13 +550,18 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,void *ctx)
 {
 	ModelBasinCompCtx *data = (ModelBasinCompCtx*)ctx;
-	int                    p,n_mp_points;
-	DataBucket             db;
-	DataField              PField_std,PField_stokes;
-	PhysCompStokes         user;
-	QPntVolCoefStokes      *all_gausspoints,*cell_gausspoints;
-	PetscInt               nqp,qp;
-	PetscErrorCode ierr;
+	int                     p,n_mp_points;
+	DataBucket              db;
+	DataField               PField_std,PField_stokes;
+	PhysCompStokes          user;
+	QPntVolCoefStokes       *all_gausspoints,*cell_gausspoints;
+	PetscInt                nqp,qp;
+    DM                      dav, cda;
+    Vec                     gcoords;
+    DMDACoor3d              ***LA_gcoords;
+    PetscInt                nel,nen_v,e;
+    const PetscInt          *elnidx_v;   
+	PetscErrorCode          ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -562,6 +569,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
+    dav = c->stokes_ctx->dav;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
@@ -572,7 +580,12 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
+
+    ierr = DMDAGetCoordinateDA(dav, &cda);CHKERRQ(ierr);
+    ierr = DMDAGetGhostedCoordinates(dav,&gcoords );CHKERRQ(ierr);
+    ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+    
+    ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_v,&elnidx_v);CHKERRQ(ierr);
 
 	/* get the quadrature points */
 	user = c->stokes_ctx;
@@ -587,6 +600,9 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 		PetscInt    phase;
 		PetscInt    layer, kmaxlayer, kminlayer, localeid_p;
 		PetscInt    I, J, K;
+        PetscScalar     elcoords[Q2_NODES_PER_EL_3D*NSD];
+        PetscScalar     Ni_p[Q2_NODES_PER_EL_3D], coord_qp[NSD];
+
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
@@ -614,11 +630,30 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 
 		
 		MPntStdGetField_local_element_index(material_point,&localeid_p);
+
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,localeid_p,&cell_gausspoints);CHKERRQ(ierr);
-		
+
+        ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_v[nen_v*localeid_p],LA_gcoords);CHKERRQ(ierr);
+
+            
 		for (qp=0; qp<nqp; qp++) {
-			cell_gausspoints[qp].eta  = eta;
-			cell_gausspoints[qp].rho  = rho;
+            PetscReal *xi_qp;
+            int i;
+            // get local coords for point p
+            xi_qp = &user->volQ->q_xi_coor[ NSD * qp ];
+            
+            P3D_ConstructNi_Q2_3D( xi_qp,Ni_p);
+            
+            // interpolate nodal coords to quadrature point
+            coord_qp[0] = coord_qp[1] = coord_qp[2] = 0.0;
+            for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+                coord_qp[0] += Ni_p[i] * elcoords[NSD*i+0];
+                coord_qp[1] += Ni_p[i] * elcoords [NSD*i+1];
+                coord_qp[2] += Ni_p[i] * elcoords[NSD*i+2];
+            }
+            
+			cell_gausspoints[qp].eta  = data->eta_b[phase-1] + coord_qp[1]*(data->eta_f[phase-1]-data->eta_b[phase-1])/Ly;
+			cell_gausspoints[qp].rho  = data->rho_b[phase-1] + coord_qp[1]*(data->rho_f[phase-1]-data->rho_b[phase-1])/Ly;
 
 			cell_gausspoints[qp].Fu[0] = 0.0;
 			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
@@ -631,7 +666,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-	
+    ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
