@@ -138,43 +138,43 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,0,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,0,1.e8,1.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,0,0.0,0.1);
+    MaterialConstantsSetValues_SoftLin(materialconstants,0,0.01,1.0);
     
     //MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,0.020);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2700,5.e-6,3.e-12);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2700,2.e-5,3.e-12);
     MaterialConstantsSetValues_DensityConst(materialconstants,1,2800);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,1,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,1,0.0,0.1);    
+    MaterialConstantsSetValues_SoftLin(materialconstants,1,0.01,1.0);    
     
     //MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,2,1.0e27,0.012);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,2,3300,5.e-6,3.e-12);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,2,1.0e26,0.012);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,2,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
-    MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.0,0.0,3.e8,2.e8,2.e7,3.e8);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.3,0.1,2.e7,2.e7,1.e7,3.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,2,3.e8,3.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,2,0.0,0.1);
+    MaterialConstantsSetValues_SoftLin(materialconstants,2,0.01,1.0);
     
     //MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e27,0.012);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,5.e-6,3.e-12);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e26,0.012);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,3,3300);
-    MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.3,0.3,2.e7,2.e7,1.e7,2.e8);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.3,0.1,2.e7,2.e7,1.e7,3.e8);
     MaterialConstantsSetValues_PlasticMises(materialconstants,3,3.e8,3.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,3,0.0,0.1);
+    MaterialConstantsSetValues_SoftLin(materialconstants,3,0.01,1.0);
     
     //MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
     MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,4,1.0e27,0.02);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,4,3300,5.e-6,3.e-12);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,4,1.0e26,0.02);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,4,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,4,3300);
     MaterialConstantsSetValues_PlasticDP(materialconstants,4,0.6,0.6,2.e7,2.e7,1.e7,3.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,4,3.e8,3.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,4,0.0,0.1);
+    MaterialConstantsSetValues_SoftLin(materialconstants,4,0.01,1.0);
     
 	/* Read the options */
 	/*cutoff */
@@ -683,9 +683,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 				pls = 0.05;   
 			}    
 		} else {
-			pls = 0.001 * rand() / (RAND_MAX + 1.0);
-			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) ) {
-				pls = 0.1 * rand() / (RAND_MAX + 1.0);
+			pls = 0.01 * rand() / (RAND_MAX + 1.0);
+			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > ylab) ) {
+				pls = 1.0 * rand() / (RAND_MAX + 1.0);
 			}			
 		}
 		
@@ -937,7 +937,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
     
-    vxl = -data->vx;
+    vxl =  0.0;
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
