@@ -1,0 +1,128 @@
+# ------------------------
+#   Model specification
+# ------------------------
+-ptatin_model rift3D_T
+-model_rift3D_T_vis_bar 1e22 
+-mx 128
+-my 64
+-mz 128
+-output_path bigonee2
+-model_rift3D_T_vx 3.14e-10 
+-model_rift3D_T_vz -1.57e-10 
+-output_frequency 20 
+-nsteps 1000
+-dt_max 1e-3
+-model_rift3D_T_wz 0.5 
+-model_rift3D_T_ageAnom 300
+-model_rift3D_T_age0    300
+-model_rift3D_T_Oy  -3.0e5
+#-model_rift3D_T_use_semi_eulerian 
+
+# ------------------------------------
+#   Nonlinear solver specification
+# ------------------------------------
+-newton_its 0
+-snes_converged_reason
+-snes_rtol 1e-2 
+-snes_atol 1e-1
+-snes_max_linear_solve_fail 10 
+-snes_max_it 5  
+
+# ------------------------------------
+#   thermal solver                  
+# ------------------------------------
+
+-T_snes_type ksponly
+-T_ksp_type fgmres
+-T_pc_type jacobi
+# ---------------------------------
+#   Stokes solver specification
+# ---------------------------------
+-ksp_type  fgmres
+-ksp_rtol  1e-2 
+-pc_type   fieldsplit
+-ksp_max_it 50 
+
+-pc_fieldsplit_type                     schur
+-pc_fieldsplit_schur_factorization_type upper
+
+#
+# Nested ksp can produce non-linear operators and degrade convergence
+# Thus we only use 1 fmgres iteration here at the expense of having
+# to do more Stokes iterations.
+#
+-fieldsplit_u_ksp_type    fgmres
+-fieldsplit_u_ksp_max_it  1
+-fieldsplit_u_ksp_rtol    1.0e-3
+-fieldsplit_u_pc_type     mg
+
+-fieldsplit_p_ksp_type    preonly
+-fieldsplit_p_pc_type     jacobi
+
+# use baij with coarse (asm)
+-stk_velocity_da_mat_type baij
+
+# use aij with coarse (diect)
+#-stk_velocity_da_mat_type aij
+
+# ---------------------------------
+#   GMG solver specification
+# ---------------------------------
+# *** IMPORTANT - IF YOU WANT TO PROFILE GMG dau_nlevels and fieldsplit_u_pc_mg_levels MUST MATCH ***
+-dau_nlevels               3 
+-fieldsplit_u_pc_mg_levels 3
+
+-A11_operator_type 0,1,1,1,1
+
+-stk_velocity_da_refine_hierarchy_x 2,4
+-stk_velocity_da_refine_hierarchy_y 2,2
+-stk_velocity_da_refine_hierarchy_z 2,4
+-snes_rtol 1e-4
+-snes_atol 1e-2
+#-use_low_order_geometry
+#-lattice_layout_perturb 0.0
+#-model_rift3D_T_norandom
+
+! --------------------------------------------------
+# SMOOTHER (cheby/specest - jacobi)
+#-fieldsplit_u_mg_levels_ksp_type      chebychev
+#-fieldsplit_u_mg_levels_ksp_max_it    10
+#-fieldsplit_u_mg_levels_pc_type       jacobi
+#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+
+# SMOOTHER (gmres - jacobi)
+-fieldsplit_u_mg_levels_ksp_type      gmres
+-fieldsplit_u_mg_levels_ksp_max_it    10
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_pc_type       jacobi
+
+! --------------------------------------------------
+# COARSE - iterative
+-fieldsplit_u_mg_coarse_ksp_type       cg 
+-fieldsplit_u_mg_coarse_ksp_max_it     25
+-fieldsplit_u_mg_coarse_ksp_rtol       1.0e-4
+-fieldsplit_u_mg_coarse_pc_type        asm
+-fieldsplit_u_mg_coarse_pc_asm_overlap 4
+-fieldsplit_u_mg_coarse_sub_pc_type    ilu
+
+# COARSE - direct
+#-fieldsplit_u_mg_coarse_pc_type lu
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist
+
+
+# --------------
+#   Monitoring
+# --------------
+-snes_monitor
+#-snes_view
+
+-fieldsplit_u_pc_mg_log
+-fieldsplit_u_ksp_monitor
+#-fieldsplit_u_mg_coarse_ksp_converged_reason
+
+-T_ksp_monitor
+
+-log_summary
+-options_left 1
