@@ -9,8 +9,10 @@ typedef struct {
 	PetscReal interface_heights_f[100];
     PetscReal interface_heights_b[100];
     PetscInt  layer_res_k[99];
-	PetscReal eta[100];
-	PetscReal rho[100];
+	PetscReal eta_f[100];
+    PetscReal eta_b[100];
+	PetscReal rho_f[100];
+    PetscReal rho_b[100];
 	PetscInt  bc_type;
 	PetscReal exx;
 	PetscReal vx_commpression;

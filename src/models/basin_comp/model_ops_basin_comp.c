@@ -129,23 +129,42 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	}
     
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_eta",data->eta,&n_int,&flg);
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_eta_f",data->eta_f,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list (-model_basin_comp_layer_eta)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list at the front (-model_basin_comp_layer_eta_f)");
 	}
 	if (n_int != data->n_interfaces-1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity (-model_basin_comp_layer_eta)",data->n_interfaces-1);
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity at the front (-model_basin_comp_layer_eta_f)",data->n_interfaces-1);
 	}
-	
+    
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_rho",data->rho,&n_int,&flg);
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_eta_b",data->eta_b,&n_int,&flg);
 	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list (-model_basin_comp_layer_rho)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list at the back (-model_basin_comp_layer_eta_b)");
 	}
 	if (n_int != data->n_interfaces-1) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density (-model_basin_comp_layer_rho)",data->n_interfaces-1);
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity at the back (-model_basin_comp_layer_eta_b)",data->n_interfaces-1);
+	}	
+    
+	n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_rho_f",data->rho_f,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list at the front (-model_basin_comp_layer_rho_f)");
+	}
+	if (n_int != data->n_interfaces-1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density at the front (-model_basin_comp_layer_rho_f)",data->n_interfaces-1);
+	}
+
+	n_int = data->max_layers;
+	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_rho_b",data->rho_b,&n_int,&flg);
+	if (!flg) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list at the back (-model_basin_comp_layer_rho_b)");
+	}
+	if (n_int != data->n_interfaces-1) {
+		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density at the back (-model_basin_comp_layer_rho_b)",data->n_interfaces-1);
 	}
 	
+    
     /* define the mesh size the z-direction for the global problem */
 	c->mz = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
@@ -453,6 +472,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 	int                    p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
+    PetscReal              Ly;
 	PetscErrorCode ierr;
 			
 	PetscFunctionBegin;
@@ -461,6 +481,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 			
 	/* define properties on material points */
 	db = c->materialpoint_db;
+    Ly = data->Ly;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
@@ -475,7 +496,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
-		//double      *position;
+		double      *position;
 		PetscReal      eta,rho;
 		PetscInt    phase;
 		PetscInt    layer, kmaxlayer, kminlayer;
@@ -484,9 +505,9 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
-		//MPntStdGetField_global_coord(material_point,&position)
+		MPntStdGetField_global_coord(material_point,&position);
 
-    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
@@ -501,8 +522,8 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 			
 			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
-				eta = data->eta[layer];
-				rho = data->rho[layer];
+				eta = data->eta_b[layer] + position[1]*(data->eta_f[layer]-data->eta_b[layer])/Ly;
+				rho = data->rho_b[layer] + position[1]*(data->rho_f[layer]-data->rho_b[layer])/Ly;
 
 				rho = -rho * GRAVITY;
 			}
@@ -561,17 +582,18 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
-		//double      *position;
-		PetscReal      eta,rho;
+		double      *position;
+		PetscReal      eta,rho, Ly;
 		PetscInt    phase;
 		PetscInt    layer, kmaxlayer, kminlayer, localeid_p;
 		PetscInt    I, J, K;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
-		
-    MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
-
+        MPntStdGetField_global_coord(material_point,&position);
+        
+        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+        Ly = data->Ly;
 		//Set the properties
 		phase = -1;
 		eta =  0.0;
@@ -583,8 +605,8 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 			
 			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
-				eta = data->eta[layer];
-				rho = data->rho[layer];
+				eta = data->eta_b[layer] + position[1]*(data->eta_f[layer]-data->eta_b[layer])/Ly;
+				rho = data->rho_b[layer] + position[1]*(data->rho_f[layer]-data->rho_b[layer])/Ly;
 			}
 			kminlayer += data->layer_res_k[layer];
 			layer++;
