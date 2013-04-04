@@ -154,7 +154,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,2,1.0e26,0.012);
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,2,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
-    MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.3,0.1,2.e7,2.e7,1.e7,3.e8);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.0,0.0,3.e8,1.e8,2.e7,3.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,2,3.e8,3.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,2,0.01,1.0);
     
@@ -163,7 +163,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e26,0.012);
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,3,3300);
-    MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.3,0.1,2.e7,2.e7,1.e7,3.e8);
+    MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.0,0.0,3.e8,1.e8,2.e7,3.e8);
     MaterialConstantsSetValues_PlasticMises(materialconstants,3,3.e8,3.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,3,0.01,1.0);
     
