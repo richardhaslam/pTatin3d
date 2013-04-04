@@ -34,17 +34,19 @@
 #-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
--model_basin_comp_Lx 30.0
--model_basin_comp_Ly 12.0
--model_basin_comp_amp_factor 0.01
+-model_basin_comp_Lx 32
+-model_basin_comp_Ly 20
+-model_basin_comp_amp_factor 0.1
 -model_basin_comp_bc_type 0
--model_basin_comp_interface_heights_f 0.0,13.5,15.3
--model_basin_comp_interface_heights_b 0.0,15.1,15.3
--model_basin_comp_layer_eta 0.025,1.0
--model_basin_comp_layer_res_k 25,7
--model_basin_comp_layer_rho 0.0,0.0
--model_basin_comp_n_interfaces 3
--model_basin_comp_vx_compression -0.005
+-model_basin_comp_interface_heights_f 0.0,12.0,16.0,24.0
+-model_basin_comp_interface_heights_b 0.0,15.0,16.0,24.0
+-model_basin_comp_layer_eta_f 0.0025,1.0,0.0025
+-model_basin_comp_layer_eta_b 0.0025,0.5,0.0025
+-model_basin_comp_layer_res_k 12,4,6
+-model_basin_comp_layer_rho_f 0.0,0.0,0.0
+-model_basin_comp_layer_rho_b 0.0,0.0,0.0
+-model_basin_comp_n_interfaces 4
+-model_basin_comp_vx_compression -0.005                              
 -model_basin_comp_alpha 0.05
 -mx 32
 -my 32
@@ -61,7 +63,6 @@
 -stk_velocity_da_refine_hierarchy_x 4,4
 -stk_velocity_da_refine_hierarchy_y 4,4
 -stk_velocity_da_refine_hierarchy_z 1,2
-
 # dump the geometric multi-grid mesh hierarchy 
 -stk_velocity_da_view_hierarchy
 
