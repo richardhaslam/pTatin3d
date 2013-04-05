@@ -11,61 +11,13 @@
 #include "dmda_remesh.h"
 #include "output_material_points.h"
 #include "mesh_quality_metrics.h"
-//#include "private/quadrature_impl.h"
+#include "element_utils_q2.h"
 #include "ptatin3d_defs.h"
 
 #include "model_basin_comp_ctx.h"
 #include "model_utils.h"
 
 
-
-/*
-#undef __FUNCT__
-#define __FUNCT__ "save_mesh"
-PetscErrorCode save_mesh(DM dav,const char name[])
-{
-	Vec             coord, slice;
-	DM              cda;
-	PetscViewer     viewer;
-	PetscInt        M, N, P, i,j;
-	PetscScalar     *slice_a;
-	DMDACoor3d      ***LA_coord;
-	PetscMPIInt     size;
-	PetscErrorCode  ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = MPI_Comm_size(((PetscObject)dav)->comm,&size);CHKERRQ(ierr);
-	if (size != 1) {
-		PetscPrintf(PETSC_COMM_WORLD,"WARNING: save_mesh() is only valid if nproc == 1\n");
-		PetscFunctionReturn(0);
-	}
-
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = VecCreateSeq(PETSC_COMM_SELF,2*M*N,&slice);CHKERRQ(ierr);
-	ierr = VecGetArray(slice, &slice_a);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
-	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	for(j=0; j < N; ++j){
-		for(i = 0; i<M; ++i){
-			slice_a[2*(j*M + i)] = LA_coord[0][j][i].x;
-			slice_a[2*(j*M + i) +1] = LA_coord[0][j][i].y;
-		}
-	}
-	ierr = VecRestoreArray(slice, &slice_a);CHKERRQ(ierr);
-	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-	
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-	ierr = VecView(slice,viewer);CHKERRQ(ierr);
-	
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);	
-	ierr = VecDestroy(&slice);CHKERRQ(ierr);
-
-	PetscFunctionReturn(0);
-}
-*/
 
 
 #undef __FUNCT__
@@ -478,7 +430,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 	PetscErrorCode ierr;
 			
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);CHKERRQ(ierr);
 			
 			
 	/* define properties on material points */
@@ -558,8 +510,8 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	PetscInt                nqp,qp;
     DM                      dav, cda;
     Vec                     gcoords;
-    DMDACoor3d              ***LA_gcoords;
-    PetscInt                nel,nen_v,e;
+    PetscScalar             *LA_gcoords;
+    PetscInt                nel,nen_v;
     const PetscInt          *elnidx_v;   
 	PetscErrorCode          ierr;
 	
@@ -666,7 +618,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-    ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -699,9 +651,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_BasinComp(pTatinCtx c,void *ctx)
 {
 	ModelBasinCompCtx *data = (ModelBasinCompCtx*)ctx;
 	PetscReal         Lx,Ly,dx,dy,dz,Lz;
-	PetscInt          mx,my,mz, itf;
+	PetscInt          mx,my,mz;
 	PetscReal         amp,factor;
-  char              mesh_outputfile[PETSC_MAX_PATH_LEN];
 	PetscErrorCode    ierr;
 
 	PetscFunctionBegin;
@@ -734,9 +685,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_BasinComp(pTatinCtx c,void *ctx)
     
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     
-    ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",c->outputpath);
-	ierr = save_mesh(c->stokes_ctx->dav,mesh_outputfile);CHKERRQ(ierr);
-    
+
 	PetscFunctionReturn(0);
 }
 
@@ -762,7 +711,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_BasinComp(pTatinCtx c,Vec X,void *ct
 	PhysCompStokes stokes;
 	DM             stokes_pack,dav,dap;
 	Vec            velocity,pressure;
-	PetscInt       M,N,P;
 	PetscInt           metric_L = 5; 
 	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION, MESH_QUALITY_DIAGONAL_RATIO, MESH_QUALITY_VERTEX_ANGLE, MESH_QUALITY_FACE_AREA_RATIO };
 	PetscReal          value[100];
