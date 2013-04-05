@@ -388,8 +388,8 @@ PetscErrorCode MaterialConstantsSetDefault_DensityBoussinesq(DataBucket db)
 	data = (MaterialConst_DensityBoussinesq*)PField->data; /* should write a function to do this */
 	for (r=0; r<nregions; r++) {
 		data[r].density = 1.0;
-        	data[r].alpha = 0.0;
-        	data[r].beta = 0.0;
+		data[r].alpha = 0.0;
+    data[r].beta = 0.0;
 	}	
 	
 	PetscFunctionReturn(0);
@@ -415,7 +415,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 	
 	/* insert options */
 	/* eta0 */
-    
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[0],region_id);
 	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -423,6 +422,25 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 	} else if ( (!found)  && (essential) ) {
 		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[0],region_id);CHKERRQ(ierr);
 	}
+
+	/* alpha */
+	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[1],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_DensityBoussinesqSetField_thermalexpension(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[0],region_id);CHKERRQ(ierr);
+	}
+
+	/* beta */
+	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[2],region_id);
+	ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+	if (found) {
+		MaterialConst_DensityBoussinesqSetField_compressibility(data,value);
+	} else if ( (!found)  && (essential) ) {
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[0],region_id);CHKERRQ(ierr);
+	}
+	
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -449,13 +467,14 @@ PetscErrorCode MaterialConstantsPrintValues_DensityBoussinesq(DataBucket db,cons
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[0],region_id);
 	MaterialConst_DensityBoussinesqGetField_density(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[1],region_id);
 	MaterialConst_DensityBoussinesqGetField_thermalexpension(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
-    sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[2],region_id);
+  
+  sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[2],region_id);
 	MaterialConst_DensityBoussinesqGetField_compressibility(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
-    
     
 	DataFieldRestoreAccess(PField);
     
@@ -504,11 +523,15 @@ PetscErrorCode MaterialConstantsScaleValues_DensityBoussinesq(DataBucket db,cons
 	DataFieldGetAccess(PField);
 	DataFieldAccessPoint(PField,region_id,(void**)&data);
 	
+	/* scaling for eta0 */
 	MaterialConst_DensityBoussinesqGetField_density(data,&density);
 	density=density/rho_star;
 	MaterialConst_DensityBoussinesqSetField_density(data,density);
-    
-    MaterialConst_DensityBoussinesqGetField_compressibility(data,&beta);
+
+	/* no scaling for alpha */
+	
+	/* scaling for beta */
+  MaterialConst_DensityBoussinesqGetField_compressibility(data,&beta);
 	beta=beta/sigma_star;
 	MaterialConst_DensityBoussinesqSetField_compressibility(data,beta);
 	
@@ -947,23 +970,23 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const in
 	MaterialConst_ViscosityArrhGetField_preexpA(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
-    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[1],region_id);
+  sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[1],region_id);
 	MaterialConst_ViscosityArrhGetField_Ascale(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
-    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[2],region_id);
+  sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[2],region_id);
 	MaterialConst_ViscosityArrhGetField_entalpy(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
-    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+  sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
 	MaterialConst_ViscosityArrhGetField_Vmol(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
-    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+  sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[4],region_id);
 	MaterialConst_ViscosityArrhGetField_nexp(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
-    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
+  sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[5],region_id);
 	MaterialConst_ViscosityArrhGetField_Tref(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
 	
