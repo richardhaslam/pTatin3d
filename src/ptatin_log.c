@@ -298,4 +298,20 @@ PetscErrorCode pTatinLogBasicCPUtime(pTatinCtx ctx,const char component_descript
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinLogNote"
+PetscErrorCode pTatinLogNote(pTatinCtx ctx,const char comment[])
+{
+	PetscViewerASCIIPrintf(ctx->log,"  Note: %s\n",comment);
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinLogNote2"
+PetscErrorCode pTatinLogNote2(pTatinCtx ctx,const char comment1[],const char comment2[])
+{
+	PetscViewerASCIIPrintf(ctx->log,"  Note: %s %s\n",comment1,comment2);
+	PetscFunctionReturn(0);
+}
+
 

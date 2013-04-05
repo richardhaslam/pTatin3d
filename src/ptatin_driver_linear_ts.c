@@ -38,6 +38,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_log.h"
 
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
@@ -481,18 +482,21 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
 	PetscInt       step;
-	
+  pTatinModel   model;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> new simulation");CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+	ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
+	ierr = pTatinLogNote2(user,"[ptatin_driver_linear_ts] -> model loaded:",model->model_name);CHKERRQ(ierr);
 	/* Check if model is being restarted from a checkpointed file */
 	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
@@ -510,6 +514,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
+	
+	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
+	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
 	
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	{
@@ -544,6 +551,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	for (k=nlevels-1; k>=0; k--) {
+		char name[128];
+		sprintf(name,"vel_dmda_Lv%d",k);
+		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
+	}
 	
 	/* Define interpolation operators for velocity space */
 	interpolation_v[0] = PETSC_NULL;
@@ -645,7 +657,10 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
+	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
+
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 
 	/* dump */
 	ierr = pTatinModel_Output(user->model,user,X,"step000000");CHKERRQ(ierr);
@@ -702,6 +717,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time+user->dt );
 		/* update context time information */
 		user->time = user->time + user->dt;
+
+		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
+		
 		
 		/* update markers */
 		{
@@ -775,6 +793,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 
 		/*
 		{
@@ -870,6 +889,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	Mat            interpolation_v[10],interpolation_eta[10];
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
+  pTatinModel    model;
 	
 	PetscErrorCode ierr;
 	
@@ -877,11 +897,14 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> restarted simulation");CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+	ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
+	ierr = pTatinLogNote2(user,"[ptatin_driver_linear_ts] -> model loaded:",model->model_name);CHKERRQ(ierr);
 	/* Check if model is being restarted from a checkpointed file */
 	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
@@ -899,6 +922,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
+	
+	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
+	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
 	
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	{
@@ -933,6 +959,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	for (k=nlevels-1; k>=0; k--) {
+		char name[128];
+		sprintf(name,"vel_dmda_Lv%d",k);
+		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
+	}
 	
 	/* Define interpolation operators for velocity space */
 	interpolation_v[0] = PETSC_NULL;
@@ -1015,6 +1046,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time + user->dt);
 		/* update context time information */
 		user->time = user->time + user->dt;
+
+		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 		/* update markers */
 		{
@@ -1088,6 +1121,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", user->step );
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		
 		
 		/* output */
