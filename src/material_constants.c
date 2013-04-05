@@ -429,7 +429,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 	if (found) {
 		MaterialConst_DensityBoussinesqSetField_thermalexpension(data,value);
 	} else if ( (!found)  && (essential) ) {
-		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[0],region_id);CHKERRQ(ierr);
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[1],region_id);CHKERRQ(ierr);
 	}
 
 	/* beta */
@@ -438,7 +438,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 	if (found) {
 		MaterialConst_DensityBoussinesqSetField_compressibility(data,value);
 	} else if ( (!found)  && (essential) ) {
-		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[0],region_id);CHKERRQ(ierr);
+		ierr = MaterialConstantsReportParseError(model_name,MaterialConst_DensityBoussinesq_member_names[2],region_id);CHKERRQ(ierr);
 	}
 	
 	
