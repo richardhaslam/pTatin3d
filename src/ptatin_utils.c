@@ -48,17 +48,18 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[])
 	mode_t mode;
 	PetscMPIInt rank;
 	int num,error_number;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	
 	/* Generate a new directory on proc 0 */
 	if (rank == 0) {
 		num = mkdir(dirname,S_IRWXU);
 		error_number = errno;
 	}
-	MPI_Bcast(&num,1,MPI_INT,0,PETSC_COMM_WORLD);
-	MPI_Bcast(&error_number,1,MPI_INT,0,PETSC_COMM_WORLD);
+	ierr = MPI_Bcast(&num,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Bcast(&error_number,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	if (error_number == EEXIST) {
 		PetscPrintf(PETSC_COMM_WORLD,"Writing output to existing directory %s \n",dirname);
@@ -74,7 +75,7 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[])
 		PetscPrintf(PETSC_COMM_WORLD,"Created output directory %s \n",dirname);
 	}
 	
-	MPI_Barrier(PETSC_COMM_WORLD);
+	ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -234,6 +235,36 @@ int ptatin_RandomGetInt(int min,int max)
 	return ri;
 }
 
+# if 0
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinWriteRevision"
+PetscErrorCode pTatinWriteRevision(const char output_path[])
+{
+	int            svn;
+	PetscMPIInt    rank;
+	char           cmd[256];
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	
+	if (rank == 0) {
 
+		/* subversion */
+		if (svn) {
+			/* svn info svn+ssh://dmay@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d : requires password */
+			
+			/* this will only work if run from the current directory */
+			sprintf(cmd,"svn info > %s/ptatin.revision",output_path);
+			system(cmd);
+		}
+		
+	}
+	
+	ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+}
+
+#endif
 
