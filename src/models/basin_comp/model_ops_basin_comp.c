@@ -13,6 +13,7 @@
 #include "mesh_quality_metrics.h"
 #include "element_utils_q2.h"
 #include "ptatin3d_defs.h"
+#include "math.h"
 
 #include "model_basin_comp_ctx.h"
 #include "model_utils.h"
@@ -128,9 +129,10 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx             = -1.0e-3;
 	data->vx_commpression = 1.0;
-	
+	data->perturbation_type = 0;	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_exx",&data->exx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
 	
@@ -341,8 +343,8 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 	PetscErrorCode ierr;
     ModelBasinCompCtx *data = (ModelBasinCompCtx*)ctx;
 	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter, rank;
-	PetscScalar random, dz_f, dz_b;
-    PetscReal *interface_heights_f, *interface_heights_b;
+	PetscScalar pertu, dz_f, dz_b, pertu_f, pertu_b;
+    PetscReal *interface_heights_f, *interface_heights_b, lamb_b, lamb_f;
     PetscInt *layer_res_k, n_interfaces;
     PetscReal amp;
 	DM cda;
@@ -373,35 +375,52 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 		kinter += 2*layer_res_k[interf-1];
 		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", kinter,N-1 );
         srand(rank*interf+2);//The seed changes with the interface and the process process.
-
+        
 		if ( (kinter>=sk) && (kinter<sk+nz) ) {
-			
+            /*Take the dominant wavelength of the viscous layer*/
+            if(data->eta_b[interf-1] < data->eta_b[interf]){
+                lamb_b = 2*M_PI*(interface_heights_b[interf+1] - interface_heights_b[interf])*pow(data->eta_b[interf]/(6.0*data->eta_b[interf-1]), 1.0/3.0);
+            }else{
+                lamb_b = (interface_heights_b[interf] - interface_heights_b[interf-1])*pow(data->eta_b[interf-1]/(6.0*data->eta_b[interf]), 1.0/3.0);
+            }
+            if(data->eta_f[interf-1] < data->eta_f[interf]){
+                lamb_f = 2*M_PI*(interface_heights_f[interf+1] - interface_heights_f[interf])*pow(data->eta_f[interf]/(6.0*data->eta_f[interf-1]), 1.0/3.0);
+            }else{
+                lamb_f = (interface_heights_f[interf] - interface_heights_f[interf-1])*pow(data->eta_f[interf-1]/(6.0*data->eta_f[interf]), 1.0/3.0);
+            }
+            
+            
 			dz_f = 0.5*((interface_heights_f[interf+1] - interface_heights_f[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights_f[interf] - interface_heights_f[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );
 			dz_b = 0.5*((interface_heights_b[interf+1] - interface_heights_b[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights_b[interf] - interface_heights_b[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );            
-            
+                
             for(i = si; i<si+nx; i++) {
                 
 				if((sj+ny == N) && (sj == 0)){
                     j=sj+ny-1;
-                    random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-					LA_coord[kinter][j][i].z += amp * dz_b * random;
-                    LA_coord[kinter][j-1][i].z += amp * dz_b * random;
-                    LA_coord[kinter][j-2][i].z += amp * dz_b * random;
+                    pertu_b =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_b);
+                    pertu_f =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_f);
+                                                                                                                                                                                        
+					LA_coord[kinter][j][i].z += amp * dz_b * pertu_b;
+                    LA_coord[kinter][j-1][i].z += amp * dz_b * pertu_b;
+                    LA_coord[kinter][j-2][i].z += amp * dz_b * pertu_b;
                     j=0;
-                    random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-                    LA_coord[kinter][j][i].z += amp * dz_f * random;
-                    LA_coord[kinter][j+1][i].z += amp * dz_f * random; 
-                    LA_coord[kinter][j+2][i].z += amp * dz_f * random;
+                    LA_coord[kinter][j][i].z += amp * dz_f * pertu_f;
+                    LA_coord[kinter][j+1][i].z += amp * dz_f * pertu_f; 
+                    LA_coord[kinter][j+2][i].z += amp * dz_f * pertu_f;
 				}else if ((sj+ny == N) || (sj == 0)){
                     PetscReal dz = 0.0;
                     PetscInt sgn = 1;
                     sgn = (sj == 0)?1:-1;
                     j = (sj == 0)?0:(sj+ny-1);
                     dz = (sj == 0)?dz_f:dz_b;
-                    random = 2.0 * rand()/(RAND_MAX+1.0) - 1.0; 
-					LA_coord[kinter][j][i].z += amp * dz * random;
-                    LA_coord[kinter][j+sgn][i].z += amp * dz * random;
-                    LA_coord[kinter][j+sgn*2][i].z += amp * dz * random;
+                    if (data->perturbation_type == 1){
+                        pertu = (sj == 0)?cos(LA_coord[kinter][j][i].x/lamb_f):cos(LA_coord[kinter][j][i].x/lamb_b);
+                    }else{
+                        pertu = 2.0 * rand()/(RAND_MAX+1.0);
+                    }
+					LA_coord[kinter][j][i].z += amp * dz * pertu;
+                    LA_coord[kinter][j+sgn][i].z += amp * dz * pertu;
+                    LA_coord[kinter][j+sgn*2][i].z += amp * dz * pertu;
 
 				}
 			}
