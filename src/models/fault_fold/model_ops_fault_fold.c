@@ -148,21 +148,22 @@ PetscErrorCode BoundaryCondition_FaultFold(DM dav,BCList bclist,pTatinCtx c,Mode
 	
 	
 	exx = data->exx;
-	
+    
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    
 	if (data->bc_type == 0) {
 		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
         
 		/*ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_commpression);CHKERRQ(ierr);
 		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_commpression);CHKERRQ(ierr);*/
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        
+
         
         ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
 	} else if (data->bc_type == 1) {
 		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Not Implemented yet!");
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"BC not Implemented yet!");
 
 		//ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
 	} else {
