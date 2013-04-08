@@ -379,12 +379,12 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 		if ( (kinter>=sk) && (kinter<sk+nz) ) {
             /*Take the dominant wavelength of the viscous layer*/
             if(data->eta_b[interf-1] < data->eta_b[interf]){
-                lamb_b = 2*M_PI*(interface_heights_b[interf+1] - interface_heights_b[interf])*pow(data->eta_b[interf]/(6.0*data->eta_b[interf-1]), 1.0/3.0);
+                lamb_b = (interface_heights_b[interf+1] - interface_heights_b[interf])*pow(data->eta_b[interf]/(6.0*data->eta_b[interf-1]), 1.0/3.0);
             }else{
                 lamb_b = (interface_heights_b[interf] - interface_heights_b[interf-1])*pow(data->eta_b[interf-1]/(6.0*data->eta_b[interf]), 1.0/3.0);
             }
             if(data->eta_f[interf-1] < data->eta_f[interf]){
-                lamb_f = 2*M_PI*(interface_heights_f[interf+1] - interface_heights_f[interf])*pow(data->eta_f[interf]/(6.0*data->eta_f[interf-1]), 1.0/3.0);
+                lamb_f = (interface_heights_f[interf+1] - interface_heights_f[interf])*pow(data->eta_f[interf]/(6.0*data->eta_f[interf-1]), 1.0/3.0);
             }else{
                 lamb_f = (interface_heights_f[interf] - interface_heights_f[interf-1])*pow(data->eta_f[interf-1]/(6.0*data->eta_f[interf]), 1.0/3.0);
             }
