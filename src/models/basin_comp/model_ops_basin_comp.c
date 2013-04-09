@@ -129,10 +129,12 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx             = -1.0e-3;
 	data->vx_commpression = 1.0;
-	data->perturbation_type = 0;	
+	data->perturbation_type = 0;
+	data->perturbation_width = 3;
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
+        ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_perturbation_width",&data->perturbation_width,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_exx",&data->exx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
 	
@@ -345,7 +347,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter, rank;
 	PetscScalar pertu, dz_f, dz_b, pertu_f, pertu_b;
     PetscReal *interface_heights_f, *interface_heights_b, lamb_b, lamb_f;
-    PetscInt *layer_res_k, n_interfaces;
+    PetscInt *layer_res_k, n_interfaces, pwidth;
     PetscReal amp;
 	DM cda;
 	Vec coord;
@@ -399,14 +401,16 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                     j=sj+ny-1;
                     pertu_b =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_b);
                     pertu_f =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_f);
-                                                                                                                                                                                        
-					LA_coord[kinter][j][i].z += amp * dz_b * pertu_b;
-                    LA_coord[kinter][j-1][i].z += amp * dz_b * pertu_b;
-                    LA_coord[kinter][j-2][i].z += amp * dz_b * pertu_b;
+                    for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                        LA_coord[kinter][j-pwidth][i].z += amp * dz_b * pertu_b;
+                    }
                     j=0;
-                    LA_coord[kinter][j][i].z += amp * dz_f * pertu_f;
-                    LA_coord[kinter][j+1][i].z += amp * dz_f * pertu_f; 
-                    LA_coord[kinter][j+2][i].z += amp * dz_f * pertu_f;
+                    pertu_b =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_b);
+                    pertu_f =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_f);
+                    for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                        LA_coord[kinter][j+pwidth][i].z += amp * dz_b * pertu_b;
+                    }
+
 				}else if ((sj+ny == N) || (sj == 0)){
                     PetscReal dz = 0.0;
                     PetscInt sgn = 1;
@@ -418,9 +422,9 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                     }else{
                         pertu = 2.0 * rand()/(RAND_MAX+1.0);
                     }
-					LA_coord[kinter][j][i].z += amp * dz * pertu;
-                    LA_coord[kinter][j+sgn][i].z += amp * dz * pertu;
-                    LA_coord[kinter][j+sgn*2][i].z += amp * dz * pertu;
+                    for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                        LA_coord[kinter][j+sgn*pwidth][i].z += amp * dz_b * pertu_b;
+                    }
 
 				}
 			}

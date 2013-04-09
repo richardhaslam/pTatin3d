@@ -13,7 +13,7 @@ typedef struct {
     PetscReal eta_b[100];
 	PetscReal rho_f[100];
     PetscReal rho_b[100];
-	PetscInt  bc_type, perturbation_type;
+	PetscInt  bc_type, perturbation_type, perturbation_width;
 	PetscReal exx;
 	PetscReal vx_commpression;
 	PetscReal Lx, Lz, Ly;
