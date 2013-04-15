@@ -1,0 +1,264 @@
+
+\documentclass[paper=a4, fontsize=11pt,twoside]{scrartcl}
+
+\usepackage[a4paper,pdftex]{geometry}										% A4paper margins
+\setlength{\oddsidemargin}{5mm}											% Remove 'twosided' indentation
+\setlength{\evensidemargin}{5mm}
+
+\usepackage[english]{babel}
+\usepackage[protrusion=true,expansion=true]{microtype}	
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage{graphicx}
+
+\usepackage{fancyhdr}
+\usepackage{hypernat}
+\usepackage{hyperref}
+\usepackage[small,nooneline,bf,hang]{caption}   % sch�ne unterschriften
+\parindent0cm                                   % Absatzbeginn nicht einr�cken
+\pagestyle{fancy}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+
+% macros
+\newcommand{\ptat}{{pTatin3d}}
+\newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\hspace{5mm}\footnotesize #1}\\}
+\newcommand{\unix}[1]{\texttt{\footnotesize #1}}
+
+% Definitions for title page
+\newcommand{\HRule}[1]{\rule{\linewidth}{#1}} 	% Horizontal rule
+
+\makeatletter							% Title
+\def\printtitle{%						
+    {\centering \@title\par}}
+\makeatother									
+
+\makeatletter							% Author
+\def\printauthor{%					
+    {\centering \large \@author}}				
+\makeatother							
+
+%Titlepage
+\title{	\normalsize \textsc{pTatin3d Manual} 	% Subtitle of the document
+		 	\\[2.0cm]											% 2cm spacing
+			\HRule{0.5pt} \\										% Upper rule
+			\LARGE \textbf{{pTatin3d User Guide}}					% Title
+			\HRule{2pt} \\ [0.5cm]								% Lower rule + 0.5cm spacing
+			\normalsize \today									% Todays date
+		}
+
+\author{
+		Dave A, May \\	
+		Institute of Geophysics,\\	
+		ETH Z{\"u}ruch\\
+        \texttt{dave.may@erdw.ethz.ch} \\
+}
+
+
+
+\begin{document}
+
+\thispagestyle{empty}% Remove page numbering on this page
+
+\printtitle% Print the title data as defined above
+  	\vfill
+\printauthor% Print the author data as defined above
+
+
+% Begin document
+
+
+\newpage
+\pagenumbering{roman}
+\tableofcontents{}
+
+\newpage
+
+\pagenumbering{arabic}
+
+\section{Overview}
+{\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of lithosphere and crust.
+At its core, support is provided for solving non-linear, incompressible Stokes flow problems in three-dimensions.
+
+
+\newpage
+\section{Software Requirements}
+\begin{itemize}
+	\item PETSc 3.2 (http://www.mcs.anl.gov/petsc)
+	\item libz (non essential)
+	\item subversion (non essential)
+\end{itemize}
+
+\section{Obtaining the Code}
+{\ptat} is available via subversion using the command
+\shellcmd{svn co svn+ssh://USERNAME@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d}
+
+\section{Installation}
+Upon successful installation of PETSc, switch into the source directory
+\shellcmd{cd ptatin3d/src}
+and type \shellcmd{make all}
+\begin{itemize}
+	\item Compiling with a particular PETSc build
+	\shellcmd{make all PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
+	\item Compiling with a particular compilation flags (C and Fortran)
+	\shellcmd{make all TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
+\end{itemize}
+The following targets for make exist (all, libs, test, models, drivers, tests)
+
+
+\newpage
+\section{Building Models}
+
+The idea we have for building models is that models should be separated as much as possible
+from the core functionality of {\ptat}. That is, we want to seperate boundary conditions,
+mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (Stokes).
+
+For this reason, we have a adopted a code structure in which models are compiled and combined into
+a separate, stand alone library. When using a {\ptat{ driver (i.e which is needed to solve something),
+we link the model library against the solver library.
+
+Models live under the directory
+	\shellcmd{ptatin3d/src/models/}
+the models are compiled into the following static library
+	\shellcmd{ptatin3d/src/models/libptatin3dmodels.a}
+	
+We have provided, as an example, a model called ``template''.
+	
+To add a model, add the directory name containing your model in
+	\shellcmd{ptatin3d/src/models/makefile}
+under the variable
+	\shellcmd{
+	TATIN\_MODEL\_DIR = \
+        template
+	}
+	
+Within the directory
+	\shellcmd{ptatin3d/src/models/template}
+are the files which define any specific data structures needed for the model,
+	(\unix{model\_template\_ctx.h})
+and a file (\unix{model\_ops\_template.c}) containing the model description.
+A ``model'' description in {\ptat} consists of defining the following operations.
+\begin{enumerate}
+	\item \unix{FP\_pTatinModel\_Initialize} (non essential)
+	Initialize any model specific options, and or model specific parameters in your user defined model context.
+
+	\item \unix{FP\_pTatinModel\_ApplyBoundaryCondition}
+	Define boundary conditions for the PDE (Stokes, energy).
+
+	\item \unix{FP\_pTatinModel\_ApplyBoundaryConditionMG}
+	Define boundary conditions for velocity on each multi-grid level.
+
+	\item \unix{FP\_pTatinModel\_ApplyMaterialBoundaryCondition} (non essential)
+	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n > 0$ (e.g. inflow boundary conditions).
+
+	\item \unix{FP\_pTatinModel\_ApplyInitialSolution} (non essential for Stokes)
+	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value my improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
+	
+	\item \unix{FP\_pTatinModel\_ApplyInitialMeshGeometry}
+	Define the geometry of the mesh. Typically this is done simply by described a hex domain via the PETSc function \unix{DMDASetUniformCoordinates()}.
+
+	\item \unix{FP\_pTatinModel\_ApplyInitialMaterialGeometry}
+	Define the initial geometry of the lithology on the markers. (e.g. specify rheology)
+
+	\item \unix{FP\_pTatinModel\_UpdateMeshGeometry} (non essential)
+	Define how the mesh should evolve with time. In some models the mesh remains fixed in space through out time, thus this function need not be defined. Other models may wish to deform the mesh with the velocity vector, or may wish to advect the free surface and then apply remeshing within the interior of the domain. Such prescription of ALE mesh movement should be specified here.
+
+	\item \unix{FP\_pTatinModel\_Output} (non essential)
+	Specify what mesh fields (e.g. velocity, pressure, temperature) and marker fields will be outputted. Numerous
+	methods to output objects from {\ptat} are provided. Any model specific output functions should be called here.
+
+	\item \unix{FP\_pTatinModel\_Destroy} 
+	Upon completion of a {\ptat} job, this function will be called to release the memory allocated which is associated 
+	with this particular model. If no data structures were defined, then this function doesn't not need to be defined.
+\end{enumerate}
+
+
+Following the definition of the above functions, to complete the model definition we have to perform the following steps :
+\begin{enumerate}
+	\item \unix{pTatinModelCreate()}
+Calling this creates a little structure to hold your function pointers and other model related information.
+
+	\item \unix{pTatinModelSetName(...,MODELNAME);}
+The variable in \unix{MODELNAME}, will used as the command line arguement used to select the model
+	\unix{-ptatin\_model MODELNAME}
+
+	\item \unix{pTatinModelSetUserData()}
+Set any data structures required by the model.
+
+	\item Assign the function pointers. This is done via \unix{pTatinModelSetFunctionPointer()}.
+The second arg indicates which function pointer is used. These are defined via
+\unix{typedef enum \{ \} pTatinModelOperation;}
+and are declared in 
+\unix{ptatin\_models.h}
+To assign the operations which your model will perform, a helper function (\unix{pTatinModelSetFunctionPointer()}) is provided.
+Example usage:
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_BC,my\_apply\_bc\_function);}
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_INIT\_MAT\_GEOM,my\_apply\_init\_material\_geom\_function);}
+
+	\item Register the model via the call
+\unix{pTatinModelRegister()}
+This will add your model definition into a list which ptatin will have access to.
+
+Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()}.
+
+	\item Finally, you need to edit
+	\unix{ptatin\_models.c}
+and add the function call to register your model.
+This should be done within
+		\unix{pTatinModelRegisterAll()}
+as you'll note, you will see the "template" model registration function 	
+		\unix{pTatinModelRegister\_Template();}
+
+So you don't have the compiler warning about ``implicitly defined function'', simply add the protoytype as an \unix{extern}, e.g.
+	\shellcmd{extern PetscErrorCode pTatinModelRegister\_Template(void);}
+\end{enumerate}
+
+\subsection{Additional notes}
+There is also a makefile within each model in the directory.
+For example,
+	\shellcmd{ptatin3d/src/models/template/makefile}
+In general, the makefiles for each different model will all be very similar.
+It is recommended to use the model makefile identified above as the basis of a makefile for any new model.
+For most new models, one would simply have to list the C files used in defining the model in the variable
+\newline
+\unix{
+\#\# List source files here \newline
+MODEL\_SRC = \newline
+        template.c \newline
+}
+
+Models must be compiled at the root level of the code tree.
+That is, to make a model, you must run ``make'' from 
+	\unix{ptatin3d/src}
+You cannot run make from within the model directory
+	\unix{ptatin3d/src/models}
+or
+	\unix{ptatin3d/src/models/template}.
+If you only want to compile the models within
+	\unix{ptatin3d/src/models},
+then execute the following command
+	\unix{make models}
+from the directory
+	\unix{ptatin3d/src}.
+
+
+\newpage
+\section{Drivers}
+
+\newpage
+\section{Nonlinear and Linear Solvers}
+
+\subsection{Configuring Solvers}
+
+
+
+\begin{figure} [hbtp]
+\center
+%\includegraphics[height=0.4\textheight]{xx.jpg}
+\caption[\itshape ]
+{\itshape Nucleation procedure}
+\label{lc}
+\end{figure}
+
+
+
+\end{document}
