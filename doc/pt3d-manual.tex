@@ -77,7 +77,9 @@
 
 \section{Overview}
 {\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of lithosphere and crust.
-At its core, support is provided for solving non-linear, incompressible Stokes flow problems in three-dimensions.
+At its core, support is provided for solving non-linear, incompressible Stokes flow problems in three-dimensions using a mixed finite element method together with a marker-and-cell method.
+
+
 
 
 \newpage
@@ -243,6 +245,40 @@ from the directory
 
 \newpage
 \section{Drivers}
+{\ptat} in itself is a library which aims to enable users to build specific executables to solve a particular class of problems in lithospheric dynamics.
+Executables which utilizes \unix{libptatin3d} are referred to as drivers.
+For standard problems, e.g. time dependent linear (or non-linear) Stokes problems with optionally thermal coupling, we provide several default drivers.
+The most important (i.e. useful) of these are summarized below.
+
+\begin{enumerate}
+	\item \unix{ptatin\_driver\_ic.app}
+	Specifically designed to confirm that the model is defined in accordance with what the developer had in mind. This driver does not solve any equations or perform any time stepping. Rather it only loads the model, loads the initial conditions and boundary conditions and calls the model output function.
+	
+	\item \unix{ptatin\_driver\_energy.app}
+	A basic driver used for testing the advection diffusion solver. It does not solve Stokes.
+	
+	\item \unix{ptatin\_driver\_linear\_ts.app}
+	A driver for solving time dependent, {\it linear} Stokes flow problems. Checkpointing is enabled.
+
+	\item \unix{ptatin\_driver\_nonlinear\_ts.app}
+	A driver for solving time dependent, {\it non-linear} Stokes flow problems. The energy equation may be optionally activated within this model.
+\end{enumerate}
+
+\subsection{Options for standard drivers}
+\begin{itemize}
+	\item \unix{-nsteps}: Number of time steps to perform.
+	\item \unix{-output\_frequency}: Interval to output data.
+	\item \unix{-output\_path}: Directory where output should be written to.
+	\item \unix{-dt\_max}: Upper bound on the time step permitted.
+	\item \unix{-dt\_min}: Lower bound on the time step permitted.
+	\item \unix{-constant\_dt}: Specifies a constant time step size which should be used.
+	\item \unix{-time\_max}: Maximum time (in model units) which simulation should perform.
+	%%
+	\item \unix{-checkpoint\_every}: Indicates interval which check point files with a non-unique name should be written.
+	\item \unix{-checkpoint\_every\_nsteps}: Indicates interval which check point files with a unique name (associated with the current time step) should be written.
+	\item \unix{-checkpoint\_every\_ncpumins}: Indicates interval in terms of CPU time with which a check point files with a unique name (associated with the current time step) should be written.
+\end{itemize}
+
 
 \newpage
 \section{Nonlinear and Linear Solvers}
