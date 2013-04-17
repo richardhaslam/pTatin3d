@@ -499,8 +499,8 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_BasinComp(pTatinCtx c,void 
 			
 			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
-				eta = data->eta_b[layer] + position[1]*(data->eta_f[layer]-data->eta_b[layer])/Ly;
-				rho = data->rho_b[layer] + position[1]*(data->rho_f[layer]-data->rho_b[layer])/Ly;
+				eta = data->eta_f[layer] + position[1]*(data->eta_b[layer]-data->eta_f[layer])/Ly;
+				rho = data->rho_f[layer] + position[1]*(data->rho_b[layer]-data->rho_f[layer])/Ly;
 
 				rho = -rho * GRAVITY;
 			}
@@ -596,8 +596,8 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 			
 			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer + 1;
-				eta = data->eta_b[layer] + position[1]*(data->eta_f[layer]-data->eta_b[layer])/Ly;
-				rho = data->rho_b[layer] + position[1]*(data->rho_f[layer]-data->rho_b[layer])/Ly;
+				eta = data->eta_f[layer] + position[1]*(data->eta_b[layer]-data->eta_f[layer])/Ly;
+				rho = data->rho_f[layer] + position[1]*(data->rho_b[layer]-data->rho_f[layer])/Ly;
 			}
 			kminlayer += data->layer_res_k[layer];
 			layer++;
@@ -627,8 +627,8 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
                 coord_qp[2] += Ni_p[i] * elcoords[NSD*i+2];
             }
             
-			cell_gausspoints[qp].eta  = data->eta_b[phase-1] + coord_qp[1]*(data->eta_f[phase-1]-data->eta_b[phase-1])/Ly;
-			cell_gausspoints[qp].rho  = data->rho_b[phase-1] + coord_qp[1]*(data->rho_f[phase-1]-data->rho_b[phase-1])/Ly;
+			cell_gausspoints[qp].eta  = data->eta_f[phase-1] + coord_qp[1]*(data->eta_b[phase-1]-data->eta_f[phase-1])/Ly;
+			cell_gausspoints[qp].rho  = data->rho_f[phase-1] + coord_qp[1]*(data->rho_b[phase-1]-data->rho_f[phase-1])/Ly;
 
 			cell_gausspoints[qp].Fu[0] = 0.0;
 			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
