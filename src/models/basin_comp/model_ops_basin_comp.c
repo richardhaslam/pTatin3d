@@ -347,8 +347,8 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 	PetscErrorCode ierr;
     ModelBasinCompCtx *data = (ModelBasinCompCtx*)ctx;
 	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter, rank, kinter_max, kinter_min;
-	PetscScalar pertu, dz_f, dz_b, pertu_f, pertu_b, *dzs, dz;
-    PetscReal *interface_heights_f, *interface_heights_b, lamb_b, lamb_f, ***interf_heights;
+	PetscScalar pertu, dz_f, dz_b, pertu_f, pertu_b, dz;
+    PetscReal *interface_heights_f, *interface_heights_b, lamb_b, lamb_f;
     PetscInt *layer_res_k, n_interfaces, pwidth;
     PetscReal amp;
 	DM cda;
@@ -370,17 +370,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-    ierr = PetscMalloc(n_interfaces*sizeof(PetscScalar **), &interf_heights);CHKERRQ(ierr);
-	for(k = 0; k<n_interfaces; k++){
-        ierr = PetscMalloc(N*sizeof(PetscScalar *), &interf_heights[k]);CHKERRQ(ierr);
-        for(j=0;j<N; j++){
-            ierr = PetscMalloc(M*sizeof(PetscScalar), &interf_heights[k][j]);CHKERRQ(ierr);
-            for(i=0; i<M;i++){
-                ierr = interf_heights[k][j][i] = 0.0;
-            }
-            
-        }
-    }
+
 
     kinter = 0;
     MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
@@ -433,16 +423,12 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                     }
 
 				}
-                for(j=sj; j<sj+ny;j++){
-                    interf_heights[interf][j][i] = LA_coord[kinter][j][i].z;
-                }
 			}
 			
 		}
 	}
     /* Loop again through the layers  to set the perturbation around the layer.*/
-    ierr = PetscMalloc(ny*sizeof(PetscScalar), &dzs);CHKERRQ(ierr);
-    
+
     kinter_max = 0;
 	for(interf = 0; interf < n_interfaces-1; interf++){ 
         DM botinterface_da, topinterface_da;
@@ -452,7 +438,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
         kinter_min = kinter_max;
         kinter_max += 2*layer_res_k[interf];
         ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_min, kinter_min + 1, 1, &botinterface_da );CHKERRQ(ierr);
-        ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max + 1, 1, &topinterface_da );CHKERRQ(ierr);
+        ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max+1, 1, &topinterface_da );CHKERRQ(ierr);
         
         ierr = DMDAGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
         ierr = VecGetArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
@@ -460,12 +446,13 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
         ierr = DMDAGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
         ierr = VecGetArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
         
-        for(i=si; i<si+nx; i++){
-            for(j=sj; j<sj+ny; j++){
+        for(i=0; i<nx; i++){
+            for(j=0; j<ny; j++){
                 for(k=sk;k<sk+nz;k++){
                     if((k <= kinter_max)&&(k >= kinter_min)){
                         dz = (  topinterface_nodes[3*(0+nx*j+i)+2]  -  botinterface_nodes[3*(0+nx*j+i)+2]  )/((PetscReal)(2.0*layer_res_k[interf]));
-                        LA_coord[k][j][i].z = botinterface_nodes[3*(0+nx*j+i)+2] + (PetscReal)dz*(k-kinter_min); 
+                        printf("----> %f .. %f .. %f \n", dz, topinterface_nodes[3*(0+nx*j+i)+2], botinterface_nodes[3*(0+nx*j+i)+2]);
+                        LA_coord[k][j+sj][i+si].z = botinterface_nodes[3*(0+nx*j+i)+2] + (PetscReal)dz*(k-kinter_min); 
                         
                     }   
                 }
@@ -483,13 +470,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
     
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
-    for(k = 0; k<n_interfaces; k++){
-        for(j=0;j<N; j++){
-            ierr = PetscFree(interf_heights[k][j]);CHKERRQ(ierr);
-        }
-        ierr = PetscFree(interf_heights[k]);CHKERRQ(ierr);
-    }
-    ierr = PetscFree(dzs);CHKERRQ(ierr);
+
     
 	PetscFunctionReturn(0);
 }
