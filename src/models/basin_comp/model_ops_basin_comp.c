@@ -14,6 +14,8 @@
 #include "element_utils_q2.h"
 #include "ptatin3d_defs.h"
 #include "math.h"
+#include "dmda_redundant.h"
+
 
 #include "model_basin_comp_ctx.h"
 #include "model_utils.h"
@@ -344,9 +346,9 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 {
 	PetscErrorCode ierr;
     ModelBasinCompCtx *data = (ModelBasinCompCtx*)ctx;
-	PetscInt i,j,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter, rank;
-	PetscScalar pertu, dz_f, dz_b, pertu_f, pertu_b;
-    PetscReal *interface_heights_f, *interface_heights_b, lamb_b, lamb_f;
+	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter, rank, kinter_max, kinter_min;
+	PetscScalar pertu, dz_f, dz_b, pertu_f, pertu_b, *dzs, dz;
+    PetscReal *interface_heights_f, *interface_heights_b, lamb_b, lamb_f, ***interf_heights;
     PetscInt *layer_res_k, n_interfaces, pwidth;
     PetscReal amp;
 	DM cda;
@@ -368,15 +370,24 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-	
-	/*Perturbes the interface for cylindrical folding*/
-    /*Perturbes the interface for cylindrical folding*/
+    ierr = PetscMalloc(n_interfaces*sizeof(PetscScalar **), &interf_heights);CHKERRQ(ierr);
+	for(k = 0; k<n_interfaces; k++){
+        ierr = PetscMalloc(N*sizeof(PetscScalar *), &interf_heights[k]);CHKERRQ(ierr);
+        for(j=0;j<N; j++){
+            ierr = PetscMalloc(M*sizeof(PetscScalar), &interf_heights[k][j]);CHKERRQ(ierr);
+            for(i=0; i<M;i++){
+                ierr = interf_heights[k][j][i] = 0.0;
+            }
+            
+        }
+    }
+
     kinter = 0;
     MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
 	for(interf = 1; interf < n_interfaces-1; interf++){
 		kinter += 2*layer_res_k[interf-1];
 		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", kinter,N-1 );
-        srand(rank*interf+2);//The seed changes with the interface and the process process.
+        srand(rank*interf+2);//The seed changes with the interface and the process.
         
 		if ( (kinter>=sk) && (kinter<sk+nz) ) {
             /*Take the dominant wavelength of the viscous layer*/
@@ -391,24 +402,19 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                 lamb_f = (interface_heights_f[interf] - interface_heights_f[interf-1])*pow(data->eta_f[interf-1]/(6.0*data->eta_f[interf]), 1.0/3.0);
             }
             
-            
-			dz_f = 0.5*((interface_heights_f[interf+1] - interface_heights_f[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights_f[interf] - interface_heights_f[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );
-			dz_b = 0.5*((interface_heights_b[interf+1] - interface_heights_b[interf])/(PetscScalar)(layer_res_k[interf]) + (interface_heights_b[interf] - interface_heights_b[interf-1])/(PetscScalar)(layer_res_k[interf-1]) );            
-                
+               
             for(i = si; i<si+nx; i++) {
                 
 				if((sj+ny == N) && (sj == 0)){
                     j=sj+ny-1;
                     pertu_b =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_b);
-                    pertu_f =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_f);
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
-                        LA_coord[kinter][j-pwidth][i].z += amp * dz_b * pertu_b;
+                        LA_coord[kinter][j-pwidth][i].z += amp * pertu_b;
                     }
                     j=0;
-                    pertu_b =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_b);
                     pertu_f =  (data->perturbation_type != 1)?(2.0 * rand()/(RAND_MAX+1.0) - 1.0):cos(LA_coord[kinter][j][i].x/lamb_f);
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
-                        LA_coord[kinter][j+pwidth][i].z += amp * dz_b * pertu_b;
+                        LA_coord[kinter][j+pwidth][i].z += amp * pertu_f;
                     }
 
 				}else if ((sj+ny == N) || (sj == 0)){
@@ -423,18 +429,68 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                         pertu = 2.0 * rand()/(RAND_MAX+1.0);
                     }
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
-                        LA_coord[kinter][j+sgn*pwidth][i].z += amp * dz_b * pertu_b;
+                        LA_coord[kinter][j+sgn*pwidth][i].z += amp * pertu;
                     }
 
 				}
+                for(j=sj; j<sj+ny;j++){
+                    interf_heights[interf][j][i] = LA_coord[kinter][j][i].z;
+                }
 			}
 			
 		}
 	}
+    /* Loop again through the layers  to set the perturbation around the layer.*/
+    ierr = PetscMalloc(ny*sizeof(PetscScalar), &dzs);CHKERRQ(ierr);
+    
+    kinter_max = 0;
+	for(interf = 0; interf < n_interfaces-1; interf++){ 
+        DM botinterface_da, topinterface_da;
+        Vec botinterface_coords, topinterface_coords;
+        PetscScalar *botinterface_nodes, *topinterface_nodes;
+        
+        kinter_min = kinter_max;
+        kinter_max += 2*layer_res_k[interf];
+        ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_min, kinter_min + 1, 1, &botinterface_da );CHKERRQ(ierr);
+        ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max + 1, 1, &topinterface_da );CHKERRQ(ierr);
+        
+        ierr = DMDAGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
+        ierr = VecGetArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
+        
+        ierr = DMDAGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
+        ierr = VecGetArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
+        
+        for(i=si; i<si+nx; i++){
+            for(j=sj; j<sj+ny; j++){
+                for(k=sk;k<sk+nz;k++){
+                    if((k <= kinter_max)&&(k >= kinter_min)){
+                        dz = (  topinterface_nodes[3*(0+nx*j+i)+2]  -  botinterface_nodes[3*(0+nx*j+i)+2]  )/((PetscReal)(2.0*layer_res_k[interf]));
+                        LA_coord[k][j][i].z = botinterface_nodes[3*(0+nx*j+i)+2] + (PetscReal)dz*(k-kinter_min); 
+                        
+                    }   
+                }
+            }
+        }
+
+        
+        ierr = VecRestoreArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
+        ierr = VecRestoreArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
+        
+        ierr = DMDestroy(&botinterface_da);CHKERRQ(ierr);
+        ierr = DMDestroy(&topinterface_da);CHKERRQ(ierr);
+        
+    }
     
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
-	
+    for(k = 0; k<n_interfaces; k++){
+        for(j=0;j<N; j++){
+            ierr = PetscFree(interf_heights[k][j]);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(interf_heights[k]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(dzs);CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }
 
@@ -698,9 +754,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_BasinComp(pTatinCtx c,void *ctx)
 	factor = 0.1;
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside BasinCompSetPerturbedInterfaces() */
-	if ( (amp < 0.0) || (amp >1.0) ) {
+	/*if ( (amp < 0.0) || (amp >1.0) ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_basin_comp_amp_factor must be 0 < amp < 1");
-	}
+	}*/
 	data->amp = amp;
 	/* step 2 - define two interfaces and perturb coords along the interface */
 	ierr = BasinCompSetMeshGeometry(c->stokes_ctx->dav, data);CHKERRQ(ierr);
