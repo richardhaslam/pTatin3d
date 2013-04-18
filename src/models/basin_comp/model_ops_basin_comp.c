@@ -451,7 +451,6 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                 for(k=sk;k<sk+nz;k++){
                     if((k <= kinter_max)&&(k >= kinter_min)){
                         dz = (  topinterface_nodes[3*(0+nx*j+i)+2]  -  botinterface_nodes[3*(0+nx*j+i)+2]  )/((PetscReal)(2.0*layer_res_k[interf]));
-                        printf("----> %f .. %f .. %f \n", dz, topinterface_nodes[3*(0+nx*j+i)+2], botinterface_nodes[3*(0+nx*j+i)+2]);
                         LA_coord[k][j+sj][i+si].z = botinterface_nodes[3*(0+nx*j+i)+2] + (PetscReal)dz*(k-kinter_min); 
                         
                     }   
