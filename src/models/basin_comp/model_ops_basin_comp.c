@@ -373,7 +373,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 
 
     kinter = 0;
-    attenuation = -log(0.99)/(PetscScalar)(data->perturbation_width);
+    attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
     
     MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
 	for(interf = 1; interf < n_interfaces-1; interf++){
