@@ -114,6 +114,8 @@ PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *va
 PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var);
 PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var);
 
+PetscErrorCode MaterialPointSet_viscosity(MPAccess X,const int p,double var);
+PetscErrorCode MaterialPointSet_density(MPAccess X,const int p,double var);
 PetscErrorCode MaterialPointSet_phase_index(MPAccess X,const int p,int var);
 PetscErrorCode MaterialPointSet_plastic_strain(MPAccess X,const int p,float var);
 PetscErrorCode MaterialPointSet_yield_indicator(MPAccess X,const int p,short var);

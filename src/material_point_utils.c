@@ -2811,6 +2811,19 @@ PetscErrorCode MaterialPointGet_viscosity(MPAccess X,const int p,double *var)
 	PetscFunctionReturn(0);
 }
 #undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_viscosity"
+PetscErrorCode MaterialPointSet_viscosity(MPAccess X,const int p,double var)
+{
+	MPntPStokes    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesSetField_eta_effective(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_density"
 PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
 {
@@ -2820,6 +2833,19 @@ PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
 	
 	ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
 	MPntPStokesGetField_density(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_density"
+PetscErrorCode MaterialPointSet_density(MPAccess X,const int p,double var)
+{
+	MPntPStokes    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntPStokes(X,p,&point);CHKERRQ(ierr);
+	MPntPStokesSetField_density(point,var);
 	
 	PetscFunctionReturn(0);
 }
