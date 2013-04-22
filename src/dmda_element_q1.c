@@ -42,7 +42,83 @@
 #include "dmda_element_q1.h"
 
 
+/* DA Q2 1D,2D,3D */
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetLocalSizeElementQ1"
+PetscErrorCode DMDAGetLocalSizeElementQ1(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz)
+{
+	PetscInt cntx,cnty,cntz;
+	PetscInt si,sj,sk,M,N,P,m,n,p,width;
+	PetscInt sig,sjg,skg,mg,ng,pg;
+	PetscErrorCode ierr;
+	PetscMPIInt rank;
+	
+	PetscFunctionBegin;
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
+	if (width != 1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
+	}
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
+	
+	cntx = cnty = cntz = 0;
+	
+	/* ======================================================================================== */
+	// x
+	cntx = mg + 1;
+	/* if on right wall */
+	if ( (sig+mg) == (M) ) {
+		cntx--;
+	}
 
+	// y
+	cnty = ng + 1;
+	if ( (sjg+ng) == (N) ) {
+		cnty--;
+	}
+
+	// z
+	cntz = pg + 1;
+	if ( (skg+pg) == (P) ) {
+		cntz--;
+	}
+	
+	
+	if (mx) { *mx = cntx; }
+	if (my) { *my = cnty; }
+	if (mz) { *mz = cntz; }
+	PetscFunctionReturn(0);
+}
+
+/* DA Q2 1D,2D,3D */
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetCornersElementQ1"
+PetscErrorCode DMDAGetCornersElementQ1(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz)
+{
+	PetscInt sig,sjg,skg,M,N,P,width;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,0,0,0);CHKERRQ(ierr);
+	if (width != 1) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
+	}
+	
+	// x
+	*sei = sig;
+	// y
+	*sej = sjg;
+	// z
+	*sek = skg;
+	/*PetscPrintf(PETSC_COMM_SELF,"si,sj,sk = %d %d %d \n", *sei,*sej,*sek);*/
+	
+	ierr = DMDAGetLocalSizeElementQ1(da,mx,my,mz);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElements_DA_Q1_3D"
@@ -571,6 +647,71 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 		ierr = DMDAUpdateGhostedCoordinates(dm);CHKERRQ(ierr);
 	}
 
+	*dmq1 = dm;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDACreateQ1"
+PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,PetscInt ndofs,DM *dmq1)
+{
+	DM dm;
+	DMDAE dae;
+	PetscInt sei,sej,sek,lmx,lmy,lmz;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndofs,1, 0,0,0, &dm );CHKERRQ(ierr);
+	
+	/* add the space for the data structure */
+	ierr = DMAttachDMDAE(dm);CHKERRQ(ierr);
+	/* fetch the data structure */
+	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
+
+	dae->ne = MX * MY * MZ;
+	dae->mx = MX;
+	dae->my = MY;
+	dae->mz = MZ;
+
+	ierr = DMDAGetLocalSizeElementQ1(dm,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+	dae->lne = lmx * lmy * lmz;	
+	dae->lmx = lmx;
+	dae->lmy = lmy;
+	dae->lmz = lmz;
+	
+	ierr = DMDAGetCornersElementQ1(dm,&sei,&sej,&sek,0,0,0);CHKERRQ(ierr);
+	dae->si = sei;
+	dae->sj = sej;
+	dae->sk = sek;
+	
+	dae->npe = 8;
+	dae->nps = 2;
+	dae->overlap = 0;
+	
+	/* for convience we scale these and re-use the data */
+	dae->lmxp = PETSC_NULL;
+	dae->lmyp = PETSC_NULL;
+	dae->lmzp = PETSC_NULL;
+	
+	dae->lsip = PETSC_NULL;
+	dae->lsjp = PETSC_NULL;
+	dae->lskp = PETSC_NULL;
+	
+	/* force element creation using MY numbering */
+	{
+		PetscInt nel,nen;
+		const PetscInt *els;
+		
+		ierr = DMDASetElementType_Q1(dm);CHKERRQ(ierr);
+		ierr = DMDAGetElements_DA_Q1_3D(dm,&nel,&nen,&els);CHKERRQ(ierr);
+	}	
+	
+	/* force coordinate copy */
+	ierr = DMDASetUniformCoordinates(dm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+	ierr = DMDAUpdateGhostedCoordinates(dm);CHKERRQ(ierr);
+	
 	*dmq1 = dm;
 	
 	PetscFunctionReturn(0);
