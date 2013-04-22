@@ -332,11 +332,13 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
 	int          ncells,ncells_face,np_per_cell;
-	PetscInt     nel,nen,lmx,lmy,lmz;
+	PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
 	const PetscInt     *elnidx;
 	PetscInt     p,k,pi,pj;
 	PetscReal    dxi,deta;
 	int          np_current,np_new;
+	PetscInt si,sj,sk,M,N,P,lnx,lny,lnz;
+	PetscBool contains_east,contains_west,contains_north,contains_south,contains_front,contains_back;
 	PetscErrorCode ierr;
 	
 	
@@ -388,6 +390,19 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 	if (perturb>1.0) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
 	}
+
+	
+	ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
+	
+	contains_east  = PETSC_FALSE; if (si+lnx == M) { contains_east  = PETSC_TRUE; }
+	contains_west  = PETSC_FALSE; if (si == 0)       { contains_west  = PETSC_TRUE; }
+	contains_north = PETSC_FALSE; if (sj+lny == N) { contains_north = PETSC_TRUE; }
+	contains_south = PETSC_FALSE; if (sj == 0)       { contains_south = PETSC_TRUE; }
+	contains_front = PETSC_FALSE; if (sk+lnz == P) { contains_front = PETSC_TRUE; }
+	contains_back  = PETSC_FALSE; if (sk == 0)       { contains_back  = PETSC_TRUE; }
+	
 	
   /* setup for coords */
   ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
@@ -413,23 +428,29 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 		
 		switch (face_idx) {
 			case 0:// east-west
+				if (!contains_east) { continue; }
 				if (ei != lmx-1) { continue; }
 				break;
 			case 1:
+				if (!contains_west) { continue; }
 				if (ei != 0) { continue; }
 				break;
 				
 			case 2:// north-south
+				if (!contains_north) { continue; }
 				if (ej != lmy-1) { continue; }
 				break;
 			case 3:
+				if (!contains_south) { continue; }
 				if (ej != 0) { continue; }
 				break;
 				
 			case 4: // front-back
+				if (!contains_front) { continue; }
 				if (ek != lmz-1) { continue; }
 				break;
 			case 5:
+				if (!contains_back) { continue; }
 				if (ek != 0) { continue; }
 				break;
 		}
