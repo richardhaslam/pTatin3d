@@ -643,6 +643,37 @@ def Generate_pTatin_QuadraturePointVolumeCoefficientEnergy():
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
+def Generate_pTatin_QuadraturePointVolumeCoefficientSPM_a():
+	ClassName      = 'QPntVolCoefSPM'
+	ClassShortName = 'QPVCSPM'
+	variable_name_list = [ 'eff_diff_kappa',    'eff_source' ]
+	variable_type_list = [ 'double',         'double'      ]
+	variable_extend_list        = [ 1, 1  ]
+	variable_textural_name_list = [ 'effective_diffusivity', 'effective_source' ]
+
+	PARTICLE_CLASS_GENERATOR( ClassName, ClassShortName, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+def Generate_pTatin_QuadraturePointVolumeCoefficientSPM_standard_fields():
+	ClassName      = 'QPntVolCoefSPMStdFields'
+	ClassShortName = 'QPVCSPMStdFields'
+	variable_name_list = [ 'rho_r','rho_s', 'U_x1', 'U_x2', 'U' ]
+	variable_type_list = [ 'double','double', 'double','double','double'  ]
+	variable_extend_list        = [ 1,1, 1,1,1 ]
+	variable_textural_name_list = [ 'density_rock', 'density_sediment', 'vel_horiz1','vel_horiz2','vel_vert' ]
+
+	PARTICLE_CLASS_GENERATOR( ClassName, ClassShortName, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+def Generate_pTatin_QuadraturePointVolumeCoefficientSPM_nonlinear_diffusivity():
+	ClassName      = 'QPntVolCoefSPMNonlinearDiff'
+	ClassShortName = 'QPVCSPMNonlinearDiff'
+	variable_name_list = [ 'K','Sc', 'grad_z' ]
+	variable_type_list = [ 'double','double', 'double'  ]
+	variable_extend_list        = [ 1,1, 3 ]
+	variable_textural_name_list = [ 'K', 'crticial_slope', 'slope' ]
+
+	PARTICLE_CLASS_GENERATOR( ClassName, ClassShortName, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
+
 # ==================================================================================
 # Material point fields
 
@@ -843,4 +874,10 @@ Generate_pTatin_MaterialConst_PlasticDP()
 Generate_pTatin_MaterialConst_SoftLin()
 Generate_pTatin_MaterialConst_SoftExpo()
 Generate_pTatin_MaterialConst_MaterialType()
+
+# quad for surface processes
+Generate_pTatin_QuadraturePointVolumeCoefficientSPM_a()
+Generate_pTatin_QuadraturePointVolumeCoefficientSPM_standard_fields()
+Generate_pTatin_QuadraturePointVolumeCoefficientSPM_nonlinear_diffusivity()
+
 
