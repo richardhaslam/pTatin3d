@@ -348,24 +348,24 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 	
 	switch (face_idx) {
 		case 0:// east-west
-			ncells_face = lmy * lmz;
+			ncells_face = lmy * lmz; // east
 			break;
 		case 1:
-			ncells_face = lmy * lmz;
+			ncells_face = lmy * lmz; // west
 			break;
 
 		case 2:// north-south
-			ncells_face = lmx * lmz;
+			ncells_face = lmx * lmz; // north 
 			break;
 		case 3:
-			ncells_face = lmx * lmz;
+			ncells_face = lmx * lmz; // south
 			break;
 
 		case 4: // front-back
-			ncells_face = lmx * lmy;
+			ncells_face = lmx * lmy; // front
 			break;
 		case 5:
-			ncells_face = lmx * lmy;
+			ncells_face = lmx * lmy; // back
 			break;
 			
 		default:
