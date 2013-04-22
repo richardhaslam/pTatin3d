@@ -120,4 +120,12 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 	PetscFunctionReturn(0);
 }
 
-
+/*absolute value for double in C*/
+#undef __FUNCT__
+#define __FUNCT__ "absolute"
+PetscReal absolute(PetscReal a)
+{   if(a < 0)
+        return -1.0*a;
+    else
+        return a;
+}
