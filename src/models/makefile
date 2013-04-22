@@ -14,7 +14,8 @@ TATIN_MODEL_DIR = \
 	advdiff_example\
 	basin_comp\
 	wrench_fold\
-	fault_fold
+	fault_fold \
+	geomod2008
 
 
 ## DONT NOT EDIT LINES BELOW
