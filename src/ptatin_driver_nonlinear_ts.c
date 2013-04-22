@@ -675,6 +675,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,0);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
