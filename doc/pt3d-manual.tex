@@ -13,8 +13,8 @@
 \usepackage{fancyhdr}
 \usepackage{hypernat}
 \usepackage{hyperref}
-\usepackage[small,nooneline,bf,hang]{caption}   % sch�ne unterschriften
-\parindent0cm                                   % Absatzbeginn nicht einr�cken
+\usepackage[small,nooneline,bf,hang]{caption} 
+\parindent0cm                                  
 \pagestyle{fancy}
 \setcounter{tocdepth}{2}
 \setcounter{secnumdepth}{3}
@@ -285,13 +285,34 @@ The most important (i.e. useful) of these are summarized below.
 
 \subsection{Configuring Solvers}
 
+\subsection{Multi-grid sequencing}
+The number of multi-grid levels is set via the option:
+\shellcmd{-dau\_nlevels X}
+If $X = 3$, this will imply that the mesh specified via \unix{-mx 16 -my 16 -mz 16} will be coarsened twice, resulting (by default) in a mesh sequence with the number of elements $M_x = 16$ (fine), $M_x = 8$ and $M_x = 4$ (coarse). For clarity, level 0 is designated as the ``coarsest'' level, and level $X-1$ is designated as the ``finest'' level.
+
+Meshes can be coarsened uniformly on each level, or one can control the coarsening factor level-by level.
+To define constant coarsening on each level, use the options
+\shellcmd{-da\_refine\_x 4}
+Different coarsening can be specified in each direction.
+Also note, that a refinement factor of 1 implies that mesh will not be coarsened in that direction. 
+
+To define a level specific coarsening, use the options
+\shellcmd{-stk\_velocity\_da\_refine\_hierarchy\_x 4,1}
+The integer parameters are listed from coarse to fine levels (left to right). The above options will result result in the following hierarchy in the $x$ direction (from coarse to fine), $M_x = \{ 4, 16, 16 \}$.
+Note that if you have $X$ levels, you are only required to specify $X-1$ values to define the coarsening hierarchy. 
+
+
+\subsection{Multi-grid performance profiling}
+To activate monitors which report CPU times on each mult-grid level, one must specify the following options
+\shellcmd{-dau\_nlevels X -fieldsplit\_u\_pc\_type mg -fieldsplit\_u\_pc\_mg\_levels X -fieldsplit\_u\_pc\_mg\_log -log\_summary}
+Note that if the values for \unix{-dau\_nlevels X} and \unix{-fieldsplit\_u\_pc\_mg\_levels X} do not match, logging will not be performed.
 
 
 \begin{figure} [hbtp]
 \center
 %\includegraphics[height=0.4\textheight]{xx.jpg}
 \caption[\itshape ]
-{\itshape Nucleation procedure}
+{\itshape Solver hierarchy}
 \label{lc}
 \end{figure}
 
