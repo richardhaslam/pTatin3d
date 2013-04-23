@@ -36,6 +36,7 @@
 #include "petscsnes.h"
 
 #include "ptatin3d.h"
+#include "ptatin_utils.h"
 #include "private/ptatin_impl.h"
 
 
@@ -46,9 +47,11 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 {
 	PetscBool stdout = PETSC_FALSE;
 	char name[PETSC_MAX_PATH_LEN];
+	char           date_time[1024];
 	PetscErrorCode ierr;
 
-	sprintf(name,"%s/ptatin.log",ctx->outputpath);
+	pTatinGenerateFormattedTimestamp(date_time);
+	sprintf(name,"%s/ptatin.log-%s",ctx->outputpath,date_time);
 	
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
 	if (!stdout) {
