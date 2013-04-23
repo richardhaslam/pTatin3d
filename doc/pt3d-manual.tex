@@ -29,7 +29,15 @@
 
 \makeatletter							% Title
 \def\printtitle{%						
-    {\centering \@title\par}}
+    {
+    	\centering \@title\par}
+		 	\vspace{10mm}
+	\begin{figure} [hbtp]
+	\includegraphics[height=0.4\textheight]{pt3d_coordinate_system.pdf}
+	\end{figure}
+    }
+
+
 \makeatother									
 
 \makeatletter							% Author
@@ -38,18 +46,17 @@
 \makeatother							
 
 %Titlepage
-\title{	\normalsize \textsc{pTatin3d Manual} 	% Subtitle of the document
-		 	\\[2.0cm]											% 2cm spacing
-			\HRule{0.5pt} \\										% Upper rule
-			\LARGE \textbf{{pTatin3d User Guide}}					% Title
-			\HRule{2pt} \\ [0.5cm]								% Lower rule + 0.5cm spacing
-			\normalsize \today									% Todays date
-		}
+	\title{	\normalsize \textsc{pTatin3d Manual} 	% Subtitle of the document
+	\\[2.0cm]									% 2cm spacing
+	\HRule{2pt} \\ [0.3cm]						% Upper rule
+	\LARGE \textbf{{pTatin3d User Guide}}			% Title
+	\HRule{2pt} \\ [0.5cm]						% Lower rule + 0.5cm spacing
+	\normalsize \today							% Todays date
+	}
 
 \author{
 		Dave A, May \\	
-		Institute of Geophysics,\\	
-		ETH Z{\"u}ruch\\
+		Institute of Geophysics, ETH Z{\"u}ruch\\
         \texttt{dave.may@erdw.ethz.ch} \\
 }
 
