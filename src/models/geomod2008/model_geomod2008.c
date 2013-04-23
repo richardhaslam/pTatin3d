@@ -40,7 +40,9 @@
 #include "ptatin3d_stokes.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "material_point_utils.h"
-
+#include "dmda_update_coords.h"
+#include "material_point_std_utils.h"
+#include "mesh_update.h"
 
 typedef struct _p_ModelCtxGeoMod2008 *ModelCtxGeoMod2008;
 struct _p_ModelCtxGeoMod2008 {
@@ -49,6 +51,7 @@ struct _p_ModelCtxGeoMod2008 {
 	PetscBool use_free_surface;
 	PetscReal Lx,Ly,Lz;
 	PetscReal vx_bc;
+	PetscReal frictional_boundary_layer_delta;
 	
 	PetscReal quartz_eta,quartz_rho;
 	PetscReal quartz_C0,quartz_mu;
@@ -67,7 +70,7 @@ struct _p_ModelCtxGeoMod2008 {
 	PetscReal air_eta,air_rho;	
 };
 
-const enum { RegionAir=0, RegionQuartz, RegionQuartzBdy, RegionCorundum, RegionCorundumBdy } RegionTags;
+const enum { RegionAir=0, RegionQuartz, RegionQuartzBdy, RegionCorundum, RegionCorundumBdy, RegionQuartzBdySkin, RegionCorundumBdySkin } RegionTags;
 
 
 PetscReal cm2m    = 1.0e-2;
@@ -98,6 +101,8 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-gm08_three_dimensional",&data->three_dimensional,&flg);CHKERRQ(ierr);
 	data->use_free_surface = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-gm08_use_free_surface",&data->use_free_surface,&flg);CHKERRQ(ierr);
+	data->frictional_boundary_layer_delta = 0.2 * cm2m;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-gm08_skin_thickness",&data->frictional_boundary_layer_delta,&flg);CHKERRQ(ierr);
 	
 	/* materials */
 	fac = 1.0;
@@ -151,6 +156,12 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_PlasticDP(materialconstants,     RegionQuartzBdy, data->quartz_bdy_mu,data->quartz_bdy_mu_inf, data->quartz_bdy_C0,data->quartz_bdy_C0_inf, one_third*data->quartz_bdy_C0,1.0e20);
 	MaterialConstantsSetValues_SoftLin(materialconstants,       RegionQuartzBdy, 0.5,1.0);
 
+	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionQuartzBdySkin, VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionQuartzBdySkin, data->quartz_eta);
+	MaterialConstantsSetValues_DensityConst(materialconstants,  RegionQuartzBdySkin, data->quartz_rho);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,     RegionQuartzBdySkin, data->quartz_bdy_mu,data->quartz_bdy_mu_inf, data->quartz_bdy_C0,data->quartz_bdy_C0_inf, one_third*data->quartz_bdy_C0,1.0e20);
+	MaterialConstantsSetValues_SoftLin(materialconstants,       RegionQuartzBdySkin, 0.5,1.0);
+	
 	/* Corundum */
 	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionCorundum, VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionCorundum, data->corundum_eta);
@@ -163,6 +174,12 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_DensityConst(materialconstants,  RegionCorundumBdy, data->corundum_rho);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,     RegionCorundumBdy, data->corundum_bdy_mu,data->corundum_bdy_mu_inf, data->corundum_bdy_C0,data->corundum_bdy_C0_inf, one_third*data->corundum_bdy_C0,1.0e20);
 	MaterialConstantsSetValues_SoftLin(materialconstants,       RegionCorundumBdy, 0.5,1.0);
+
+	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionCorundumBdySkin, VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionCorundumBdySkin, data->corundum_eta);
+	MaterialConstantsSetValues_DensityConst(materialconstants,  RegionCorundumBdySkin, data->corundum_rho);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,     RegionCorundumBdySkin, data->corundum_bdy_mu,data->corundum_bdy_mu_inf, data->corundum_bdy_C0,data->corundum_bdy_C0_inf, one_third*data->corundum_bdy_C0,1.0e20);
+	MaterialConstantsSetValues_SoftLin(materialconstants,       RegionCorundumBdySkin, 0.5,1.0);
 	
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VP_STD;
@@ -170,6 +187,7 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global = 1.0e+25;
 	rheology->eta_lower_cutoff_global = 1.0e-20;
 	
+	/*
 	switch (data->experiment) {
 		case 1:
 			rheology->nphases_active = 3;
@@ -181,25 +199,9 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 			rheology->nphases_active = 5;
 			break;
 	}
-
-	/*
-	{
-		MaterialConst_MaterialType *mat_type;
-		PetscInt                   regionidx;	
-    DataField                  PField;
-		
-		DataBucketGetDataFieldByName(materialconstants,MaterialConst_MaterialType_classname,&PField);
-		DataFieldGetAccess(PField);
-		
-		for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
-			DataFieldAccessPoint(PField,regionidx,(void**)&mat_type);
-			MaterialConst_MaterialTypeSetField_plastic_type(mat_type,PLASTIC_DP);
-		}
-		
-		DataFieldRestoreAccess(PField);
-	}
 	*/
-	 
+	rheology->nphases_active = 7;
+
 	length_scale    = 1.0;
 	velocity_scale  = 1.0e-5;
 	viscosity_scale = 1.0e12;
@@ -382,17 +384,102 @@ PetscErrorCode ModelApplyStokesVelocityBoundaryConditionMG_GeoMod2008(PetscInt n
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "GeomMod2008ApplyFrictionalBoundarySkin"
+PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM dav,DataBucket material_points)
+{
+	PetscInt         M,N,P;
+	PetscReal        gmin[3],gmax[3];
+	PetscReal        dx,dy,dz,delta,dl;
+	MPAccess         mpX;
+	int              p,n_mp_points;
+	PetscBool        apply_skin;
+	PetscErrorCode   ierr;
+
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	/* reset all skin particles */
+	DataBucketGetSizes(material_points,&n_mp_points,0,0);
+	ierr = MaterialPointGetAccess(material_points,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mp_points; p++) {
+		int region_index;
+
+		ierr = MaterialPointGet_phase_index(mpX,p,&region_index);CHKERRQ(ierr);
+		
+		if (region_index == RegionQuartzBdySkin) {
+			ierr = MaterialPointSet_phase_index(mpX,p,RegionQuartz);CHKERRQ(ierr);
+		} else if (region_index == RegionCorundumBdySkin) {
+			ierr = MaterialPointSet_phase_index(mpX,p,RegionCorundum);CHKERRQ(ierr);
+		}
+		
+	}
+	ierr = MaterialPointRestoreAccess(material_points,&mpX);CHKERRQ(ierr);
+	
+	
+	/* compute dx */
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+	dx = (gmax[0]-gmin[0])/((PetscReal)(M-1));
+	dy = (gmax[1]-gmin[1])/((PetscReal)(N-1));
+	dz = (gmax[2]-gmin[2])/((PetscReal)(P-1));
+	
+	delta = dx; if (dy < delta) { delta = dy; } if (dz < delta) { delta = dz; }
+	dl = data->frictional_boundary_layer_delta;
+	if ( data->frictional_boundary_layer_delta < 2.0 * delta) {
+		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): skin thickness is smaller than 2 elements");
+		dl = 2.0 * delta;
+	}
+	
+	/* check for delta epsilon distance from boundary */
+	/* reset all skin particles */
+	DataBucketGetSizes(material_points,&n_mp_points,0,0);
+	ierr = MaterialPointGetAccess(material_points,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mp_points; p++) {
+		int region_index;
+		double *xp;
+		
+		ierr = MaterialPointGet_phase_index(mpX,p,&region_index);CHKERRQ(ierr);
+		ierr = MaterialPointGet_global_coord(mpX,p,&xp);CHKERRQ(ierr);
+		
+		apply_skin = PETSC_FALSE;
+		if ( fabs(xp[0] - gmin[0]) < dl ) { apply_skin = PETSC_TRUE; }
+		if ( fabs(xp[0] - gmax[0]) < dl ) { apply_skin = PETSC_TRUE; }
+		if ( fabs(xp[2] - gmin[2]) < dl ) { apply_skin = PETSC_TRUE; }
+		if ( fabs(xp[2] - gmax[2]) < dl ) { apply_skin = PETSC_TRUE; }
+		if ( fabs(xp[1] - gmin[1]) < dl ) { apply_skin = PETSC_TRUE; }
+		
+		if (apply_skin) {
+			if (region_index == RegionQuartz) {
+				ierr = MaterialPointSet_phase_index(mpX,p,RegionQuartzBdySkin);CHKERRQ(ierr);
+			} else if (region_index == RegionCorundum) {
+				ierr = MaterialPointSet_phase_index(mpX,p,RegionCorundumBdySkin);CHKERRQ(ierr);
+			}
+		}
+		
+	}
+	ierr = MaterialPointRestoreAccess(material_points,&mpX);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_GeoMod2008"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
+	DataBucket         material_points;
+	PhysCompStokes     stokes;
+
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	// Experiment 1
-	/* inflow on North face? */
+	ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+
+	ierr = GeomMod2008ApplyFrictionalBoundarySkin(data,stokes->dav,material_points);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -572,7 +659,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 	DataBucketDestroy(&material_points_face);
 	
 	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -686,7 +772,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,voi
 PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
-	PetscErrorCode ierr;
+	DataBucket         material_points;
+	PhysCompStokes     stokes;
+	PetscErrorCode     ierr;
 	
 	PetscFunctionBegin;
 	
@@ -701,7 +789,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ct
 			break;
 			
 	}
-	
+
+	ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	ierr = GeomMod2008ApplyFrictionalBoundarySkin(data,stokes->dav,material_points);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
