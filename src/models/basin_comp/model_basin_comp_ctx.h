@@ -13,11 +13,12 @@ typedef struct {
     PetscReal eta_b[100];
 	PetscReal rho_f[100];
     PetscReal rho_b[100];
-	PetscInt  bc_type, perturbation_type, perturbation_width;
+	PetscInt  bc_type, perturbation_type, perturbation_width, layering_type;
 	PetscReal exx;
 	PetscReal vx_commpression;
 	PetscReal Lx, Lz, Ly;
     PetscReal amp;
+    PetscReal depth, slope, midleslope; //for layering type 1.
 } ModelBasinCompCtx;
 
 #endif
