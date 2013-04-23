@@ -255,6 +255,10 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 			break;
 	}
 	
+	if (data->use_free_surface) {
+		data->Ly = (3.0) * cm2m; /* direction of g */
+	}
+	
 	if (!data->three_dimensional) {
 		PetscReal dx;
 		PhysCompStokes stokes;
@@ -299,10 +303,15 @@ PetscErrorCode ApplyStokesVelocityBC_GeoMod2008(pTatinCtx c,void *ctx,BCList bcl
 			
 		case 1:
 			// Experiment 1
-			ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,vx);CHKERRQ(ierr);
-			
+			//vx = 0.0;
+			//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&vx);CHKERRQ(ierr);
 			vy = 0.0;
 			ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,SOUTH_FACE,vy);CHKERRQ(ierr);
+			
+			vx = data->vx_bc;
+			ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,vx);CHKERRQ(ierr);
+			//vy = 0.0;
+			//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&vy);CHKERRQ(ierr);
 			
 			vz = 0.0;
 			ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,FRONT_FACE,vz);CHKERRQ(ierr);
@@ -312,10 +321,14 @@ PetscErrorCode ApplyStokesVelocityBC_GeoMod2008(pTatinCtx c,void *ctx,BCList bcl
 			vx = vy = 0.0;
 			ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE,vx);CHKERRQ(ierr);
 			//ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,NORTH_FACE,vy);CHKERRQ(ierr);
+
+			
+			
 			break;
 			
 		case 2:
 			// Experiment 1
+			vx = data->vx_bc;
 			ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,vx);CHKERRQ(ierr);
 			
 			vy = 0.0;
@@ -420,16 +433,18 @@ PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM
 	/* compute dx */
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
-	dx = (gmax[0]-gmin[0])/((PetscReal)(M-1));
-	dy = (gmax[1]-gmin[1])/((PetscReal)(N-1));
-	dz = (gmax[2]-gmin[2])/((PetscReal)(P-1));
+	dx = (gmax[0]-gmin[0])/((PetscReal)((M-1)/2));
+	dy = (gmax[1]-gmin[1])/((PetscReal)((N-1)/2));
+	dz = (gmax[2]-gmin[2])/((PetscReal)((P-1)/2));
 	
 	delta = dx; if (dy > delta) { delta = dy; } if (dz > delta) { delta = dz; }
 	dl = data->frictional_boundary_layer_delta;
 	if ( data->frictional_boundary_layer_delta < 2.0 * delta) {
-		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): skin thickness is smaller than 2 elements");
-		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): suggest you re-run with -gm08_skin_thickness %1.4e", 2.0 * delta);
+		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): skin thickness is smaller than 2 elements\n");
+		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): suggest you re-run with -gm08_skin_thickness %1.4e\n", 2.0 * delta);
 	}
+
+	PetscPrintf(PETSC_COMM_WORLD,"geomod2008: dx,dy,dz = (%1.4e , %1.4e , %1.4e); skin thickness %1.4e \n", dx,dy,dz,dl );
 	
 	/* check for delta epsilon distance from boundary */
 	/* reset all skin particles */
@@ -445,9 +460,13 @@ PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM
 		apply_skin = PETSC_FALSE;
 		if ( fabs(xp[0] - gmin[0]) < dl ) { apply_skin = PETSC_TRUE; }
 		if ( fabs(xp[0] - gmax[0]) < dl ) { apply_skin = PETSC_TRUE; }
-		if ( fabs(xp[2] - gmin[2]) < dl ) { apply_skin = PETSC_TRUE; }
-		if ( fabs(xp[2] - gmax[2]) < dl ) { apply_skin = PETSC_TRUE; }
 		if ( fabs(xp[1] - gmin[1]) < dl ) { apply_skin = PETSC_TRUE; }
+
+		if (data->three_dimensional) {
+			if ( fabs(xp[2] - gmin[2]) < dl ) { apply_skin = PETSC_TRUE; }
+			if ( fabs(xp[2] - gmax[2]) < dl ) { apply_skin = PETSC_TRUE; }
+		}
+		
 		
 		if (apply_skin) {
 			if (region_index == RegionQuartz) {
