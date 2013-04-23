@@ -424,11 +424,11 @@ PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM
 	dy = (gmax[1]-gmin[1])/((PetscReal)(N-1));
 	dz = (gmax[2]-gmin[2])/((PetscReal)(P-1));
 	
-	delta = dx; if (dy < delta) { delta = dy; } if (dz < delta) { delta = dz; }
+	delta = dx; if (dy > delta) { delta = dy; } if (dz > delta) { delta = dz; }
 	dl = data->frictional_boundary_layer_delta;
 	if ( data->frictional_boundary_layer_delta < 2.0 * delta) {
 		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): skin thickness is smaller than 2 elements");
-		dl = 2.0 * delta;
+		PetscPrintf(PETSC_COMM_WORLD,"WARNING (geomod2008): suggest you re-run with -gm08_skin_thickness %1.4e", 2.0 * delta);
 	}
 	
 	/* check for delta epsilon distance from boundary */
