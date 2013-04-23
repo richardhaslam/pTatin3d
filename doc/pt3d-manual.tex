@@ -33,7 +33,7 @@
     	\centering \@title\par}
 		 	\vspace{10mm}
 	\begin{figure} [hbtp]
-	\includegraphics[height=0.4\textheight]{pt3d_coordinate_system.pdf}
+	\includegraphics[height=0.4\textheight]{figs/ptat3d_front_page.pdf}
 	\end{figure}
     }
 
@@ -55,9 +55,11 @@
 	}
 
 \author{
-		Dave A, May \\	
-		Institute of Geophysics, ETH Z{\"u}ruch\\
-        \texttt{dave.may@erdw.ethz.ch} \\
+{\normalsize \textsc{Developers}}
+\begin{itemize}
+\item[-] Dave A. May: Institute of Geophysics, ETH Z{\"u}ruch \texttt{(dave.may@erdw.ethz.ch)} 
+\item[-] Laetitia Le Pourhiet: UPMC, Univ. Paris 06  \texttt{(laetitia.le\_pourhiet@upmc.fr)}
+\end{itemize}
 }
 
 
@@ -292,7 +294,7 @@ The most important (i.e. useful) of these are summarized below.
 
 \begin{figure} [hbtp]
 \center
-%\includegraphics[height=0.4\textheight]{pt3d_solver.pdf}
+%\includegraphics[height=0.4\textheight]{figs/pt3d_solver.pdf}
 \caption[\itshape ]
 {\itshape Solver hierarchy}
 \label{fig:solver_hierarchy}
@@ -340,7 +342,7 @@ Note that if the values for \unix{-dau\_nlevels X} and \unix{-fieldsplit\_u\_pc\
 The underlying coordinate system used in {\ptat} is a Cartesian. In Fig.~\ref{fig:domain_coord} we identify the face labels used.
 \begin{figure} [hbtp]
 \center
-\includegraphics[height=0.4\textheight]{pt3d_coordinate_system.pdf}
+\includegraphics[height=0.4\textheight]{figs/pt3d_coordinate_system.pdf}
 \caption[\itshape ]
 {\itshape Natural coordinate system used by the physical domain $\Omega$ in {\ptat}. Labels indicate various names given by different structures functionality.}
 \label{fig:domain_coord}
