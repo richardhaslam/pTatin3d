@@ -119,6 +119,7 @@ The following targets for make exist (all, libs, test, models, drivers, tests)
 \newpage
 \section{Building Models}
 
+\subsection{Code structure}
 The idea we have for building models is that models should be separated as much as possible
 from the core functionality of {\ptat}. That is, we want to seperate boundary conditions,
 mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (Stokes).
@@ -251,7 +252,58 @@ then execute the following command
 from the directory
 	\unix{ptatin3d/src}.
 
+\subsection{Implementing boundary and initial conditions}
+{\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to prescribe boundary and initial conditions into the structures and solution vectors used by {\ptat} without require the user to see the underlying data structures used, or understand parallelism.
 
+To apply boundary conditions, the main function used is:
+\shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
+ BCList list, \\
+  DM da, \\
+  DMDABCListConstraintLoc doflocation, \\
+  PetscInt dof\_idx, \\
+  PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
+  void *ctx)} 
+which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as
+\begin{itemize}
+%%
+\item[] \unix{BCList list} - the data structure used to store boundary conditions
+%%
+\item[] \unix{DM da} - the data structure used to represent the mesh and quantity (e.g. velocity)
+%%
+\item[] \unix{DMDABCListConstraintLoc doflocation} - index to identify which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
+	DMDABCList\_INTERIOR\_LOC, 
+	DMDABCList\_IMIN\_LOC,
+	DMDABCList\_IMAX\_LOC,
+	DMDABCList\_JMIN\_LOC,
+	DMDABCList\_JMAX\_LOC,
+	DMDABCList\_KMIN\_LOC,
+	DMDABCList\_KMAX\_LOC. 
+Refer to Fig.~\ref{fig:domain_coord} for the geometric association of these names.
+%%
+\item[] \unix{PetscInt dof\_idx} - the integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1)
+%%
+\item[] \unix{PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition
+%%
+\item[] \unix{void *ctx} - any data structure, parameters which are required by the user provided function
+%%
+\end{itemize}
+
+Calling sequence for \unix{evaluate\_boundary\_condition} is
+\shellcmd{PetscBool evaluate\_boundary\_condition( PetscScalar position[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is applied
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition
+\item[] \unix{PetscScalar *value} - the actual value of the boundary condition [OUTPUT]
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the boundary condition should be applied at this location [OUTPUT]
+\end{itemize}
+For a simple example of a user defined boundary condition function, refer to 
+\shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
+in file \unix{dmda\_bcs.c}.
+
+
+
+% -----------------------------------------------------------------------------------------
 \newpage
 \section{Drivers}
 {\ptat} in itself is a library which aims to enable users to build specific executables to solve a particular class of problems in lithospheric dynamics.
