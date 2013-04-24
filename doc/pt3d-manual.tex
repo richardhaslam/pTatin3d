@@ -252,7 +252,7 @@ then execute the following command
 from the directory
 	\unix{ptatin3d/src}.
 
-\subsection{Implementing boundary and initial conditions}
+\subsection{Implementing Dirichlet boundary conditions}
 {\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to prescribe boundary and initial conditions into the structures and solution vectors used by {\ptat} without require the user to see the underlying data structures used, or understand parallelism.
 
 To apply boundary conditions, the main function used is:
@@ -261,7 +261,7 @@ To apply boundary conditions, the main function used is:
   DM da, \\
   DMDABCListConstraintLoc doflocation, \\
   PetscInt dof\_idx, \\
-  PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
+  PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
   void *ctx)} 
 which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as;
 \begin{itemize}
@@ -282,7 +282,7 @@ Refer to Fig.~\ref{fig:domain_coord} for the geometric association of these name
 %%
 \item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
 %%
-\item[] \unix{PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
+\item[] \unix{PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
 %%
 \item[] \unix{void *ctx} - any data structure or parameters which are required by the user provided function to evaluate the boundary condition.
 %%
@@ -292,14 +292,19 @@ The calling sequence for \unix{evaluate\_boundary\_condition} is,
 \shellcmd{PetscBool evaluate\_boundary\_condition( PetscScalar position[], PetscScalar *value, void *ctx )}
 where the arguments are;
 \begin{itemize}
-\item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is applied
-\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition
-\item[] \unix{PetscScalar *value} - the actual value of the boundary condition [OUTPUT]
-\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the boundary condition should be applied at this location [OUTPUT]
+\item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is evaluated.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the actual value of the boundary condition [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the boundary condition should be applied at this location [OUTPUT].
 \end{itemize}
 For a simple example of a user defined boundary condition function, refer to 
 \shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
 in file \unix{dmda\_bcs.c}.
+
+A standard set of velocity Dirichlet boundary conditions for Stokes are defined in \unix{ptatin\_std\_dirichlet\_boundary\_conditions.c}. Please refer to  \unix{ptatin\_std\_dirichlet\_boundary\_conditions.h} for a summary of the functions available.
+
+
+
 
 Notes: 
 \begin{enumerate}
@@ -307,6 +312,80 @@ Notes:
 \item Boundary conditions do not have to be applied along an entire face. Prescribing boundary conditions internal to a face is controlled by whether your user provided function returns  \unix{PETSC\_TRUE} or \unix{PETSC\_FALSE}. For example, if the bc evaluator was called with the argument \unix{DMDABCList\_IMIN\_LOC} we will traverse along the bottom boundary. The user defined function could return  \unix{PETSC\_TRUE} if $x < 0.5$ and \unix{PETSC\_FALSE} otherwise. When \unix{PETSC\_FALSE} is returned the parameter \unix{PetscScalar *value} is ignored.
 \item When defining time dependent boundary conditions, the variable time should be included within the user defined structured (\unix{void *ctx}) which is passed into \unix{DMDABCListTraverse3d()}.
 \end{enumerate}
+
+\subsection{Implementing initial conditions}
+Iterators are provided to allow to define the contents of PETSc vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
+
+The standard vector iterator is given by
+\shellcmd{PetscErrorCode DMDAVecTraverse3d( \newline
+  DM da, \\
+  Vec X, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*), \\
+  void *ctx),} 
+ where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{Vec X} - PETSc vector into which you want to insert values (e.g. velocity).
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*)} - the user provided function.
+%%
+\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
+%%
+\end{itemize}
+The calling sequence for \unix{evaluate\_function} is,
+\shellcmd{PetscBool evaluate\_function( PetscScalar position[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\end{itemize}
+%
+%
+%\shellcmd{PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof\_idx,PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)}
+%
+%
+
+The standard $ijk$ vector iterator is given by
+\shellcmd{PetscErrorCode DMDAVecTraverseIJK( \newline
+  DM da, \\
+  Vec X, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*), \\
+  void *ctx),} 
+ where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{Vec X} - PETSc vector into which you want to insert values (e.g. velocity).
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*)} - the user provided function.
+%%
+\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
+%%
+\end{itemize}
+The calling sequence for \unix{evaluate\_functionIJK} is,
+\shellcmd{PetscBool evaluate\_functionIJK( PetscScalar position[], PetscInt global\_index[], PetscInt local\_index[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
+\item[] \unix{PetscInt global\_index[]} - $i,j,k$ values of the node in the global numbering system.
+\item[] \unix{PetscInt local\_index[]} - $i,j,k$ values of the node in the local numbering system.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\end{itemize}
+
+
 
 
 % -----------------------------------------------------------------------------------------
