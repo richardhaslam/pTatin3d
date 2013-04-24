@@ -263,14 +263,14 @@ To apply boundary conditions, the main function used is:
   PetscInt dof\_idx, \\
   PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
   void *ctx)} 
-which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as
+which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as;
 \begin{itemize}
 %%
-\item[] \unix{BCList list} - the data structure used to store boundary conditions
+\item[] \unix{BCList list} - data structure used to store boundary conditions.
 %%
-\item[] \unix{DM da} - the data structure used to represent the mesh and quantity (e.g. velocity)
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
 %%
-\item[] \unix{DMDABCListConstraintLoc doflocation} - index to identify which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
+\item[] \unix{DMDABCListConstraintLoc doflocation} - index identifying which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
 	\{ \unix{DMDABCList\_INTERIOR\_LOC, 
 	DMDABCList\_IMIN\_LOC,
 	DMDABCList\_IMAX\_LOC,
@@ -280,17 +280,17 @@ which is declared in \unix{dmda\_bcs.c}, where the input arguments are identifie
 	DMDABCList\_KMAX\_LOC} \}.
 Refer to Fig.~\ref{fig:domain_coord} for the geometric association of these names.
 %%
-\item[] \unix{PetscInt dof\_idx} - the integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1)
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
 %%
-\item[] \unix{PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition
+\item[] \unix{PetscBool (* evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
 %%
-\item[] \unix{void *ctx} - any data structure, parameters which are required by the user provided function
+\item[] \unix{void *ctx} - any data structure or parameters which are required by the user provided function to evaluate the boundary condition.
 %%
 \end{itemize}
 
-Calling sequence for \unix{evaluate\_boundary\_condition} is
+The calling sequence for \unix{evaluate\_boundary\_condition} is,
 \shellcmd{PetscBool evaluate\_boundary\_condition( PetscScalar position[], PetscScalar *value, void *ctx )}
-where the arguments are
+where the arguments are;
 \begin{itemize}
 \item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is applied
 \item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition
@@ -301,6 +301,12 @@ For a simple example of a user defined boundary condition function, refer to
 \shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
 in file \unix{dmda\_bcs.c}.
 
+Notes: 
+\begin{enumerate}
+\item Boundary conditions can be applied within the interior of the domain using the value \unix{DMDABCList\_INTERIOR\_LOC}.
+\item Boundary conditions do not have to be applied along an entire face. Prescribing boundary conditions internal to a face is controlled by whether your user provided function returns  \unix{PETSC\_TRUE} or \unix{PETSC\_FALSE}. For example, if the bc evaluator was called with the argument \unix{DMDABCList\_IMIN\_LOC} we will traverse along the bottom boundary. The user defined function could return  \unix{PETSC\_TRUE} if $x < 0.5$ and \unix{PETSC\_FALSE} otherwise. When \unix{PETSC\_FALSE} is returned the parameter \unix{PetscScalar *value} is ignored.
+\item When defining time dependent boundary conditions, the variable time should be included within the user defined structured (\unix{void *ctx}) which is passed into \unix{DMDABCListTraverse3d()}.
+\end{enumerate}
 
 
 % -----------------------------------------------------------------------------------------
