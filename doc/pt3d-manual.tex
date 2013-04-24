@@ -271,13 +271,13 @@ which is declared in \unix{dmda\_bcs.c}, where the input arguments are identifie
 \item[] \unix{DM da} - the data structure used to represent the mesh and quantity (e.g. velocity)
 %%
 \item[] \unix{DMDABCListConstraintLoc doflocation} - index to identify which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
-	DMDABCList\_INTERIOR\_LOC, 
+	\{ \unix{DMDABCList\_INTERIOR\_LOC, 
 	DMDABCList\_IMIN\_LOC,
 	DMDABCList\_IMAX\_LOC,
 	DMDABCList\_JMIN\_LOC,
 	DMDABCList\_JMAX\_LOC,
 	DMDABCList\_KMIN\_LOC,
-	DMDABCList\_KMAX\_LOC. 
+	DMDABCList\_KMAX\_LOC} \}.
 Refer to Fig.~\ref{fig:domain_coord} for the geometric association of these names.
 %%
 \item[] \unix{PetscInt dof\_idx} - the integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1)
