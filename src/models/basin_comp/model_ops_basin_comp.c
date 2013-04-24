@@ -558,12 +558,23 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 		}
 	}
     }else if (data->perturbation_type == 2){/*perturbe all the interfaces with a white noise*/
-        kinter = 0;
+        PetscInt kinter_min, kinter_max;
+        
+        kinter_min = 0;
+        kinter_max = 0;
         MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
         for(interf = 1; interf < n_interfaces-1; interf++){
-            kinter += 2*layer_res_k[interf-1];
+            DM botinterface_da, topinterface_da;
+            Vec botinterface_coords, topinterface_coords;
+            PetscScalar *botinterface_nodes, *topinterface_nodes;
+            
+            kinter_min = kinter_max;
+            kinter_max += 2*layer_res_k[interf-1];
+            
             srand(rank*interf+2);//The seed changes with the interface and the process.
+            
             /*Find the viscous layer*/
+            #if 0
             if(data->eta_b[interf-1] < data->eta_b[interf]){
                 H_b = interface_heights_b[interf+1] - interface_heights_b[interf];
             }else{
@@ -574,18 +585,42 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             }else{
                 H_f = (interface_heights_f[interf] - interface_heights_f[interf-1]);
             }
+            #endif
+            
+            
+            if(data->eta_f[interf-1] < data->eta_f[interf]){
+                ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max + 1, 1, &botinterface_da );CHKERRQ(ierr);
+                ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max + 2*layer_res_k[interf], kinter_max + 2*layer_res_k[interf]+1, 1, &topinterface_da );CHKERRQ(ierr);
+        
+            }else{
+                ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_min, kinter_min + 1, 1, &botinterface_da );CHKERRQ(ierr);
+                ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max + 1, 1, &topinterface_da );CHKERRQ(ierr);   
+          
+                
+            }        
+
+            ierr = DMDAGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
+            ierr = VecGetArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
+            
+            ierr = DMDAGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
+            ierr = VecGetArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
             
             if ( (kinter>=sk) && (kinter<sk+nz) ) {
                 for(i = si; i<si+nx; i++) {
                     for(j = sj; j<sj+ny; j++){
-
-                        LA_coord[kinter][j][i].z += amp * 0.5*(H_f + H_b)*(2.0 * rand()/(RAND_MAX+1.0));
+                        printf("--> %f     %d\n",(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2]), interf);
+                        LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*(2.0 * rand()/(RAND_MAX+1.0));//Perturbe with an amplitude prop to the local thickness.
                         
                     }
                         
                     }
                 }
-                
+            ierr = VecRestoreArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
+            ierr = VecRestoreArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
+            
+            ierr = DMDestroy(&botinterface_da);CHKERRQ(ierr);
+            ierr = DMDestroy(&topinterface_da);CHKERRQ(ierr);
+            
             }
     }
     
