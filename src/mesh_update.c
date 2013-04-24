@@ -186,5 +186,22 @@ PetscErrorCode UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(DM dav,Vec vel
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh"
+PetscErrorCode UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh(DM dav,Vec velocity,PetscReal step)
+{
+	PetscInt       M,N,P;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,step);CHKERRQ(ierr);
+	
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 
 
