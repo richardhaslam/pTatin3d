@@ -521,3 +521,76 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt 
 
 
 
+
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARemeshJMAX_UpdateHeightsFromInterior"
+PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da)
+{
+	PetscErrorCode ierr;
+	PetscInt M,N,P,si,sj,sk,nx,ny,nz,i,j,k;
+	DM cda;
+	Vec coords,gcoords;
+	DMDACoor3d ***LA_coords,***LA_gcoords;
+	
+	PetscFunctionBegin;
+
+	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+
+	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	if (sj+ny == N) { /* we contain the surface mesh */
+		
+		/* check IMIN */
+		if (si == 0) {
+			i = 0;
+			for (k=sk; k<sk+nz; k++) {
+				LA_coords[k][N-1][i].y = LA_gcoords[k][N-1][i+1].y;
+			}
+		}
+		
+		/* check IMAX */
+		if (si + nx == M) {
+			i = M-1;
+			for (k=sk; k<sk+nz; k++) {
+				LA_coords[k][N-1][i].y = LA_gcoords[k][N-1][i-1].y;
+			}
+		}
+		
+		/* check KMIN */
+		if (sk == 0) {
+			k = 0;
+			for (i=si; i<si+nx; i++) {
+				LA_coords[k][N-1][i].y = LA_gcoords[k+1][N-1][i].y;
+			}
+		}
+		
+		/* check KMAX */
+		if (sk + nz == P) {
+			k = P-1;
+			for (i=si; i<si+nx; i++) {
+				LA_coords[k][N-1][i].y = LA_gcoords[k-1][N-1][i].y;
+			}
+		}
+	}
+	
+	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+	
+	/* update */
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+
+	
+	PetscFunctionReturn(0);
+}
+
+
+

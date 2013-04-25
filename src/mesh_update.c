@@ -195,13 +195,138 @@ PetscErrorCode UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh(DM dav
 	
 	PetscFunctionBegin;
 	
+	/* take a full lagrangian step */
 	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,step);CHKERRQ(ierr);
+	
+	{
+		PetscReal dx;
+		PetscReal gmin[3],gmax[3];
+		PetscInt i,k,si,sj,sk,nx,ny,nz;
+		Vec coordinates;
+		DM cda;
+		DMDACoor3d ***LA_coords;
+		
+		
+		ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		dx = (gmax[0]-gmin[0])/( (PetscReal)((M-1)) );
+		
+		/* resample bottom nodes so they are equi-distance in x */
+		ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+		
+		ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+		ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+		ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
+
+		if (sj == 0) { /* bottom layer nodes */
+			for (k=sk; k<sk+nz; k++) {
+				for (i=si; i<si+nx; i++) {
+					LA_coords[k][0][i].x = gmin[0] + i * dx;
+				}
+			}
+		}
+		
+		ierr = DMDAVecRestoreArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
+
+		ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
+	}
+	
 	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "UpdateMeshGeometry_DecoupledHorizontalVerticalMeshMovement"
+PetscErrorCode UpdateMeshGeometry_DecoupledHorizontalVerticalMeshMovement(DM dav,Vec velocity,PetscReal step)
+{
+	PetscInt       M,N,P;
+	Vec            velocity_ale;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMGetGlobalVector(dav,&velocity_ale);CHKERRQ(ierr);
+	ierr = VecCopy(velocity,velocity_ale);CHKERRQ(ierr);
+
+	/* kill y componenet */
+	ierr = VecStrideSet(velocity_ale,1,0.0);CHKERRQ(ierr); /* zero y component */
+	/* take a full lagrangian step in x-z  */
+	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity_ale,step);CHKERRQ(ierr);
+
+	
+	/* resample bottom nodes so they are equi-distance in x-z */
+	{
+		PetscReal dx,dz;
+		PetscReal gmin[3],gmax[3];
+		PetscInt i,j,k,si,sj,sk,nx,ny,nz;
+		Vec coordinates;
+		DM cda;
+		DMDACoor3d ***LA_coords;
+		
+		
+		ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		dx = (gmax[0]-gmin[0])/( (PetscReal)((M-1)) );
+		dz = (gmax[2]-gmin[2])/( (PetscReal)((P-1)) );
+		
+		ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+		
+		ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+		ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+		ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
+		
+		if (sj == 0) { /* bottom layer nodes */
+			j = 0;
+			for (k=sk; k<sk+nz; k++) {
+				for (i=si; i<si+nx; i++) {
+					LA_coords[k][j][i].x = gmin[0] + i * dx;
+					LA_coords[k][j][i].z = gmin[2] + k * dz;
+				}
+			}
+		}
+
+		if (sj + ny == N) { /* top layer nodes */
+			j = N - 1;
+			for (k=sk; k<sk+nz; k++) {
+				for (i=si; i<si+nx; i++) {
+					LA_coords[k][j][i].x = gmin[0] + i * dx;
+					LA_coords[k][j][i].z = gmin[2] + k * dz;
+				}
+			}
+		}
+		
+		
+		ierr = DMDAVecRestoreArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
+		
+		ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
+	}
+	
+
+	ierr = VecCopy(velocity,velocity_ale);CHKERRQ(ierr);
+	ierr = VecStrideSet(velocity_ale,0,0.0);CHKERRQ(ierr); /* zero x component */
+	ierr = VecStrideSet(velocity_ale,2,0.0);CHKERRQ(ierr); /* zero z component */
+	
+
+	/* take a full lagrangian step in y  */
+	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity_ale,step);CHKERRQ(ierr);
+	
+	/* move exterior based on interior */
+	ierr = DMDARemeshJMAX_UpdateHeightsFromInterior(dav);CHKERRQ(ierr);
+	
+	/* clean up spacing inside */
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
+	
+	
+	ierr = DMRestoreGlobalVector(dav,&velocity_ale);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
 
 
 
