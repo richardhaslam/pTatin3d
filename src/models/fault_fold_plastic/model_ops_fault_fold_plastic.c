@@ -21,6 +21,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	PetscInt n_int,n;
     RheologyConstants   *rheology;
 	DataBucket          materialconstants = c->material_constants;
+    PetscReal length_scale,velocity_scale,time_scale,viscosity_scale,density_scale,pressure_scale;
 	PetscBool flg;
     const PetscReal one_third = 0.333333333333333;
 
@@ -57,10 +58,10 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 
 	pTatinModelGetOptionReal("-model_fault_fold_plastic_Ly", &data->Ly, "User must provide the length along the y direction", PETSC_NULL,PETSC_TRUE);
 
-        PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_sigma",&data->sigma,&flg);
+    /*    PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_sigma",&data->sigma,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the spreading of the weak zone (-model_fault_fold_plastic_sigma)");
-	}
+	}*/
 
 	n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_interface_heights",data->interface_heights,&n_int,&flg);
@@ -251,6 +252,45 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_plastic_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_exx",&data->exx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_vx_commpression",&data->exx,&flg);CHKERRQ(ierr);
+    
+    /*----------------------------Rescaling-----------------------------------------*/
+    length_scale    = 1.0;
+	velocity_scale  = 1.0;
+	viscosity_scale = 1.0e12;
+	
+	time_scale      = length_scale / velocity_scale;
+	pressure_scale  = viscosity_scale / time_scale;
+	density_scale   = pressure_scale / length_scale;
+    
+	PetscPrintf(PETSC_COMM_WORLD,"faul_fold_plastic: length scale    = %1.4e \n", length_scale);
+	PetscPrintf(PETSC_COMM_WORLD,"faul_fold_plastic: velocity scale  = %1.4e \n", velocity_scale);
+	PetscPrintf(PETSC_COMM_WORLD,"faul_fold_plastic: viscosity scale = %1.4e \n", viscosity_scale);
+	PetscPrintf(PETSC_COMM_WORLD,"faul_fold_plastic: time scale      = %1.4e \n", time_scale);
+	PetscPrintf(PETSC_COMM_WORLD,"faul_fold_plastic: pressure scale  = %1.4e \n", pressure_scale);
+	PetscPrintf(PETSC_COMM_WORLD,"faul_fold_plastic: density scale   = %1.4e \n", density_scale);
+	
+	// scale material properties
+	{
+		PetscInt phase;	
+        
+		for (phase=0; phase<rheology->nphases_active; phase++) {
+			MaterialConstantsScaleAll(materialconstants,phase,length_scale,velocity_scale,time_scale,viscosity_scale,density_scale,pressure_scale);
+		}
+	}	
+	
+	/* experiment info */
+	data->vx_commpression = data->vx_commpression / velocity_scale;
+    data->exx = data->exx*time_scale;
+    data->Lx /= length_scale;
+    data->Ly /= length_scale; /* direction of g */
+    data->Lz /= length_scale;
+    
+    for(n=0; n<data->n_interfaces-1; n++) {
+		data->interface_heights[n] /= length_scale;
+	}
+    
+    
+    
     
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Wrench Fold\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ", data->Lx,data->Ly,data->Lz );
@@ -569,6 +609,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
             phase = data->n_interfaces;
         } 
 		/* user the setters provided for you */
+        //printf("phase: %d;; %d %d %d\n", phase, I,J,K);
         ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
 	}
 	ierr = MaterialPointRestoreAccess(material_points,&mpX);CHKERRQ(ierr);			
@@ -577,100 +618,6 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitialMaterialGeometryQuadraturePoints_FaultFoldPlastic"
-PetscErrorCode InitialMaterialGeometryQuadraturePoints_FaultFoldPlastic(pTatinCtx c,void *ctx)
-{
-	ModelFaultFoldPlasticCtx *data = (ModelFaultFoldPlasticCtx*)ctx;
-	int                    p,n_mp_points;
-	DataBucket             db;
-	DataField              PField_std,PField_stokes;
-	PhysCompStokes         user;
-	QPntVolCoefStokes      *all_gausspoints,*cell_gausspoints;
-	PetscInt               nqp,qp;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
-	/* define properties on material points */
-	db = c->materialpoint_db;
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
-	DataFieldGetAccess(PField_std);
-	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
-	
-	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
-	DataFieldGetAccess(PField_stokes);
-	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
-	
-	
-	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
-
-	/* get the quadrature points */
-	user = c->stokes_ctx;
-	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
-	nqp = user->volQ->npoints;
-	
-	for (p=0; p<n_mp_points; p++) {
-		MPntStd     *material_point;
-		MPntPStokes *mpprop_stokes;
-		double      *position;
-		PetscReal      eta,rho, center2, sigma2;
-		PetscInt    phase;
-		PetscInt    layer, kmaxlayer, kminlayer, localeid_p;
-		PetscInt    I, J, K;
-		
-		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
-		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
-		MPntStdGetField_global_coord(material_point,&position);
-        
-		sigma2  = data->sigma*data->sigma;
-        center2 = (position[1]-0.5*data->Ly)*(position[1]-0.5*data->Ly);        
-        
-        MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
-
-		//Set the properties
-		phase = -1;
-		eta =  0.0;
-		rho = 0.0;
-		kmaxlayer = kminlayer = 0;
-		layer = 0;
-		while( (phase == -1) && (layer < data->n_interfaces-1) ){
-			kmaxlayer += data->layer_res_k[layer];
-			
-			if( (K<kmaxlayer) && (K>=kminlayer) ){
-				phase = layer + 1;
-				//eta = data->eta[layer]- (data->eta[layer]-data->etaweak[layer])*exp(-center2/(2.0*sigma2));
-				rho = data->rho[layer];
-			}
-			kminlayer += data->layer_res_k[layer];
-			layer++;
-		}
-
-		
-		MPntStdGetField_local_element_index(material_point,&localeid_p);
-		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,localeid_p,&cell_gausspoints);CHKERRQ(ierr);
-		
-		for (qp=0; qp<nqp; qp++) {
-			cell_gausspoints[qp].eta  = eta;
-			cell_gausspoints[qp].rho  = rho;
-
-			cell_gausspoints[qp].Fu[0] = 0.0;
-			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
-			cell_gausspoints[qp].Fu[2] = 0.0;
-
-			cell_gausspoints[qp].Fp = 0.0;
-		}		
-		
-	}
-	
-	DataFieldRestoreAccess(PField_std);
-	DataFieldRestoreAccess(PField_stokes);
-	
-	PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__
@@ -687,8 +634,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_FaultFoldPlastic(pTatinCtx c,vo
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(c,data);CHKERRQ(ierr);
-	ierr = InitialMaterialGeometryQuadraturePoints_FaultFoldPlastic(c,data);CHKERRQ(ierr);
-	
+		
 	PetscFunctionReturn(0);
 }
 
@@ -797,10 +743,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_FaultFoldPlastic(pTatinCtx c,Vec X,v
 #if 0
 	/* activate marker interpolation */	
 	if (remesh) {
+        PetscInt M,N,P;
 		c->coefficient_projection_type = 1;
 		
 		ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
+		ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d(dav,0,P);CHKERRQ(ierr);
 	}
 #endif	
 	
