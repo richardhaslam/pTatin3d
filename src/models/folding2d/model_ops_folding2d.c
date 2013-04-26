@@ -300,6 +300,60 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Folding2d(pTatinCtx c,void *c
 	PetscFunctionReturn(0);
 }
 
+
+/*
+#undef __FUNCT__
+#define __FUNCT__ "Folding2dSetMeshGeometry"
+PetscErrorCode Folding2dSetMeshGeometry(DM dav, void *ctx)
+{
+	PetscErrorCode ierr;
+    ModelFolding2dCtx *data = (ModelFolding2dCtx*)ctx;
+	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, kinter_max, kinter_min, interf, n_interfaces,*layer_res_k;
+    PetscScalar dz, *interface_heights;
+    
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***LA_coord;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	n_interfaces = data->n_interfaces;
+    layer_res_k = data->layer_res_k;
+    interface_heights = data->interface_heights;
+    
+    
+    kinter_max = 0;
+	for(interf = 0; interf < n_interfaces-1; interf++){ 
+        kinter_min = kinter_max;
+        kinter_max += 2*layer_res_k[interf];
+        dz = (interface_heights[interf+1] - interface_heights[interf])/(PetscReal)(2.0*layer_res_k[interf]);
+        for(i=si; i<si+nx; i++){
+            for(j=sj; j<sj+ny; j++){
+                PetscScalar h;
+                h = data->interface_heights[interf];
+                for(k=sk;k<sk+nz;k++){
+                    if((k <= kinter_max)&&(k >= kinter_min)){
+                        LA_coord[k][j][i].z = h + (PetscReal)dz*(k-kinter_min); 
+                        
+                    }   
+                }
+            }
+        }
+        
+    }
+    
+	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+*/
 #undef __FUNCT__
 #define __FUNCT__ "Folding2dSetPerturbedInterfaces"
 PetscErrorCode Folding2dSetPerturbedInterfaces(DM dav, PetscScalar interface_heights[], PetscInt layer_res_j[], PetscInt n_interfaces,PetscReal amp)
@@ -557,7 +611,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	PetscReal         Lx,Ly,dx,dy,dz,Lz;
 	PetscInt          mx,my,mz, itf;
 	PetscReal         amp,factor;
-  char              mesh_outputfile[PETSC_MAX_PATH_LEN];
+    char              mesh_outputfile[PETSC_MAX_PATH_LEN];
+    int               rank;
 	PetscErrorCode    ierr;
 
 	PetscFunctionBegin;
@@ -607,8 +662,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Folding2d(pTatinCtx c,void *ctx)
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
     
   ierr = sprintf(mesh_outputfile, "%s/mesh_t_0.dat",c->outputpath);
-	ierr = save_mesh(c->stokes_ctx->dav,mesh_outputfile);CHKERRQ(ierr);
     
+    MPI_Comm_rank(((PetscObject)c->stokes_ctx->dav)->comm,&rank);
+    if(rank == 0){
+        ierr = save_mesh(c->stokes_ctx->dav,mesh_outputfile);CHKERRQ(ierr);
+    }
 	PetscFunctionReturn(0);
 }
 
