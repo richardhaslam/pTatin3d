@@ -608,7 +608,6 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             if ( (kinter>=sk) && (kinter<sk+nz) ) {
                 for(i = si; i<si+nx; i++) {
                     for(j = sj; j<sj+ny; j++){
-                        printf("--> %f     %d\n",(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2]), interf);
                         LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*(2.0 * rand()/(RAND_MAX+1.0));//Perturbe with an amplitude prop to the local thickness.
                         
                     }
