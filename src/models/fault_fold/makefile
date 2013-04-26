@@ -1,7 +1,7 @@
 
 ## List source files here
 MODEL_SRC = \
-	model_ops_fault_fold_plastic.c
+	model_ops_fault_fold.c
 	
 
 ## USER SHOULD NOT NEED TO EDIT ANYTHING BELOW
