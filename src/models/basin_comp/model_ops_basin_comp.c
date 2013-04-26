@@ -156,8 +156,6 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
     data->slope = 1.0/data->midleslope;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_slope",&data->slope,&flg);CHKERRQ(ierr);
 
-    printf("----->   layering %d \n",data->layering_type);
-    
     
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Basin Compression\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e]\n", data->Lx,data->Ly,data->Lz );
@@ -571,7 +569,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             kinter_min = kinter_max;
             kinter_max += 2*layer_res_k[interf-1];
             
-            srand(rank*interf+2);//The seed changes with the interface and the process.
+            srand(200*rank*interf+2);//The seed changes with the interface and the process.
             
             /*Find the viscous layer*/
             #if 0
@@ -608,7 +606,9 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             if ( (kinter>=sk) && (kinter<sk+nz) ) {
                 for(i = si; i<si+nx; i++) {
                     for(j = sj; j<sj+ny; j++){
+                        printf("PERTURBing but shiting you?!  %f", LA_coord[kinter_max][j][i].z);
                         LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*(2.0 * rand()/(RAND_MAX+1.0));//Perturbe with an amplitude prop to the local thickness.
+                        printf("    %f\n", LA_coord[kinter_max][j][i].z);
                         
                     }
                         
