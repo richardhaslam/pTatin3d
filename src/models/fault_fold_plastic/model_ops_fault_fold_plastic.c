@@ -292,7 +292,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
     
     
     
-	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Wrench Fold\"\n");
+	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Fault Fold Plastic\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e] ", data->Lx,data->Ly,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
 	for (n=data->n_interfaces-1; n>=1; n--) {
@@ -583,6 +583,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
 		PetscInt    phase;
 		PetscInt    layer, kmaxlayer, kminlayer;
 		PetscInt    I, J, K;
+        PetscReal   eta, rho;
 
 		DataFieldAccessPoint(mpX->PField[MPField_Std],p,   (void**)&material_point);
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
@@ -599,7 +600,9 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
 			kmaxlayer += data->layer_res_k[layer];
 			
 			if( (K<kmaxlayer) && (K>=kminlayer) ){
-				phase = layer + 1;
+				phase = layer;
+                eta = data->eta[layer];
+                rho = data->rho[layer];
 			}
 			kminlayer += data->layer_res_k[layer];
 			layer++;
@@ -607,10 +610,14 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
         /*Check if we are in the fault:*/
         if ((data->domain_res_j[0]<=J) && (data->domain_res_j[0]+data->domain_res_j[1]>J)){
             phase = data->n_interfaces;
+            eta = data->fault_eta[0];
+            rho = data->fault_rho[0];
         } 
 		/* user the setters provided for you */
         //printf("phase: %d;; %d %d %d\n", phase, I,J,K);
         ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
+        ierr = MaterialPointSet_viscosity(mpX,p,eta);CHKERRQ(ierr);
+        ierr = MaterialPointSet_density(mpX,p,rho);CHKERRQ(ierr);
 	}
 	ierr = MaterialPointRestoreAccess(material_points,&mpX);CHKERRQ(ierr);			
 
@@ -755,6 +762,41 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_FaultFoldPlastic(pTatinCtx c,Vec X,v
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_FaultFoldPlastic"
+PetscErrorCode ModelApplyInitialStokesVariableMarkers_FaultFoldPlastic(pTatinCtx user,Vec X,void *ctx)
+{
+	
+	PhysCompStokes    stokes;
+	DM                stokes_pack,dau,dap;
+	Vec               Uloc,Ploc;
+	PetscScalar       *LA_Uloc,*LA_Ploc;
+	PetscErrorCode    ierr;
+	PetscFunctionBegin;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	
+	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelInitialCondition_FaultFoldPlastic"
 PetscErrorCode ModelInitialCondition_FaultFoldPlastic(pTatinCtx c,Vec X,void *ctx)
 {
@@ -860,7 +902,9 @@ PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_FaultFoldPlastic);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_FaultFoldPlastic);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_FaultFoldPlastic);CHKERRQ(ierr);
-	
+    
+    ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_FaultFoldPlastic);CHKERRQ(ierr);
+
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
 	
