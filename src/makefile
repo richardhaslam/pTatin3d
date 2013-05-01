@@ -70,7 +70,8 @@ export TATIN_SRC = \
 			monitors.c \
 			mp_advection.c \
 			units.c \
-			model_utils.c
+			model_utils.c \
+			eigen_operators.c
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
