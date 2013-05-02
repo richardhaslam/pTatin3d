@@ -129,3 +129,53 @@ PetscReal absolute(PetscReal a)
     else
         return a;
 }
+
+/*Remove the linear trend
+ Assume a regular spacing and chose an appropriate coordinate system such
+ sum x_i = 0
+ */
+
+#undef __FUNCT__
+#define __FUNCT__ "detrend"
+void detrend(PetscReal array[], PetscInt n)
+{
+    PetscReal x, y, a, b;
+    PetscReal sy = 0.0,
+    sxy = 0.0,
+    sxx = 0.0;
+    PetscInt i;
+    
+    for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0)
+    {
+        y = array[i];
+        sy += y;
+        sxy += x * y;
+        sxx += x * x;
+    }
+    b = sxy / sxx;
+    a = sy / n;
+    
+    for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0)
+        array[i] -= (a+b*x);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "rednoise"
+PetscErrorCode rednoise(PetscReal *rnoise, PetscInt n, PetscInt seed)
+{
+    PetscInt i;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    ierr = PetscMalloc(n*sizeof(PetscReal),&rnoise);CHKERRQ(ierr);
+	ierr = PetscMemzero(rnoise,n*sizeof(PetscReal));CHKERRQ(ierr);
+    srand(1+seed);
+    rnoise[0] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+    for(i=1; i<n; i++){
+        rnoise[i] = rnoise[i-1] + 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+    }
+    
+    detrend(rnoise,n);
+    
+    PetscFunctionReturn(0);
+}
