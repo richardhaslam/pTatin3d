@@ -557,6 +557,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
 	}
     }else if (data->perturbation_type == 2){/*perturbe all the interfaces with a white noise*/
         PetscInt kinter_min, kinter_max;
+        PetscReal *rnoise;
         
         kinter_min = 0;
         kinter_max = 0;
@@ -569,8 +570,12 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             kinter_min = kinter_max;
             kinter_max += 2*layer_res_k[interf-1];
             
-            srand(200*rank*interf+2);//The seed changes with the interface and the process.
+            ierr = PetscMalloc(nx*ny*sizeof(PetscReal),&rnoise);CHKERRQ(ierr);
+            ierr = PetscMemzero(rnoise,nx*ny*sizeof(PetscReal));CHKERRQ(ierr);
             
+            ierr = rednoise(rnoise, nx*ny,rank*interf+2);CHKERRQ(ierr);
+
+
             /*Find the viscous layer*/
             #if 0
             if(data->eta_b[interf-1] < data->eta_b[interf]){
@@ -603,12 +608,10 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             ierr = DMDAGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
             ierr = VecGetArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
             
-            if ( (kinter>=sk) && (kinter<sk+nz) ) {
+            if ( (kinter_max>=sk) && (kinter_max<sk+nz) ) {
                 for(i = si; i<si+nx; i++) {
                     for(j = sj; j<sj+ny; j++){
-                        printf("PERTURBing but shiting you?!  %f", LA_coord[kinter_max][j][i].z);
-                        LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*(2.0 * rand()/(RAND_MAX+1.0));//Perturbe with an amplitude prop to the local thickness.
-                        printf("    %f\n", LA_coord[kinter_max][j][i].z);
+                        LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*rnoise[(i-si)*ny+(j-sj)];//Perturbe with an amplitude prop to the local thickness.
                         
                     }
                         
@@ -619,8 +622,10 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             
             ierr = DMDestroy(&botinterface_da);CHKERRQ(ierr);
             ierr = DMDestroy(&topinterface_da);CHKERRQ(ierr);
+            ierr = PetscFree(rnoise);CHKERRQ(ierr);
             
             }
+            
     }
     
 
