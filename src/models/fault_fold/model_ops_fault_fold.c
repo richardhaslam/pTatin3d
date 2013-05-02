@@ -320,8 +320,8 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav,void *ctx)// PetscScalar i
     amp = data->amp;
     Lx = data->Lx;
     fold_centers = data->fold_centers;
-    fold_center_front = Lx*fold_centers[0]/fold_centers[1];
-    fold_center_back = Lx*fold_centers[2]/fold_centers[3];
+    fold_center_front = 0.25*Lx + 0.5*Lx*fold_centers[0]/fold_centers[1];
+    fold_center_back = 0.25*Lx + 0.5*Lx*fold_centers[2]/fold_centers[3];
     
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
