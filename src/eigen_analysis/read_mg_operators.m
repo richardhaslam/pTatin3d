@@ -2,6 +2,10 @@
 % Read operators genrated from petsc
 % Useful for debugging mg smoother spectrum and testing SLEPc
 %
+% You may have to copy PetscBinaryRead.m into the current working
+% directory. This found in your petsc distribution in
+%   $PETSC_DIR/bin/matlab
+%
 
 clear all
 
