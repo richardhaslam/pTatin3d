@@ -144,7 +144,7 @@ void detrend(PetscReal array[], PetscInt n)
     sxy = 0.0,
     sxx = 0.0;
     PetscInt i;
-    
+
     for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0)
     {
         y = array[i];
@@ -152,30 +152,45 @@ void detrend(PetscReal array[], PetscInt n)
         sxy += x * y;
         sxx += x * x;
     }
-    b = sxy / sxx;
-    a = sy / n;
+    a = sxy/sxx;
+    b = sy/(PetscReal)n;
     
-    for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0)
-        array[i] -= (a+b*x);
+    
+    for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0){
+        array[i] -= (a*x+b);
+    }
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "rednoise"
-PetscErrorCode rednoise(PetscReal *rnoise, PetscInt n, PetscInt seed)
+PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed)
 {
     PetscInt i;
+    PetscReal maxi;
     PetscErrorCode ierr;
     
     PetscFunctionBegin;
-    ierr = PetscMalloc(n*sizeof(PetscReal),&rnoise);CHKERRQ(ierr);
-	ierr = PetscMemzero(rnoise,n*sizeof(PetscReal));CHKERRQ(ierr);
-    srand(1+seed);
+    
+    srand(seed);
     rnoise[0] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+
     for(i=1; i<n; i++){
         rnoise[i] = rnoise[i-1] + 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
     }
     
+
     detrend(rnoise,n);
+    
+    maxi = 0.0;
+    for(i=1; i<n; i++){
+        
+        if (abs(rnoise[i])>maxi){
+            maxi = abs(rnoise[i]);
+        }
+    }
+    for(i=1; i<n; i++){
+        rnoise[i] /= maxi;
+    }
     
     PetscFunctionReturn(0);
 }

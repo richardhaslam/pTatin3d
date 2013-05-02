@@ -40,5 +40,5 @@ PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_poi
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,const char error[],const char default_opt[],PetscBool essential);
 PetscReal absolute(PetscReal a);
 void detrend(PetscReal array[], PetscInt n);
-PetscErrorCode rednoise(PetscReal *rnoise, PetscInt n, PetscInt seed);
+PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed);
 #endif
