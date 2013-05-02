@@ -715,6 +715,7 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 	Mat As,Bs,Ae,Ai;
 	PetscInt nsplits,k,nlevels;
 	PetscViewer viewer;
+	PetscBool ascii_view = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -727,13 +728,25 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 	ksp_A11 = sub_ksp[0];
 	ierr = KSPGetPC(ksp_A11,&pc_A11);CHKERRQ(ierr);
 	
+	/* matlab agrees */
+	/*
+	{
+		ierr = KSPGetOperators(ksp_A11,&Ae,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+		ierr = _slepc_eigen(Ae,EPS_HEP,"StokesA11");CHKERRQ(ierr);
+	}
+	*/
 	ierr = PCMGGetLevels(pc_A11,&nlevels);CHKERRQ(ierr);
 	
 	ierr = PCMGGetCoarseSolve(pc_A11,&ksp_level);CHKERRQ(ierr);
 	ierr = KSPGetOperators(ksp_level,&Ai,0,0);CHKERRQ(ierr);
 	ierr = MatComputeExplicitOperator(Ai,&Ae);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_coarse.mat",&viewer);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+
+	if (ascii_view) {
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_coarse.mat",&viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+	} else {
+		ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"A_coarse.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	}
 	ierr = MatView(Ae,viewer);CHKERRQ(ierr);
 	ierr = MatDestroy(&Ae);CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -747,8 +760,12 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 		ierr = KSPGetOperators(ksp_level,&Ai,0,0);CHKERRQ(ierr);
 		ierr = MatComputeExplicitOperator(Ai,&Ae);CHKERRQ(ierr);
 
-		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+		if (ascii_view) {
+			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&viewer);CHKERRQ(ierr);
+			ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+		} else {
+			ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		}
 		ierr = MatView(Ae,viewer);CHKERRQ(ierr);
 		ierr = MatDestroy(&Ae);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -766,6 +783,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 	Mat As,Bs,Ae;
 	PetscInt nsplits,k,nlevels;
 	PetscViewer viewer;
+	PetscBool ascii_view = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -782,8 +800,14 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 	
 	ierr = PCMGGetCoarseSolve(pc_A11,&ksp_level);CHKERRQ(ierr);
 	ierr = KSPComputeExplicitOperator(ksp_level,&Ae);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_pc_coarse.mat",&viewer);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+
+	if (ascii_view) {
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_ksp_coarse.mat",&viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+	} else {
+		ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"A_ksp_coarse.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	}
+	
 	ierr = MatView(Ae,viewer);CHKERRQ(ierr);
 	ierr = MatDestroy(&Ae);CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -791,12 +815,16 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 	for( k=1; k<nlevels; k++ ){
 		char name[256];
 		
-		sprintf(name,"A_pc_level_%d.mat",k);
+		sprintf(name,"A_ksp_level_%d.mat",k);
 		
 		ierr = PCMGGetSmoother(pc_A11,k,&ksp_level);CHKERRQ(ierr);
 		ierr = KSPComputeExplicitOperator(ksp_level,&Ae);CHKERRQ(ierr);
-		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&viewer);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+		if (ascii_view) {
+			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&viewer);CHKERRQ(ierr);
+			ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+		} else {
+			ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		}
 		ierr = MatView(Ae,viewer);CHKERRQ(ierr);
 		ierr = MatDestroy(&Ae);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -804,8 +832,31 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 
 	/* complete fine grid */
 	ierr = KSPComputeExplicitOperator(ksp_A11,&Ae);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_pc_mg.mat",&viewer);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+	if (ascii_view) {
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_ksp_mg.mat",&viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+	} else {
+		ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"A_ksp_mg.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	}
+	ierr = MatView(Ae,viewer);CHKERRQ(ierr);
+
+	/* matlab agrees */
+	/*
+	{
+		ierr = _slepc_eigen(Ae,EPS_NHEP,"StokesA.inv(A')");CHKERRQ(ierr);
+	}
+	*/
+	 
+	ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+	ierr = PCComputeExplicitOperator(pc_A11,&Ae);CHKERRQ(ierr);
+	if (ascii_view) {
+		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"A_pc_mg.mat",&viewer);CHKERRQ(ierr);
+		ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+	} else {
+		ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"A_pc_mg.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+	}
 	ierr = MatView(Ae,viewer);CHKERRQ(ierr);
 	ierr = MatDestroy(&Ae);CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
