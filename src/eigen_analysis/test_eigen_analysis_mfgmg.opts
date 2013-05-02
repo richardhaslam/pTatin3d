@@ -21,8 +21,8 @@
 -fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_ksp_type chebychev
 -fieldsplit_u_mg_levels_pc_type jacobi
--fieldsplit_u_mg_levels_ksp_norm_type NONE
--fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 -ksp_type fgmres
 -model_viscous_sinker_eta0 1.0
 -output_path t1
@@ -36,20 +36,40 @@
 -my 12
 -mz 12
 
+# testing only
+#-fieldsplit_u_ksp_type cg
+#-fieldsplit_u_ksp_max_it 1
+#-fieldsplit_u_mg_levels_ksp_max_it 1
+#-fieldsplit_u_mg_levels_ksp_type richardson
+#-fieldsplit_u_mg_levels_pc_type none
+
+###=====================
+#
+# IMPORTANT:
+# To ensure that the preconditioned operator is in fact symmetric, it is essential
+# that the smoother is applied on all levels IDENTICALLY for each column vector (0,0,0,1,0.....)
+#-fieldsplit_u_mg_levels_ksp_converged_reason
+-fieldsplit_u_mg_levels_ksp_convergence_test skip
+#
+###=====================
+
 # slepc options
 # number of eigenvalues
 -eps_nev 10
-#-eps_all
--eps_tol 1e-6
--eps_monitor
+-eps_tol 1e-5
+-eps_monitor_conv
 
-#-eps_largest_magnitude
+# identification of eigenvalues required
+-eps_largest_magnitude
 #-eps_smallest_magnitude
 #-eps_largest_real
 #-eps_smallest_real
 #-eps_largest_imaginary
 #-eps_smallest_imaginary
-
-
+#
+#-eps_target_magnitude
+#-eps_target 1.0e-9
+#-eps_nev 500
+#-eps_mpd 600
 
 #End of PETSc Option Table entries
