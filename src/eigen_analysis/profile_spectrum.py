@@ -1,11 +1,23 @@
 
 import os
 
-output_file = 'eigen_spectrum.dat'
 
-options_file = 'test_basic_mfgmg.opts'
+options_file = 'test_eigen_analysis_mfgmg.opts'
 
-slepc_opts = '-eps_monitor_conv -eps_tol 1e-4 -eps_nev 20'
+job1_A = '-mx 32 -my 32 -mz 32 -dau_nlevels 4 -model_viscous_sinker_eta0 1.0e-4 -fieldsplit_u_ksp_rtol 1.0e-1 -gbump_amp 0.0'
+job2_A = '-mx 32 -my 32 -mz 32 -dau_nlevels 4 -model_viscous_sinker_eta0 1.0e-4 -fieldsplit_u_ksp_rtol 1.0e-3 -gbump_amp 0.0'
+job3_A = '-mx 32 -my 32 -mz 32 -dau_nlevels 4 -model_viscous_sinker_eta0 1.0e-4 -fieldsplit_u_ksp_rtol 1.0e-6 -gbump_amp 0.0'
+
+job1_B = '-mx 32 -my 32 -mz 32 -dau_nlevels 4 -model_viscous_sinker_eta0 1.0 -fieldsplit_u_ksp_rtol 1.0e-1 -gbump_amp 0.0'
+job2_B = '-mx 32 -my 32 -mz 32 -dau_nlevels 4 -model_viscous_sinker_eta0 1.0 -fieldsplit_u_ksp_rtol 1.0e-3 -gbump_amp 0.0'
+job3_B = '-mx 32 -my 32 -mz 32 -dau_nlevels 4 -model_viscous_sinker_eta0 1.0 -fieldsplit_u_ksp_rtol 1.0e-6 -gbump_amp 0.0'
+
+options_file = options_file + ' ' + job1_A
+
+output_file = 'eigen_spectrum_job1_A.dat'
+
+
+slepc_opts = '-eps_monitor_conv -eps_tol 1e-5 -eps_nev 20'
 
 # Indicate which style of analysis required
 analyser_opts = ' -eigen_anal 1'
