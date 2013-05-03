@@ -445,9 +445,12 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
 	PetscScalar    kr,ki;
 	Vec            xr,xi;
 	PetscInt       i,nev,maxit,its,nconv;
+	PetscBool      compute_errors = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
+
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-slepc_compute_errors",&compute_errors,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysis: \"%s\" ===== \n",description);
   ierr = MatGetVecs(A,PETSC_NULL,&xr);CHKERRQ(ierr);
@@ -474,31 +477,39 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
 	
 	if (nconv>0) {
 		/* Display eigenvalues and relative errors */
-		ierr = PetscPrintf(PETSC_COMM_WORLD,
-											 "               k                   ||Ax-kx||/||kx||\n"
-											 "   --------------------------    --------------------\n");CHKERRQ(ierr);
+		if (compute_errors) {
+			ierr = PetscPrintf(PETSC_COMM_WORLD,
+												 "               k                   ||Ax-kx||/||kx||\n"
+												 "   --------------------------    --------------------\n");CHKERRQ(ierr);
+		} else {
+			ierr = PetscPrintf(PETSC_COMM_WORLD,
+												 "               k              \n"
+												 "   -------------------------- \n");CHKERRQ(ierr);
+		}
 		
 		for (i=0;i<nconv;i++) {
 			/* 
 			 Get converged eigenpairs: i-th eigenvalue is stored in kr (real part) and ki (imaginary part)
 			 */
 			ierr = EPSGetEigenpair(eps,i,&kr,&ki,xr,xi);CHKERRQ(ierr);
+			re = kr;
+			im = ki;
+
 			/*
 			 Compute the relative error associated to each eigenpair
 			 */
-			ierr = EPSComputeRelativeError(eps,i,&error);CHKERRQ(ierr);
-			
-			re = kr;
-			im = ki;
-			
-			ierr = PetscPrintf(PETSC_COMM_WORLD," %1.6e %+1.6e j       %1.6e\n",re,im,error);CHKERRQ(ierr);
+			if (compute_errors) {
+				ierr = EPSComputeRelativeError(eps,i,&error);CHKERRQ(ierr);
+				ierr = PetscPrintf(PETSC_COMM_WORLD," %1.6e %+1.6e j       %1.6e\n",re,im,error);CHKERRQ(ierr);
+			} else {
+				ierr = PetscPrintf(PETSC_COMM_WORLD," %1.6e %+1.6e j \n",re,im);CHKERRQ(ierr);
+			}
 		}
 		ierr = PetscPrintf(PETSC_COMM_WORLD,"\n");CHKERRQ(ierr);
 		
 		ierr = PetscPrintf(PETSC_COMM_WORLD,"## GNUPLOT ## \n");CHKERRQ(ierr);
 		for (i=0;i<nconv;i++) {
 			ierr = EPSGetEigenpair(eps,i,&kr,&ki,xr,xi);CHKERRQ(ierr);
-			ierr = EPSComputeRelativeError(eps,i,&error);CHKERRQ(ierr);
 			re = kr;
 			im = ki;
 			ierr = PetscPrintf(PETSC_COMM_WORLD,"%1.6e %1.6e\n",re,im);CHKERRQ(ierr);
