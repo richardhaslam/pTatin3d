@@ -34,7 +34,7 @@
 #ifndef __mesh_deformation_h__
 #define __mesh_deformation_h__
 
-PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da);
+PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,PetscReal gbump_lambda);
 PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da);
 PetscErrorCode MeshDeformation_ShearXY(DM da);
 
