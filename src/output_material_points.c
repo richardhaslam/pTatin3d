@@ -721,7 +721,14 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 	for (k=esk; k<esk+2*mz+1; k++) {
 		for (j=esj; j<esj+2*my+1; j++) {
 			for (i=esi; i<esi+2*mx+1; i++) {
-				fprintf( vtk_fp,"      %1.6e %1.6e %1.6e\n", (float)LA_gcoords[k][j][i].x, (float)LA_gcoords[k][j][i].y, (float)LA_gcoords[k][j][i].z );
+				float xc,yc,zc;
+				
+				xc = (float)LA_gcoords[k][j][i].x; if (fabsf(xc) < 1.0e-12) { xc = 0.0; }
+				yc = (float)LA_gcoords[k][j][i].y; if (fabsf(yc) < 1.0e-12) { yc = 0.0; }
+				zc = (float)LA_gcoords[k][j][i].z; if (fabsf(zc) < 1.0e-12) { zc = 0.0; }
+				
+				
+				fprintf( vtk_fp,"      %1.6e %1.6e %1.6e\n", xc,yc,zc );
 			}
 		}
 	}
