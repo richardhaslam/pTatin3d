@@ -51,10 +51,9 @@ grid deformation etc.
  */
 #undef __FUNCT__
 #define __FUNCT__ "MeshDeformation_GaussianBump_YMAX"
-PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
+PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,PetscReal gbump_lambda)
 {
 	PetscErrorCode ierr;
-	PetscReal gbump_amp,gbump_lambda;
 	PetscInt si,sj,sk,nx,ny,nz,i,j,k,MY;
 	DM cda;
 	Vec coord;
@@ -63,10 +62,21 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da)
 	PetscReal Gmin[3],Gmax[3];
 	
 	PetscFunctionBegin;
-	gbump_amp    = -0.6;
-	gbump_lambda = -5.6;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_amp",&gbump_amp,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_lambda",&gbump_lambda,PETSC_NULL);CHKERRQ(ierr);
+
+	{
+		PetscReal tmp;
+		PetscBool flg;
+		
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_amp",&tmp,&flg);CHKERRQ(ierr);
+		if (flg) {
+			gbump_amp    = tmp;
+		}
+
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_lambda",&tmp,&flg);CHKERRQ(ierr);
+		if (flg) {
+			gbump_lambda = tmp;
+		}
+	}
 	
 	ierr = DMDAGetBoundingBox(da,Gmin,Gmax);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(da,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);

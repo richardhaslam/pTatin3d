@@ -83,7 +83,7 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	data->length[2] = 0.5 * data->Lz;
 	
 	/* bc type */
-	data->boundary_conditon_type = VSBC_FreeSlip;
+	data->boundary_conditon_type = VSBC_FreeSlipFreeSurface;
 		
 	/* parse from command line */
 	rheology->const_eta0[0] = 1.0;
@@ -451,7 +451,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 
 	//
 	PetscPrintf(PETSC_COMM_WORLD,"RUNNING DEFORMED MESH EXAMPLE \n");	
-	ierr = MeshDeformation_GaussianBump_YMAX(c->stokes_ctx->dav);CHKERRQ(ierr);
+	ierr = MeshDeformation_GaussianBump_YMAX(c->stokes_ctx->dav,-0.3,-5.6);CHKERRQ(ierr);
 	//
 	
 	PetscFunctionReturn(0);
