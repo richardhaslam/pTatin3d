@@ -129,7 +129,9 @@ PetscErrorCode ModelInitialize_FaultFold(pTatinCtx c,void *ctx)
     data->phi = 0;
     ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_phi",&data->phi,&flg);CHKERRQ(ierr);
     data->phi *= 2.0*M_PI;
- 
+    data->offset = 1.0;
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_offset",&data->offset,&flg);CHKERRQ(ierr);
+    
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_exx",&data->exx,&flg);CHKERRQ(ierr);
@@ -389,7 +391,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
     ModelFaultFoldCtx *data = (ModelFaultFoldCtx*)ctx;
 	PetscInt i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, kinter, rank, kinter_max, kinter_min;
 	PetscScalar dz, dy, pertu, attenuation, H;
-    PetscReal *interface_heights, lamb, phi;
+    PetscReal *interface_heights, lamb, phi, offset;
     PetscInt *layer_res_k, n_interfaces, pwidth;
     PetscReal amp;
     PetscReal fold_center_front, fold_center_back, Lx, *fold_centers;
@@ -408,7 +410,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
     amp = data->amp;
     phi = data->phi;
     Lx = data->Lx;
-
+    offset = data->offset;
 
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -478,7 +480,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
 				if((sj+ny == N) && (sj == 0)){
                     j=sj+ny-1;
                     center = (LA_coord[kinter][j][i].x-0.5*Lx);
-                    pertu =  amp*H*cos(center/lamb+phi)*exp(-0.5*center*center/(0.15*Lx*0.15*Lx));
+                    pertu =  amp*H*cos(center/(offset*lamb)+phi)*exp(-0.5*center*center/(0.15*Lx*0.15*Lx));
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
                         LA_coord[kinter][j-pwidth][i].z += pertu*exp(-pwidth*attenuation);
                     }
@@ -495,7 +497,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                     sgn = (sj == 0)?1:-1;
                     j = (sj == 0)?0:(sj+ny-1);
                     center = (LA_coord[kinter][j][i].x-0.5*Lx);
-                    pertu = (sj == 0)?amp*H*cos(center/lamb)*exp(-0.5*center*center):amp*H*cos(center/lamb+phi)*exp(-0.5*center*center/(0.15*Lx*0.15*Lx));
+                    pertu = (sj == 0)?amp*H*cos(center/lamb)*exp(-0.5*center*center):amp*H*cos(center/(offset*lamb)+phi)*exp(-0.5*center*center/(0.15*Lx*0.15*Lx));
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
                         LA_coord[kinter][j+sgn*pwidth][i].z += pertu *exp(-pwidth*attenuation);
                     }
@@ -510,7 +512,6 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                 fold_center_back = 0.25*Lx + 0.5*Lx*fold_centers[2]/fold_centers[3];
                 dy = data->Ly/(PetscScalar)(N/2-1);
                 for(i = si; i<si+nx; i++) {
-                    PetscScalar offset = 12.0;
                     if((sj+ny == N) && (sj == 0)){
                         PetscScalar center = 0;
                         j=sj+ny-1;

@@ -18,6 +18,7 @@ typedef struct {
 	PetscReal Lx, Lz, Ly;
     PetscReal amp;
     PetscReal phi;
+    PetscReal offset;
     PetscInt perturbation_type, perturbation_width;
      
 } ModelFaultFoldCtx;
