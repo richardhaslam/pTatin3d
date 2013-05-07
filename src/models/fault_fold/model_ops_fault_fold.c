@@ -480,18 +480,19 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
 			
 		}else if (data->perturbation_type == 1){
             attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
+            PetscReal sigp = 0.05;    
             for(i = si; i<si+nx; i++) {
                 PetscScalar center = 0;
 				if((sj+ny == N) && (sj == 0)){
                     j=sj+ny-1;
                     center = (LA_coord[kinter][j][i].x-0.5*Lx);
-                    pertu =  amp*H*cos(center/(offset*lamb)+phi)*exp(-0.5*center*center/(0.01*Lx*0.01*Lx));
+                    pertu =  amp*H*cos(center/(offset*lamb)+phi)*exp(-0.5*center*center/(sigp*Lx*sigp*Lx));
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
                         LA_coord[kinter][j-pwidth][i].z += pertu*exp(-pwidth*attenuation);
                     }
                     j=0;
                     center = (LA_coord[kinter][j][i].x-0.5*Lx);
-                    pertu =  amp*H*cos(center/lamb)*exp(-0.5*center*center/(0.01*Lx*0.01*Lx));
+                    pertu =  amp*H*cos(center/lamb)*exp(-0.5*center*center/(sigp*Lx*sigp*Lx));
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
                         LA_coord[kinter][j+pwidth][i].z += pertu*exp(-pwidth*attenuation);
                     }
@@ -502,7 +503,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                     sgn = (sj == 0)?1:-1;
                     j = (sj == 0)?0:(sj+ny-1);
                     center = (LA_coord[kinter][j][i].x-0.5*Lx);
-                    pertu = (sj == 0)?amp*H*cos(center/lamb)*exp(-0.5*center*center):amp*H*cos(center/(offset*lamb)+phi)*exp(-0.5*center*center/(0.01*Lx*0.01*Lx));
+                    pertu = (sj == 0)?amp*H*cos(center/lamb)*exp(-0.5*center*center/(sigp*Lx*sigp*Lx)):amp*H*cos(center/(offset*lamb)+phi)*exp(-0.5*center*center/(sigp*Lx*sigp*Lx));
                     for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
                         LA_coord[kinter][j+sgn*pwidth][i].z += pertu *exp(-pwidth*attenuation);
                     }
