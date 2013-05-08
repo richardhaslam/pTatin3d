@@ -24,6 +24,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
     PetscReal length_scale,velocity_scale,time_scale,viscosity_scale,density_scale,pressure_scale;
 	PetscBool flg;
     const PetscReal one_third = 0.333333333333333;
+    PetscReal deg2rad = M_PI/180.0;
 
 	PetscErrorCode ierr;
 	
@@ -119,6 +120,9 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	if (n_int != data->n_interfaces-1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer friction list (-model_fault_fold_plastic_layer_mu)",data->n_interfaces-1);
 	}
+    for (n=0; n<n_int; n++) {
+		data->mu[n] *= deg2rad;
+	}
     
     n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_C0_inf",data->C0_inf,&n_int,&flg);
@@ -136,6 +140,9 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
 	if (n_int != data->n_interfaces-1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer friction inf value list (-model_fault_fold_plastic_layer_mu_inf)",data->n_interfaces-1);
+	}
+    for (n=0; n<n_int; n++) {
+		data->mu_inf[n] *= deg2rad;
 	}
     
 	n_int = data->max_layers;
@@ -173,6 +180,9 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	if (n_int != data->max_fault_layers) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault friction list (-model_fault_fold_plastic_fault_mu)",data->max_fault_layers);
 	}
+    for (n=0; n<n_int; n++) {
+		data->fault_mu[n] *= deg2rad;
+	}
     
     n_int = data->max_fault_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_C0_inf",data->fault_C0_inf,&n_int,&flg);
@@ -190,6 +200,9 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
 	if (n_int != data->max_fault_layers) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault friction inf value list (-model_fault_fold_plastic_fault_mu_inf)",data->max_fault_layers);
+	}
+    for (n=0; n<n_int; n++) {
+		data->fault_mu_inf[n] *= deg2rad;
 	}
     
 	n_int = data->max_fault_layers;
@@ -245,7 +258,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	data->Lz = data->interface_heights[data->n_interfaces-1];
 		
     data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
-	data->exx             = -1.0e-3;
+	data->exx             = 1.0e-3;
 	data->vx_commpression = 1.0;
 	
 	/* parse from command line or input file */
@@ -254,9 +267,16 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_vx_commpression",&data->exx,&flg);CHKERRQ(ierr);
     
     /*----------------------------Rescaling-----------------------------------------*/
-    length_scale    = 1.0;
-	velocity_scale  = 1.0;
-	viscosity_scale = 1.0e12;
+    length_scale    = data->Lx;
+	velocity_scale  = 1.5e-9; //~5cm.year-1
+    viscosity_scale = -1.0;
+	for (n=0; n<data->n_interfaces-2; n++) {
+		if (viscosity_scale < data->eta[n]){
+            viscosity_scale = data->eta[n];
+        }
+	}
+
+	
 	
 	time_scale      = length_scale / velocity_scale;
 	pressure_scale  = viscosity_scale / time_scale;
@@ -601,8 +621,8 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
 			
 			if( (K<kmaxlayer) && (K>=kminlayer) ){
 				phase = layer;
-                eta = data->eta[layer];
-                rho = data->rho[layer];
+                //eta = data->eta[layer];
+                //rho = data->rho[layer];
 			}
 			kminlayer += data->layer_res_k[layer];
 			layer++;
@@ -610,14 +630,14 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
         /*Check if we are in the fault:*/
         if ((data->domain_res_j[0]<=J) && (data->domain_res_j[0]+data->domain_res_j[1]>J)){
             phase = data->n_interfaces;
-            eta = data->fault_eta[0];
-            rho = data->fault_rho[0];
+            //eta = data->fault_eta[0];
+            //rho = data->fault_rho[0];
         } 
 		/* user the setters provided for you */
         //printf("phase: %d;; %d %d %d\n", phase, I,J,K);
         ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
-        ierr = MaterialPointSet_viscosity(mpX,p,eta);CHKERRQ(ierr);
-        ierr = MaterialPointSet_density(mpX,p,rho);CHKERRQ(ierr);
+        //ierr = MaterialPointSet_viscosity(mpX,p,eta);CHKERRQ(ierr);
+        //ierr = MaterialPointSet_density(mpX,p,rho);CHKERRQ(ierr);
 	}
 	ierr = MaterialPointRestoreAccess(material_points,&mpX);CHKERRQ(ierr);			
 
