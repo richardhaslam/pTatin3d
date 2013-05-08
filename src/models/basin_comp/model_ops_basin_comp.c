@@ -15,7 +15,7 @@
 #include "ptatin3d_defs.h"
 #include "math.h"
 #include "dmda_redundant.h"
-
+#include <time.h>
 
 #include "model_basin_comp_ctx.h"
 #include "model_utils.h"
@@ -570,10 +570,10 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             kinter_min = kinter_max;
             kinter_max += 2*layer_res_k[interf-1];
             
-            ierr = PetscMalloc(nx*ny*sizeof(PetscReal),&rnoise);CHKERRQ(ierr);
-            ierr = PetscMemzero(rnoise,nx*ny*sizeof(PetscReal));CHKERRQ(ierr);
+            ierr = PetscMalloc(N*M*sizeof(PetscReal),&rnoise);CHKERRQ(ierr);
+            ierr = PetscMemzero(rnoise,N*M*sizeof(PetscReal));CHKERRQ(ierr);
             
-            ierr = rednoise(rnoise, nx*ny,rank*interf+2);CHKERRQ(ierr);
+            ierr = rednoise(rnoise, N*M,time(NULL)*(interf+2));CHKERRQ(ierr);
 
 
             /*Find the viscous layer*/
@@ -611,7 +611,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             if ( (kinter_max>=sk) && (kinter_max<sk+nz) ) {
                 for(i = si; i<si+nx; i++) {
                     for(j = sj; j<sj+ny; j++){
-                        LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*rnoise[(i-si)*ny+(j-sj)];//Perturbe with an amplitude prop to the local thickness.
+                        LA_coord[kinter_max][j][i].z += amp *(topinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2] - botinterface_nodes[3*(0+nx*(j-sj)+(i-si))+2])*rnoise[(i)*ny+(j)];//Perturbe with an amplitude prop to the local thickness.
                         
                     }
                         
