@@ -624,10 +624,10 @@ def Generate_pTatin3d_QuadraturePointVolumeCoefficientStokes():
 def Generate_pTatin3d_QuadraturePointSurfaceCoefficientStokes():
 	ParticleClass      = 'QPntSurfCoefStokes'
 	ParticleClassShort = 'QPSCStk'
-	variable_name_list = [ 'normal', 'tangent', 'traction' ]
-	variable_type_list = [ 'double', 'double',  'double'   ]
-	variable_extend_list        = [ 3, 3, 3 ]
-	variable_textural_name_list = [ 'surface_normal', 'surface_tangent', 'surface_traction' ]
+	variable_name_list = [ 'normal', 'tangent1', 'tangent2', 'traction', 'eta','rho' ]
+	variable_type_list = [ 'double', 'double',  'double', 'double', 'double', 'double'   ]
+	variable_extend_list        = [ 3, 3, 3, 3, 1, 1 ]
+	variable_textural_name_list = [ 'surface_normal', 'surface_tangent1', 'surface_tangent2', 'surface_traction', 'viscosity', 'density' ]
 
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
