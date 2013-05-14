@@ -192,6 +192,7 @@ void generate_all_face_ids_Q2_2D( int **fid )
  */
 void generate_all_face_ids_Q2_3D( int **fid )
 {
+	/*
 	int fid_px[] = { 20,11,2, 23,14,5, 26,17,8 };
 	int fid_mx[] = { 0,9,18,  3,12,21, 6,15,24 };
 
@@ -200,6 +201,17 @@ void generate_all_face_ids_Q2_3D( int **fid )
 
 	int fid_pz[] = { 18,19,20, 21,22,23, 24,25,26 };
 	int fid_mz[] = { 2,1,0, 5,4,3, 8,7,6 };
+	*/
+	
+	int fid_px[] = { 2,5,8, 11,14,17, 20,23,26 };
+	int fid_mx[] = { 6,3,0, 15,12,9,  24,21,18 };
+
+	int fid_pe[] = { 8,7,6, 17,16,15, 26,25,24 };
+	int fid_me[] = { 0,1,2, 9,10,11, 18,19,20 };
+	
+	int fid_pz[] = { 18,19,20, 21,22,23, 24,25,26 };
+	int fid_mz[] = { 2,1,0, 5,4,3, 8,7,6 };
+	
 	
 	memcpy( fid[0], fid_px, sizeof(int)*9 );
 	memcpy( fid[1], fid_mx, sizeof(int)*9 );
@@ -697,25 +709,33 @@ void compute_surface_geometry_Q2_3D(	ConformingElementFamily e,
 	
 	mag = sqrt( n[0]*n[0] + n[1]*n[1] + n[2]*n[2] );
 	
-	n0[0] = n[0]/mag;
-	n0[1] = n[1]/mag;
-	n0[2] = n[2]/mag;
+	if (n0) {
+		n0[0] = n[0]/mag;
+		n0[1] = n[1]/mag;
+		n0[2] = n[2]/mag;
+	}
 	
-	t[0] =  (y_s*z_t - z_s*y_t);
-	t[1] = -(x_s*z_t - z_s*x_t);
-	t[2] =  (x_s*y_t - y_s*x_t);
+	/* 
+	 There are two tangent vectors, we return only the one in the "s" direction.
+
+	 Tangents are constructured such that
+	 t1 x t2 = normal
+	 normal x t1 = t2
+	 t2 x norma = t1
+	*/
+	if (t0) {
+		t[0] = x_s;
+		t[1] = y_s;
+		t[2] = z_s;
+		magt = sqrt( t[0]*t[0] + t[1]*t[1] + t[2]*t[2] );
+		t0[0] = t[0]/magt;
+		t0[1] = t[1]/magt;
+		t0[2] = t[2]/magt;
+	}
 	
-	/* Should I take "s" or "t" here?? */
-	/* What conditions should be meet by both normal and tangent? Any?? */
-	t[0] = x_s;
-	t[1] = y_s;
-	t[2] = z_s;
-	magt = sqrt( t[0]*t[0] + t[1]*t[1] + t[2]*t[2] );
-	t0[0] = t[0]/magt;
-	t0[1] = t[1]/magt;
-	t0[2] = t[2]/magt;
-	
-	*J = mag;
+	if (J) {
+		*J = mag;
+	}
 }	
 
 void ElementHelper_matrix_inverse_3x3(double A[3][3],double B[3][3])
@@ -849,7 +869,7 @@ void compute_element_normal_Q2_2D(	ConformingElementFamily e,
 																	const double coords[],   // should contain 9 points with dimension 2 (x,y) // 
 																	QuadElementEdge face_idx,  // face id //
 																	const QPoint1d *xi0,      // should contain 1 point with dimension 1 (xi,)   //
-																	double n0[], double *J ) // n0[] contains 1 point with dimension 2 (x,y) //
+																	double n0[]) // n0[] contains 1 point with dimension 2 (x,y) //
 {
 	const int SURFACE_DIM = 1;
 	const int Q2_NPS = 3;
@@ -879,17 +899,13 @@ void compute_element_normal_Q2_2D(	ConformingElementFamily e,
 	
 	n0[0] = n[0]/mag;
 	n0[1] = n[1]/mag;
-	
-	if (J) {
-		*J = mag;
-	}
 }	
 
 void compute_element_normal_Q2_3D(	ConformingElementFamily e,
 									const double coords[],   // should contain 27 points with dimension 3 (x,y,z) // 
 									HexElementFace face_idx,  // face id //
 									const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
-									double n0[], double *J ) // n0[] contains 1 point with dimension 3 (x,y,z) //
+									double n0[]) // n0[] contains 1 point with dimension 3 (x,y,z) //
 {
 	const int SURFACE_DIM = 2;
 	const int Q2_NPS = 9;
@@ -939,10 +955,94 @@ void compute_element_normal_Q2_3D(	ConformingElementFamily e,
 	n0[1] = n[1]/mag;
 	n0[2] = n[2]/mag;
 	
-	if (J) {
-		*J = mag;
-	}
 }	
+
+/*
+ compute_surface_geometry()
+ + Defines the Jacobian for surface integration.
+ */
+void compute_element_tangent_Q2_2D(	ConformingElementFamily e, 
+																		const double coords[], // should contain 4 points with dimension 2 (x,y) // 
+																		QuadElementEdge edge_idx,       // face node ids (size = 2) //
+																		const QPoint1d *xi0,    // should contain 1 point with dimension 1 (xi)   //
+																		double t0[])  // t0[] contains 1 point with dimension 2 (x,y) //
+{
+	double x_s, y_s;
+	double mag;
+	double __GNi_1d[3];
+	double *GNi_1d[1];
+	const int *fid = e->edge_node_list[edge_idx];
+	int i;
+	
+	GNi_1d[0] = &__GNi_1d[0];
+	
+	// x_,s = dN_i/ds x_i //
+	ConstructGNi_Q2_1D( xi0, GNi_1d );
+	
+	x_s = y_s = 0.0;
+	for (i=0; i<3; i++) {
+		x_s += GNi_1d[0][i] * coords[2*fid[i]  ];
+		y_s += GNi_1d[0][i] * coords[2*fid[i]+1];
+	}
+	
+	mag = sqrt( x_s*x_s + y_s*y_s );
+	if ( (edge_idx==QUAD_EDGE_Nxi) || (edge_idx==QUAD_EDGE_Peta) ) {
+		
+		t0[0] = x_s/mag;
+		t0[1] = y_s/mag;
+	} else { /* reverse P_xi, N_eta */
+		t0[0] = -x_s/mag;
+		t0[1] = -y_s/mag;
+	}
+	
+}	
+
+void compute_element_tangent_Q2_3D(	ConformingElementFamily e,
+																	const double coords[],   // should contain 27 points with dimension 3 (x,y,z) // 
+																	HexElementFace face_idx,  // face id //
+																	const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
+																	double t1[],double t2[] ) // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
+{
+	const int SURFACE_DIM = 2;
+	const int Q2_NPS = 9;
+	double x_s,y_s,z_s;
+	double x_t,y_t,z_t;
+	double mag;
+	int i;
+	double __GNi_st[SURFACE_DIM*Q2_NPS];
+	double *GNi_st[SURFACE_DIM];
+	const int *fid = e->face_node_list[(int)face_idx];
+	
+	
+	GNi_st[0] = &__GNi_st[0];
+	GNi_st[1] = &__GNi_st[Q2_NPS];
+	
+	ConstructGNi_Q2_2D( xi0, GNi_st );
+	
+	// x_,s = dN_i/ds x_i //
+	x_s = y_s = z_s = 0.0;
+	x_t = y_t = z_t = 0.0;
+	for( i=0; i<Q2_NPS; i++ ) {
+		x_s = x_s + GNi_st[0][i] * coords[3*fid[i]  ];
+		y_s = y_s + GNi_st[0][i] * coords[3*fid[i]+1];
+		z_s = z_s + GNi_st[0][i] * coords[3*fid[i]+2];
+		
+		x_t = x_t + GNi_st[1][i] * coords[3*fid[i]  ];
+		y_t = y_t + GNi_st[1][i] * coords[3*fid[i]+1];
+		z_t = z_t + GNi_st[1][i] * coords[3*fid[i]+2];
+	}
+	
+	t1[0] = x_s;  t1[1] = y_s;  t1[2] = z_s;
+	t2[0] = x_t;  t2[1] = y_t;  t2[2] = z_t;
+	
+	mag = sqrt( t1[0]*t1[0] + t1[1]*t1[1] + t1[2]*t1[2] );	
+	t1[0] = t1[0]/mag;  t1[1] = t1[1]/mag;  t1[2] = t1[2]/mag;
+
+	mag = sqrt( t2[0]*t2[0] + t2[1]*t2[1] + t2[2]*t2[2] );	
+	t2[0] = t2[0]/mag;  t2[1] = t2[1]/mag;  t2[2] = t2[2]/mag;	
+}	
+
+
 
 void ElementTypeCreate_Q2(ConformingElementFamily *_e,const int dim)
 {
@@ -1001,11 +1101,31 @@ void ElementTypeCreate_Q2(ConformingElementFamily *_e,const int dim)
 	
 	e->compute_volume_geometry_2D = compute_volume_geometry_Q2_2D;
 	e->compute_volume_geometry_3D = compute_volume_geometry_Q2_3D;
+
+	e->compute_surface_normal_2D   = compute_element_normal_Q2_2D;
+	e->compute_surface_normal_3D   = compute_element_normal_Q2_3D;
+
+	e->compute_surface_tangent_2D  = compute_element_tangent_Q2_2D;	
+	e->compute_surface_tangents_3D = compute_element_tangent_Q2_3D;
 	
 	*_e = e;
 }
 
 /* testing code */
+
+void eval_cross_product(double x1[],double x2[],double r[])
+{
+	double x_s,y_s,z_s;
+	double x_t,y_t,z_t;
+	
+	x_s = x1[0]; y_s = x1[1]; z_s = x1[2];
+	x_t = x2[0]; y_t = x2[1]; z_t = x2[2];
+
+	r[0] =  (y_s*z_t - z_s*y_t);
+	r[1] = -(x_s*z_t - z_s*x_t);
+	r[2] =  (x_s*y_t - y_s*x_t);
+}
+
 void insert_point_3D( const int i, const double x, const double y, const double z, double coords[] )
 {
 	coords[ 3*i    ] = x;
@@ -1070,19 +1190,33 @@ void testEQ2_SurfQuad3d_1( void )
 		e->generate_surface_quadrature_3D( e, f, &ngp_s, gp2, gp3 );
 		
 		for( p=0; p<ngp_s; p++ ) {
-			double n0[3],t0[3], J;
+			double n0[3],t0[3],t1[3],t2[3],J;
+			
 			
 			e->compute_surface_geometry_3D(	e, coords,	// should contain 27 points with dimension 3 (x,y,z) // 
+																		 f,			// face node ids (size = 9) //
+																		 &gp2[p],    // should contain 1 point with dimension 2 (s,t)   //
+																		 n0,t0, &J );	// n0[],t0 contains 1 point with dimension 3 (x,y,z) //
+			
+			compute_element_normal_Q2_3D(	e, coords,	// should contain 27 points with dimension 3 (x,y,z) // 
 											f,			// face node ids (size = 9) //
 											&gp2[p],    // should contain 1 point with dimension 2 (xi,eta)   //
-											n0,t0, &J );	// n0[],t0[] contains 1 point with dimension 3 (x,y,z) //
+											n0 );	// n0[] contains 1 point with dimension 3 (x,y,z) //
+			
+			compute_element_tangent_Q2_3D(	e, coords,	// should contain 27 points with dimension 3 (x,y,z) // 
+																	 f,			// face node ids (size = 9) //
+																	 &gp2[p],    // should contain 1 point with dimension 2 (xi,eta)   //
+																	 t1,t2 );	// t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
+			
 			if(p==0) {
-				printf("f=%.2d: normal  = %+1.6lf, %+1.6lf, %+1.6lf \n", f, n0[0],n0[1],n0[2] );
-				printf("f=%.2d: tangent = %+1.6lf, %+1.6lf, %+1.6lf \n", f, t0[0],t0[1],t0[2] );
+				printf("f=%.2d: normal    = %+1.6lf, %+1.6lf, %+1.6lf \n", f, n0[0],n0[1],n0[2] );
+				printf("f=%.2d: tangent1  = %+1.6lf, %+1.6lf, %+1.6lf \n", f, t1[0],t1[1],t1[2] );
+				printf("f=%.2d: tangent2  = %+1.6lf, %+1.6lf, %+1.6lf \n", f, t2[0],t2[1],t2[2] );
 			}
 			
 			sa = sa + gp2[p].w * 1.0 * J;
 		}
+		printf("\n");
 	}
 	exact_sa = 2.0*Lx*Ly + 2.0*Ly*Lz + 2.0*Lz*Lx;
 	printf("sa = %+1.6f : exact = %+1.6f \n", sa, exact_sa );
@@ -1510,11 +1644,11 @@ void testEQ2_SurfQuad3d_2( void )
 
 	// optional
 #if 1
-	/* rotate the coordinates */
+	/* rotate the coordinates about z axis */
 	for( i=0; i<27; i++ ) {
 		double R[3][3];
 		double xold[3],xnew[3];
-		double theta = 45.0*M_PI/180.0;
+		double theta = 15.0*M_PI/180.0;
 		
 		R[0][0] = cos(theta);	R[0][1] = -sin(theta);	R[0][2] = 0.0;
 		R[1][0] = sin(theta);	R[1][1] = cos(theta);	R[1][2] = 0.0;
@@ -1589,15 +1723,30 @@ void testEQ2_SurfQuad3d_2( void )
 																		 &gp2[p],    // should contain 1 point with dimension 2 (s,t)   //
 																		 normal,tangent, &det_surfJ );	// n0[],t0 contains 1 point with dimension 3 (x,y,z) //
 
+			if (p==0) {
+				double r[3],r1[3];
+				
+				printf("[f=%d:p=%d]: normal     %+1.2e %+1.2e %+1.2e \n", f,p,normal[0],normal[1],normal[2]);
+				printf("[f=%d:p=%d]: tangent(s) %+1.2e %+1.2e %+1.2e \n", f,p,tangent[0],tangent[1],tangent[2]);
+
+				eval_cross_product(normal,tangent,r); // t2
+				eval_cross_product(r,normal,r1);
+				printf("[f=%d:p=%d]: t2     %+1.2e %+1.2e %+1.2e \n", f,p,r[0],r[1],r[2]);
+				printf("[f=%d:p=%d]: t1     %+1.2e %+1.2e %+1.2e \n", f,p,r1[0],r1[1],r1[2]);
+				
+			
+			}
 			Fn = fx_p*normal[0] + fy_p*normal[1] + fz_p*normal[2];
 			F_dot_n = F_dot_n + gp2[p].w * Fn * det_surfJ;
 			
 		}
+		printf("\n");
 	}
 	printf("int_surf( F.n )   = %+1.6lf \n", F_dot_n );
 }
 
-void testEQ2( void )
+/*
+void main( void )
 {	
 	testEQ2_FaceIds();
 	testEQ2_QuadratureStokesVol();
@@ -1605,7 +1754,8 @@ void testEQ2( void )
 	
 	testEQ2_SurfQuad2d_1();
 	testEQ2_SurfQuad2d_int_rotated_2();
-
+	
 	testEQ2_SurfQuad3d_1();
 	testEQ2_SurfQuad3d_2();
 }
+*/

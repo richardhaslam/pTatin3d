@@ -97,11 +97,15 @@ struct _p_ConformingElementFamily {
 	void (*generate_volume_quadrature_2D)(int*,QPoint2d*); // ngp,w[],xi_xyz[]
 	void (*compute_surface_geometry_2D)(ConformingElementFamily,const double*,QuadElementEdge,const QPoint1d*,double*,double*,double*); // coords[],edge_idx,,xi[],normal[],J
 	void (*compute_volume_geometry_2D)(const double*,const double**,double**,double*); // coords[],GNi[][],GNx[][],J
+	void (*compute_surface_normal_2D)(ConformingElementFamily,const double*,QuadElementEdge,const QPoint1d*,double*);
+	void (*compute_surface_tangent_2D)(ConformingElementFamily,const double*,QuadElementEdge,const QPoint1d*,double*);
 	
 	void (*generate_surface_quadrature_3D)(ConformingElementFamily,HexElementFace,int*,QPoint2d*,QPoint3d*);
 	void (*generate_volume_quadrature_3D)(int*,QPoint3d*);
 	void (*compute_surface_geometry_3D)(ConformingElementFamily,const double*,HexElementFace,const QPoint2d*,double*,double*,double*);
 	void (*compute_volume_geometry_3D)(const double*,const double**,double**,double*);
+	void (*compute_surface_normal_3D)(ConformingElementFamily,const double*,HexElementFace,const QPoint2d*,double*);
+	void (*compute_surface_tangents_3D)(ConformingElementFamily,const double*,HexElementFace,const QPoint2d*,double*,double*);
 	
 	/* 
 	 3D  2D  1D
