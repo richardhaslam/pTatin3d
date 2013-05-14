@@ -648,13 +648,117 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 
 
 #undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGeometrySetUp"
-PetscErrorCode SurfaceQuadratureGeometrySetUp(SurfaceQuadrature Q,DM da)
+#define __FUNCT__ "SurfaceQuadratureGeometrySetUpStokes"
+PetscErrorCode SurfaceQuadratureGeometrySetUpStokes(SurfaceQuadrature Q,DM da)
 {
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	//ierr = SurfaceQuadratureStokesCoordinatesSetUp(Q,da);CHKERRQ(ierr); // not storing coordinates //
-	//TODO ierr = SurfaceQuadratureOrientationSetUp(Q,da);CHKERRQ(ierr);
+	ierr = SurfaceQuadratureOrientationSetUpStokes(Q,da);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureOrientationSetUpStokes"
+PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da)
+{
+	PetscErrorCode ierr;
+	DM             cda;
+	Vec            gcoords;
+	PetscScalar    *LA_gcoords;
+	PetscInt       nel,nen,fe,e,i,k,gp;
+	const PetscInt *elnidx;
+	ConformingElementFamily element;
+	double         elcoords[3*Q2_NODES_PER_EL_3D];
+	double         Ni[27];
+	QPntSurfCoefStokes *all_qpoint;
+	QPntSurfCoefStokes *cell_qpoint;
+	
+	PetscFunctionBegin;
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	element = Q->e;
+	
+	ierr = SurfaceQuadratureGetAllCellData_Stokes(Q,&all_qpoint);CHKERRQ(ierr);
+	for (fe=0; fe<Q->nfaces; fe++) {
+		
+		e = Q->element_list[fe];
+		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		
+		ierr =  SurfaceQuadratureGetCellData_Stokes(Q,all_qpoint,fe,&cell_qpoint);CHKERRQ(ierr);
+
+		for (gp=0; gp<Q->ngp; gp++) {
+			//double normal[3],tangent1[3],tangent2[3],xp,yp,zp;
+			double *normal,*tangent1,*tangent2,xp,yp,zp;
+			QPntSurfCoefStokes *qpoint = &cell_qpoint[gp];
+			
+			
+			QPntSurfCoefStokesGetField_surface_normal(qpoint,&normal);
+			QPntSurfCoefStokesGetField_surface_tangent1(qpoint,&tangent1);
+			QPntSurfCoefStokesGetField_surface_tangent2(qpoint,&tangent2);
+			
+			element->compute_surface_normal_3D(	
+																					 element, 
+																					 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+																					 Q->face_id,	 // edge index 0,1,2,3,4,5,6,7 //
+																					 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
+																					 normal ); // normal[] contains 1 point with dimension 3 (x,y,z) //
+			element->compute_surface_tangents_3D(	
+																				 element, 
+																				 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+																				 Q->face_id,	 
+																				 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
+																				 tangent1,tangent2 ); // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
+			
+			/* interpolate global coords */
+			element->basis_NI_3D(&Q->gp3[gp],Ni);
+			xp = yp = zp = 0.0;
+			for (k=0; k<element->n_nodes_3D; k++) {
+				xp += Ni[k] * elcoords[3*k  ];
+				yp += Ni[k] * elcoords[3*k+1];
+				zp += Ni[k] * elcoords[3*k+2];
+			}
+			
+			
+			printf("fe=%d p=%d (s,t) %1.4e %1.4e: (xi,eta,zeta) %1.4e %1.4e %1.4e: (x,y,z) %1.4e %1.4e %1.4e \n",
+									 fe,gp, Q->gp2[gp].xi,Q->gp2[gp].eta, Q->gp3[gp].xi,Q->gp3[gp].eta,Q->gp3[gp].zeta,
+									 xp,yp,zp);
+		}
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureGetAllCellData_Stokes"
+PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSurfCoefStokes *coeffs[])
+{
+	QPntSurfCoefStokes *quadraturepoint_data;
+  DataField          PField;
+	PetscFunctionBegin;
+	
+	DataBucketGetDataFieldByName(Q->properties_db, QPntSurfCoefStokes_classname ,&PField);
+	quadraturepoint_data = PField->data;
+	*coeffs = quadraturepoint_data;
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureGetCellData_Stokes"
+PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfCoefStokes coeffs[],PetscInt cidx,QPntSurfCoefStokes *cell[])
+{
+  PetscFunctionBegin;
+	if (cidx>=Q->nfaces) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"cidx > max cells");
+	}
+	
+	*cell = &coeffs[cidx*Q->ngp];
+  PetscFunctionReturn(0);
 }
 
