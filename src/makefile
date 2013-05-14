@@ -34,6 +34,7 @@ export TATIN_SRC = \
 			MPntPStokes_def.c \
 			MPntPStokesPl_def.c \
 			QPntVolCoefStokes_def.c \
+			QPntSurfCoefStokes_def.c \
 			MPntPEnergy_def.c \
 			QPntVolCoefEnergy_def.c \
 			output_paraview.c \
