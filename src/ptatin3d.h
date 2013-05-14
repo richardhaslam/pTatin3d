@@ -46,6 +46,7 @@ typedef struct _p_pTatinModel *pTatinModel;
 typedef struct _p_PhysCompStokes *PhysCompStokes;
 typedef struct _p_PhysCompEnergy *PhysCompEnergy;
 typedef struct _p_Quadrature *Quadrature;
+typedef struct _p_SurfaceQuadrature *SurfaceQuadrature;
 
 typedef enum { LINE_QUAD=0,SURFACE_QUAD,VOLUME_QUAD } QuadratureType;
 
@@ -111,7 +112,7 @@ PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data
 PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data);
 
 PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X);
-PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[]);
+PetscErrorCode DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[]);
 
 PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial);
 

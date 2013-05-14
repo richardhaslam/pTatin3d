@@ -38,13 +38,14 @@
 #include "petscdm.h"
 #include "dmda_bcs.h"
 
+
 struct _p_PhysCompStokes {
 	PetscInt                mx,my,mz; /* global mesh size */
 	DM                      dav,dap;
   DM                      stokes_pack;
 	BCList                  u_bclist,p_bclist;
 	Quadrature              volQ;
-	//	SurfaceQuadratureStokes surfQ[QUAD_EDGES]; /* four edges */
+	SurfaceQuadrature       *surfQ; /* eight faces - one for each hex */
 	PetscBool               use_mf_stokes;
 };
 

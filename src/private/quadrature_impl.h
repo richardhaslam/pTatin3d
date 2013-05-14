@@ -34,6 +34,9 @@
 #ifndef __private_ptatin_quadrature_impl_h__
 #define __private_ptatin_quadrature_impl_h__
 
+#include "petsc.h"
+#include "../element_type_Q2.h"
+
 struct _p_Quadrature {
 	PetscInt       dim;
 	QuadratureType type; /* line (dim=2), surface(dim=3), vol(dim=2,3) */
@@ -43,5 +46,18 @@ struct _p_Quadrature {
 	PetscInt   n_elements;
 	DataBucket properties_db;
 };
+
+struct _p_SurfaceQuadrature {
+	ConformingElementFamily e;
+	HexElementFace face_id;
+	/* quadrature */
+	PetscInt    ngp;
+	QPoint1d    gp2[3]; /* s,t coordinates */
+	QPoint2d    gp3[3]; /* xi,eta,zeta coordinates */
+	PetscInt    ncells;
+	PetscInt    *cell_list; /* list of cells connected to the face */
+	DataBucket  properties_db;
+};	
+
 
 #endif
