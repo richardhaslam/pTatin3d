@@ -167,7 +167,7 @@ PetscErrorCode test_pTatinVecFieldWrite(void)
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
 	
-	ierr = MeshDeformation_GaussianBump_YMAX(da);CHKERRQ(ierr);
+	ierr = MeshDeformation_GaussianBump_YMAX(da,-0.3,-5.6);CHKERRQ(ierr);
 	
 	/* create a field */
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
