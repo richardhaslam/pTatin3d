@@ -39,8 +39,10 @@
 #include "dmda_element_q2p1.h"
 #include "quadrature.h"
 #include "dmda_checkpoint.h"
+#include "element_type_Q2.h"
 
 #include "QPntVolCoefStokes_def.h"
+#include "QPntSurfCoefStokes_def.h"
 
 
 #undef __FUNCT__
@@ -560,7 +562,6 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "VolumeQuadratureGetAllCellData_Stokes"
 PetscErrorCode VolumeQuadratureGetAllCellData_Stokes(Quadrature Q,QPntVolCoefStokes *coeffs[])
@@ -589,4 +590,71 @@ PetscErrorCode VolumeQuadratureGetCellData_Stokes(Quadrature Q,QPntVolCoefStokes
   PetscFunctionReturn(0);
 }
 
+/* surface quadrature */
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureCreate_GaussLegendreStokes"
+PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace index,SurfaceQuadrature *quadrature)
+{
+	SurfaceQuadrature Q;
+	PetscInt nface_list[SURF_QUAD_FACES];
+	PetscInt lmx,lmy,lmz,nfaces,M,N,P,si,sj,sk,ni,nj,nk;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	
+	ierr = SurfaceQuadratureCreate(&Q);CHKERRQ(ierr);
+	//Q->dim  = 3;
+	//Q->type = SURFACE_QUAD;
+	
+	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0,0, 0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,PETSC_NULL,&ni,&nj,&nk);CHKERRQ(ierr);
+  ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+	nface_list[0] = nface_list[1] = nface_list[2] = nface_list[3] = 0;
+	nface_list[4] = nface_list[5] = nface_list[6] = nface_list[7] = 0;
+	if (si+ni == M) { nface_list[HEX_FACE_Pxi]   = lmy*lmz; }
+	if (si == 0)    { nface_list[HEX_FACE_Nxi]   = lmy*lmz; }
+	if (sj+nj == N) { nface_list[HEX_FACE_Peta]  = lmx*lmz; }
+	if (sj == 0)    { nface_list[HEX_FACE_Neta]  = lmx*lmz; }
+	if (sk+nk == P) { nface_list[HEX_FACE_Pzeta] = lmx*lmy; }
+	if (sk == 0)    { nface_list[HEX_FACE_Nzeta] = lmx*lmy; }
+	
+	nfaces = nface_list[ index ];
+	//Q->ncells = nfaces;
+
+	/* setup surface gauss points (weights and local coordinates) */
+	ierr = _SurfaceQuadratureCreate(Q,index,nfaces);CHKERRQ(ierr);
+	
+	/* setup element lists */
+	ierr = _SurfaceQuadratureCellIndexSetUp(Q,index,nfaces,da);CHKERRQ(ierr);
+	
+	/* setup properties */
+	if (nfaces != 0) {
+		DataBucketCreate(&Q->properties_db);
+		DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),PETSC_NULL);
+		DataBucketFinalize(Q->properties_db);
+		
+		DataBucketSetInitialSizes(Q->properties_db,Q->ngp*nfaces,1);
+		
+		DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+	} else {
+		Q->properties_db = PETSC_NULL;
+	}
+	
+	*quadrature = Q;
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureGeometrySetUp"
+PetscErrorCode SurfaceQuadratureGeometrySetUp(SurfaceQuadrature Q,DM da)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	//ierr = SurfaceQuadratureStokesCoordinatesSetUp(Q,da);CHKERRQ(ierr); // not storing coordinates //
+	//TODO ierr = SurfaceQuadratureOrientationSetUp(Q,da);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+}
 

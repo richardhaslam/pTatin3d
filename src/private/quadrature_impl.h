@@ -52,10 +52,10 @@ struct _p_SurfaceQuadrature {
 	HexElementFace face_id;
 	/* quadrature */
 	PetscInt    ngp;
-	QPoint1d    gp2[3]; /* s,t coordinates */
-	QPoint2d    gp3[3]; /* xi,eta,zeta coordinates */
-	PetscInt    ncells;
-	PetscInt    *cell_list; /* list of cells connected to the face */
+	QPoint2d    gp2[9]; /* s,t coordinates */
+	QPoint3d    gp3[9]; /* xi,eta,zeta coordinates */
+	PetscInt    nfaces;
+	PetscInt    *element_list; /* list of cells connected to the face */
 	DataBucket  properties_db;
 };	
 

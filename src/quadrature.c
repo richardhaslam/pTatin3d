@@ -33,6 +33,7 @@
 
 #define _GNU_SOURCE
 #include "petsc.h"
+#include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/quadrature_impl.h"
 #include "swarm_fields.h"
@@ -159,5 +160,152 @@ void QuadratureCreateGauss_3pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal *
 	}
 	*_q_coor = q_coor;
 	*_q_weight = q_weight;
+}
+
+/* surface quadrature */
+#undef __FUNCT__  
+#define __FUNCT__ "SurfaceQuadratureCreate"
+PetscErrorCode SurfaceQuadratureCreate(SurfaceQuadrature *quadrature)
+{
+	SurfaceQuadrature Q;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = PetscMalloc(sizeof(struct _p_SurfaceQuadrature),&Q);CHKERRQ(ierr);
+	ierr = PetscMemzero(Q,sizeof(struct _p_SurfaceQuadrature));CHKERRQ(ierr);
+	
+	*quadrature = Q;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_SurfaceQuadratureCreate"
+PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementFace index,PetscInt nfaces)
+{
+	ConformingElementFamily e;
+	double size;
+	PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"SurfaceQuadratureCreate:\n");
+	
+	ElementTypeCreate_Q2(&e,3);
+	quadrature->e       = e;
+	quadrature->face_id = index;
+	e->generate_surface_quadrature_3D(e,index,&quadrature->ngp,quadrature->gp2,quadrature->gp3);	
+	
+	quadrature->nfaces = nfaces;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQuadrature]: attributing %d edge elements \n", nfaces );
+	PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQPointCoefficient]: attributing %d surface quadrature points \n", nfaces*quadrature->ngp );
+	if (nfaces != 0) {
+		ierr = PetscMalloc( sizeof(PetscInt)*nfaces, &quadrature->element_list);CHKERRQ(ierr);
+	} else {
+		quadrature->element_list = PETSC_NULL;
+	}
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_SurfaceQuadratureCellIndexSetUp"
+PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFace index,PetscInt nface_edge,DM da)
+{
+	PetscInt eli,elj,elk;
+	PetscInt si,sj,sk,ni,nj,nk,M,N,P,lmx,lmy,lmz;
+	PetscInt nfaces[SURF_QUAD_FACES];
+	PetscInt cnt,elidx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0,0, 0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+	ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+	
+	if (nface_edge==0) { 
+		PetscFunctionReturn(0); 
+	}
+  
+	switch (index) {
+			
+		case HEX_FACE_Pxi:
+			cnt = 0;
+			eli = lmx - 1;
+			for (elk=0; elk<lmz; elk++) {
+				for (elj=0; elj<lmy; elj++) {
+					elidx = eli + elj * lmx + elk * lmx*lmy;
+					Q->element_list[ cnt ] = elidx;
+					cnt++;
+				}
+			}
+			break;
+			
+		case HEX_FACE_Nxi:
+			cnt = 0;
+			eli = 0;
+			for (elk=0; elk<lmz; elk++) {
+				for (elj=0; elj<lmy; elj++) {
+					elidx = eli + elj * lmx + elk * lmx*lmy;
+					Q->element_list[ cnt ] = elidx;
+					cnt++;
+				}
+			}
+			break;
+			
+		case HEX_FACE_Peta:
+			cnt = 0;
+			elj = lmy - 1;
+			for (elk=0; elk<lmz; elk++) {
+				for (eli=0; eli<lmx; eli++) {
+					elidx = eli + elj * lmx + elk * lmx*lmy;
+					Q->element_list[ cnt ] = elidx;
+					cnt++;
+				}
+			}
+			break;
+			
+		case HEX_FACE_Neta:
+			cnt = 0;
+			elj = 0;
+			for (elk=0; elk<lmz; elk++) {
+				for (eli=0; eli<lmx; eli++) {
+					elidx = eli + elj * lmx + elk * lmx*lmy;
+					Q->element_list[ cnt ] = elidx;
+					cnt++;
+				}
+			}
+			break;
+			
+		case HEX_FACE_Pzeta:
+			cnt = 0;
+			elk = lmz - 1;
+			for (elj=0; elj<lmy; elj++) {
+				for (eli=0; eli<lmx; eli++) {
+					elidx = eli + elj * lmx + elk * lmx*lmy;
+					Q->element_list[ cnt ] = elidx;
+					cnt++;
+				}
+			}
+			break;
+			
+			
+		case HEX_FACE_Nzeta:
+			cnt = 0;
+			elk = 0;
+			for (elj=0; elj<lmy; elj++) {
+				for (eli=0; eli<lmx; eli++) {
+					elidx = eli + elj * lmx + elk * lmx*lmy;
+					Q->element_list[ cnt ] = elidx;
+					cnt++;
+				}
+			}
+			break;
+	}
+	
+	PetscFunctionReturn(0);
 }
 
