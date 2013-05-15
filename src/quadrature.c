@@ -215,7 +215,7 @@ PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFa
 {
 	PetscInt eli,elj,elk;
 	PetscInt si,sj,sk,ni,nj,nk,M,N,P,lmx,lmy,lmz;
-	PetscInt nfaces[SURF_QUAD_FACES];
+	PetscInt nfaces[HEX_EDGES];
 	PetscInt cnt,elidx;
 	PetscErrorCode ierr;
 	
@@ -226,7 +226,7 @@ PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFa
 	ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
 	
-	if (nface_edge==0) { 
+	if (nface_edge == 0) { 
 		PetscFunctionReturn(0); 
 	}
   
@@ -322,8 +322,8 @@ PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 	
 	Q = *quadrature;
 	
-	ierr = PetscFree(Q->element_list);CHKERRQ(ierr);
-	DataBucketDestroy(&Q->properties_db);
+	if (Q->element_list) { ierr = PetscFree(Q->element_list);CHKERRQ(ierr); }
+	if (Q->properties_db) { DataBucketDestroy(&Q->properties_db); }
 	ElementTypeDestroy_Q2(&Q->e);
 
 	ierr = PetscFree(Q);CHKERRQ(ierr);
@@ -332,4 +332,3 @@ PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 	
 	PetscFunctionReturn(0);
 }
-
