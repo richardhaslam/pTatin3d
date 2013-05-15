@@ -113,7 +113,7 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
 	user = *ctx;
 	
 	if (user->surfQ) {
-		for (e=0; e<SURF_QUAD_FACES; e++) {
+		for (e=0; e<HEX_EDGES; e++) {
 			if (user->surfQ[e]) { 
 				ierr = SurfaceQuadratureDestroy(&user->surfQ[e]);CHKERRQ(ierr);
 				user->surfQ[e] = PETSC_NULL;
@@ -122,7 +122,7 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
 		ierr = PetscFree(user->surfQ);CHKERRQ(ierr);
 	}
 	
-//	if (user->Q) { ierr = QuadratureStokesDestroy(&user->Q);CHKERRQ(ierr); }
+	if (user->volQ) { ierr = QuadratureDestroy(&user->volQ);CHKERRQ(ierr); }
 	if (user->p_bclist) { ierr = BCListDestroy(&user->p_bclist);CHKERRQ(ierr); }
 	if (user->u_bclist) { ierr = BCListDestroy(&user->u_bclist);CHKERRQ(ierr); }
   if (user->stokes_pack) { ierr = DMDestroy(&user->stokes_pack);CHKERRQ(ierr); }
@@ -603,22 +603,27 @@ PetscErrorCode VolumeQuadratureGetCellData_Stokes(Quadrature Q,QPntVolCoefStokes
 PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace index,SurfaceQuadrature *quadrature)
 {
 	SurfaceQuadrature Q;
-	PetscInt nface_list[SURF_QUAD_FACES];
+	PetscInt nface_list[HEX_EDGES];
 	PetscInt lmx,lmy,lmz,nfaces,M,N,P,si,sj,sk,ni,nj,nk;
 	PetscErrorCode ierr;
 	
   PetscFunctionBegin;
+	
+	if (index > HEX_EDGES) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"face index for 3d hex must be in the range [0,5]");
+	}
 	
 	ierr = SurfaceQuadratureCreate(&Q);CHKERRQ(ierr);
 	//Q->dim  = 3;
 	//Q->type = SURFACE_QUAD;
 	
 	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0,0, 0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(da,&si,&sj,PETSC_NULL,&ni,&nj,&nk);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
   ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-	nface_list[0] = nface_list[1] = nface_list[2] = nface_list[3] = 0;
-	nface_list[4] = nface_list[5] = nface_list[6] = nface_list[7] = 0;
+	nface_list[0] = nface_list[1] = 0;
+	nface_list[2] = nface_list[3] = 0;
+	nface_list[4] = nface_list[5] = 0;
 	if (si+ni == M) { nface_list[HEX_FACE_Pxi]   = lmy*lmz; }
 	if (si == 0)    { nface_list[HEX_FACE_Nxi]   = lmy*lmz; }
 	if (sj+nj == N) { nface_list[HEX_FACE_Peta]  = lmx*lmz; }
@@ -665,7 +670,6 @@ PetscErrorCode SurfaceQuadratureGeometrySetUpStokes(SurfaceQuadrature Q,DM da)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "SurfaceQuadratureOrientationSetUpStokes"
 PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da)
@@ -683,6 +687,9 @@ PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da
 	QPntSurfCoefStokes *cell_qpoint;
 	
 	PetscFunctionBegin;
+	
+	if (Q->nfaces == 0) { PetscFunctionReturn(0); }
+	
 	/* setup for coords */
 	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
 	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
@@ -731,13 +738,119 @@ PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da
 				zp += Ni[k] * elcoords[3*k+2];
 			}
 			
-			
-			printf("fe=%d p=%d (s,t) %1.4e %1.4e: (xi,eta,zeta) %1.4e %1.4e %1.4e: (x,y,z) %1.4e %1.4e %1.4e \n",
-									 fe,gp, Q->gp2[gp].xi,Q->gp2[gp].eta, Q->gp3[gp].xi,Q->gp3[gp].eta,Q->gp3[gp].zeta,
+			/*
+			printf("[face=%d] fe=%d p=%d (s,t) %1.4e %1.4e: (xi,eta,zeta) %1.4e %1.4e %1.4e: (x,y,z) %1.4e %1.4e %1.4e \n",
+									 Q->face_id,fe,gp, Q->gp2[gp].xi,Q->gp2[gp].eta, Q->gp3[gp].xi,Q->gp3[gp].eta,Q->gp3[gp].zeta,
 									 xp,yp,zp);
+			*/
+			//printf("%1.4e %1.4e %1.4e %1.4e %1.4e %1.4e\n",xp,yp,zp,0.1*normal[0],0.1*normal[1],0.1*normal[2]);
+			
 		}
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureOrientationViewGnuplotStokes"
+PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q,DM da,const char name[])
+{
+	PetscErrorCode ierr;
+	DM             cda;
+	Vec            gcoords;
+	PetscScalar    *LA_gcoords;
+	PetscInt       nel,nen,fe,e,i,k,gp;
+	const PetscInt *elnidx;
+	ConformingElementFamily element;
+	double         elcoords[3*Q2_NODES_PER_EL_3D];
+	double         Ni[27];
+	QPntSurfCoefStokes *all_qpoint;
+	QPntSurfCoefStokes *cell_qpoint;
+	char fname[256];
+	PetscMPIInt rank;
+	FILE *file;
+	
+	PetscFunctionBegin;
+
+	
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	if (name) {
+		sprintf(fname,"%s-surfquadrature-face%d-r%d.gp",name,Q->face_id,rank);
+	} else {
+		sprintf(fname,"surfquadrature-face%d-r%d.gp",Q->face_id,rank);
+	}
+	file = fopen(fname,"w");
+	if (!file) {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",fname);
+	}
+
+	fprintf(file,"# Surface quadrature data (n,t1,t1,traction) for face %d \n",Q->face_id);
+	fprintf(file,"# nfaces = %d \n",Q->nfaces);
+	
+	if (Q->nfaces == 0) { PetscFunctionReturn(0); }
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	element = Q->e;
+	
+	ierr = SurfaceQuadratureGetAllCellData_Stokes(Q,&all_qpoint);CHKERRQ(ierr);
+	for (fe=0; fe<Q->nfaces; fe++) {
+		
+		e = Q->element_list[fe];
+		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		
+		ierr =  SurfaceQuadratureGetCellData_Stokes(Q,all_qpoint,fe,&cell_qpoint);CHKERRQ(ierr);
+		
+		for (gp=0; gp<Q->ngp; gp++) {
+			//double normal[3],tangent1[3],tangent2[3],xp,yp,zp;
+			double *normal,*tangent1,*tangent2,*traction,xp,yp,zp;
+			QPntSurfCoefStokes *qpoint = &cell_qpoint[gp];
+			
+			
+			QPntSurfCoefStokesGetField_surface_normal(qpoint,&normal);
+			QPntSurfCoefStokesGetField_surface_tangent1(qpoint,&tangent1);
+			QPntSurfCoefStokesGetField_surface_tangent2(qpoint,&tangent2);
+
+			QPntSurfCoefStokesGetField_surface_traction(qpoint,&traction);
+			
+			element->compute_surface_normal_3D(	
+																				 element, 
+																				 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+																				 Q->face_id,	 // edge index 0,1,2,3,4,5,6,7 //
+																				 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
+																				 normal ); // normal[] contains 1 point with dimension 3 (x,y,z) //
+			element->compute_surface_tangents_3D(	
+																					 element, 
+																					 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+																					 Q->face_id,	 
+																					 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
+																					 tangent1,tangent2 ); // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
+			
+			/* interpolate global coords */
+			element->basis_NI_3D(&Q->gp3[gp],Ni);
+			xp = yp = zp = 0.0;
+			for (k=0; k<element->n_nodes_3D; k++) {
+				xp += Ni[k] * elcoords[3*k  ];
+				yp += Ni[k] * elcoords[3*k+1];
+				zp += Ni[k] * elcoords[3*k+2];
+			}
+			
+			fprintf(file,"%1.4e %1.4e %1.4e %1.4e %1.4e %1.4e  %1.4e %1.4e %1.4e %1.4e %1.4e %1.4e  %1.4e %1.4e %1.4e %1.4e %1.4e %1.4e  %1.4e %1.4e %1.4e %1.4e %1.4e %1.4e\n",
+							xp,yp,zp,0.1*normal[0],0.1*normal[1],0.1*normal[2],
+							xp,yp,zp,0.1*tangent1[0],0.1*tangent1[1],0.1*tangent1[2],
+							xp,yp,zp,0.1*tangent2[0],0.1*tangent2[1],0.1*tangent2[2],
+							xp,yp,zp,0.1*traction[0],0.1*traction[1],0.1*traction[2]
+							);
+
+		}
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	fclose(file);
+	
   PetscFunctionReturn(0);
 }
 
@@ -749,9 +862,13 @@ PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSu
   DataField          PField;
 	PetscFunctionBegin;
 	
-	DataBucketGetDataFieldByName(Q->properties_db, QPntSurfCoefStokes_classname ,&PField);
-	quadraturepoint_data = PField->data;
-	*coeffs = quadraturepoint_data;
+	if (Q->nfaces) {
+		DataBucketGetDataFieldByName(Q->properties_db, QPntSurfCoefStokes_classname ,&PField);
+		quadraturepoint_data = PField->data;
+		*coeffs = quadraturepoint_data;
+	} else {
+		*coeffs = PETSC_NULL;
+	}
 	
   PetscFunctionReturn(0);
 }
@@ -761,11 +878,14 @@ PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSu
 PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfCoefStokes coeffs[],PetscInt cidx,QPntSurfCoefStokes *cell[])
 {
   PetscFunctionBegin;
-	if (cidx>=Q->nfaces) {
+	if (cidx >= Q->nfaces) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"cidx > max cells");
 	}
-	
-	*cell = &coeffs[cidx*Q->ngp];
+	if (Q->nfaces) {
+		*cell = &coeffs[cidx*Q->ngp];
+	} else {
+		*cell = PETSC_NULL;
+	}
   PetscFunctionReturn(0);
 }
 
@@ -781,16 +901,20 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 	
 	dav = ctx->dav;
 	
-	ierr = PetscMalloc(sizeof(SurfaceQuadrature)*SURF_QUAD_FACES,&ctx->surfQ);CHKERRQ(ierr);
-	for (face_index=0; face_index<SURF_QUAD_FACES; face_index++) {
+	ierr = PetscMalloc(sizeof(SurfaceQuadrature)*HEX_EDGES,&ctx->surfQ);CHKERRQ(ierr);
+	for (face_index=0; face_index<HEX_EDGES; face_index++) {
 		ctx->surfQ[face_index] = PETSC_NULL;
 	}
 
-	for (face_index=0; face_index<SURF_QUAD_FACES; face_index++) {
+	for (face_index=0; face_index<HEX_EDGES; face_index++) {
 		SurfaceQuadrature surfQ;
 		
 		ierr = SurfaceQuadratureCreate_GaussLegendreStokes(dav,face_index,&surfQ);CHKERRQ(ierr);
 		ierr = SurfaceQuadratureGeometrySetUpStokes(surfQ,dav);CHKERRQ(ierr);
+
+		// debugging
+		//ierr = SurfaceQuadratureOrientationViewGnuplotStokes(surfQ,dav,"init");CHKERRQ(ierr);
+		
 		ctx->surfQ[face_index] = surfQ;
 	}
 	
