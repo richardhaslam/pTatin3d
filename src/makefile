@@ -48,6 +48,7 @@ export TATIN_SRC = \
 			ptatin_check_compiler_flags.c \
 			ptatin_log.c \
 			ptatin3d_stokes.c \
+			stokes_output.c \
 			ptatin3d_energy.c \
 			phys_comp_energy.c \
 			energy_assembly.c \
