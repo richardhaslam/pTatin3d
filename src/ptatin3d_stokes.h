@@ -50,6 +50,7 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx);
 PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,const PetscInt mz,PhysCompStokes ctx);
 PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx);
 PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx);
+PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx);
 
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[]);
 PetscErrorCode DMDASetValuesLocalStencil_InsertValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[]);

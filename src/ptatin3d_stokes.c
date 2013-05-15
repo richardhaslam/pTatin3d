@@ -112,9 +112,16 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
 	if (!ctx) {PetscFunctionReturn(0);}
 	user = *ctx;
 	
-//	for (e=0; e<QUAD_EDGES; e++) {
-//		if (user->surfQ[e]) { ierr = SurfaceQuadratureStokesDestroy(&user->surfQ[e]);CHKERRQ(ierr); }
-//	}
+	if (user->surfQ) {
+		for (e=0; e<SURF_QUAD_FACES; e++) {
+			if (user->surfQ[e]) { 
+				ierr = SurfaceQuadratureDestroy(&user->surfQ[e]);CHKERRQ(ierr);
+				user->surfQ[e] = PETSC_NULL;
+			}
+		}
+		ierr = PetscFree(user->surfQ);CHKERRQ(ierr);
+	}
+	
 //	if (user->Q) { ierr = QuadratureStokesDestroy(&user->Q);CHKERRQ(ierr); }
 	if (user->p_bclist) { ierr = BCListDestroy(&user->p_bclist);CHKERRQ(ierr); }
 	if (user->u_bclist) { ierr = BCListDestroy(&user->u_bclist);CHKERRQ(ierr); }
@@ -760,5 +767,33 @@ PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfC
 	
 	*cell = &coeffs[cidx*Q->ngp];
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompCreateSurfaceQuadrature_Stokes"
+PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
+{
+	DM       dav;
+	PetscInt face_index;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	dav = ctx->dav;
+	
+	ierr = PetscMalloc(sizeof(SurfaceQuadrature)*SURF_QUAD_FACES,&ctx->surfQ);CHKERRQ(ierr);
+	for (face_index=0; face_index<SURF_QUAD_FACES; face_index++) {
+		ctx->surfQ[face_index] = PETSC_NULL;
+	}
+
+	for (face_index=0; face_index<SURF_QUAD_FACES; face_index++) {
+		SurfaceQuadrature surfQ;
+		
+		ierr = SurfaceQuadratureCreate_GaussLegendreStokes(dav,face_index,&surfQ);CHKERRQ(ierr);
+		ierr = SurfaceQuadratureGeometrySetUpStokes(surfQ,dav);CHKERRQ(ierr);
+		ctx->surfQ[face_index] = surfQ;
+	}
+	
+	PetscFunctionReturn(0);
 }
 

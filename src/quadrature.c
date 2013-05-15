@@ -309,3 +309,27 @@ PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFa
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SurfaceQuadratureDestroy"
+PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
+{
+	SurfaceQuadrature Q;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	if (!quadrature) { PetscFunctionReturn(0); }
+	
+	Q = *quadrature;
+	
+	ierr = PetscFree(Q->element_list);CHKERRQ(ierr);
+	DataBucketDestroy(&Q->properties_db);
+	ElementTypeDestroy_Q2(&Q->e);
+
+	ierr = PetscFree(Q);CHKERRQ(ierr);
+	
+	*quadrature = PETSC_NULL;
+	
+	PetscFunctionReturn(0);
+}
+
