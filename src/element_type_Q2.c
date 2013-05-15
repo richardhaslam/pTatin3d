@@ -1048,6 +1048,7 @@ void ElementTypeDestroy_Q2(ConformingElementFamily *_e)
 	
 	if (!_e) { return; }
 
+	e = *_e;
 	free(e->name);
 	
 	free2d(&e->point_node_list);
