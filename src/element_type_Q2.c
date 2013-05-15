@@ -1042,7 +1042,21 @@ void compute_element_tangent_Q2_3D(	ConformingElementFamily e,
 	t2[0] = t2[0]/mag;  t2[1] = t2[1]/mag;  t2[2] = t2[2]/mag;	
 }	
 
+void ElementTypeDestroy_Q2(ConformingElementFamily *_e)
+{
+	ConformingElementFamily e;
+	
+	if (!_e) { return; }
 
+	free(e->name);
+	
+	free2d(&e->point_node_list);
+	free2d(&e->edge_node_list);
+	free2d(&e->face_node_list);
+	
+	free(e);
+	*_e = NULL;
+}
 
 void ElementTypeCreate_Q2(ConformingElementFamily *_e,const int dim)
 {
