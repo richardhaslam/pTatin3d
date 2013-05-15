@@ -875,7 +875,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscInt       nlevels,k,max;
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
-	PetscInt       kk;
+	PetscInt       kk,e;
 	
 	PetscErrorCode ierr;
 	
@@ -922,9 +922,11 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
-	//for (e=0; e<QUAD_EDGES; e++) {
-	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
-	//}
+	for (e=0; e<HEX_EDGES; e++) {
+		ierr = SurfaceQuadratureGeometrySetUpStokes(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
+		//ierr = SurfaceQuadratureOrientationViewGnuplotStokes(user->stokes_ctx->surfQ[e],dav,"def");CHKERRQ(ierr);
+		ierr = SurfaceQuadratureViewParaview_Stokes(user->stokes_ctx,user->outputpath,"def");CHKERRQ(ierr);
+	}
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 	
