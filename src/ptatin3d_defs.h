@@ -45,7 +45,7 @@
 #define Q1_NODES_PER_EL_2D 4
 #define Q1_NODES_PER_EL_1D 2
 
-#define SURF_QUAD_FACES 8
+//#define SURF_QUAD_FACES 6
 
 #define NSD    3
 #define U_DOFS NSD
