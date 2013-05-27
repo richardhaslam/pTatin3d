@@ -441,6 +441,7 @@ extern PetscErrorCode pTatinModelRegister_AdvDiffExample(void);
 extern PetscErrorCode pTatinModelRegister_BasinComp(void);
 extern PetscErrorCode pTatinModelRegister_FaultFold(void);
 extern PetscErrorCode pTatinModelRegister_WrenchFold(void);
+extern PetscErrorCode pTatinModelRegister_Delamination(void);
 extern PetscErrorCode pTatinModelRegister_GeoMod2008(void);
 extern PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void);
 #undef __FUNCT__
@@ -466,7 +467,9 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_BasinComp();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_FaultFold();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_WrenchFold();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);  
-    ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);  	
+    ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
+    ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
+    ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }
