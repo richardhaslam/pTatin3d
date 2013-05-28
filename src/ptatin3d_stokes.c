@@ -663,9 +663,10 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 	if (nfaces != 0) {
 		DataBucketSetInitialSizes(Q->properties_db,Q->ngp*nfaces,1);
 	} else {
-		DataBucketSetInitialSizes(Q->properties_db,0,1);
+		DataBucketSetInitialSizes(Q->properties_db,1,1);
+        DataBucketSetSizes(Q->properties_db,0,-1);
 	}
-	DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+//	DataBucketView(((PetscObject)da)->comm, Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	*quadrature = Q;
   PetscFunctionReturn(0);
@@ -931,7 +932,14 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 		
 		ctx->surfQ[face_index] = surfQ;
 	}
-	
+
+	for (face_index=0; face_index<HEX_EDGES; face_index++) {
+        PetscPrintf(PETSC_COMM_WORLD,"SurfaceQuadrature[face %d] \n",face_index);
+        DataBucketView(((PetscObject)dav)->comm, ctx->surfQ[face_index]->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+        
+	}
+        
+    
 	PetscFunctionReturn(0);
 }
 
