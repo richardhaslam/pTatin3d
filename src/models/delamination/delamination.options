@@ -1,0 +1,59 @@
+#to be run with ./ptatin_driver_nonlinear_ts.app
+-A11_operator_type 0,1,1,1,1
+-dau_nlevels 2
+-dt_max 1e-3
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 7
+
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_mg_coarse_ksp_max_it 25
+-fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
+-fieldsplit_u_mg_coarse_ksp_type cg
+-fieldsplit_u_mg_coarse_pc_asm_overlap 4
+-fieldsplit_u_mg_coarse_pc_type asm
+-fieldsplit_u_mg_coarse_sub_pc_type ilu
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 2
+#-fieldsplit_u_pc_mg_log
+-fieldsplit_u_pc_type mg
+-ksp_max_it 50
+-ksp_rtol 1e-3
+-ksp_type fgmres
+-lattice_layout_perturb 0.0
+-mx 24
+-my 12
+-mz 24
+-newton_its 0
+-nsteps 10
+-options_left 1
+-output_path delamination
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model delamination
+-snes_rtol 1e-1
+-snes_atol 1e-3
+-snes_max_it 3
+-snes_max_linear_solve_fail 10
+
+#-snes_view
+-ksp_gmres_restart 50
+-stk_velocity_da_mat_type baij
+-stk_velocity_da_refine_hierarchy_x 4 
+-stk_velocity_da_refine_hierarchy_y 1 
+-stk_velocity_da_refine_hierarchy_z 4 
+
+-use_quasi_newton_coordinate_update
+#-snes_ksp_ew
+
+-snes_converged_reason
+-snes_monitor
+-ksp_converged_reason
+-ksp_monitor

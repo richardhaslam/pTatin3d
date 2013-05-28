@@ -155,9 +155,9 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	/* viscosity */
     rheology->const_eta0[0] = 2.0*1.0e23; /* crust */
 	rheology->const_eta0[1] = 1.0*1.0e19; /* crust - lower */
-	rheology->const_eta0[2] = 2.0*1.0e23; /* mantle - litho */
-	rheology->const_eta0[3] = 5.0*1.0e19; /* mantle - astheno */
-    rheology->const_eta0[4] = 5.0*1.0e21; /* mantle - lower */
+	rheology->const_eta0[2] = 2.0*1.0e22; /* mantle - litho */
+	rheology->const_eta0[3] = 1.0*1.0e19; /* mantle - astheno */
+    rheology->const_eta0[4] = 1.0*1.0e21; /* mantle - lower */
 	
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[0] *= data->viscosity_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[1] *= data->viscosity_bar; }
