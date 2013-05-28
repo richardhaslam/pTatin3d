@@ -474,13 +474,13 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	/* time step control */
 	user->nsteps           = 1;
 	user->dt_max           = 1.0e30;
-	user->dt_min           = 1.0e-30;
-	user->dt               = user->dt_min;
+	user->dt_min           = 0.0;
+	user->dt               = 0.0;
 	user->output_frequency = 1;
 	user->time_max         = 1.0e32;
 	user->time             = 0.0;
   user->step             = 0;
-  user->dt_adv           = user->dt_min;
+  user->dt_adv           = 0.0;
 	user->use_constant_dt  = PETSC_FALSE;
   
     ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
