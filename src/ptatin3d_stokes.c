@@ -641,6 +641,8 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 	ierr = _SurfaceQuadratureCellIndexSetUp(Q,index,nfaces,da);CHKERRQ(ierr);
 	
 	/* setup properties */
+	/*
+	// note: the parallel viewer wont work if db passed in is null //
 	if (nfaces != 0) {
 		DataBucketCreate(&Q->properties_db);
 		DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),PETSC_NULL);
@@ -652,6 +654,18 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 	} else {
 		Q->properties_db = PETSC_NULL;
 	}
+	*/
+
+	DataBucketCreate(&Q->properties_db);
+	DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),PETSC_NULL);
+	DataBucketFinalize(Q->properties_db);
+		
+	if (nfaces != 0) {
+		DataBucketSetInitialSizes(Q->properties_db,Q->ngp*nfaces,1);
+	} else {
+		DataBucketSetInitialSizes(Q->properties_db,0,1);
+	}
+	DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	*quadrature = Q;
   PetscFunctionReturn(0);
