@@ -669,6 +669,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	Vec              T,f;
 	RheologyType     init_rheology_type;
 	PetscBool        monitor_stages = PETSC_FALSE;
+	PetscBool        activate_quasi_newton_coord_update = PETSC_FALSE;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
@@ -676,6 +677,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,0);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -856,7 +858,12 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 	/* Define non-linear solver */
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+	if (!activate_quasi_newton_coord_update) {
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+	} else {
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
+	}
+		
 	// activate mffd via -snes_mf_operator
 	ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 	// Force mffd
@@ -930,7 +937,11 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes_newton);CHKERRQ(ierr);
 		ierr = SNESSetOptionsPrefix(snes_newton,"n_");CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		if (!activate_quasi_newton_coord_update) {
+			ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+		} else {
+			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
+		}
 		// Force mffd
 		ierr = SNESSetJacobian(snes_newton,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		
@@ -1142,7 +1153,11 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		/* b) create solver */
 		/* Define non-linear solver */
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		if (!activate_quasi_newton_coord_update) {
+			ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+		} else {
+			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
+		}
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 		
