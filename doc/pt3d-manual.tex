@@ -160,7 +160,7 @@ A ``model'' description in {\ptat} consists of defining the following operations
 	Define boundary conditions for velocity on each multi-grid level.
 
 	\item \unix{FP\_pTatinModel\_ApplyMaterialBoundaryCondition} (non essential)
-	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n > 0$ (e.g. inflow boundary conditions).
+	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n < 0$ (e.g. inflow boundary conditions).
 
 	\item \unix{FP\_pTatinModel\_ApplyInitialSolution} (non essential for Stokes)
 	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value my improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
@@ -180,7 +180,7 @@ A ``model'' description in {\ptat} consists of defining the following operations
 
 	\item \unix{FP\_pTatinModel\_Destroy} 
 	Upon completion of a {\ptat} job, this function will be called to release the memory allocated which is associated 
-	with this particular model. If no data structures were defined, then this function doesn't not need to be defined.
+	with this particular model. If no data structures were defined, then this function does not need to be defined.
 \end{enumerate}
 
 
@@ -190,14 +190,14 @@ Following the definition of the above functions, to complete the model definitio
 Calling this creates a little structure to hold your function pointers and other model related information.
 
 	\item \unix{pTatinModelSetName(...,MODELNAME);}
-The variable in \unix{MODELNAME}, will used as the command line arguement used to select the model
+The variable in \unix{MODELNAME}, will used as the command line argument used to select the model
 	\unix{-ptatin\_model MODELNAME}
 
 	\item \unix{pTatinModelSetUserData()}
 Set any data structures required by the model.
 
 	\item Assign the function pointers. This is done via \unix{pTatinModelSetFunctionPointer()}.
-The second arg indicates which function pointer is used. These are defined via
+The second argument indicates which function pointer is used. These are defined via
 \unix{typedef enum \{ \} pTatinModelOperation;}
 and are declared in 
 \unix{ptatin\_models.h}
@@ -253,7 +253,7 @@ from the directory
 	\unix{ptatin3d/src}.
 
 \subsection{Implementing Dirichlet boundary conditions}
-{\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to prescribe boundary and initial conditions into the structures and solution vectors used by {\ptat} without require the user to see the underlying data structures used, or understand parallelism.
+{\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
 
 To apply boundary conditions, the main function used is:
 \shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
@@ -278,13 +278,13 @@ which is declared in \unix{dmda\_bcs.c}, where the input arguments are identifie
 	DMDABCList\_JMAX\_LOC,
 	DMDABCList\_KMIN\_LOC,
 	DMDABCList\_KMAX\_LOC} \}.
-Refer to Fig.~\ref{fig:domain_coord} for the geometric association of these names.
+Refer to Fig.~\ref{fig:domain_coord} for the geometric interpretation of these names.
 %%
 \item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
 %%
 \item[] \unix{PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
 %%
-\item[] \unix{void *ctx} - any data structure or parameters which are required by the user provided function to evaluate the boundary condition.
+\item[] \unix{void *ctx} - any data structure, or parameters which are required by the user provided function to evaluate the boundary condition.
 %%
 \end{itemize}
 
