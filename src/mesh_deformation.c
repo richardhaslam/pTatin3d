@@ -238,3 +238,152 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetUniformCoordinates1D"
+PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,PetscReal X1)
+{
+	PetscErrorCode ierr;
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k,M,N,P,ML;
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***_coord;
+	PetscReal delta;
+	
+	PetscFunctionBegin;
+
+	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+
+	switch (dir) {
+		case 0:
+			ML = M;
+			break;
+		case 1:
+			ML = N;
+			break;
+		case 2:
+			ML = P;
+			break;
+	}
+	delta = (X1-X0)/((PetscReal)ML - 1.0);
+	
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
+	for( k=sk; k<sk+nz; k++ ) {
+		for( j=sj; j<sj+ny; j++ ) {
+			for( i=si; i<si+nx; i++ ) {
+				
+				switch (dir) {
+					case 0:
+						_coord[k][j][i].x = X0 + delta * i;
+						break;
+					case 1:
+						_coord[k][j][i].y = X0 + delta * j;
+						break;
+					case 2:
+						_coord[k][j][i].z = X0 + delta * k;
+						break;
+				}
+				
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/*
+PetscInt dir     : Value of 0, 1, or 2 indicating in which diection you wish refiniment to occur along 
+PetscInt side    : Value of 0 or 1, indicating the direction in which you wish to refine. 
+                   Suppose coords in one-direction are in the range [c0,c1], then side=0 indicates refinement 
+                   will occur towards c0. side=1 implies refinement occurs towards c1.
+PetscReal factor : Controls aggressiveness of coarsening. Larger values cause very rapid coarsening.
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetGraduatedCoordinates1D"
+PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,PetscReal factor)
+{
+	PetscErrorCode ierr;
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k,M,N,P;
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***_coord;
+	PetscReal delta;
+	PetscReal MeshMin[3],MeshMax[3],Lx[3],xp,x,f,f0,f1;
+	
+	
+	PetscFunctionBegin;
+	
+	if ((dir < 0) || (dir > 3)) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"dir\" must be one of {0,1,2}");
+	}
+	if ((side < 0) || (side > 1)) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"side\" must be one of {0,1}");
+	}
+	if (factor < 0.0) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"factor\" must be > 0.0");
+	}
+	
+	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+
+	ierr = DMDAGetBoundingBox(da,MeshMin,MeshMax);CHKERRQ(ierr);
+	Lx[0] = (MeshMax[0] - MeshMin[0]);
+	Lx[1] = (MeshMax[1] - MeshMin[1]);
+	Lx[2] = (MeshMax[2] - MeshMin[2]);
+	
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
+
+	if (side == 0) {
+		f0 = exp(MeshMin[dir]*factor);
+		f1 = exp(MeshMax[dir]*factor) - f0;
+	} else {
+		x = MeshMin[dir];
+		xp = MeshMax[dir] - x;
+		f0 = exp(xp*factor);
+		
+		x = MeshMax[dir];
+		xp = MeshMax[dir] - x;
+		f1 = exp(xp*factor) - f0;
+	}
+
+	for (k=sk; k<sk+nz; k++) {
+		for (j=sj; j<sj+ny; j++) {
+			for (i=si; i<si+nx; i++) {
+				PetscScalar pos[3];
+
+				pos[0] = _coord[k][j][i].x;
+				pos[1] = _coord[k][j][i].y;
+				pos[2] = _coord[k][j][i].z;
+
+				if (side == 0) {
+					f = (exp(pos[dir]*factor) - f0)/f1;
+				} else {
+					x = pos[dir];
+					xp = MeshMax[dir] - x;
+					
+					f = (exp(xp*factor) - f0)/f1;
+				}
+
+				pos[dir] = f;
+				pos[dir] = pos[dir] * Lx[dir] + MeshMin[dir];
+				
+				_coord[k][j][i].x = pos[0];
+				_coord[k][j][i].y = pos[1];
+				_coord[k][j][i].z = pos[2];
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}

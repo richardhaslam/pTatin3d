@@ -37,6 +37,8 @@
 PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,PetscReal gbump_lambda);
 PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da);
 PetscErrorCode MeshDeformation_ShearXY(DM da);
+PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,PetscReal X1);
+PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,PetscReal factor);
 
 #endif
 
