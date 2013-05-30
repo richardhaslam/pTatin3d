@@ -15,7 +15,8 @@ TATIN_MODEL_DIR = \
 	basin_comp\
 	wrench_fold\
 	fault_fold \
-	delamination\
+	delamination \
+	riftrh \
 	geomod2008 \
 	fault_fold_plastic
 
