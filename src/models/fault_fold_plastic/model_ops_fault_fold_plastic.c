@@ -305,7 +305,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
     data->Ly /= length_scale; /* direction of g */
     data->Lz /= length_scale;
     
-    for(n=0; n<data->n_interfaces-1; n++) {
+    for(n=0; n<data->n_interfaces; n++) {
 		data->interface_heights[n] /= length_scale;
 	}
     
