@@ -27,7 +27,7 @@ typedef struct {
     PetscReal fold_centers[4];
     PetscReal sigma;
 	PetscInt  bc_type;
-	PetscReal exx, vx_commpression;
+	PetscReal exx, vx_compression;
 	PetscReal Lx, Lz, Ly;
     PetscReal amp;
 } ModelFaultFoldPlasticCtx;

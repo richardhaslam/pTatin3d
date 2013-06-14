@@ -259,18 +259,18 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 		
     data->bc_type = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx             = 1.0e-3;
-	data->vx_commpression = 1.0;
+	data->vx_compression = 1.0;
 	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_plastic_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_vx_commpression",&data->exx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_vx_compression",&data->vx_compression,&flg);CHKERRQ(ierr);
     
     /*----------------------------Rescaling-----------------------------------------*/
     length_scale    = data->Lx;
 	velocity_scale  = 1.5e-9; //~5cm.year-1
     viscosity_scale = -1.0;
-	for (n=0; n<data->n_interfaces-2; n++) {
+	for (n=0; n<data->n_interfaces-1; n++) {
 		if (viscosity_scale < data->eta[n]){
             viscosity_scale = data->eta[n];
         }
@@ -299,7 +299,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}	
 	
 	/* experiment info */
-	data->vx_commpression = data->vx_commpression / velocity_scale;
+	data->vx_compression = data->vx_compression / velocity_scale;
     data->exx = data->exx*time_scale;
     data->Lx /= length_scale;
     data->Ly /= length_scale; /* direction of g */
@@ -332,7 +332,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 #define __FUNCT__ "BoundaryCondition_FaultFoldPlastic"
 PetscErrorCode BoundaryCondition_FaultFoldPlastic(DM dav,BCList bclist,pTatinCtx c,ModelFaultFoldPlasticCtx *data)
 {
-	PetscReal         exx, zero = 0.0, vx_E=-data->vx_commpression, vx_W = data->vx_commpression;
+	PetscReal         exx, zero = 0.0, vx_E=-data->vx_compression, vx_W = data->vx_compression;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
@@ -347,8 +347,8 @@ PetscErrorCode BoundaryCondition_FaultFoldPlastic(DM dav,BCList bclist,pTatinCtx
 	if (data->bc_type == 0) {
 		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
         
-		/*ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_commpression);CHKERRQ(ierr);
-		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_commpression);CHKERRQ(ierr);*/
+		/*ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE,-data->vx_compression);CHKERRQ(ierr);
+		ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE, data->vx_compression);CHKERRQ(ierr);*/
 
         
         ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
