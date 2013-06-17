@@ -933,12 +933,12 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 		ctx->surfQ[face_index] = surfQ;
 	}
 
+	/*
 	for (face_index=0; face_index<HEX_EDGES; face_index++) {
         PetscPrintf(PETSC_COMM_WORLD,"SurfaceQuadrature[face %d] \n",face_index);
         DataBucketView(((PetscObject)dav)->comm, ctx->surfQ[face_index]->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
-        
 	}
-        
+	*/
     
 	PetscFunctionReturn(0);
 }
