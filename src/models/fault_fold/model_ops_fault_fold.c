@@ -397,7 +397,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
     PetscReal *interface_heights, lamb, phi, offset, psig1, psig2;
     PetscInt *layer_res_k, n_interfaces, pwidth;
     PetscReal amp;
-    PetscReal fold_center_front, fold_center_back, Lx, *fold_centers;
+    PetscReal fold_center_front, fold_center_back, Lx, Ly, *fold_centers;
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
@@ -415,6 +415,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
     psig1 = data->psig1;
     psig2 = data->psig2;
     Lx = data->Lx;
+    Ly = data->Ly;
     offset = data->offset;
 
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
@@ -511,7 +512,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
 				}
 			}
         }
-            if (data->perturbation_type == 2){ 
+            else if (data->perturbation_type == 2){ 
                 attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
                 fold_centers = data->fold_centers;
                 fold_center_front = 0.25*Lx + 0.5*Lx*fold_centers[0]/fold_centers[1];
@@ -545,6 +546,42 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                     }
                 }
             }
+            if (data->perturbation_type == 3){ //Mainly to see the absorbed embryonic folds, if it exists?
+                attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
+                fold_centers = data->fold_centers;
+                fold_center_front = 0.25*Lx + 0.5*Lx*fold_centers[0]/fold_centers[1];
+                fold_center_back = 0.25*Lx + 0.5*Lx*fold_centers[2]/fold_centers[3];
+                dy = data->Ly/(PetscScalar)(N/2-1);
+                for(i = si; i<si+nx; i++) {
+                    if(sj+ny == N){
+                        PetscScalar center = 0;
+                        j=sj+ny-1;
+                        center = LA_coord[kinter][j][i].x-fold_center_back;
+                        pertu = amp * H * exp(-0.5*center*center/(psig1*psig1));
+                        for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                            LA_coord[kinter][j-pwidth][i].z += pertu *exp(-pwidth*attenuation);
+                        }
+                    }
+
+                    for(j = sj; j<sj+ny; j++){
+                        
+                        PetscScalar centerr, centerl;
+                        centerr = ((LA_coord[kinter][j][i].x-fold_center_front) - offset*psig2)*((LA_coord[kinter][j][i].x-fold_center_front) - offset*psig2) + (0.5*Ly - LA_coord[kinter][j][i].y)*(0.5*Ly - LA_coord[kinter][j][i].y);
+                        centerl = ((LA_coord[kinter][j][i].x-fold_center_front) + offset*psig2)*((LA_coord[kinter][j][i].x-fold_center_front) + offset*psig2) + (0.5*Ly - LA_coord[kinter][j][i].y)*(0.5*Ly - LA_coord[kinter][j][i].y);
+                        if ( (sj<= (int)(0.5*N)) && (sj+ny >= (int)(0.5*N)) ){
+                            LA_coord[kinter][j][i].z += 0.5*amp * H *(exp(-0.5*(centerr)*(centerr)/(psig2*psig2)) + exp(-0.5*(centerl)*(centerl)/(psig2*psig2)))*exp(-absolute(j-(int)(0.5*N))*attenuation);
+                        }else{
+                            LA_coord[kinter][j][i].z += 0.5*amp * H *(exp(-0.5*(centerr)*(centerr)/(psig2*psig2)) + exp(-0.5*(centerl)*(centerl)/(psig2*psig2)));
+                        }
+                        
+                    }
+                        
+                        
+                }
+            }
+                
+        
+            
 
 	}
     }
