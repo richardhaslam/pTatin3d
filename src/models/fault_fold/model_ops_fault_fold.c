@@ -569,9 +569,9 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                         centerr = ((LA_coord[kinter][j][i].x-fold_center_front) - offset*psig2)*((LA_coord[kinter][j][i].x-fold_center_front) - offset*psig2) + (0.5*Ly - LA_coord[kinter][j][i].y)*(0.5*Ly - LA_coord[kinter][j][i].y);
                         centerl = ((LA_coord[kinter][j][i].x-fold_center_front) + offset*psig2)*((LA_coord[kinter][j][i].x-fold_center_front) + offset*psig2) + (0.5*Ly - LA_coord[kinter][j][i].y)*(0.5*Ly - LA_coord[kinter][j][i].y);
                         if ( (sj<= (int)(0.5*N)) && (sj+ny >= (int)(0.5*N)) ){
-                            LA_coord[kinter][j][i].z += 0.5*amp * H *(exp(-0.5*(centerr)*(centerr)/(psig2*psig2)) + exp(-0.5*(centerl)*(centerl)/(psig2*psig2)))*exp(-absolute(j-(int)(0.5*N))*attenuation);
+                            LA_coord[kinter][j][i].z += 1.0*amp * H *(exp(-0.5*(centerr)*(centerr)/(psig2*psig2)) + exp(-0.5*(centerl)*(centerl)/(psig2*psig2)))*exp(-absolute(j-(int)(0.5*N))*attenuation);
                         }else{
-                            LA_coord[kinter][j][i].z += 0.5*amp * H *(exp(-0.5*(centerr)*(centerr)/(psig2*psig2)) + exp(-0.5*(centerl)*(centerl)/(psig2*psig2)));
+                            LA_coord[kinter][j][i].z += 1.0*amp * H *(exp(-0.5*(centerr)*(centerr)/(psig2*psig2)) + exp(-0.5*(centerl)*(centerl)/(psig2*psig2)));
                         }
                         
                     }
