@@ -437,12 +437,12 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 		pTatin_ConstructNi_Q2_3D( xi_p, NI );
 		
 		
+		T_mp = 0.0;
 		if (daT) {
 			/* Interpolate the temperature */
 			/* NOTE: scaling is requred of xi_p if nested mesh is used */
 			P3D_ConstructNi_Q1_3D(xi_p,NI_T);
             
-			T_mp = 0.0;
 			for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
 				T_mp += NI_T[k] * elT[k];
 			}
