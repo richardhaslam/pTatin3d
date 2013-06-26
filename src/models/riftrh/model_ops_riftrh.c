@@ -37,6 +37,9 @@
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
 #include "material_point_std_utils.h"
+#include "MPntStd_def.h"
+#include "MPntPStokes_def.h"
+#include "MPntPStokesPl_def.h"
 
 #include "ptatin_models.h"
 
@@ -69,9 +72,9 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->Lx=1200.e3;
 	data->Ly=250.e3;
 	data->Lz=1200.e3;
-	data->hc=35.e3;
-	data->hm=90.e3;
-	data->ha=125.e3;
+	data->hc=60.e3;
+	data->hm=60.e3;
+	data->ha=130.e3;
     /*seed geometry*/
 	data->dxs=12.e3;
 	data->dys=6.e3;
@@ -84,15 +87,15 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->rhoc=2800.;
 	data->rhom=3300.;
 	data->rhoa=3250.;
-	data->etac=1.e22;
-	data->etam=1.e26;
-	data->etaa=1.e20;
+	data->etac=1.e28;
+	data->etam=1.e22;
+	data->etaa=1.e19;
     /* rheology parameters */
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VP_STD;
 	rheology->nphases_active = 3;
 	rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
-	rheology->eta_upper_cutoff_global = 1.e+25;
+	rheology->eta_upper_cutoff_global = 1.e+28;
 	rheology->eta_lower_cutoff_global = 1.e+19;
 	data->runmises = PETSC_FALSE;
 	/* set the deffault values of the material constant for this particular model */
@@ -108,8 +111,8 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	MaterialConstantsSetDefaults(materialconstants);
     /* phase 0, asthenosphere */
     regionidx = 0;
-//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etaa);
     
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoa,2.e-5,0.0);
@@ -120,8 +123,8 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 
     /* phase 1, mantle lithosphere */
     regionidx = 1;
-//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etam);
     
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.0);
@@ -132,8 +135,8 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 
     /* phase 2, crust / upper lithosphere */
     regionidx = 2;
-//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
     
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.e-5,0.0);
@@ -518,8 +521,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscInt               e,p,n_mp_points;
 	DataBucket             db;
-	DataField              PField_std,PField_stokes;
+	DataField              PField_std,PField_stokes,PField_pls;
 	int                    phase;
+    PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center;
+    PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
 	PetscErrorCode ierr;
     
 	
@@ -536,21 +541,32 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
+    
+    DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	DataFieldGetAccess(PField_pls);
 	
-	
-	/* m */
-   	
+    ha_dimensional = data->ha * data->length_bar;
+    hm_dimensional = data->hm * data->length_bar;
+    hc_dimensional = data->hc * data->length_bar;
+    x_center       = 0.5 * data->Lx * data->length_bar;
+    notch_width    = 50.0e3;
+    notch_height   = 30.0e3;
+    
+	/* marker loop */
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point_std;
 		MPntPStokes *material_point_stokes;
+        MPntPStokesPl *mpprop_pls;
 		double      *position;
 		double      eta,rho;
         int         phase;
+        float       plastic_strain;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point_std);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&material_point_stokes);
+        DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point_std,&position);
@@ -568,14 +584,29 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
             eta=data->etac;
             rho=data->rhoc;
         }
+
+        xp_dimensional = position[0] * data->length_bar;
+		yp_dimensional = position[1] * data->length_bar;
+		zp_dimensional = position[2] * data->length_bar;
+        plastic_strain = 0.0;
+        
+        if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
+            if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+                plastic_strain = 1.0;
+            }
+        }
 		
 		/* user the setters provided for you */
+        MPntPStokesPlSetField_plastic_strain(mpprop_pls,plastic_strain);
 		MPntStdSetField_phase_index(material_point_std,         phase);
 		MPntPStokesSetField_eta_effective(material_point_stokes,eta);
 		MPntPStokesSetField_density(material_point_stokes,      rho);
 	}
 	
+  
+    
 	DataFieldRestoreAccess(PField_std);
+    DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
 	
 	PetscFunctionReturn(0);
@@ -665,14 +696,30 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec
 #define __FUNCT__ "ModelOutput_Riftrh"
 PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
-	PetscErrorCode ierr;
+	ModelRiftrhCtx  *data = (ModelRiftrhCtx*)ctx;
+	DataBucket       materialpoint_db;
+	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+    
+    {
+		//  Write out just the stokes variable?
+		//  const int nf = 1;
+		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
+		//
+		//  Write out just std, stokes and plastic variables
+		const int nf = 3;
+		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
+		char mp_file_prefix[256];
+		
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		sprintf(mp_file_prefix,"%s_all_mp_data",prefix);
+		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+	}
     
 	PetscFunctionReturn(0);
 }
