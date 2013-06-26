@@ -85,8 +85,8 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->rhom=3300.;
 	data->rhoa=3250.;
 	data->etac=1.e22;
-	data->etam=1.e22;
-	data->etaa=1.e22;
+	data->etam=1.e26;
+	data->etaa=1.e20;
     /* rheology parameters */
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VP_STD;
@@ -265,28 +265,70 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelRiftrh_DefineBCList"
 PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRiftrhCtx *data)
 {
-	PetscScalar    vxl,vxr,zero;
+	PetscScalar    vxl,vxr,vybottom,zero,height,length;
+    PetscInt       vbc_type;
 	PetscErrorCode ierr;
+    PetscReal MeshMin[3],MeshMax[3],domain_height;
+    DM stokes_pack,dau,dap;
+
+
     
 	PetscFunctionBegin;
+
+    stokes_pack = user->stokes_ctx->stokes_pack;
 	
+	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+
     zero=0.;
+//    vbc_type = 1; /* in / out flow condition on the sides */
+    vbc_type = 2; /* outflow condition on the sides, inflow condition on the base */
     
-	/* infilling free slip base */
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	
-	/* free surface top*/
-	
-	/*extension along face of normal x */
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_riftrhl,(void*)data);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_riftrhr,(void*)data);CHKERRQ(ierr);
     
-    /*free slip base*/
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    if (vbc_type == 1) {
+        
+        /* infilling free slip base */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        /* free surface top*/
+        
+        /*extension along face of normal x */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_riftrhl,(void*)data);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_riftrhr,(void*)data);CHKERRQ(ierr);
+        
+        /*free slip base*/
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        /* no flow in z*/
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    }
     
-    /* no flow in z*/
-    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    if (vbc_type == 2) {
+        vxl = -data->vx_up;
+        vxr = data->vx_up;
+        ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
+        height = MeshMax[1] - MeshMin[1];
+        length = MeshMax[0] - MeshMin[0];
+        vybottom = 2.*data->vx_up * height / length;
+        
+        /* infilling free slip base */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        
+        /* free surface top*/
+        
+        /*extension along face of normal x */
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vxl);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxr);CHKERRQ(ierr);
+        
+        /*free slip base*/
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vybottom);CHKERRQ(ierr);
+        
+        /* no flow in z*/
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    }
+    
+    
 	
 	PetscFunctionReturn(0);
 }
