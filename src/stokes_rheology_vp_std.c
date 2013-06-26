@@ -263,6 +263,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	DataField      PField_ViscConst,PField_ViscZ,PField_ViscFK,PField_ViscArrh;
 	DataField      PField_PlasticMises,PField_PlasticDP;
 	DataField      PField_SoftLin,PField_SoftExpo;
+    /* structs or material constants */
 	MaterialConst_MaterialType      *MatType_data;
 	MaterialConst_DensityConst      *DensityConst_data;
 	MaterialConst_DensityBoussinesq *DensityBoussinesq_data;
@@ -288,6 +289,9 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	
+    /* PField_std global index marker, phase marker, ...*/
+    /* PField_stokes contains: etaf, rhof */
+    /* PField_pls contains: accumulated plastic strain, yield type */
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
 	
