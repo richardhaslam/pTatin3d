@@ -17,7 +17,7 @@
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
 
--fieldsplit_u_ksp_max_it 1
+#-fieldsplit_u_ksp_max_it 1
 
 # configure the smoother on each level
 
