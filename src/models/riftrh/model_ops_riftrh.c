@@ -540,6 +540,44 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Riftrh"
+PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec X,void *ctx)
+{
+	ModelRiftrhCtx               *data = (ModelRiftrhCtx*)ctx;
+	DM                           stokes_pack,dau,dap;
+	PhysCompStokes               stokes;
+	Vec                          Uloc,Ploc;
+	PetscScalar                  *LA_Uloc,*LA_Ploc;
+	DataField                    PField;
+	MaterialConst_MaterialType   *truc;
+	PetscInt                     regionidx;
+	PetscErrorCode               ierr;
+	
+	PetscFunctionBegin;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	
+	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+	
+	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+		
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_Riftrh"
 PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 {
@@ -644,13 +682,18 @@ PetscErrorCode pTatinModelRegister_Riftrh(void)
 	
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Riftrh);CHKERRQ(ierr);
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian);CHKERRQ(ierr);
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_Riftrh);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_Riftrh);CHKERRQ(ierr);
+	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian);CHKERRQ(ierr);
+	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Riftrh);CHKERRQ(ierr);
 	
