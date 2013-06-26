@@ -546,7 +546,7 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                     }
                 }
             }
-            if (data->perturbation_type == 3){ //Mainly to see the absorbed embryonic folds, if it exists?
+            else if (data->perturbation_type == 3){ //Mainly to see the absorbed embryonic folds, if it exists?
                 attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
                 fold_centers = data->fold_centers;
                 fold_center_front = 0.25*Lx + 0.5*Lx*fold_centers[0]/fold_centers[1];
@@ -577,6 +577,40 @@ PetscErrorCode FaultFoldSetPerturbedInterfaces(DM dav, void *ctx)
                     }
                         
                         
+                }
+            }
+            else if (data->perturbation_type == 4){ 
+                attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
+                fold_centers = data->fold_centers;
+                fold_center_front = 0.25*Lx + 0.5*Lx*fold_centers[0]/fold_centers[1];
+                fold_center_back = 0.25*Lx + 0.5*Lx*fold_centers[2]/fold_centers[3];
+                dy = data->Ly/(PetscScalar)(N/2-1);
+                for(i = si; i<si+nx; i++) {
+                    if((sj+ny == N) && (sj == 0)){
+                        PetscScalar center = 0;
+                        j=sj+ny-1;
+                        center = LA_coord[kinter][j][i].x-fold_center_back;
+                        pertu = amp * H * exp(-0.5*center*center/(psig1*psig1));
+                        for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                            LA_coord[kinter][j-pwidth][i].z += pertu *exp(-pwidth*attenuation);
+                        }
+                        j=0;
+                        pertu = amp * H *(exp(-0.5*(center-offset*2.0*M_PI*lamb)*(center-offset*2.0*M_PI*lamb)/(psig2*psig2)) + exp(-0.5*(center+offset*2.0*M_PI*lamb)*(center+offset*2.0*M_PI*lamb)/(psig2*psig2)));
+                        for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                            LA_coord[kinter][j+pwidth][i].z += pertu *exp(-pwidth*attenuation);
+                        }
+                    }else if ((sj+ny == N) || (sj == 0)){
+                        PetscScalar center = 0;
+                        PetscInt sgn = 1;
+                        j= (sj == 0)?0:(sj+ny-1);
+                        sgn = (sj == 0)?1:-1;
+                        
+                        center = (sj == 0)?(LA_coord[kinter][j][i].x-fold_center_front):(LA_coord[kinter][j][i].x-fold_center_back);
+                        pertu = (sj == 0)?(amp * H *(exp(-0.5*(center-offset*2.0*M_PI*lamb)*(center-offset*2.0*M_PI*lamb)/(psig2*psig2)) + exp(-0.5*(center+offset*2.0*M_PI*lamb)*(center+offset*2.0*M_PI*lamb)/(psig2*psig2)))):amp * H * exp(-0.5*center*center/(psig1*psig1));
+                        for(pwidth = 0; pwidth<data->perturbation_width; pwidth++){
+                            LA_coord[kinter][j+sgn*pwidth][i].z += pertu *exp(-pwidth*attenuation);
+                        }
+                    }
                 }
             }
                 
