@@ -430,7 +430,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	PetscInt           Nxp[2];
 	PetscReal          perturb;
 	DataBucket         material_point_db,material_point_face_db;
-	PetscInt           f, n_face_list=2, face_list[] = { 0, 1 }; // xmin, xmax //
+	PetscInt           f, n_face_list=3, face_list[] = { 0, 1, 3 }; // xmin, xmax, ybase //
 	int                p,n_mp_points;
 	MPAccess           mpX;
 	PetscErrorCode     ierr;
