@@ -37,6 +37,7 @@
 #include "ptatin3d.h"
 #include "private/quadrature_impl.h"
 #include "swarm_fields.h"
+#include "dmda_element_q2p1.h"
 #include "quadrature.h"
 
 
