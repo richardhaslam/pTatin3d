@@ -136,6 +136,7 @@ export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot
 export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
 
 export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
+export TATIN_CFLAGS_O3_CRAY	= -O3 -hfp3
 
 export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
 export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
