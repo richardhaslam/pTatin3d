@@ -760,7 +760,8 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	
 	
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetOperators(ksp,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetTolerances(ksp,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,30);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
 	PetscGetTime(&t0);
@@ -773,7 +774,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp: time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	PetscGetTime(&t0);
-	ierr = KSPSolve(B,x,y);CHKERRQ(ierr);
+	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	ierr = KSPGetTolerances(ksp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
