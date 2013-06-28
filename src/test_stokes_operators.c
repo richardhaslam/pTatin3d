@@ -729,6 +729,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscLogDouble t0,t1;
 	double         tl,timeMIN,timeMAX;
 	PetscInt       its;
+	PetscInt       ii,iterations;
 	KSP            ksp;
 	PetscErrorCode ierr;
 	
@@ -736,6 +737,8 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
+	iterations = 5;
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the assembled operator */
 	da = user->dav;
@@ -756,8 +759,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
-	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
-	
+	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(ksp,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -771,10 +773,12 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
 
-	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp:            time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUpA11:                        time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	PetscGetTime(&t0);
-	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+	for (ii=0; ii<iterations; ii++) {
+		ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+	}
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -782,7 +786,8 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 
 	ierr = KSPGetTolerances(ksp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"KSPSolve(its = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %d,cycles = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: average                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
 	ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
