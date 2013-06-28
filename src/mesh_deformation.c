@@ -387,3 +387,4 @@ PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,Pe
 	
 	PetscFunctionReturn(0);
 }
+

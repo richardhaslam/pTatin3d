@@ -32,6 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
+#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
@@ -40,6 +41,7 @@
 #include "quadrature.h"
 #include "dmda_checkpoint.h"
 #include "element_type_Q2.h"
+#include "swarm_fields.h"
 
 #include "QPntVolCoefStokes_def.h"
 #include "QPntSurfCoefStokes_def.h"
