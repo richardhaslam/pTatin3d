@@ -263,8 +263,8 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
-	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
-	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF):      time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 
@@ -276,16 +276,16 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
-	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
-	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	PetscGetTime(&t0);
 	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
-	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
-	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM):     time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	/*
@@ -640,8 +640,8 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
 	}
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
-	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
-	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): iterations %.6d     time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): average               time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
@@ -677,7 +677,7 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	iterations = 5;
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
-	/* create the mf operators */
+	/* create the assembled operator */
 	da = user->dav;
 	
 	/* assembled matrix */
@@ -694,8 +694,8 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
-	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
-	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	PetscGetTime(&t0);
@@ -704,8 +704,8 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	}
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
-	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
-	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM): iterations %.6d     time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(ASM): average               time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
@@ -713,6 +713,78 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	ierr = VecDestroy(&y);CHKERRQ(ierr);
 	
+	ierr = MatDestroy(&B);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "perform_viscous_solve"
+PetscErrorCode perform_viscous_solve(PhysCompStokes user)
+{
+	Mat            B;
+	Vec            x,y;
+	DM             da;
+	PetscScalar    min,max;
+	PetscLogDouble t0,t1;
+	double         tl,timeMIN,timeMAX;
+	PetscInt       its;
+	KSP            ksp;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
+	
+	/* create the assembled operator */
+	da = user->dav;
+	
+	/* assembled matrix */
+	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+	ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+	
+	ierr = VecSet(x,0.0);CHKERRQ(ierr);
+	ierr = _GenerateTestVector(da,3,0,x);CHKERRQ(ierr);
+	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
+	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
+	
+	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	PetscGetTime(&t0);
+	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = (double)(t1 - t0);
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
+	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	
+	
+	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+	ierr = KSPSetOperators(B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+	PetscGetTime(&t0);
+	ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = (double)(t1 - t0);
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
+
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp: time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	
+	PetscGetTime(&t0);
+	ierr = KSPSolve(B,x,y);CHKERRQ(ierr);
+	ierr = KSPGetTolerances(ksp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its);CHKERRQ(ierr);
+	PetscGetTime(&t1);
+	tl = (double)(t1 - t0);
+	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSolve(its = %d) time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+
+	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
+	ierr = VecDestroy(&y);CHKERRQ(ierr);
 	ierr = MatDestroy(&B);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -811,15 +883,21 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	}
 	
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-apply_A11mf_operator",&found,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-apply_A11mf_operator",&found,PETSC_NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = apply_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 	}
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-apply_A11asm_operator",&found,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-apply_A11asm_operator",&found,PETSC_NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = apply_asm_A11(user->stokes_ctx);CHKERRQ(ierr);		
+	}
+
+	found  = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-perform_viscous_solve_A11asm_operator",&found,PETSC_NULL);CHKERRQ(ierr);
+	if (found) {
+		ierr = perform_viscous_solve(user->stokes_ctx);CHKERRQ(ierr);		
 	}
 	
 	
