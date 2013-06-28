@@ -70,7 +70,7 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VISCOUS;
-//	rheology->rheology_type = RHEOLOGY_VP_STD;
+	//	rheology->rheology_type = RHEOLOGY_VP_STD;
 	
 	data->dimensional   = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_delamination_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
@@ -94,23 +94,23 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	data->length_bar    = 100.0 * 1.0e3;
 	data->viscosity_bar = 1e23;
 	data->velocity_bar  = 1.0e-10;
-
+	
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_vis_bar",&data->viscosity_bar,&flg);CHKERRQ(ierr);
-    flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_vel_bar",&data->velocity_bar,&flg);CHKERRQ(ierr);
-    flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_length_bar",&data->length_bar,&flg);CHKERRQ(ierr);
-    data->time_bar      = data->length_bar / data->velocity_bar;
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_vel_bar",&data->velocity_bar,&flg);CHKERRQ(ierr);
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_length_bar",&data->length_bar,&flg);CHKERRQ(ierr);
+	data->time_bar      = data->length_bar / data->velocity_bar;
 	data->pressure_bar  = data->viscosity_bar*data->velocity_bar / data->length_bar;
 	data->density_bar   = data->viscosity_bar*data->velocity_bar / ( data->length_bar * data->length_bar );
 	/*
-	if (!data->dimensional) {
-		data->length_bar    = 1.0;
-		data->viscosity_bar = 1.0;
-		data->velocity_bar  = 1.0;
-		data->time_bar      = 1.0;
-		data->pressure_bar  = 1.0;
-		data->density_bar   = 1.0;
-	}
-	*/
+	 if (!data->dimensional) {
+	 data->length_bar    = 1.0;
+	 data->viscosity_bar = 1.0;
+	 data->velocity_bar  = 1.0;
+	 data->time_bar      = 1.0;
+	 data->pressure_bar  = 1.0;
+	 data->density_bar   = 1.0;
+	 }
+	 */
 	
 	/* box geometry, m */
 	data->Lx =  8.0e5;
@@ -148,41 +148,41 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"  -model_delamination_vx [m/s]:  %+1.4e  -model_delamination_vz [m/s]:  %+1.4e : computed vy [m/s]:  %+1.4e \n", vx,vz,vy);
 	PetscPrintf(PETSC_COMM_WORLD,"  -model_delamination_vx [cm/yr]:%+1.4e  -model_delamination_vz [cm/yr]:%+1.4e : computed vy [cm/yr]:%+1.4e \n", vx/cm_per_year2m_per_sec,vz/cm_per_year2m_per_sec,vy/cm_per_year2m_per_sec);
 	
-   
+	
 	/* parse from command line */
 	rheology->nphases_active = 5;
 	
 	/* viscosity */
-    rheology->const_eta0[0] = 2.0*1.0e23; /* crust */
+	rheology->const_eta0[0] = 2.0*1.0e23; /* crust */
 	rheology->const_eta0[1] = 1.0*1.0e19; /* crust - lower */
 	rheology->const_eta0[2] = 2.0*1.0e22; /* mantle - litho */
 	rheology->const_eta0[3] = 1.0*1.0e19; /* mantle - astheno */
-    rheology->const_eta0[4] = 1.0*1.0e21; /* mantle - lower */
+	rheology->const_eta0[4] = 1.0*1.0e21; /* mantle - lower */
 	
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[0] *= data->viscosity_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[1] *= data->viscosity_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[2] *= data->viscosity_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[3] *= data->viscosity_bar; }
-    flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta4",&rheology->const_eta0[4],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[4] *= data->viscosity_bar; }
-
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_eta4",&rheology->const_eta0[4],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_eta0[4] *= data->viscosity_bar; }
+	
 	
 	for (n=0; n<rheology->nphases_active; n++) {
 		PetscPrintf(PETSC_COMM_WORLD,"  input: -model_delamination_eta%d [Pa.s]    : current value %+1.4e [Pa.s]\n", n,rheology->const_eta0[n] );
 	}
 	
 	/* density */
-    data->rho0=3200.0;
-    rheology->const_rho0[0] = 2700.0; /* crust */
+	data->rho0=3200.0;
+	rheology->const_rho0[0] = 2700.0; /* crust */
 	rheology->const_rho0[1] = 2700.0; /* crust */
 	rheology->const_rho0[2] = 3300.0; /* mantle */
 	rheology->const_rho0[3] = 3280.0; /* mantle */
-    rheology->const_rho0[4] = 3300.0; /* mantle */
+	rheology->const_rho0[4] = 3300.0; /* mantle */
 	
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[0] *= data->density_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[1] *= data->density_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[2] *= data->density_bar; }
 	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[3] *= data->density_bar; }
-    flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_rho4",&rheology->const_rho0[4],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[4] *= data->density_bar; }
+	flg = PETSC_FALSE; ierr = PetscOptionsGetReal(PETSC_NULL,"-model_delamination_rho4",&rheology->const_rho0[4],&flg);CHKERRQ(ierr); if (flg && !data->dimensional) { rheology->const_rho0[4] *= data->density_bar; }
 	
 	for (n=0; n<rheology->nphases_active; n++) {
 		PetscPrintf(PETSC_COMM_WORLD,"  input: -model_delamination_rho%d [kg.m^-3] : current value %+1.4e [kg.m^-3]\n", n,rheology->const_rho0[n] );
@@ -213,7 +213,7 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 		rheology->const_rho0[n] = rheology->const_rho0[n] / data->density_bar;
 	}
 	data->rho0 = data->rho0/ data->density_bar;
-    
+	
 	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_delamination_Ox   :  %+1.4e    -model_delamination_Lx   :  %+1.4e  \n", data->Ox ,data->Lx );
 	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_delamination_Oy   :  %+1.4e    -model_delamination_Ly   :  %+1.4e \n", data->Oy, data->Ly );
 	PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_delamination_Oz   :  %+1.4e    -model_delamination_Lz   :  %+1.4e\n", data->Oz , data->Lz );
@@ -233,13 +233,13 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	data->eta[1] = rheology->const_eta0[1];
 	data->eta[2] = rheology->const_eta0[2];
 	data->eta[3] = rheology->const_eta0[3];
-    data->eta[4] = rheology->const_eta0[4];
+	data->eta[4] = rheology->const_eta0[4];
 	
 	data->rho[0] = rheology->const_rho0[0];
 	data->rho[1] = rheology->const_rho0[1];
 	data->rho[2] = rheology->const_rho0[2];
 	data->rho[3] = rheology->const_rho0[3];
-    data->rho[4] = rheology->const_rho0[4];
+	data->rho[4] = rheology->const_rho0[4];
 	
 	PetscFunctionReturn(0);
 }
@@ -251,7 +251,7 @@ PetscErrorCode ModelDelamination_DefineBCList(BCList bclist,DM dav,pTatinCtx use
 {
 	PetscScalar    vxl,vxr,vzf,vzb,vy;
 	PetscErrorCode ierr;
-
+	
 	PetscFunctionBegin;
 	
 	vxl = -data->vx;
@@ -287,7 +287,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Delamination(pTatinCtx user,void *ctx
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = ModelDelamination_DefineBCList(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,user,data);CHKERRQ(ierr);
-
+	
 	PetscFunctionReturn(0);
 }
 
@@ -354,14 +354,14 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	PetscScalar         y_lab1      = -120.0e3; 
 	PetscScalar     	y_moho      = -40.0e3;
 	PetscScalar     	y_midcrust  = -20.0e3;
-    
+	
 	PetscScalar         zG          = 500.0e3; 
 	PetscScalar         zY          = 200.0e3;
 	PetscScalar         xSN         = 200.0e3;
 	PetscScalar         xWL         = 400.0e3;
 	PetscScalar         xGV         = 300.0e3;
 	PetscScalar         xDV         = 550.0e3;
-
+	
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -379,7 +379,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	
 	
 	/* m */
-   	
+	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	for (p=0; p<n_mp_points; p++) {
@@ -397,65 +397,65 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 		/* convert to scaled units */
 		xcoord = position[0] * data->length_bar;
 		ycoord = position[1] * data->length_bar;
-        zcoord = position[2] * data->length_bar;
+		zcoord = position[2] * data->length_bar;
 		if (ycoord < y_midmantle) {
 			phase = 4;
 			eta =  data->eta[4];
 			rho =  data->rho[4];
-            
-        } else if (ycoord < y_lab2) {
-                phase = 3;
-                eta =  data->eta[3];
-                rho =  data->rho[3];
-            
+			
+		} else if (ycoord < y_lab2) {
+			phase = 3;
+			eta =  data->eta[3];
+			rho =  data->rho[3];
+			
 		} else if (ycoord < y_lab1) {
-            
-            if (zcoord <= zG & zcoord >= zY & xcoord > xGV & xcoord <= xWL){
-                phase = 2;
-                eta =  data->eta[2];
-                rho =  data->rho[2];
-            } else {
-                    phase = 3;
-                    eta =  data->eta[3];
-                    rho =  data->rho[3];    
-            }    
-                    
-        } else if (ycoord < y_moho) {
-            
-            if (zcoord < zG ){
-                if (xcoord > xWL & xcoord <= xDV & zcoord > zY){
-                    phase = 3;
-                    eta =  data->eta[3];
-                    rho =  data->rho[3];    
-                } else {
-                    phase = 2;
-                    eta =  data->eta[2];
-                    rho =  data->rho[2];
-                }
-            } else {
-                
-                if (xcoord > xSN & xcoord <= xDV){
-                    phase = 3;
-                    eta =  data->eta[3];
-                    rho =  data->rho[3];
-                } else {
-                    phase = 2;
-                    eta =  data->eta[2];
-                    rho =  data->rho[2];
-                }                
-            }
-            
-		} else if (ycoord<y_midcrust) {
-			if (xcoord > xSN & xcoord <=xDV) {
-                phase = 1;
-                eta =  data->eta[1];
-                rho =  data->rho[1];
-            }else{
-                phase = 0;
-                eta =  data->eta[0];
-                rho =  data->rho[0];
-            }
-        } else {
+			
+			if ((zcoord <= zG) && (zcoord >= zY) && (xcoord > xGV) && (xcoord <= xWL)){
+				phase = 2;
+				eta =  data->eta[2];
+				rho =  data->rho[2];
+			} else {
+				phase = 3;
+				eta =  data->eta[3];
+				rho =  data->rho[3];    
+			}    
+			
+		} else if (ycoord < y_moho) {
+			
+			if (zcoord < zG ){
+				if ((xcoord > xWL) && (xcoord <= xDV) && (zcoord > zY)){
+					phase = 3;
+					eta =  data->eta[3];
+					rho =  data->rho[3];    
+				} else {
+					phase = 2;
+					eta =  data->eta[2];
+					rho =  data->rho[2];
+				}
+			} else {
+				
+				if ((xcoord > xSN) && (xcoord <= xDV)){
+					phase = 3;
+					eta =  data->eta[3];
+					rho =  data->rho[3];
+				} else {
+					phase = 2;
+					eta =  data->eta[2];
+					rho =  data->rho[2];
+				}                
+			}
+			
+		} else if (ycoord < y_midcrust) {
+			if ((xcoord > xSN) && (xcoord <= xDV)) {
+				phase = 1;
+				eta =  data->eta[1];
+				rho =  data->rho[1];
+			} else {
+				phase = 0;
+				eta =  data->eta[0];
+				rho =  data->rho[0];
+			}
+		} else {
 			phase = 0;
 			eta =  data->eta[0];
 			rho =  data->rho[0];
@@ -496,26 +496,26 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-    ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    
-    vxl = -data->vx;
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	vxl = -data->vx;
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
 	vzb =  0.0;//data->vz;
 	
-//	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
+	//	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	/* apply -5 < vx 5 across the domain x \in [0,1] */
 	
-/*	ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(data->Lx-data->Ox),vxl,0.0);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-	
-	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-	
-*/	
+	/*	ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(data->Lx-data->Ox),vxl,0.0);CHKERRQ(ierr);
+	 ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+	 ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
+	 ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+	 
+	 ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
+	 ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+	 
+	 */	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	
 	
@@ -529,13 +529,13 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	HPctx.rho        = data->rho0;
 	
 	
-    ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
-    ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
-    ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
+	ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-    	
-     ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-     
+	
+	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
+	
 	
 	PetscFunctionReturn(0);
 }
@@ -551,7 +551,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Delamination(pTatinCtx c,Vec X,void 
 	DM               stokes_pack,dav,dap;
 	Vec              velocity,pressure;
 	PetscInt         M,N,P;
-
+	
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -754,8 +754,8 @@ PetscErrorCode pTatinModelRegister_Delamination(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Delamination);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Delamination);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialCondition_Delamination);CHKERRQ(ierr);    
-    
-
+	
+	
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
