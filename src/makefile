@@ -197,8 +197,7 @@ tests: libs models
 	-@echo ""
 	-@echo "*** Building tests ***"
 	@for t in ${TATIN_TESTS} ; do \
-		${MAKE} $${t}.o; \
-		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
+		${MAKE} $${t}.app;
 	done
 
 models: base_objects libs
@@ -211,13 +210,15 @@ drivers: libs models
 	-@echo ""
 	-@echo "*** Building pTatin executables ***"
 	@for t in ${TATIN_DRIVERS} ; do \
-		${MAKE} $${t}.o; \
-		${PCC} ${TATIN_CFLAGS} -o $${t}.app $${t}.o ${TATIN_INC} ${TATIN_LIB}; \
+		${MAKE} $${t}.app;
 	done
 
 ptatin_check_compiler_flags.o: ptatin_check_compiler_flags.c
 	-@echo ""
 	${PCC} ${TATIN_CFLAGS} -c ptatin_check_compiler_flags.c ${TATIN_INC} -DCOMPFLAGS='${TATIN_CFLAGS}'
+
+%.app: %.o
+	${PCC} ${TATIN_CFLAGS} -o $*.app $*.o ${TATIN_INC} ${TATIN_LIB}; 
 
 
 %.o: %.c
