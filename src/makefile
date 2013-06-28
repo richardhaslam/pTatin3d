@@ -7,6 +7,9 @@
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 
+# Compilation options are to be placed in makefile.arch
+include makefile.arch
+
 export TATIN_DIR	=	${PWD}
 
 export TATIN_SRC = \
@@ -124,29 +127,32 @@ export EXTERNAL_LIBS	=	${PETSC_LIB} ${LIBZ_LIB}
 export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmodels -lptatin3d ${EXTERNAL_LIBS}
 #export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels
 
+
 ## Set flags here, or run >make TATIN_CFLAGS='-g -O0'
-export TATIN_CFLAGS_DEBUG		= -O0 -g -fno-nested-functions -Wno-unused-variable -Wall
+#export TATIN_CFLAGS_DEBUG		= -O0 -g -fno-nested-functions -Wno-unused-variable -Wall
+#export TATIN_CFLAGS_DEBUG_CRAY		= -O0 -g
+#
+#export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+#export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops 
+#
+#export TATIN_CFLAGS_O3_DIONYSOS = -std=gnu99 -O3 -g -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
+#export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
+#export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
+#
+#export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
+#export TATIN_CFLAGS_O3_CRAY	= -O3 -hfp3
+#
+#export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
+#export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
+#export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -march=native -funroll-loops -ffast-math -Wstrict-aliasing -fstrict-aliasing
 
-export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops 
+#export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG_CRAY}
+#export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
-
-export TATIN_CFLAGS_O3_DIONYSOS = -std=gnu99 -O3 -g -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
-export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
-export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
-
-export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
-export TATIN_CFLAGS_O3_CRAY	= -O3 -hfp3
-
-export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
-export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
-export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -march=native -funroll-loops -ffast-math -Wstrict-aliasing -fstrict-aliasing
-
-export TATIN_CFLAGS		= ${TATIN_CFLAGS_DEBUG}
-export TATIN_CC			= ${PCC}
-export TATIN_FFLAGS		= ${TATIN_FFLAGS_DEBUG}
-export TATIN_FC			= ${FC}
-#export TATIN_FC				= gfortran -m64
+# Compilers are determined via petsc
+export TATIN_CC		= ${PCC}
+export TATIN_FC		= ${FC}
+#export TATIN_FC	= gfortran -m64
 
 
 all: 
