@@ -756,12 +756,12 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
-	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(ksp,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-	ierr = KSPSetTolerances(ksp,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,30);CHKERRQ(ierr);
+	ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
 	PetscGetTime(&t0);
@@ -771,18 +771,20 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
 
-	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp: time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUp:            time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
 	PetscGetTime(&t0);
 	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
-	ierr = KSPGetTolerances(ksp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its);CHKERRQ(ierr);
 	PetscGetTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
-	PetscPrintf(PETSC_COMM_WORLD,"KSPSolve(its = %d) time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
+	ierr = KSPGetTolerances(ksp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its);CHKERRQ(ierr);
+
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSolve(its = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+	
 	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	ierr = VecDestroy(&y);CHKERRQ(ierr);

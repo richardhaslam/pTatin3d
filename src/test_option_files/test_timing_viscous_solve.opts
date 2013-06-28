@@ -9,7 +9,6 @@
 ##
 ## =============================================================== 
 #PETSc Option Table entries:
--ksp_view
 -log_summary
 -mx 12
 -my 12
