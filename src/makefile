@@ -197,7 +197,7 @@ tests: libs models
 	-@echo ""
 	-@echo "*** Building tests ***"
 	@for t in ${TATIN_TESTS} ; do \
-		${MAKE} $${t}.app;
+		${MAKE} $${t}.app; \
 	done
 
 models: base_objects libs
@@ -210,7 +210,7 @@ drivers: libs models
 	-@echo ""
 	-@echo "*** Building pTatin executables ***"
 	@for t in ${TATIN_DRIVERS} ; do \
-		${MAKE} $${t}.app;
+		${MAKE} $${t}.app; \
 	done
 
 ptatin_check_compiler_flags.o: ptatin_check_compiler_flags.c
