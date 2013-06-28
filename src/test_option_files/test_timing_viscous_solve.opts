@@ -9,6 +9,7 @@
 ##
 ## =============================================================== 
 #PETSc Option Table entries:
+-iterations 5
 -log_summary
 -mx 12
 -my 12
