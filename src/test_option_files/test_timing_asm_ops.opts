@@ -11,6 +11,7 @@
 #PETSc Option Table entries:
 -apply_A11asm_operator
 -iterations 50
+-log_summary
 -mx 12
 -my 12
 -mz 12
