@@ -1,0 +1,18 @@
+#
+#  -- pTatin Optimization flags --
+#    Operating system: Cray XE6 operating system (hexagon,kraken,hooper)
+#    Compiler: cray-gcc
+#
+
+export TATIN_CFLAGS_DEBUG	= -O0 -g
+export TATIN_CFLAGS_OPT_a	= -O3 -hfp3
+
+export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
+export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
+
+#
+#  Select optimized or debug compilation flags
+#
+export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
+export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
+
