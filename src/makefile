@@ -186,7 +186,7 @@ base_objects_fortran:
 material_constants: base_objects
 	-@${MAKE} -C material_constants
 
-libs: base_objects
+libs: base_objects material_constants
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
