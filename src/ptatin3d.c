@@ -41,6 +41,7 @@
 
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
+#include "dmda_view_petscvtk.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "MPntPStokesPl_def.h"
