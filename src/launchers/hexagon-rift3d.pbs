@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# Give the job a name (optional)
+#PBS -N "pt3d-rift3d-bigC50-2coh"
+#
+# Specify the project the job should be accounted on (obligatory)
+#PBS -A geofysisk
+#
+
+#  Send me an email on  a=abort, b=begin, e=end
+#PBS -m abe
+#PBS -M dave.mayhem23@gmail.com
+
+
+# The job needs at most 60 hours wall-clock time on 1 CPU (obligatory)
+#PBS -l mppwidth=1024,walltime=24:00:00
+#
+
+# Combined stdout and stderr
+#PBS -j oe
+
+# Write the standard output of the job to file 'ptat{.out,.err}' (optional)
+## PBS -o ptat.out
+## PBS -e ptat.err
+
+#
+# Make sure I am in the correct directory
+mkdir -p /work/$USER/pt3d-rift
+cd /work/$USER/pt3d-rift
+
+# Invoke the executable on the compute node
+aprun -B ./ptatin_driver_nonlinear_ts.app -options_file test_rift3D_T_gmg_ite2.ops \
+-model_rift3D_T_vz 1.57e-10 \
+-output_path /work/$USER/pt3d-rift/bigC50-2coh-inflow \
+-ksp_rtol 1.0e-3 \
+-model_rift3D_Tfriction_2 0.6  -model_rift3D_Tfriction_inf_2 0.1 -model_rift3D_Tcohesion_2 2e7 -model_rift3D_Tcohesion_inf_2 2e7 -model_rift3D_Tfriction_3 0.6 -model_rift3D_Tfriction_inf_3 0.1 -model_rift3D_Tcohesion_3 2e7 -model_rift3D_Tcohesion_inf_3 2e7
+
+
+
