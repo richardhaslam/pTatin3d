@@ -76,7 +76,8 @@ export TATIN_SRC = \
 			mp_advection.c \
 			units.c \
 			model_utils.c \
-			eigen_operators.c
+			eigen_operators.c \
+			ksp_chebyrn.c \
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
@@ -197,6 +198,7 @@ tests: libs models
 	-@echo ""
 	-@echo "*** Building tests ***"
 	@for t in ${TATIN_TESTS} ; do \
+		${MAKE} $${t}.o; \
 		${MAKE} $${t}.app; \
 	done
 
@@ -210,6 +212,7 @@ drivers: libs models
 	-@echo ""
 	-@echo "*** Building pTatin executables ***"
 	@for t in ${TATIN_DRIVERS} ; do \
+		${MAKE} $${t}.o; \
 		${MAKE} $${t}.app; \
 	done
 
@@ -217,9 +220,10 @@ ptatin_check_compiler_flags.o: ptatin_check_compiler_flags.c
 	-@echo ""
 	${PCC} ${TATIN_CFLAGS} -c ptatin_check_compiler_flags.c ${TATIN_INC} -DCOMPFLAGS='${TATIN_CFLAGS}'
 
-%.app: %.o
-	${PCC} ${TATIN_CFLAGS} -o $*.app $*.o ${TATIN_INC} ${TATIN_LIB}; 
 
+
+%.app: %.o ${TATIN_OBJ} material_constants/*.o
+	${PCC} ${TATIN_CFLAGS} -o $*.app $*.o ${TATIN_INC} ${TATIN_LIB}; 
 
 %.o: %.c
 	-@echo ""

@@ -933,6 +933,7 @@ int main(int argc,char **argv)
 	PetscErrorCode ierr;
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+	ierr = pTatinKSPRegister();CHKERRQ(ierr);
 	
 	ierr = pTatin3d_assemble_stokes(argc,argv);CHKERRQ(ierr);
 	
