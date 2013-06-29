@@ -197,7 +197,7 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_ChebychevRN(KSP ksp,PetscReal
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPChebychevSetEigenvalues"
+#define __FUNCT__ "KSPChebychevRNSetEigenvalues"
 /*@
  KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
  of the preconditioned problem.
@@ -218,7 +218,7 @@ EXTERN_C_END
  
  .keywords: KSP, Chebyshev, set, eigenvalues
  @*/
-PetscErrorCode  KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
+PetscErrorCode  KSPChebychevRNSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
   PetscErrorCode ierr;
 	
@@ -226,12 +226,12 @@ PetscErrorCode  KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveReal(ksp,emax,2);
   PetscValidLogicalCollectiveReal(ksp,emin,3);
-  ierr = PetscTryMethod(ksp,"KSPChebychevSetEigenvalues_C",(KSP,PetscReal,PetscReal),(ksp,emax,emin));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPChebychevRNSetEigenvalues_C",(KSP,PetscReal,PetscReal),(ksp,emax,emin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPChebychevSetEstimateEigenvalues"
+#define __FUNCT__ "KSPChebychevRNSetEstimateEigenvalues"
 /*@
  KSPChebychevSetEstimateEigenvalues - Automatically estimate the eigenvalues to use for Chebychev
  
@@ -262,7 +262,7 @@ PetscErrorCode  KSPChebychevSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin
  
  .keywords: KSP, Chebyshev, set, eigenvalues
  @*/
-PetscErrorCode KSPChebychevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
+PetscErrorCode KSPChebychevRNSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
   PetscErrorCode ierr;
 	
@@ -272,7 +272,7 @@ PetscErrorCode KSPChebychevSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal 
   PetscValidLogicalCollectiveReal(ksp,b,3);
   PetscValidLogicalCollectiveReal(ksp,c,4);
   PetscValidLogicalCollectiveReal(ksp,d,5);
-  ierr = PetscTryMethod(ksp,"KSPChebychevSetEstimateEigenvalues_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPChebychevRNSetEstimateEigenvalues_C",(KSP,PetscReal,PetscReal,PetscReal,PetscReal),(ksp,a,b,c,d));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -290,9 +290,9 @@ PetscErrorCode KSPSetFromOptions_ChebychevRN(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP ChebychevRN Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_chebychev_global_reduction_redundant_number","Number of redundant vecs used in VecNorm/VecDot","KSPChebychevGlobalReductionRedundantSetNumber",cheb->nsubcomm,&cheb->nsubcomm,0);CHKERRQ(ierr);
-	ierr = PetscOptionsRealArray("-ksp_chebychev_eigenvalues","extreme eigenvalues","KSPChebychevSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
-  ierr = PetscOptionsRealArray("-ksp_chebychev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebychev eigenvalue bounds","KSPChebychevSetEstimateEigenvalues",tform,&four,&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPChebychevSetEstimateEigenvalues(ksp,tform[0],tform[1],tform[2],tform[3]);CHKERRQ(ierr);}
+	ierr = PetscOptionsRealArray("-ksp_chebychev_eigenvalues","extreme eigenvalues","KSPChebychevRNSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
+  ierr = PetscOptionsRealArray("-ksp_chebychev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebychev eigenvalue bounds","KSPChebychevRNSetEstimateEigenvalues",tform,&four,&flg);CHKERRQ(ierr);
+  if (flg) {ierr = KSPChebychevRNSetEstimateEigenvalues(ksp,tform[0],tform[1],tform[2],tform[3]);CHKERRQ(ierr);}
   if (cheb->kspest) {
     /* Mask the PC so that PCSetFromOptions does not do anything */
     ierr = KSPSetPC(cheb->kspest,cheb->pcnone);CHKERRQ(ierr);
@@ -517,8 +517,8 @@ PetscErrorCode KSPDestroy_ChebychevRN(KSP ksp)
 	}
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevRNSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevRNSetEstimateEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
