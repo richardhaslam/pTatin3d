@@ -722,7 +722,7 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 #define __FUNCT__ "perform_viscous_solve"
 PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 {
-	Mat            B;
+	Mat            A,B;
 	Vec            x,y;
 	DM             da;
 	PetscScalar    min,max;
@@ -732,6 +732,9 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscInt       ii,iterations;
 	KSP            ksp;
 	PetscViewer    monviewer;
+	MatStokesMF    StkCtx;
+	MatA11MF       A11Ctx;
+	PetscBool      use_mf_A;
 	PetscErrorCode ierr;
 	
 	
@@ -743,6 +746,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	
 	/* create the assembled operator */
 	da = user->dav;
+	
 	
 	/* assembled matrix */
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
@@ -761,9 +765,22 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+
+	use_mf_A = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mf_A11",&use_mf_A,PETSC_NULL);CHKERRQ(ierr);
+	if (use_mf_A) {
+		ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
+		ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
+		ierr = MatCopy_StokesMF_A11MF(StkCtx,&A11Ctx);CHKERRQ(ierr);
+		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&A);CHKERRQ(ierr);
+	} else {
+		A = B;
+		ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+	}
+	
 	
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetOperators(ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 	ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -801,7 +818,12 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	ierr = VecDestroy(&y);CHKERRQ(ierr);
+	ierr = MatDestroy(&A);CHKERRQ(ierr);
 	ierr = MatDestroy(&B);CHKERRQ(ierr);
+	if (use_mf_A) {
+		ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+		ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
+	}
 	
 	PetscFunctionReturn(0);
 }
