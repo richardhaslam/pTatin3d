@@ -18,7 +18,8 @@ TATIN_MODEL_DIR = \
 	delamination \
 	riftrh \
 	geomod2008 \
-	fault_fold_plastic
+	fault_fold_plastic \
+	zagros_viscous
 
 
 ## DONT NOT EDIT LINES BELOW
