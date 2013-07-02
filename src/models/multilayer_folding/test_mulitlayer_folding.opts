@@ -47,7 +47,7 @@
 -model_zagros_viscous_bc_type 1                              
 -mx 64
 -my 64
--ptatin_model mulitlayer_folding
+-ptatin_model multilayer_folding
 -nsteps 10000
 -output_frequency 1
 -output_path test-mulitlayer_folding
