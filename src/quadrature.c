@@ -190,7 +190,7 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	PetscErrorCode ierr;
 	
   PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"SurfaceQuadratureCreate:\n");
+	//PetscPrintf(PETSC_COMM_WORLD,"SurfaceQuadratureCreate:\n");
 	
 	ElementTypeCreate_Q2(&e,3);
 	quadrature->e       = e;
@@ -199,8 +199,8 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	
 	quadrature->nfaces = nfaces;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQuadrature]: attributing %d edge elements \n", nfaces );
-	PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQPointCoefficient]: attributing %d surface quadrature points \n", nfaces*quadrature->ngp );
+	//PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQuadrature]: attributing %d edge elements \n", nfaces );
+	//PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQPointCoefficient]: attributing %d surface quadrature points \n", nfaces*quadrature->ngp );
 	if (nfaces != 0) {
 		ierr = PetscMalloc( sizeof(PetscInt)*nfaces, &quadrature->element_list);CHKERRQ(ierr);
 	} else {
