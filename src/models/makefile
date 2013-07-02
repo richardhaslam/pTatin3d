@@ -19,7 +19,7 @@ TATIN_MODEL_DIR = \
 	riftrh \
 	geomod2008 \
 	fault_fold_plastic \
-	zagros_viscous
+	multilayer_folding
 
 
 ## DONT NOT EDIT LINES BELOW
