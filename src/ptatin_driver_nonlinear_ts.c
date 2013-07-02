@@ -199,11 +199,12 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	PetscInt       k,lmx,lmy,lmz,si,sj,sk;
 	PetscInt       nels,nen;
 	const PetscInt *els;
-	PetscMPIInt    rank;
+	PetscMPIInt    rank,size;
 	
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 	
 	/* Report mesh sizes */
 	for (k=0; k<nlevels; k++) {
@@ -211,6 +212,7 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 		PetscPrintf(PETSC_COMM_WORLD,"         level [%2D]: global Q2 elements (%D x %D x %D) \n", k,lmx,lmy,lmz );
 	}		
 	
+	/*
 	for (k=0; k<nlevels; k++) {
 		
 		ierr = DMDAGetElements_pTatinQ2P1(dav_hierarchy[k],&nels,&nen,&els);CHKERRQ(ierr);
@@ -219,7 +221,8 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 			PetscPrintf(PETSC_COMM_SELF,"[r%4D]: level [%2D]: local Q2 elements  (%D x %D x %D) \n", rank, k,lmx,lmy,lmz );
 		}
 	}
-	
+	*/
+	/*
 	for (k=0; k<nlevels; k++) {
 		ierr = DMDAGetElements_pTatinQ2P1(dav_hierarchy[k],&nels,&nen,&els);CHKERRQ(ierr);
 		
@@ -231,7 +234,35 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 			PetscPrintf(PETSC_COMM_SELF,"[r%4D]: level [%2D]: element range [%D - %D] x [%D - %D] x [%D - %D] \n", rank, k,si,si+lmx-1,sj,sj+lmy-1,sk,sk+lmz-1 );
 		}
 	}
+	*/
 	
+	for (k=0; k<nlevels; k++) {
+		PetscInt mp,np,pp,*_mx,*_my,*_mz,ii,jj,kk;
+		
+		ierr = DMDAGetOwnershipRangesElementQ2(dav_hierarchy[k],&mp,&np,&pp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&_mx,&_my,&_mz);CHKERRQ(ierr);
+
+		PetscPrintf(PETSC_COMM_WORLD,"level [%2D]: [total size %4D]: element range I [ ", k,size );
+		for (ii=0; ii<mp; ii++) { 
+			PetscPrintf(PETSC_COMM_WORLD,"%4D", _mx[ii] );
+			if (ii != mp-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
+		}PetscPrintf(PETSC_COMM_WORLD," ]\n");
+
+		PetscPrintf(PETSC_COMM_WORLD,"                               element range J [ ");
+		for (jj=0; jj<np; jj++) { 
+			PetscPrintf(PETSC_COMM_WORLD,"%4D", _my[jj] );
+			if (jj != np-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
+		}PetscPrintf(PETSC_COMM_WORLD," ]\n");
+
+		PetscPrintf(PETSC_COMM_WORLD,"                               element range K [ ");
+		for (kk=0; kk<pp; kk++) { 
+			PetscPrintf(PETSC_COMM_WORLD,"%4D", _mz[kk] );
+			if (kk != pp-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
+		}PetscPrintf(PETSC_COMM_WORLD," ]\n");
+		
+		ierr = PetscFree(_mx);CHKERRQ(ierr);
+		ierr = PetscFree(_my);CHKERRQ(ierr);
+		ierr = PetscFree(_mz);CHKERRQ(ierr);
+	}
 	PetscFunctionReturn(0);
 }
 
@@ -670,6 +701,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	RheologyType     init_rheology_type;
 	PetscBool        monitor_stages = PETSC_FALSE;
 	PetscBool        activate_quasi_newton_coord_update = PETSC_FALSE;
+	DataBucket       materialpoint_db;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
@@ -719,7 +751,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	//ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
@@ -754,6 +786,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	if (active_energy) {
 		ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 	}
+	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
