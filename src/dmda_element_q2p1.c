@@ -94,7 +94,7 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
 	
 	cntx = cnty = cntz = 0;
@@ -275,7 +275,7 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
 	}
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	/*PetscPrintf(PETSC_COMM_SELF,"[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
 	
 	cntx = cnty = cntz = 0;
@@ -328,8 +328,8 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	PetscFunctionBegin;
 	/* create file name */
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	MPI_Comm_size( comm, &nproc );
-	MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_size( comm, &nproc );
+	ierr = MPI_Comm_rank( comm, &rank );
 	
 	ierr = DMDAGetInfo( da, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(da,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
@@ -353,14 +353,14 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	ierr = PetscMalloc( sizeof(PetscInt)*(pP+1), &lmz );CHKERRQ(ierr);
 	
 	if (dim >= 1) {
-		MPI_Allgather ( &esi, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &esi, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			olx[i] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &mx, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &mx, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
@@ -369,14 +369,14 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	}
 	
 	if (dim >= 2 ) {
-		MPI_Allgather ( &esj, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &esj, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			oly[j] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &my, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &my, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
@@ -385,14 +385,14 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	}
 	
 	if (dim == 3 ) {
-		MPI_Allgather ( &esk, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &esk, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
 			olz[k] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &mz, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &mz, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
@@ -431,7 +431,7 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	int rank;
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=2) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 2 for Q2");
@@ -556,7 +556,7 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
 	int rank;
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=0) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 0 for P0 with multi-dofs");
@@ -637,11 +637,11 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
 	ierr = DMDAGetInfo(dm, 0, 0,0,0, 0,0,0, &dof,&sw, 0,0,0, 0);CHKERRQ(ierr);
   
   if (sw == 2) {
-    if (!beenHereQ2) { PetscPrintf(PETSC_COMM_WORLD,"ASSUMING stencil width=2 implies Q2 basis...\n"); }
+    //if (!beenHereQ2) { PetscPrintf(PETSC_COMM_WORLD,"ASSUMING stencil width=2 implies Q2 basis...\n"); }
     ierr = DMDAGetElements_DA_Q2(dm,nel,nen,e);CHKERRQ(ierr);
     beenHereQ2 = 1;
   } else if (sw == 0) {
-    if (!beenHereP0) { PetscPrintf(PETSC_COMM_WORLD,"ASSUMING stencil width=0 implies P0 basis...\n"); }
+    //if (!beenHereP0) { PetscPrintf(PETSC_COMM_WORLD,"ASSUMING stencil width=0 implies P0 basis...\n"); }
     ierr = DMDAGetElements_DA_P1(dm,nel,nen,e);CHKERRQ(ierr);
     beenHereP0 = 1;
   } else {
