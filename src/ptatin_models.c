@@ -445,7 +445,7 @@ extern PetscErrorCode pTatinModelRegister_Delamination(void);
 extern PetscErrorCode pTatinModelRegister_Riftrh(void);
 extern PetscErrorCode pTatinModelRegister_GeoMod2008(void);
 extern PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void);
-extern PetscErrorCode pTatinModelRegister_ZagrosViscousPlastic(void);
+extern PetscErrorCode pTatinModelRegister_ZagrosViscous(void);
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
 PetscErrorCode pTatinModelRegisterAll(void)
@@ -473,7 +473,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
     ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
     ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
     ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_ZagrosViscousPlastic();CHKERRQ(ierr);  
+    ierr = pTatinModelRegister_ZagrosViscous();CHKERRQ(ierr);  
     
 	PetscFunctionReturn(0);
 }
