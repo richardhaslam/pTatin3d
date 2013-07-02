@@ -241,19 +241,19 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 		
 		ierr = DMDAGetOwnershipRangesElementQ2(dav_hierarchy[k],&mp,&np,&pp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&_mx,&_my,&_mz);CHKERRQ(ierr);
 
-		PetscPrintf(PETSC_COMM_WORLD,"level [%2D]: [total size %4D]: element range I [ ", k,size );
+		PetscPrintf(PETSC_COMM_WORLD,"level [%2D]: [total cores %4D]: element range I [ ", k,size );
 		for (ii=0; ii<mp; ii++) { 
 			PetscPrintf(PETSC_COMM_WORLD,"%4D", _mx[ii] );
 			if (ii != mp-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
 		}PetscPrintf(PETSC_COMM_WORLD," ]\n");
 
-		PetscPrintf(PETSC_COMM_WORLD,"                               element range J [ ");
+		PetscPrintf(PETSC_COMM_WORLD,"                                element range J [ ");
 		for (jj=0; jj<np; jj++) { 
 			PetscPrintf(PETSC_COMM_WORLD,"%4D", _my[jj] );
 			if (jj != np-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
 		}PetscPrintf(PETSC_COMM_WORLD," ]\n");
 
-		PetscPrintf(PETSC_COMM_WORLD,"                               element range K [ ");
+		PetscPrintf(PETSC_COMM_WORLD,"                                element range K [ ");
 		for (kk=0; kk<pp; kk++) { 
 			PetscPrintf(PETSC_COMM_WORLD,"%4D", _mz[kk] );
 			if (kk != pp-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
