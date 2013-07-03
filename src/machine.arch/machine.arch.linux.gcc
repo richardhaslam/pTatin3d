@@ -4,9 +4,9 @@
 #    Compiler: gcc,gfortran
 #
 
-export TATIN_CFLAGS_DEBUG	= -std=gnu99 -O0 -g -fno-nested-functions -Wall -Wno-unused-variable
-export TATIN_CFLAGS_OPT_a	= -std=gnu99 -O2 -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_OPT_b	= -std=gnu99 -O3 -Wstrict-aliasing -fstrict-aliasing -funroll-loops -mtune=native -march=native -funroll-loops -ffast-math
+export TATIN_CFLAGS_DEBUG	= -std=gnu99 -fgnu89-inline -O0 -g -Wall -Wno-unused-variable
+export TATIN_CFLAGS_OPT_a	= -std=gnu99 -fgnu89-inline -O2 -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_OPT_b	= -std=gnu99 -fgnu89-inline -O3 -Wstrict-aliasing -fstrict-aliasing -funroll-loops -mtune=native -march=native -funroll-loops -ffast-math
 
 export TATIN_FFLAGS_DEBUG	= -O0 -g -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
