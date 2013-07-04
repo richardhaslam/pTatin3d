@@ -950,7 +950,7 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_PVTS(DM dau,const int nvars,cons
 	int t;
 	
 	PetscFunctionBegin;
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
@@ -1021,7 +1021,7 @@ PetscErrorCode pTatinOutputParaViewMarkerFields(DM pack,DataBucket material_poin
 	
 	PetscFunctionBegin;
 
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {

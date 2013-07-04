@@ -153,6 +153,7 @@ void pTatinGenerateFormattedTimestamp(char date_time[])
 void FileExists(const char fname[],int *exists)
 {
 	FILE *file = NULL;
+	int ierr;
 	
 	file = fopen(fname, "r");
 	
@@ -162,7 +163,7 @@ void FileExists(const char fname[],int *exists)
 	} else {
 		*exists = 0;
 	}
-	MPI_Barrier(PETSC_COMM_WORLD);
+	ierr = MPI_Barrier(PETSC_COMM_WORLD);
 }
 
 void FileExistsRank(MPI_Comm comm,const char fname[],int *exists)
@@ -170,10 +171,10 @@ void FileExistsRank(MPI_Comm comm,const char fname[],int *exists)
 	int   rank,size;
 	char  fname_rank[1024];
 	FILE  *file = NULL;
-
+	int ierr;
 	
-	MPI_Comm_size(comm,&size);
-	MPI_Comm_rank(comm,&rank);
+	ierr = MPI_Comm_size(comm,&size);
+	ierr = MPI_Comm_rank(comm,&rank);
 	if (size == 1) {
 		sprintf(fname_rank,"%s",fname);
 	} else {
@@ -188,7 +189,7 @@ void FileExistsRank(MPI_Comm comm,const char fname[],int *exists)
 	} else {
 		*exists = 0;
 	}
-	MPI_Barrier(PETSC_COMM_WORLD);
+	ierr = MPI_Barrier(PETSC_COMM_WORLD);
 }
 
 int StringEmpty(const char string[])
@@ -211,7 +212,7 @@ void ptatin_RandomSetSeedRank(MPI_Comm comm)
 {
 	int rank,ierr;
 	
-	MPI_Comm_rank(comm,&rank);
+	ierr = MPI_Comm_rank(comm,&rank);
 	srand((unsigned)rank);
 }
 

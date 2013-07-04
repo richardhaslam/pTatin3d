@@ -202,7 +202,7 @@ PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 	
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(((PetscObject)da)->comm,&rank);
+	ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetNeighbors(da,&neighborranks);CHKERRQ(ierr);
 	
 	neighborcount = 0;
