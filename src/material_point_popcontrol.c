@@ -356,7 +356,7 @@ PetscErrorCode apply_mppc_nn_patch(
 #if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
 #endif	
-	MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
+	ierr = MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
 	if (cells_needing_new_points_g==0) {
 		//		PetscPrintf(PETSC_COMM_WORLD,"!! No population control required <global>!!\n");
 		PetscFunctionReturn(0);
@@ -630,7 +630,7 @@ PetscErrorCode apply_mppc_nn_patch2(
 #if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
 #endif	
-	MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
+	ierr = MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
 	if (cells_needing_new_points_g==0) {
 		//		PetscPrintf(PETSC_COMM_WORLD,"!! No population control required <global>!!\n");
 		PetscFunctionReturn(0);
@@ -1420,7 +1420,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	}
 
 	/* check if we can exit early */
-	MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
+	ierr = MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
 	if (cells_needing_reassignment_g == 0) {
 #if (MPPC_LOG_LEVEL >= 1)
 		PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! No region re-assignment equired <global> !!\n");
@@ -1430,7 +1430,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	}
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %d cells <global> !!\n",cells_needing_reassignment_g);
-	MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );
+	ierr = MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %d points <global> !!\n",points_needing_reassignment_g);
 #endif	
 

@@ -68,7 +68,7 @@ PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 	
 	
 	PetscObjectGetComm( (PetscObject)da1, &comm );
-	MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_rank( comm, &rank );CHKERRQ(ierr);
 	
 	if( dim1 != dim2 ) {	PetscSynchronizedPrintf( comm, "[%d]: DA->dim are different { %d , %d } \n", dim1,dim2 );		*flg = PETSC_FALSE;	}
 	

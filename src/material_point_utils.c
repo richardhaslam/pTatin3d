@@ -461,7 +461,7 @@ PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointFie
 	
 	
 	/* write out the parallel information */
-	MPI_Comm_size(PETSC_COMM_WORLD,&nproc);
+	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 	for (i=0; i<nproc; i++) {
 		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i );
 		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
@@ -514,7 +514,7 @@ PetscErrorCode SwarmViewGeneric_ParaView(DataBucket db,const int nfields,const M
 		asprintf(&filename,"./%s",vtkfilename);
 	}
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (rank==0) {
 		ierr = SwarmViewGeneric_PVTUXML(nfields,list,prefix,filename);CHKERRQ(ierr);
 	}

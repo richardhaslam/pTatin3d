@@ -451,8 +451,8 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 	PetscFunctionBegin;
 	/* create file name */
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	MPI_Comm_size( comm, &nproc );
-	MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_size( comm, &nproc );CHKERRQ(ierr);
+	ierr = MPI_Comm_rank( comm, &rank );CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo( da, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
 	ierr = DMDAEGetOwnershipRanges(da,&pM,&pN,&pP,&olx,&oly,&olz,&lmx,&lmy,&lmz);CHKERRQ(ierr);
@@ -514,7 +514,7 @@ PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char 
 	PetscMPIInt    rank;
 	
 	PetscFunctionBegin;
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
@@ -590,7 +590,7 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const ch
 	} else {
 		asprintf(&filename,"./%s",vtkfilename);
 	}
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputMeshEnergyPVTS(daT,prefix,filename);CHKERRQ(ierr);
 	free(filename);
 	free(vtkfilename);

@@ -841,12 +841,12 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	PetscFunctionBegin;
 	
 	/* communucate */
-	MPI_Comm_size(((PetscObject)da)->comm,&size);
+	ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
 	if (size==1) {
 		PetscFunctionReturn(0);
 	}
 	
-	MPI_Comm_rank(((PetscObject)da)->comm,&rank);
+	ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 	
 	neighborcount  = de->n_neighbour_procs;
 	neighborranks2 = de->neighbour_procs;
@@ -862,7 +862,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
 	DataBucketGetSizes(db,&npoints,0,0);
 	
-	MPI_Allreduce(&npoints,&npoints_global_init,1,MPI_INT,MPI_SUM,de->comm);
+	ierr = MPI_Allreduce(&npoints,&npoints_global_init,1,MPI_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
 	
 	/* figure out how many points left processor */
 	ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
@@ -971,7 +971,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	ierr = DataExGetRecvData( de, &recv_length, (void**)&recv_data );CHKERRQ(ierr);
 	{
 		PetscInt totalsent;
-		MPI_Allreduce(&recv_length,&totalsent,1,MPIU_INT,MPI_SUM,de->comm);
+		ierr = MPI_Allreduce(&recv_length,&totalsent,1,MPIU_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  DataEx: total points sent = %d \n", totalsent);
 	}
 	
@@ -1070,7 +1070,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	
 	
 	DataBucketGetSizes(db,&npoints,0,0);
-	MPI_Allreduce(&npoints,&npoints_global_fin,1,MPI_INT,MPI_SUM,de->comm);
+	ierr = MPI_Allreduce(&npoints,&npoints_global_fin,1,MPI_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  SwarmUpdatePosition_GENERIC(Communication): num. points global ( init. = %d : final = %d )\n", npoints_global_init,npoints_global_fin);
 	ierr = PetscFree(data_p);CHKERRQ(ierr);
 	

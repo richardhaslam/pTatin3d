@@ -157,7 +157,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
 	
 	cntx = cnty = cntz = 0;
@@ -308,7 +308,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetCornersElement(DM da,PetscInt *sei,Pet
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	/*PetscPrintf(PETSC_COMM_SELF,"[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
 	
 	cntx = cnty = cntz = 0;
@@ -360,8 +360,8 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	PetscFunctionBegin;
 	/* create file name */
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	MPI_Comm_size( comm, &nproc );
-	MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_size( comm, &nproc );CHKERRQ(ierr);
+	ierr = MPI_Comm_rank( comm, &rank );CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo( da, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(da,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
@@ -385,14 +385,14 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	ierr = PetscMalloc( sizeof(PetscInt)*(pP+1), &lmz );CHKERRQ(ierr);
 	
 	if (dim >= 1) {
-		MPI_Allgather ( &esi, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &esi, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			olx[i] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &mx, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &mx, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		j = k = 0;
 		for( i=0; i<pM; i++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
@@ -401,14 +401,14 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	}
 	
 	if (dim >= 2 ) {
-		MPI_Allgather ( &esj, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &esj, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
 			oly[j] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &my, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &my, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = k = 0;
 		for( j=0; j<pN; j++ ) {
 			PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
@@ -417,14 +417,14 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	}
 	
 	if (dim == 3 ) {
-		MPI_Allgather ( &esk, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &esk, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
 			olz[k] = tmp[procid];
 		}
 		
-		MPI_Allgather ( &mz, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );
+		ierr = MPI_Allgather ( &mz, 1, MPIU_INT, tmp, 1, MPIU_INT, comm );CHKERRQ(ierr);
 		i = j = 0;
 		for( k=0; k<pP; k++ ) {
 			PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
@@ -462,7 +462,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscI
 	int rank;
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=1) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");
@@ -559,7 +559,7 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 	int rank;
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=1) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");

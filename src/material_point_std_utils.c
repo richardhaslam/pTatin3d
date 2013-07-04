@@ -55,11 +55,11 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 	DataField    PField;
 	long int     np_local, np_global, max_local, max;
 	int          rank,p,L;
-	
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(comm,&rank);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
 	DataFieldGetAccess(PField);
 	DataFieldVerifyAccess( PField,sizeof(MPntStd));
@@ -76,14 +76,14 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 			max_local = marker->pid;
 		}
 	}
-	MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );
+	ierr = MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);
 	max = max + 1;
 	
 	/* give particles a unique identifier */
 	np_local = (end_pid-start_pid);
 
-	MPI_Scan( &np_local, &np_global, 1, MPI_LONG, MPI_SUM, comm );
+	ierr = MPI_Scan( &np_local, &np_global, 1, MPI_LONG, MPI_SUM, comm );CHKERRQ(ierr);
 	//printf("rank %d : np_local = %ld, np_global = %ld \n",rank,np_local,np_global);
 	for (p=start_pid; p<end_pid; p++) {
 		MPntStd *marker;
@@ -852,6 +852,7 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 	FILE *vtk_fp;
 	PetscInt i;
 	char *sourcename;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
@@ -888,7 +889,7 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 	///////////////
 	
 	/* write out the parallel information */
-	MPI_Comm_size(PETSC_COMM_WORLD,&nproc);
+	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 	for (i=0; i<nproc; i++) {
 		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i );
 		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
@@ -940,7 +941,7 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 		asprintf(&filename,"./%s",vtkfilename);
 	}
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (rank==0) {
 		ierr = __SwarmView_MPntStd_PVTU( prefix, filename );CHKERRQ(ierr);
 	}

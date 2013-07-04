@@ -76,7 +76,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	}
 	
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_rank( comm, &rank );CHKERRQ(ierr);
 	if( rank != 0 ) { PetscFunctionReturn(0); }
 	
 	

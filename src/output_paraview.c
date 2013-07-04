@@ -56,9 +56,10 @@ PetscErrorCode pTatinGenerateParallelVTKName(const char prefix[],const char suff
 {
 	char *nn;
 	int rank;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (prefix!=NULL) {
 		asprintf(&nn,"%s-subdomain%1.5d.%s",prefix,rank,suffix);
 	} else {
@@ -91,10 +92,11 @@ PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 {
 	PetscMPIInt rank;
 	FILE *fp;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	/* only master generates this file */
-	MPI_Comm_rank( PETSC_COMM_WORLD, &rank );
+	ierr = MPI_Comm_rank( PETSC_COMM_WORLD, &rank );CHKERRQ(ierr);
 	if( rank != 0 ) { PetscFunctionReturn(0); }
 	
 	fp = fopen(pvdfilename,"w");
@@ -123,10 +125,11 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	int key_L;
 	char key[] = "</Collection>";
 	char *copy,*tmp;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	/* only master generates this file */
-	MPI_Comm_rank( PETSC_COMM_WORLD, &rank );
+	ierr = MPI_Comm_rank( PETSC_COMM_WORLD, &rank );CHKERRQ(ierr);
 	if( rank != 0 ) { PetscFunctionReturn(0); }
 	
 	
