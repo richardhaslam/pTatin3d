@@ -104,16 +104,25 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 \shellcmd{svn co svn+ssh://USERNAME@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d}
 
 \section{Installation}
-Upon successful installation of PETSc, switch into the source directory
+Upon successful installation of PETSc, switch into the source directory of {\ptat}
 \shellcmd{cd ptatin3d/src}
-and type \shellcmd{make all}
+In this directory, there is a file called
+\shellcmd{makefile.arch}
+This file contains the specific compiler optimization flags for your particular operating system / compiler.
+By default, the \unix{makefile.arch} provided for you is tailored for Mac OSX. 
+If you are trying to install {\ptat} on another system,
+consult the directory
+\shellcmd{ptatin3d/src/machine.arch}
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). 
+
+Once the \unix{makefile.arch} is adjusted for your operating system, type \shellcmd{make all}
 \begin{itemize}
 	\item Compiling with a particular PETSc build
 	\shellcmd{make all PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
 	\item Compiling with a particular compilation flags (C and Fortran)
 	\shellcmd{make all TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
 \end{itemize}
-The following targets for make exist (all, libs, test, models, drivers, tests)
+The following targets for make exist (all, libs,models, drivers, tests)
 
 
 \newpage
