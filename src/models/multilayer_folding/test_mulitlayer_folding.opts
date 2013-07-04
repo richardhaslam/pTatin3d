@@ -2,7 +2,7 @@
 -A11_operator_type 0,1,1,1,1
 -coefficient_projection_type -1
 -checkpoint_every 1
--dau_nlevels 4
+-dau_nlevels 2
 -dt_max 0.05
 #-constant_dt 0.05
 -fieldsplit_p_ksp_type preonly
@@ -34,19 +34,25 @@
 #-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
--model_zagros_viscous_Lx 12
--model_zagros_viscous_Ly 6
--model_zagros_viscous_amp_factor 0.05 #from the layer thickness
--model_zagros_viscous_interface_heights 0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0
--model_zagros_viscous_layer_eta 0.0025,1.0,0.0025,1.0,0.0025,1.0,0.0025,1.0
--model_zagros_viscous_layer_res_k 5,5,5,5,5,5,5,5
--model_zagros_viscous_layer_rho 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
--model_zagros_viscous_n_interfaces 9
--model_zagros_viscous_vx 0.005
--model_zagros_viscous_exx -0.2
--model_zagros_viscous_bc_type 1                              
+-model_multilayer_folding_Lx 12
+-model_multilayer_folding_Ly 6
+-model_multilayer_folding_amp_factor 0.05 #from the layer thickness
+-model_multilayer_folding_interface_heights 0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0
+-model_multilayer_folding_layer_eta 0.0025,1.0,0.0025,1.0,0.0025,1.0,0.0025,1.0
+-model_multilayer_folding_layer_res_k 5,5,5,5,5,5,5,5
+-model_multilayer_folding_layer_rho 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+-model_multilayer_folding_n_interfaces 9
+-model_multilayer_folding_vx 0.005
+-model_multilayer_folding_exx -0.2
+-model_multilayer_folding_bc_type 1                              
 -mx 64
 -my 64
+
+# low resolution test
+#-mx 10
+#-my 10
+#-model_multilayer_folding_layer_res_k 2,2,2,2,2,2,2,2
+
 -ptatin_model multilayer_folding
 -nsteps 10000
 -output_frequency 1
@@ -56,13 +62,12 @@
 -pc_type fieldsplit
 -snes_type ksponly
 -stk_velocity_da_mat_type baij
--stk_velocity_da_refine_hierarchy_x 1,1,1
--stk_velocity_da_refine_hierarchy_y 2,4,1
--stk_velocity_da_refine_hierarchy_z 1,2,1
+
+-stk_velocity_da_refine_hierarchy_x 2,2
+-stk_velocity_da_refine_hierarchy_y 2,2
+-stk_velocity_da_refine_hierarchy_z 1,1
+
 # dump the geometric multi-grid mesh hierarchy 
--stk_velocity_da_view_hierarchy
-#-restart
-#-restart_directory test-basin_comp
-#-restart_prefix step000001
+#-stk_velocity_da_view_hierarchy
 
 #End of PETSc Option Table entries
