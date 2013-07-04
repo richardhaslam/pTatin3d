@@ -487,7 +487,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d( DM da, PetscInt 
 	
 	PetscFunctionBegin;
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	MPI_Comm_size( comm, &size );
+	ierr = MPI_Comm_size( comm, &size );CHKERRQ(ierr);
 	if(size==1) {
 		ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( da, startK, endK );CHKERRQ(ierr);
 	}
@@ -508,7 +508,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt 
 	
 	PetscFunctionBegin;
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	MPI_Comm_size( comm, &size );
+	ierr = MPI_Comm_size( comm, &size );CHKERRQ(ierr);
 	if(size==1) {
 		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( da, startJ, endJ );CHKERRQ(ierr);
 	}
