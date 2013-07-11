@@ -60,9 +60,12 @@
 
 //#define NO_LOWORDER_OPERATORS
 #define ONEPOINTQ_LOWORDER_OPERATORS
+//#define ONEPOINTQ_DIAG_LOWORDER_OPERATORS
 //#define Q1GEOM_LOWORDER_OPERATORS
 //#define AFFINEGEOM_LOWORDER_OPERATORS
 //
+
+
 
 /* --- A11 --- */
 #undef __FUNCT__
@@ -198,6 +201,9 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 #endif
 #ifdef ONEPOINTQ_LOWORDER_OPERATORS
 		P3D_evaluate_geometry_elementQ2_1gp(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+#endif
+#ifdef ONEPOINTQ_DIAG_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ2_1gp_diagonal(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 #endif
 #ifdef Q1GEOM_LOWORDER_OPERATORS
 		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
@@ -441,6 +447,9 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 #endif
 #ifdef ONEPOINTQ_LOWORDER_OPERATORS
 		P3D_evaluate_geometry_elementQ2_1gp(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+#endif
+#ifdef ONEPOINTQ_DIAG_LOWORDER_OPERATORS
+		P3D_evaluate_geometry_elementQ2_1gp_diagonal(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 #endif
 #ifdef Q1GEOM_LOWORDER_OPERATORS
 		P3D_evaluate_geometry_elementQ1_appliedQ2(ngp,detJ, GNIQ1, elcoords, GNI,dNudx,dNudy,dNudz );
