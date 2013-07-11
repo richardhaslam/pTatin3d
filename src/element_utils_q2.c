@@ -449,3 +449,56 @@ void P3D_evaluate_geometry_elementQ2_1gp(
 	
 	// TOTAL = 18 + 14 + 58 + 15 = 105
 }
+
+void P3D_evaluate_geometry_elementQ2_1gp_diagonal(
+																				 PetscReal GNI_centre[3][NPE],
+																				 PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
+																				 PetscReal detJ[],
+																				 PetscReal dNudx[][NPE],
+																				 PetscReal dNudy[][NPE],
+																				 PetscReal dNudz[][NPE] )
+{
+	PetscInt k,p;
+	PetscReal t4, t6, t8, t10, t12, t14, t17;
+	PetscReal J[3],iJ[3],detJp;
+	PetscReal xc;
+	PetscReal yc;
+	PetscReal zc;
+	
+	J[0] = J[1] = J[2] = 0.0;
+
+	for (k=0; k<NPE; k++) {
+		PetscReal xc = el_coords[3*k+0];
+		PetscReal yc = el_coords[3*k+1];
+		PetscReal zc = el_coords[3*k+2];
+		
+		J[0] += GNI_centre[0][k] * xc ;
+		J[1] += GNI_centre[1][k] * yc ;
+		J[2] += GNI_centre[2][k] * zc ;
+	}
+	/* flops = NPE * 3 */
+	
+	detJp = J[0]*J[1]*J[2];
+	/* flops = 2 */
+	
+	iJ[0] = 1.0/J[0];
+	iJ[1] = 1.0/J[1];
+	iJ[2] = 1.0/J[2];
+	/* flops = 3 */
+	
+	for (p=0; p<nqp; p++) {
+		detJ[p] = detJp;
+		
+		/* shape function derivatives */
+		for (k=0; k<NPE; k++) {
+			dNudx[p][k] = iJ[0]*GNI[p][0][k];
+			
+			dNudy[p][k] =                         iJ[1]*GNI[p][1][k];
+			
+			dNudz[p][k] =                                                 iJ[2]*GNI[p][2][k];
+		}
+	}
+	/* flops = [NQP*NPE] * 3 */
+	
+	// TOTAL = NPE*3 + 2 + 3 + [NQP*NPE] * 3 = 2303
+}
