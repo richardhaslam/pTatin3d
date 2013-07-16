@@ -379,7 +379,6 @@ PetscErrorCode MultilayerFoldingRemeshingAccordingToTheInterfaces(DM dav, void *
 
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFoldingSetPerturbedInterfaces"
-//Perturbes the interfaces with a whitenoise
 
 PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 {
@@ -416,8 +415,10 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 	for (interf=1; interf<n_interfaces-1; interf++) {
 		jinter += 2*layer_res_j[interf-1];
 		//PetscPrintf(PETSC_COMM_WORLD,"kinter = %d (max=%d)\n", kinter,P-1 );
-		srand((rank+1)*(interf+1)+1);//The seed changes with the interface and the process.
-		
+        if (data->perturbation_type == 0)//Perturbes the interfaces with a whitenoise
+
+        {
+        srand((rank+1)*(interf+1)+1);//The seed changes with the interface and the process.		
 		if ( (jinter>=sj) && (jinter<sj+ny) ) {
 			/*Take the dominant wavelength of the viscous layer*/
 			if (data->eta[interf-1] < data->eta[interf]) {
@@ -434,6 +435,28 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 				
 			}
 		}
+        }else if (data->perturbation_type == 1)//Perturbes the interfaces with a coscos function
+        {
+        
+            if ( (jinter>=sj) && (jinter<sj+ny) ) {
+                /*Take the dominant wavelength of the viscous layer*/
+                if (data->eta[interf-1] < data->eta[interf]) {
+                    H = interface_heights[interf+1] - interface_heights[interf];
+                } else{
+                    H = (interface_heights[interf] - interface_heights[interf-1]);
+                }
+                //PetscPrintf(PETSC_COMM_WORLD,"kinter = %d H = %f\n", kinter,H );
+                for (i=si; i<si+nx; i++) {
+                    for (k=sk; k<sk+nz; k++) {
+                        double kx = 1.0,kz=1.0;
+                        pertu = cos(kx*LA_coord[k][jinter][i].x)*cos(kz*LA_coord[k][jinter][i].z);
+                        LA_coord[k][jinter][i].y += amp * H * pertu;
+                    }
+                    
+                }
+            }
+        }
+        
 	}
 	
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
