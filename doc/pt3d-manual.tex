@@ -484,6 +484,47 @@ To activate monitors which report CPU times on each mult-grid level, one must sp
 Note that if the values for \unix{-dau\_nlevels X} and \unix{-fieldsplit\_u\_pc\_mg\_levels X} do not match, logging will not be performed.
 
 
+\subsection{Understanding residuals}
+
+When solving linear problems, two types of residuals are important to monitor for both accuracy of the Stokes problem and efficiency of the solver.
+By default, all drivers report the Stokes residuals for the individual components of the residual associated with the $u,v,w$-momentum equations and the continuity equation. The complete residual associated with the residual of the full vector $(u,v,w,p)$ can be monitored using the flag
+\shellcmd{-ksp\_monitor}
+
+The residuals output to the screen will typically look like the following:
+\begingroup
+    \fontsize{6.5pt}{6.5pt}\selectfont
+	\begin{verbatim}
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 2.307691625955e-03, 0.000000000000e+00, 0.000000000000e+00 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.000000000000e+00 
+        1 KSP Residual norm 9.566218971472e-01 
+        2 KSP Residual norm 6.120179419948e-01 
+        3 KSP Residual norm 2.693954462485e-01 
+        4 KSP Residual norm 7.305148723409e-02 
+        5 KSP Residual norm 2.484961341074e-02 
+        6 KSP Residual norm 7.872576358279e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.931850895378e-07, 2.249650371310e-03, 1.931669353791e-07, 3.613480131486e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 9.383540923375e-01 
+        1 KSP Residual norm 2.353199854638e-01 
+        2 KSP Residual norm 6.233285019473e-02 
+        3 KSP Residual norm 2.466199083002e-02 
+        4 KSP Residual norm 6.082964600394e-03 
+  2 KSP Component U,V,W,P residual norm [ 2.862389390637e-05, 9.461315464033e-04, 2.873233657833e-05, 1.128984116051e-03 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.461862868221e+01 
+        1 KSP Residual norm 6.787824394358e-01 
+        2 KSP Residual norm 1.306125161069e-01 
+  3 KSP Component U,V,W,P residual norm [ 1.614279704240e-04, 4.795734857592e-04, 1.613914106944e-04, 8.488885268501e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 3.614067424860e+01 
+        1 KSP Residual norm 1.727513541857e+00 
+        2 KSP Residual norm 1.701193913599e-01 
+  4 KSP Component U,V,W,P residual norm [ 1.182053444264e-04, 2.177408865879e-04, 1.181950335293e-04, 3.963394470286e-04 ]
+	\end{verbatim}
+\endgroup
+The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the residuals of the Stokes problem, whilst the shorter lines under each instance of ``{\tt Residual norms for fieldsplit\_u\_ solve.}'' relate to the viscous block solver which is performed as the Stokes preconditioner is applied.
+
 
 \section{Geometry}
 
