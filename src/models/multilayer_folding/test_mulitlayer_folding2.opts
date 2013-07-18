@@ -60,10 +60,10 @@
 -ptatin_model multilayer_folding
 -nsteps 10000
 -output_frequency 1
--output_path /Users/marinec/test_multilayer_ptatin3d
+-output_path test_multilayer_ptatin3d
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
--pc_type field split
+-pc_type fieldsplit
 -snes_type ksponly
 -stk_velocity_da_mat_type baij
 
