@@ -2,7 +2,7 @@
 -A11_operator_type 0,1,1,1,1
 -coefficient_projection_type -1
 -checkpoint_every 1
--dau_nlevels 2
+-dau_nlevels 1
 -dt_max 0.05
 #-constant_dt 0.05
 -fieldsplit_p_ksp_type preonly
@@ -34,23 +34,38 @@
 #-ksp_monitor_true_residual
 -ksp_type fgmres
 -log_summary
--model_multilayer_folding_Lx 1000
+-model_multilayer_folding_Lx 750
 -model_multilayer_folding_Lz 500
--model_multilayer_folding_amp_factor 0.5 #from the layer thickness
+
+# 	perturbation types
+#  0: random noise 
+#  1: co and sinusoidal perturbation
+# 
+
+-model_multilayer_folding_perturbation_type 1
+-model_multilayer_folding_kx 0.2
+-model_multilayer_folding_kz 0.4
+-model_multilayer_folding_amp_factor 0.01 # from the layer thickness
+
 
 # Three layer model implies we need four interfaces
 -model_multilayer_folding_n_interfaces       4
--model_multilayer_folding_interface_heights  0.0,50.0,60,100.0
+-model_multilayer_folding_interface_heights  0.0,50.0,50.5,100.0
+
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
 -model_multilayer_folding_layer_eta     0.0025,1.0,0.0025
 -model_multilayer_folding_layer_res_j   2,1,2 
 -model_multilayer_folding_layer_rho     2.7,2.7,2.7
--mx 4
--mz 4
-
+-mx 10
+-mz 10
 -model_multilayer_folding_vx      0.005
 -model_multilayer_folding_exx     -0.2
--model_multilayer_folding_bc_type 1                              
+-model_multilayer_folding_vz	  0.005
+-model_multilayer_folding_ezz     -0.2
+-model_multilayer_folding_bc_type  1                              
+
+
+
 
 # low resolution test
 #-mx 10
@@ -58,7 +73,7 @@
 #-model_multilayer_folding_layer_res_k 2,2,2,2,2,2,2,2
 
 -ptatin_model multilayer_folding
--nsteps 10000
+-nsteps 3
 -output_frequency 1
 -output_path test_multilayer_ptatin3d
 -pc_fieldsplit_schur_factorization_type upper
@@ -67,9 +82,9 @@
 -snes_type ksponly
 -stk_velocity_da_mat_type baij
 
--stk_velocity_da_refine_hierarchy_x 2,2
--stk_velocity_da_refine_hierarchy_y 2,2
--stk_velocity_da_refine_hierarchy_z 1,1
+#-stk_velocity_da_refine_hierarchy_x 2,2
+#-stk_velocity_da_refine_hierarchy_y 2,2
+#-stk_velocity_da_refine_hierarchy_z 1,1
 
 # dump the geometric multi-grid mesh hierarchy 
 #-stk_velocity_da_view_hierarchy
