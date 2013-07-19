@@ -41,7 +41,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_multilayer_folding_n_interfaces)");
 	}
-	
+    
 	PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_Lx",&data->Lx,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_multilayer_folding_Lx)");
@@ -101,15 +101,21 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
     
 	data->bc_type           = 0; /* 0 use vx compression ; 1 use exx compression */
 	data->exx               = -1.0e-3;
-	data->vx_commpression   = 1.0;
+    data->ezz               = -1.0e-3;
+	data->vx_compression   = 1.0;
+    data->vz_compression   = 1.0;
 	data->perturbation_type = 0;
     
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_multilayer_folding_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_multilayer_folding_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
-	
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kx",&data->kx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kz",&data->kx,&flg);CHKERRQ(ierr);
+    
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_ezz",&data->ezz,&flg); CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Multilayer Folding\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e]\n", data->Lx,data->Lz,data->Ly );
@@ -140,7 +146,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 #define __FUNCT__ "BoundaryCondition_MultilayerFolding"
 PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
-	PetscReal         exx, zero = 0.0, vx_E=0.0, vx_W = 0.0;
+	PetscReal         ezz, exx, zero = 0.0, vx_E=0.0, vx_W = 0.0, vz_F = 0.0, vz_B = 0.0;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
@@ -148,8 +154,16 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	
 	
 	exx  = data->exx;
-	vx_E = -data->vx_commpression;
-	vx_W = data->vx_commpression;
+	ezz  = data->ezz;
+    vx_E = -data->vx_compression;
+    
+    
+    
+	vx_W = data->vx_compression;
+    vz_B = data->vz_compression; 
+    vz_F = -data->vz_compression;
+    
+    
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	
@@ -165,7 +179,7 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
      
      
      */
-        
+    
     
 	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -177,10 +191,12 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
 	} else if (data->bc_type == 1) {
 		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
-		ierr = DirichletBC_ApplyStrainRateExx(bclist,dav,exx);CHKERRQ(ierr);
-		
-		//ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
-	} else {
+        //	ierr = DirichletBC_ApplyStrainRateExx(bclist,dav,exx);CHKERRQ(ierr);
+        
+        ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
+        ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,ezz,2);CHKERRQ(ierr);
+        
+    } else {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type");
 	}
 	
@@ -192,9 +208,9 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	/* do nothing! */
 	
 	/* free slip lateral */
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-
+    //	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    //	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }
 
@@ -204,7 +220,7 @@ PetscErrorCode ModelApplyBoundaryCondition_MultilayerFolding(pTatinCtx c,void *c
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
 	PetscErrorCode  ierr;
-	PetscReal       exx;
+	PetscReal       exx, ezz;
 	BCList          bclist;
 	DM              dav;
 	
@@ -213,7 +229,7 @@ PetscErrorCode ModelApplyBoundaryCondition_MultilayerFolding(pTatinCtx c,void *c
 	
 	
 	exx = data->exx;
-	
+	ezz = data->ezz;
 	bclist = c->stokes_ctx->u_bclist;
 	dav    = c->stokes_ctx->dav;
 	ierr = BoundaryCondition_MultilayerFolding(dav,bclist,c,data);CHKERRQ(ierr);
@@ -339,8 +355,8 @@ PetscErrorCode MultilayerFoldingRemeshingAccordingToTheInterfaces(DM dav, void *
 		jinter_min = jinter_max;
 		jinter_max += 2*layer_res_j[interf];
         
-//		ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_min, kinter_min + 1, 1, &botinterface_da );CHKERRQ(ierr);
-//		ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max+1, 1, &topinterface_da );CHKERRQ(ierr);
+        //		ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_min, kinter_min + 1, 1, &botinterface_da );CHKERRQ(ierr);
+        //		ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max+1, 1, &topinterface_da );CHKERRQ(ierr);
         
         ierr = DMDACreate3dRedundant( dav, si,si+nx, jinter_min, jinter_min+1, sk, sk+nz, 1, &botinterface_da );CHKERRQ(ierr);
 		ierr = DMDACreate3dRedundant( dav, si,si+nx, jinter_max, jinter_max+1, sk, sk+nz, 1, &topinterface_da );CHKERRQ(ierr);
@@ -415,29 +431,33 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 	for (interf=1; interf<n_interfaces-1; interf++) {
 		jinter += 2*layer_res_j[interf-1];
 		//PetscPrintf(PETSC_COMM_WORLD,"kinter = %d (max=%d)\n", kinter,P-1 );
-        if (data->perturbation_type == 0)//Perturbes the interfaces with a whitenoise
-
-        {
-        srand((rank+1)*(interf+1)+1);//The seed changes with the interface and the process.		
-		if ( (jinter>=sj) && (jinter<sj+ny) ) {
-			/*Take the dominant wavelength of the viscous layer*/
-			if (data->eta[interf-1] < data->eta[interf]) {
-				H = interface_heights[interf+1] - interface_heights[interf];
-			} else{
-				H = (interface_heights[interf] - interface_heights[interf-1]);
-			}
-			//PetscPrintf(PETSC_COMM_WORLD,"kinter = %d H = %f\n", kinter,H );
-			for (i=si; i<si+nx; i++) {
-				for (k=sk; k<sk+nz; k++) {
-					pertu = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-					LA_coord[k][jinter][i].y += amp * H * pertu;
-				}
-				
-			}
-		}
-        }else if (data->perturbation_type == 1)//Perturbes the interfaces with a coscos function
-        {
         
+        
+        if (data->perturbation_type == 0)//Perturbes the interfaces with a whitenoise
+            
+        {
+            srand((rank+1)*(interf+1)+1);//The seed changes with the interface and the process.		
+            if ( (jinter>=sj) && (jinter<sj+ny) ) {
+                /*Take the dominant wavelength of the viscous layer*/
+                if (data->eta[interf-1] < data->eta[interf]) {
+                    H = interface_heights[interf+1] - interface_heights[interf];
+                } else{
+                    H = (interface_heights[interf] - interface_heights[interf-1]);
+                }
+                //PetscPrintf(PETSC_COMM_WORLD,"kinter = %d H = %f\n", kinter,H );
+                for (i=si; i<si+nx; i++) {
+                    for (k=sk; k<sk+nz; k++) {
+                        pertu = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+                        LA_coord[k][jinter][i].y += amp * H * pertu;
+                    }
+                    
+                }
+            }
+        }
+        
+        else if (data->perturbation_type == 1)//Perturbes the interfaces with a coscos function
+        {
+            
             if ( (jinter>=sj) && (jinter<sj+ny) ) {
                 /*Take the dominant wavelength of the viscous layer*/
                 if (data->eta[interf-1] < data->eta[interf]) {
@@ -667,7 +687,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
+    
 	PetscFunctionReturn(0);
 }
 
@@ -717,7 +737,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	 dy = Ly / ((PetscReal)my);
 	 dz = Lz / ((PetscReal)mz);
 	 */
-//	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, data->interface_heights[0],Lz);CHKERRQ(ierr);
+    //	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, data->interface_heights[0],Lz);CHKERRQ(ierr);
     
     ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
 	factor = 0.1;
@@ -849,6 +869,8 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    
+    
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	
 	{

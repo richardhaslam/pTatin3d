@@ -10,10 +10,13 @@ typedef struct {
 	PetscReal eta[100];
 	PetscReal rho[100];
 	PetscInt  bc_type, perturbation_type;
+	PetscReal ezz; 
 	PetscReal exx;
-	PetscReal vx_commpression;
+	PetscReal vx_compression;
+	PetscReal vz_compression;
 	PetscReal Lx, Lz, Ly;
     PetscReal amp;
+    PetscReal kx,kz; 
 } ModelMultilayerFoldingCtx;
 
 #endif
