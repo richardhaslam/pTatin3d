@@ -99,12 +99,17 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	data->Ly = data->interface_heights[ data->n_interfaces - 1 ];
 	
 	
-	data->bc_type           = 0; /* 0 use vx compression ; 1 use exx compression */
-	data->exx               = -1.0e-3;
-	data->ezz               = -1.0e-3;
+	/* initialize values */
+	data->bc_type           = 0; /* 0 use vx/vz compression ; 1 use exx/ezz compression */
 	data->vx_compression    = 1.0;
 	data->vz_compression    = 1.0;
+	data->exx               = -1.0e-3;
+	data->ezz               = -1.0e-3;
+
 	data->perturbation_type = 0;
+	data->kx                = 0.2;
+	data->kz                = 0.2;
+	data->A0                = 1.0e-2;
 	
 	/* parse from command line or input file */
 	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_multilayer_folding_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
@@ -113,11 +118,10 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kz",&data->kz,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_A0",&data->A0,&flg);CHKERRQ(ierr);
 	
-	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_exx",&data->exx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_ezz",&data->ezz,&flg); CHKERRQ(ierr); 
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_exx",&data->exx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_ezz",&data->ezz,&flg); CHKERRQ(ierr); 
 	
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Multilayer Folding\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e]\n", data->Lx,data->Ly,data->Lz );
