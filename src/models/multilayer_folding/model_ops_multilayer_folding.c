@@ -142,26 +142,11 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 #define __FUNCT__ "BoundaryCondition_MultilayerFolding"
 PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
-	PetscReal         ezz, exx, zero = 0.0, vx_E=0.0, vx_W = 0.0, vz_F = 0.0, vz_B = 0.0;
+	PetscReal         zero;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
-	exx  = data->exx;
-	ezz  = data->ezz;
-	vx_E = -data->vx_compression;
-	
-	
-	
-	vx_W = data->vx_compression;
-	vz_B = data->vz_compression; 
-	vz_F = -data->vz_compression;
-	
-	
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	
 	
 	/*          Boundary conditions 
@@ -172,40 +157,43 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	 West  Face                    // to ZOY at X = 0
 	 lateral face                  // to YOX at Z = 0 
 	 lateral face                  // to YOX at Z = K-1
-	 
-	 
-	 */
+	*/
 	
-	
-	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	
 	if (data->bc_type == 0) {
+		PetscReal vx_E=0.0,vx_W = 0.0,vz_F = 0.0,vz_B = 0.0;
+		
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
 		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
+		vx_E = -data->vx_compression;
+		vx_W =  data->vx_compression;
+		vz_B =  data->vz_compression; 
+		vz_F = -data->vz_compression;
 		
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
 	} else if (data->bc_type == 1) {
+		PetscReal ezz,exx;
+
 		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
-		//	ierr = DirichletBC_ApplyStrainRateExx(bclist,dav,exx);CHKERRQ(ierr);
-		
+		exx = data->exx;
+		ezz = data->ezz;
+
 		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
 		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,ezz,2);CHKERRQ(ierr);
-		
 	} else {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type");
 	}
 	
 	/* free slip south (base) */
+	zero = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
 	
 	
 	/* free surface north */
 	/* do nothing! */
-	
-	/* free slip lateral */
-	//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
