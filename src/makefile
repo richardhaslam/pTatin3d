@@ -199,6 +199,7 @@ tests: libs models
 	-@echo "*** Building tests ***"
 	@for t in ${TATIN_TESTS} ; do \
 		${MAKE} $${t}.o; \
+		-@rm -f $${t}.app; \
 		${MAKE} $${t}.app; \
 	done
 
@@ -210,9 +211,10 @@ models: base_objects libs
 
 drivers: libs models
 	-@echo ""
-	-@echo "*** Building pTatin executables ***"
+	-@echo "*** Building pTatin drivers ***"
 	@for t in ${TATIN_DRIVERS} ; do \
 		${MAKE} $${t}.o; \
+		rm -f $${t}.app; \
 		${MAKE} $${t}.app; \
 	done
 
