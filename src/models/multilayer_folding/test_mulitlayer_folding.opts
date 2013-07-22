@@ -49,9 +49,9 @@
 -mz 64
 
 # low resolution test
-#-mx 10
-#-mz 10
-#-model_multilayer_folding_layer_res_j 2,2,2,2,2,2,2,2
+-mx 10
+-mz 10
+-model_multilayer_folding_layer_res_j 2,2,2,2,2,2,2,2
 
 -ptatin_model multilayer_folding
 -nsteps 10000
