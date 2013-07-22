@@ -15,27 +15,33 @@
 
 -fieldsplit_u_mg_coarse_ksp_max_it 1000
 #-fieldsplit_u_mg_coarse_ksp_monitor_true_residual
--fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
--fieldsplit_u_mg_coarse_ksp_type cg
--fieldsplit_u_mg_coarse_pc_type  asm
--fieldsplit_u_mg_coarse_pc_asm_overlap 3
+#-fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
+#-fieldsplit_u_mg_coarse_ksp_type cg
+#-fieldsplit_u_mg_coarse_pc_type  asm
+#-fieldsplit_u_mg_coarse_pc_asm_overlap 3
+-fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_type lu
+
  
+#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_ksp_type chebychev
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
--fieldsplit_u_mg_levels_ksp_max_it 20
--fieldsplit_u_mg_levels_ksp_norm_type NONE
--fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_pc_type jacobi
--ksp_atol 1.0e-6
 
 ## MORE ROBUST ON DEFORMED MESHES? 
--fieldsplit_u_mg_levels_ksp_type cg
+-fieldsplit_u_mg_levels_ksp_max_it 8
+-fieldsplit_u_mg_levels_ksp_type fgmres
+
+-fieldsplit_u_ksp_rtol 1.0e-1
 
 #-ksp_monitor_true_residual
 -ksp_type fgmres
+-ksp_rtol 1.0e-5
 -log_summary
--model_multilayer_folding_Lx 750
--model_multilayer_folding_Lz 500
+-model_multilayer_folding_Lx 100.0e-2
+-model_multilayer_folding_Lz 100.0e-2
 
 # 	perturbation types
 #  0: random noise 
@@ -46,46 +52,39 @@
 -model_multilayer_folding_kx 0.2
 -model_multilayer_folding_kz 0.4
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
--model_multilayer_folding_A0 1; 
+-model_multilayer_folding_A0 0.01 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
 
 # Three layer model implies we need four interfaces
 -model_multilayer_folding_n_interfaces       4
--model_multilayer_folding_interface_heights  0.0,50.0,50.5,100.0
-
+-model_multilayer_folding_interface_heights  0.0e-2,50.0e-2,50.5e-2,100.0e-2
 
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
 -model_multilayer_folding_layer_eta     0.0025,1.0,0.0025
--model_multilayer_folding_layer_res_j   2,1,2 
--model_multilayer_folding_layer_rho     2.7,2.7,2.7
--mx 10
--mz 10
--model_multilayer_folding_vx      0.005
+-model_multilayer_folding_layer_res_j   6,2,6
+-model_multilayer_folding_layer_rho     0.0,0.0,0.0
+-mx 16
+-mz 16
+-model_multilayer_folding_vx       0.005
+-model_multilayer_folding_vz	     0.005
 -model_multilayer_folding_exx     -0.2
--model_multilayer_folding_vz	  0.005
 -model_multilayer_folding_ezz     -0.2
--model_multilayer_folding_bc_type  1                              
+-model_multilayer_folding_bc_type  1                             
 
-
-
-
-# low resolution test
-#-mx 10
-#-my 10
-#-model_multilayer_folding_layer_res_k 2,2,2,2,2,2,2,2
 
 -ptatin_model multilayer_folding
 -nsteps 3
 -output_frequency 1
--output_path /Users/marinec/test_multilayer_ptatin3d
+-output_path test_multilayer_ptatin3d
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -snes_type ksponly
--stk_velocity_da_mat_type baij
+-stk_velocity_da_mat_type aij
 
-#-stk_velocity_da_refine_hierarchy_x 2,2
-#-stk_velocity_da_refine_hierarchy_y 2,2
-#-stk_velocity_da_refine_hierarchy_z 1,1
+-dau_nlevels 2
+-stk_velocity_da_refine_hierarchy_x 4
+-stk_velocity_da_refine_hierarchy_y 2
+-stk_velocity_da_refine_hierarchy_z 4
 
 # dump the geometric multi-grid mesh hierarchy 
 #-stk_velocity_da_view_hierarchy
