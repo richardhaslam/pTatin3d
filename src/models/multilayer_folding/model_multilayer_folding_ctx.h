@@ -17,7 +17,9 @@ typedef struct {
 	PetscReal Lx, Lz, Ly;
     PetscReal amp;
     PetscReal kx,kz; 
+    PetscReal A0;
 } ModelMultilayerFoldingCtx;
 
 #endif
+
 

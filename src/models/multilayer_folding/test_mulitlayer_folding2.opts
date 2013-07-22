@@ -46,11 +46,12 @@
 -model_multilayer_folding_kx 0.2
 -model_multilayer_folding_kz 0.4
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
-
+-model_multilayer_folding_A0 1; 
 
 # Three layer model implies we need four interfaces
 -model_multilayer_folding_n_interfaces       4
 -model_multilayer_folding_interface_heights  0.0,50.0,50.5,100.0
+
 
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
 -model_multilayer_folding_layer_eta     0.0025,1.0,0.0025
@@ -75,7 +76,7 @@
 -ptatin_model multilayer_folding
 -nsteps 3
 -output_frequency 1
--output_path test_multilayer_ptatin3d
+-output_path /Users/marinec/test_multilayer_ptatin3d
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
