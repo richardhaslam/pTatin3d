@@ -127,19 +127,12 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD," Layer Depth Profile:\n");
-	//PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
-	//PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-	//PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
-	//PetscPrintf(PETSC_COMM_WORLD,"|\n");
-	//PetscPrintf(PETSC_COMM_WORLD,"-\n -\n  -\n   -\n    -\n");
-	
 	for (n=data->n_interfaces-1; n>=1; n--) {
 		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
 		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	}
-	//PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
 	
 	PetscFunctionReturn(0);
