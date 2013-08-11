@@ -40,8 +40,9 @@
 -ksp_type fgmres
 -ksp_rtol 1.0e-5
 -log_summary
--model_multilayer_folding_Lx 100.0e-2
--model_multilayer_folding_Lz 100.0e-2
+-model_multilayer_folding_Lx 1.0
+-model_multilayer_folding_Lz 1.0
+-model_multilayer_folding_L_char 100.0
 
 # 	perturbation types
 #  0: random noise 
@@ -49,32 +50,34 @@
 # 
 
 -model_multilayer_folding_perturbation_type 1
--model_multilayer_folding_kx 0.2
--model_multilayer_folding_kz 0.4
+-model_multilayer_folding_kx 0.3142
+-model_multilayer_folding_kz 0.7662
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
--model_multilayer_folding_A0 0.01 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
+-model_multilayer_folding_A0 0.5e-4 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
 
 # Three layer model implies we need four interfaces
 -model_multilayer_folding_n_interfaces       4
--model_multilayer_folding_interface_heights  0.0e-2,50.0e-2,50.5e-2,100.0e-2
+-model_multilayer_folding_interface_heights  0.0,50.0e-2,50.5e-2,1.0
 
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
 -model_multilayer_folding_layer_eta     0.0025,1.0,0.0025
 -model_multilayer_folding_layer_res_j   6,2,6
--model_multilayer_folding_layer_rho     0.0,0.0,0.0
+-model_multilayer_folding_layer_rho     0.0,0.0,0.0	
 -mx 16
 -mz 16
 -model_multilayer_folding_vx       0.005
 -model_multilayer_folding_vz	     0.005
--model_multilayer_folding_exx     -0.2
--model_multilayer_folding_ezz     -0.2
--model_multilayer_folding_bc_type  1                             
+-model_multilayer_folding_exx     -0.3e2
+-model_multilayer_folding_ezz     -0.1e2
+-model_multilayer_folding_bc_type  1         
+-constant_dt 5.0e-05                    
 
 
 -ptatin_model multilayer_folding
--nsteps 3
+-nsteps 5
 -output_frequency 1
--output_path test_multilayer_ptatin3d
+-checkpoint_every_nsteps 1
+-output_path /Users/marinec/test_multilayer_ptatin3d/lx50lz50
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
