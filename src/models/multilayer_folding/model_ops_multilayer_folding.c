@@ -117,6 +117,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kx",&data->kx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kz",&data->kz,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_A0",&data->A0,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_L_char",&data->L_char,&flg); CHKERRQ(ierr); 
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
@@ -389,7 +390,7 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
 	PetscErrorCode ierr;
 	PetscInt       i,j,k,si,sj,sk,nx,ny,nz,M,N,P, interf, jinter;
-	PetscScalar    pertu, dz, H;
+	PetscScalar    pertu,pertu_, dz, H;
 	PetscReal      *interface_heights;
 	PetscInt       *layer_res_j, n_interfaces;
 	PetscReal      amp;
@@ -455,14 +456,19 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 				
 				for (i=si; i<si+nx; i++) {
 					for (k=sk; k<sk+nz; k++) {
-						PetscReal kx, kz, A0; 
+						PetscReal kx, kz, A0, L_char, x_dimensional, z_dimensional;
 
-						kx = data->kx; 
-						kz = data->kz; 
-						A0 = data->A0; 
+						kx = data->kx;
+						kz = data->kz;
+						A0 = data->A0;
+                        L_char = data->L_char;
+                        x_dimensional = LA_coord[k][jinter][i].x * L_char;
+                        z_dimensional = LA_coord[k][jinter][i].z * L_char;
 						
-						pertu = cos(kx*LA_coord[k][jinter][i].x)*cos(kz*LA_coord[k][jinter][i].z);
-						LA_coord[k][jinter][i].y += A0 * pertu;
+						pertu = cos( kx * x_dimensional ) * cos( kz * z_dimensional );
+//						pertu_ = pertu * 1.0/L_char; 
+                        LA_coord[k][jinter][i].y += A0 * pertu;
+                        
 					}
 					
 				}
