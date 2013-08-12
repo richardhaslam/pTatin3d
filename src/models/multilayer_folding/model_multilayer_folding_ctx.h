@@ -14,7 +14,7 @@ typedef struct {
 	PetscReal exx;
 	PetscReal vx_compression;
 	PetscReal vz_compression;
-	PetscReal Lx, Lz, Ly;
+	PetscReal Lx, Lz, Ly, L_char;
     PetscReal amp;
     PetscReal kx,kz; 
     PetscReal A0;
