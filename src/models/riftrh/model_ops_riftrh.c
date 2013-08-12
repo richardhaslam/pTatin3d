@@ -422,6 +422,9 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Riftrh(PetscInt nl,BCList bclist[],
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian"
+// adding particles on the lower boundary to accommodate inflow
+// adding particles on the left and right boundary to accommodate inflow
+
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx     *data = (ModelRiftrhCtx*)ctx;
@@ -614,6 +617,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Riftrh"
+/* ASSIGN INITIAL VISCOSITY BASED ON INITIAL STRAIN RATE PRESSURE */
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec X,void *ctx)
 {
 	ModelRiftrhCtx               *data = (ModelRiftrhCtx*)ctx;
@@ -640,6 +644,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec 
 	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	
+    /* interpolate mesh velocity and pressure to markers and then sets viscosity */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
@@ -652,6 +657,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_Riftrh"
+/* SET AN INITIAL BACK GROUND STRAIN RATE, TEMPERATURE, PRESSURE */
 PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -665,6 +671,7 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian"
+/* DEFINE ALE */
 PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -685,6 +692,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
+    /* ONLY VERTICAL REMESHING */
 	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -744,6 +752,7 @@ PetscErrorCode ModelDestroy_Riftrh(pTatinCtx c,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegister_Riftrh"
+/* ASSIGN ALL FUNCTIONS DEFINED ABOVE */
 PetscErrorCode pTatinModelRegister_Riftrh(void)
 {
 	ModelRiftrhCtx *data;
