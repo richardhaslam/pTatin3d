@@ -24,4 +24,10 @@ fields which may be specified.
   [field to extract via command line arguments]
   pvpython marker_extract_vtu2binary.py -i VTU_FILE_TO_CONVERT -f field1,field2,
 
+[plot_solver_residuals.py]
+- Parses ptatin / petsc solver residuals from a text file.
+- Filters out SNES iterations, KSP viscous block iterations/residuals so they can be plotted
+
+[pt3d-scaling.py]
+- Generates consistent non-dimensional scaling for Stokes equations
 
