@@ -60,37 +60,63 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	DataBucket materialconstants = c->material_constants;
 	PetscBool nondim;
 	PetscScalar vx,vy,vz,Sx,Sy,Sz;
-    PetscScalar vx_down,dh_vx;
+	PetscScalar vx_down,dh_vx;
 	PetscInt regionidx;
-    PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
+	PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-
+	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-/*Box GEOMETRY*/
-	data->Lx=1200.e3;
-	data->Ly=250.e3;
-	data->Lz=1200.e3;
-	data->hc=60.e3;
-	data->hm=60.e3;
-	data->ha=130.e3;
-    /*seed geometry*/
-	data->dxs=12.e3;
-	data->dys=6.e3;
-	data->dzs=1200.e3;
-    /*velocity boundary condition geometry*/
-	data->hvbx1=125.e3;
-	data->hvbx2=115.e3;
-	data->vx_up=0.5*cm_per_yer2m_per_sec;
-    /* material propoerties */
-	data->rhoc=2800.;
-	data->rhom=3300.;
-	data->rhoa=3250.;
-	data->etac=1.e28;
-	data->etam=1.e22;
-	data->etaa=1.e19;
-    /* rheology parameters */
+	
+	/* Box GEOMETRY */
+	data->Lx = 1200.0e3;
+	data->Ly = 250.0e3;
+	data->Lz = 1200.0e3;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	
+	data->hc = 60.0e3;
+	data->hm = 60.0e3;
+	data->ha = 130.0e3;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hc",&data->hc,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hm",&data->hm,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_ha",&data->ha,&flg);CHKERRQ(ierr);
+	
+	/* seed geometry */
+	data->dxs = 12.0e3;
+	data->dys = 6.0e3;
+	data->dzs = 1200.0e3;
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_dxs",&data->dxs,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_dys",&data->dys,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_dzs",&data->dzs,&flg);CHKERRQ(ierr);
+	
+	/* velocity boundary condition geometry */
+	data->hvbx1 = 125.0e3;
+	data->hvbx2 = 115.0e3;
+	data->vx_up = 0.5*cm_per_yer2m_per_sec;
+	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
+	
+	/* material propoerties */
+	data->rhoc = 2800.0;
+	data->rhom = 3300.0;
+	data->rhoa = 3250.0;
+	data->etac = 1.0e28;
+	data->etam = 1.0e22;
+	data->etaa = 1.0e19;
+	/* MATERIAL PARAMETERS */
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhom",&data->rhom,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhoa",&data->rhoa,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etac",&data->etac,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etam",&data->etam,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etaa",&data->etaa,&flg);CHKERRQ(ierr);
+	
+	/* rheology parameters */
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VP_STD;
 	rheology->nphases_active = 3;
@@ -104,90 +130,68 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->viscosity_bar = 1e22;
 	data->velocity_bar  = 1.0e-10;
 	data->dimensional   = PETSC_TRUE;
-    
-    
-//    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_Riftrh_param2",&data->param2,&flg);CHKERRQ(ierr);
+	
+	
+	//    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_Riftrh_param2",&data->param2,&flg);CHKERRQ(ierr);
 	/* Material constant */
 	MaterialConstantsSetDefaults(materialconstants);
-    /* phase 0, asthenosphere */
-    regionidx = 0;
+	/* phase 0, asthenosphere */
+	regionidx = 0;
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etaa);
-    
+	
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoa,2.e-5,0.0);
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoa);
+	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoa);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
-
-    /* phase 1, mantle lithosphere */
-    regionidx = 1;
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
+	
+	/* phase 1, mantle lithosphere */
+	regionidx = 1;
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etam);
-    
+	
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.0);
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
+	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
-
-    /* phase 2, crust / upper lithosphere */
-    regionidx = 2;
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
+	
+	/* phase 2, crust / upper lithosphere */
+	regionidx = 2;
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+	//	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
-    
+	
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.e-5,0.0);
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
+	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
-
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_Lz",&data->Lz,&flg);CHKERRQ(ierr);
-    
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hc",&data->hc,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hm",&data->hm,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_ha",&data->ha,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_dxs",&data->dxs,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_dys",&data->dys,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_dzs",&data->dzs,&flg);CHKERRQ(ierr);
-    /*VELOCITY BOUNDARY CONDITION GEOMETRY*/
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
-    
-    /*MATERIAL PARAMETERS*/
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhom",&data->rhom,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhoa",&data->rhoa,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etac",&data->etac,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etam",&data->etam,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etaa",&data->etaa,&flg);CHKERRQ(ierr);
-    
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
+	
+		
 	/* Read the options */
-	/*cutoff */
+	/* cutoff */
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_runwithmises",&data->runmises,PETSC_NULL);CHKERRQ(ierr);
-	/*scaling */
+	/* scaling */
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
 	} else {
-        ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_vis_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_vel_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_vis_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_vel_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr);
 	}
-
-    /* compute vxdown*/
-    dh_vx = data->hvbx1 - data->hvbx2;
-    data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2) / (data->ha - dh_vx/2);
-    
+	
+	/* compute vxdown */
+	dh_vx = data->hvbx1 - data->hvbx2;
+	data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2) / (data->ha - dh_vx/2);
+	
 	/* reports before scaling */
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_Riftrh_Lx : %+1.4e [SI]\n", data->Lx );
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_Riftrh_Ly : %+1.4e [SI]\n", data->Ly );
@@ -196,17 +200,17 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"-model_Riftrh_rhoc [kg/m^3] :%+1.4e \n", data->rhoc );
 	PetscPrintf(PETSC_COMM_WORLD,"-model_Riftrh_rhom [kg/m^3] :%+1.4e \n", data->rhom );
 	PetscPrintf(PETSC_COMM_WORLD,"-model_Riftrh_rhoa [kg/m^3] :%+1.4e \n", data->rhoa );
-    
+	
 	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
 		MaterialConstantsPrintAll(materialconstants,regionidx);
 	}
-    
+	
 	if (data->dimensional) {
-		/*Compute additional scaling parameters*/
+		/* Compute additional scaling parameters */
 		data->time_bar      = data->length_bar / data->velocity_bar;
 		data->pressure_bar  = data->viscosity_bar/data->time_bar;
 		data->density_bar   = data->pressure_bar / data->length_bar;
-        
+		
 		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]:  during the solve scaling will be done using \n");
 		PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
 		PetscPrintf(PETSC_COMM_WORLD,"  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
@@ -224,7 +228,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 		data->hc = data->hc / data->length_bar;
 		data->hm = data->hm / data->length_bar;
 		data->ha = data->ha / data->length_bar;
-        /*seed geometry*/
+		/* seed geometry */
 		data->dxs = data->dxs / data->length_bar;
 		data->dys = data->dys / data->length_bar;
 		data->dzs = data->dzs / data->length_bar;
@@ -237,13 +241,13 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 		data->rhoc = data->rhoc/data->density_bar;
 		data->rhom = data->rhom/data->density_bar;
 		data->rhoa = data->rhoa/data->density_bar;
-        
+		
 		// scale material properties
 		for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
 			MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
 		}
-        
-		/*Reports scaled values*/		
+		
+		/* Reports scaled values */		
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value    -model_Riftrh_Lx   :  %+1.4e \n", data->Lx );
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value    -model_Riftrh_Ly   :  %+1.4e \n", data->Ly );
 		PetscPrintf(PETSC_COMM_WORLD,"scaled value    -model_Riftrh_Lz   :  %+1.4e \n", data->Lz );
@@ -257,10 +261,10 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 			MaterialConstantsPrintAll(materialconstants,regionidx);
 		}
 	}
-    
+	
 	data->output_markers = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_output_markers",&data->output_markers,PETSC_NULL);CHKERRQ(ierr);
-    
+	
 	PetscFunctionReturn(0);
 }
 
@@ -269,69 +273,69 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRiftrhCtx *data)
 {
 	PetscScalar    vxl,vxr,vybottom,zero,height,length;
-    PetscInt       vbc_type;
+	PetscInt       vbc_type;
 	PetscErrorCode ierr;
-    PetscReal MeshMin[3],MeshMax[3],domain_height;
-    DM stokes_pack,dau,dap;
-
-
-    
+	PetscReal MeshMin[3],MeshMax[3],domain_height;
+	DM stokes_pack,dau,dap;
+	
+	
+	
 	PetscFunctionBegin;
-
-    stokes_pack = user->stokes_ctx->stokes_pack;
+	
+	stokes_pack = user->stokes_ctx->stokes_pack;
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-
-    zero=0.;
-//    vbc_type = 1; /* in / out flow condition on the sides */
-    vbc_type = 2; /* outflow condition on the sides, inflow condition on the base */
-    
-    
-    if (vbc_type == 1) {
-        
-        /* infilling free slip base */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        
-        /* free surface top*/
-        
-        /*extension along face of normal x */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_riftrhl,(void*)data);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_riftrhr,(void*)data);CHKERRQ(ierr);
-        
-        /*free slip base*/
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        
-        /* no flow in z*/
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-    }
-    
-    if (vbc_type == 2) {
-        vxl = -data->vx_up;
-        vxr = data->vx_up;
-        ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
-        height = MeshMax[1] - MeshMin[1];
-        length = MeshMax[0] - MeshMin[0];
-        vybottom = 2.*data->vx_up * height / length;
-        
-        /* infilling free slip base */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        
-        /* free surface top*/
-        
-        /*extension along face of normal x */
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vxl);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxr);CHKERRQ(ierr);
-        
-        /*free slip base*/
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vybottom);CHKERRQ(ierr);
-        
-        /* no flow in z*/
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-        ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-    }
-    
-    
+	
+	zero=0.;
+	//    vbc_type = 1; /* in / out flow condition on the sides */
+	vbc_type = 2; /* outflow condition on the sides, inflow condition on the base */
+	
+	
+	if (vbc_type == 1) {
+		
+		/* infilling free slip base */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		/* free surface top*/
+		
+		/*extension along face of normal x */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_riftrhl,(void*)data);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_riftrhr,(void*)data);CHKERRQ(ierr);
+		
+		/*free slip base*/
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		/* no flow in z*/
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	}
+	
+	if (vbc_type == 2) {
+		vxl = -data->vx_up;
+		vxr = data->vx_up;
+		ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
+		height = MeshMax[1] - MeshMin[1];
+		length = MeshMax[0] - MeshMin[0];
+		vybottom = 2.*data->vx_up * height / length;
+		
+		/* infilling free slip base */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		
+		/* free surface top*/
+		
+		/*extension along face of normal x */
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vxl);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxr);CHKERRQ(ierr);
+		
+		/*free slip base*/
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vybottom);CHKERRQ(ierr);
+		
+		/* no flow in z*/
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+	}
+	
+	
 	
 	PetscFunctionReturn(0);
 }
@@ -347,8 +351,8 @@ PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, v
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-    
-    dh_vx = datal->hvbx1 - datal->hvbx2;
+	
+	dh_vx = datal->hvbx1 - datal->hvbx2;
 	if ( position[1] >= datal->ha ) {
 		vx = -datal->vx_up;
 	} else if ( position[1] < datal->ha - dh_vx) {
@@ -359,7 +363,7 @@ PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, v
 	*value = vx;
 	return impose_dirichlet;
 }
-               
+
 #undef __FUNCT__
 #define __FUNCT__ "BCListEvaluator_riftrhr"
 PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *data )
@@ -371,8 +375,8 @@ PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, v
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-    
-    dh_vx = datal->hvbx1 - datal->hvbx2;
+	
+	dh_vx = datal->hvbx1 - datal->hvbx2;
 	if ( position[1] >= datal->ha ) {
 		vx = datal->vx_up;
 	} else if ( position[1] < datal->ha - dh_vx) {
@@ -391,13 +395,13 @@ PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, v
 PetscErrorCode ModelApplyBoundaryCondition_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
-    PetscErrorCode ierr;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = ModelRiftrh_DefineBCList(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,c,data);CHKERRQ(ierr);
-
+	
 	PetscFunctionReturn(0);
 }
 
@@ -413,7 +417,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Riftrh(PetscInt nl,BCList bclist[],
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	for (n=0; n<nl; n++) {
-        ierr = ModelRiftrh_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
+		ierr = ModelRiftrh_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
 		
 	}	
 	
@@ -440,14 +444,14 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
+	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-    
+	
 	
 	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
-    
+	
 	
 	/* create face storage for markers */
 	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
@@ -459,13 +463,13 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 		Nxp[0]  = 1;
 		Nxp[1]  = 1;
 		perturb = 0.1;
-        
+		
 		/* reset size */
 		DataBucketSetSizes(material_point_face_db,0,-1);
-        
+		
 		/* assign coords */
 		ierr = SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(dav,Nxp,perturb, face_list[f], material_point_face_db);CHKERRQ(ierr);
-        
+		
 		/* assign values */
 		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
 		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
@@ -473,11 +477,11 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 			ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
 		}
 		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-				
+		
 		/* insert into volume bucket */
 		DataBucketInsertValues(material_point_db,material_point_face_db);
 	}
-    
+	
 	/* Copy ALL values from nearest markers to newly inserted markers expect (xi,xip,pid) */
 	ierr = MaterialPointRegionAssignment_v1(material_point_db,dav);CHKERRQ(ierr);
 	
@@ -506,14 +510,14 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscErrorCode ierr;
 	
-    
+	
 	PetscFunctionBegin;
-
+	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
-
+	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"Lx = %d \n", data->Lx );
-
+	
 	PetscFunctionReturn(0);
 }
 
@@ -526,10 +530,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;
 	int                    phase;
-    PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center;
-    PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
+	PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center;
+	PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
 	PetscErrorCode ierr;
-    
+	
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -544,72 +548,72 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
-    
-    DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	
+	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
 	DataFieldGetAccess(PField_pls);
 	
-    ha_dimensional = data->ha * data->length_bar;
-    hm_dimensional = data->hm * data->length_bar;
-    hc_dimensional = data->hc * data->length_bar;
-    x_center       = 0.5 * data->Lx * data->length_bar;
-    notch_width    = 50.0e3;
-    notch_height   = 30.0e3;
-    
+	ha_dimensional = data->ha * data->length_bar;
+	hm_dimensional = data->hm * data->length_bar;
+	hc_dimensional = data->hc * data->length_bar;
+	x_center       = 0.5 * data->Lx * data->length_bar;
+	notch_width    = 50.0e3;
+	notch_height   = 30.0e3;
+	
 	/* marker loop */
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point_std;
 		MPntPStokes *material_point_stokes;
-        MPntPStokesPl *mpprop_pls;
+		MPntPStokesPl *mpprop_pls;
 		double      *position;
 		double      eta,rho;
-        int         phase;
-        float       plastic_strain;
+		int         phase;
+		float       plastic_strain;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point_std);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&material_point_stokes);
-        DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
+		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point_std,&position);
 		
-        phase = 0;
-        eta=data->etaa;
-        rho=data->rhoa;
-        if (position[1] > data->ha && position[1] < (data->ha+data->hm) ) {
-            phase = 1;
-            eta=data->etam;
-            rho=data->rhom;
-        }
-        if (position[1]>data->ha+data->hm ) {
-            phase = 2;
-            eta=data->etac;
-            rho=data->rhoc;
-        }
-
-        xp_dimensional = position[0] * data->length_bar;
+		phase = 0;
+		eta=data->etaa;
+		rho=data->rhoa;
+		if (position[1] > data->ha && position[1] < (data->ha+data->hm) ) {
+			phase = 1;
+			eta=data->etam;
+			rho=data->rhom;
+		}
+		if (position[1]>data->ha+data->hm ) {
+			phase = 2;
+			eta=data->etac;
+			rho=data->rhoc;
+		}
+		
+		xp_dimensional = position[0] * data->length_bar;
 		yp_dimensional = position[1] * data->length_bar;
 		zp_dimensional = position[2] * data->length_bar;
-        plastic_strain = 0.0;
-        
-        if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
-            if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
-                plastic_strain = 1.0;
-            }
-        }
+		plastic_strain = 0.0;
+		
+		if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
+			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+				plastic_strain = 1.0;
+			}
+		}
 		
 		/* user the setters provided for you */
-        MPntPStokesPlSetField_plastic_strain(mpprop_pls,plastic_strain);
+		MPntPStokesPlSetField_plastic_strain(mpprop_pls,plastic_strain);
 		MPntStdSetField_phase_index(material_point_std,         phase);
 		MPntPStokesSetField_eta_effective(material_point_stokes,eta);
 		MPntPStokesSetField_density(material_point_stokes,      rho);
 	}
 	
-  
-    
+	
+	
 	DataFieldRestoreAccess(PField_std);
-    DataFieldRestoreAccess(PField_pls);
+	DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
 	
 	PetscFunctionReturn(0);
@@ -644,14 +648,14 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec 
 	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	
-    /* interpolate mesh velocity and pressure to markers and then sets viscosity */
+	/* interpolate mesh velocity and pressure to markers and then sets viscosity */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
-		
+	
 	PetscFunctionReturn(0);
 }
 
@@ -692,11 +696,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-    /* ONLY VERTICAL REMESHING */
+	/* ONLY VERTICAL REMESHING */
 	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-    
+	
 	PetscFunctionReturn(0);
 }
 
@@ -710,11 +714,11 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-    
-    {
+	
+	{
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
 		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
@@ -728,7 +732,7 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 		sprintf(mp_file_prefix,"%s_all_mp_data",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
-    
+	
 	PetscFunctionReturn(0);
 }
 
@@ -766,25 +770,25 @@ PetscErrorCode pTatinModelRegister_Riftrh(void)
 	ierr = PetscMemzero(data,sizeof(ModelRiftrhCtx));CHKERRQ(ierr);
 	
 	/* set initial values for model parameters */
-//	data->Lx = 0.0;
-//	data->param2 = 0;
+	//	data->Lx = 0.0;
+	//	data->param2 = 0;
 	
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
-
+	
 	/* Set name, model select via -ptatin_model NAME */
 	ierr = pTatinModelSetName(m,"Riftrh");CHKERRQ(ierr);
-
+	
 	/* Set model data */
 	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 	
 	/* Set function pointers */
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_Riftrh);CHKERRQ(ierr);
-
+	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian);CHKERRQ(ierr);
-
+	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Riftrh);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_Riftrh);CHKERRQ(ierr);
