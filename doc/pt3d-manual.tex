@@ -438,6 +438,104 @@ The most important (i.e. useful) of these are summarized below.
 \newpage
 \section{Nonlinear and Linear Solvers}
 
+The discrete linear Stokes problem can be expressed as
+\begin{equation}
+	\begin{bmatrix}
+	A 	&B	\\
+	B^T	&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	u \\
+	p
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	f	\\
+	h
+	\end{bmatrix}
+	\label{eq:discretelinearstokes}
+\end{equation}
+We solve Eq.~\eqref{eq:discretelinearstokes} via a right preconditioned Krylov method using an Elman-Wathan style upper block triangular preconditioner. The preconditioned system is thus
+\begin{equation}
+	\begin{bmatrix}
+	A 	&B	\\
+	B^T	&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}^{-1}
+	\begin{bmatrix}
+	\tilde{u} \\
+	\tilde{p}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	f	\\
+	h
+	\end{bmatrix}
+	\label{eq:discretelinearstokes_pc}
+\end{equation}
+where
+\begin{equation}
+	\begin{bmatrix}
+	\tilde{u} \\
+	\tilde{p}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}
+	\begin{bmatrix}
+	u \\
+	p
+	\end{bmatrix}
+\end{equation}
+The upper block triangular preconditioner is only required to be applied to vectors. Rather than assembling the inverse and multiplying with an arbitrary vector $(x_1,x_2)$, we re-state the problem in the following manner
+\begin{equation}
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}^{-1}
+	\begin{bmatrix}
+	{x_1} \\
+	{x_2}
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	y_1	\\
+	y_2
+	\end{bmatrix}
+%
+\quad
+	\longrightarrow
+\quad
+	\text{Solve }
+	\begin{bmatrix}
+	A 	&B	\\
+	0	&-S
+	\end{bmatrix}
+	\begin{bmatrix}
+	y_1	\\
+	y_2
+	\end{bmatrix}
+	=
+	\begin{bmatrix}
+	{x_1} \\
+	{x_2}
+	\end{bmatrix}
+	\medspace \text{for } y_1, y_2	
+\end{equation}
+The solve involving the upper triangular system is defined in two steps:
+\begin{enumerate}
+	\item Solve $-S \, y_2 = x_2$ for $y_2$
+	\item Solve $A \, y_1 = x_1 - B \, y_2$ for $y_1$
+\end{enumerate}
+
+The iterative solution strategy for the Stokes flow problem is a nested procedure, containing many sub-solves. 
+The nested form of the method used is depicted in Fig.~\ref{fig:solver_hierarchy}.
+We will refer to the outer most solver (i.e. that for Eq.~\eqref{eq:discretelinearstokes_pc}) as the ``Stokes solve''. Any solver associated with the $A$ matrix will be verified to as a ``Viscous block'' solve. Any solver related to $S$ will be referred to as a ``Pressure Schur complement'' solve.
 \begin{figure} [hbtp]
 \center
 \includegraphics[height=0.6\textheight]{figs/pt3d_solve_hierarchy.pdf}
@@ -445,9 +543,12 @@ The most important (i.e. useful) of these are summarized below.
 {\itshape Solver hierarchy}
 \label{fig:solver_hierarchy}
 \end{figure}
+In the following section we detail how to configure the solver applied to Eq.~\eqref{eq:discretelinearstokes_pc} to obtain $(u,p)$, and how to configure the solvers in steps 1 ({\tt -fieldsplit\_u\_ksp}) and 2 ({\tt -fieldsplit\_p\_ksp}) of applying the upper triangular preconditioner.
 
 
 \subsection{Configuring solvers}
+
+
 
 \subsection{Multi-grid sequencing}
 The number of multi-grid levels is set via the option:
