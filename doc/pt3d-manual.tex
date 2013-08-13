@@ -548,6 +548,32 @@ In the following section we detail how to configure the solver applied to Eq.~\e
 
 \subsection{Configuring solvers}
 
+\subsubsection{Non-linear Stokes solver}
+Non-linear methods adopt the following sequence
+\begin{enumerate}
+	\item Given $x_0$, set $k = 0$. Compute $\| F (x_0) \|$
+	\item Solve $J(x_k) \delta x = -F(x_k)$
+	\item $x_{k+1} = x_k + \delta x$
+	\item Compute $\| F (x_{k+1}) \|$
+	\item $k = k + 1$, goto step 2 until converged.
+\end{enumerate}
+The non-linear iteration sequence may be terminated for several different  reasons. The reasons and the controlling parameters (modifiable from the command line are provided below):\newline
+\unix{-snes\_rtol 1.0e-3} : stops if $\| F (x_{k+1}) \| \le 10^{-3} \| F (x_0) \|$ \newline
+\unix{-snes\_atol 1.0e-3} : stops if $\| F (x_{k+1}) \| \le 10^{-3}$  \newline 
+\unix{-snes\_stol 1.0e-3} : stops if $\| \delta x \| \le 10^{-3} \| x_{k+1} \|$ \newline
+\unix{-snes\_max\_it 30} : stops if 30 non-linear iterations occur \newline
+\unix{-snes\_max\_funcs 30} : stops if 30 non-linear residual evaluations occur \newline
+
+\subsubsection{Linearized Stokes solve}
+\unix{-ksp\_rtol 1.0e-3} : stops if $\| J_k \delta x + F_k \| \le 10^{-3} \| J_0 \delta x + F_0 \|$ \newline
+\unix{-ksp\_atol 1.0e-3} : stops if $\| J_k \delta x + F_k  \| \le 10^{-3}$  \newline 
+\unix{-ksp\_max\_it 30} : stops if 30 Stokes iterations occur \newline
+
+\subsubsection{Viscous block solve}
+\unix{-fieldsplit\_u\_ksp\_rtol 1.0e-3} : stops if $\| A u_k - b \| \le 10^{-3} \| A u_k - b \|$ \newline
+\unix{-fieldsplit\_u\_ksp\_atol 1.0e-3} : stops if $\| A u_k - b  \| \le 10^{-3}$  \newline 
+\unix{-fieldsplit\_u\_ksp\_max\_it 30} : stops if 30 viscous block iterations occur \newline
+
 
 
 \subsection{Multi-grid sequencing}
