@@ -268,8 +268,11 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->output_markers = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_output_markers",&data->output_markers,PETSC_NULL);CHKERRQ(ierr);
 	
-    pTatinPhysCompActivate_Energy(c, PETSC_TRUE);
-    pTatinContextValid_Energy(c, &energy_exists);
+	/* cannot call this here as velocity mesh is not yet created */
+	//ierr = pTatinPhysCompActivate_Energy(c, PETSC_TRUE);CHKERRQ(ierr);
+	
+	/* valid way to check if energy exists, call this in other functions where needed */
+	//ierr = pTatinContextValid_Energy(c, &energy_exists);CHKERRQ(ierr);
     
     
     
