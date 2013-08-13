@@ -40,6 +40,7 @@
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "MPntPStokesPl_def.h"
+#include "ptatin3d_energy.h"
 
 #include "ptatin_models.h"
 
@@ -58,11 +59,11 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	PetscBool flg;
 	RheologyConstants      *rheology;
 	DataBucket materialconstants = c->material_constants;
-	PetscBool nondim;
+	PetscBool nondim, energy_exists;
 	PetscScalar vx,vy,vz,Sx,Sy,Sz;
 	PetscScalar vx_down,dh_vx;
 	PetscInt regionidx;
-	PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
+	PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -143,7 +144,9 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoa,2.e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoa);
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
+        phi1_rad=M_PI*15./180.;
+        phi2_rad=M_PI*2./180.;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
 	
@@ -155,7 +158,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
 	
@@ -167,7 +170,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
 	
@@ -265,6 +268,11 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->output_markers = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_output_markers",&data->output_markers,PETSC_NULL);CHKERRQ(ierr);
 	
+    pTatinPhysCompActivate_Energy(c, PETSC_TRUE);
+    pTatinContextValid_Energy(c, &energy_exists);
+    
+    
+    
 	PetscFunctionReturn(0);
 }
 
