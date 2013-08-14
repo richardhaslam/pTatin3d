@@ -726,11 +726,11 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	if data->output_markers { 
+	if (data->output_markers) { 
 	   ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
         }
 	
-	if data->output_markers { 
+	if (data->output_markers) { 
 	{
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
