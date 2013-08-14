@@ -49,8 +49,7 @@
 PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx);
 PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, void *ctx );
-PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *ctx );
-
+PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *ctx ); 
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Riftrh"
 PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
@@ -455,7 +454,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
+#if 0	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
@@ -509,7 +508,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	
 	/* delete */
 	DataBucketDestroy(&material_point_face_db);
-	
+#endif	
 	PetscFunctionReturn(0);
 }
 
@@ -727,8 +726,11 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+	if data->output_markers { 
+	   ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+        }
 	
+	if data->output_markers { 
 	{
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
@@ -743,6 +745,7 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 		sprintf(mp_file_prefix,"%s_all_mp_data",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
+        }
 	
 	PetscFunctionReturn(0);
 }
