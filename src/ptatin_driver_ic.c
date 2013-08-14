@@ -52,7 +52,9 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	DM              multipys_pack,dav,dap;
 	PetscErrorCode  ierr;
 	pTatinCtx       user;
-	Vec             X,F;
+	Vec             X,F,T;
+	PetscBool       active_energy;
+	PhysCompEnergy  energy;
 	
 	PetscFunctionBegin;
 	
@@ -87,6 +89,25 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
 	
+	/* generate energy solver */
+	/* NOTE - Generating the thermal solver here will ensure that the initial geometry on the mechanical model is copied */
+	/* NOTE - Calling pTatinPhysCompActivate_Energy() after pTatin3dCreateMaterialPoints() is essential */
+	{
+		PetscBool load_energy = PETSC_FALSE;
+		
+		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
+		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
+	}
+	if (active_energy) {
+		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+		
+		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
+		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+	}
+    
+    
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
 	//for (e=0; e<QUAD_EDGES; e++) {
@@ -150,6 +171,9 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	}
 	
 	
+	if (active_energy) {
+		ierr = VecDestroy(&T);CHKERRQ(ierr);
+	}
 	ierr = VecDestroy(&X);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
 	ierr = pTatin3dDestroyContext(&user);
