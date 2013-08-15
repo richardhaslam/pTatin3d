@@ -34,6 +34,8 @@
 
 #define _GNU_SOURCE
 #include "petsc.h"
+#include <private/snesimpl.h>
+
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -945,3 +947,90 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 	PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokes_ConvergenceTest_UPstol"
+PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *ctx)
+{
+	Vec X,dX,Xu,Xp,dXu,dXp;
+	PetscReal atol,rtol,stol;
+	PetscInt maxit,maxf;
+	PetscReal normU[2],normP[2];
+	PetscReal alpha[2];
+  pTatinCtx       user;
+	PhysCompStokes  stokes;
+  DM              stokes_pack;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	*reason = SNES_CONVERGED_ITERATING;	
+
+	user = (pTatinCtx)ctx;
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	
+	ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRQ(ierr);
+
+	ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
+	ierr = SNESGetSolutionUpdate(snes,&dX);CHKERRQ(ierr);
+	
+	ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,dX,&dXu,&dXp);CHKERRQ(ierr);
+
+	ierr = VecNorm(dXu,NORM_2,&normU[0]);CHKERRQ(ierr);
+	ierr = VecNorm(dXp,NORM_2,&normP[0]);CHKERRQ(ierr);
+	
+	ierr = VecNorm(Xu,NORM_2,&normU[1]);CHKERRQ(ierr);
+	ierr = VecNorm(Xp,NORM_2,&normP[1]);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,dX,&dXu,&dXp);CHKERRQ(ierr);
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+
+	if (!it) {
+		/* set parameter for default relative tolerance convergence test */
+		snes->ttol = fnorm*snes->rtol;
+	}	
+	
+	if (fnorm < snes->abstol) {
+		*reason = SNES_CONVERGED_FNORM_ABS;
+	}
+	
+	if (it && !*reason) {	
+	
+		// ||dX|| < eps ||X||
+		alpha[0] = 1.0;
+		alpha[1] = 0.0;
+		if ( alpha[0] * normU[0] < stol * normU[1] ) {
+				*reason = SNES_CONVERGED_PNORM_RELATIVE;
+		}
+		if ( alpha[1] * normP[0] < stol * normP[1] ) {
+			*reason = SNES_CONVERGED_PNORM_RELATIVE;
+		}
+	
+		if (fnorm <= snes->ttol) {
+			*reason = SNES_CONVERGED_FNORM_RELATIVE;
+		}
+		
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokes_SetConvergenceTest_UPstol"
+PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user)
+{
+	const char *prefix;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"Activating \"ConvergenceTest_UPstol\" on SNES (%s)\n",prefix);
+	
+	//ierr = SNESSetApplicationContext(snes,(void*)user);CHKERRQ(ierr);
+	ierr = SNESSetConvergenceTest(snes,SNESStokes_ConvergenceTest_UPstol,(void**)user,PETSC_NULL);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
