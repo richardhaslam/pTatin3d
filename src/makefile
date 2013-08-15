@@ -199,7 +199,7 @@ tests: libs models
 	-@echo "*** Building tests ***"
 	@for t in ${TATIN_TESTS} ; do \
 		${MAKE} $${t}.o; \
-		-@rm -f $${t}.app; \
+		rm -f $${t}.app; \
 		${MAKE} $${t}.app; \
 	done
 
