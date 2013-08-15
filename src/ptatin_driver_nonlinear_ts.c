@@ -939,8 +939,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1125,6 +1125,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 	/* Define non-linear solver */
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+	//ierr = SNESSetApplicationContext(snes,(void*)user);CHKERRQ(ierr);
 	if (!activate_quasi_newton_coord_update) {
 		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 	} else {
@@ -1185,7 +1186,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 	/* do a picard solve */
 	picard_its = snes_its;
-	PetscOptionsGetInt(PETSC_NULL,"-picard_its",&picard_its,0);
+	PetscOptionsGetInt(PETSC_NULL,"-picard_its",&picard_its,PETSC_NULL);
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
@@ -1198,11 +1199,12 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 #endif
 
 	newton_its = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
+	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,PETSC_NULL);
 	if (newton_its>0) {
 		SNES snes_newton;
 		
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes_newton);CHKERRQ(ierr);
+		//ierr = SNESSetApplicationContext(snes_newton,(void*)user);CHKERRQ(ierr);
 		ierr = SNESSetOptionsPrefix(snes_newton,"n_");CHKERRQ(ierr);
 		if (!activate_quasi_newton_coord_update) {
 			ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes,user);CHKERRQ(ierr);
@@ -1424,6 +1426,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		/* b) create solver */
 		/* Define non-linear solver */
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+		//ierr = SNESSetApplicationContext(snes,(void*)user);CHKERRQ(ierr);
+		
 		if (!activate_quasi_newton_coord_update) {
 			ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 		} else {
@@ -1441,10 +1445,29 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 		/* initial condition used */
 		//ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+
 		/* monitors */
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		{
+			PetscBool moniter_set;
+
+			moniter_set = PETSC_FALSE;
+			ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+
+			moniter_set = PETSC_FALSE;
+			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+			if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+
+			moniter_set = PETSC_FALSE;
+			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+			if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+		}
+		{
+			PetscBool cvg_test_set;
+			
+			cvg_test_set = PETSC_FALSE;
+			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_converged_upstol",&cvg_test_set,PETSC_NULL);CHKERRQ(ierr);
+			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,(void**)user);CHKERRQ(ierr); }
+		}
 		
 		/* c) configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
