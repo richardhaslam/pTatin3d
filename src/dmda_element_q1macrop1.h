@@ -52,15 +52,15 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt 
 
 PetscErrorCode DMDAESetType_Q1Macro(DM da);
 
-PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[]);
+PetscErrorCode DMDAEQ1Macro_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[]);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[]);
-PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
+PetscErrorCode DMDAEQ1Macro_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
-PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
+PetscErrorCode DMDAEQ1Macro_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[]);
-PetscErrorCode DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[]);
+PetscErrorCode DMDAEQ1Macro_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[]);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[]);
-PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[]);
+PetscErrorCode DMDAEQ1Macro_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[]);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[]);
 
 

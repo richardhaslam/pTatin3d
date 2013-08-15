@@ -971,7 +971,7 @@ PetscErrorCode  DMDAESetType_Q1Macro(DM da)
 /* element helpers */
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1Macro_GetElementCoordinates_3D"
-PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
+PetscErrorCode DMDAEQ1Macro_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
 	PetscErrorCode ierr;
@@ -1001,7 +1001,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementCoordinates_3D(PetscScalar elco
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1Macro_GetScalarElementField_3D"
-PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
+PetscErrorCode DMDAEQ1Macro_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
 	PetscErrorCode ierr;
@@ -1027,7 +1027,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetScalarElementField_3D(PetscScalar elfi
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1Macro_GetVectorElementField_3D"
-PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
+PetscErrorCode DMDAEQ1Macro_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
 	PetscErrorCode ierr;
@@ -1057,7 +1057,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetVectorElementField_3D(PetscScalar elfi
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1Macro_SetValuesLocalStencil_AddValues_DOF"
-PetscErrorCode DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
+PetscErrorCode DMDAEQ1Macro_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
 {
   PetscInt n,d,el_idx,idx;
 	
@@ -1091,7 +1091,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_SetValuesLocalStencil_AddValues_DOF(Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1Macro_GetElementLocalIndicesDOF"
-PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
+PetscErrorCode DMDAEQ1Macro_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
 	PetscErrorCode ierr;
