@@ -1466,7 +1466,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			
 			cvg_test_set = PETSC_FALSE;
 			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_converged_upstol",&cvg_test_set,PETSC_NULL);CHKERRQ(ierr);
-			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,(void**)user);CHKERRQ(ierr); }
+			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,user);CHKERRQ(ierr); }
 		}
 		
 		/* c) configure for fieldsplit */
