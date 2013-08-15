@@ -998,7 +998,13 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 	}
 	
 	if (it && !*reason) {	
-	
+    ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
+
+		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (U): %14.12e ?<? %14.12e \n",(double)snormUP[0]/(double)xnormUP[0],(double)snes->xtol);CHKERRQ(ierr);
+		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (P): %14.12e ?<? %14.12e \n",(double)snormUP[1]/(double)xnormUP[1],(double)snes->xtol);CHKERRQ(ierr);
+
+		ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
+		
 		// ||dX|| < eps ||X||
 		alpha[0] = 1.0;
 		alpha[1] = 0.0;
@@ -1008,7 +1014,7 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 		}
 		if ( snormUP[1] < alpha[1] * stol * xnormUP[1] ) {
 			*reason = SNES_CONVERGED_PNORM_RELATIVE;
-      ierr = PetscInfo3(snes,"Converged due to small update length (P): %14.12e < %14.12e * %14.12e\n",(double)snormUP[0],(double)snes->xtol,(double)xnormUP[1]);CHKERRQ(ierr);
+      ierr = PetscInfo3(snes,"Converged due to small update length (P): %14.12e < %14.12e * %14.12e\n",(double)snormUP[1],(double)snes->xtol,(double)xnormUP[1]);CHKERRQ(ierr);
 		}
 	
 		if (fnorm <= snes->ttol) {
