@@ -42,14 +42,15 @@
 -ksp_type fgmres
 
 -log_summary
+-nsteps 2
 -mx 20
--my 4
+-my 10
 -mz 20
 -output_path rift3d
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -ptatin_model Riftrh
--snes_type ksponly
+#-snes_type ksponly
 -stk_velocity_da_mat_type aij
 #End of PETSc Option Table entries
