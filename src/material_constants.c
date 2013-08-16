@@ -989,7 +989,14 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const in
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[5],region_id);
 	MaterialConst_ViscosityArrhGetField_Tref(data,&value);
 	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
-	
+
+  sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[6],region_id);
+	MaterialConst_ViscosityArrhGetField_Eta_scale(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+
+    sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[7],region_id);
+	MaterialConst_ViscosityArrhGetField_P_scale(data,&value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
     
 	DataFieldRestoreAccess(PField);
 	
@@ -1986,7 +1993,10 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 			break; 
 		case VISCOUS_ARRHENIUS:
 			ierr= MaterialConstantsSetFromOptions_ViscosityArrh(db,model_name,region_id,essential);CHKERRQ(ierr);
-			break; 
+			break;
+		case VISCOUS_ARRHENIUS_2:
+			ierr= MaterialConstantsSetFromOptions_ViscosityArrh(db,model_name,region_id,essential);CHKERRQ(ierr);
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
 			break;
@@ -2074,7 +2084,10 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 			break; 
 		case VISCOUS_ARRHENIUS:
             ierr = MaterialConstantsScaleValues_ViscosityArrh(db,region_id,eta_star,P_star);CHKERRQ(ierr);
-			break; 
+			break;
+		case VISCOUS_ARRHENIUS_2:
+            ierr = MaterialConstantsScaleValues_ViscosityArrh(db,region_id,eta_star,P_star);CHKERRQ(ierr);
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
 			break;
@@ -2159,7 +2172,10 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 			break; 
 		case VISCOUS_ARRHENIUS:
 			ierr = MaterialConstantsPrintValues_ViscosityArrh(db,region_id);CHKERRQ(ierr);
-			break; 
+			break;
+		case VISCOUS_ARRHENIUS_2:
+			ierr = MaterialConstantsPrintValues_ViscosityArrh(db,region_id);CHKERRQ(ierr);
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
 			break;

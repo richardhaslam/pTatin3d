@@ -51,7 +51,8 @@ typedef enum {
 	VISCOUS_CONSTANT=0,
 	VISCOUS_FRANKK,
     	VISCOUS_Z,
-	VISCOUS_ARRHENIUS
+	VISCOUS_ARRHENIUS,
+	VISCOUS_ARRHENIUS_2
 } ViscousType;
 
 typedef enum { 
