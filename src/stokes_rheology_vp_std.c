@@ -489,12 +489,48 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
                 
 				pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
                 
-				entalpy = entalpy + pressure*Vmol;
+                if (pressure >= 0.0) {
+                    entalpy = entalpy + pressure*Vmol;
+                }
+
 				eta  = Ascale*0.25*pow(sr,1.0/nexp - 1.0)*pow(0.75*preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
 				eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
-				
 			}
 				break;
+
+			case VISCOUS_ARRHENIUS_2: {
+				PetscScalar R       = 8.31440;
+				PetscReal nexp      = ViscArrh_data[ region_idx ].nexp;
+				PetscReal entalpy   = ViscArrh_data[ region_idx ].entalpy;
+				PetscReal preexpA   = ViscArrh_data[ region_idx ].preexpA;
+				PetscReal Vmol      = ViscArrh_data[ region_idx ].Vmol;
+				PetscReal Tref      = ViscArrh_data[ region_idx ].Tref;
+				PetscReal Ascale    = ViscArrh_data[ region_idx ].Ascale;
+				PetscReal T_arrh    = T_mp + Tref ;
+				PetscReal sr, eta, pressure;
+				
+				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+                ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+                
+                sr = inv2_D_mp/ViscArrh_data[ region_idx ].Eta_scale*ViscArrh_data[ region_idx ].P_scale;
+				if (sr < 1.0e-17) {
+					sr = 1.0e-17;
+				}
+                
+				pressure = ViscArrh_data[ region_idx ].P_scale*pressure_mp;
+                
+                if (pressure >= 0.0) {
+                    entalpy = entalpy + pressure*Vmol;
+                }
+
+				eta  = Ascale*pow(sr,1.0/nexp - 1.0)*pow(preexpA,-1.0/nexp)*exp(entalpy/(nexp*R*T_arrh));
+				eta_mp = eta/ViscArrh_data[ region_idx ].Eta_scale;
+			}
+				break;
+                
+            default:
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default ViscousType specified. Valid choices are VISCOUS_CONSTANT, VISCOUS_Z, VISCOUS_FRANKK, VISCOUS_ARRHENIUS, VISCOUS_ARRHENIUS_2");
+                
 		}
 		
 		switch (plastic_type) {
@@ -531,6 +567,8 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 						ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp, tau_yield_inf, &tau_yield_mp);
 					}
 						break;
+                    default:
+                        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
 				}
 				
 				//MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
@@ -546,9 +584,9 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 					ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
 					
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
-					if 	(eta_mp < 1.e-10) {
-						PetscPrintf(PETSC_COMM_WORLD," region_idx %d tau_yield_mp = %e inv2_D_mp = %e ux = %e,uy = %e,uz = %e \n",region_idx,tau_yield_mp,inv2_D_mp,ux,uy,uz);
-					}
+					//if 	(eta_mp < 1.e-10) {
+					//	PetscPrintf(PETSC_COMM_WORLD," region_idx %d tau_yield_mp = %e inv2_D_mp = %e ux = %e,uy = %e,uz = %e \n",region_idx,tau_yield_mp,inv2_D_mp,ux,uy,uz);
+					//}
 					npoints_yielded++;
 					//  MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
 				}
@@ -593,7 +631,9 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 						ComputeExponentialSoft(eplastic,emin,efold,phi, phi_inf, &phi);
 					}
 						break;
-				} 
+                    default:
+                        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
+				}
 				
 				/* mark all markers as not yielding */
 				MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
@@ -627,10 +667,12 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
 					npoints_yielded++;
 					MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield_type);
-					
 				}
 			}
 				break;
+
+            default:
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default PlasticType set. Valid choices are PLASTIC_NONE, PLASTIC_MISES, PLASTIC_DP");
 		}
 		
 		
@@ -661,7 +703,9 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				rho_mp = -10.0*rho0*(1-alpha*T_mp+beta*pressure_mp);
 				MPntPStokesSetField_density(mpprop_stokes,rho_mp);         
 			}
-				break;                 
+				break;
+            default:
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default DensityType set. Valid choices are DENSITY_CONSTANT, DENSITY_BOUSSINESQ");
 				
 		}
 		
