@@ -41,4 +41,17 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,const
 PetscReal absolute(PetscReal a);
 void detrend(PetscReal array[], PetscInt n);
 PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed);
+
+typedef struct {
+        PetscScalar nlayers;
+        PetscReal lscale;
+        PetscReal cond[20];
+        PetscReal hp[20];
+        PetscReal qbase[20];
+        PetscReal ytop[20];
+        PetscReal ttop[20];
+        PetscReal thick[20];
+} DMDA_thermalfield_init_params;
+
+PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx);
 #endif

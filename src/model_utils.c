@@ -194,3 +194,59 @@ PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed)
     
     PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse_InitialThermalField3D"
+PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+    DMDA_thermalfield_init_params *thermalparams;
+    thermalparams = (DMDA_thermalfield_init_params*)ctx;
+    PetscInt i,klay,nlt;
+    PetscReal y,yldep,dtemp;
+
+    y   = pos[1] * thermalparams->lscale;
+    nlt = thermalparams->nlayers;
+//  Which layer contains the current node?
+    klay = 0;
+
+    for (i=0; i <= nlt-1; i++) {
+        if (y <= thermalparams->ytop[i] && y >= thermalparams->ytop[i+1]) {
+            klay = i;
+            break;
+        }
+    }
+    yldep = thermalparams->ytop[klay] - y;
+    dtemp = thermalparams->hp[klay] * yldep * (thermalparams->thick[klay]-yldep/2.0e0) + thermalparams->qbase[klay]*yldep;
+    dtemp = dtemp / thermalparams->cond[klay];
+    *val  = thermalparams->ttop[klay] + dtemp;
+/*    if (pos[0]==0&&pos[2]==0) {
+        printf("y=%1.4e, T=%1.4e \n",y,*val);
+        printf("ytop0=%1.4e\n",thermalparams->ytop[0]);
+        printf("ytop1=%1.4e\n",thermalparams->ytop[1]);
+        printf("ytop1=%1.4e\n",thermalparams->ytop[2]);
+        printf("klay=%d\n",klay);
+    }
+ */
+
+    return PETSC_TRUE;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
