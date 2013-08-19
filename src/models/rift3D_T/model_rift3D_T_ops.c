@@ -598,6 +598,96 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2"
+PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx   *data = (ModelRift3D_TCtx*)ctx;
+	PhysCompStokes     stokes;
+	DM                 stokes_pack,dav,dap;
+	PetscInt           Nxp[2];
+	PetscReal          perturb;
+	DataBucket         material_point_db,material_point_face_db;
+	PetscInt           f, n_face_list=2, face_list[] = { 3, 4 }; // ymin, zmax //
+	//	PetscInt           f, n_face_list=1, face_list[] = { 3 }; /* base */
+	int                p,n_mp_points;
+	MPAccess           mpX;
+	PetscErrorCode     ierr;
+	
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
+	
+	/* create face storage for markers */
+	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
+	
+	for (f=0; f<n_face_list; f++) {
+		
+		/* traverse */
+		/* [0,1/east,west] ; [2,3/north,south] ; [4,5/front,back] */
+		Nxp[0]  = 1;
+		Nxp[1]  = 1;
+		perturb = 0.1;
+		
+		/* reset size */
+		DataBucketSetSizes(material_point_face_db,0,-1);
+		
+		/* assign coords */
+		ierr = SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(dav,Nxp,perturb, face_list[f], material_point_face_db);CHKERRQ(ierr);
+		
+		/* assign values */
+		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
+		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		for (p=0; p<n_mp_points; p++) {
+			ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
+		}
+		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+
+		
+		/* set/reset any variables */
+		/*
+		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
+		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		for (p=0; p<n_mp_points; p++) {
+			ierr = MaterialPointSet_plastic_strain(mpX,p,0.0);CHKERRQ(ierr);
+			ierr = MaterialPointSet_yield_indicator(mpX,p,0);CHKERRQ(ierr);
+		}
+		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		*/
+		
+		/* insert into volume bucket */
+		DataBucketInsertValues(material_point_db,material_point_face_db);
+	}	
+	
+	/* Copy ONLY PHASE from nearest markers to newly inserted markers expect (xi,xip,pid) */
+	ierr = MaterialPointRegionAssignment_v2(material_point_db,dav);CHKERRQ(ierr);
+	
+	
+	/* re-assign pid's for new particles such that they are consistent with the original volume marker set */
+#if 0
+	{
+		const int nf = 2;
+		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+		char mp_file_prefix[1024];
+		
+		sprintf(mp_file_prefix,"mpoints_remesh_vol1");
+		ierr = SwarmViewGeneric_ParaView(material_point_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+	}
+#endif	
+	
+	/* delete */
+	DataBucketDestroy(&material_point_face_db);
+		
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_Rift3D_T"
 PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
