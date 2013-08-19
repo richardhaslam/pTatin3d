@@ -60,6 +60,8 @@
 
 #include "rift3D_T_ctx.h"
 
+#define REMOVE_FACE_INJECTION
+
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx);
 
@@ -498,6 +500,12 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
+#ifndef REMOVE_FACE_INJECTION	
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] FACE_INJECTION IS BEING IGNORED - POTENTIAL BUG DETECTED \n", __FUNCT__);
+#endif
+	
+#ifdef REMOVE_FACE_INJECTION	
+	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
@@ -583,6 +591,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 	
 	/* delete */
 	DataBucketDestroy(&material_point_face_db);
+
+#endif	
 	
 	PetscFunctionReturn(0);
 }
