@@ -19,13 +19,12 @@
 	-model_Riftrh_etam 1.0e21
 	-model_Riftrh_vis_bar 1.0e26
 
--mx 20
--my 4
--mz 20
--nsteps 3
+-mx 128
+-my 32
+-mz 128
+-nsteps 100
 -output_frequency 1
 -output_path rift3d
-
 -constant_dt 1.0e-3
 
 # ------------------------------------------
@@ -64,15 +63,15 @@
 		
 
 	# multigrid coarse grid geometry
-	-dau_nlevels 2
-	-fieldsplit_u_pc_mg_levels 2
+	-dau_nlevels               3
+	-fieldsplit_u_pc_mg_levels 3
 
-	-stk_velocity_da_refine_hierarchy_x 2,2
-	-stk_velocity_da_refine_hierarchy_y 1,1
-	-stk_velocity_da_refine_hierarchy_z 2,2
+	-stk_velocity_da_refine_hierarchy_x 2,4
+	-stk_velocity_da_refine_hierarchy_y 1,2
+	-stk_velocity_da_refine_hierarchy_z 2,4
 
 	# Multigrid coarse grid operators
-	-A11_operator_type 0,1
+	-A11_operator_type 0,1,1
 	-stk_velocity_da_mat_type aij
 
 	# multigrid smoother on each level
@@ -110,6 +109,6 @@
 		-fieldsplit_u_mg_coarse_ksp_converged_reason
 	-snes_converged_reason
 
-
+-snes_view
 -log_summary
 -options_left 1

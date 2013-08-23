@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# Give the job a name (optional)
+#PBS -N "pt3d"
+#
+# Specify the project the job should be accounted on (obligatory)
+#PBS -A geofysisk
+#
+
+#  Send me an email on  a=abort, b=begin, e=end
+#PBS -m abe
+#PBS -M dave.mayhem23@gmail.com
+
+
+# The job needs at most 60 hours wall-clock time on 1 CPU (obligatory)
+#PBS -l mppwidth=512,walltime=10:20:00
+#
+
+# Combined stdout and stderr
+#PBS -j oe
+
+# Write the standard output of the job to file 'ptat{.out,.err}' (optional)
+## PBS -o ptat-kspa11.out
+## PBS -e ptat-kspa11.err
+
+#
+# Make sure I am in the correct directory
+mkdir -p /work/$USER/pt3d-rh
+cd /work/$USER/pt3d-rh
+
+# Invoke the executable on the compute node
+aprun -B ./ptatin_driver_nonlinear_ts.app \
+  -options_file pt3d.riftrh.mg.iterativecoarse.opts \
+  -output_path /work/dmay/pt3d-rh/output7 \
+  -fieldsplit_u_mg_coarse_ksp_type fgmres \
+  -fieldsplit_u_mg_coarse_ksp_max_it 20 \
+  -fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2 \
+  -fieldsplit_u_mg_coarse_pc_type ksp \
+    -fieldsplit_u_mg_coarse_ksp_ksp_type chebychev \
+    -fieldsplit_u_mg_coarse_ksp_ksp_norm_type NONE \
+      -fieldsplit_u_mg_coarse_ksp_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1 \
+      -fieldsplit_u_mg_coarse_ksp_est_ksp_norm_type NONE \
+    -fieldsplit_u_mg_coarse_ksp_ksp_max_it 15 \
+    -fieldsplit_u_mg_coarse_ksp_pc_type asm \
+      -fieldsplit_u_mg_coarse_ksp_pc_asm_overlap 1 \
+      -fieldsplit_u_mg_coarse_ksp_sub_pc_type icc \
+      -fieldsplit_u_mg_coarse_ksp_sub_pc_factor_levels 3 \
+  -fieldsplit_u_mg_coarse_ksp_gmres_modifiedgramschmidt \
+  -options_left \
+  -snes_max_it 1 \
+
+#  -stk_velocity_da_refine_hierarchy_x 2,2 \
+#  -stk_velocity_da_refine_hierarchy_y 2,2 \
+#  -stk_velocity_da_refine_hierarchy_z 2,2 \
+#  -dau_nlevels               3 \
+#  -fieldsplit_u_pc_mg_levels 3 \
+#  -da_processors_y 1 \
+
+
