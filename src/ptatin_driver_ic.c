@@ -44,6 +44,8 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "ptatin_utils.h"
 #include "stokes_form_function.h"
 #include "stokes_operators.h"
+#include "sub_comm.h"
+#include "dmda_redundant.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_material_points_check_ic"
@@ -88,6 +90,28 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+
+#if 0
+	{
+		DM sdav;
+		int nproc;
+		MPI_Subcomm scomm;
+		Vec field;
+		
+		MPI_Comm_size(PETSC_COMM_WORLD,&nproc);
+		
+		ierr = DMDACreate3dSemiRedundant(dav,nproc/8,&scomm,&sdav);CHKERRQ(ierr);
+
+		if (sdav) {
+			ierr = DMCreateGlobalVector(sdav,&field);CHKERRQ(ierr);
+			//ierr = DMView(sdav, PETSC_VIEWER_STDOUT_(scomm->sub_comm) );CHKERRQ(ierr); /* allocates a viewer?? */
+			ierr = DMDAViewPetscVTK(sdav,field,"subdm.vtk");CHKERRQ(ierr);
+			ierr = VecDestroy(&field);CHKERRQ(ierr);
+			ierr = DMDestroy(&sdav);CHKERRQ(ierr);
+		}
+		MPI_Subcomm_free(&scomm);
+	}
+#endif
 	
 	/* generate energy solver */
 	/* NOTE - Generating the thermal solver here will ensure that the initial geometry on the mechanical model is copied */
