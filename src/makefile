@@ -33,6 +33,7 @@ export TATIN_SRC = \
 			dmda_element_q1macrop1.c \
 			swarm_fields.c \
 			data_exchanger.c \
+			sub_comm.c \
 			MPntStd_def.c \
 			MPntPStokes_def.c \
 			MPntPStokesPl_def.c \

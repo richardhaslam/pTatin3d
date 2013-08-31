@@ -35,7 +35,10 @@
 #include <petscdm.h>
 
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
+#include "sub_comm.h"
+#include "dmda_update_coords.h"
 #include "dmda_redundant.h"
+
 
 extern PetscErrorCode DMView_DA_Private(DM da);
 
@@ -215,3 +218,100 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 	
 	PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDACreate3dSemiRedundant"
+PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM *sda)
+{
+	MPI_Comm comm,subcomm;
+	MPI_Subcomm _sub;
+	DM _sda,seq_da;
+	int ie,active;
+	PetscInt M,N,P,dof,sw;
+	DMDABoundaryType wrap[3];
+	DMDAStencilType st;
+	PetscInt si[3],gnx[3];
+	PetscErrorCode ierr;
+
+	comm = ((PetscObject)da)->comm;
+	
+	ie = MPI_Subcomm_create_MethodA(comm,(int)nred,&_sub);
+	ie = MPI_Subcomm_get_comm(_sub,&subcomm);
+	ie = MPI_Subcomm_get_active(_sub,&active);
+	
+	/* get properties from original da, create sub da letting petsc determine distribution */
+	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap[0],&wrap[1],&wrap[2],&st );CHKERRQ(ierr);
+	if (active) {
+		ierr = DMDACreate3d(subcomm,wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, PETSC_NULL,PETSC_NULL,PETSC_NULL, &_sda );CHKERRQ(ierr);
+	} else {
+		_sda = PETSC_NULL;
+	}
+	
+	/* fetch distribution information about sub da */
+	/* active ranks fetch a range of entries, non active ranks fetch a single local node */
+	si[0]  = si[1]  = si[2]  = -1;
+	gnx[0] = gnx[1] = gnx[2] = -1;
+	if (active) {
+		ierr = DMDAGetCorners(_sda,&si[0],&si[1],&si[2],&gnx[0],&gnx[1],&gnx[2]);CHKERRQ(ierr);
+	} else {
+		ierr = DMDAGetCorners(da,&si[0],&si[1],&si[2],PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+		gnx[0] = gnx[1] = gnx[2] = 1;
+	}
+
+	ierr = DMDACreate3dRedundant(da,si[0],si[0]+gnx[0], si[1],si[1]+gnx[1], si[2],si[2]+gnx[2], dof, &seq_da );CHKERRQ(ierr);
+	
+	/* now copy the coordiantes */
+	if (active) {
+		PetscInt s_si[3],seq_si[3],s_gnx[3],seq_gnx[3];
+		DM seq_cda,s_cda;
+		Vec seq_coor,s_coor;
+		DMDACoor3d ***LA_seq_coor,***LA_s_coor;
+		PetscInt i,j,k;
+		
+		ierr = DMDASetUniformCoordinates( _sda, 0.0,1.0, 0.0,1.0, 0.0,1.0 );CHKERRQ(ierr);
+
+		ierr = DMDAGetCoordinateDA(seq_da,&seq_cda);CHKERRQ(ierr);
+		ierr = DMDAGetCoordinates(seq_da,&seq_coor);CHKERRQ(ierr);
+		ierr = DMDAVecGetArray(seq_cda,seq_coor,&LA_seq_coor);CHKERRQ(ierr);
+
+		ierr = DMDAGetCoordinateDA(_sda,&s_cda);CHKERRQ(ierr);
+		ierr = DMDAGetCoordinates(_sda,&s_coor);CHKERRQ(ierr);
+		ierr = DMDAVecGetArray(s_cda,s_coor,&LA_s_coor);CHKERRQ(ierr);
+		
+		/* check sizes */
+		ierr = DMDAGetCorners(_sda,  &s_si[0],  &s_si[1],  &s_si[2],  &s_gnx[0],  &s_gnx[1],  &s_gnx[2]);CHKERRQ(ierr);
+		ierr = DMDAGetCorners(seq_da,&seq_si[0],&seq_si[1],&seq_si[2],&seq_gnx[0],&seq_gnx[1],&seq_gnx[2]);CHKERRQ(ierr);
+		
+		if (s_gnx[0] != seq_gnx[0]) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"i range doesn't match"); }
+		if (s_gnx[1] != seq_gnx[1]) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"j range doesn't match"); }
+		if (s_gnx[2] != seq_gnx[2]) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"k range doesn't match"); }
+		
+		for (k=s_si[2]; k<s_si[2]+s_gnx[2]; k++) {
+			for (j=s_si[1]; j<s_si[1]+s_gnx[1]; j++) {
+				for (i=s_si[0]; i<s_si[0]+s_gnx[0]; i++) {
+
+					LA_s_coor[k][j][i].x = LA_seq_coor[ k - s_si[2] ][ j - s_si[1] ][ i - s_si[0] ].x;
+					LA_s_coor[k][j][i].y = LA_seq_coor[ k - s_si[2] ][ j - s_si[1] ][ i - s_si[0] ].y;
+					LA_s_coor[k][j][i].z = LA_seq_coor[ k - s_si[2] ][ j - s_si[1] ][ i - s_si[0] ].z;
+					
+				}
+			}
+		}
+		
+		ierr = DMDAVecRestoreArray(s_cda,s_coor,&LA_s_coor);CHKERRQ(ierr);
+		ierr = DMDAVecRestoreArray(seq_cda,seq_coor,&LA_seq_coor);CHKERRQ(ierr);
+		
+		
+		ierr = DMDAUpdateGhostedCoordinates(_sda);CHKERRQ(ierr);
+	}
+	
+	ierr = DMDestroy(&seq_da);CHKERRQ(ierr);
+	
+	
+	*sub = _sub;
+	*sda = _sda;
+	
+	PetscFunctionReturn(0);
+}
+
