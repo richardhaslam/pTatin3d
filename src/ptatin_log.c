@@ -150,6 +150,7 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	PetscInt its,lits,nkspfails,nFevals,nstepfails;
 	const char *prefix;
 	SNESConvergedReason reason;
+	PetscBool same;
 	PetscErrorCode ierr;
 	
 	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
@@ -158,12 +159,25 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
 	ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
-	PetscViewerASCIIPrintf(ctx->log,"  SNES: (%18.18s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  total linear its. %1.4d;  reason %s;  \n", snesname,prefix,rnorm,its,lits,SNESConvergedReasons[reason]);
+	ierr = PetscTypeCompare((PetscObject)snes,SNESKSPONLY,&same);CHKERRQ(ierr);
 
-	ierr = SNESGetLinearSolveFailures(snes,&nkspfails);CHKERRQ(ierr);
-	ierr = SNESGetNonlinearStepFailures(snes,&nstepfails);CHKERRQ(ierr);
-	ierr = SNESGetNumberFunctionEvals(snes,&nFevals);CHKERRQ(ierr);
-	PetscViewerASCIIPrintf(ctx->log,"        function evals %1.4d;  ksp failures %1.4d;  step failures %1.4d\n", nFevals, nkspfails, nstepfails);
+	if (!same) {
+		PetscViewerASCIIPrintf(ctx->log,"  SNES: (%18.18s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  total linear its. %1.4d;  reason %s;  \n", snesname,prefix,rnorm,its,lits,SNESConvergedReasons[reason]);
+
+		ierr = SNESGetLinearSolveFailures(snes,&nkspfails);CHKERRQ(ierr);
+		ierr = SNESGetNonlinearStepFailures(snes,&nstepfails);CHKERRQ(ierr);
+		ierr = SNESGetNumberFunctionEvals(snes,&nFevals);CHKERRQ(ierr);
+		PetscViewerASCIIPrintf(ctx->log,"                                              function evals %1.4d;  ksp failures %1.4d;  step failures %1.4d\n", nFevals, nkspfails, nstepfails);
+	}
+	else if (same) {
+		char kspname[] = "snes->ksp";
+		KSP ksp;
+
+		PetscViewerASCIIPrintf(ctx->log,"  SNES: (%18.18s)[prefix %8.8s] -> ksponly \n", snesname,prefix);
+
+		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+		ierr = pTatinLogBasicKSP(ctx,kspname,ksp);CHKERRQ(ierr);
+	}
 	
 	PetscFunctionReturn(0);
 }
