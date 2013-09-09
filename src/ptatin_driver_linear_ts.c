@@ -515,9 +515,6 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
 	
-	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
-	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
-	
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	{
 		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
@@ -529,7 +526,10 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
-	
+
+	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
+	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
+		
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//for (e=0; e<QUAD_EDGES; e++) {
 	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
@@ -551,10 +551,14 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		char name[128];
 		sprintf(name,"vel_dmda_Lv%d",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
+
+		//sprintf(name,"vel_dmda_Lv%d.vtk",k);
+		//ierr = DMDAViewPetscVTK(dav_hierarchy[k],PETSC_NULL,name);CHKERRQ(ierr);
 	}
 	
 	/* Define interpolation operators for velocity space */
@@ -923,9 +927,6 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	dav           = user->stokes_ctx->dav;
 	dap           = user->stokes_ctx->dap;
 	
-	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
-	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
-	
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	{
 		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
@@ -938,6 +939,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
 	
+	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
+	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
+		
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//for (e=0; e<QUAD_EDGES; e++) {
 	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
@@ -959,6 +963,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		char name[128];
 		sprintf(name,"vel_dmda_Lv%d",k);

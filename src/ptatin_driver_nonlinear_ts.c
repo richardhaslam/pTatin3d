@@ -968,10 +968,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	dav           = stokes->dav;
 	dap           = stokes->dap;
 
-	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
-	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
-	
-	
 	/* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
 	{
 		Vec X;
@@ -986,6 +982,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
+	
+	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
+	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
 	
 	/* generate energy solver */
 	/* NOTE - Generating the thermal solver here will ensure that the initial geometry on the mechanical model is copied */
@@ -1027,6 +1026,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
+	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		char name[128];
 		sprintf(name,"vel_dmda_Lv%d",k);
