@@ -144,6 +144,7 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_runwithmises",&data->runmises,PETSC_NULL);CHKERRQ(ierr);
 	/*scaling */     
+	nondim = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;

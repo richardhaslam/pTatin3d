@@ -110,9 +110,10 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Lx",&data->Lx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Ly",&data->Ly,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Lz",&data->Lz,&flg);CHKERRQ(ierr);
-	
+
+	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_viscous_sinker_cube",&data->is_sphere,&flg);CHKERRQ(ierr);
-	if (flg==PETSC_TRUE) { data->is_sphere = PETSC_FALSE; }
+	if (flg == PETSC_TRUE) { data->is_sphere = PETSC_FALSE; }
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Ox",&data->origin[0],&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_viscous_sinker_Oy",&data->origin[1],&flg);CHKERRQ(ierr);

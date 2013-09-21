@@ -184,7 +184,8 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_runwithmises",&data->runmises,PETSC_NULL);CHKERRQ(ierr);
-	/*scaling */     
+	/*scaling */ 
+	nondim = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
@@ -745,7 +746,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	srand(0);
-	
+
+	norandomiseplastic = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
+
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
 		MPntPStokes   *mpprop_stokes;
@@ -775,8 +779,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		} else {
 			phase = 0;
 		}
-		norandomiseplastic = PETSC_FALSE;
-		ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
+
 		if (norandomiseplastic) {
 			pls   = 0.0;
 			if ( (xcoord > 250.0e3) && (xcoord < 350.0e3) &&  (zcoord < 150.0e3) ) {

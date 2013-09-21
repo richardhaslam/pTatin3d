@@ -295,6 +295,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_runwithmises",&data->runmises,PETSC_NULL);CHKERRQ(ierr);
 	/* scaling */
+	nondim = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
