@@ -84,22 +84,22 @@ struct  _p_DataEx {
 
 extern const char *status_names[];
 
-DataEx DataExCreate( MPI_Comm comm, const PetscInt count );
-PetscErrorCode DataExView( DataEx d );
-PetscErrorCode DataExDestroy( DataEx d );
-PetscErrorCode DataExTopologyInitialize( DataEx d );
-PetscErrorCode DataExTopologyAddNeighbour( DataEx d, const PetscMPIInt proc_id );
-PetscErrorCode DataExTopologyFinalize( DataEx d );
-PetscErrorCode DataExInitializeSendCount( DataEx de );
-PetscErrorCode DataExAddToSendCount( DataEx de, const PetscMPIInt proc_id, const PetscInt count );
-PetscErrorCode DataExFinalizeSendCount( DataEx de );
-PetscErrorCode DataExPackInitialize( DataEx de, size_t unit_message_size );
-PetscErrorCode DataExPackData( DataEx de, PetscMPIInt proc_id, PetscInt n, void *data );
-PetscErrorCode DataExPackFinalize( DataEx de );
-PetscErrorCode DataExBegin( DataEx de );
-PetscErrorCode DataExEnd( DataEx de );
-PetscErrorCode DataExGetSendData( DataEx de, PetscInt *length, void **send );
-PetscErrorCode DataExGetRecvData( DataEx de, PetscInt *length, void **recv );
+DataEx DataExCreate(MPI_Comm comm,const PetscInt count);
+PetscErrorCode DataExView(DataEx d);
+PetscErrorCode DataExDestroy(DataEx d);
+PetscErrorCode DataExTopologyInitialize(DataEx d);
+PetscErrorCode DataExTopologyAddNeighbour(DataEx d,const PetscMPIInt proc_id);
+PetscErrorCode DataExTopologyFinalize(DataEx d);
+PetscErrorCode DataExInitializeSendCount(DataEx de);
+PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const PetscInt count);
+PetscErrorCode DataExFinalizeSendCount(DataEx de);
+PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size);
+PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *data);
+PetscErrorCode DataExPackFinalize(DataEx de);
+PetscErrorCode DataExBegin(DataEx de);
+PetscErrorCode DataExEnd(DataEx de);
+PetscErrorCode DataExGetSendData(DataEx de,PetscInt *length,void **send);
+PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv);
 
 
 
