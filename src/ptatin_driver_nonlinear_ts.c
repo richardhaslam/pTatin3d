@@ -295,6 +295,9 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatShellGetMatStokesMF(A,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
 		mf->daU = PETSC_NULL;
+		ierr = ISDestroy(&mf->isU);CHKERRQ(ierr);
+		ierr = ISDestroy(&mf->isV);CHKERRQ(ierr);
+		ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
 	}
 	
 	/* B operator */
@@ -384,9 +387,14 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
 				
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
+				/* memory saving - only need daU IF you want to split A11 into A11uu,A11vv,A11ww */
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;				
+				mf->daU = PETSC_NULL;
+				ierr = ISDestroy(&mf->isU);CHKERRQ(ierr);
+				ierr = ISDestroy(&mf->isV);CHKERRQ(ierr);
+				ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
+				/* --- */
 				operatorA11[k] = Auu;
 				
 				{
@@ -398,9 +406,14 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 						
 						if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Activiting low order A11 operator \n");
 						ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
+						/* memory saving - only need daU IF you want to split A11 into A11uu,A11vv,A11ww */
 						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
 						mf->daU = PETSC_NULL;				
+						ierr = ISDestroy(&mf->isU);CHKERRQ(ierr);
+						ierr = ISDestroy(&mf->isV);CHKERRQ(ierr);
+						ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
+						/* --- */
 						operatorB11[k] = Buu;
 						
 					} else {
@@ -1028,6 +1041,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	/* Generate physics modules */
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"Generated vel/pressure mesh --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 	
 	/* Pack all physics together */
 	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
@@ -1050,6 +1065,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"Generated material points --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
@@ -1077,6 +1094,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
 		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
+
+		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
+		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 	}
 	
 	/* interpolate material point coordinates (needed if mesh was modified) */
@@ -1115,6 +1135,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolation_v[k],1,&interpolation_eta[k]);CHKERRQ(ierr);
 	}
+	PetscPrintf(PETSC_COMM_WORLD,"Generated velocity mesh hierarchy --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 	
 	/* Coarse grid setup: Define material properties on gauss points */
 	for (k=0; k<nlevels-1; k++) {
@@ -1127,6 +1149,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,np_per_dim,ncells,&volQ[k]);CHKERRQ(ierr);
 	}
 	volQ[nlevels-1] = stokes->volQ;
+	PetscPrintf(PETSC_COMM_WORLD,"Generated quadrature point hierarchy --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 
 	/* Coarse grid setup: Define boundary conditions */
 	for (k=0; k<nlevels-1; k++) {
@@ -1160,6 +1184,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	mlctx.operatorA11 = operatorA11;
 	mlctx.operatorB11 = operatorB11;
 	/* ============================================== */
+	PetscPrintf(PETSC_COMM_WORLD,"Generated stokes operators --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 	
 	
 	
@@ -1233,6 +1259,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 	
+	PetscPrintf(PETSC_COMM_WORLD,"PreSolve(0) --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 #if 1
 {
 	PetscInt snes_its;
@@ -1268,6 +1296,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	}
 }
 #endif
+	PetscPrintf(PETSC_COMM_WORLD,"PostSolve(0) --> ");
+	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
 
 	newton_its = 0;
 	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,PETSC_NULL);
@@ -1640,10 +1670,20 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
+	PetscMPIInt rank;
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	
+	ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
+
 	ierr = pTatin3d_nonlinear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
+
+	//ierr = PetscMemoryGetMaximumUsage(&mem);CHKERRQ(ierr);
+	//PetscPrintf(PETSC_COMM_SELF,"[%D] MaxMemory = %1.4e MB \n",rank,mem*1.0e-6);
+	//ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
+	//PetscPrintf(PETSC_COMM_SELF,"[%D] MaxMemory = %1.4e MB \n",rank,mem*1.0e-6);
+	ierr = pTatinGetRangeMaximumMemoryUsage(PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = PetscFinalize();CHKERRQ(ierr);
 	return 0;

@@ -236,6 +236,53 @@ int ptatin_RandomGetInt(int min,int max)
 	return ri;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetRangeMaximumMemoryUsage"
+PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[])
+{
+	PetscErrorCode ierr;
+	PetscLogDouble mem;
+	double min,max,_mem;
+	
+	ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
+	_mem = (double)mem;
+	ierr = MPI_Allreduce(&_mem,&min,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&_mem,&max,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	if (range) {
+		range[0] = (PetscReal)min;
+		range[1] = (PetscReal)max;
+	} else {
+		PetscPrintf(PETSC_COMM_WORLD,"pTatin3dMaxMemoryUsage = [%1.4e , %1.4e] (MB) \n",min*1.0e-6,max*1.0e-6);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetRangeCurrentMemoryUsage"
+PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
+{
+	PetscErrorCode ierr;
+	PetscLogDouble mem;
+	double min,max,_mem;
+	
+	ierr = PetscMallocGetCurrentUsage(&mem);CHKERRQ(ierr);
+	_mem = (double)mem;
+	ierr = MPI_Allreduce(&_mem,&min,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&_mem,&max,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	if (range) {
+		range[0] = (PetscReal)min;
+		range[1] = (PetscReal)max;
+	} else {
+		PetscPrintf(PETSC_COMM_WORLD,"pTatin3dCurrentMemoryUsage = [%1.4e , %1.4e] (MB) \n",min*1.0e-6,max*1.0e-6);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+
 # if 0
 
 #undef __FUNCT__

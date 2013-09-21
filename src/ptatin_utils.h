@@ -45,5 +45,8 @@ void ptatin_RandomSetSeed(unsigned seed);
 double ptatin_RandomGetDouble(double min,double max);
 int ptatin_RandomGetInt(int min,int max);
 
+PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[]);
+PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[]);
+
 #endif
 
