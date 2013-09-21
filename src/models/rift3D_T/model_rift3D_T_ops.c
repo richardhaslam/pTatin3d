@@ -717,6 +717,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	DataField              PField_std,PField_pls;
 	int                    phase;
 	MPAccess               mpX;
+	PetscBool              norandomiseplastic;
 	PetscErrorCode         ierr;
 
 	PetscFunctionBegin;
@@ -757,7 +758,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 		double        *position,ycoord,xcoord,zcoord;
 		float         pls;
 		char          yield;
-		PetscBool     norandomiseplastic;
         
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
