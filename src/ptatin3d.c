@@ -1119,8 +1119,9 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	PetscFunctionBegin;
 	
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
+	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg==PETSC_TRUE) {
+	if (flg == PETSC_TRUE) {
 		ctx->restart_from_file = PETSC_TRUE;
 	}	
 	if (!ctx->restart_from_file) {

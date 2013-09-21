@@ -347,7 +347,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		
 		switch (level_type[k]) {
 				
-			case 0:
+			case OP_TYPE_REDISC_ASM:
 			{
 				Mat Auu;
 				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
@@ -374,7 +374,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			}
 				break;
 				
-			case 1:
+			case OP_TYPE_REDISC_MF:
 			{
 				Mat Auu;
 				MatA11MF mf,A11Ctx;
@@ -414,7 +414,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			}
 				break;
 				
-			case 2:
+			case OP_TYPE_GALERKIN:
 			{
 				Mat Auu;
 				
@@ -575,7 +575,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 		
 		switch (level_type[k]) {
 				
-			case 0:
+			case OP_TYPE_REDISC_ASM:
 			{
 				Mat Auu;
 				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
@@ -602,7 +602,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 			}
 				break;
 				
-			case 1:
+			case OP_TYPE_REDISC_MF:
 			{
 				Mat Auu;
 				MatA11MF mf,A11Ctx;
@@ -642,7 +642,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 			}
 				break;
 				
-			case 2:
+			case OP_TYPE_GALERKIN:
 			{
 				Mat Auu;
 				
@@ -820,6 +820,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		PC        pc,pc_i;
 		PetscInt  nsplits;
 		
+		use_low_order_geometry = PETSC_FALSE;
 		ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
 
 		for (k=mlctx->nlevels-2; k>=0; k--) {
@@ -843,7 +844,21 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 					ierr = MatAssemble_StokesA_AUU(mlctx->operatorB11[k],mlctx->dav_hierarchy[k],mlctx->u_bclist[k],mlctx->volQ[k]);CHKERRQ(ierr);
 
 					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-
+					/* hack for nested coarse solver */
+					{
+						KSP ksp_nested;
+						PC pc_smoother;
+						PetscBool is_nested_ksp;
+						
+						ierr = KSPGetPC(ksp_smoother,&pc_smoother);CHKERRQ(ierr);
+						is_nested_ksp = PETSC_FALSE;
+						ierr = PetscTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
+						if (is_nested_ksp) {
+							ierr = PCKSPGetKSP(pc_smoother,&ksp_nested);CHKERRQ(ierr);
+							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						}
+					}
+					
 					/* no low order assembly */
 					/*
 					if (use_low_order_geometry==PETSC_TRUE) {
@@ -857,7 +872,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 					
 				case OP_TYPE_REDISC_MF:
 				{
-					if (use_low_order_geometry==PETSC_TRUE) {
+					if (use_low_order_geometry == PETSC_TRUE) {
 						//	ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 					} else {
@@ -889,6 +904,62 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 					break;
 			}
 		}
+		
+		/* push operators */
+		for (k=mlctx->nlevels-1; k>=0; k--) {
+			
+			ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+			ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+			ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
+			ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
+			
+			if (k == 0) {
+				ierr = PCMGGetCoarseSolve(pc_i,&ksp_smoother);CHKERRQ(ierr);
+			} else {
+				ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
+			}
+			
+			switch (mlctx->level_type[k]) {
+					
+				case OP_TYPE_REDISC_ASM:
+				{
+					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					/* hack for nested coarse solver */
+					{
+						KSP ksp_nested;
+						PC pc_smoother;
+						PetscBool is_nested_ksp;
+						
+						ierr = KSPGetPC(ksp_smoother,&pc_smoother);CHKERRQ(ierr);
+						is_nested_ksp = PETSC_FALSE;
+						ierr = PetscTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
+						if (is_nested_ksp) {
+							ierr = PCKSPGetKSP(pc_smoother,&ksp_nested);CHKERRQ(ierr);
+							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						}
+					}
+				}
+					break;
+					
+				case OP_TYPE_REDISC_MF:
+				{
+					if (use_low_order_geometry == PETSC_TRUE) {
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					} else {
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					}
+				}
+					break;
+					
+				case OP_TYPE_GALERKIN:
+				{
+					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				}
+					break;
+			}
+		}
+		
+		
 		
 	}
 #endif	
