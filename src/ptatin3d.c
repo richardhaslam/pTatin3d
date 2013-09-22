@@ -185,6 +185,65 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_ModelOutputLite_Velocity_Stokes"
+PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
+{
+	PetscErrorCode ierr;
+	char           *name;
+	char           date_time[1024];
+	DM             stokes_pack;
+	Vec            UP;
+	PetscLogDouble t0,t1;
+	static int     beenhere=0;
+	static char    *pvdfilename;
+	PetscFunctionBegin;
+	
+	PetscGetTime(&t0);
+	// PVD
+	if (beenhere==0) {
+		
+		if (ctx->restart_from_file) {
+			pTatinGenerateFormattedTimestamp(date_time);
+			asprintf(&pvdfilename,"%s/timeseries_v_%s.pvd",ctx->outputpath,date_time);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
+		} else {
+			asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		}
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
+	}
+	{
+		char *vtkfilename;
+		
+		if (prefix) {
+			asprintf(&vtkfilename, "%s_v.pvts",prefix);
+		} else {
+			asprintf(&vtkfilename, "v.pvts");
+		}
+		
+		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, PETSC_NULL);CHKERRQ(ierr);
+		free(vtkfilename);
+	}
+	
+	// PVTS + VTS
+	if (prefix) {
+		asprintf(&name,"%s_v",prefix);
+	} else {
+		asprintf(&name,"v");
+	}
+	
+	stokes_pack = ctx->stokes_ctx->stokes_pack;
+	UP = X;
+	ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+	free(name);
+	PetscGetTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	
+	PetscFunctionReturn(0);
+}
 
 
 /* MATERIAL POINTS */
