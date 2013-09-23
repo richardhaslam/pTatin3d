@@ -282,7 +282,7 @@ PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 	}
 	ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
 	PetscGetTime(&t1);
-	PetscPrintf(de->comm,"DataEx Communication setup time = %1.4e\n",t1-t0);
+	PetscPrintf(de->comm,"[[SwarmDMDA3dDataExchangerCreate: time = %1.4e (sec)]]\n",t1-t0);
 	
 	*_de = de;
 	
@@ -343,7 +343,7 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
   ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	DataBucketSetInitialSizes(db,lmx*lmy*lmz*2*2*2,1000);
 	PetscGetTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm initialization: %1.4lf sec]]\n", t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm initialization: %1.4lf (sec)]]\n", t1-t0);
 	
 	PetscGetTime(&t0);
 	{
@@ -364,7 +364,7 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 	}
 	PetscGetTime(&t1);
 	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
-	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm->coordinate assignment: %d points : %1.4lf sec]]\n", npoints,t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm->coordinate assignment: %d points : %1.4lf (sec)]]\n", npoints,t1-t0);
 	
 	
 	/* create the data exchanger need for parallel particle movement */
