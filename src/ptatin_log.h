@@ -49,5 +49,8 @@ PetscErrorCode pTatinLogBasicCPUtime(pTatinCtx ctx,const char component_descript
 PetscErrorCode pTatinLogNote(pTatinCtx ctx,const char comment[]);
 PetscErrorCode pTatinLogNote2(pTatinCtx ctx,const char comment1[],const char comment2[]);
 
+PetscErrorCode pTatinViewBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X);
+PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM pack,Vec X);
+
 #endif
 

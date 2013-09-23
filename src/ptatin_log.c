@@ -223,6 +223,22 @@ PetscErrorCode pTatinLogBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "pTatinViewBasicStokesSolution"
+PetscErrorCode pTatinViewBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X)
+{
+	PetscViewer  tmp;
+	PetscErrorCode ierr;
+	
+	tmp = ctx->log;
+	ctx->log  = PETSC_VIEWER_STDOUT_WORLD;
+	PetscPrintf(PETSC_COMM_WORLD,"pTatinViewBasicStokesSolution:\n");
+	ierr = pTatinLogBasicStokesSolution(ctx,pack,X);CHKERRQ(ierr);
+	ctx->log = tmp;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "pTatinLogBasicStokesSolutionResiduals"
 PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM pack,Vec X)
 {
@@ -233,9 +249,8 @@ PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM 
 	PetscErrorCode ierr;
 	
 //	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-//	ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-	
 	ierr = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 
 	ierr = DMCompositeGetAccess(pack,F,&Fu,&Fp);CHKERRQ(ierr);
 	
@@ -264,6 +279,22 @@ PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM 
 	
 	ierr = DMCompositeRestoreAccess(pack,F,&Fu,&Fp);CHKERRQ(ierr);
 //	ierr = VecDestroy(&F);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinViewBasicStokesSolutionResiduals"
+PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM pack,Vec X)
+{
+	PetscViewer  tmp;
+	PetscErrorCode ierr;
+	
+	tmp = ctx->log;
+	ctx->log  = PETSC_VIEWER_STDOUT_WORLD;
+	PetscPrintf(PETSC_COMM_WORLD,"pTatinViewBasicStokesSolutionResiduals:\n");
+	ierr = pTatinLogBasicStokesSolutionResiduals(ctx,snes,pack,X);CHKERRQ(ierr);
+	ctx->log = tmp;
 	
 	PetscFunctionReturn(0);
 }
