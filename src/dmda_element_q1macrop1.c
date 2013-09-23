@@ -939,6 +939,7 @@ PetscErrorCode  DMDAESetType_Q1Macro(DM da)
 
 	/* create data bucket */
 	ierr = PetscMalloc(sizeof(struct _p_DMDAEQ1MacroCtx),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_DMDAEQ1MacroCtx));CHKERRQ(ierr);
 	
 	/* fill it out */
 	ierr = _DMDAEQ1Macro_MixedSpace_GetSizeElement(da,&ctx->Mx_mixed_space,&ctx->My_mixed_space,&ctx->Mz_mixed_space);CHKERRQ(ierr);

@@ -81,6 +81,7 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	ierr = KSPGetPCSide(ksp,&side);CHKERRQ(ierr);
 	
 	ierr = PetscMalloc(sizeof(struct _p_MatEigenOperator),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_MatEigenOperator));CHKERRQ(ierr);
 	
 	ctx->A   = Aop;     ierr = PetscObjectReference((PetscObject)Aop);CHKERRQ(ierr);
 	ctx->pc   = pc;     ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);

@@ -2577,6 +2577,7 @@ PetscErrorCode MaterialPointGetAccess(DataBucket materialpoint_db,MPAccess *help
 	PetscFunctionBegin;
 	
 	ierr = PetscMalloc(sizeof(struct _p_MPAccess),&X);CHKERRQ(ierr);
+	ierr = PetscMemzero(X,sizeof(struct _p_MPAccess));CHKERRQ(ierr);
 	
 	X->db = materialpoint_db;
 	

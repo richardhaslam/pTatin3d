@@ -49,8 +49,8 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	pTatinModel m;
 	PetscFunctionBegin;
 	
-	PetscMalloc(sizeof(struct _p_pTatinModel),&m);
-	PetscMemzero(m,sizeof(struct _p_pTatinModel));
+	ierr = PetscMalloc(sizeof(struct _p_pTatinModel),&m);CHKERRQ(ierr);
+	ierr = PetscMemzero(m,sizeof(struct _p_pTatinModel));CHKERRQ(ierr);
 	*model = m;
 	PetscFunctionReturn(0);
 }
