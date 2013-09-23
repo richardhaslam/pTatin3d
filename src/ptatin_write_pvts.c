@@ -355,13 +355,30 @@ PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscB
 
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompStokesWrite_DM_X"
-PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],const char name[])
+PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],char name[])
 {
+	PetscInt       output_type;
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
 	
-	ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+	output_type = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-output_type",&output_type,0);
+	switch (output_type) {
+		case 0:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+		case 1:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = pTatinOutputLiteParaViewMeshVelocity(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+		default:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+	}
+	ierr = pTatinOutputLiteParaViewMeshVelocity(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -420,7 +437,7 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 	if (flg) { 
 		sprintf(outfilename,"%s%s",outfilename,suffix);
 	}
-	sprintf(outfilename,"%s-vp",outfilename);
+	//sprintf(outfilename,"%s_vp",outfilename);
 	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
 	ierr = PhysCompStokesWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
 	
@@ -485,8 +502,8 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 		//sprintf(outfilename,"%s%s",outfilename,suffix);
 		_strlcat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);
 	}
-	//sprintf(outfilename,"%s-vp",outfilename);
-	_strlcat(outfilename,"-vp",PETSC_MAX_PATH_LEN-1);
+	//sprintf(outfilename,"%s_vp",outfilename);
+	//_strlcat(outfilename,"_vp",PETSC_MAX_PATH_LEN-1);
 	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
 	ierr = PhysCompStokesWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
 	
