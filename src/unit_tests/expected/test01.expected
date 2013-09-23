@@ -1,0 +1,157 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+** Revision: 3636 2012-11-06 19:14:24Z dmay #
+**
+**                                                                       
+** pTatin3d is configured with debug options 
+**   TATIN_CFLAGS = -std=gnu99 -fgnu89-inline -O0 -g -fno-nested-functions -Wall -Wno-unused-variable
+** For signifcant performance improvements, please consult the makefile  
+** and set TATIN_CFLAGS to an optimized value suitable for your machine. 
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+Writing output to existing directory pt3dout 
+Writing output to existing directory pt3dout 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "folding"
+  [pTatinModel]: Registering model [9] with name "folding2d"
+  [pTatinModel]: Registering model [10] with name "advdiff_example"
+  [pTatinModel]: Registering model [11] with name "basin_comp"
+  [pTatinModel]: Registering model [12] with name "fault_fold"
+  [pTatinModel]: Registering model [13] with name "wrench_fold"
+  [pTatinModel]: Registering model [14] with name "delamination"
+  [pTatinModel]: Registering model [15] with name "Riftrh"
+  [pTatinModel]: Registering model [16] with name "geomod2008"
+  [pTatinModel]: Registering model [17] with name "fault_fold_plastic"
+  [pTatinModel]: Registering model [18] with name "multilayer_folding"
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+BCList: Mem. usage (min,max) = 7.13e-01,7.13e-01 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 21384 
+  buffer             = 1 
+  allocated          = 21385 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 1.03e+00 (MB) 
+  Total mem. usage                                                      = 1.03e+00 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 891 
+  buffer             = 1 
+  allocated          = 892 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 9.99e-02 (MB) 
+  Total mem. usage                                                      = 9.99e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 891 
+  buffer             = 1 
+  allocated          = 892 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 9.99e-02 (MB) 
+  Total mem. usage                                                      = 9.99e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 792 
+  buffer             = 1 
+  allocated          = 793 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 8.88e-02 (MB) 
+  Total mem. usage                                                      = 8.88e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 792 
+  buffer             = 1 
+  allocated          = 793 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 8.88e-02 (MB) 
+  Total mem. usage                                                      = 8.88e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 648 
+  buffer             = 1 
+  allocated          = 649 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 7.27e-02 (MB) 
+  Total mem. usage                                                      = 7.27e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 648 
+  buffer             = 1 
+  allocated          = 649 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 7.27e-02 (MB) 
+  Total mem. usage                                                      = 7.27e-02 (MB) 
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0007 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 6336 points : 0.0045 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Matrix Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.6401e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.7030e-03 (sec)]]
+[[ModelApplyInitialMeshGeometry_ViscousSinker]]
+RUNNING DEFORMED MESH EXAMPLE 
+[[ModelApplyInitialMaterialGeometry_ViscousSinker]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+
+
+
+====================================================================
+
++  Test [compare_mf_A11]: Mesh 8 x 9 x 11 
+MatMultA11(MF):      time 5.2575e-02 (sec): ratio 1.0000e+02%: min/max 5.2575e-02 5.2575e-02 (sec)
+MatAssemblyA11(ASM): time 3.9984e+00 (sec): ratio 1.0000e+02%: min/max 3.9984e+00 3.9984e+00 (sec)
+MatMultA11(ASM):     time 3.5601e-02 (sec): ratio 1.0000e+02%: min/max 3.5601e-02 3.5601e-02 (sec)
+  y.y    = +5.71903034e+04 [mfo]
+  y2.y2  = +5.71903034e+04 [asm]
+  min[A11_mfo.x-A11_asm.x]  = -3.97858829e-15 
+  max[A11_mfo.x-A11_asm.x]  = +5.30597701e-15 
+
++  Test [compare_mf_A21]: Mesh 8 x 9 x 11 
+StokesA21Preallocation_basic: using nnz = 81 and onnz = 30 
+  y.y    = +2.08663233e+00 [mfo]
+  y2.y2  = +2.08663233e+00 [asm]
+  min[A21_mfo.x-A21_asm.x]  = -1.24900090e-16 
+  max[A21_mfo.x-A21_asm.x]  = +9.71445147e-17 
+
++  Test [compare_mf_A12]: Mesh 8 x 9 x 11 
+StokesA12Preallocation_basic: using nnz = 32 and onnz = 16 
+  y.y    = +2.46117948e+00 [mfo]
+  y2.y2  = +2.46117948e+00 [asm]
+  min[A12_mfo.x-A12_asm.x]  = -2.08166817e-17 
+  max[A12_mfo.x-A12_asm.x]  = +2.08166817e-17 
+
++  Test [compare_mf_A]: Mesh 8 x 9 x 11 
+  y.y    = +8.99396315e+02 [mfo]
+  y2.y2  = +8.99396315e+02 [asm]
+  min[A_mfo.x-A_asm.x]  = -2.77555756e-16 
+  max[A_mfo.x-A_asm.x]  = +2.22044605e-16 
+
++  Test [compare_mf_diagA11]: Mesh 8 x 9 x 11 
+  y.y    = +4.66458445e+03 [mfo]
+  y2.y2  = +4.66458445e+03 [asm]
+  min[diagA11_mfo-diagA11_asm]  = -6.66133815e-16 
+  max[diagA11_mfo-diagA11_asm]  = +5.55111512e-16 
+
+
+
+====================================================================

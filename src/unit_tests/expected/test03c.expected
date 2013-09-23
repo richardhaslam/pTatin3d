@@ -1,0 +1,614 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+** Revision: 3636 2012-11-06 19:14:24Z dmay #
+**
+**                                                                       
+** pTatin3d is configured with debug options 
+**   TATIN_CFLAGS = -std=gnu99 -fgnu89-inline -O0 -g -fno-nested-functions -Wall -Wno-unused-variable
+** For signifcant performance improvements, please consult the makefile  
+** and set TATIN_CFLAGS to an optimized value suitable for your machine. 
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+Writing output to existing directory pt3dout 
+Writing output to existing directory pt3dout 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "folding"
+  [pTatinModel]: Registering model [9] with name "folding2d"
+  [pTatinModel]: Registering model [10] with name "advdiff_example"
+  [pTatinModel]: Registering model [11] with name "basin_comp"
+  [pTatinModel]: Registering model [12] with name "fault_fold"
+  [pTatinModel]: Registering model [13] with name "wrench_fold"
+  [pTatinModel]: Registering model [14] with name "delamination"
+  [pTatinModel]: Registering model [15] with name "Riftrh"
+  [pTatinModel]: Registering model [16] with name "geomod2008"
+  [pTatinModel]: Registering model [17] with name "fault_fold_plastic"
+  [pTatinModel]: Registering model [18] with name "multilayer_folding"
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
+pTatin3dRestart: Unable to restart job
+[[ModelInitialize_ViscousSinker]]
+BCList: Mem. usage (min,max) = 3.45e+00,3.45e+00 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 110592 
+  buffer             = 1 
+  allocated          = 110593 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 5.31e+00 (MB) 
+  Total mem. usage                                                      = 5.31e+00 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 2304 
+  buffer             = 1 
+  allocated          = 2305 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.58e-01 (MB) 
+  Total mem. usage                                                      = 2.58e-01 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 2304 
+  buffer             = 1 
+  allocated          = 2305 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.58e-01 (MB) 
+  Total mem. usage                                                      = 2.58e-01 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 2304 
+  buffer             = 1 
+  allocated          = 2305 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.58e-01 (MB) 
+  Total mem. usage                                                      = 2.58e-01 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 2304 
+  buffer             = 1 
+  allocated          = 2305 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.58e-01 (MB) 
+  Total mem. usage                                                      = 2.58e-01 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 2304 
+  buffer             = 1 
+  allocated          = 2305 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.58e-01 (MB) 
+  Total mem. usage                                                      = 2.58e-01 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 2304 
+  buffer             = 1 
+  allocated          = 2305 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.58e-01 (MB) 
+  Total mem. usage                                                      = 2.58e-01 (MB) 
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0040 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 32768 points : 0.0196 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Matrix Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 2.1229e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 2.2240e-03 (sec)]]
+[[ModelApplyInitialMeshGeometry_ViscousSinker]]
+RUNNING DEFORMED MESH EXAMPLE 
+[[ModelApplyInitialMaterialGeometry_ViscousSinker]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+Mesh size (16 x 16 x 16) : MG levels 3  
+         level [ 0]: global Q2 elements (2 x 8 x 2) 
+         level [ 1]: global Q2 elements (4 x 16 x 4) 
+         level [ 2]: global Q2 elements (16 x 16 x 16) 
+[r   0]: level [ 0]: local Q2 elements  (2 x 8 x 2) 
+[r   0]: level [ 1]: local Q2 elements  (4 x 16 x 4) 
+[r   0]: level [ 2]: local Q2 elements  (16 x 16 x 16) 
+[r   0]: level [ 0]: element range [0 - 1] x [0 - 7] x [0 - 1] 
+[r   0]: level [ 1]: element range [0 - 3] x [0 - 15] x [0 - 3] 
+[r   0]: level [ 2]: element range [0 - 15] x [0 - 15] x [0 - 15] 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 864 
+  buffer             = 1 
+  allocated          = 865 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 4.15e-02 (MB) 
+  Total mem. usage                                                      = 4.15e-02 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 6912 
+  buffer             = 1 
+  allocated          = 6913 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 3.32e-01 (MB) 
+  Total mem. usage                                                      = 3.32e-01 (MB) 
+BCList: Mem. usage (min,max) = 4.08e-02,4.08e-02 (MB) 
+BCList: Mem. usage (min,max) = 2.57e-01,2.57e-01 (MB) 
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+Level [2]: Coarse grid type :: Re-discretisation :: matrix free operator 
+Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+[[ModelInitialCondition_ViscousSinker]]
+[[ModelOutput_ViscousSinker]]
+  writing pvdfilename pt3dout/timeseries_vp.pvd 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 1.44e-02 (sec) 
+  writing pvdfilename pt3dout/timeseries_mpoints_std.pvd 
+pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 7.83e-02 (sec) 
+   [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 7.63e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 7.55e-04 (sec)
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 1.359979191523e-03, 0.000000000000e+00, 0.000000000000e+00 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.000000000000e+00 
+        1 KSP Residual norm 8.524368371193e-01 
+        2 KSP Residual norm 6.120629397191e-01 
+        3 KSP Residual norm 3.297392704448e-01 
+        4 KSP Residual norm 1.281622930387e-01 
+        5 KSP Residual norm 5.455625467273e-02 
+        6 KSP Residual norm 2.651816285236e-02 
+        7 KSP Residual norm 7.514294713925e-03 
+  1 KSP Component U,V,W,P residual norm [ 8.520903454426e-11, 1.359945532165e-03, 9.386643695608e-11, 6.765714597331e-06 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.032677071303e-02 
+        1 KSP Residual norm 1.858685489668e-03 
+        2 KSP Residual norm 7.012925076130e-04 
+        3 KSP Residual norm 3.219082924584e-04 
+        4 KSP Residual norm 1.009579098861e-04 
+  2 KSP Component U,V,W,P residual norm [ 3.508531615168e-08, 1.358023965529e-03, 3.629081413542e-08, 5.152901846609e-05 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.489806302384e-01 
+        1 KSP Residual norm 1.345340186550e-02 
+        2 KSP Residual norm 1.992852789950e-03 
+        3 KSP Residual norm 8.146866392111e-04 
+  3 KSP Component U,V,W,P residual norm [ 1.892281098958e-07, 1.352468093592e-03, 1.951640539980e-07, 1.007888602628e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 7.511579779054e-01 
+        1 KSP Residual norm 7.392302173263e-02 
+        2 KSP Residual norm 7.597013641117e-03 
+        3 KSP Residual norm 1.730938273194e-03 
+  4 KSP Component U,V,W,P residual norm [ 9.070737689816e-07, 1.282268771645e-03, 9.063885966562e-07, 3.156623503329e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 2.311528461905e+00 
+        1 KSP Residual norm 2.302194058588e-01 
+        2 KSP Residual norm 2.153502532286e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.668875038713e-05, 1.025252852544e-03, 1.660079881016e-05, 5.851823502461e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 2.772878460068e+00 
+        1 KSP Residual norm 2.753707746359e-01 
+        2 KSP Residual norm 2.259686022575e-02 
+  6 KSP Component U,V,W,P residual norm [ 1.591374679232e-05, 6.352841831080e-04, 1.598889196741e-05, 6.779536508938e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 2.280338177725e+00 
+        1 KSP Residual norm 2.152653084134e-01 
+        2 KSP Residual norm 1.592869924409e-02 
+  7 KSP Component U,V,W,P residual norm [ 8.693547923058e-06, 2.020296658519e-04, 8.774720464133e-06, 4.829546138642e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.108254673493e+00 
+        1 KSP Residual norm 4.656530578861e-02 
+        2 KSP Residual norm 7.823167779750e-03 
+  8 KSP Component U,V,W,P residual norm [ 3.769217140159e-06, 5.762784700332e-05, 3.823876931024e-06, 2.726950121748e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.774741710692e+00 
+        1 KSP Residual norm 1.056938648205e-01 
+        2 KSP Residual norm 1.715480506463e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.082402610568e-06, 1.459084605651e-05, 2.084118858720e-06, 1.368921215770e-04 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.522402864632e+00 
+        1 KSP Residual norm 8.296023794421e-02 
+        2 KSP Residual norm 1.236077822231e-02 
+ 10 KSP Component U,V,W,P residual norm [ 7.959104675952e-07, 6.807737904491e-06, 8.247189624292e-07, 9.529110216877e-05 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.286226343966e+00 
+        1 KSP Residual norm 9.223947388504e-02 
+        2 KSP Residual norm 8.548954687072e-03 
+ 11 KSP Component U,V,W,P residual norm [ 5.894688711557e-07, 3.012869793059e-06, 6.018715298591e-07, 6.277634146440e-05 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.704524805781e+00 
+        1 KSP Residual norm 1.297124513993e-01 
+        2 KSP Residual norm 1.191880455775e-02 
+ 12 KSP Component U,V,W,P residual norm [ 6.138127144488e-07, 1.063738721801e-06, 6.406323495633e-07, 3.182108046892e-05 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.906261137805e+00 
+        1 KSP Residual norm 1.401244447777e-01 
+        2 KSP Residual norm 1.717372074576e-02 
+ 13 KSP Component U,V,W,P residual norm [ 3.388209995566e-07, 5.480700152671e-07, 3.565059541897e-07, 1.736659341737e-05 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 2.689384834764e+00 
+        1 KSP Residual norm 1.757448135792e-01 
+        2 KSP Residual norm 1.588891243785e-02 
+ 14 KSP Component U,V,W,P residual norm [ 1.162040258619e-07, 2.097574017064e-07, 1.493248350912e-07, 1.245388124988e-05 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 2.006102944853e+00 
+        1 KSP Residual norm 1.597413623378e-01 
+        2 KSP Residual norm 1.417658584157e-02 
+ 15 KSP Component U,V,W,P residual norm [ 7.650377404259e-08, 1.490115269099e-07, 9.284464840508e-08, 8.144800650247e-06 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 7.421792429035e-01 
+        1 KSP Residual norm 5.577929537205e-02 
+        2 KSP Residual norm 5.787009820990e-03 
+ 16 KSP Component U,V,W,P residual norm [ 7.822380064364e-08, 1.178735084598e-07, 7.674093267503e-08, 4.550125718033e-06 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.210382169758e+00 
+        1 KSP Residual norm 4.582200830646e-02 
+        2 KSP Residual norm 9.387490979548e-03 
+ 17 KSP Component U,V,W,P residual norm [ 7.285418459408e-08, 1.086594299566e-07, 7.562162792641e-08, 2.439593654909e-06 ]
+        Residual norms for fieldsplit_u_ solve.
+        0 KSP Residual norm 1.433548494018e+00 
+        1 KSP Residual norm 6.121762556082e-02 
+        2 KSP Residual norm 1.451423240295e-02 
+        3 KSP Residual norm 1.100825701988e-02 
+ 18 KSP Component U,V,W,P residual norm [ 2.012854004037e-08, 3.378853239648e-08, 2.989630334657e-08, 1.077902805139e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 18
+SNES Object: 1 MPI processes
+  type: ksponly
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=18
+  total number of function evaluations=1
+  KSP Object:   1 MPI processes  
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000
+    tolerances:  relative=0.001, absolute=1e-50, divergence=10000
+    right preconditioning
+    using nonzero initial guess
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   1 MPI processes  
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, blocksize = -1, factorization UPPER
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block 
+        KSP Object:        (fieldsplit_u_)         1 MPI processes        
+          type: fgmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=0.01, absolute=1e-50, divergence=10000
+          right preconditioning
+          using UNPRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_u_)         1 MPI processes        
+          type: mg
+            MG: type is MULTIPLICATIVE, levels=3 cycles=v
+              Cycles per PCApply=1
+              Not using Galerkin computed coarse grid matrices
+          Coarse grid solver -- level -------------------------------
+            KSP Object:            (fieldsplit_u_mg_coarse_)             1 MPI processes            
+              type: preonly
+              maximum iterations=1, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              left preconditioning
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_coarse_)             1 MPI processes            
+              type: lu
+                LU: out-of-place factorization
+                tolerance for zero pivot 1e-12
+                matrix ordering: nd
+                factor fill ratio given 5, needed 2.14015
+                  Factored matrix follows:
+                    Matrix Object:                     1 MPI processes                    
+                      type: seqaij
+                      rows=1275, cols=1275
+                      package used to perform factorization: petsc
+                      total: nonzeros=549315, allocated nonzeros=549315
+                      total number of mallocs used during MatSetValues calls =0
+                        using I-node routines: found 380 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Matrix Object:               1 MPI processes              
+                type: seqaij
+                rows=1275, cols=1275
+                total: nonzeros=256671, allocated nonzeros=0
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 425 nodes, limit used is 5
+          Down solver (pre-smoother) on level 1 -------------------------------
+            KSP Object:            (fieldsplit_u_mg_levels_1_)             1 MPI processes            
+              type: gmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=2
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              left preconditioning
+              using nonzero initial guess
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_levels_1_)             1 MPI processes            
+              type: bjacobi
+                block Jacobi: number of blocks = 1
+                Local solve is same for all blocks, in the following KSP and PC objects:
+                KSP Object:                (fieldsplit_u_mg_levels_1_sub_)                 1 MPI processes                
+                  type: preonly
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  left preconditioning
+                  using NONE norm type for convergence test
+                PC Object:                (fieldsplit_u_mg_levels_1_sub_)                 1 MPI processes                
+                  type: ilu
+                    ILU: out-of-place factorization
+                    0 levels of fill
+                    tolerance for zero pivot 1e-12
+                    using diagonal shift to prevent zero pivot
+                    matrix ordering: natural
+                    factor fill ratio given 1, needed 1
+                      Factored matrix follows:
+                        Matrix Object:                         1 MPI processes                        
+                          type: seqaij
+                          rows=8019, cols=8019
+                          package used to perform factorization: petsc
+                          total: nonzeros=2176551, allocated nonzeros=2176551
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 2673 nodes, limit used is 5
+                  linear system matrix = precond matrix:
+                  Matrix Object:                  (Buu_)                   1 MPI processes                  
+                    type: seqaij
+                    rows=8019, cols=8019
+                    total: nonzeros=2176551, allocated nonzeros=2176551
+                    total number of mallocs used during MatSetValues calls =0
+                      using I-node routines: found 2673 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Matrix Object:              (Buu_)               1 MPI processes              
+                type: seqaij
+                rows=8019, cols=8019
+                total: nonzeros=2176551, allocated nonzeros=2176551
+                total number of mallocs used during MatSetValues calls =0
+                  using I-node routines: found 2673 nodes, limit used is 5
+          Up solver (post-smoother) same as down solver (pre-smoother)
+          Down solver (pre-smoother) on level 2 -------------------------------
+            KSP Object:            (fieldsplit_u_mg_levels_2_)             1 MPI processes            
+              type: chebychev
+                Chebychev: eigenvalue estimates:  min = 0.474565, max = 2.61011
+                KSP Object:                (fieldsplit_u_mg_levels_2_est_)                 1 MPI processes                
+                  type: gmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=5, initial guess is zero
+                  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                  left preconditioning
+                  using NONE norm type for convergence test
+                PC Object:                (fieldsplit_u_mg_levels_2_)                 1 MPI processes                
+                  type: jacobi
+                  linear system matrix = precond matrix:
+                  Matrix Object:                   1 MPI processes                  
+                    type: shell
+                    rows=107811, cols=107811
+              maximum iterations=10
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+              left preconditioning
+              using nonzero initial guess
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_levels_2_)             1 MPI processes            
+              type: jacobi
+              linear system matrix = precond matrix:
+              Matrix Object:               1 MPI processes              
+                type: shell
+                rows=107811, cols=107811
+          Up solver (post-smoother) same as down solver (pre-smoother)
+          linear system matrix = precond matrix:
+          Matrix Object:           1 MPI processes          
+            type: shell
+            rows=107811, cols=107811
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object:        (fieldsplit_p_)         1 MPI processes        
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_p_)         1 MPI processes        
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Matrix Object:           1 MPI processes          
+            type: schurcomplement
+            rows=16384, cols=16384
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Matrix Object:                (S*_)                 1 MPI processes                
+                  type: seqsbaij
+                  rows=16384, cols=16384
+                  total: nonzeros=65536, allocated nonzeros=65536
+                  total number of mallocs used during MatSetValues calls =0
+                      block size is 4
+              A10
+                Matrix Object:                 1 MPI processes                
+                  type: shell
+                  rows=16384, cols=107811
+              KSP of A00
+                KSP Object:                (fieldsplit_u_)                 1 MPI processes                
+                  type: fgmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10000, initial guess is zero
+                  tolerances:  relative=0.01, absolute=1e-50, divergence=10000
+                  right preconditioning
+                  using UNPRECONDITIONED norm type for convergence test
+                PC Object:                (fieldsplit_u_)                 1 MPI processes                
+                  type: mg
+                    MG: type is MULTIPLICATIVE, levels=3 cycles=v
+                      Cycles per PCApply=1
+                      Not using Galerkin computed coarse grid matrices
+                  Coarse grid solver -- level -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_coarse_)                     1 MPI processes                    
+                      type: preonly
+                      maximum iterations=1, initial guess is zero
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                      left preconditioning
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_coarse_)                     1 MPI processes                    
+                      type: lu
+                        LU: out-of-place factorization
+                        tolerance for zero pivot 1e-12
+                        matrix ordering: nd
+                        factor fill ratio given 5, needed 2.14015
+                          Factored matrix follows:
+                            Matrix Object:                             1 MPI processes                            
+                              type: seqaij
+                              rows=1275, cols=1275
+                              package used to perform factorization: petsc
+                              total: nonzeros=549315, allocated nonzeros=549315
+                              total number of mallocs used during MatSetValues calls =0
+                                using I-node routines: found 380 nodes, limit used is 5
+                      linear system matrix = precond matrix:
+                      Matrix Object:                       1 MPI processes                      
+                        type: seqaij
+                        rows=1275, cols=1275
+                        total: nonzeros=256671, allocated nonzeros=0
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 425 nodes, limit used is 5
+                  Down solver (pre-smoother) on level 1 -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_levels_1_)                     1 MPI processes                    
+                      type: gmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=2
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                      left preconditioning
+                      using nonzero initial guess
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_levels_1_)                     1 MPI processes                    
+                      type: bjacobi
+                        block Jacobi: number of blocks = 1
+                        Local solve is same for all blocks, in the following KSP and PC objects:
+                        KSP Object:                        (fieldsplit_u_mg_levels_1_sub_)                         1 MPI processes                        
+                          type: preonly
+                          maximum iterations=10000, initial guess is zero
+                          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                          left preconditioning
+                          using NONE norm type for convergence test
+                        PC Object:                        (fieldsplit_u_mg_levels_1_sub_)                         1 MPI processes                        
+                          type: ilu
+                            ILU: out-of-place factorization
+                            0 levels of fill
+                            tolerance for zero pivot 1e-12
+                            using diagonal shift to prevent zero pivot
+                            matrix ordering: natural
+                            factor fill ratio given 1, needed 1
+                              Factored matrix follows:
+                                Matrix Object:                                 1 MPI processes                                
+                                  type: seqaij
+                                  rows=8019, cols=8019
+                                  package used to perform factorization: petsc
+                                  total: nonzeros=2176551, allocated nonzeros=2176551
+                                  total number of mallocs used during MatSetValues calls =0
+                                    using I-node routines: found 2673 nodes, limit used is 5
+                          linear system matrix = precond matrix:
+                          Matrix Object:                          (Buu_)                           1 MPI processes                          
+                            type: seqaij
+                            rows=8019, cols=8019
+                            total: nonzeros=2176551, allocated nonzeros=2176551
+                            total number of mallocs used during MatSetValues calls =0
+                              using I-node routines: found 2673 nodes, limit used is 5
+                      linear system matrix = precond matrix:
+                      Matrix Object:                      (Buu_)                       1 MPI processes                      
+                        type: seqaij
+                        rows=8019, cols=8019
+                        total: nonzeros=2176551, allocated nonzeros=2176551
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 2673 nodes, limit used is 5
+                  Up solver (post-smoother) same as down solver (pre-smoother)
+                  Down solver (pre-smoother) on level 2 -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_levels_2_)                     1 MPI processes                    
+                      type: chebychev
+                        Chebychev: eigenvalue estimates:  min = 0.474565, max = 2.61011
+                        KSP Object:                        (fieldsplit_u_mg_levels_2_est_)                         1 MPI processes                        
+                          type: gmres
+                            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                            GMRES: happy breakdown tolerance 1e-30
+                          maximum iterations=5, initial guess is zero
+                          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                          left preconditioning
+                          using NONE norm type for convergence test
+                        PC Object:                        (fieldsplit_u_mg_levels_2_)                         1 MPI processes                        
+                          type: jacobi
+                          linear system matrix = precond matrix:
+                          Matrix Object:                           1 MPI processes                          
+                            type: shell
+                            rows=107811, cols=107811
+                      maximum iterations=10
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+                      left preconditioning
+                      using nonzero initial guess
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_levels_2_)                     1 MPI processes                    
+                      type: jacobi
+                      linear system matrix = precond matrix:
+                      Matrix Object:                       1 MPI processes                      
+                        type: shell
+                        rows=107811, cols=107811
+                  Up solver (post-smoother) same as down solver (pre-smoother)
+                  linear system matrix = precond matrix:
+                  Matrix Object:                   1 MPI processes                  
+                    type: shell
+                    rows=107811, cols=107811
+              A01
+                Matrix Object:                 1 MPI processes                
+                  type: shell
+                  rows=107811, cols=16384
+          Matrix Object:          (S*_)           1 MPI processes          
+            type: seqsbaij
+            rows=16384, cols=16384
+            total: nonzeros=65536, allocated nonzeros=65536
+            total number of mallocs used during MatSetValues calls =0
+                block size is 4
+    linear system matrix followed by preconditioner matrix:
+    Matrix Object:    (stokes_Amf_)     1 MPI processes    
+      type: shell
+      rows=124195, cols=124195
+    Matrix Object:     1 MPI processes    
+      type: nest
+      rows=124195, cols=124195
+        Matrix object: 
+          type=nest, rows=2, cols=2 
+          MatNest structure: 
+          (0,0) : type=shell, rows=107811, cols=107811 
+          (0,1) : prefix="Bup_", type=shell, rows=107811, cols=16384 
+          (1,0) : prefix="Bpu_", type=shell, rows=16384, cols=107811 
+          (1,1) : prefix="S*_", type=seqsbaij, rows=16384, cols=16384 
+pTatinViewBasicStokesSolutionResiduals:
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 7.54e-04 (sec)
+  Field         min          max          norm_2       norm_1 
+        Fu      -2.4570e-09  +3.7939e-09  +4.9403e-08  +4.3082e-06 
+        Fp      -1.1434e-07  +1.2260e-07  +1.0779e-06  +6.1348e-05 
+        FX      -1.1434e-07  +1.2260e-07  +1.0790e-06  +6.5656e-05 
+pTatinViewBasicStokesSolution:
+  Field         min          max          norm_2       norm_1 
+  velocity      -1.7444e+00  +2.8382e+00  +2.4713e+02  +5.2064e+04 
+  pressure      -8.6522e-02  +9.4401e-02  +3.0046e+00  +2.0257e+02 
+         X      -1.7444e+00  +2.8382e+00  +2.4715e+02  +5.2267e+04 
+[[ModelOutput_ViscousSinker]]
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 1.40e-02 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 1.36e-02 (sec) 
+  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 2.2571e-02 [accepted] | ==>> dt used = 2.2571e-02 |
+  timestep[] dt_courant = 2.2571e-02 
+  writing pt3dout/ptat3dcpf.ctx_step000000 
+  writing pt3dout/ptat3dcpf.dmda-velocity_step000000 
+  writing pt3dout/ptat3dcpf.dmda-velocity-coords_step000000 
+  writing pt3dout/ptat3dcpf.dmda-pressure_step000000 
+  writing pt3dout/ptat3dcpf.dmda-X_step000000 
+  writing pt3dout/ptat3dcpf.dmda-Xu_step000000 
+  writing pt3dout/ptat3dcpf.dmda-Xp_step000000 
+  writing pt3dout/ptat3dcpf.markers_step000000 

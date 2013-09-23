@@ -1,0 +1,190 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+** Revision: 3636 2012-11-06 19:14:24Z dmay #
+**
+**                                                                       
+** pTatin3d is configured with debug options 
+**   TATIN_CFLAGS = -std=gnu99 -fgnu89-inline -O0 -g -fno-nested-functions -Wall -Wno-unused-variable
+** For signifcant performance improvements, please consult the makefile  
+** and set TATIN_CFLAGS to an optimized value suitable for your machine. 
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+Writing output to existing directory pt3dout 
+Writing output to existing directory pt3dout 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "folding"
+  [pTatinModel]: Registering model [9] with name "folding2d"
+  [pTatinModel]: Registering model [10] with name "advdiff_example"
+  [pTatinModel]: Registering model [11] with name "basin_comp"
+  [pTatinModel]: Registering model [12] with name "fault_fold"
+  [pTatinModel]: Registering model [13] with name "wrench_fold"
+  [pTatinModel]: Registering model [14] with name "delamination"
+  [pTatinModel]: Registering model [15] with name "Riftrh"
+  [pTatinModel]: Registering model [16] with name "geomod2008"
+  [pTatinModel]: Registering model [17] with name "fault_fold_plastic"
+  [pTatinModel]: Registering model [18] with name "multilayer_folding"
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+BCList: Mem. usage (min,max) = 4.72e-01,4.72e-01 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 13824 
+  buffer             = 1 
+  allocated          = 13825 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 6.64e-01 (MB) 
+  Total mem. usage                                                      = 6.64e-01 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 576 
+  buffer             = 1 
+  allocated          = 577 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
+  Total mem. usage                                                      = 6.46e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 576 
+  buffer             = 1 
+  allocated          = 577 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
+  Total mem. usage                                                      = 6.46e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 576 
+  buffer             = 1 
+  allocated          = 577 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
+  Total mem. usage                                                      = 6.46e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 576 
+  buffer             = 1 
+  allocated          = 577 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
+  Total mem. usage                                                      = 6.46e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 576 
+  buffer             = 1 
+  allocated          = 577 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
+  Total mem. usage                                                      = 6.46e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 576 
+  buffer             = 1 
+  allocated          = 577 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
+  Total mem. usage                                                      = 6.46e-02 (MB) 
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0005 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 4096 points : 0.0029 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Matrix Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.7850e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.8570e-03 (sec)]]
+[[ModelApplyInitialMeshGeometry_ViscousSinker]]
+RUNNING DEFORMED MESH EXAMPLE 
+[[ModelApplyInitialMaterialGeometry_ViscousSinker]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+
+
+
+====================================================================
+
++  Test [perform_viscous_solve]: Mesh 8 x 8 x 8 
+MatAssemblyA11(ASM):                time 2.5893e+00 (sec): ratio 1.0000e+02%: min/max 2.5893e+00 2.5893e+00 (sec)
+KSPSetUpA11:                        time 1.6868e+00 (sec): ratio 1.0000e+02%: min/max 1.6868e+00 1.6868e+00 (sec)
+  0 KSP Residual norm 6.108644629256e+04 
+  1 KSP Residual norm 2.627688393416e+04 
+  2 KSP Residual norm 2.034586017245e+04 
+  3 KSP Residual norm 1.166682022481e+04 
+  4 KSP Residual norm 5.094928106910e+03 
+  5 KSP Residual norm 2.397254366941e+03 
+  6 KSP Residual norm 9.173100007020e+02 
+  7 KSP Residual norm 2.866291276680e+02 
+  8 KSP Residual norm 9.558370990254e+01 
+  9 KSP Residual norm 4.818903551805e+01 
+ 10 KSP Residual norm 2.712254113754e+01 
+ 11 KSP Residual norm 1.517046087906e+01 
+ 12 KSP Residual norm 5.514749208845e+00 
+ 13 KSP Residual norm 1.183948765601e+00 
+ 14 KSP Residual norm 3.833484540551e-01 
+ 15 KSP Residual norm 1.763619098612e-01 
+ 16 KSP Residual norm 8.467724667076e-02 
+ 17 KSP Residual norm 3.229701593069e-02 
+ 18 KSP Residual norm 1.516436935781e-02 
+ 19 KSP Residual norm 8.343857732956e-03 
+ 20 KSP Residual norm 4.571698020990e-03 
+ 21 KSP Residual norm 1.774456080788e-03 
+ 22 KSP Residual norm 6.960580943836e-04 
+ 23 KSP Residual norm 2.434027858422e-04 
+ 24 KSP Residual norm 8.849715777404e-05 
+ 25 KSP Residual norm 2.397192997797e-05 
+ 26 KSP Residual norm 5.180934189692e-06 
+ 27 KSP Residual norm 1.446371158423e-06 
+ 28 KSP Residual norm 3.780802244749e-07 
+ 29 KSP Residual norm 1.149828199113e-07 
+ 30 KSP Residual norm 2.598644048322e-08 
+KSPSolveA11(its = 30,cycles = 5)   time 7.3873e+00 (sec): ratio 1.0000e+02%: min/max 7.3873e+00 7.3873e+00 (sec)
+KSPSolveA11: average                time 1.4775e+00 (sec): ratio 1.0000e+02%: min/max 1.4775e+00 1.4775e+00 (sec)
+KSP Object: 1 MPI processes
+  type: gmres
+    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+    GMRES: happy breakdown tolerance 1e-30
+  maximum iterations=30, initial guess is zero
+  tolerances:  relative=1e-20, absolute=1e-50, divergence=10000
+  left preconditioning
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
+  type: ilu
+    ILU: out-of-place factorization
+    0 levels of fill
+    tolerance for zero pivot 1e-12
+    using diagonal shift to prevent zero pivot
+    matrix ordering: natural
+    factor fill ratio given 1, needed 1
+      Factored matrix follows:
+        Matrix Object:         1 MPI processes        
+          type: seqaij
+          rows=14739, cols=14739
+          package used to perform factorization: petsc
+          total: nonzeros=4437351, allocated nonzeros=4437351
+          total number of mallocs used during MatSetValues calls =0
+            using I-node routines: found 4913 nodes, limit used is 5
+  linear system matrix = precond matrix:
+  Matrix Object:   1 MPI processes  
+    type: seqaij
+    rows=14739, cols=14739
+    total: nonzeros=4437351, allocated nonzeros=4437351
+    total number of mallocs used during MatSetValues calls =0
+      using I-node routines: found 4913 nodes, limit used is 5
+
+
+
+====================================================================
