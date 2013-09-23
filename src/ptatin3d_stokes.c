@@ -479,6 +479,7 @@ PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	ierr = DMDAPackDataToFile(dap,fname_p);CHKERRQ(ierr);
 	
 	/* coords */
+	/* Why is this even here? - DMDAPackDataToFile() writes out the coordinates */
 	if (fname_coors) {
 		ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
 		ierr = PetscViewerBinaryOpen( ((PetscObject)dav)->comm,fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);

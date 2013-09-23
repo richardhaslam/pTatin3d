@@ -254,9 +254,9 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	PetscLogDouble t0,t1;
 	static int     beenhere=0;
 	static char    *pvdfilename;
-	char f1[PETSC_MAX_PATH_LEN];
-	char f2[PETSC_MAX_PATH_LEN];
-	char f3[PETSC_MAX_PATH_LEN];
+	char           f1[PETSC_MAX_PATH_LEN];
+	//char           f2[PETSC_MAX_PATH_LEN];
+	char           f3[PETSC_MAX_PATH_LEN];
 	PetscFunctionBegin;
 	
 	PetscGetTime(&t0);
@@ -294,19 +294,19 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	/* dav,dap */
 	if (prefix) {
 		sprintf(f1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
-		sprintf(f2,"%s/%s.dmda-velocity-coords",ctx->outputpath,prefix);
+		//sprintf(f2,"%s/%s.dmda-velocity-coords",ctx->outputpath,prefix);
 		sprintf(f3,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
 	} else {
 		sprintf(f1,"%s/dmda-velocity",ctx->outputpath);
-		sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
+		//sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
 		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
 	}
-	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,f2);CHKERRQ(ierr);
+	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,PETSC_NULL);CHKERRQ(ierr);
 	
 	/* dump the vectors */
 	{
 		PetscViewer viewer;
-		Vec Xu,Xp;
+		Vec         Xu,Xp;
 		
 		ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 		
