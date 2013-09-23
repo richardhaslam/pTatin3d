@@ -3,9 +3,6 @@ import sys
 import os
 
 
-os.system('export PTATIN3D_DIR=`pwd`/..')
-
-
 def strip_keywords(infilename,outfilename):
 	bad_words = ['(MB)', '(sec)']
 	bad_words = bad_words + ['**']
@@ -124,14 +121,18 @@ def main():
 	print '** Executing pTatin3d unit tests'
 	print '**'
 
+	# set environment variable for bin directory
+	ptatin_bin_dir = os.getcwd() + '/..'
+	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
+
 	# remove contents of directory where all ptatin output is sent
 	os.system('rm -f pt3dout/*')
 	os.system('rm -f output/*')
 
-#	test01()
-#	test02()
-#	test03a()
-#	test03b()
+	test01()
+	test02()
+	test03a()
+	test03b()
 	test03c()
 
 
