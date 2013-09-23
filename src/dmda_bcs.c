@@ -70,6 +70,7 @@ PetscErrorCode BCListCreate(BCList *list)
 	PetscErrorCode ierr;
 	
 	ierr = PetscMalloc( sizeof(struct _p_BCList),&ll);CHKERRQ(ierr);
+	ierr = PetscMemzero(ll,sizeof(struct _p_BCList));CHKERRQ(ierr);
 	ll->allEmpty = PETSC_FALSE;
 	*list = ll;
 	PetscFunctionReturn(0);

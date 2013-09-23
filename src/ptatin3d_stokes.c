@@ -99,6 +99,7 @@ PetscErrorCode PhysCompCreate_Stokes(PhysCompStokes *ctx)
 	
 	PetscFunctionBegin;
 	ierr = PetscMalloc(sizeof(struct _p_PhysCompStokes),&stokes);CHKERRQ(ierr);
+	ierr = PetscMemzero(stokes,sizeof(struct _p_PhysCompStokes));CHKERRQ(ierr);
 	*ctx = stokes;
 	PetscFunctionReturn(0);
 }
