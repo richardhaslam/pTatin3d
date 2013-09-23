@@ -78,6 +78,7 @@ PetscErrorCode PhysCompCreate_Energy(PhysCompEnergy *E)
 	
 	PetscFunctionBegin;
 	ierr = PetscMalloc(sizeof(struct _p_PhysCompEnergy),&energy);CHKERRQ(ierr);
+	ierr = PetscMemzero(energy,sizeof(struct _p_PhysCompEnergy));CHKERRQ(ierr);
 	*E = energy;
 	PetscFunctionReturn(0);
 }
