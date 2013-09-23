@@ -378,7 +378,6 @@ PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char out
 			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 	}
-	ierr = pTatinOutputLiteParaViewMeshVelocity(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
