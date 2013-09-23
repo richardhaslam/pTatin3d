@@ -122,7 +122,6 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes"
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
@@ -245,6 +244,95 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes"
+PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
+{
+	PetscErrorCode ierr;
+	char           date_time[1024];
+	DM             stokes_pack;
+	PetscLogDouble t0,t1;
+	static int     beenhere=0;
+	static char    *pvdfilename;
+	char f1[PETSC_MAX_PATH_LEN];
+	char f2[PETSC_MAX_PATH_LEN];
+	char f3[PETSC_MAX_PATH_LEN];
+	PetscFunctionBegin;
+	
+	PetscGetTime(&t0);
+	// PVD
+	if (beenhere==0) {
+		
+		if (ctx->restart_from_file) {
+			pTatinGenerateFormattedTimestamp(date_time);
+			asprintf(&pvdfilename,"%s/timeseries_X_%s.pvd",ctx->outputpath,date_time);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
+		} else {
+			asprintf(&pvdfilename,"%s/timeseries_X.pvd",ctx->outputpath);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		}
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
+	}
+	{
+		char *vtkfilename;
+		
+		if (prefix) {
+			asprintf(&vtkfilename, "%s_X.pvts",prefix);
+		} else {
+			asprintf(&vtkfilename, "X.pvts");
+		}
+		
+		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+		free(vtkfilename);
+	}
+	
+	stokes_pack = ctx->stokes_ctx->stokes_pack;
+
+	/* dump the dmda's */
+	/* dav,dap */
+	if (prefix) {
+		sprintf(f1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
+		sprintf(f2,"%s/%s.dmda-velocity-coords",ctx->outputpath,prefix);
+		sprintf(f3,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
+	} else {
+		sprintf(f1,"%s/dmda-velocity",ctx->outputpath);
+		sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
+		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
+	}
+	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,f2);CHKERRQ(ierr);
+	
+	/* dump the vectors */
+	{
+		PetscViewer viewer;
+		Vec Xu,Xp;
+		
+		ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+		
+		if (prefix) { sprintf(f1,"%s/%s.dmda-Xu",ctx->outputpath,prefix); } 
+		else {        sprintf(f1,"%s/dmda-Xu",ctx->outputpath);           }
+		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = VecView(Xu,viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+		
+		if (prefix) { sprintf(f1,"%s/%s.dmda-Xp",ctx->outputpath,prefix); } 
+		else {        sprintf(f1,"%s/dmda-Xp",ctx->outputpath);           }
+		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = VecView(Xp,viewer);CHKERRQ(ierr);
+		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+		
+		ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+	}	
+	
+	
+	PetscGetTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	
+	PetscFunctionReturn(0);
+}
 
 /* MATERIAL POINTS */
 #undef __FUNCT__
