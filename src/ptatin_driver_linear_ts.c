@@ -665,7 +665,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
 	ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
-
+	ierr = pTatinViewBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
+	ierr = pTatinViewBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
+	
 	/* dump */
 	ierr = pTatinModel_Output(user->model,user,X,"step000000");CHKERRQ(ierr);
 
