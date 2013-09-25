@@ -37,6 +37,8 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
+//#define PTATIN_USE_MPIIO
+
 
 PetscErrorCode DMDAPackDataToFile(DM da,const char name[]);
 PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *da);
