@@ -378,3 +378,34 @@ PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadFromFile"
+PetscErrorCode VecLoadFromFile(Vec x,const char name[])
+{
+	PetscErrorCode ierr;
+	PetscViewer    v;
+	MPI_Comm       comm;
+	
+	
+	PetscFunctionBegin;
+	
+	ierr = PetscViewerCreate(((PetscObject)x)->comm,&v);CHKERRQ(ierr);
+	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
+	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
+#ifdef PTATIN_USE_MPIIO
+	ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
+#endif
+	ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
+	ierr = VecLoad(x,v); CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
+	
+	/* 
+	 putain - VecLoadIntoVector inserts the option below into the command line.
+	 This will screw shit up if you load in vectors with different block sizes.
+	 */
+	ierr = PetscOptionsClearValue("-vecload_block_size");CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);	
+}
+
