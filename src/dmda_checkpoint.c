@@ -349,3 +349,32 @@ PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 	PetscFunctionReturn(0);		
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMDAWriteVectorToFile"
+PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
+{
+	char fieldname[PETSC_MAX_PATH_LEN];
+	PetscViewer viewer;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	if (zip_file) {
+		sprintf(fieldname,"%s.gz",name);
+	} else {
+		sprintf(fieldname,"%s",name);
+	}
+	
+  ierr = PetscViewerCreate(((PetscObject)x)->comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+#ifdef PTATIN_USE_MPIIO	
+	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+#endif
+	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
+	
+	ierr = VecView(x,viewer);CHKERRQ(ierr);
+	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}

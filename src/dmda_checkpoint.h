@@ -44,7 +44,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[]);
 PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *da);
 PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x);
 PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[]);
-
+PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file);
 
 #endif
 
