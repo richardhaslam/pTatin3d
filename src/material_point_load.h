@@ -43,5 +43,13 @@ PetscErrorCode MaterialPointStdRemoval(DataBucket db,long int start,long int npo
 PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,long int npoints,double coords_mp[],int phase_mp[]);
 PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,PetscBool append,const char coordfile[],const char phasefile[]);
 
+PetscErrorCode SwarmDataWriteToPetscVec(DataBucket db,const char suffix[]);
+
+PetscErrorCode SwarmDataWriteToPetscVec_MPntStd(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokes(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokesPl(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+PetscErrorCode SwarmDataWriteToPetscVec_MPntPEnergy(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+
+
 #endif
 
