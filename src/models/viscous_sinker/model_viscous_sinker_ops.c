@@ -592,8 +592,9 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 	//ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
 	
-	// test for alternate single file marker output
+	// tests for alternate (output/load)ing of "single file marker" formats
 	//ierr = SwarmDataWriteToPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
+	//ierr = SwarmDataLoadFromPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

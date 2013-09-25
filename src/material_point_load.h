@@ -44,12 +44,17 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,PetscBool append,const char coordfile[],const char phasefile[]);
 
 PetscErrorCode SwarmDataWriteToPetscVec(DataBucket db,const char suffix[]);
+PetscErrorCode SwarmDataLoadFromPetscVec(DataBucket db,const char suffix[]);
 
 PetscErrorCode SwarmDataWriteToPetscVec_MPntStd(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
 PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokes(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
 PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokesPl(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
 PetscErrorCode SwarmDataWriteToPetscVec_MPntPEnergy(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
 
+PetscErrorCode SwarmDataLoadFromPetscVec_MPntStd(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokes(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokesPl(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
+PetscErrorCode SwarmDataLoadFromPetscVec_MPntPEnergy(DataBucket db,const char suffix[],Vec point_field_data,PetscBool write_to_tgz);
 
 #endif
 
