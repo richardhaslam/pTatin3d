@@ -100,7 +100,9 @@ PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
   ierr = PetscViewerCreate(((PetscObject)x)->comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
-	//ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+#ifdef PTATIN_USE_MPIIO	
+	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+#endif
 	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 	
 	ierr = VecView(x,viewer);CHKERRQ(ierr);
@@ -128,7 +130,9 @@ PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
   ierr = PetscViewerCreate(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_READ);CHKERRQ(ierr);
-	//ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+#ifdef PTATIN_USE_MPIIO	
+	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+#endif
 	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 	
 //	ierr = VecCreate(((PetscObject)viewer)->comm,x);CHKERRQ(ierr);
