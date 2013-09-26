@@ -1402,6 +1402,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	}
 	ierr = MatDestroy(&A);CHKERRQ(ierr);
 	ierr = MatDestroy(&B);CHKERRQ(ierr);
+	ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
 	ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 	
 	
