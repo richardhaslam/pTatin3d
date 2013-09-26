@@ -76,6 +76,7 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
 
 PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy);
 PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user);
+PetscErrorCode SNESStokesPCSetOptions_A(SNES snes);
 
 #endif
 

@@ -1233,6 +1233,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 	// Force mffd
 	//ierr = SNESSetJacobian(snes,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+
+	//ierr = SNESStokesPCSetOptions_A(snes);CHKERRQ(ierr);
 	ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
 	/* force MG context into SNES */
@@ -1315,6 +1317,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		// Force mffd
 		ierr = SNESSetJacobian(snes_newton,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		
+		//ierr = SNESStokesPCSetOptions_A(snes_newton);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes_newton);CHKERRQ(ierr);
 
 		/* compose */
@@ -1535,6 +1538,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
 		}
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+
+		//ierr = SNESStokesPCSetOptions_A(snes);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 		
 		

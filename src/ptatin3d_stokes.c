@@ -1046,3 +1046,61 @@ PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user)
 	
 	PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsInsertPrefixString"
+PetscErrorCode PetscOptionsInsertPrefixString(const char prefix[],const char option[])
+{
+	PetscErrorCode ierr;
+	char opt[PETSC_MAX_PATH_LEN];
+	
+	if (option[0] != '-') {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Option must start with a -");
+	}
+	
+	if (!prefix) {
+		ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
+	} else {
+		sprintf(opt,"-%s%s",prefix,&option[1]);
+		ierr = PetscOptionsInsertString(opt);CHKERRQ(ierr);
+	}
+		
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokesPCSetOptions_A"
+PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
+{
+	const char *prefix;
+	
+	PetscErrorCode ierr;
+	
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-pc_type fieldsplit");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-pc_fieldsplit_type schur");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-pc_fieldsplit_schur_factorization_type upper");CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_p_ksp_type preonly");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_p_pc_type jacobi");CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_ksp_type fgmres");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_ksp_rtol 1.0e-2");CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_type chebychev");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_max_it 6");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_pc_type jacobi");CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type bjacobi");CHKERRQ(ierr);
+	//ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type lu");CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
