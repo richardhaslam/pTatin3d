@@ -1,0 +1,116 @@
+!
+! Activate experimental driver
+!		experimental_pTatin3d_nonlinear_viscous_forward_model_driver
+!
+
+-experimental
+
+! Select model_rift3D_T
+-ptatin_model rift3D_T
+
+! Define resolution and simulation parameters
+-mx 32
+-my 8
+-mz 1
+-nsteps 2000
+-output_frequency 100
+-output_path newtontest
+-dt_max 1e-3
+-log_summary
+
+! Define model parameters
+-model_rift3D_T_Lx 1200.e3
+-model_rift3D_T_age0 300
+-model_rift3D_T_ageAnom 300
+-model_rift3D_T_eta_lower_cutoff_global 1.e+20
+-model_rift3D_T_use_semi_eulerian
+-model_rift3D_T_vis_bar 1e22
+-model_rift3D_T_vx 3.14e-10
+-model_rift3D_T_vz -0.00e-10
+-model_rift3D_T_wz 0.5
+-model_rift3D_Tcohesion_2 2e7
+-model_rift3D_Tcohesion_3 2e7
+-model_rift3D_Tcohesion_inf_2 2e7
+-model_rift3D_Tcohesion_inf_3 2e7
+-model_rift3D_Teta0_0 1e27
+-model_rift3D_Teta0_1 1e27
+-model_rift3D_Teta0_2 1e30
+-model_rift3D_Teta0_3 1e30
+-model_rift3D_Tfriction_2 0.6
+-model_rift3D_Tfriction_3 0.6
+-model_rift3D_Tfriction_inf_2 0.1
+-model_rift3D_Tfriction_inf_3 0.1
+-model_rift3D_Ttheta_0 0.025
+-model_rift3D_Ttheta_1 0.025
+-model_rift3D_Ttheta_2 0.018
+-model_rift3D_Ttheta_3 0.018
+
+! GMG configuration
+-dau_nlevels 3
+-A11_operator_type 0,1,1,1,1
+-stk_velocity_da_mat_type baij
+-stk_velocity_da_refine_hierarchy_x 4,2
+-stk_velocity_da_refine_hierarchy_y 2,1
+-stk_velocity_da_refine_hierarchy_z 1,1
+
+! Energy solver
+-T_ksp_atol 1.0e-4
+-T_ksp_monitor
+-T_ksp_rtol 1.0e-10
+-T_ksp_type fgmres
+-T_pc_type bjacobi
+-T_snes_type ksponly
+
+! Step 0 -----------------
+! picard
+-p0_snes_atol 1.0e-2
+-p0_snes_rtol 1.0e-4
+-p0_snes_max_it 5
+-p0_snes_max_linear_solve_fail 10
+	-p0_ksp_rtol 1.0e-3
+	-p0_ksp_max_it 50
+-p0_snes_monitor
+
+! newton
+! ** Set -n0_snes_max_it 0 to skip initial newton solve **
+-n0_snes_atol 1.0e-2
+-n0_snes_rtol 1.0e-4
+-n0_snes_max_it 2
+-n0_snes_max_linear_solve_fail 10
+-n0_snes_mf_operator
+	-n0_pc_fieldsplit_real_diagonal
+	-n0_ksp_rtol 1.0e-3
+	-n0_ksp_max_it 50
+-n0_snes_monitor
+
+
+! Subsequent steps -----------------
+! picard
+-p_snes_atol 1.0e-2
+-p_snes_rtol 1.0e-4
+-p_snes_max_it 2
+-p_snes_max_linear_solve_fail 10
+	-p_ksp_rtol 1.0e-3
+	-p_ksp_max_it 50
+-p_snes_monitor
+
+! newton
+! ** Set -n_snes_max_it 0 to skip initial newton solve **
+-n_snes_max_it 2
+-n_snes_atol 1.0e-2
+-n_snes_rtol 1.0e-4
+-n_snes_max_linear_solve_fail 10
+-n_snes_mf_operator
+	-n_pc_fieldsplit_real_diagonal
+	-n_ksp_rtol 1.0e-3
+	-n_ksp_max_it 50
+-n_snes_monitor
+
+
+! Viewers to check our options
+-p0_snes_view
+-n0_snes_view
+-p_snes_view
+-n_snes_view
+
+-options_left
