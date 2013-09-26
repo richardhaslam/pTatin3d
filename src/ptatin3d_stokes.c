@@ -1079,6 +1079,8 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 	
 	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
 
+	ierr = PetscOptionsInsertPrefixString(prefix,"-ksp_type fgmres");CHKERRQ(ierr);
+
 	ierr = PetscOptionsInsertPrefixString(prefix,"-pc_type fieldsplit");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-pc_fieldsplit_type schur");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-pc_fieldsplit_schur_factorization_type upper");CHKERRQ(ierr);
@@ -1088,6 +1090,7 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_ksp_type fgmres");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_ksp_rtol 1.0e-2");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_ksp_max_it 40");CHKERRQ(ierr);
 
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_type chebychev");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_norm_type NONE");CHKERRQ(ierr);
@@ -1097,8 +1100,8 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type bjacobi");CHKERRQ(ierr);
+	//ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
+	//ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type bjacobi");CHKERRQ(ierr);
 	//ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type lu");CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
