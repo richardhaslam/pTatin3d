@@ -41,9 +41,10 @@ void FileExists(const char *fname,int *exists);
 void FileExistsRank(MPI_Comm comm,const char fname[],int *exists);
 int StringEmpty(const char string[]);
 
-void ptatin_RandomSetSeed(unsigned seed);
-double ptatin_RandomGetDouble(double min,double max);
-int ptatin_RandomGetInt(int min,int max);
+void ptatin_RandomNumberSetSeed(unsigned seed);
+void ptatin_RandomNumberSetSeedRank(MPI_Comm comm);
+double ptatin_RandomNumberGetDouble(double min,double max);
+int ptatin_RandomNumberGetInt(int min,int max);
 
 PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[]);
 PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[]);

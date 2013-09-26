@@ -40,6 +40,7 @@
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_utils.h"
 #include "dmda_bcs.h"
 #include "swarm_fields.h"
 #include "MPntStd_def.h"
@@ -746,7 +747,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
     //xc         = 0.0; 
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
-	srand(0);
+	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
 
 	norandomiseplastic = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
@@ -786,9 +787,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 				pls = 0.05;   
 			}    
 		} else {
-			pls = 0.03 * rand() / (RAND_MAX + 1.0);
+			//pls = 0.03 * rand() / (RAND_MAX + 1.0);
+			pls = ptatin_RandomNumberGetDouble(0.0,0.03);
 			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
-				pls = 0.3 * rand() / (RAND_MAX + 1.0);
+				//pls = 0.3 * rand() / (RAND_MAX + 1.0);
+				pls = ptatin_RandomNumberGetDouble(0.0,0.3);
 			}			
 		}
 		

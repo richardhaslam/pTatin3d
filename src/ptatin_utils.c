@@ -204,11 +204,11 @@ int StringEmpty(const char string[])
 	return 0;
 }
 
-void ptatin_RandomSetSeed(unsigned seed)
+void ptatin_RandomNumberSetSeed(unsigned seed)
 {
 	srand(seed);
 }
-void ptatin_RandomSetSeedRank(MPI_Comm comm)
+void ptatin_RandomNumberSetSeedRank(MPI_Comm comm)
 {
 	int rank,ierr;
 	
@@ -216,7 +216,7 @@ void ptatin_RandomSetSeedRank(MPI_Comm comm)
 	srand((unsigned)rank);
 }
 
-double ptatin_RandomGetDouble(double min,double max)
+double ptatin_RandomNumberGetDouble(double min,double max)
 {
 	double r,rr;
 	
@@ -225,7 +225,7 @@ double ptatin_RandomGetDouble(double min,double max)
 	return rr;
 }
 
-int ptatin_RandomGetInt(int min,int max)
+int ptatin_RandomNumberGetInt(int min,int max)
 {
 	double r,rr;
 	int ri;
