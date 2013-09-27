@@ -76,7 +76,13 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
 
 PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy);
 PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user);
+
+PetscErrorCode PetscOptionsInsertPrefixString(const char prefix[],const char option[]);
 PetscErrorCode SNESStokesPCSetOptions_A(SNES snes);
+PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglog);
+PetscErrorCode SNESStokesPCMGCoarseSetOptions_SparseDirect(SNES snes);
+PetscErrorCode SNESStokesPCMGCoarseSetOptions_IterativeASM(SNES snes,PetscReal rtol,PetscInt maxits,PetscInt overlap);
+PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,PetscReal rtol,PetscInt maxits,PetscInt maxitsnested,PetscInt overlap);
 
 #endif
 

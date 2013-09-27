@@ -1107,3 +1107,144 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokesPCMGSetOptions"
+PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglog)
+{
+	const char *prefix;
+	char opt[PETSC_MAX_PATH_LEN];
+	
+	PetscErrorCode ierr;
+	
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_pc_type mg");CHKERRQ(ierr);
+	
+	{
+		KSP ksp,*split_ksp;
+		PC pc,split_pc;
+		PetscInt nsplits,nlevels;
+		
+		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&split_ksp);CHKERRQ(ierr);
+		
+		ierr = KSPGetPC(split_ksp[0],&split_pc);CHKERRQ(ierr);
+		ierr = PCMGGetLevels(split_pc,&nlevels);CHKERRQ(ierr);
+		
+		sprintf(opt,"-fieldsplit_u_pc_mg_levels %d",nlevels);
+		ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+	}
+	
+	if (mglog) {
+		ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_pc_mg_log");CHKERRQ(ierr);
+		ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_converged_reason");CHKERRQ(ierr);
+	}
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_type chebychev");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_norm_type NONE");CHKERRQ(ierr);
+	
+	sprintf(opt,"-fieldsplit_u_mg_levels_ksp_max_it %d",maxits);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_pc_type jacobi");CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokesPCMGCoarseSetOptions_IterativeASM"
+PetscErrorCode SNESStokesPCMGCoarseSetOptions_IterativeASM(SNES snes,PetscReal rtol,PetscInt maxits,PetscInt overlap)
+{
+	const char *prefix;
+	char opt[PETSC_MAX_PATH_LEN];
+	
+	PetscErrorCode ierr;
+	
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
+	
+	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_max_it %d",maxits);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+
+	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_rtol %1.4e",rtol);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type asm");CHKERRQ(ierr);
+	
+	sprintf(opt,"-fieldsplit_u_mg_coarse_pc_asm_overlap %d",overlap);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_sub_pc_type ilu");CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokesPCMGCoarseSetOptions_NestedIterativeASM"
+PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,PetscReal rtol,PetscInt maxits,PetscInt maxitsnested,PetscInt overlap)
+{
+	const char *prefix;
+	char opt[PETSC_MAX_PATH_LEN];
+	
+	PetscErrorCode ierr;
+	
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type fgmres");CHKERRQ(ierr);
+	
+	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_max_it %d",maxits);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+	
+	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_rtol %1.4e",rtol);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+	
+	/* defined nested ksp solver on coarse grid */
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type ksp");CHKERRQ(ierr);
+
+	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_ksp_max_it %d",maxitsnested);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_type chebychev");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
+	
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_pc_type asm");CHKERRQ(ierr);
+	sprintf(opt,"-fieldsplit_u_coarse_ksp_pc_asm_overlap %d",overlap);
+	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_sub_pc_type ilu");CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESStokesPCMGCoarseSetOptions_SparseDirect"
+PetscErrorCode SNESStokesPCMGCoarseSetOptions_SparseDirect(SNES snes)
+{
+	const char *prefix;
+	char opt[PETSC_MAX_PATH_LEN];
+	MPI_Comm comm;
+	PetscErrorCode ierr;
+	PetscMPIInt nproc;
+	
+	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+	
+	ierr = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
+
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type lu");CHKERRQ(ierr);
+
+	if (nproc == 1) {
+		ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack");CHKERRQ(ierr);
+	} else {
+		ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist");CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
