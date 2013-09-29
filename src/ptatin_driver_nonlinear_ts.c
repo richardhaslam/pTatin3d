@@ -1282,6 +1282,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscGetTime(&time[1]);
 	ierr = pTatinLogBasicSNES(user,"Stokes[LinearStage]",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicCPUtime(user,"Stokes[LinearStage]",time[1]-time[0]);CHKERRQ(ierr);
+	ierr = pTatinLogPetscLog(user,"Stokes[LinearStage]");CHKERRQ(ierr);
 	if (monitor_stages) {
 		ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
 	}
@@ -1300,6 +1301,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscGetTime(&time[1]);
 	ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicCPUtime(user,"Stokes[PicardStage]",time[1]-time[0]);CHKERRQ(ierr);
+	ierr = pTatinLogPetscLog(user,"Stokes[PicardStage]");CHKERRQ(ierr);
 	if (monitor_stages) {
 		ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
 	}
@@ -1351,6 +1353,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[NewtonStage]",time[1]-time[0]);CHKERRQ(ierr);
+		ierr = pTatinLogPetscLog(user,"Stokes[NewtonStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
 		}
@@ -1606,7 +1609,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
-		
+		ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
+
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
@@ -1974,7 +1978,8 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		SNESSetTolerances(snes_picard,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
 		ierr = SNESSolve(snes_picard,PETSC_NULL,X);CHKERRQ(ierr);
-		ierr = pTatinLogBasicSNES(user,"Stokes: LinearStage",snes_picard);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes[LinearStage]",snes_picard);CHKERRQ(ierr);
+		ierr = pTatinLogPetscLog(user,"Stokes[LinearStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
 		}
@@ -1984,7 +1989,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
 		ierr = SNESSolve(snes_picard,PETSC_NULL,X);CHKERRQ(ierr);
-		ierr = pTatinLogBasicSNES(user,"Stokes: PicardStage",snes_picard);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes_picard);CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
 		}
@@ -2028,7 +2033,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
 		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
-		ierr = pTatinLogBasicSNES(user,"Stokes: NewtonStage",snes_newton);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
 		}
@@ -2256,7 +2261,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		
 		/* e) solve mechanical model */
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
 
 		ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
@@ -2297,7 +2302,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		
 		/* e) solve mechanical model */
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
+		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes);CHKERRQ(ierr);
 
 		ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);

@@ -379,4 +379,19 @@ PetscErrorCode pTatinLogNote2(pTatinCtx ctx,const char comment1[],const char com
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinLogPetscLog"
+PetscErrorCode pTatinLogPetscLog(pTatinCtx ctx,const char comment[])
+{
+	PetscErrorCode ierr;
+	
+	PetscViewerASCIIPrintf(ctx->log,">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+	if (comment) {
+		PetscViewerASCIIPrintf(ctx->log,">>>>>>>>>>>  %s \n",comment);
+	}
+	ierr = PetscLogView(ctx->log);CHKERRQ(ierr);
+	PetscViewerASCIIPrintf(ctx->log,"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+	PetscFunctionReturn(0);
+}
+
 

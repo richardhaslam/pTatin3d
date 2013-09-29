@@ -48,6 +48,7 @@ PetscErrorCode pTatinLogBasicMaterialPoints(pTatinCtx ctx,const char mpname[],Da
 PetscErrorCode pTatinLogBasicCPUtime(pTatinCtx ctx,const char component_description[],double time);
 PetscErrorCode pTatinLogNote(pTatinCtx ctx,const char comment[]);
 PetscErrorCode pTatinLogNote2(pTatinCtx ctx,const char comment1[],const char comment2[]);
+PetscErrorCode pTatinLogPetscLog(pTatinCtx ctx,const char comment[]);
 
 PetscErrorCode pTatinViewBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X);
 PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM pack,Vec X);
