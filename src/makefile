@@ -79,6 +79,7 @@ export TATIN_SRC = \
 			model_utils.c \
 			eigen_operators.c \
 			ksp_chebyrn.c \
+			geometry_object.c \
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
