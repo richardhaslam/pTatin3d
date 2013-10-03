@@ -1,86 +1,141 @@
-#PETSc Option Table entries:
--A11_operator_type 0,1,1,1,1
--coefficient_projection_type -1
--checkpoint_every 1
--dau_nlevels 1
--dt_max 0.05
+# ------------------------------------------
+# Model specification
+#  - Simple one layer folding experiment to verify correctness of solution from ptatin_model
+#  - Verification is achieved via comparison with Fletchers analytic solutions
+# ------------------------------------------
 
--fieldsplit_p_ksp_type preonly
--fieldsplit_p_pc_type jacobi
-
--fieldsplit_u_ksp_max_it 10000
--fieldsplit_u_ksp_monitor
--fieldsplit_u_ksp_rtol 1.0e-2
--fieldsplit_u_ksp_type fgmres
-
--fieldsplit_u_mg_coarse_ksp_max_it 1000
--fieldsplit_u_mg_coarse_ksp_type fgmres
--fieldsplit_u_mg_coarse_pc_type lu
+	-ptatin_model multilayer_folding
 
 
--fieldsplit_u_mg_levels_est_ksp_norm_type NONE
--fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
--fieldsplit_u_mg_levels_ksp_max_it 10
--fieldsplit_u_mg_levels_pc_type jacobi
+# ------------------------------------------
+# Geometric specification
+	-model_multilayer_folding_Lx 1.0
+	-model_multilayer_folding_Lz 0.1
+	-model_multilayer_folding_L_char 1.0
 
-## MORE ROBUST ON DEFORMED MESHES? 
--fieldsplit_u_mg_levels_ksp_max_it 8
--fieldsplit_u_mg_levels_ksp_type fgmres
+# The layer is embedded within a larger matrix, thus we have 
+# three horizontal regions in the material we need to define the heights for
+# This implies we have to specify FOUR heights
+	-model_multilayer_folding_n_interfaces       4
+	-model_multilayer_folding_interface_heights  -50.0e-2,-0.25e-2,0.25e-2,50.0e-2
 
--fieldsplit_u_ksp_rtol 1.0e-1
 
-#-ksp_monitor_true_residual
--ksp_type fgmres
--ksp_rtol 1.0e-5
--log_summary
--model_multilayer_folding_Lx 100.0
--model_multilayer_folding_Lz 10.0
--model_multilayer_folding_L_char 1.0
-
-# 	perturbation types
-#  0: random noise 
-#  1: co and sinusoidal perturbation
-# 
-
+# ---------------------
+# Perturbation types
+#   0: random noise 
+#   1: co and sinusoidal perturbation 
 -model_multilayer_folding_perturbation_type 1
 -model_multilayer_folding_kx 0.1257
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
 -model_multilayer_folding_A0 0.5e-4 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
 
-# Three layer model implies we need four interfaces
--model_multilayer_folding_n_interfaces       4
--model_multilayer_folding_interface_heights  -50.0,-0.25,0.25,50.0
 
-
+# ---------------------
+# Material properties
 # Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
--model_multilayer_folding_layer_eta     0.01,1.0,0.01
--model_multilayer_folding_layer_res_j   6,2,6
--model_multilayer_folding_layer_rho     0.0,0.0,0.0	
--mx 16
--mz 1
--model_multilayer_folding_exx     -0.3e2
--model_multilayer_folding_ezz      0.0e2
--model_multilayer_folding_bc_type  2       
--constant_dt 1.0e-05    
+	-model_multilayer_folding_layer_eta     0.01,1.0,0.01
+	-model_multilayer_folding_layer_rho     0.0,0.0,0.0	
 
 
--ptatin_model multilayer_folding
--nsteps 2
--output_frequency 1
--checkpoint_every_nsteps 1
--output_path /Users/marinec/test_multilayer_ptatin3d/lambda50
--pc_fieldsplit_schur_factorization_type upper
--pc_fieldsplit_type schur
--pc_type fieldsplit
--snes_type ksponly
--stk_velocity_da_mat_type aij
+# ---------------------
+# Boundary conditions
+	-model_multilayer_folding_bc_type  2       
+	-model_multilayer_folding_exx     -0.3e2
+	-model_multilayer_folding_ezz      0.0e2
 
--dau_nlevels 2
--stk_velocity_da_refine_hierarchy_x 4
--stk_velocity_da_refine_hierarchy_y 2
--stk_velocity_da_refine_hierarchy_z 1
 
-# dump the geometric multi-grid mesh hierarchy 
-#-stk_velocity_da_view_hierarchy
+# ------------------------------------------
+# pTatin simulation parameters
+	
+	!! Model resolution
+	-mx 16
+	-model_multilayer_folding_layer_res_j   6,2,6
+	-mz 1
 
-#End of PETSc Option Table entries
+	!! Time step control
+	-constant_dt 1.0e-05    
+	-dt_max 0.05
+	-nsteps 2
+
+	!! output control
+	-output_frequency 1
+	-output_path lambda50
+
+	!! checkpoint control
+	-checkpoint_every_nsteps 1
+	-checkpoint_every 1
+
+
+# ------------------------------------------
+# Stokes solver
+
+	-snes_type ksponly
+	-ksp_type fgmres
+	-ksp_rtol 1.0e-5
+	-ksp_atol 1.0e-9
+	-pc_type fieldsplit
+	
+	-pc_fieldsplit_type schur
+	-pc_fieldsplit_schur_factorization_type upper
+
+	-stk_velocity_da_mat_type aij
+
+
+# ------------------------------------------
+# Pressure block solver
+
+	-fieldsplit_p_ksp_type preonly
+	-fieldsplit_p_pc_type jacobi
+
+
+# ------------------------------------------
+# Viscous block solver
+
+	-fieldsplit_u_ksp_type fgmres
+	#-fieldsplit_u_ksp_rtol 1.0e-2
+	-fieldsplit_u_ksp_rtol 1.0e-1
+	-fieldsplit_u_ksp_max_it 10000
+	-fieldsplit_u_ksp_max_it 4
+	-fieldsplit_u_pc_type mg
+
+	-coefficient_projection_type -1
+
+	-dau_nlevels 2
+	-A11_operator_type 0,1
+	-stk_velocity_da_refine_hierarchy_x 4
+	-stk_velocity_da_refine_hierarchy_y 2
+	-stk_velocity_da_refine_hierarchy_z 1
+
+	# dump the geometric multi-grid mesh hierarchy 
+	#-stk_velocity_da_view_hierarchy
+
+	#-fieldsplit_u_mg_levels_ksp_type chebychev
+	#-fieldsplit_u_mg_levels_ksp_max_it 12
+	#-fieldsplit_u_mg_levels_pc_type jacobi
+	#-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+	#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+
+	# This smoother appears to be more robust on high aspect ratio/defomred meshes
+	-fieldsplit_u_mg_levels_ksp_type fgmres
+	-fieldsplit_u_mg_levels_ksp_max_it 16
+	-fieldsplit_u_mg_levels_pc_type jacobi
+
+	#-fieldsplit_u_mg_levels_ksp_type richardson
+	#-fieldsplit_u_mg_levels_ksp_richardson_self_scale
+	#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+
+
+# ------------------------------------------
+# Viscous block coarse grid solver
+	-fieldsplit_u_mg_coarse_ksp_type fgmres
+	-fieldsplit_u_mg_coarse_ksp_max_it 1000
+	-fieldsplit_u_mg_coarse_pc_type lu
+
+
+# ------------------------------------------
+# Solver monitors
+	-fieldsplit_u_ksp_monitor
+	#-fieldsplit_u_mg_coarse_ksp_converged_reason
+
+	-log_summary
+
