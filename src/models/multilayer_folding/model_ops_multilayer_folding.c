@@ -100,7 +100,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	
 	
 	/* initialize values */
-	data->bc_type           = 0; /* 0 use vx/vz compression ; 1 use exx/ezz compression */
+	data->bc_type           = 2; /* 0 use vx/vz compression ; 1 use exx/ezz compression ; 2 use exx/ezz with moving base which conserves volume */
 	data->vx_compression    = 1.0;
 	data->vz_compression    = 1.0;
 	data->exx               = -1.0e-3;
@@ -165,36 +165,72 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	*/
 	
 	
-	if (data->bc_type == 0) {
-		PetscReal vx_E=0.0,vx_W = 0.0,vz_F = 0.0,vz_B = 0.0;
+	switch(data->bc_type) {
+			
+		case 0:
+		{
+			PetscReal vx_E=0.0,vx_W = 0.0,vz_F = 0.0,vz_B = 0.0;
+			
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			
+			/* compression east/west in the x-direction (0) [east-west] using constant velocity */
+			vx_E = -data->vx_compression;
+			vx_W =  data->vx_compression;
+			vz_B =  data->vz_compression; 
+			vz_F = -data->vz_compression;
+			
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
 		
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		
-		/* compression east/west in the x-direction (0) [east-west] using constant velocity */
-		vx_E = -data->vx_compression;
-		vx_W =  data->vx_compression;
-		vz_B =  data->vz_compression; 
-		vz_F = -data->vz_compression;
-		
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
-	} else if (data->bc_type == 1) {
-		PetscReal ezz,exx;
+			/* free slip south (base) */
+			zero = 0.0;
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
+		}
+			break;
+			
+		case 1:
+		{
+			PetscReal ezz,exx;
+			
+			/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
+			exx = data->exx;
+			ezz = data->ezz;
+			
+			ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
+			ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,ezz,2);CHKERRQ(ierr);
+			
+			/* free slip south (base) */
+			zero = 0.0;
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
+		}
+			break;
 
-		/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
-		exx = data->exx;
-		ezz = data->ezz;
-
-		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
-		ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,ezz,2);CHKERRQ(ierr);
-	} else {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type");
+		case 2:
+		{
+			PetscReal ezz,exx;
+			PetscReal Max[3],Min[3],Ly,vyB;
+			
+			/* compression east/west in the x-direction (0) [east-west] using constant strain rate */
+			exx = data->exx;
+			ezz = data->ezz;
+			
+			ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
+			ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,ezz,2);CHKERRQ(ierr);
+			
+			/* move base down to accomodate pure thickening */
+			ierr = DMDAGetBoundingBox(dav,Min,Max);CHKERRQ(ierr);
+			Ly = Max[1]-Min[1];
+			
+			vyB = 0.5 * (data->exx + data->ezz)*Ly;
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vyB);CHKERRQ(ierr); 
+		}
+			break;
+			
+		default:		
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type. Valid range is: -model_multilayer_folding_bc_type {0,1,2}");
 	}
 	
-	/* free slip south (base) */
-	zero = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
 	
 	
 	/* free surface north */
