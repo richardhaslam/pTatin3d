@@ -1,0 +1,86 @@
+#PETSc Option Table entries:
+-A11_operator_type 0,1,1,1,1
+-coefficient_projection_type -1
+-checkpoint_every 1
+-dau_nlevels 1
+-dt_max 0.05
+
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+
+-fieldsplit_u_ksp_max_it 10000
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+
+-fieldsplit_u_mg_coarse_ksp_max_it 1000
+-fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_type lu
+
+
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_pc_type jacobi
+
+## MORE ROBUST ON DEFORMED MESHES? 
+-fieldsplit_u_mg_levels_ksp_max_it 8
+-fieldsplit_u_mg_levels_ksp_type fgmres
+
+-fieldsplit_u_ksp_rtol 1.0e-1
+
+#-ksp_monitor_true_residual
+-ksp_type fgmres
+-ksp_rtol 1.0e-5
+-log_summary
+-model_multilayer_folding_Lx 100.0
+-model_multilayer_folding_Lz 10.0
+-model_multilayer_folding_L_char 1.0
+
+# 	perturbation types
+#  0: random noise 
+#  1: co and sinusoidal perturbation
+# 
+
+-model_multilayer_folding_perturbation_type 1
+-model_multilayer_folding_kx 0.1257
+-model_multilayer_folding_amp_factor 0.01 # from the layer thickness
+-model_multilayer_folding_A0 0.5e-4 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
+
+# Three layer model implies we need four interfaces
+-model_multilayer_folding_n_interfaces       4
+-model_multilayer_folding_interface_heights  -50.0,-0.25,0.25,50.0
+
+
+# Three layer model implies we need 3 element resolutions and 3 viscosities and 3 densities
+-model_multilayer_folding_layer_eta     0.01,1.0,0.01
+-model_multilayer_folding_layer_res_j   6,2,6
+-model_multilayer_folding_layer_rho     0.0,0.0,0.0	
+-mx 16
+-mz 1
+-model_multilayer_folding_exx     -0.3e2
+-model_multilayer_folding_ezz      0.0e2
+-model_multilayer_folding_bc_type  2       
+-constant_dt 1.0e-05    
+
+
+-ptatin_model multilayer_folding
+-nsteps 2
+-output_frequency 1
+-checkpoint_every_nsteps 1
+-output_path /Users/marinec/test_multilayer_ptatin3d/lambda50
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-snes_type ksponly
+-stk_velocity_da_mat_type aij
+
+-dau_nlevels 2
+-stk_velocity_da_refine_hierarchy_x 4
+-stk_velocity_da_refine_hierarchy_y 2
+-stk_velocity_da_refine_hierarchy_z 1
+
+# dump the geometric multi-grid mesh hierarchy 
+#-stk_velocity_da_view_hierarchy
+
+#End of PETSc Option Table entries
