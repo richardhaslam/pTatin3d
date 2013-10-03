@@ -105,7 +105,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	data->vz_compression    = 1.0;
 	data->exx               = -1.0e-3;
 	data->ezz               = -1.0e-3;
-
+	
 	data->perturbation_type = 0;
 	data->kx                = 0.2;
 	data->kz                = 0.2;
@@ -117,7 +117,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kx",&data->kx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kz",&data->kz,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_A0",&data->A0,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_L_char",&data->L_char,&flg); CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_L_char",&data->L_char,&flg); CHKERRQ(ierr); 
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
@@ -162,7 +162,7 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	 West  Face                    // to ZOY at X = 0
 	 lateral face                  // to YOX at Z = 0 
 	 lateral face                  // to YOX at Z = K-1
-	*/
+	 */
 	
 	
 	switch(data->bc_type) {
@@ -182,7 +182,7 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 			
 			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&vx_W);CHKERRQ(ierr);
 			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vx_E);CHKERRQ(ierr);
-		
+			
 			/* free slip south (base) */
 			zero = 0.0;
 			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
@@ -205,7 +205,7 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); 
 		}
 			break;
-
+			
 		case 2:
 		{
 			PetscReal ezz,exx;
@@ -458,8 +458,8 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 		//PetscPrintf(PETSC_COMM_WORLD,"kinter = %d (max=%d)\n", kinter,P-1 );
 		
 		
-		if (data->perturbation_type == 0) // Perturbs the interfaces with a whitenoise
-		{
+		if (data->perturbation_type == 0) { // Perturbs the interfaces with a whitenoise
+			
 			srand((rank+1)*(interf+1)+1); // The seed changes with the interface and the process.		
 			if ( (jinter>=sj) && (jinter<sj+ny) ) {
 				/* Take the dominant wavelength of the viscous layer */
@@ -479,32 +479,25 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 			}
 		}
 		
-		else if (data->perturbation_type == 1) // Perturbs the interfaces with a cos(x).cos(z) function
-		{
+		else if (data->perturbation_type == 1) { // Perturbs the interfaces with a cos(x).cos(z) function
 			
 			if ( (jinter>=sj) && (jinter<sj+ny) ) {
-				/* Take the dominant wavelength of the viscous layer */
-				if (data->eta[interf-1] < data->eta[interf]) {
-					H = interface_heights[interf+1] - interface_heights[interf];
-				} else {
-					H = (interface_heights[interf] - interface_heights[interf-1]);
-				}
 				
 				for (i=si; i<si+nx; i++) {
 					for (k=sk; k<sk+nz; k++) {
 						PetscReal kx, kz, A0, L_char, x_dimensional, z_dimensional;
-
+						
 						kx = data->kx;
 						kz = data->kz;
 						A0 = data->A0;
-                        L_char = data->L_char;
-                        x_dimensional = LA_coord[k][jinter][i].x * L_char;
-                        z_dimensional = LA_coord[k][jinter][i].z * L_char;
+						L_char = data->L_char;
+						x_dimensional = LA_coord[k][jinter][i].x * L_char;
+						z_dimensional = LA_coord[k][jinter][i].z * L_char;
 						
 						pertu = cos( kx * x_dimensional ) * cos( kz * z_dimensional );
-//						pertu_ = pertu * 1.0/L_char; 
-                        LA_coord[k][jinter][i].y += A0 * pertu;
-                        
+						//						pertu_ = pertu * 1.0/L_char; 
+						LA_coord[k][jinter][i].y += A0 * pertu;
+						
 					}
 					
 				}
@@ -891,6 +884,198 @@ PetscErrorCode ModelInitialCondition_MultilayerFolding(pTatinCtx c,Vec X,void *c
 	PetscFunctionReturn(0);
 }
 
+
+/* 
+ Fletcher, Three-dimensional folding of an embedded viscous layer in pure shear, 1991, eq 29 a
+ */
+double compute_q_3d(double H,double eta_l,double eta_m,double l,double m)
+{
+	double R,k,alpha,beta,beta1,q;
+	double lambda;
+	
+	R = eta_m/eta_l;
+	lambda = sqrt(l*l + m*m);
+	k = lambda * H;
+	
+	alpha = -2.0 * (1.0 - R);
+	beta  = 1.0 - R*R;
+	beta1 = -1.0 * ( (1.0+R*R)*(exp(k)-exp(-k)) + 2.0*R*(exp(k)+exp(-k))  )/(2.0*k);
+	q = alpha / ( beta + beta1 );
+	
+	return q;
+}
+
+double compute_amplitude(double A0,double H,double time,double exx,double ezz,double eta_l,double eta_m,double l,double m)
+{
+	double eyy,lambda,lambda2,arg,q,Anew;
+	
+	q = compute_q_3d(H,eta_l,eta_m,l,m);
+	
+	eyy = -(exx + ezz);
+	lambda = sqrt(l*l + m*m);
+	lambda2 = lambda*lambda;
+	// solution of equation 29 from Fletcher, 1991 //
+	arg = eyy - 0.5 * q * ( (l*l/lambda2)*exx + (m*m/lambda2)*ezz - eyy );
+	Anew = A0 * exp( arg * time );
+	
+	return Anew;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFoldingOutputAmplitudeMax"
+PetscErrorCode MultilayerFoldingOutputAmplitudeMax(pTatinCtx c,ModelMultilayerFoldingCtx *data)
+{
+	PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
+	DM dav,cda;
+	Vec coord;
+	DMDACoor3d ***LA_coord;
+	PetscErrorCode ierr;
+	PetscReal peak,xz[2],H;
+	static int been_here = 0;
+	static PetscReal peak_last;
+	
+	
+	if (been_here == 0) {
+		PetscPrintf(PETSC_COMM_WORLD,"# kx %+1.4e \n",data->kx);
+		PetscPrintf(PETSC_COMM_WORLD,"# kz %+1.4e \n",data->kz);
+		
+		if (data->bc_type == 0) {
+			PetscPrintf(PETSC_COMM_WORLD,"# vx %+1.4e \n",data->vx_compression);
+			PetscPrintf(PETSC_COMM_WORLD,"# vz %+1.4e \n",data->vz_compression);
+		} else if (data->bc_type == 1) {
+			PetscPrintf(PETSC_COMM_WORLD,"# exx %+1.4e \n",data->exx);
+			PetscPrintf(PETSC_COMM_WORLD,"# ezz %+1.4e \n",data->ezz);
+		} else if (data->bc_type == 2) {
+			PetscPrintf(PETSC_COMM_WORLD,"# exx %+1.4e \n",data->exx);
+			PetscPrintf(PETSC_COMM_WORLD,"# ezz %+1.4e \n",data->ezz);
+		}
+		
+		PetscPrintf(PETSC_COMM_WORLD,"# H  %+1.4e \n", data->interface_heights[2]-data->interface_heights[1]);
+		PetscPrintf(PETSC_COMM_WORLD,"# A0 %+1.4e \n", data->A0);
+		
+		PetscPrintf(PETSC_COMM_WORLD,"# interface3 %d [node index]\n", 2*(data->layer_res_j[0]+data->layer_res_j[1]+data->layer_res_j[2]));
+		PetscPrintf(PETSC_COMM_WORLD,"# interface2 %d \n", 2*(data->layer_res_j[0]+data->layer_res_j[1]));
+		PetscPrintf(PETSC_COMM_WORLD,"# interface1 %d \n", 2*data->layer_res_j[0]);
+		PetscPrintf(PETSC_COMM_WORLD,"# interface0 %d \n", 0);
+		been_here = 1;
+	}
+	
+	H = data->interface_heights[2]-data->interface_heights[1];
+	
+	jinter  = 2 * data->layer_res_j[0];
+	jinter += 2 * data->layer_res_j[1];
+	
+	dav    = c->stokes_ctx->dav;
+	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	
+	peak = -1.0e32;
+	xz[0] = xz[1] = -1.0e32;
+	for (i=si; i<si+nx; i++) {
+		for (k=sk; k<sk+nz; k++) {
+			
+			if (LA_coord[k][jinter][i].y > peak) {
+				peak = LA_coord[k][jinter][i].y;
+				xz[0] = LA_coord[k][jinter][i].x;
+				xz[1] = LA_coord[k][jinter][i].z;
+			}
+			
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"# A_max %1.8e [x,z %1.4e,%1.4e] time %1.4e \n", peak,xz[0],xz[1],c->time);
+	{
+		double q3d,q3d_pt3d,A_init,A_anl,eyy,Lx,Lz;
+		
+		A_init = 0.5 * H + data->A0 * cos(data->kx * xz[0]) * cos(data->kz * xz[1]);
+		A_anl = compute_amplitude(A_init,H,c->time,data->exx,data->ezz,data->eta[1],data->eta[0],data->kx,data->kz);
+		PetscPrintf(PETSC_COMM_WORLD,"# ** A_anl ** %1.8e : variation %1.4f%% \n",A_anl,100.0*(peak-A_anl)/A_anl);
+	}
+	peak_last = peak;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFoldingOutputAmplitude"
+PetscErrorCode MultilayerFoldingOutputAmplitude(pTatinCtx c,ModelMultilayerFoldingCtx *data)
+{
+	PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
+	DM dav,cda;
+	Vec coord;
+	DMDACoor3d ***LA_coord;
+	PetscErrorCode ierr;
+	PetscReal peak,xz[2],H;
+	static int been_here = 0;
+	double error[2];
+	
+	
+	if (been_here == 0) {
+		PetscPrintf(PETSC_COMM_WORLD,"# kx %+1.4e \n",data->kx);
+		PetscPrintf(PETSC_COMM_WORLD,"# kz %+1.4e \n",data->kz);
+		
+		if (data->bc_type == 0) {
+			PetscPrintf(PETSC_COMM_WORLD,"# vx %+1.4e \n",data->vx_compression);
+			PetscPrintf(PETSC_COMM_WORLD,"# vz %+1.4e \n",data->vz_compression);
+		} else if (data->bc_type == 1) {
+			PetscPrintf(PETSC_COMM_WORLD,"# exx %+1.4e \n",data->exx);
+			PetscPrintf(PETSC_COMM_WORLD,"# ezz %+1.4e \n",data->ezz);
+		} else if (data->bc_type == 2) {
+			PetscPrintf(PETSC_COMM_WORLD,"# exx %+1.4e \n",data->exx);
+			PetscPrintf(PETSC_COMM_WORLD,"# ezz %+1.4e \n",data->ezz);
+		}
+		
+		PetscPrintf(PETSC_COMM_WORLD,"# H  %+1.4e \n", data->interface_heights[2]-data->interface_heights[1]);
+		PetscPrintf(PETSC_COMM_WORLD,"# A0 %+1.4e \n", data->A0);
+		
+		PetscPrintf(PETSC_COMM_WORLD,"# interface3 %d [node index]\n", 2*(data->layer_res_j[0]+data->layer_res_j[1]+data->layer_res_j[2]));
+		PetscPrintf(PETSC_COMM_WORLD,"# interface2 %d \n", 2*(data->layer_res_j[0]+data->layer_res_j[1]));
+		PetscPrintf(PETSC_COMM_WORLD,"# interface1 %d \n", 2*data->layer_res_j[0]);
+		PetscPrintf(PETSC_COMM_WORLD,"# interface0 %d \n", 0);
+		been_here = 1;
+	}
+	
+	H = data->interface_heights[2]-data->interface_heights[1];
+	
+	jinter  = 2 * data->layer_res_j[0];
+	jinter += 2 * data->layer_res_j[1];
+	
+	dav    = c->stokes_ctx->dav;
+	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	
+	error[0] = 1.0e32;
+	error[1] = 0.0;
+	for (i=si; i<si+nx; i++) {
+		for (k=sk; k<sk+nz; k++) {
+			double A_init,A_anl,err;
+			
+			peak = LA_coord[k][jinter][i].y;
+			xz[0] = LA_coord[k][jinter][i].x;
+			xz[1] = LA_coord[k][jinter][i].z;
+			
+			
+			A_init = 0.5 * H + data->A0 * cos(data->kx * xz[0]) * cos(data->kz * xz[1]);
+			A_anl = compute_amplitude(A_init,H,c->time,data->exx,data->ezz,data->eta[1],data->eta[0],data->kx,data->kz);
+			err = fabs( 100.0*(peak-A_anl)/A_anl );
+			
+			error[0] = fmin(error[0],err);
+			error[1] = fmax(error[1],err);
+			
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"# ** A_anl: errors [min/max] %1.4f%% %1.4f%% \n",error[0],error[1]);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_MultilayerFolding"
 PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix[],void *ctx)
@@ -902,10 +1087,8 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
+
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	
 	{
 		const int                   nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
@@ -915,6 +1098,9 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}	
+
+	//ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
+	ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
