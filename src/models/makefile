@@ -37,7 +37,7 @@ build:
 
 modellib:
 	-@echo ""
-	-@echo "  Assembling model library using object files:" 
+	-@echo "***  Assembling model library using object files:" 
 	@for m in ${TATIN_MODEL_DIR} ; do \
 		${MAKE} addtolib -C $${m}/; \
 	done

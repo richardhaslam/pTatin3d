@@ -15,7 +15,7 @@ TATIN_MODEL_INC		=	-I${MODEL_PATH} -I${TATIN_DIR} ${TATIN_INC}
 	${TATIN_CC} ${TATIN_CFLAGS} -c $*.c ${TATIN_MODEL_INC}
 
 all:
-	-@echo "    + Compiling model: " `pwd`
+	-@echo "\n    + Compiling model: " `pwd` "\c"
 #	-@echo ${TATIN_DIR}
 #	-@echo ${TATIN_MODEL_INC}
 	

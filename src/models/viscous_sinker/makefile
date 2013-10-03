@@ -11,11 +11,10 @@ MODEL_PATH				= `pwd`
 TATIN_MODEL_INC		=	-I${MODEL_PATH} -I${TATIN_DIR} ${TATIN_INC}
 
 %.o: %.c
-	-@echo ""
 	${TATIN_CC} ${TATIN_CFLAGS} -c $*.c ${TATIN_MODEL_INC}
 
 all:
-	-@echo "    + Compiling model: " `pwd`
+	-@echo "\n    + Compiling model: " `pwd`
 #	-@echo ${TATIN_DIR}
 #	-@echo ${TATIN_MODEL_INC}
 	
