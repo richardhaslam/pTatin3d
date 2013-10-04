@@ -1089,3 +1089,244 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 	PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "_pTatinOutputLiteMeshVelocitySlicedPVTS"
+PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
+																											 PetscInt processor_span[],
+																											 PetscInt olx[],PetscInt lmx[],
+																											 PetscInt oly[],PetscInt lmy[],
+																											 PetscInt olz[],PetscInt lmz[],
+																											 PetscInt processor_I[],
+																											 PetscInt processor_J[],
+																											 PetscInt processor_K[],
+																											 const char prefix[])
+{
+	PetscErrorCode ierr;
+	PetscInt       swidth,i,j,k;
+	PetscInt       startI,endI,startJ,endJ,startK,endK;
+	
+	PetscFunctionBegin;
+	
+	/* VTS HEADER - OPEN */	
+	if(vtk_fp) fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
+	
+#ifdef WORDSIZE_BIGENDIAN
+	if(vtk_fp) fprintf( vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	if(vtk_fp) fprintf( vtk_fp, "<VTKFile type=\"PStructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
+	swidth = 2;
+	
+	startI = olx[processor_I[0]];
+	endI   = olx[processor_I[1]-1] + 2*lmx[processor_I[1]-1];
+
+	startJ = oly[processor_J[0]];
+	endJ   = oly[processor_J[1]-1] + 2*lmy[processor_J[1]-1];
+
+	startK = olz[processor_K[0]];
+	endK   = olz[processor_K[1]-1] + 2*lmz[processor_K[1]-1];
+	
+	if(vtk_fp) fprintf( vtk_fp, "  <PStructuredGrid GhostLevel=\"%d\" WholeExtent=\"%d %d %d %d %d %d\">\n", swidth, startI,endI, startJ,endJ, startK,endK );
+	
+	/* VTS COORD DATA */	
+	if(vtk_fp) fprintf( vtk_fp, "    <PPoints>\n");
+	if(vtk_fp) fprintf( vtk_fp, "      <PDataArray type=\"Float32\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
+	if(vtk_fp) fprintf( vtk_fp, "    </PPoints>\n");
+	
+	
+	/* VTS CELL DATA */	
+	if(vtk_fp) fprintf( vtk_fp, "    <PCellData>\n");
+	if(vtk_fp) fprintf( vtk_fp, "    </PCellData>\n");
+	
+	
+	/* VTS NODAL DATA */
+	if(vtk_fp) fprintf( vtk_fp, "    <PPointData>\n");
+	if(vtk_fp) fprintf( vtk_fp, "      <PDataArray type=\"Float32\" Name=\"velocity\" NumberOfComponents=\"3\"/>\n");
+	if(vtk_fp) fprintf( vtk_fp, "    </PPointData>\n");
+	
+	/* write out the parallel information */
+	for (k=processor_K[0]; k<processor_K[1]; k++) {
+		for (j=processor_J[0]; j<processor_J[1]; j++) {
+			for (i=processor_I[0]; i<processor_I[1]; i++) {
+				char     *name;
+				PetscInt procid;
+				
+				procid = i + j*processor_span[0] + k*processor_span[0]*processor_span[1]; /* convert proc(i,j,k) to pid */
+
+				asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid );
+				if(vtk_fp) fprintf( vtk_fp, "      <Piece Extent=\"%d %d %d %d %d %d\"      Source=\"%s\"/>\n",
+													 olx[i],olx[i]+lmx[i]*2,
+													 oly[j],oly[j]+lmy[j]*2,
+													 olz[k],olz[k]+lmz[k]*2,
+													 name);
+				free(name);
+			}
+		}
+	}
+	
+	/* VTS HEADER - CLOSE */	
+	if(vtk_fp) fprintf( vtk_fp, "  </PStructuredGrid>\n");
+	if(vtk_fp) fprintf( vtk_fp, "</VTKFile>\n");
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputLiteMeshVelocitySlicedPVTS"
+PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],const char prefix[])
+{
+	PetscErrorCode ierr;
+	DM             dau,dap;
+	FILE           *vtk_fp = NULL;
+	PetscMPIInt    rank;
+	PetscInt pM,pN,pP;
+	PetscInt i,j,k,II,dim;
+	PetscInt *olx,*oly,*olz;
+	PetscInt *lmx,*lmy,*lmz;
+	PetscInt processor_span[3];
+	PetscInt processor_I[2];
+	PetscInt processor_J[2];
+	PetscInt processor_K[2];
+	
+	PetscFunctionBegin;
+	
+	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMDAGetOwnershipRangesElementQ2(dau,&pM,&pN,&pP,&olx,&oly,&olz,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+	processor_span[0] = pM;
+	processor_span[1] = pN;
+	processor_span[2] = pP;
+	
+	if (rank == 0) {
+		
+		// I
+		for (i=0; i<pM; i++) {
+			char pprefix[PETSC_MAX_PATH_LEN];
+			char sdprefix[PETSC_MAX_PATH_LEN];
+			char *vtkfilename,*filename;
+			
+			sprintf(pprefix,"%s_v_PSliceI%d",prefix,i);
+			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+			if (path) {
+				asprintf(&filename,"%s/%s",path,vtkfilename);
+			} else {
+				asprintf(&filename,"./%s",vtkfilename);
+			}
+
+			vtk_fp = NULL;
+			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+			}
+			
+			processor_I[0] = i;
+			processor_I[1] = i+1;
+			
+			processor_J[0] = 0;
+			processor_J[1] = pN;
+			processor_K[0] = 0;
+			processor_K[1] = pP;
+
+			sprintf(sdprefix,"%s_v",prefix);
+			_pTatinOutputLiteMeshVelocitySlicedPVTS(vtk_fp,
+																							processor_span,
+																							olx,lmx,oly,lmy,olz,lmz,
+																							processor_I,processor_J,processor_K,
+																							sdprefix);
+			free(filename);
+			free(vtkfilename);
+			fclose(vtk_fp);
+		}
+
+		// J
+		for (j=0; j<pN; j++) {
+			char pprefix[PETSC_MAX_PATH_LEN];
+			char sdprefix[PETSC_MAX_PATH_LEN];
+			char *vtkfilename,*filename;
+			
+			sprintf(pprefix,"%s_v_PSliceJ%d",prefix,j);
+			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+			if (path) {
+				asprintf(&filename,"%s/%s",path,vtkfilename);
+			} else {
+				asprintf(&filename,"./%s",vtkfilename);
+			}
+			
+			vtk_fp = NULL;
+			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+			}
+			
+			processor_I[0] = 0;
+			processor_I[1] = pM;
+			
+			processor_J[0] = j;
+			processor_J[1] = j+1;
+			processor_K[0] = 0;
+			processor_K[1] = pP;
+			
+			sprintf(sdprefix,"%s_v",prefix);
+			_pTatinOutputLiteMeshVelocitySlicedPVTS(vtk_fp,
+																							processor_span,
+																							olx,lmx,oly,lmy,olz,lmz,
+																							processor_I,processor_J,processor_K,
+																							sdprefix);
+			free(filename);
+			free(vtkfilename);
+			fclose(vtk_fp);
+		}
+
+		// K
+		for (k=0; k<pP; k++) {
+			char pprefix[PETSC_MAX_PATH_LEN];
+			char sdprefix[PETSC_MAX_PATH_LEN];
+			char *vtkfilename,*filename;
+			
+			sprintf(pprefix,"%s_v_PSliceK%d",prefix,k);
+			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+			if (path) {
+				asprintf(&filename,"%s/%s",path,vtkfilename);
+			} else {
+				asprintf(&filename,"./%s",vtkfilename);
+			}
+			
+			vtk_fp = NULL;
+			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+			}
+			
+			processor_I[0] = 0;
+			processor_I[1] = pM;
+			
+			processor_J[0] = 0;
+			processor_J[1] = pN;
+			processor_K[0] = k;
+			processor_K[1] = k+1;
+			
+			sprintf(sdprefix,"%s_v",prefix);
+			_pTatinOutputLiteMeshVelocitySlicedPVTS(vtk_fp,
+																							processor_span,
+																							olx,lmx,oly,lmy,olz,lmz,
+																							processor_I,processor_J,processor_K,
+																							sdprefix);
+			free(filename);
+			free(vtkfilename);
+			fclose(vtk_fp);
+		}
+		
+		
+	}
+		
+	ierr = PetscFree(olx);CHKERRQ(ierr);
+	ierr = PetscFree(oly);CHKERRQ(ierr);
+	ierr = PetscFree(olz);CHKERRQ(ierr);
+	
+	ierr = PetscFree(lmx);CHKERRQ(ierr);
+	ierr = PetscFree(lmy);CHKERRQ(ierr);
+	ierr = PetscFree(lmz);CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
