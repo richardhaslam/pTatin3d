@@ -1010,7 +1010,7 @@ PetscErrorCode MultilayerFoldingOutputAmplitude(pTatinCtx c,ModelMultilayerFoldi
 	PetscErrorCode ierr;
 	PetscReal peak,xz[2],H;
 	static int been_here = 0;
-	double error[2];
+	double error[2],gerror[2];
 	
 	
 	if (been_here == 0) {
@@ -1071,7 +1071,10 @@ PetscErrorCode MultilayerFoldingOutputAmplitude(pTatinCtx c,ModelMultilayerFoldi
 	}
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"# ** A_anl: errors [min/max] %1.4f%% %1.4f%% \n",error[0],error[1]);
+	ierr = MPI_Allreduce(&error[0],&gerror[0],1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&error[1],&gerror[1],1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	PetscPrintf(PETSC_COMM_WORLD,"# ** A_anl: errors [min/max] %1.4f%% %1.4f%% \n",gerror[0],gerror[1]);
 	
 	PetscFunctionReturn(0);
 }
