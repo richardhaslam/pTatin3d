@@ -11,6 +11,9 @@ const char *GeomTypeNames[] = {
 	"GeomType_Box", 
 	"GeomType_Cylinder", 
 	"GeomType_Sphere",
+	"GeomType_EllipticCylinder",
+	"GeomType_Ellipsoid",
+	"GeomType_InfLayer",
 	"GeomType_SetOperation",
 	0
 };
@@ -31,7 +34,8 @@ const char *GeomRotateAxisNames[] = {
 
 void PointRotate(double xin[],GeomRotateAxis axis,double angle,double xout[]);
 void PointBackRotate(double xin[],GeomRotateAxis axis,double angle,double xout[]);
-
+void PointTranslate(double xin[],double shift[],double xout[]);
+void PointBackTranslate(double xin[],double shift[],double xout[]);
 /* ------------------------------------------------------------------------------------------- */
 /* API */
 #undef __FUNCT__
@@ -57,6 +61,10 @@ PetscErrorCode GeometryObjectCreate(const char name[],int region_index,double va
 	
 	go->geom_point_inside = PETSC_NULL;
 	go->geom_transform_translate = PETSC_NULL;
+	
+	go->centroid[0]=0.0;
+	go->centroid[1]=0.0;
+	go->centroid[2]=0.0;
 	
 	*G = go;
 	
@@ -111,20 +119,6 @@ PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double 
 	PetscFunctionReturn(0);
 }
 
-/* translate */
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectTransformTranslate"
-PetscErrorCode GeometryObjectTransformTranslate(GeometryObject go,double shift[])
-{
-	/* call method */
-	if (go->geom_transform_translate) {
-		go->geom_transform_translate(go,shift);
-	} else {
-		printf("No method for go->geom_transform_translate provided\n");
-		exit(0);
-	}
-	PetscFunctionReturn(0);
-}
 
 /* point inside */
 #undef __FUNCT__
@@ -134,23 +128,19 @@ PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *ins
 	int    nr;
 	double posin[3],posout[3];
 	
-	
-	posin[0] = pos[0];
-	posin[1] = pos[1];
-	posin[2] = pos[2];
+	PointBackTranslate(pos,go->centroid,posout);
 	
 	for (nr=go->n_rotations-1; nr>=0; nr--) {
-		PointBackRotate(posin,go->rotation_axis[nr],go->rotation_angle[nr],posout);
-		
 		posin[0] = posout[0];
 		posin[1] = posout[1];
 		posin[2] = posout[2];
+		PointBackRotate(posin,go->rotation_axis[nr],go->rotation_angle[nr],posout);
 	}
 	
 	/* call method */
 	if (go->geom_point_inside) {
 		*inside = 0;
-		go->geom_point_inside(go,posin,inside);
+		go->geom_point_inside(go,posout,inside);
 	} else {
 		printf("No method for go->geom_point_inside provided\n");
 		exit(0);
@@ -269,6 +259,24 @@ PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],Geo
 	PetscFunctionReturn(0);
 }
 
+void PointTranslate(double xin[],double shift[],double xout[])
+{
+int    i;
+	for (i=0;i<3;i++){
+	xout[i]= xin[i]+shift[i];
+	}
+}
+
+void PointBackTranslate(double xin[],double shift[],double xout[])
+{
+double shift2[3];
+int    i;
+	for (i=0;i<3;i++){
+	shift2[i] = -shift[i];
+	}
+	PointTranslate(xin,shift2,xout);
+}
+
 void PointRotate(double xin[],GeomRotateAxis axis,double angle,double xout[])
 {
 	double RR[3][3],xin2[3];
@@ -361,12 +369,12 @@ PetscErrorCode GeometryObjectSetFromOptions_Box(GeometryObject go)
 	ierr = GeometryObjectGetContext_Box(go,&box);CHKERRQ(ierr);
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-x0",&val,&flg);CHKERRQ(ierr);
-	if (flg) { box->x0[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-x1",&val,&flg);CHKERRQ(ierr);
-	if (flg) { box->x0[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-x2",&val,&flg);CHKERRQ(ierr);
-	if (flg) { box->x0[2] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
 	
 	ierr = PetscOptionsGetReal(name,"-Lx0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { box->Lx[0] = val; }
@@ -378,22 +386,7 @@ PetscErrorCode GeometryObjectSetFromOptions_Box(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectTransformTranslate_Box"
-PetscErrorCode GeometryObjectTransformTranslate_Box(GeometryObject go,double shift[])
-{
-	GeomTypeBox box;
-	PetscErrorCode ierr;
-	
-	
-	ierr = GeometryObjectGetContext_Box(go,&box);CHKERRQ(ierr);
-	
-	box->x0[0] = box->x0[0] + shift[0];
-	box->x0[1] = box->x0[1] + shift[1];
-	box->x0[2] = box->x0[2] + shift[2];
-	
-	PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Box"
@@ -401,19 +394,15 @@ PetscErrorCode GeometryObjectPointInside_Box(GeometryObject go,double pos[],int 
 {
 	GeomTypeBox box;
 	PetscErrorCode ierr;
-	
+	PetscInt i; 
 	
 	ierr = GeometryObjectGetContext_Box(go,&box);CHKERRQ(ierr);
+	*inside = 0;
 	
-	if (pos[0] < box->x0[0])              { PetscFunctionReturn(0); }
-	if (pos[0] > box->x0[0] + box->Lx[0]) { PetscFunctionReturn(0); }
-	
-	if (pos[1] < box->x0[1])              { PetscFunctionReturn(0); }
-	if (pos[1] > box->x0[1] + box->Lx[1]) { PetscFunctionReturn(0); }
-	
-	if (pos[2] < box->x0[2])              { PetscFunctionReturn(0); }
-	if (pos[2] > box->x0[2] + box->Lx[2]) { PetscFunctionReturn(0); }
-	
+	for (i=0;i<3;i++){
+	if ((pos[i]*pos[i]) > (box->Lx[i]*box->Lx[i]*0.25)) { PetscFunctionReturn(0); }
+	}
+		
 	*inside = 1;
 	
 	PetscFunctionReturn(0);
@@ -429,16 +418,15 @@ PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeBox),&box);CHKERRQ(ierr);
 	ierr = PetscMemzero(box,sizeof(struct _p_GeomTypeBox));CHKERRQ(ierr);
-	box->x0[0] = x0[0];
-	box->x0[1] = x0[1];
-	box->x0[2] = x0[2];
 	box->Lx[0] = Lx[0];
 	box->Lx[1] = Lx[1];
 	box->Lx[2] = Lx[2];
+	go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
 	
 	go->type                     = GeomType_Box;
 	go->geom_point_inside        = GeometryObjectPointInside_Box;
-	go->geom_transform_translate = GeometryObjectTransformTranslate_Box;
 	go->geom_destroy             = GeometryObjectDestroy_Box;
 	go->ctx = (void*)box;
 	
@@ -477,12 +465,12 @@ PetscErrorCode GeometryObjectSetFromOptions_Sphere(GeometryObject go)
 	ctx = (GeomTypeSphere)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-Ox",&val,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->origin[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-Oy",&val,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->origin[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-Oz",&val,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->origin[2] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
 	
 	ierr = PetscOptionsGetReal(name,"-rad",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radius = val; }
@@ -490,21 +478,7 @@ PetscErrorCode GeometryObjectSetFromOptions_Sphere(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectTransformTranslate_Sphere"
-PetscErrorCode GeometryObjectTransformTranslate_Sphere(GeometryObject go,double shift[])
-{
-	GeomTypeSphere ctx;
-	
-	
-	ctx = (GeomTypeSphere)go->ctx;
-	
-	ctx->origin[0] = ctx->origin[0] + shift[0];
-	ctx->origin[1] = ctx->origin[1] + shift[1];
-	ctx->origin[2] = ctx->origin[2] + shift[2];
-	
-	PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Sphere"
@@ -517,9 +491,8 @@ PetscErrorCode GeometryObjectPointInside_Sphere(GeometryObject go,double pos[],i
 	ctx = (GeomTypeSphere)go->ctx;
 	
 	r2 = ctx->radius * ctx->radius;
-	sep2 =  (pos[0]-ctx->origin[0])*(pos[0]-ctx->origin[0]);
-	sep2 += (pos[1]-ctx->origin[1])*(pos[1]-ctx->origin[1]);
-	sep2 += (pos[2]-ctx->origin[2])*(pos[2]-ctx->origin[2]);
+	sep2 =  pos[0]*pos[0]+pos[1]*pos[1]+pos[2]*pos[2];
+	
 	if (sep2 < r2) {
 		*inside = 1;
 	}
@@ -529,7 +502,7 @@ PetscErrorCode GeometryObjectPointInside_Sphere(GeometryObject go,double pos[],i
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectSetType_Sphere"
-PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],double radius)
+PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double x0[],double radius)
 {
 	GeomTypeSphere ctx;
 	PetscErrorCode ierr;
@@ -537,18 +510,121 @@ PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],do
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSphere),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSphere));CHKERRQ(ierr);
-	ctx->origin[0] = origin[0];
-	ctx->origin[1] = origin[1];
-	ctx->origin[2] = origin[2];
+    
+    go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
+
 	ctx->radius = radius;
 	
 	go->type                     = GeomType_Sphere;
 	go->geom_point_inside        = GeometryObjectPointInside_Sphere;
-	go->geom_transform_translate = GeometryObjectTransformTranslate_Sphere;
 	go->geom_destroy             = GeometryObjectDestroy_Sphere;
 	go->ctx = (void*)ctx;
 	
 	ierr = GeometryObjectSetFromOptions_Sphere(go);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------- */
+/* ELLIPSOID: implementation */
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectDestroy_Ellipsoid"
+PetscErrorCode GeometryObjectDestroy_Ellipsoid(GeometryObject go)
+{
+	GeomTypeEllipsoid ctx;
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeEllipsoid)go->ctx;
+	ierr = PetscFree(ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetFromOptions_Ellipsoid"
+PetscErrorCode GeometryObjectSetFromOptions_Ellipsoid(GeometryObject go)
+{
+	GeomTypeEllipsoid ctx;
+	PetscReal val;
+	PetscBool flg;
+	char name[1024];
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeEllipsoid)go->ctx;
+	
+	sprintf(name,"%s_",go->name);
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
+	
+	ierr = PetscOptionsGetReal(name,"-ra",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->radia = val; }
+	ierr = PetscOptionsGetReal(name,"-rb",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->radib = val; }
+	ierr = PetscOptionsGetReal(name,"-rc",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->radic = val; }
+	
+	PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectPointInside_Ellipsoid"
+PetscErrorCode GeometryObjectPointInside_Ellipsoid(GeometryObject go,double pos[],int *inside)
+{
+	GeomTypeEllipsoid ctx;
+	double ra2,rb2,rc2,sep2;
+	
+	*inside = 0;
+	ctx = (GeomTypeEllipsoid)go->ctx;
+	
+	ra2 = ctx->radia * ctx->radia;
+    rb2 = ctx->radib * ctx->radib;
+    rc2 = ctx->radic * ctx->radic;
+	
+	sep2 =  pos[0]*pos[0]/ra2+pos[1]*pos[1]/rb2+pos[2]*pos[2]/rc2;
+	
+	if (sep2 < 1) {
+		*inside = 1;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetType_Ellipsoid"
+PetscErrorCode GeometryObjectSetType_Ellipsoid(GeometryObject go,double x0[],double radia,double radib,double radic)
+{
+	GeomTypeEllipsoid ctx;
+	PetscErrorCode ierr;
+	
+	
+	ierr = PetscMalloc(sizeof(struct _p_GeomTypeEllipsoid),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeEllipsoid));CHKERRQ(ierr);
+    
+    go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
+
+	ctx->radia = radia	;
+    ctx->radib = radib	;
+    ctx->radic = radic	;
+	
+	go->type                     = GeomType_Ellipsoid;
+	go->geom_point_inside        = GeometryObjectPointInside_Ellipsoid;
+	go->geom_destroy             = GeometryObjectDestroy_Ellipsoid;
+	go->ctx = (void*)ctx;
+	
+	ierr = GeometryObjectSetFromOptions_Ellipsoid(go);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -584,12 +660,12 @@ PetscErrorCode GeometryObjectSetFromOptions_Cylinder(GeometryObject go)
 	ctx = (GeomTypeCylinder)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-Ox",&val,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->x0[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-Oy",&val,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->x0[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-Oz",&val,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->x0[2] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
 	
 	ierr = PetscOptionsGetReal(name,"-rad",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radius = val; }
@@ -603,21 +679,7 @@ PetscErrorCode GeometryObjectSetFromOptions_Cylinder(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectTransformTranslate_Cylinder"
-PetscErrorCode GeometryObjectTransformTranslate_Cylinder(GeometryObject go,double shift[])
-{
-	GeomTypeCylinder ctx;
-	
-	
-	ctx = (GeomTypeCylinder)go->ctx;
-	
-	ctx->x0[0] = ctx->x0[0] + shift[0];
-	ctx->x0[1] = ctx->x0[1] + shift[1];
-	ctx->x0[2] = ctx->x0[2] + shift[2];
-	
-	PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Cylinder"
@@ -636,51 +698,28 @@ PetscErrorCode GeometryObjectPointInside_Cylinder(GeometryObject go,double pos[]
 	switch (ctx->axis) {
 			
 		case ROTATE_AXIS_Z: // check in x-y
-			
-			if (pos[2] < ctx->x0[2])               { PetscFunctionReturn(0); }
-			if (pos[2] > ctx->x0[2] + ctx->length) { PetscFunctionReturn(0); }
-			
-			sep2 =  (pos[0]-ctx->x0[0])*(pos[0]-ctx->x0[0]);
-			sep2 += (pos[1]-ctx->x0[1])*(pos[1]-ctx->x0[1]);
-			if (sep2 < r2) {
-				*inside = 1;
-			}
-			
+			if ((pos[2]*pos[2]) > ctx->length) { PetscFunctionReturn(0); }
+			if (pos[0]*pos[0]+pos[1]*pos[1] > r2) { PetscFunctionReturn(0); } 
 			break;
 			
 		case ROTATE_AXIS_Y: // check in x-z
-			
-			if (pos[1] < ctx->x0[1])               { PetscFunctionReturn(0); }
-			if (pos[1] > ctx->x0[1] + ctx->length) { PetscFunctionReturn(0); }
-			
-			sep2 =  (pos[0]-ctx->x0[0])*(pos[0]-ctx->x0[0]);
-			sep2 += (pos[2]-ctx->x0[2])*(pos[2]-ctx->x0[2]);
-			if (sep2 < r2) {
-				*inside = 1;
-			}
-			
-			break;
+			if ((pos[1]*pos[1]) > ctx->length) { PetscFunctionReturn(0); }
+			if (pos[0]*pos[0]+pos[2]*pos[2] > r2) { PetscFunctionReturn(0); } 
+			break;			
 			
 		case ROTATE_AXIS_X: // check in y-z
+			if ((pos[0]*pos[0]) > ctx->length) { PetscFunctionReturn(0); }
+			if (pos[1]*pos[1]+pos[2]*pos[2] > r2) { PetscFunctionReturn(0); } 
+			break;			
 			
-			if (pos[0] < ctx->x0[0])               { PetscFunctionReturn(0); }
-			if (pos[0] > ctx->x0[0] + ctx->length) { PetscFunctionReturn(0); }
-			
-			sep2  = (pos[1]-ctx->x0[1])*(pos[1]-ctx->x0[1]);
-			sep2 += (pos[2]-ctx->x0[2])*(pos[2]-ctx->x0[2]);
-			if (sep2 < r2) {
-				*inside = 1;
-			}
-			
-			break;
 	}
-	
+	*inside = 1;
 	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectSetType_Cylinder"
-PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double origin[],double radius,double length,GeomRotateAxis axis)
+PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double x0[],double radius,double length,GeomRotateAxis axis)
 {
 	GeomTypeCylinder ctx;
 	PetscErrorCode ierr;
@@ -688,16 +727,16 @@ PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double origin[],
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeCylinder),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeCylinder));CHKERRQ(ierr);
-	ctx->x0[0]  = origin[0];
-	ctx->x0[1]  = origin[1];
-	ctx->x0[2]  = origin[2];
+    go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
+
 	ctx->radius = radius;
 	ctx->length = length;
 	ctx->axis   = axis;
 	
 	go->type                     = GeomType_Cylinder;
 	go->geom_point_inside        = GeometryObjectPointInside_Cylinder;
-	go->geom_transform_translate = GeometryObjectTransformTranslate_Cylinder;
 	go->geom_destroy             = GeometryObjectDestroy_Cylinder;
 	go->ctx = (void*)ctx;
 	
@@ -707,6 +746,239 @@ PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double origin[],
 }
 
 /* ------------------------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------- */
+/* Elliptic CYLINDER: implementation */
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectDestroy_EllipticCylinder"
+PetscErrorCode GeometryObjectDestroy_EllipticCylinder(GeometryObject go)
+{
+	GeomTypeEllipticCylinder ctx;
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeEllipticCylinder)go->ctx;
+	ierr = PetscFree(ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetFromOptions_EllipticCylinder"
+PetscErrorCode GeometryObjectSetFromOptions_EllipticCylinder(GeometryObject go)
+{
+	GeomTypeEllipticCylinder ctx;
+	PetscReal val;
+	PetscInt ival;
+	PetscBool flg;
+	char name[1024];
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeEllipticCylinder)go->ctx;
+	
+	sprintf(name,"%s_",go->name);
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
+	
+	ierr = PetscOptionsGetReal(name,"-ra",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->radia = val; }
+
+	ierr = PetscOptionsGetReal(name,"-rb",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->radib = val; }
+	
+	ierr = PetscOptionsGetReal(name,"-len",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->length = val; }
+	
+	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
+	
+	PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectPointInside_EllipticCylinder"
+PetscErrorCode GeometryObjectPointInside_EllipticCylinder(GeometryObject go,double pos[],int *inside)
+{
+	GeomTypeEllipticCylinder ctx;
+	double ra2,rb2;
+	
+	
+	ctx = (GeomTypeEllipticCylinder)go->ctx;
+	
+	ra2 = ctx->radia * ctx->radia;
+	rb2 = ctx->radib * ctx->radib;
+	
+	*inside = 0;
+	switch (ctx->axis) {
+			
+		case ROTATE_AXIS_Z: // check in x-y
+			if ((pos[2]*pos[2]) > (ctx->length*ctx->length*0.25)) { PetscFunctionReturn(0); }
+			if ((pos[0]*pos[0])/ra2+pos[1]*pos[1]/rb2 > 1.0) { PetscFunctionReturn(0); } 
+			break;
+			
+		case ROTATE_AXIS_Y: // check in x-z
+
+			if ((pos[1]*pos[1]) > (ctx->length*ctx->length*0.25)) { PetscFunctionReturn(0); }
+			if (pos[2]*pos[2]/ra2+pos[0]*pos[0]/rb2 > 1.0) { PetscFunctionReturn(0); } 
+			break;			
+			
+		case ROTATE_AXIS_X: // check in y-z
+			if ((pos[0]*pos[0]) > (ctx->length*ctx->length*0.25)) { PetscFunctionReturn(0); }
+			if (pos[1]*pos[1]/ra2+pos[2]*pos[2]/rb2 > 1.0) { PetscFunctionReturn(0); } 
+			break;			
+			
+	}
+	*inside = 1;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetType_EllipticCylinder"
+PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x0[],double radia,double radib,double length,GeomRotateAxis axis)
+{
+	GeomTypeEllipticCylinder ctx;
+	PetscErrorCode ierr;
+	
+	
+	ierr = PetscMalloc(sizeof(struct _p_GeomTypeEllipticCylinder),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeEllipticCylinder));CHKERRQ(ierr);
+    
+    go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
+
+	ctx->radia  = radia;
+	ctx->radib  = radib;
+	ctx->length = length;
+	ctx->axis   = axis;
+	
+	go->type                     = GeomType_EllipticCylinder;
+	go->geom_point_inside        = GeometryObjectPointInside_EllipticCylinder;
+	go->geom_destroy             = GeometryObjectDestroy_EllipticCylinder;
+	go->ctx = (void*)ctx;
+	
+	ierr = GeometryObjectSetFromOptions_EllipticCylinder(go);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------------------------- */
+
+
+/* ------------------------------------------------------------------------------------------- */
+/* ------------------------------------------------------------------------------------------- */
+/* Elliptic CYLINDER: implementation */
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectDestroy_InfLayer"
+PetscErrorCode GeometryObjectDestroy_InfLayer(GeometryObject go)
+{
+	GeomTypeInfLayer ctx;
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeInfLayer)go->ctx;
+	ierr = PetscFree(ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetFromOptions_InfLayer"
+PetscErrorCode GeometryObjectSetFromOptions_InfLayer(GeometryObject go)
+{
+	GeomTypeInfLayer ctx;
+	PetscReal val;
+	PetscInt ival;
+	PetscBool flg;
+	char name[1024];
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeInfLayer)go->ctx;
+	
+	sprintf(name,"%s_",go->name);
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
+	
+	ierr = PetscOptionsGetReal(name,"-thick",&val,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->thickness = val; }
+	
+	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
+	
+	PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectPointInside_InfLayer"
+PetscErrorCode GeometryObjectPointInside_InfLayer(GeometryObject go,double pos[],int *inside)
+{
+	GeomTypeInfLayer ctx;
+		
+	
+	ctx = (GeomTypeInfLayer)go->ctx;
+	*inside = 0;
+	switch (ctx->axis) {
+			
+		case ROTATE_AXIS_Z: // check in x-y
+			if ((pos[2]*pos[2]) > (ctx->thickness*ctx->thickness*0.25)) { PetscFunctionReturn(0); }
+			break;
+			
+		case ROTATE_AXIS_Y: // check in x-z
+			if ((pos[1]*pos[1]) > (ctx->thickness*ctx->thickness*0.25)) { PetscFunctionReturn(0); }
+			break;			
+			
+		case ROTATE_AXIS_X: // check in y-z
+			if ((pos[0]*pos[0]) > (ctx->thickness*ctx->thickness*0.25)) { PetscFunctionReturn(0); }
+			break;			
+			
+	}
+	*inside = 1;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetType_InfLayer"
+PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],double thickness,GeomRotateAxis axis)
+{
+	GeomTypeInfLayer ctx;
+	PetscErrorCode ierr;
+	
+	
+	ierr = PetscMalloc(sizeof(struct _p_GeomTypeInfLayer),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeInfLayer));CHKERRQ(ierr);
+    go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
+
+	ctx->thickness  = thickness;
+	ctx->axis       = axis;
+	
+	go->type                     = GeomType_InfLayer;
+	go->geom_point_inside        = GeometryObjectPointInside_InfLayer;
+	go->geom_destroy             = GeometryObjectDestroy_InfLayer;
+	go->ctx = (void*)ctx;
+	
+	ierr = GeometryObjectSetFromOptions_InfLayer(go);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------------------------- */
+
+
 /* SetOperation: Implementation */
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectDestroy_SetOperation"
@@ -725,25 +997,7 @@ PetscErrorCode GeometryObjectDestroy_SetOperation(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectTransformTranslate_SetOperation"
-PetscErrorCode GeometryObjectTransformTranslate_SetOperation(GeometryObject go,double shift[])
-{
-	GeomTypeSetOperation ctx;
-	PetscErrorCode ierr;
-	
-	
-	ctx = (GeomTypeSetOperation)go->ctx;
-	
-	if (ctx->A) {
-		ierr = GeometryObjectTransformTranslate(ctx->A,shift);CHKERRQ(ierr);
-	}
-	if (ctx->B) {
-		ierr = GeometryObjectTransformTranslate(ctx->B,shift);CHKERRQ(ierr);
-	}
-	
-	PetscFunctionReturn(0);
-}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_SetOperation"
@@ -810,7 +1064,6 @@ PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetO
 	
 	go->type                     = GeomType_SetOperation;
 	go->geom_point_inside        = GeometryObjectPointInside_SetOperation;
-	go->geom_transform_translate = GeometryObjectTransformTranslate_SetOperation;
 	go->geom_destroy             = GeometryObjectDestroy_SetOperation;
 	go->ctx = (void*)ctx;
 	

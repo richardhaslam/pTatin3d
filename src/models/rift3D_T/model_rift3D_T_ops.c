@@ -58,6 +58,7 @@
 #include "energy_output.h"
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
+#include "geometry_object.h"
 
 #include "rift3D_T_ctx.h"
 
@@ -73,7 +74,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
 	RheologyConstants      *rheology;
 	DataBucket materialconstants = c->material_constants;
-	PetscBool nondim;
+	PetscBool nondim,isAtlantic;
 	PetscScalar vx,vy,vz,Sx,Sy,Sz;
 	PetscInt regionidx;
     PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
@@ -105,7 +106,32 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	data->viscosity_bar = 1e25;
 	data->velocity_bar  = 1.0e-10;
 	data->dimensional   = PETSC_TRUE;
-	/* box geometry, m */
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_Atlantic",&isAtlantic,PETSC_NULL);CHKERRQ(ierr);
+	if (isAtlantic){
+    /* box geometry, m */
+	data->Lx =  32.0e5;
+	data->Ly =  0.0e5;
+	data->Lz =  32.0e5;
+	data->Ox =  0.0e5;
+	data->Oy = -2.0e5;
+	data->Oz =  0.0e5;
+	/* velocity cm/y */
+	vx = 1.0*cm_per_yer2m_per_sec;
+	vz = 0.0*cm_per_yer2m_per_sec;
+	/* rho0 for initial pressure*/ 
+	data->rho0 = 3140.0;
+    /*Temperature */ 
+    data->Tbottom = 1400.0;
+    data->Ttop    = 0.0;
+    data->thermal_age0 = 200;
+    data->thermal_age_anom = 200;
+    data->wx_anom  = 1;
+    data->wz_anom  = 0.5;
+    data->cx_anom  = 3.0;
+    data->cz_anom  = 0.0;
+    	}
+     else {
+    /* box geometry, m */
 	data->Lx =  6.0e5;
 	data->Ly =  0.0e5;
 	data->Lz =  6.0e5;
@@ -127,7 +153,8 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     data->wz_anom  = 0.5;
     data->cx_anom  = 3.0;
     data->cz_anom  = 0.0;
-	/* Material constant */
+        }
+		/* Material constant */
 	MaterialConstantsSetDefaults(materialconstants);
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
@@ -147,7 +174,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,0.020);
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2700,2.e-5,3.e-12);
-    MaterialConstantsSetValues_DensityConst(materialconstants,1,2800);
+    MaterialConstantsSetValues_DensityConst(materialconstants,1,2700);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,1,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,1,0.0,0.3);    
@@ -711,116 +738,17 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Rift3D_T"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
-	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-	int                    e,p,n_mp_points;
-	PetscScalar            y_lab,y_moho,y_midcrust,notch_l,notch_w2,xc;
-	DataBucket             db;
-	DataField              PField_std,PField_pls;
-	int                    phase;
-	MPAccess               mpX;
-	PetscBool              norandomiseplastic;
-	PetscErrorCode         ierr;
+PetscBool isAtlantic = PETSC_FALSE;
+PetscErrorCode ierr; 
 
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
-	/* define properties on material points */
-	db = c->materialpoint_db;
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
-	DataFieldGetAccess(PField_std);
-	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
-	
-	
-	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
-	DataFieldGetAccess(PField_pls);
-	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
-	
-	
-	/* m */
-	y_lab      = -120.0e3; 
-	y_moho     = -40.0e3;
-	y_midcrust = -20.0e3;
-	notch_w2   = 50.e3;
-    notch_l    = 150.e3;
-    xc         = (data->Lx + data->Ox)/2.0* data->length_bar;
-    //xc         = 0.0; 
-	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
-	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
-
-	norandomiseplastic = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
-
-	for (p=0; p<n_mp_points; p++) {
-		MPntStd       *material_point;
-		MPntPStokes   *mpprop_stokes;
-		MPntPStokesPl *mpprop_pls;
-		double        *position,ycoord,xcoord,zcoord;
-		float         pls;
-		char          yield;
-        
-		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
-		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
-		
-		/* Access using the getter function provided for you (recommeneded for beginner user) */
-		MPntStdGetField_global_coord(material_point,&position);
-		
-		/* convert to scaled units */
-		xcoord = position[0] * data->length_bar;
-		ycoord = position[1] * data->length_bar;
-		zcoord = position[2] * data->length_bar;
-		
-		if (ycoord < y_lab) {
-			phase = 3;
-		} else if (ycoord < y_moho) {
-			phase = 2;
-		} else if (ycoord < y_midcrust) {
-			phase = 1;
-		} else {
-			phase = 0;
-		}
-
-		if (norandomiseplastic) {
-			pls   = 0.0;
-			if ( (xcoord > 250.0e3) && (xcoord < 350.0e3) &&  (zcoord < 150.0e3) ) {
-				pls = 0.05;   
-			}    
-		} else {
-			//pls = 0.03 * rand() / (RAND_MAX + 1.0);
-			pls = ptatin_RandomNumberGetDouble(0.0,0.03);
-			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
-				//pls = 0.3 * rand() / (RAND_MAX + 1.0);
-				pls = ptatin_RandomNumberGetDouble(0.0,0.3);
-			}			
-		}
-		
-    yield = 0; 
-		/* user the setters provided for you */
-		MPntStdSetField_phase_index(material_point,phase);
-		MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield);
-		MPntPStokesPlSetField_plastic_strain(mpprop_pls,pls);
-	}
-	
-	DataFieldRestoreAccess(PField_std);
-	DataFieldRestoreAccess(PField_pls);
-
-	
-	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mp_points; p++) {
-		double kappa,H;
-		
-		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
-
-		kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
-		H     = 0.0;
-		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
-		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
-	}
-	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-    
-    
-	PetscFunctionReturn(0);
+ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_Atlantic",&isAtlantic,PETSC_NULL);CHKERRQ(ierr);
+	if (isAtlantic){
+      	ModelApplyInitialMaterialGeometry_Atlantic(c,ctx);
+    	}
+     else {
+        ModelApplyInitialMaterialGeometry_Notchtest(c,ctx);
+        }
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1170,6 +1098,262 @@ PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Notchtest"
+PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	int                    e,p,n_mp_points;
+	PetscScalar            y_lab,y_moho,y_midcrust,notch_l,notch_w2,xc;
+	DataBucket             db;
+	DataField              PField_std,PField_pls;
+	int                    phase;
+	MPAccess               mpX;
+	PetscBool              norandomiseplastic;
+	PetscErrorCode         ierr;
+
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	/* define properties on material points */
+	db = c->materialpoint_db;
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+	
+	
+	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	DataFieldGetAccess(PField_pls);
+	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
+	
+	
+	/* m */
+	y_lab      = -120.0e3; 
+	y_moho     = -40.0e3;
+	y_midcrust = -20.0e3;
+	notch_w2   = 50.e3;
+    notch_l    = 150.e3;
+    xc         = (data->Lx + data->Ox)/2.0* data->length_bar;
+    //xc         = 0.0; 
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+	
+	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
+
+	norandomiseplastic = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
+
+	for (p=0; p<n_mp_points; p++) {
+		MPntStd       *material_point;
+		MPntPStokes   *mpprop_stokes;
+		MPntPStokesPl *mpprop_pls;
+		double        *position,ycoord,xcoord,zcoord;
+		float         pls;
+		char          yield;
+        
+		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
+		
+		/* Access using the getter function provided for you (recommeneded for beginner user) */
+		MPntStdGetField_global_coord(material_point,&position);
+		
+		/* convert to scaled units */
+		xcoord = position[0] * data->length_bar;
+		ycoord = position[1] * data->length_bar;
+		zcoord = position[2] * data->length_bar;
+		
+		if (ycoord < y_lab) {
+			phase = 3;
+		} else if (ycoord < y_moho) {
+			phase = 2;
+		} else if (ycoord < y_midcrust) {
+			phase = 1;
+		} else {
+			phase = 0;
+		}
+
+		if (norandomiseplastic) {
+			pls   = 0.0;
+			if ( (xcoord > 250.0e3) && (xcoord < 350.0e3) &&  (zcoord < 150.0e3) ) {
+				pls = 0.05;   
+			}    
+		} else {
+			//pls = 0.03 * rand() / (RAND_MAX + 1.0);
+			pls = ptatin_RandomNumberGetDouble(0.0,0.03);
+			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
+				//pls = 0.3 * rand() / (RAND_MAX + 1.0);
+				pls = ptatin_RandomNumberGetDouble(0.0,0.3);
+			}			
+		}
+		
+    yield = 0; 
+		/* user the setters provided for you */
+		MPntStdSetField_phase_index(material_point,phase);
+		MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield);
+		MPntPStokesPlSetField_plastic_strain(mpprop_pls,pls);
+	}
+	
+	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_pls);
+
+	
+	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mp_points; p++) {
+		double kappa,H;
+		
+		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
+
+		kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+		H     = 0.0;
+		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
+		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
+	}
+	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+    
+    
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Atlantic"
+PetscErrorCode ModelApplyInitialMaterialGeometry_Atlantic(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	int                    e,p,n_mp_points;
+	PetscScalar            L[3],xc[3];
+	DataBucket             db;
+	DataField              PField_std,PField_pls;
+	int                    phase;
+	MPAccess               mpX;
+	GeometryObject         g0,g1,g2,g3,gn0,gn1;
+	PetscErrorCode         ierr;
+	PetscReal              angle = 0.0;
+	PetscInt               phase_index = 0;
+
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-centralsuturezone_angle",&angle,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-centralsuturezone_index",&phase_index,PETSC_NULL);CHKERRQ(ierr);
+
+	
+	/*define geometry of heterogenities*/ 
+	L[0]  =  2.0; L[1]  =  1.2; L[2]  = 3.0; 
+	xc[0] =   6.; xc[1] = -0.6; xc[2] = 1.5;
+	ierr=GeometryObjectCreate("southatlantic",PETSC_NULL,PETSC_NULL,PETSC_NULL,&gn0);
+    ierr=GeometryObjectSetType_Box(gn0,xc,L);
+    L[0]  =  2.0; L[1]  =  1.2; L[2]  =  3.0; 
+	xc[0] =  26.0; xc[1] = -0.6; xc[2] = 30.5;
+	ierr=GeometryObjectCreate("northatlantic",PETSC_NULL,PETSC_NULL,PETSC_NULL,&gn1);
+    ierr=GeometryObjectSetType_Box(gn1,xc,L);
+    
+	
+	/*define geometry of layers*/ 
+	xc[0] =  16.0; xc[1] = -0.1; xc[2] = 16.0 ;
+	ierr=GeometryObjectCreate("uppercrust",0,PETSC_NULL,PETSC_NULL,&g0);
+	ierr=GeometryObjectSetType_InfLayer(g0,xc,0.2,ROTATE_AXIS_Y);
+	xc[0] =  16.0; xc[1] = -0.3; xc[2] = 16.0 ;
+	ierr=GeometryObjectCreate("lowercrust",0,PETSC_NULL,PETSC_NULL,&g1);
+	ierr=GeometryObjectSetType_InfLayer(g1,xc,0.2,ROTATE_AXIS_Y);
+	ierr=GeometryObjectCreate("centralsuturezone",phase_index,PETSC_NULL,PETSC_NULL,&g3);
+    ierr=GeometryObjectSetType_EllipticCylinder(g3,xc,7.5,1.5,0.2, ROTATE_AXIS_Y );
+    GeometryObjectRotate(g3,ROTATE_AXIS_Y,angle);
+	xc[0] =  16.0; xc[1] = -0.8; xc[2] = 16.0 ;
+	ierr=GeometryObjectCreate("uppermantle",2,PETSC_NULL,PETSC_NULL,&g2);
+	ierr=GeometryObjectSetType_InfLayer(g2,xc,0.8,ROTATE_AXIS_Y);
+	
+	
+	
+	/* define properties on material points */
+	db = c->materialpoint_db;
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+	
+	
+	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	DataFieldGetAccess(PField_pls);
+	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+		
+	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
+	
+	for (p=0; p<n_mp_points; p++) {
+		MPntStd       *material_point;
+		MPntPStokes   *mpprop_stokes;
+		MPntPStokesPl *mpprop_pls;
+		double        *position,ycoord,xcoord,zcoord;
+		float         pls;
+		char          yield;
+        int           phase;
+        int           insidenotch1,insidenotch2,inside;
+		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
+		
+		/* Access using the getter function provided for you (recommeneded for beginner user) */
+		MPntStdGetField_global_coord(material_point,&position);
+		
+		// first the layering 
+		//phase==GEOM_SHAPE_REGION_INDEX_NULL;
+
+		
+		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g0,position,&phase);}
+		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g1,position,&phase);}
+		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g2,position,&phase);}
+		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g3,position,&phase);}
+		if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {phase=3;}
+		// than the plastic heterogeneities
+		
+		
+		phase=3;
+		GeometryObjectPointInside(g0,position,&inside);
+		if ( inside==1 ) {phase=0;};
+		GeometryObjectPointInside(g1,position,&inside);
+		if ( inside==1 ) {phase=1;};
+		GeometryObjectPointInside(g3,position,&inside);
+		if ( inside==1 ) {phase=phase_index;};
+		GeometryObjectPointInside(g2,position,&inside);
+		if ( inside==1 ) {phase=2;};
+		
+        pls   = ptatin_RandomNumberGetDouble(0.0,0.03);
+		yield = 0; 
+		GeometryObjectPointInside(gn0,position,&inside);
+		if ( inside==1 ) {pls = ptatin_RandomNumberGetDouble(0.0,0.3);}
+		GeometryObjectPointInside(gn1,position,&inside);
+		if ( inside==1 ) {pls = ptatin_RandomNumberGetDouble(0.0,0.3);}
+        
+		/* user the setters provided for you */
+		MPntStdSetField_phase_index(material_point,phase);
+		MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield);
+		MPntPStokesPlSetField_plastic_strain(mpprop_pls,pls);
+	}
+	
+	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_pls);
+	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+	
+	for (p=0; p<n_mp_points; p++) {
+		double kappa,H;
+		
+		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
+
+		kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+		H     = 0.0;
+		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
+		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
+	}
+	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+    
+    // Dont know on what to loop to destroy all of them ;(
+    
+    GeometryObjectDestroy(&g0);GeometryObjectDestroy(&g1);
+    GeometryObjectDestroy(&g2);GeometryObjectDestroy(&g3);
+	GeometryObjectDestroy(&gn0);GeometryObjectDestroy(&gn1);
 	
 	PetscFunctionReturn(0);
 }

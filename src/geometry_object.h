@@ -5,6 +5,9 @@ typedef enum {
 	GeomType_Box=0, 
 	GeomType_Cylinder, 
 	GeomType_Sphere,
+	GeomType_EllipticCylinder,
+	GeomType_Ellipsoid,
+	GeomType_InfLayer,
 	GeomType_SetOperation,
 	GeomType_NULL
 } GeomType;
@@ -39,7 +42,7 @@ struct _p_GeometryObject {
 	GeomType type;
 	int      ref_cnt;
 	void     *ctx;
-	//double   centroid[3];
+	double   centroid[3];
 	int      region_index;
 	double   value;
 	int            n_rotations;
@@ -62,18 +65,35 @@ struct _p_GeometryObject {
 */
 typedef struct _p_GeomTypeBox *GeomTypeBox;
 struct _p_GeomTypeBox {
-	double x0[3],Lx[3];
+	double Lx[3];
 };
 
 typedef struct _p_GeomTypeCylinder *GeomTypeCylinder;
 struct _p_GeomTypeCylinder {
 	GeomRotateAxis axis;
-	double x0[3],radius,length;
+	double radius,length;
 };
 
 typedef struct _p_GeomTypeSphere *GeomTypeSphere;
 struct _p_GeomTypeSphere {
-	double origin[3],radius;
+	double radius;
+};
+
+typedef struct _p_GeomTypeEllipticCylinder *GeomTypeEllipticCylinder;
+struct _p_GeomTypeEllipticCylinder {
+    GeomRotateAxis axis;
+	double radia,radib,length;
+};
+
+typedef struct _p_GeomTypeInfLayer *GeomTypeInfLayer;
+struct _p_GeomTypeInfLayer {
+    GeomRotateAxis axis;
+	double thickness;
+};
+
+typedef struct _p_GeomTypeEllipsoid *GeomTypeEllipsoid;
+struct _p_GeomTypeEllipsoid {
+	double radia,radib,radic;
 };
 
 typedef struct _p_GeomTypeSetOperation *GeomTypeSetOperation;
@@ -102,6 +122,9 @@ PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx
 PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator type,GeometryObject A,GeometryObject B);
 PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],double radius);
 PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double x0[],double radius,double Lx,GeomRotateAxis axis);
+PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x0[],double radia,double radib,double Lx,GeomRotateAxis axis);
+PetscErrorCode GeometryObjectSetType_Ellipsoid(GeometryObject go,double x0[],double radia,double radib,double radic);
+PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],double Lx,GeomRotateAxis axis);
 
 PetscErrorCode GeomTypeNameGetId(const char name[],int *id);
 PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],GeometryObject *g);
