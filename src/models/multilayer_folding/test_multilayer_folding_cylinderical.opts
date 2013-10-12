@@ -9,8 +9,8 @@
 
 # ------------------------------------------
 # Geometric specification
-	-model_multilayer_folding_Lx 1.0
-	-model_multilayer_folding_Lz 0.1
+	-model_multilayer_folding_Lx 1
+	-model_multilayer_folding_Lz 0.6
 	-model_multilayer_folding_L_char 1.0
 
 # The layer is embedded within a larger matrix, thus we have 
@@ -26,8 +26,8 @@
 #   0: random noise 
 #   1: co and sinusoidal perturbation 
 -model_multilayer_folding_perturbation_type 1
--model_multilayer_folding_kx 12.566370614359172
--model_multilayer_folding_kz 0.0
+-model_multilayer_folding_kx 10.47197551
+-model_multilayer_folding_kz 12.56637061
 #-model_multilayer_folding_kz 10.0
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
 -model_multilayer_folding_A0 0.5e-4 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
@@ -52,18 +52,18 @@
 # pTatin simulation parameters
 	
 	!! Model resolution
-	-mx 16
+	-mx 24
 	-model_multilayer_folding_layer_res_j   12,2,12
-	-mz 1
+	-mz 24
 
 	!! Time step control
-	-constant_dt 1.0e-05    
+	-constant_dt 1.0e-07    
 	-dt_max 0.05
-	-nsteps 2
+	-nsteps 1
 
 	!! output control
 	-output_frequency 1
-	-output_path lambda50
+	-output_path /Users/marinec/test_multilayer_ptatin3d/lambda40
 
 	!! checkpoint control
 	-checkpoint_every_nsteps 1
@@ -107,7 +107,7 @@
 	-A11_operator_type 0,1
 	-stk_velocity_da_refine_hierarchy_x 4
 	-stk_velocity_da_refine_hierarchy_y 2
-	-stk_velocity_da_refine_hierarchy_z 1
+	-stk_velocity_da_refine_hierarchy_z 4
 
 	# dump the geometric multi-grid mesh hierarchy 
 	#-stk_velocity_da_view_hierarchy
