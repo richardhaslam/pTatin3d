@@ -27,7 +27,7 @@
 #   1: co and sinusoidal perturbation 
 -model_multilayer_folding_perturbation_type 1
 -model_multilayer_folding_kx 10.47197551
--model_multilayer_folding_kz 0.0
+-model_multilayer_folding_kz 12.56637061
 #-model_multilayer_folding_kz 10.0
 -model_multilayer_folding_amp_factor 0.01 # from the layer thickness
 -model_multilayer_folding_A0 0.5e-4 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
@@ -44,7 +44,7 @@
 # Boundary conditions
 	-model_multilayer_folding_bc_type  2       
 	-model_multilayer_folding_exx     -0.3e2
-	-model_multilayer_folding_ezz     -0.0e2
+	-model_multilayer_folding_ezz     -0.3e2
 #	-model_multilayer_folding_ezz     -0.3e2
 
 
@@ -52,9 +52,9 @@
 # pTatin simulation parameters
 	
 	!! Model resolution
-	-mx 16
+	-mx 12
 	-model_multilayer_folding_layer_res_j   12,2,12
-	-mz 1
+	-mz 16
 
 	!! Time step control
 	-constant_dt 1.0e-07    
@@ -107,7 +107,7 @@
 	-A11_operator_type 0,1
 	-stk_velocity_da_refine_hierarchy_x 4
 	-stk_velocity_da_refine_hierarchy_y 2
-	-stk_velocity_da_refine_hierarchy_z 1
+	-stk_velocity_da_refine_hierarchy_z 4
 
 	# dump the geometric multi-grid mesh hierarchy 
 	#-stk_velocity_da_view_hierarchy
