@@ -659,7 +659,7 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 	%%%%%%%%%%%%
 	\item {\it Elements possess a high aspect ratio (AR)}. When using $Q_2$-$P_1$ elements, the inf-sup constant increases with increasing AR. Possible fixes: (1) Strengthen the Schur complement preconditioner. This could be achieved by \unix{-fieldsplit\_p\_pc\_type lu}, or switching to use an approximate form  of $S = B^T A^{-1} B$ via say one application of a Krylov method preconditioned with the scaled lumped mass matrix. Increasing the strength of the Schur complement preconditioner can be achieved by making the solve on $A^{-1}$ more accurate and making the solve on $S$ more accurate; (2) modify the element resolution to make AR $< 10$.
 	%%%%%%%%%%%%
-	\item {\it Convergence failure of the viscous block}. See below.
+	\item {\it Convergence failure of the viscous block}. This can be diagnosed by running with these options; \unix{-fieldsplit\_u\_ksp\_monitor\_true\_residual -fieldsplit\_u\_ksp\_converged\_reason}. See below for more information.
 	%%%%%%%%%%%%
 \end{enumerate}
 
@@ -673,7 +673,10 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 	(3) Use more robust coarse grid operators, e.g. assemble some levels and use Galerkin coarsening on the coarser levels;
 	(4) Use less levels, or try aggressive coarsening.
 	%%%%%%%%%%%%
-	\item {\it MG coarse grid solver fails to converge}. Possible fixes: (1) Improve the coarse grid solver. See below.
+	\item {\it MG coarse grid solver fails to converge}. 
+	This can be diagnosed by running with these options; \
+	\unix{-fieldsplit\_u\_mg\_coarse\_ksp\_monitor\_true\_residual -fieldsplit\_u\_mg\_coarse\_ksp\_converged\_reason}.
+	Possible fixes: (1) Improve the coarse grid solver. See below for more details.
 	%%%%%%%%%%%%
 \end{enumerate}
 
