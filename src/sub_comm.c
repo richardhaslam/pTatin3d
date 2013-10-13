@@ -14,7 +14,7 @@ int _MPI_Subcomm_create(MPI_Subcomm *scomm)
 	
 	*scomm = comm;
 	
-	return 1;
+	return(0);
 }
 
 int MPI_Subcomm_free(MPI_Subcomm *scomm)
@@ -30,31 +30,31 @@ int MPI_Subcomm_free(MPI_Subcomm *scomm)
 	
 	*scomm = NULL;
 	
-	return 1;
+	return(0);
 }
 
 int MPI_Subcomm_get_active(MPI_Subcomm sc,int *a)
 {
 	*a = sc->parent_rank_active_in_subcomm;
-	return 1;
+	return(0);
 }
 
 int MPI_Subcomm_get_parent_comm(MPI_Subcomm sc,MPI_Comm *a)
 {
 	*a = sc->parent_comm;
-	return 1;
+	return(0);
 }
 
 int MPI_Subcomm_get_comm(MPI_Subcomm sc,MPI_Comm *a)
 {
 	*a = sc->sub_comm;
-	return 1;
+	return(0);
 }
 
 int MPI_Subcomm_get_active_ranks(MPI_Subcomm sc,int **a)
 {
 	*a = sc->ranks_from_parent;
-	return 1;
+	return(0);
 }
 
 
@@ -121,7 +121,7 @@ int MPI_Subcomm_create_MethodA(MPI_Comm parent_comm,int parent_reduction_factor,
 	ierr = MPI_Group_free(&sub_group);
 	*scomm = comm;
 	
-	return 1;
+	return(0);
 }
 
 
