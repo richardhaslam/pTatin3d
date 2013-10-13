@@ -17,7 +17,6 @@ typedef struct {
 
 
 /* helpers for gather matrix and scattering vectors */
-
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSemiRedundant"
 PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,Mat *_red)
@@ -117,26 +116,25 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 }
 
 /* implementations for SemiRedundant */
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_SemiRedundant"
 static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 {
   PetscErrorCode   ierr;
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
-	MPI_Comm comm;
-	MPI_Subcomm sc;
-	PetscMPIInt size;
+	MPI_Comm     comm;
+	MPI_Subcomm  sc;
+	PetscMPIInt  size;
 	MatStructure str;
-  MatReuse reuse;
+  MatReuse     reuse;
 
-	
+  PetscFunctionBegin;
 	/* construction phase */
   if (!pc->setupcalled) {
 	
 		/* set up sub communicator */
-		PetscObjectGetComm((PetscObject)pc,&comm);
-		MPI_Subcomm_create_MethodA(comm,red->nsubcomm_factor,&sc);
+		ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+		ierr = MPI_Subcomm_create_MethodA(comm,red->nsubcomm_factor,&sc);CHKERRQ(ierr);
 		red->subcomm = sc;
 		ierr = MPI_Comm_size(sc->sub_comm,&red->nsubcomm_size);CHKERRQ(ierr);
 		
@@ -157,9 +155,6 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 			ierr = KSPAppendOptionsPrefix(red->ksp,"semiredundant_");CHKERRQ(ierr); 
 		}
 	}
-	
-	
-	
 	
 	/* fetch redundant matrix */
 	if (!pc->setupcalled) {
@@ -200,10 +195,10 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 	/* setup scatters */
 	if (!pc->setupcalled) {
 		PetscInt st,ed;
-		PetscInt i,n,N;
-		Vec x;
+		PetscInt n,N;
+		Vec      x;
 	
-		PetscObjectGetComm((PetscObject)pc,&comm);
+		ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
 		ierr = MatGetVecs(red->A,&x,PETSC_NULL);CHKERRQ(ierr);
 		
 		if (red->xred) {
@@ -224,7 +219,6 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 		ierr = VecDestroy(&x);CHKERRQ(ierr);
 	}
 	
-	
 	/* common - no construction */
 	ierr = PCGetOperators(pc,&red->A,&red->B,&str);CHKERRQ(ierr);
 	if (red->Ared) {
@@ -241,23 +235,19 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_SemiRedundant"
 static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 {
   PetscErrorCode   ierr;
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
-	
-	Vec xtmp;
-	PetscInt i,st,ed;
-	VecScatter scatter;
-  PetscScalar    *array;
-	
-	
+	Vec         xtmp;
+	PetscInt    i,st,ed;
+	VecScatter  scatter;
+  PetscScalar *array;
+		
   PetscFunctionBegin;
-	
-	xtmp = red->xtmp;
+	xtmp    = red->xtmp;
 	scatter = red->scatter;
 	
 	/* pull in vector */
@@ -360,7 +350,7 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
   PetscErrorCode   ierr;
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
   PetscBool        iascii,isstring;
-  PetscViewer    subviewer;
+  PetscViewer      subviewer;
 	
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -391,8 +381,6 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
