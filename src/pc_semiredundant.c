@@ -10,6 +10,9 @@ typedef struct {
 	Mat A,B,Ared,Bred;
 	Vec xred,yred;
 	KSP ksp;
+	IS isin;
+	VecScatter scatter;
+	Vec xtmp;
 } PC_SemiRedundant;
 
 
@@ -194,6 +197,33 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 		}
 	}
 	
+	/* setup scatters */
+	if (!pc->setupcalled) {
+		PetscInt st,ed;
+		PetscInt i,n,N;
+		Vec x;
+	
+		PetscObjectGetComm((PetscObject)pc,&comm);
+		ierr = MatGetVecs(red->A,&x,PETSC_NULL);CHKERRQ(ierr);
+		
+		if (red->xred) {
+			ierr = VecGetOwnershipRange(red->xred,&st,&ed);CHKERRQ(ierr);
+			ierr = ISCreateStride(comm,ed-st,st,1,&red->isin);CHKERRQ(ierr);
+		} else {
+			ierr = VecGetOwnershipRange(x,&st,&ed);CHKERRQ(ierr);
+			ierr = ISCreateStride(comm,1,st,1,&red->isin);CHKERRQ(ierr);
+		}
+		
+		ierr = ISGetLocalSize(red->isin,&n);CHKERRQ(ierr);
+		ierr = ISGetSize(red->isin,&N);CHKERRQ(ierr);
+		ierr = VecCreate(((PetscObject)red->isin)->comm,&red->xtmp);CHKERRQ(ierr);
+		ierr = VecSetSizes(red->xtmp,n,N);CHKERRQ(ierr);
+		ierr = VecSetType(red->xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
+		ierr = VecScatterCreate(x,red->isin,red->xtmp,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
+
+		ierr = VecDestroy(&x);CHKERRQ(ierr);
+	}
+	
 	
 	/* common - no construction */
 	ierr = PCGetOperators(pc,&red->A,&red->B,&str);CHKERRQ(ierr);
@@ -220,43 +250,19 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
 	
 	Vec xtmp;
-	IS is;
-	PetscInt st,ed;
+	PetscInt i,st,ed;
 	VecScatter scatter;
-	PetscInt   i,n,N;
   PetscScalar    *array;
 	
 	
   PetscFunctionBegin;
 	
-	/* pull in vector */
-	{
-		//PetscPrintf(PETSC_COMM_WORLD,"X\n");
-		//VecView(x,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));
-		
-		
-		if (red->xred) {
-			VecGetOwnershipRange(red->xred,&st,&ed);
-			ierr = ISCreateStride(PETSC_COMM_WORLD,ed-st,st,1,&is);CHKERRQ(ierr);
-		} else {
-			VecGetOwnershipRange(x,&st,&ed);
-			ierr = ISCreateStride(PETSC_COMM_WORLD,1,st,1,&is);CHKERRQ(ierr);
-		}
-		
-		
-		ISGetLocalSize(is,&n);
-		ISGetSize(is,&N);
-		VecCreate(((PetscObject)is)->comm,&xtmp);
-		VecSetSizes(xtmp,n,N);
-		VecSetType(xtmp,((PetscObject)x)->type_name);
-		VecScatterCreate(x,is,xtmp,NULL,&scatter);
-		VecScatterBegin(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);
-		VecScatterEnd(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);
-		
-		//PetscPrintf(PETSC_COMM_WORLD,"X*\n");
-		//VecView(xtmp,PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));
-	}
+	xtmp = red->xtmp;
+	scatter = red->scatter;
 	
+	/* pull in vector */
+	ierr = VecScatterBegin(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	ierr = VecScatterEnd(scatter,x,xtmp,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	
 	/* solve */
 	if (red->ksp) {
@@ -266,9 +272,6 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 		/* we created xred with empty local arrays, now we fill it in */
 		ierr = VecPlaceArray(red->xred,(const PetscScalar*)array);CHKERRQ(ierr);
 		
-		//PetscPrintf(PETSC_COMM_WORLD,"Xred\n");
-		//VecView(red->xred,PETSC_VIEWER_STDOUT_(red->subcomm->sub_comm));
-		
 		ierr = KSPSolve(red->ksp,red->xred,red->yred);CHKERRQ(ierr);
 		
 		ierr = VecResetArray(red->xred);CHKERRQ(ierr);
@@ -276,7 +279,6 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 	}
 
 	/* return vector */
-	
 	ierr = VecGetArray(xtmp,&array);CHKERRQ(ierr);
 	if (red->yred) {
 		PetscScalar *LA_yred;
@@ -293,15 +295,9 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 	}
 	ierr = VecRestoreArray(xtmp,&array);CHKERRQ(ierr);
 	
-	VecScatterBegin(scatter,xtmp,y,ADD_VALUES,SCATTER_REVERSE);
-	VecScatterEnd(scatter,xtmp,y,ADD_VALUES,SCATTER_REVERSE);
+	ierr = VecScatterBegin(scatter,xtmp,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+	ierr = VecScatterEnd(scatter,xtmp,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-	
-	ierr = ISDestroy(&is);CHKERRQ(ierr);
-	ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
-	ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
-	
-	
   PetscFunctionReturn(0);
 }
 
@@ -317,8 +313,13 @@ static PetscErrorCode PCReset_SemiRedundant(PC pc)
 	if (red->yred) { ierr = VecDestroy(&red->yred);CHKERRQ(ierr);}
 	if (red->Ared) { ierr = MatDestroy(&red->Ared);CHKERRQ(ierr);}
 	if (red->Bred) { ierr = MatDestroy(&red->Bred);CHKERRQ(ierr);}
-  if (red->ksp) {ierr = KSPReset(red->ksp);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
+
+	ierr = ISDestroy(&red->isin);CHKERRQ(ierr);
+	ierr = VecDestroy(&red->xtmp);CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&red->scatter);CHKERRQ(ierr);
+  if (red->ksp) {  ierr = KSPReset(red->ksp);CHKERRQ(ierr);}
+  
+	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -333,6 +334,7 @@ static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
 	if (red->ksp) {
 		ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
 	}
+	ierr = MPI_Subcomm_free(&red->subcomm);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -373,13 +375,13 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: parent comm size reduction factor = %D\n",red->nsubcomm_factor);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: subcomm_size = %D\n",red->nsubcomm_size);CHKERRQ(ierr);
 			
+			ierr = PetscViewerGetSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+			ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
 			if (red->subcomm->parent_rank_active_in_subcomm) {
-				ierr = PetscViewerGetSubcomm(viewer,((PetscObject)red->ksp)->comm,&subviewer);CHKERRQ(ierr);
-				ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
 				ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
-				ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-				ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)red->ksp)->comm,&subviewer);CHKERRQ(ierr);
 			}
+			ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+			ierr = PetscViewerRestoreSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
 			
 		}
   } else if (isstring) { 
