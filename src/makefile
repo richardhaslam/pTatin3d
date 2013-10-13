@@ -49,7 +49,7 @@ export TATIN_SRC = \
 			material_point_popcontrol.c \
 			material_point_load.c \
 			ptatin_utils.c \
-			ptatin_check_compiler_flags.c \
+			ptatin_init.c \
 			ptatin_log.c \
 			ptatin3d_stokes.c \
 			stokes_output.c \
@@ -221,9 +221,9 @@ drivers: libs models
 		${MAKE} $${t}.app; \
 	done
 
-ptatin_check_compiler_flags.o: ptatin_check_compiler_flags.c
+ptatin_init.o: ptatin_init.c
 	-@echo ""
-	${PCC} ${TATIN_CFLAGS} -c ptatin_check_compiler_flags.c ${TATIN_INC} -DCOMPFLAGS='${TATIN_CFLAGS}'
+	${PCC} ${TATIN_CFLAGS} -c ptatin_init.c ${TATIN_INC} -DCOMPFLAGS='${TATIN_CFLAGS}'
 
 
 

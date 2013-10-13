@@ -41,7 +41,7 @@
 #include <petsc.h>
 #include <petscvec.h>
 #include <petscmat.h>
-
+#include "ptatin_init.h"
 
 /* ./test_mat_assem.app -A11_mat_type {sbaij,aij} */
 PetscErrorCode test_1(void)
@@ -184,11 +184,11 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 
 	
-	PetscInitialize(&argc,&argv,(char *)0,0);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = test_1();CHKERRQ(ierr);
 	ierr = test_2();CHKERRQ(ierr);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

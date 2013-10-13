@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      ptatin_check_compiler_flags.c
+ **    Filename:      ptatin_init.c
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -35,7 +35,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#define PTATIN_SVN_REVISION "3636 2012-11-06 19:14:24Z dmay"
+#define PTATIN_SVN_REVISION "r4831 2013-10-13 19:54:50 +0200 dmay"
 
 #define STR_VALUE(arg)      #arg
 #define STRINGIFY_ARG(name) STR_VALUE(name)
@@ -69,6 +69,7 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 #define __FUNCT__ "pTatinWritePreamble"
 PetscErrorCode pTatinWritePreamble(void)
 {
+	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
@@ -87,7 +88,7 @@ PetscErrorCode pTatinWritePreamble(void)
 	
 #ifdef COMPFLAGS
 	#define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
-	pTatinCheckCompilationFlags(STR_ARG_NAME);
+	ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
 #endif
 
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
@@ -95,4 +96,36 @@ PetscErrorCode pTatinWritePreamble(void)
 	PetscFunctionReturn(0);
 }
 
+
+extern PetscErrorCode KSPCreate_ChebychevRN(KSP ksp);
+extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinInitialize"
+PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const char help[])
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
+
+	ierr = KSPRegisterDynamic("chebychevrn","./","KSPCreate_ChebychevRN",KSPCreate_ChebychevRN);CHKERRQ(ierr);
+	ierr = PCRegisterDynamic("semiredundant","./","PCCreate_SemiRedundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
+
+	ierr = pTatinWritePreamble();CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinFinalize"
+PetscErrorCode pTatinFinalize(void)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = PetscFinalize();CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 

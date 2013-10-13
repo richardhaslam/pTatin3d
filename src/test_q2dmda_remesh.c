@@ -35,6 +35,7 @@
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
@@ -141,11 +142,11 @@ int main( int argc,char **argv )
 {
 	PetscErrorCode ierr;
 	
-	PetscInitialize(&argc,&argv,(char *)0,0);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_remesh();CHKERRQ(ierr);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 
 	return 0;
 }

@@ -37,6 +37,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
@@ -817,8 +818,9 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	/*
 	{
 		PetscScalar min,max;
-		PetscReal ydy;
-
+		PetscReal ydy,resnorm;
+		Vec res;
+		
 		ierr = VecDot(y,y,&ydy);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  y.y     = %+1.8e \n", ydy );
 		
@@ -826,6 +828,14 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 		ierr = VecMax(y,PETSC_NULL,&max);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  min[y]  = %+1.8e \n", min );
 		PetscPrintf(PETSC_COMM_WORLD,"  max[y]  = %+1.8e \n", max );
+		
+		ierr = VecDuplicate(x,&res);CHKERRQ(ierr);
+		ierr = MatMult(A,y,res);CHKERRQ(ierr);
+		ierr = VecAXPY(res,-1.0,x);CHKERRQ(ierr);
+		ierr = VecNorm(res,NORM_2,&resnorm);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"  |res|     = %+1.8e \n", resnorm );
+		
+		ierr = VecDestroy(&res);CHKERRQ(ierr);
 	}
 	*/
 	
@@ -972,13 +982,10 @@ int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
 	
-	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-	ierr = pTatinKSPRegister();CHKERRQ(ierr);
-	ierr = PCRegisterDynamic("semiredundant","./","PCCreate_SemiRedundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
-
+	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_assemble_stokes(argc,argv);CHKERRQ(ierr);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

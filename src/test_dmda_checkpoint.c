@@ -42,6 +42,7 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
+#include "ptatin_init.h"
 #include "dmda_update_coords.h"
 #include "dmda_view_petscvtk.h"
 #include "dmda_checkpoint.h"
@@ -180,10 +181,10 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscInt mx,my,mz;
 	
-	PetscInitialize(&argc,&argv,(char *)0,0);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
 	
 	ierr = test_DMDACheckPoint();CHKERRQ(ierr);
 
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

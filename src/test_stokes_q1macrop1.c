@@ -36,6 +36,7 @@ static const char help[] = "Test mesh generation of Q1MacroP1\n\n";
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 
 #include "ptatin_utils.h"
 #include "dmda_element_q2p1.h"
@@ -105,10 +106,10 @@ int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
 	
-	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	ierr = test_q1macrop1_a();CHKERRQ(ierr);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

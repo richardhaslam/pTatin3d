@@ -45,6 +45,7 @@
 #include "ptatin3d.h"
 #include "ptatin3d_defs.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 
 #include "dmda_update_coords.h"
 #include "dmda_view_petscvtk.h"
@@ -525,7 +526,7 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscLogDouble t0,t1,gt,lt;
 	
-	PetscInitialize(&argc,&argv,(char *)0,0);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
 	
 //	ierr = test_DMDACheckPoint();CHKERRQ(ierr);
 
@@ -536,6 +537,6 @@ int main( int argc,char **argv )
 	ierr = MPI_Allreduce(&lt,&gt,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"test_LoadStokesFromCheckpoint_WriteToVTS: CPU time %1.4e (sec)\n", gt);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

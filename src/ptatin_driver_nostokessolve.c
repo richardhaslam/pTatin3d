@@ -344,10 +344,10 @@ int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
 	
-	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_material_points_gmg(argc,argv);CHKERRQ(ierr);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

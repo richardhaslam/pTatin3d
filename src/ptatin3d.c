@@ -35,7 +35,6 @@
 #include "private/daimpl.h" 
 #include "petsc.h"
 
-#include "ptatin_check_compiler_flags.h"
 #include "ptatin3d.h"
 #include "ptatin3d_defs.h"
 
@@ -590,8 +589,6 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	
-	ierr = pTatinWritePreamble();CHKERRQ(ierr);
 	
   ierr = PetscNew(struct _p_pTatinCtx,&user);CHKERRQ(ierr);
 	

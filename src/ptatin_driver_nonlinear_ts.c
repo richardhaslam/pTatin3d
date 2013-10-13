@@ -38,6 +38,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 #include "ptatin_log.h"
 
 #include "material_point_utils.h"
@@ -2396,7 +2397,7 @@ int main(int argc,char **argv)
 	PetscErrorCode ierr;
 	PetscMPIInt rank;
 	
-	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	
 	ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
@@ -2418,6 +2419,6 @@ int main(int argc,char **argv)
 	//PetscPrintf(PETSC_COMM_SELF,"[%D] MaxMemory = %1.4e MB \n",rank,mem*1.0e-6);
 	ierr = pTatinGetRangeMaximumMemoryUsage(PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

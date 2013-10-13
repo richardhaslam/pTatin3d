@@ -993,17 +993,3 @@ PetscErrorCode  KSPCreate_ChebychevRN(KSP ksp)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinKSPRegister"
-PetscErrorCode pTatinKSPRegister(void)
-{
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = KSPRegisterDynamic("chebychevrn","./","KSPCreate_ChebychevRN",KSPCreate_ChebychevRN);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}

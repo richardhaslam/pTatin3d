@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      ptatin_check_compiler_flags.h
+ **    Filename:      ptatin_init.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -31,9 +31,12 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
-#ifndef __ptatin_check_compiler_flags_h__
-#define __ptatin_check_compiler_flags_h__
+#ifndef __ptatin_init_h__
+#define __ptatin_init_h__
 
+PetscErrorCode pTatinCheckCompilationFlags(const char flags[]);
 PetscErrorCode pTatinWritePreamble(void);
+PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const char help[]);
+PetscErrorCode pTatinFinalize(void);
 
 #endif

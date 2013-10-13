@@ -42,6 +42,7 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
+#include "ptatin_init.h"
 #include "dmda_update_coords.h"
 #include "dmda_duplicate.h"
 #include "dmda_view_petscvtk.h"
@@ -164,7 +165,7 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscInt mx,my,mz;
 	
-	PetscInitialize(&argc,&argv,(char *)0,0);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
 	
 	mx = my = mz = 10;
 	PetscOptionsGetInt( PETSC_NULL, "-mx", &mx, 0 );
@@ -172,6 +173,6 @@ int main( int argc,char **argv )
 	PetscOptionsGetInt( PETSC_NULL, "-mz", &mz, 0 );
 	
 	ierr = test_DMDADuplicateLayout(mx,my,mz);CHKERRQ(ierr);
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

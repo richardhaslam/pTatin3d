@@ -43,6 +43,7 @@ Run with:
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 
 extern PetscErrorCode pTatinModelRegister_Template(void);
 
@@ -122,10 +123,10 @@ int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
 	
-	PetscInitialize(&argc,&argv,(char *)0,0);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
 
 	test_model();
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }

@@ -38,6 +38,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 #include "ptatin_log.h"
 
 #include "material_point_utils.h"
@@ -1548,7 +1549,7 @@ int main(int argc,char **argv)
 	PetscErrorCode ierr;
 	PetscBool restart,flg;
 	
-	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	restart = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-restart",&restart,&flg);CHKERRQ(ierr);
@@ -1558,6 +1559,6 @@ int main(int argc,char **argv)
 		ierr = pTatin3d_linear_viscous_forward_model_driver_RESTART(argc,argv);CHKERRQ(ierr);
 	}
 	
-	ierr = PetscFinalize();CHKERRQ(ierr);
+	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
 }
