@@ -813,6 +813,22 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %d,cycles = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: average                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
+
+	/*
+	{
+		PetscScalar min,max;
+		PetscReal ydy;
+
+		ierr = VecDot(y,y,&ydy);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"  y.y     = %+1.8e \n", ydy );
+		
+		ierr = VecMin(y,PETSC_NULL,&min);CHKERRQ(ierr);
+		ierr = VecMax(y,PETSC_NULL,&max);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"  min[y]  = %+1.8e \n", min );
+		PetscPrintf(PETSC_COMM_WORLD,"  max[y]  = %+1.8e \n", max );
+	}
+	*/
+	
 	ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
@@ -948,6 +964,8 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
@@ -956,6 +974,8 @@ int main(int argc,char **argv)
 	
 	ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	ierr = pTatinKSPRegister();CHKERRQ(ierr);
+	ierr = PCRegisterDynamic("semiredundant","./","PCCreate_SemiRedundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
+
 	
 	ierr = pTatin3d_assemble_stokes(argc,argv);CHKERRQ(ierr);
 	
