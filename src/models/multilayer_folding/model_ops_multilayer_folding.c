@@ -896,7 +896,7 @@ double compute_q_3d(double H,double eta_l,double eta_m,double l,double m)
 	R = eta_m/eta_l;
 	lambda = sqrt(l*l + m*m);
 	k = lambda * H;
-    
+	
 	alpha = -2.0 * (1.0 - R);
 	beta  = 1.0 - R*R;
 	beta1 = -1.0 * ( (1.0+R*R)*(exp(k)-exp(-k)) + 2.0*R*(exp(k)+exp(-k))  )/(2.0*k);
@@ -920,9 +920,6 @@ double compute_q_2d(double H, double eta_l,double eta_m,double kx)
 	return q;
 }
 
-
-
-
 double compute_amplitude(double A0,double H,double time,double exx,double ezz,double eta_l,double eta_m,double l,double m)
 {
 	double eyy,lambda,lambda2,arg,q,Anew;
@@ -941,36 +938,31 @@ double compute_amplitude(double A0,double H,double time,double exx,double ezz,do
 
 double extract_q_cylindrical(double amp, double exx,double time, double A0)
 {
-    
-    // eq 28 Fletcher 1977 dA_dt = (1+q)(-exx)*A where dA_dt can be approx by (A-A0)/time if time at t0 = 0 
-    
-    double q, alpha;
-    
-    alpha = (1-A0/amp)/time; 
-    q = -(alpha/exx)-1; 
-    
-    return q; 
+	// eq 28 Fletcher 1977 dA_dt = (1+q)(-exx)*A where dA_dt can be approx by (A-A0)/time if time at t0 = 0 
+	double q, alpha;
+	
+	alpha = (1.0-A0/amp)/time; 
+	q = -(alpha/exx)-1.0; 
+	
+	return q; 
 }
-
 
 double extract_q_3d(double amp, double exx, double ezz, double l, double m, double time, double A0)
 {
-    
-    // eq 29 Fletcher 1991 dA_dt = eyy*A-(q/2)[(l*l/lambda2)*exx + (m*m/lambda2)*ezz - eyy]*A     where dA_dt can be approx by (A-A0)/time if time at t0 = 0 
-    
-    double eyy, q, lambda, lambda2, arg, alpha, beta; 
-    
-    arg     =  (1-A0/amp)/time; 
-    eyy     =  -(exx + ezz);
-    lambda  =  sqrt(l*l +m*m); 
-    lambda2 =  lambda*lambda;
-    
-    alpha = -2.0 * (arg-eyy);
-    beta  = (l*l/lambda2)*exx + (m*m/lambda2)*ezz - eyy; 
-    
-    q = alpha/beta; 
-    
-    return q; 
+	// eq 29 Fletcher 1991 dA_dt = eyy*A-(q/2)[(l*l/lambda2)*exx + (m*m/lambda2)*ezz - eyy]*A     where dA_dt can be approx by (A-A0)/time if time at t0 = 0 
+	double eyy, q, lambda, lambda2, arg, alpha, beta; 
+	
+	arg     =  (1.0-A0/amp)/time; 
+	eyy     =  -(exx + ezz);
+	lambda  =  sqrt(l*l + m*m); 
+	lambda2 =  lambda*lambda;
+	
+	alpha = -2.0 * (arg-eyy);
+	beta  = (l*l/lambda2)*exx + (m*m/lambda2)*ezz - eyy; 
+	
+	q = alpha/beta; 
+	
+	return q; 
 }
 
 #undef __FUNCT__
@@ -1051,23 +1043,21 @@ PetscErrorCode MultilayerFoldingOutputAmplitudeMax(pTatinCtx c,ModelMultilayerFo
 	PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFoldingOutput_q"
 PetscErrorCode MultilayerFoldingOutput_q(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
-    PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
+	PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
 	DM dav,cda;
 	Vec coord;
 	DMDACoor3d ***LA_coord;
 	PetscErrorCode ierr;
-	PetscReal peak_max, peak_min, xz[2],yz[2], H;
+	PetscReal peak_max,peak_min,g_peak_max,g_peak_min,xz[2],yz[2],H;
 	static int been_here = 0;
-	double q_error[2],gq_error[2];
-    PetscReal arg, arg_3d, A0, q_cylindrical, eyy, q_3d, q_th_3D,q_th_2D, err, amp;
-    
-    if (been_here == 0) {
+	PetscReal arg,arg_3d,A0,q_cylindrical,eyy,q_3d,q_th_3D,q_th_2D,err,amp;
+	
+	
+	if (been_here == 0) {
 		PetscPrintf(PETSC_COMM_WORLD,"# kx %+1.4e \n",data->kx);
 		PetscPrintf(PETSC_COMM_WORLD,"# kz %+1.4e \n",data->kz);
 		
@@ -1103,75 +1093,54 @@ PetscErrorCode MultilayerFoldingOutput_q(pTatinCtx c,ModelMultilayerFoldingCtx *
 	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-    
-    peak_max = -1.0e32;
-    peak_min = 1.0e32;
+	peak_max = -1.0e32;
+	peak_min = 1.0e32;
 	xz[0] = xz[1] = -1.0e32;
-    yz[0] = yz[1] = -1.0e32;
+	yz[0] = yz[1] = -1.0e32;
 	for (i=si; i<si+nx; i++) {
 		for (k=sk; k<sk+nz; k++) {
-	
-            if (LA_coord[k][jinter][i].y > peak_max) {
+			
+			if (LA_coord[k][jinter][i].y > peak_max) {
 				peak_max = LA_coord[k][jinter][i].y;
 				xz[0] = LA_coord[k][jinter][i].x;
 				xz[1] = LA_coord[k][jinter][i].z;
 			}
-
-            if (LA_coord[k][jinter][i].y < peak_min) {
+			
+			if (LA_coord[k][jinter][i].y < peak_min) {
 				peak_min = LA_coord[k][jinter][i].y;
 				yz[0] = LA_coord[k][jinter][i].x;
 				yz[1] = LA_coord[k][jinter][i].z;
 			}
-
-                
+			
 		}
 	}
-    
+	
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
-    
-    PetscPrintf(PETSC_COMM_WORLD,"# A_max %1.8e [x,z %1.4e,%1.4e] time %1.4e \n", peak_max,xz[0],xz[1],c->time);
-    PetscPrintf(PETSC_COMM_WORLD,"# A_min %1.8e [x,z %1.4e,%1.4e] time %1.4e \n", peak_min,yz[0],yz[1],c->time);
-    
-    amp    =  0.5*(peak_max-peak_min); 
-    
-    // for the case of the 2d cylindrical problem dA_dt = (1+q)(-exx)*A eq(28)
-    q_cylindrical = extract_q_cylindrical(amp, data->exx, c->time, data->A0);
-    
-    
-    q_3d   = extract_q_3d(amp, data->exx, data->ezz, data->kx, data->kz, c->time, data->A0);
-    
-    
-    
-    PetscPrintf(PETSC_COMM_WORLD,"amp %1.8e, arg %1.8e, arg_3d %1.8e \n",amp, arg, arg_3d); 
-    
-    
-        q_th_3D = compute_q_3d(H, data->eta[1], data->eta[0], data->kx, data->kz);
-    
-        q_th_2D = compute_q_2d(H, data->eta[1], data->eta[0],data->kx); 
-//    
-//    
-      err = fabs( 100.0*(q_3d-q_th_3D)/q_th_3D);
-//    
-    q_error[0] = fmin(q_error[0],err);
-    q_error[1] = fmax(q_error[1],err);
 	
-    PetscPrintf(PETSC_COMM_WORLD,"# q_cylindrical %1.8e, q_3d %1.8e, q_th_3D %1.8e, q_th_2D %1.8e \n", q_cylindrical, q_3d, q_th_3D, q_th_2D);         
-   
-    
-    
-    
-    
-    
-//    PetscPrintf(PETSC_COMM_WORLD,"# q %1.8e, q_th %1.8e, [x,z %1.4e,%1.4e] time %1.4e \n", q, q_th,xz[0],xz[1],c->time);
+	ierr = MPI_Allreduce(&peak_min,&g_peak_min,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&peak_max,&g_peak_max,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+
 	
-	ierr = MPI_Allreduce(&q_error[0],&gq_error[0],1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&q_error[1],&gq_error[1],1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"# A_max %1.8e [x,z %1.4e,%1.4e] time %1.4e \n", g_peak_max,xz[0],xz[1],c->time);
+	PetscPrintf(PETSC_COMM_WORLD,"# A_min %1.8e [x,z %1.4e,%1.4e] time %1.4e \n", g_peak_min,yz[0],yz[1],c->time);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"# ** q_th: errors [min/max] %1.4f%% %1.4f%% \n",gq_error[0],gq_error[1]);
+	amp = 0.5 * ( g_peak_max - g_peak_min ); 
+	
+	/* for the case of the 2d cylindrical problem dA_dt = (1+q)(-exx)*A eq(28) */
+	q_cylindrical = extract_q_cylindrical(amp, data->exx, c->time, data->A0);
+	
+	q_3d = extract_q_3d(amp, data->exx, data->ezz, data->kx, data->kz, c->time, data->A0);
+	PetscPrintf(PETSC_COMM_WORLD,"amp %1.8e, arg %1.8e, arg_3d %1.8e \n",amp, arg, arg_3d); 
+		
+	q_th_3D = compute_q_3d(H, data->eta[1], data->eta[0], data->kx, data->kz);
+	q_th_2D = compute_q_2d(H, data->eta[1], data->eta[0],data->kx); 
+	PetscPrintf(PETSC_COMM_WORLD,"# q_cylindrical %1.8e, q_3d %1.8e, q_th_3D %1.8e, q_th_2D %1.8e \n", q_cylindrical, q_3d, q_th_3D, q_th_2D);
+
+	err = fabs( 100.0*(q_3d - q_th_3D)/q_th_3D );
+	PetscPrintf(PETSC_COMM_WORLD,"# ** q_th: error %1.4f%% \n",err);
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFoldingOutputAmplitude"
@@ -1264,7 +1233,7 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	{
 		const int                   nf = 2;
@@ -1275,12 +1244,10 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}	
-
-	ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
-	ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);
-    ierr = MultilayerFoldingOutput_q(c,data); CHKERRQ(ierr);
-    
-    
+	
+	//ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
+	//ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);
+	ierr = MultilayerFoldingOutput_q(c,data); CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
