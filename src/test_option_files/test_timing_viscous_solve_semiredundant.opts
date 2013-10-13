@@ -12,7 +12,7 @@
 -iterations 1
 -ksp_max_it 10
 -ksp_rtol 1.0e-10
--ksp_type fgmres
+-ksp_type preonly
 -model_viscous_sinker_eta0 1.0e-6
 -mx 4
 -my 4
