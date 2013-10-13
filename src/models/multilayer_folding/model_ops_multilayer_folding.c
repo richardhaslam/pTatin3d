@@ -145,7 +145,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "BoundaryCondition_MultilayerFolding"
-PetscErrorCode 
+PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCtx user,ModelMultilayerFoldingCtx *data)
 {
 	PetscReal         zero;
 	PetscErrorCode    ierr;
