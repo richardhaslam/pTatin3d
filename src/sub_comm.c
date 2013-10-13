@@ -104,12 +104,14 @@ int MPI_Subcomm_create_MethodA(MPI_Comm parent_comm,int parent_reduction_factor,
 	}
 	ierr = MPI_Comm_create(parent_comm, sub_group, &sub_comm);
 
+	/*
 	{
 		int sr,snp;
 		ierr = MPI_Comm_size(sub_comm,&snp);
 		ierr = MPI_Comm_rank(sub_comm,&sr);
 		printf("parent[%d of %d]: sub[%d of %d]: active = %d \n",rank,nproc,sr,snp,active);
 	}
+	*/
 	
 	comm->parent_comm        = parent_comm;
 	comm->sub_comm           = sub_comm;
@@ -117,7 +119,7 @@ int MPI_Subcomm_create_MethodA(MPI_Comm parent_comm,int parent_reduction_factor,
 	comm->ranks_from_parent  = subranks;
 	comm->parent_rank_active_in_subcomm = active;
 
-	/* should be able to free group safely as its been embedded insode sub_comm */
+	/* We can safely free group as its been embedded inside the sub_comm */
 	ierr = MPI_Group_free(&sub_group);
 	*scomm = comm;
 	

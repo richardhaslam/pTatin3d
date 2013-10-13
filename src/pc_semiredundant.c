@@ -26,9 +26,9 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 	PetscInt       start,end,nr,nc;
 	PetscInt       i,j,*nnz,*onnz;
 	MPI_Comm       comm;
-	Mat            Alocal,*_Alocal,red;
+	Mat            Alocal,*_Alocal,red;	
 	
-	
+  PetscFunctionBegin;
 	ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
 	ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
 	
@@ -273,7 +273,7 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 	if (red->yred) {
 		PetscScalar *LA_yred;
 		
-		VecGetOwnershipRange(red->yred,&st,&ed);
+		ierr = VecGetOwnershipRange(red->yred,&st,&ed);CHKERRQ(ierr);
 
 		ierr = VecGetArray(red->yred,&LA_yred);CHKERRQ(ierr);
 		for (i=0; i<ed-st; i++) {
