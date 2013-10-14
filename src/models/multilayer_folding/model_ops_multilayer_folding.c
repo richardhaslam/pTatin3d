@@ -1247,7 +1247,7 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	
 	//ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
 	//ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);
-	ierr = MultilayerFoldingOutput_q(c,data); CHKERRQ(ierr);
+	//ierr = MultilayerFoldingOutput_q(c,data); CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
