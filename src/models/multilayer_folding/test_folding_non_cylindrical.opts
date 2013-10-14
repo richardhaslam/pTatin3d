@@ -1,17 +1,22 @@
-# ------------------------------------------
+# -------------------------------------------------------------------------------------------------
 # Model specification
+#
 #  - Simple one layer folding experiment to verify correctness of solution from ptatin_model
-#  - Verification is achieved via comparison with Fletchers analytic solutions
-# ------------------------------------------
+#  - This option file defines a non-cylinderical (3D) model
+#  - Verification is achieved via comparison with Fletchers' 3D analytic solution, see reference
+#    Raymond C. Fletcher, Three-dimensional folding of an embedded viscous layer in pure shear, 
+#    Journal of Structural Geology, Volume 13, Issue 1, 1991, Pages 87-96
+#
+# -------------------------------------------------------------------------------------------------
 
 	-ptatin_model multilayer_folding
+	-verify_with_analytics
 
 
 # ------------------------------------------
 # Geometric specification
 	-model_multilayer_folding_Lx 1
 	-model_multilayer_folding_Lz 0.6
-	-model_multilayer_folding_L_char 1.0
 
 # The layer is embedded within a larger matrix, thus we have 
 # three horizontal regions in the material we need to define 
@@ -28,8 +33,6 @@
 -model_multilayer_folding_perturbation_type 1
 -model_multilayer_folding_kx 10.47197551
 -model_multilayer_folding_kz 12.56637061
-#-model_multilayer_folding_kz 10.0
--model_multilayer_folding_amp_factor 0.01 # from the layer thickness
 -model_multilayer_folding_A0 0.5e-4 # Gamma(x,z) = H/2 +/- A0.cos(kx.x).cos(kz.z)
 
 

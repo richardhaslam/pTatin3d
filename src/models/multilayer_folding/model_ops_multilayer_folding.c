@@ -117,6 +117,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kx",&data->kx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_kz",&data->kz,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_A0",&data->A0,&flg);CHKERRQ(ierr);
+	data->L_char = 1.0;
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_L_char",&data->L_char,&flg); CHKERRQ(ierr); 
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
@@ -458,50 +459,54 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 		//PetscPrintf(PETSC_COMM_WORLD,"kinter = %d (max=%d)\n", kinter,P-1 );
 		
 		
-		if (data->perturbation_type == 0) { // Perturbs the interfaces with a whitenoise
-			
-			srand((rank+1)*(interf+1)+1); // The seed changes with the interface and the process.		
-			if ( (jinter>=sj) && (jinter<sj+ny) ) {
-				/* Take the dominant wavelength of the viscous layer */
-				if (data->eta[interf-1] < data->eta[interf]) {
-					H = interface_heights[interf+1] - interface_heights[interf];
-				} else {
-					H = (interface_heights[interf] - interface_heights[interf-1]);
-				}
-				//PetscPrintf(PETSC_COMM_WORLD,"kinter = %d H = %f\n", kinter,H );
-				for (i=si; i<si+nx; i++) {
-					for (k=sk; k<sk+nz; k++) {
-						pertu = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-						LA_coord[k][jinter][i].y += amp * H * pertu;
+		switch (data->perturbation_type) {
+
+			case 0:
+
+				srand((rank+1)*(interf+1)+1); // The seed changes with the interface and the process.		
+				if ( (jinter>=sj) && (jinter<sj+ny) ) {
+					/* Take the dominant wavelength of the viscous layer */
+					if (data->eta[interf-1] < data->eta[interf]) {
+						H = interface_heights[interf+1] - interface_heights[interf];
+					} else {
+						H = (interface_heights[interf] - interface_heights[interf-1]);
 					}
-					
+					for (i=si; i<si+nx; i++) {
+						for (k=sk; k<sk+nz; k++) {
+							pertu = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+							LA_coord[k][jinter][i].y += amp * H * pertu;
+						}
+					}
 				}
-			}
-		}
-		
-		else if (data->perturbation_type == 1) { // Perturbs the interfaces with a cos(x).cos(z) function
-			
-			if ( (jinter>=sj) && (jinter<sj+ny) ) {
 				
-				for (i=si; i<si+nx; i++) {
-					for (k=sk; k<sk+nz; k++) {
-						PetscReal kx, kz, A0, L_char, x_dimensional, z_dimensional;
-						
-						kx = data->kx;
-						kz = data->kz;
-						A0 = data->A0;
-						L_char = data->L_char;
-						x_dimensional = LA_coord[k][jinter][i].x * L_char;
-						z_dimensional = LA_coord[k][jinter][i].z * L_char;
-						
-						pertu = cos( kx * x_dimensional ) * cos( kz * z_dimensional );
-						//						pertu_ = pertu * 1.0/L_char; 
-						LA_coord[k][jinter][i].y += A0 * pertu;
-						
+				break;
+			
+			case 1:
+
+				if ( (jinter>=sj) && (jinter<sj+ny) ) {
+					for (i=si; i<si+nx; i++) {
+						for (k=sk; k<sk+nz; k++) {
+							PetscReal kx, kz, A0, L_char, x_dimensional, z_dimensional;
+							
+							kx = data->kx;
+							kz = data->kz;
+							A0 = data->A0;
+							L_char = data->L_char;
+							x_dimensional = LA_coord[k][jinter][i].x * L_char;
+							z_dimensional = LA_coord[k][jinter][i].z * L_char;
+							
+							pertu = cos( kx * x_dimensional ) * cos( kz * z_dimensional );
+							//						pertu_ = pertu * 1.0/L_char; 
+							LA_coord[k][jinter][i].y += A0 * pertu;
+						}
 					}
-					
 				}
-			}
+				
+				break;
+
+			default:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown perturbation type selected. Should be {0,1}");
+				break;
 		}
 		
 	}
@@ -1227,8 +1232,8 @@ PetscErrorCode MultilayerFoldingOutputAmplitude(pTatinCtx c,ModelMultilayerFoldi
 PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
-	//char           name[256];
 	DataBucket     materialpoint_db;
+	PetscBool      verify_with_analytics = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1245,9 +1250,12 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}	
 	
-	//ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
-	//ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);
-	//ierr = MultilayerFoldingOutput_q(c,data); CHKERRQ(ierr);
+	PetscOptionsGetBool(PETSC_NULL,"-verify_with_analytics",&verify_with_analytics,PETSC_NULL);
+	if (verify_with_analytics) {
+		//ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
+		//ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);
+		ierr = MultilayerFoldingOutput_q(c,data); CHKERRQ(ierr);
+	}
 	
 	PetscFunctionReturn(0);
 }
