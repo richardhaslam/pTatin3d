@@ -40,7 +40,8 @@
 
 typedef enum { 
 	RHEOLOGY_VISCOUS=0, 
-	RHEOLOGY_VP_STD
+	RHEOLOGY_VP_STD,
+	RHEOLOGY_LAVA
 } RheologyType;
 
 

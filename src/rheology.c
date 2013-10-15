@@ -43,6 +43,7 @@
 #include "rheology.h"
 #include "stokes_rheology_viscous.h"
 #include "stokes_rheology_vp_std.h"
+#include "stokes_rheology_lava.h"
 
 
 #undef __FUNCT__
@@ -115,7 +116,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 	switch (rheo->rheology_type) {
 
 		case RHEOLOGY_VISCOUS:
-			if (been_here==0) {
+			if (been_here == 0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS selected ***\n");
 			}
 			/* update on markers */
@@ -123,10 +124,18 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			break;
 			
 		case RHEOLOGY_VP_STD:
-			if (been_here==0) {
+			if (been_here == 0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VP_STD selected ***\n");
 			}
 			ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+      ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
+			break;
+
+		case RHEOLOGY_LAVA:
+			if (been_here == 0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_LAVA selected ***\n");
+			}
+			ierr = EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,u,dap,p);CHKERRQ(ierr);
       ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
 			break;
 			
@@ -227,7 +236,7 @@ PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,
 PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
   RheologyConstants *rheo;
-  static int        been_here=0;
+  static int        been_here = 0;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
@@ -237,7 +246,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 	switch (rheo->rheology_type) {
 			
 		case RHEOLOGY_VISCOUS:
-			if (been_here==0) {
+			if (been_here == 0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***\n");
 			}
 			break;
@@ -247,7 +256,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 			DataBucket     db;
 			static BTruth  found;
 			
-			if (been_here==0) {
+			if (been_here == 0) {
 				/* access material point information */
 				ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
 				/* check plastic marker type is loaded */
@@ -262,6 +271,12 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 				ierr = StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
 			}
 		}
+			break;
+			
+		case RHEOLOGY_LAVA:
+			if (been_here == 0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_LAVA is NULL ***\n");
+			}
 			break;
 			
 		default:
