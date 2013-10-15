@@ -72,5 +72,11 @@ void P3D_evaluate_geometry_elementQ2_1gp_diagonal(
 																									PetscReal dNudy[][NPE],
 																									PetscReal dNudz[][NPE] );
 
+void P3D_evaluate_global_derivatives_Q2(PetscReal el_coords[NPE*3],PetscReal GNI[3][NPE],
+                                        PetscReal dNudx[NPE],
+                                        PetscReal dNudy[NPE],
+                                        PetscReal dNudz[NPE] );
+
+
 #endif
 
