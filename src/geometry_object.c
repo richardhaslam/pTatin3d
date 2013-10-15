@@ -40,7 +40,7 @@ void PointBackTranslate(double xin[],double shift[],double xout[]);
 /* API */
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectCreate"
-PetscErrorCode GeometryObjectCreate(const char name[],int region_index,double value,double (*fp)(double*),GeometryObject *G)
+PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G)
 {
 	GeometryObject go;
 	PetscErrorCode ierr;
@@ -54,10 +54,6 @@ PetscErrorCode GeometryObjectCreate(const char name[],int region_index,double va
 	go->ctx = PETSC_NULL;
 	go->n_rotations = 0;
 	go->ref_cnt = 0;
-	
-	go->region_index = region_index;
-	go->value = value;
-	go->evaluate_region_function = fp;
 	
 	go->geom_point_inside = PETSC_NULL;
 	go->geom_transform_translate = PETSC_NULL;
@@ -147,7 +143,7 @@ PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *ins
 	}
 	PetscFunctionReturn(0);
 }
-
+/*
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectEvaluateRegionIndex"
 PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObject go,double pos[],int *region)
@@ -206,7 +202,7 @@ PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos
 	}
 	PetscFunctionReturn(0);
 }
-
+*/
 /* ------------------------------------------------------------------------------------------- */
 /* helpers */
 #undef __FUNCT__
@@ -254,6 +250,32 @@ PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],Geo
 		item = G[i];
 	}
 	if (*g == NULL) {
+		printf("[Warning] GeomObject with name %s was not found in list\n",name);
+	}
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectIdFindByName"
+PetscErrorCode GeometryObjectIdFindByName(GeometryObject G[],const char name[],PetscInt *GoId)
+{
+	GeometryObject item;
+	int i,v;
+	
+	*GoId = NULL;
+	
+	i = 0;
+	item = G[i];
+	while (item != NULL) {
+		v = strcmp(name,G[i]->name);
+		if (v == 0) {
+			*GoId = i;
+			break;
+		}
+		i++;
+		item = G[i];
+	}
+	if (*GoId == NULL) {
 		printf("[Warning] GeomObject with name %s was not found in list\n",name);
 	}
 	PetscFunctionReturn(0);
@@ -1048,11 +1070,14 @@ PetscErrorCode GeometryObjectPointInside_SetOperation(GeometryObject go,double x
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectSetType_SetOperation"
-PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator op_type,GeometryObject A,GeometryObject B)
+PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator op_type,double x0[],GeometryObject A,GeometryObject B)
 {
 	GeomTypeSetOperation ctx;
 	PetscErrorCode ierr;
 	
+	go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSetOperation),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSetOperation));CHKERRQ(ierr);

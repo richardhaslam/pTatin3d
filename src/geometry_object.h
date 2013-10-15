@@ -43,8 +43,8 @@ struct _p_GeometryObject {
 	int      ref_cnt;
 	void     *ctx;
 	double   centroid[3];
-	int      region_index;
-	double   value;
+//	int      region_index;
+//	double   value;
 	int            n_rotations;
 	double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
 	GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
@@ -55,7 +55,7 @@ struct _p_GeometryObject {
   /* user methods */
 	//int    (*evaluate_region_index)(double*);
 	//double (*evaluate_region_value)(double*);
-	double (*evaluate_region_function)(double*);
+	//double (*evaluate_region_function)(double*);
 };
 
 
@@ -105,7 +105,7 @@ struct _p_GeomTypeSetOperation {
 /* 
  API
 */
-PetscErrorCode GeometryObjectCreate(const char name[],int region_index,double value,double (*fp)(double*),GeometryObject *G);
+PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G);
 PetscErrorCode GeometryObjectDestroy(GeometryObject *G);
 
 PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double angle);
@@ -119,7 +119,7 @@ PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos
  Specific constructors for each implementation
 */
 PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx[]);
-PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator type,GeometryObject A,GeometryObject B);
+PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator type,double x0[],GeometryObject A,GeometryObject B);
 PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],double radius);
 PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double x0[],double radius,double Lx,GeomRotateAxis axis);
 PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x0[],double radia,double radib,double Lx,GeomRotateAxis axis);
@@ -128,5 +128,5 @@ PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],doub
 
 PetscErrorCode GeomTypeNameGetId(const char name[],int *id);
 PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],GeometryObject *g);
-
+PetscErrorCode GeometryObjectIdFindByName(GeometryObject G[],const char name[],PetscInt *GoId);
 #endif
