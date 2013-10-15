@@ -102,8 +102,7 @@ PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double 
 	
 	
 	if (go->n_rotations == GEOM_SHAPE_MAX_ROTATIONS-1) {
-		printf("No more rotations permitted\n");
-		exit(0);
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No more rotations permitted");
 	}
 	
 	angle2 = angle * M_PI / 180.0;
@@ -138,8 +137,7 @@ PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *ins
 		*inside = 0;
 		go->geom_point_inside(go,posout,inside);
 	} else {
-		printf("No method for go->geom_point_inside provided\n");
-		exit(0);
+		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No method for go->geom_point_inside provided");
 	}
 	PetscFunctionReturn(0);
 }
@@ -225,7 +223,7 @@ PetscErrorCode GeomTypeNameGetId(const char name[],int *id)
 		i++;
 		item = GeomTypeNames[i];
 	}
-	SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"GeomType %s not located in list of available GeomTypes\n",name);
+	SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"GeomType %s not located in list of available GeomTypes",name);
 	PetscFunctionReturn(0);
 }
 
@@ -283,18 +281,18 @@ PetscErrorCode GeometryObjectIdFindByName(GeometryObject G[],const char name[],P
 
 void PointTranslate(double xin[],double shift[],double xout[])
 {
-int    i;
-	for (i=0;i<3;i++){
-	xout[i]= xin[i]+shift[i];
+	int i;
+	for (i=0; i<3; i++){
+		xout[i] = xin[i] + shift[i];
 	}
 }
 
 void PointBackTranslate(double xin[],double shift[],double xout[])
 {
-double shift2[3];
-int    i;
-	for (i=0;i<3;i++){
-	shift2[i] = -shift[i];
+	double shift2[3];
+	int    i;
+	for (i=0; i<3; i++){
+		shift2[i] = -shift[i];
 	}
 	PointTranslate(xin,shift2,xout);
 }
@@ -421,8 +419,8 @@ PetscErrorCode GeometryObjectPointInside_Box(GeometryObject go,double pos[],int 
 	ierr = GeometryObjectGetContext_Box(go,&box);CHKERRQ(ierr);
 	*inside = 0;
 	
-	for (i=0;i<3;i++){
-	if ((pos[i]*pos[i]) > (box->Lx[i]*box->Lx[i]*0.25)) { PetscFunctionReturn(0); }
+	for (i=0; i<3; i++){
+		if ((pos[i]*pos[i]) > (box->Lx[i]*box->Lx[i]*0.25)) { PetscFunctionReturn(0); }
 	}
 		
 	*inside = 1;
@@ -533,7 +531,7 @@ PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double x0[],double
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSphere),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSphere));CHKERRQ(ierr);
     
-    go->centroid[0] = x0[0];
+	go->centroid[0] = x0[0];
 	go->centroid[1] = x0[1];
 	go->centroid[2] = x0[2];
 
