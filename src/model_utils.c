@@ -200,11 +200,11 @@ PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed)
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
     DMDA_thermalfield_init_params *thermalparams;
-    thermalparams = (DMDA_thermalfield_init_params*)ctx;
     PetscInt i,klay,nlt;
     PetscReal y,yldep,dtemp;
 
-    y   = pos[1] * thermalparams->lscale;
+		thermalparams = (DMDA_thermalfield_init_params*)ctx;
+		y   = pos[1] * thermalparams->lscale;
     nlt = thermalparams->nlayers;
 //  Which layer contains the current node?
     klay = 0;
