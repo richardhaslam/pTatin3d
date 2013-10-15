@@ -119,6 +119,7 @@ PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos
  Specific constructors for each implementation
 */
 PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx[]);
+PetscErrorCode GeometryObjectSetType_BoxCornerReference(GeometryObject go,double x0[],double Lx[]);
 PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator type,double x0[],GeometryObject A,GeometryObject B);
 PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],double radius);
 PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double x0[],double radius,double Lx,GeomRotateAxis axis);

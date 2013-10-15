@@ -248,7 +248,7 @@ PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],Geo
 		item = G[i];
 	}
 	if (*g == NULL) {
-		printf("[Warning] GeomObject with name %s was not found in list\n",name);
+		PetscPrintf(PETSC_COMM_SELF,"[Warning] GeomObject with name %s was not found in list\n",name);
 	}
 	PetscFunctionReturn(0);
 }
@@ -260,7 +260,7 @@ PetscErrorCode GeometryObjectIdFindByName(GeometryObject G[],const char name[],P
 	GeometryObject item;
 	int i,v;
 	
-	*GoId = NULL;
+	*GoId = -1;
 	
 	i = 0;
 	item = G[i];
@@ -273,8 +273,8 @@ PetscErrorCode GeometryObjectIdFindByName(GeometryObject G[],const char name[],P
 		i++;
 		item = G[i];
 	}
-	if (*GoId == NULL) {
-		printf("[Warning] GeomObject with name %s was not found in list\n",name);
+	if (*GoId == -1) {
+		PetscPrintf(PETSC_COMM_SELF,"[Warning] GeomObject with name %s was not found in list\n",name);
 	}
 	PetscFunctionReturn(0);
 }
@@ -452,6 +452,20 @@ PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx
 	
 	ierr = GeometryObjectSetFromOptions_Box(go);CHKERRQ(ierr);
 	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetType_BoxCornerReference"
+PetscErrorCode GeometryObjectSetType_BoxCornerReference(GeometryObject go,double x0[],double Lx[])
+{
+	double c0[3];
+	PetscErrorCode ierr;
+	
+	c0[0] = x0[0] + 0.5 * Lx[0];
+	c0[1] = x0[1] + 0.5 * Lx[1];
+	c0[2] = x0[2] + 0.5 * Lx[2];
+	ierr = GeometryObjectSetType_Box(go,c0,Lx);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
