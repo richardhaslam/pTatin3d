@@ -65,6 +65,7 @@ export TATIN_SRC = \
 			material_constants.c \
 			stokes_rheology_viscous.c \
 			stokes_rheology_vp_std.c \
+			stokes_rheology_lava.c \
 			stokes_form_function.c \
 			stokes_operators_mf.c \
 			stokes_operators.c \
@@ -81,6 +82,7 @@ export TATIN_SRC = \
 			ksp_chebyrn.c \
 			pc_semiredundant.c \
 			geometry_object.c \
+			geometry_object_evaluator.c \
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
