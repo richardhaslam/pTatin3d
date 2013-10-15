@@ -33,10 +33,6 @@ extern const char *GeomRotateAxisNames[];
 
 #define GEOM_SHAPE_MAX_ROTATIONS 25
 
-#define GEOM_SHAPE_REGION_VALUE_NULL -1.0e32
-#define GEOM_SHAPE_REGION_INDEX_NULL -69
-
-
 typedef struct _p_GeometryObject *GeometryObject;
 struct _p_GeometryObject {
 	char     *name;
@@ -112,9 +108,9 @@ PetscErrorCode GeometryObjectDestroy(GeometryObject *G);
 PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double angle);
 PetscErrorCode GeometryObjectTransformTranslate(GeometryObject go,double shift[]);
 PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *inside);
-PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObject go,double pos[],int *region);
-PetscErrorCode GeometryObjectEvaluateRegionValue(GeometryObject go,double pos[],double *value);
-PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos[],double *value);
+//PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObject go,double pos[],int *region);
+//PetscErrorCode GeometryObjectEvaluateRegionValue(GeometryObject go,double pos[],double *value);
+//PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos[],double *value);
 
 /* 
  Specific constructors for each implementation
