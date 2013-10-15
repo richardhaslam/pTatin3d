@@ -24,7 +24,8 @@ extern const char *GeomTypeSetOperatorNames[];
 typedef enum { 
 	ROTATE_AXIS_X = 0,
 	ROTATE_AXIS_Y = 1,
-	ROTATE_AXIS_Z = 2
+	ROTATE_AXIS_Z = 2,
+	ROTATE_AXIS_UNDEFINED
 } GeomRotateAxis;
 extern const char *GeomRotateAxisNames[];
 

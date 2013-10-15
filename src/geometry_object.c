@@ -43,6 +43,7 @@ void PointBackTranslate(double xin[],double shift[],double xout[]);
 PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G)
 {
 	GeometryObject go;
+	int k;
 	PetscErrorCode ierr;
 	
 	
@@ -54,6 +55,11 @@ PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G)
 	go->ctx = PETSC_NULL;
 	go->n_rotations = 0;
 	go->ref_cnt = 0;
+	
+	for (k=0; k<GEOM_SHAPE_MAX_ROTATIONS; k++) {
+		go->rotation_angle[k] = 0.0;
+		go->rotation_axis[k] = ROTATE_AXIS_UNDEFINED;
+	}
 	
 	go->geom_point_inside = PETSC_NULL;
 	go->geom_transform_translate = PETSC_NULL;
