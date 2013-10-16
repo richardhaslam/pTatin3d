@@ -1215,67 +1215,212 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 	}
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
     
-    
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Atlantic"
-PetscErrorCode ModelApplyInitialMaterialGeometry_Atlantic(pTatinCtx c,void *ctx)
-{
-	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
-	int                    e,p,n_mp_points;
-	PetscScalar            L[3],xc[3];
-	DataBucket             db;
-	DataField              PField_std,PField_pls;
-	int                    phase;
-	MPAccess               mpX;
-	GeometryObject         g0,g1,g2,g3,gn0,gn1;
-	PetscErrorCode         ierr;
-	PetscReal              angle = 0.0;
-	PetscInt               phase_index = 0;
+PetscErrorCode ModelApplyInitialMaterialGeometry_Atlantic(pTatinCtx c,void *ctx) {
 
+PetscErrorCode         ierr;
+PetscFunctionBegin;
+PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+      ierr = ModelDefineGeometryObjects_Atlantic(c,ctx);
+      ierr = ModelApplyInitialMaterialIndex_Atlantic(c,ctx);
+      ierr = ModelApplyInitialMaterialPlasticProperties_Atlantic(c,ctx);
+      ierr = ModelApplyInitialMaterialThermalProperties_Atlantic(c,ctx);
+PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelDefineGeometryObjects_Atlantic"
+PetscErrorCode ModelDefineGeometryObjects_Atlantic(pTatinCtx c,void *ctx){
+ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+GeometryObject *G,g;
+PetscInt  ngo; 
+PetscInt igo; 
+PetscScalar            L[3],xc[3];
+PetscReal              angle = 0.0;
+	PetscInt               iA,iB;
+	PetscErrorCode         ierr;
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-centralsuturezone_angle",&angle,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-centralsuturezone_index",&phase_index,PETSC_NULL);CHKERRQ(ierr);
-
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-centralsuturezone_angle",&angle,PETSC_NULL);CHKERRQ(ierr);
+	igo = 0; 
 	
 	/*define geometry of heterogenities*/ 
+	ierr=GeometryObjectCreate("southatlantic",&g);
 	L[0]  =  2.0; L[1]  =  1.2; L[2]  = 3.0; 
 	xc[0] =   6.; xc[1] = -0.6; xc[2] = 1.5;
-	ierr=GeometryObjectCreate("southatlantic",PETSC_NULL,PETSC_NULL,PETSC_NULL,&gn0);
-    ierr=GeometryObjectSetType_Box(gn0,xc,L);
-    L[0]  =  2.0; L[1]  =  1.2; L[2]  =  3.0; 
+    ierr=GeometryObjectSetType_Box(g,xc,L);
+    ierr=GeometryObjectSetFromOptions_Box(g);
+    data->G[igo]=g;
+    igo = igo+1; 	
+
+	ierr=GeometryObjectCreate("northatlantic",&g);
+	L[0]  =  2.0; L[1]  =  1.2; L[2]  =  3.0; 
 	xc[0] =  26.0; xc[1] = -0.6; xc[2] = 30.5;
-	ierr=GeometryObjectCreate("northatlantic",PETSC_NULL,PETSC_NULL,PETSC_NULL,&gn1);
-    ierr=GeometryObjectSetType_Box(gn1,xc,L);
-    
+	ierr = GeometryObjectSetType_Box(g,xc,L);
+    ierr = GeometryObjectSetFromOptions_Box(g);    
+	data->G[igo]=g;
+	igo = igo+1;
 	
-	/*define geometry of layers*/ 
+	ierr=GeometryObjectCreate("notches",&g);
+	GeometryObjectIdFindByName(data->G,"northatlantic",&iA);
+    GeometryObjectIdFindByName(data->G,"southatlantic",&iB);
+    ierr=GeometryObjectSetType_SetOperation(g,GeomType_SetUnion,xc,data->G[iA],data->G[iB]);
+	data->G[igo]=g;
+	igo = igo+1;
+	
 	xc[0] =  16.0; xc[1] = -0.1; xc[2] = 16.0 ;
-	ierr=GeometryObjectCreate("uppercrust",0,PETSC_NULL,PETSC_NULL,&g0);
-	ierr=GeometryObjectSetType_InfLayer(g0,xc,0.2,ROTATE_AXIS_Y);
+	ierr=GeometryObjectCreate("uppercrust",&g);
+	ierr=GeometryObjectSetType_InfLayer(g,xc,0.2,ROTATE_AXIS_Y);
+	ierr = GeometryObjectSetFromOptions_InfLayer(g);
+    data->G[igo]=g;
+    igo = igo+1;
+	
 	xc[0] =  16.0; xc[1] = -0.3; xc[2] = 16.0 ;
-	ierr=GeometryObjectCreate("lowercrust",0,PETSC_NULL,PETSC_NULL,&g1);
-	ierr=GeometryObjectSetType_InfLayer(g1,xc,0.2,ROTATE_AXIS_Y);
-	ierr=GeometryObjectCreate("centralsuturezone",phase_index,PETSC_NULL,PETSC_NULL,&g3);
-    ierr=GeometryObjectSetType_EllipticCylinder(g3,xc,7.5,1.5,0.2, ROTATE_AXIS_Y );
-    GeometryObjectRotate(g3,ROTATE_AXIS_Y,angle);
+	ierr=GeometryObjectCreate("lowercrustbox",&g);
+	ierr=GeometryObjectSetType_InfLayer(g,xc,0.2,ROTATE_AXIS_Y);
+	ierr = GeometryObjectSetFromOptions_InfLayer(g);
+	data->G[igo]=g;
+	igo = igo+1;	
+	
+	ierr=GeometryObjectCreate("centralsuturezone",&g);
+    ierr=GeometryObjectSetType_EllipticCylinder(g,xc,7.5,1.5,0.2, ROTATE_AXIS_Y );
+    GeometryObjectRotate(g,ROTATE_AXIS_Y,angle);
+    ierr = GeometryObjectSetFromOptions_EllipticCylinder(g);
+    data->G[igo]=g;
+    igo = igo+1;
+    
+    
+    xc[0] =  16.0; xc[1] = -0.3; xc[2] = 16.0 ;
+    ierr=GeometryObjectCreate("lowercrust",&g);
+    GeometryObjectIdFindByName(data->G,"lowercrustbox",&iA);
+    GeometryObjectIdFindByName(data->G,"centralsuturezone",&iB);
+    ierr=GeometryObjectSetType_SetOperation(g,GeomType_SetComplement,xc,data->G[iA],data->G[iB]); 
+    data->G[igo]=g;
+    igo = igo+1;
+    
 	xc[0] =  16.0; xc[1] = -0.8; xc[2] = 16.0 ;
-	ierr=GeometryObjectCreate("uppermantle",2,PETSC_NULL,PETSC_NULL,&g2);
-	ierr=GeometryObjectSetType_InfLayer(g2,xc,0.8,ROTATE_AXIS_Y);
+	ierr=GeometryObjectCreate("uppermantle",&g);
+	ierr=GeometryObjectSetType_InfLayer(g,xc,0.8,ROTATE_AXIS_Y);
+	ierr = GeometryObjectSetFromOptions_InfLayer(g);
+	data->G[igo]=g;
+	igo = igo+1;
 	
+	ngo = igo; 
+
+	data->ngo = ngo;
 	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialIndexGeometry_Atlantic"
+PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	int                    e,p,n_mp_points;
+	DataBucket             db;
+	DataField              PField_std;
+	int                    phase;
+	PetscInt               phase_index;
+	MPAccess               mpX;
+	PetscErrorCode         ierr;
+	GeometryObject         *G,g; 
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	phase_index = 0; 
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-centralsuturezone_index",&phase_index,PETSC_NULL);CHKERRQ(ierr);
+
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+
+		
+	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
+	G = data->G; 
+	for (p=0; p<n_mp_points; p++) {
+		MPntStd       *material_point;
+		double        *position,ycoord,xcoord,zcoord;
+        int           phase, inside;
+		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+		
+		/* Access using the getter function provided for you (recommeneded for beginner user) */
+		MPntStdGetField_global_coord(material_point,&position);
+		
+		
 	
+	   /* not general but easier for beginners */ 
+	    phase = 3; 
+		ierr=GeometryObjectFindByName(G,"uppercrust",&g);
+		ierr = GeometryObjectPointInside(g,position,&inside);
+		if ( inside==1 ) {phase=0;};	
+		ierr=GeometryObjectFindByName(G,"lowercrust",&g);
+		ierr = GeometryObjectPointInside(g,position,&inside);
+		if ( inside==1 ) {phase=1;};
+		ierr=GeometryObjectFindByName(G,"centralsuturezone",&g);
+		ierr = GeometryObjectPointInside(g,position,&inside);
+		if ( inside==1 ) {phase=phase_index;};
+		ierr=GeometryObjectFindByName(G,"uppermantle",&g);
+		ierr = GeometryObjectPointInside(g,position,&inside);
+		if ( inside==1 ) {phase=2;};
 	
+		/* Alternatively 
+
+		phase=default_phase;
+		
+		for (i_phase_go=0, i_phase_go < n_phase_go; i_phase_go++{
+	         igo = go_phase_go[i_phase_go]; 
+	         ierr = GeometryObjectPointInside(G[igo],position,&inside);
+		    if ( inside==1 ) {phase=phase_go[i_phase_go]};
+		}
+		*/	
+	
+		MPntStdSetField_phase_index(material_point,phase);
+		}
+	
+	DataFieldRestoreAccess(PField_std);
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialPlasticProperties_Atlantic"
+PetscErrorCode ModelApplyInitialMaterialPlasticProperties_Atlantic(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	int                    e,p,n_mp_points;
+	DataBucket             db;
+	DataField              PField_pls,PField_std;
+	int                    phase;
+	PetscErrorCode         ierr;
+	GeometryObject         *G = data->G;    
+    PetscReal              max_pls_background     = 0.03;
+    PetscReal              *max_pls_notch; 
+    PetscInt               n_pls_go , *go_pls_go, i_pls_go,igo; 
+    
+    
+    /* enter data name of go and value for max noise, noise should be function pointer to in this data
+       here it is lame because only one GO */ 
+    n_pls_go = 1;
+    ierr=GeometryObjectIdFindByName(G,"notches",&go_pls_go[0]);
+    max_pls_notch[0]   = 0.3;  
+
+
+	/* define properties on material points */
+	db = c->materialpoint_db;
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+		
 	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
 	DataFieldGetAccess(PField_pls);
 	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
@@ -1285,60 +1430,61 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Atlantic(pTatinCtx c,void *ctx)
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
-		MPntPStokes   *mpprop_stokes;
-		MPntPStokesPl *mpprop_pls;
+	    MPntPStokesPl *mpprop_pls;
 		double        *position,ycoord,xcoord,zcoord;
 		float         pls;
 		char          yield;
-        int           phase;
-        int           insidenotch1,insidenotch2,inside;
-		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+		PetscInt     inside; 
+        DataFieldAccessPoint(PField_std,p,(void**)&material_point);
 		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
-		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point,&position);
 		
-		// first the layering 
-		//phase==GEOM_SHAPE_REGION_INDEX_NULL;
-
-		
-		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g0,position,&phase);}
-		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g1,position,&phase);}
-		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g2,position,&phase);}
-		//if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {GeometryObjectEvaluateRegionIndex(g3,position,&phase);}
-		if (phase==GEOM_SHAPE_REGION_INDEX_NULL) {phase=3;}
-		// than the plastic heterogeneities
-		
-		
-		phase=3;
-		GeometryObjectPointInside(g0,position,&inside);
-		if ( inside==1 ) {phase=0;};
-		GeometryObjectPointInside(g1,position,&inside);
-		if ( inside==1 ) {phase=1;};
-		GeometryObjectPointInside(g3,position,&inside);
-		if ( inside==1 ) {phase=phase_index;};
-		GeometryObjectPointInside(g2,position,&inside);
-		if ( inside==1 ) {phase=2;};
-		
-        pls   = ptatin_RandomNumberGetDouble(0.0,0.03);
+	    pls=ptatin_RandomNumberGetDouble(0.0,max_pls_background);
 		yield = 0; 
-		GeometryObjectPointInside(gn0,position,&inside);
-		if ( inside==1 ) {pls = ptatin_RandomNumberGetDouble(0.0,0.3);}
-		GeometryObjectPointInside(gn1,position,&inside);
-		if ( inside==1 ) {pls = ptatin_RandomNumberGetDouble(0.0,0.3);}
-        
+		
+		for (i_pls_go = 0; i_pls_go < n_pls_go; i_pls_go++){
+	         igo = go_pls_go[i_pls_go]; 
+	         ierr = GeometryObjectPointInside(G[igo],position,&inside);
+		    if ( inside==1 ) {
+		          pls=ptatin_RandomNumberGetDouble(0.0,max_pls_notch[i_pls_go]);
+		    }
+		}	
+		
 		/* user the setters provided for you */
-		MPntStdSetField_phase_index(material_point,phase);
 		MPntPStokesPlSetField_yield_indicator(mpprop_pls,yield);
 		MPntPStokesPlSetField_plastic_strain(mpprop_pls,pls);
 	}
 	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_pls);
-	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
 	
+	PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialThermalProperties_Atlantic"
+PetscErrorCode ModelApplyInitialMaterialThermalProperties_Atlantic(pTatinCtx c,void *ctx)
+{
+	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
+	int                    p,n_mp_points,phase;
+	DataBucket             db;
+	DataField              PField_std;
+	MPAccess               mpX;
+	PetscErrorCode         ierr;
+	
+	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+
 	for (p=0; p<n_mp_points; p++) {
-		double kappa,H;
+		MPntStd       *material_point;
+		double        *position,ycoord,xcoord,zcoord;
+	    double kappa,H;
+	    DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+		
+		/* Access using the getter function provided for you (recommeneded for beginner user) */
+		MPntStdGetField_global_coord(material_point,&position);		
 		
 		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
 
@@ -1348,12 +1494,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Atlantic(pTatinCtx c,void *ctx)
 		ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
 	}
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-    
-    // Dont know on what to loop to destroy all of them ;(
-    
-    GeometryObjectDestroy(&g0);GeometryObjectDestroy(&g1);
-    GeometryObjectDestroy(&g2);GeometryObjectDestroy(&g3);
-	GeometryObjectDestroy(&gn0);GeometryObjectDestroy(&gn1);
-	
+    	
 	PetscFunctionReturn(0);
 }
