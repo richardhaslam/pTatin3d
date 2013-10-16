@@ -147,66 +147,18 @@ PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *ins
 	}
 	PetscFunctionReturn(0);
 }
-/*
+
 #undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvaluateRegionIndex"
-PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObject go,double pos[],int *region)
+#define __FUNCT__ "GeometryObjectSetCentroid"
+PetscErrorCode GeometryObjectSetCentroid(GeometryObject go,double cx[])
 {
-	int inside;
-	PetscErrorCode ierr;
+	go->centroid[0] = cx[0];
+	go->centroid[1] = cx[1];
+	go->centroid[2] = cx[2];
 	
-	
-	inside = 0;
-	ierr = GeometryObjectPointInside(go,pos,&inside);CHKERRQ(ierr);
-	
-	*region = GEOM_SHAPE_REGION_INDEX_NULL;
-	if (inside == 1) {
-		*region = go->region_index;
-	}
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvaluateRegionValue"
-PetscErrorCode GeometryObjectEvaluateRegionValue(GeometryObject go,double pos[],double *value)
-{
-	int inside;
-	PetscErrorCode ierr;
-	
-	
-	inside = 0;
-	ierr = GeometryObjectPointInside(go,pos,&inside);CHKERRQ(ierr);
-	
-	*value = GEOM_SHAPE_REGION_VALUE_NULL;
-	if (inside == 1) {
-		*value = go->value;
-	}
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvaluateRegionFunction"
-PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos[],double *value)
-{
-	int inside;
-	PetscErrorCode ierr;
-	
-	
-	inside = 0;
-	ierr = GeometryObjectPointInside(go,pos,&inside);CHKERRQ(ierr);
-	
-	*value = GEOM_SHAPE_REGION_VALUE_NULL;
-	if (inside == 1) {
-		if (go->evaluate_region_function) {
-			*value = go->evaluate_region_function(pos);
-		} else {
-			printf("No method for go->evaluate_region_function provided\n");
-			exit(0);
-		}
-	}
-	PetscFunctionReturn(0);
-}
-*/
 /* ------------------------------------------------------------------------------------------- */
 /* helpers */
 #undef __FUNCT__
@@ -335,6 +287,10 @@ void PointRotate(double xin[],GeomRotateAxis axis,double angle,double xout[])
 			RR[1][0] = s_ang;		RR[1][1] =  c_ang;	RR[1][2] = 0.0;
 			RR[2][0] = 0.0;			RR[2][1] = 0.0;			RR[2][2] = 1.0;
 		}
+			break;
+			
+		case ROTATE_AXIS_UNDEFINED:
+			PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
 			break;
 	}
 	
@@ -751,6 +707,10 @@ PetscErrorCode GeometryObjectPointInside_Cylinder(GeometryObject go,double pos[]
 			if ((pos[0]*pos[0]) > ctx->length) { PetscFunctionReturn(0); }
 			if (pos[1]*pos[1]+pos[2]*pos[2] > r2) { PetscFunctionReturn(0); } 
 			break;			
+
+		case ROTATE_AXIS_UNDEFINED:
+			PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
+			break;
 			
 	}
 	*inside = 1;
@@ -871,7 +831,11 @@ PetscErrorCode GeometryObjectPointInside_EllipticCylinder(GeometryObject go,doub
 		case ROTATE_AXIS_X: // check in y-z
 			if ((pos[0]*pos[0]) > (ctx->length*ctx->length*0.25)) { PetscFunctionReturn(0); }
 			if (pos[1]*pos[1]/ra2+pos[2]*pos[2]/rb2 > 1.0) { PetscFunctionReturn(0); } 
-			break;			
+			break;	
+			
+		case ROTATE_AXIS_UNDEFINED:
+			PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
+			break;
 			
 	}
 	*inside = 1;
@@ -983,6 +947,10 @@ PetscErrorCode GeometryObjectPointInside_InfLayer(GeometryObject go,double pos[]
 		case ROTATE_AXIS_X: // check in y-z
 			if ((pos[0]*pos[0]) > (ctx->thickness*ctx->thickness*0.25)) { PetscFunctionReturn(0); }
 			break;			
+	
+		case ROTATE_AXIS_UNDEFINED:
+			PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
+			break;
 			
 	}
 	*inside = 1;
@@ -1096,6 +1064,33 @@ PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetO
 	go->centroid[0] = x0[0];
 	go->centroid[1] = x0[1];
 	go->centroid[2] = x0[2];
+	
+	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSetOperation),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSetOperation));CHKERRQ(ierr);
+	ctx->set_type = op_type;
+	ctx->A = A;
+	ctx->B = B;
+	if (A) { A->ref_cnt++; }
+	if (B) { B->ref_cnt++; }
+	
+	go->type                     = GeomType_SetOperation;
+	go->geom_point_inside        = GeometryObjectPointInside_SetOperation;
+	go->geom_destroy             = GeometryObjectDestroy_SetOperation;
+	go->ctx = (void*)ctx;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetType_SetOperationDefault"
+PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomTypeSetOperator op_type,GeometryObject A,GeometryObject B)
+{
+	GeomTypeSetOperation ctx;
+	PetscErrorCode ierr;
+	
+	go->centroid[0] = 0.5 * ( A->centroid[0] + B->centroid[0] );
+	go->centroid[1] = 0.5 * ( A->centroid[1] + B->centroid[1] );
+	go->centroid[2] = 0.5 * ( A->centroid[2] + B->centroid[2] );
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSetOperation),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSetOperation));CHKERRQ(ierr);

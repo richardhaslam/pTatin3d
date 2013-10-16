@@ -40,8 +40,6 @@ struct _p_GeometryObject {
 	int      ref_cnt;
 	void     *ctx;
 	double   centroid[3];
-//	int      region_index;
-//	double   value;
 	int            n_rotations;
 	double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
 	GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
@@ -49,10 +47,6 @@ struct _p_GeometryObject {
 	PetscErrorCode (*geom_point_inside)(GeometryObject,double*,int*);
 	PetscErrorCode (*geom_transform_translate)(GeometryObject,double*);
 	PetscErrorCode (*geom_destroy)(GeometryObject);
-  /* user methods */
-	//int    (*evaluate_region_index)(double*);
-	//double (*evaluate_region_value)(double*);
-	//double (*evaluate_region_function)(double*);
 };
 
 
@@ -106,22 +100,26 @@ PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G);
 PetscErrorCode GeometryObjectDestroy(GeometryObject *G);
 
 PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double angle);
-PetscErrorCode GeometryObjectTransformTranslate(GeometryObject go,double shift[]);
 PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *inside);
-//PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObject go,double pos[],int *region);
-//PetscErrorCode GeometryObjectEvaluateRegionValue(GeometryObject go,double pos[],double *value);
-//PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObject go,double pos[],double *value);
+PetscErrorCode GeometryObjectSetCentroid(GeometryObject go,double cx[]);
 
 /* 
  Specific constructors for each implementation
 */
 PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx[]);
 PetscErrorCode GeometryObjectSetType_BoxCornerReference(GeometryObject go,double x0[],double Lx[]);
+
 PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator type,double x0[],GeometryObject A,GeometryObject B);
+PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomTypeSetOperator op_type,GeometryObject A,GeometryObject B);
+
 PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],double radius);
+
 PetscErrorCode GeometryObjectSetType_Cylinder(GeometryObject go,double x0[],double radius,double Lx,GeomRotateAxis axis);
+
 PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x0[],double radia,double radib,double Lx,GeomRotateAxis axis);
+
 PetscErrorCode GeometryObjectSetType_Ellipsoid(GeometryObject go,double x0[],double radia,double radib,double radic);
+
 PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],double Lx,GeomRotateAxis axis);
 
 PetscErrorCode GeomTypeNameGetId(const char name[],int *id);
