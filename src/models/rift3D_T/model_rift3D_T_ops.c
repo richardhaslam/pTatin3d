@@ -173,7 +173,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     //MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);    
 	MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,0.020);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2700,2.e-5,3.e-12);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2800,2.e-5,3.e-12);
     MaterialConstantsSetValues_DensityConst(materialconstants,1,2700);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,1,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
@@ -1287,6 +1287,7 @@ PetscReal              angle = 0.0;
 	data->G[igo]=g;
 	igo = igo+1;	
 	
+	 xc[0] =  16.0; xc[1] = -0.3; xc[2] = 16.0 ;
 	ierr=GeometryObjectCreate("centralsuturezone",&g);
     ierr=GeometryObjectSetType_EllipticCylinder(g,xc,7.5,1.5,0.2, ROTATE_AXIS_Y );
     GeometryObjectRotate(g,ROTATE_AXIS_Y,angle);
@@ -1295,7 +1296,7 @@ PetscReal              angle = 0.0;
     igo = igo+1;
     
     
-    xc[0] =  16.0; xc[1] = -0.3; xc[2] = 16.0 ;
+   
     ierr=GeometryObjectCreate("lowercrust",&g);
     GeometryObjectIdFindByName(data->G,"lowercrustbox",&iA);
     GeometryObjectIdFindByName(data->G,"centralsuturezone",&iB);
@@ -1333,6 +1334,7 @@ PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
 	phase_index = 0; 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-centralsuturezone_index",&phase_index,PETSC_NULL);CHKERRQ(ierr);
 
@@ -1361,16 +1363,16 @@ PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
 	    phase = 3; 
 		ierr=GeometryObjectFindByName(G,"uppercrust",&g);
 		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=0;};	
+		if ( inside==1 ) {phase=0;}	
 		ierr=GeometryObjectFindByName(G,"lowercrust",&g);
 		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=1;};
+		if ( inside==1 ) {phase=1;}
 		ierr=GeometryObjectFindByName(G,"centralsuturezone",&g);
 		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=phase_index;};
+		if ( inside==1 ) {phase=phase_index;}
 		ierr=GeometryObjectFindByName(G,"uppermantle",&g);
 		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=2;};
+		if ( inside==1 ) {phase=2;}
 	
 		/* Alternatively 
 
@@ -1404,17 +1406,23 @@ PetscErrorCode ModelApplyInitialMaterialPlasticProperties_Atlantic(pTatinCtx c,v
 	PetscErrorCode         ierr;
 	GeometryObject         *G = data->G;    
     PetscReal              max_pls_background     = 0.03;
-    PetscReal              *max_pls_notch; 
-    PetscInt               n_pls_go , *go_pls_go, i_pls_go,igo; 
+    PetscReal              max_pls_notch[10]; 
+    PetscInt               n_pls_go , go_pls_go[10], i_pls_go,igo; 
     
     
     /* enter data name of go and value for max noise, noise should be function pointer to in this data
        here it is lame because only one GO */ 
+    /*   
+    n_pls_go = 2;
+    ierr=GeometryObjectIdFindByName(G,"northatlantic",&go_pls_go[0]);
+    ierr=GeometryObjectIdFindByName(G,"southatlantic",&go_pls_go[1]);
+    max_pls_notch[0]   = 0.3;  
+    max_pls_notch[1]   = 0.3;  
+     */
     n_pls_go = 1;
     ierr=GeometryObjectIdFindByName(G,"notches",&go_pls_go[0]);
     max_pls_notch[0]   = 0.3;  
-
-
+     
 	/* define properties on material points */
 	db = c->materialpoint_db;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
