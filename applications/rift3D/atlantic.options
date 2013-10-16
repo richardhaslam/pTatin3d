@@ -17,9 +17,6 @@
 -T_pc_type bjacobi
 -T_snes_type ksponly
 -centralsuturezone_angle 90
--da_processors_x 2
--da_processors_y 1
--da_processors_z 2
 -dau_nlevels 3
 -dt_max 1e-3
 -fieldsplit_p_ksp_type preonly
