@@ -19,7 +19,8 @@ TATIN_MODEL_DIR = \
 	riftrh \
 	geomod2008 \
 	fault_fold_plastic \
-	multilayer_folding
+	multilayer_folding \
+	submarinelavaflow
 
 
 ## DONT NOT EDIT LINES BELOW

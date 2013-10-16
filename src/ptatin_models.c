@@ -446,6 +446,8 @@ extern PetscErrorCode pTatinModelRegister_Riftrh(void);
 extern PetscErrorCode pTatinModelRegister_GeoMod2008(void);
 extern PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void);
 extern PetscErrorCode pTatinModelRegister_MultilayerFolding(void);
+extern PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void);
+
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
 PetscErrorCode pTatinModelRegisterAll(void)
@@ -469,11 +471,12 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_BasinComp();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_FaultFold();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_WrenchFold();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);
-    ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);  
+	ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);  
+	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);  
     
 	PetscFunctionReturn(0);
 }
