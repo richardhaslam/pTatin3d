@@ -1319,7 +1319,7 @@ PetscReal              angle = 0.0;
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialIndexGeometry_Atlantic"
+#define __FUNCT__ "ModelApplyInitialMaterialIndex_Atlantic"
 PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -1479,20 +1479,19 @@ PetscErrorCode ModelApplyInitialMaterialThermalProperties_Atlantic(pTatinCtx c,v
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
 	int                    p,n_mp_points,phase;
 	DataBucket             db;
-	DataField              PField_std;
 	MPAccess               mpX;
 	PetscErrorCode         ierr;
 	
+
+	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
 	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
 
 	for (p=0; p<n_mp_points; p++) {
-		MPntStd       *material_point;
-		double        *position,ycoord,xcoord,zcoord;
-	    double kappa,H;
-	    DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+		double *position,ycoord,xcoord,zcoord;
+		double kappa,H;
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
-		MPntStdGetField_global_coord(material_point,&position);		
+		ierr = MaterialPointGet_global_coord(mpX,p,&position);CHKERRQ(ierr);
 		
 		ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
 
