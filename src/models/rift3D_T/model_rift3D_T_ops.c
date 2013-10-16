@@ -1269,7 +1269,7 @@ PetscReal              angle = 0.0;
 	ierr=GeometryObjectCreate("notches",&g);
 	GeometryObjectIdFindByName(data->G,"northatlantic",&iA);
     GeometryObjectIdFindByName(data->G,"southatlantic",&iB);
-    ierr=GeometryObjectSetType_SetOperation(g,GeomType_SetUnion,xc,data->G[iA],data->G[iB]);
+    ierr=GeometryObjectSetType_SetOperation(g,GeomSet_Union,xc,data->G[iA],data->G[iB]);
 	data->G[igo]=g;
 	igo = igo+1;
 	
@@ -1300,7 +1300,7 @@ PetscReal              angle = 0.0;
     ierr=GeometryObjectCreate("lowercrust",&g);
     GeometryObjectIdFindByName(data->G,"lowercrustbox",&iA);
     GeometryObjectIdFindByName(data->G,"centralsuturezone",&iB);
-    ierr=GeometryObjectSetType_SetOperation(g,GeomType_SetComplement,xc,data->G[iA],data->G[iB]); 
+    ierr=GeometryObjectSetType_SetOperation(g,GeomSet_Complement,xc,data->G[iA],data->G[iB]); 
     data->G[igo]=g;
     igo = igo+1;
     
