@@ -1013,31 +1013,35 @@ PetscErrorCode GeometryObjectPointInside_SetOperation(GeometryObject go,double x
 {
 	GeomTypeSetOperation ctx;
 	int is1,is2;
+	double xpc[3];
 	PetscErrorCode ierr;
 	
 	
 	ctx = (GeomTypeSetOperation)go->ctx;
 	
-	ierr = GeometryObjectPointInside(ctx->A,xp,&is1);CHKERRQ(ierr);
-	ierr = GeometryObjectPointInside(ctx->B,xp,&is2);CHKERRQ(ierr);
+	/* Undo the coordinate shift performed by the first call to GeometryObjectPointInside() which was applied to the set */
+	PointTranslate(xp,go->centroid,xpc);	
+
+	ierr = GeometryObjectPointInside(ctx->A,xpc,&is1);CHKERRQ(ierr);
+	ierr = GeometryObjectPointInside(ctx->B,xpc,&is2);CHKERRQ(ierr);
 	
-	switch (ctx->set_type) {
+	switch (ctx->operator_type) {
 			
-		case GeomType_SetUnion:
+		case GeomSet_Union:
 			*inside = 0;
 			if ( (is1 == 1) || (is2 == 1) ) {
 				*inside = 1;
 			}
 			break;
 			
-		case GeomType_SetIntersection:
+		case GeomSet_Intersection:
 			*inside = 0;
 			if ( (is1 == 1) && (is2 == 1) ) {
 				*inside = 1;
 			}
 			break;
 			
-		case GeomType_SetComplement:
+		case GeomSet_Complement:
 			*inside = 0;
 			if (is1 == 1) {
 				*inside = 1;
@@ -1056,7 +1060,7 @@ PetscErrorCode GeometryObjectPointInside_SetOperation(GeometryObject go,double x
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectSetType_SetOperation"
-PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator op_type,double x0[],GeometryObject A,GeometryObject B)
+PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomSetOperatorType type,double x0[],GeometryObject A,GeometryObject B)
 {
 	GeomTypeSetOperation ctx;
 	PetscErrorCode ierr;
@@ -1067,7 +1071,7 @@ PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetO
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSetOperation),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSetOperation));CHKERRQ(ierr);
-	ctx->set_type = op_type;
+	ctx->operator_type = type;
 	ctx->A = A;
 	ctx->B = B;
 	if (A) { A->ref_cnt++; }
@@ -1083,7 +1087,7 @@ PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetO
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectSetType_SetOperationDefault"
-PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomTypeSetOperator op_type,GeometryObject A,GeometryObject B)
+PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomSetOperatorType type,GeometryObject A,GeometryObject B)
 {
 	GeomTypeSetOperation ctx;
 	PetscErrorCode ierr;
@@ -1094,7 +1098,7 @@ PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomT
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeomTypeSetOperation),&ctx);CHKERRQ(ierr);
 	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeSetOperation));CHKERRQ(ierr);
-	ctx->set_type = op_type;
+	ctx->operator_type = type;
 	ctx->A = A;
 	ctx->B = B;
 	if (A) { A->ref_cnt++; }

@@ -14,10 +14,10 @@ typedef enum {
 extern const char *GeomTypeNames[];
 
 typedef enum { 
-	GeomType_SetUnion=0, 
-	GeomType_SetIntersection, 
-	GeomType_SetComplement,
-} GeomTypeSetOperator;
+	GeomSet_Union=0, 
+	GeomSet_Intersection, 
+	GeomSet_Complement,
+} GeomSetOperatorType;
 extern const char *GeomTypeSetOperatorNames[];
 
 
@@ -89,7 +89,7 @@ struct _p_GeomTypeEllipsoid {
 
 typedef struct _p_GeomTypeSetOperation *GeomTypeSetOperation;
 struct _p_GeomTypeSetOperation {
-	int set_type;
+	GeomSetOperatorType operator_type;
 	GeometryObject A,B;
 };
 
@@ -109,8 +109,8 @@ PetscErrorCode GeometryObjectSetCentroid(GeometryObject go,double cx[]);
 PetscErrorCode GeometryObjectSetType_Box(GeometryObject go,double x0[],double Lx[]);
 PetscErrorCode GeometryObjectSetType_BoxCornerReference(GeometryObject go,double x0[],double Lx[]);
 
-PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomTypeSetOperator type,double x0[],GeometryObject A,GeometryObject B);
-PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomTypeSetOperator op_type,GeometryObject A,GeometryObject B);
+PetscErrorCode GeometryObjectSetType_SetOperation(GeometryObject go,GeomSetOperatorType type,double x0[],GeometryObject A,GeometryObject B);
+PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomSetOperatorType type,GeometryObject A,GeometryObject B);
 
 PetscErrorCode GeometryObjectSetType_Sphere(GeometryObject go,double origin[],double radius);
 
