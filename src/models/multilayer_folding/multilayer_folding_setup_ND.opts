@@ -12,6 +12,28 @@
 #  Dolostones/Gypsum/Anhydrite (weak layer) viscosity: 1e21, density 2700 kg/m3, thickness: 1 km 
 #  sandstones/limestones: viscosity: 1e23, density 2500 kg/m3, thickness: 1.5 km 
 #  Halite/Gypsum/Halite viscosity: 1e19, density 2200 kg/m3, thickness: 1.5 km 
+#
+#	non dimensional units 
+#
+#  option: --elv_eta =  1.0e22
+#  option: --elv_length =  200.0e3
+#  option: --elv_velocity =  2.0e-9
+# <StokesScales: ND>
+#  eta          1e+22
+#  length       200000.0
+#  velocity     2e-09
+#  time         1e+14
+#  strain-rate  1e-14
+#  pressure     400.0
+#  rhs-scale    0.002
+# </StokesScales>
+# <StokesScales: Convert user units into scaled units>
+#  eta         -> eta         x  1e-22
+#  length      -> length      x  5e-06
+#  velocity    -> velocity    x  500000000.0
+#  time        -> time        x  1e-14
+#  strain-rate -> strain-rate x  1e+14
+#  pressure    -> pressure    x  0.0025
 # ------------------------------------------
 
 	-ptatin_model multilayer_folding

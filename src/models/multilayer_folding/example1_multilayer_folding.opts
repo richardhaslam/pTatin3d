@@ -18,7 +18,7 @@
 -fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
 -fieldsplit_u_mg_coarse_ksp_type cg
 -fieldsplit_u_mg_coarse_pc_type  asm
--fieldsplit_u_mg_coarse_pc_asm_overlap 3
+-fieldsplit_u_mg_coarse_pc_asm_overlap 3-D
  
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
@@ -35,7 +35,7 @@
 -ksp_type fgmres
 -log_summary
 -model_multilayer_folding_Lx 12
--model_multilayer_folding_Lz 6
+-model_multilayer_folding_Lz 64
 -model_multilayer_folding_amp_factor 0.05 #from the layer thickness
 -model_multilayer_folding_interface_heights 0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0
 -model_multilayer_folding_layer_eta 0.0025,1.0,0.0025,1.0,0.0025,1.0,0.0025,1.0
