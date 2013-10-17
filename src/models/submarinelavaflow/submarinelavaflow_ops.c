@@ -99,13 +99,46 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	ierr = GeometryObjectSetType_Cylinder(G,x0,0.35,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
 	
 	ierr = GeometryObjectCreate("crust_region",&crust);CHKERRQ(ierr);
-	ierr = GeometryObjectSetType_SetOperation(crust,GeomType_SetComplement,x0,G,lava);CHKERRQ(ierr);
-	ierr = GeometryObjectDestroy(&G);CHKERRQ(ierr);
-	
+	ierr = GeometryObjectSetType_SetOperation(crust,GeomSet_Complement,x0,G,lava);CHKERRQ(ierr);
+	//ierr = GeometryObjectDestroy(&G);CHKERRQ(ierr);
+
 	data->go[0] = domain;
 	data->go[1] = lava;
-	data->go[2] = crust;
+	data->go[2] = G;
 	data->ngo = 3; 
+	
+	{
+		GeometryObject A,B,C;
+		
+		x0[0] = 0.5; x0[1] = 0.5; x0[2] = 0.0;
+		ierr = GeometryObjectCreate("mickey",&A);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_Cylinder(A,x0,0.15,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
+
+		x0[0] = 0.7; x0[1] = 0.5; x0[2] = 0.0;
+		ierr = GeometryObjectCreate("mouse",&B);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_Cylinder(B,x0,0.15,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
+
+		ierr = GeometryObjectCreate("MM",&C);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_SetOperation(C,GeomSet_Union,x0,A,B);CHKERRQ(ierr);
+		//ierr = GeometryObjectSetType_SetOperation(C,GeomSet_Complement,x0,A,B);CHKERRQ(ierr);
+		//ierr = GeometryObjectSetType_SetOperation(C,GeomSet_Intersection,x0,A,B);CHKERRQ(ierr);
+		//ierr = GeometryObjectDestroy(&A);CHKERRQ(ierr);
+		//ierr = GeometryObjectDestroy(&B);CHKERRQ(ierr);
+		//x0[0] = x0[1] = x0[2] = 0.0;
+		//ierr = GeometryObjectSetCentroid(C,x0);CHKERRQ(ierr);
+
+		
+		//data->go[3] = A;
+		//data->go[4] = B;
+		//data->ngo = 5; 
+		
+		
+		data->go[3] = C;
+		data->ngo = 4; 
+	}
+	
+	
+	
 	
 	
 	ierr = GeometryObjectEvalCreate("domain",&data->go_thermal_ic[0]);CHKERRQ(ierr);
@@ -337,8 +370,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		ierr = MaterialPointGet_global_coord(mpX,p,&position);CHKERRQ(ierr);
 
+		inside = 0;
 		ierr = GeometryObjectPointInside(data->go[0],position,&inside);CHKERRQ(ierr);
-		if (inside) {
+		if (inside == 1) {
 			ierr = MaterialPointSet_phase_index(mpX,p,0);CHKERRQ(ierr);
 		} else {
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Point appears to be outside domain");
@@ -346,10 +380,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 			
 		for (k=1; k<data->ngo; k++) {
 			
+			inside = 0;
 			ierr = GeometryObjectPointInside(data->go[k],position,&inside);CHKERRQ(ierr);
 			if (inside == 1) {
 				ierr = MaterialPointSet_phase_index(mpX,p,k);CHKERRQ(ierr);
-				break;
 			}
 		}
 
