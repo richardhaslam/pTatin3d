@@ -830,7 +830,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
 	PetscInt       step;
-  pTatinModel   model;
+  pTatinModel    model;
+	PetscLogDouble time[2];
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1011,8 +1012,13 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 
+	PetscGetTime(&time[0]);
 	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	PetscGetTime(&time[1]);
 	ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
+	ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
+	ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
+
 	ierr = pTatinViewBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
 	ierr = pTatinViewBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
 	
@@ -1100,7 +1106,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
 		
 		/* add / remove points if cells are over populated or depleted of points */
-		//		ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
+		//ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 		
 		
 		/* update markers = >> gauss points */
@@ -1146,8 +1152,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
+		PetscGetTime(&time[0]);
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
+		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
 
 		/*
 		{
