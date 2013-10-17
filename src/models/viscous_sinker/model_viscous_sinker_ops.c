@@ -44,6 +44,8 @@
 #include "MPntPStokes_def.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "dmda_iterator.h"
+#include "mesh_deformation.h"
+#include "mesh_update.h"
 
 #include "viscous_sinker_ctx.h"
 
