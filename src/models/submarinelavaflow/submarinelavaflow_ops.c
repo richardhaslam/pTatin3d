@@ -107,6 +107,7 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	data->go[2] = G;
 	data->ngo = 3; 
 	
+	/*
 	{
 		GeometryObject A,B,C;
 		
@@ -136,11 +137,9 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 		data->go[3] = C;
 		data->ngo = 4; 
 	}
+	*/
 	
-	
-	
-	
-	
+
 	ierr = GeometryObjectEvalCreate("domain",&data->go_thermal_ic[0]);CHKERRQ(ierr);
 	ierr = GeometryObjectEvalCreate("lava_region",&data->go_thermal_ic[1]);CHKERRQ(ierr);
 	ierr = GeometryObjectEvalCreate("crust_region",&data->go_thermal_ic[2]);CHKERRQ(ierr);
