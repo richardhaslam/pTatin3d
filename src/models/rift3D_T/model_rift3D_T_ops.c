@@ -1327,27 +1327,39 @@ PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
 	DataBucket             db;
 	DataField              PField_std;
 	int                    phase;
-	PetscInt               phase_index;
+	PetscInt               i_phase_go,phase_index, default_phase,n_phase_go,phase_go[100],go_phase_go[100];
 	MPAccess               mpX;
 	PetscErrorCode         ierr;
-	GeometryObject         *G,g; 
+	GeometryObject         g; 
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	phase_index = 0; 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-centralsuturezone_index",&phase_index,PETSC_NULL);CHKERRQ(ierr);
-
+    default_phase = 3; 
 	
+	
+	    
+    n_phase_go = 4;
+    ierr=GeometryObjectIdFindByName(data->G,"uppercrust",&go_phase_go[0]);
+    ierr=GeometryObjectIdFindByName(data->G,"lowercrust",&go_phase_go[1]);
+    ierr=GeometryObjectIdFindByName(data->G,"centralsuturezone",&go_phase_go[2]);
+    ierr=GeometryObjectIdFindByName(data->G,"uppermantle",&go_phase_go[3]);
+    phase_go[0]   = 0;  
+    phase_go[1]   = 1;
+    phase_go[2]   = phase_index;  
+    phase_go[3]   = 2;
+    
+    
 	/* define properties on material points */
 	db = c->materialpoint_db;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
-
+    DataBucketGetSizes(db,&n_mp_points,0,0);
 		
-	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
-	G = data->G; 
+
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
 		double        *position,ycoord,xcoord,zcoord;
@@ -1356,34 +1368,17 @@ PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point,&position);
-		
-		
 	
-	   /* not general but easier for beginners */ 
-	    phase = 3; 
-		ierr=GeometryObjectFindByName(G,"uppercrust",&g);
-		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=0;}	
-		ierr=GeometryObjectFindByName(G,"lowercrust",&g);
-		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=1;}
-		ierr=GeometryObjectFindByName(G,"centralsuturezone",&g);
-		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=phase_index;}
-		ierr=GeometryObjectFindByName(G,"uppermantle",&g);
-		ierr = GeometryObjectPointInside(g,position,&inside);
-		if ( inside==1 ) {phase=2;}
-	
-		/* Alternatively 
 
 		phase=default_phase;
 		
-		for (i_phase_go=0, i_phase_go < n_phase_go; i_phase_go++{
+		for (i_phase_go=0; i_phase_go < n_phase_go; i_phase_go++){
+		PetscInt igo;
 	         igo = go_phase_go[i_phase_go]; 
-	         ierr = GeometryObjectPointInside(G[igo],position,&inside);
-		    if ( inside==1 ) {phase=phase_go[i_phase_go]};
+	         ierr = GeometryObjectPointInside(data->G[igo],position,&inside);
+		    if ( inside==1 ) {phase=phase_go[i_phase_go];}
 		}
-		*/	
+			
 	
 		MPntStdSetField_phase_index(material_point,phase);
 		}
@@ -1412,17 +1407,18 @@ PetscErrorCode ModelApplyInitialMaterialPlasticProperties_Atlantic(pTatinCtx c,v
     
     /* enter data name of go and value for max noise, noise should be function pointer to in this data
        here it is lame because only one GO */ 
-    /*   
+    /*  
     n_pls_go = 2;
     ierr=GeometryObjectIdFindByName(G,"northatlantic",&go_pls_go[0]);
     ierr=GeometryObjectIdFindByName(G,"southatlantic",&go_pls_go[1]);
     max_pls_notch[0]   = 0.3;  
     max_pls_notch[1]   = 0.3;  
-     */
+    */
+    
     n_pls_go = 1;
     ierr=GeometryObjectIdFindByName(G,"notches",&go_pls_go[0]);
     max_pls_notch[0]   = 0.3;  
-     
+    
 	/* define properties on material points */
 	db = c->materialpoint_db;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
