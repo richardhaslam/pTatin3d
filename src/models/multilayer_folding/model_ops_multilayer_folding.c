@@ -814,7 +814,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	PetscInt           metric_L = 5; 
 	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION, MESH_QUALITY_DIAGONAL_RATIO, MESH_QUALITY_VERTEX_ANGLE, MESH_QUALITY_FACE_AREA_RATIO };
 	PetscReal          value[100];
-	PetscBool          remesh;
+	PetscBool          remesh,basal_remesh = PETSC_FALSE;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -832,23 +832,43 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	
 	/* check mesh quality */
 	ierr = DMDAComputeMeshQualityMetricList(dav,metric_L,metric_list,value);CHKERRQ(ierr);
-	remesh = PETSC_FALSE;
-	if (value[0] > 2.0) {
-		remesh = PETSC_TRUE;
-	}
-	if ( (value[1] < 0.7) || (value[1] > 1.0)) {
-		remesh = PETSC_TRUE;
-	}
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_ASPECT_RATIO\"    %1.4e \n", value[0]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DISTORTION\"      %1.4e \n", value[1]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DIAGONAL_RATIO\"  %1.4e \n", value[2]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_VERTEX_ANGLE\"    %1.4e \n", value[3]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_FACE_AREA_RATIO\" %1.4e \n", value[4]);
 	
+
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_basal_remesh",&basal_remesh,PETSC_NULL);CHKERRQ(ierr);
+	if (basal_remesh && (value[0] > 20.0)) {
+		/* Remesh only the first layer if the aspect ratio is > 20 */
+		PetscInt   res_j;
+		DMDACoor3d span_xz[4];
+		PetscReal  gmin[3],gmax[3];
+		
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Remeshing basal layer only \n", __FUNCT__);
+		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"before");CHKERRQ(ierr);
+
+		/* clean up base */
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		span_xz[0].x = gmin[0];    span_xz[0].y = gmin[1];    span_xz[0].z = gmin[2];
+		span_xz[1].x = gmin[0];    span_xz[1].y = gmin[1];    span_xz[1].z = gmax[2];
+		span_xz[2].x = gmax[0];    span_xz[2].y = gmin[1];    span_xz[2].z = gmax[2];
+		span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
+		ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
+		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"baseremesh");CHKERRQ(ierr);
+		
+		/* interpolate between base and top of first layer */
+		res_j = 2 * data->layer_res_j[0] + 1; /* use nodal indices */
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,res_j);CHKERRQ(ierr);
+		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"after");CHKERRQ(ierr);
+	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Remeshing currently deactivated \n", __FUNCT__);
 	
 #if 0
+	//PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Marker remeshing currently deactivated \n", __FUNCT__);
+	remesh = PETSC_FALSE;
+
 	/* activate marker interpolation */	
 	if (remesh) {
 		c->coefficient_projection_type = 1;
