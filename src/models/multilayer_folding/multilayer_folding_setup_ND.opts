@@ -91,6 +91,9 @@
 	-checkpoint_every_nsteps 1
 	-checkpoint_every 1
 
+	!! Activate the remesh to clean up the mesh within the low viscosity layer
+	-model_multilayer_basal_remesh
+
 
 # ------------------------------------------
 # Stokes solver
