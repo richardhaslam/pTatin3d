@@ -447,6 +447,7 @@ extern PetscErrorCode pTatinModelRegister_GeoMod2008(void);
 extern PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void);
 extern PetscErrorCode pTatinModelRegister_MultilayerFolding(void);
 extern PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void);
+extern PetscErrorCode pTatinModelRegister_ExSubduction(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -475,8 +476,9 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);  
-	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);  
-    
+	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_ExSubduction();CHKERRQ(ierr);
+
 	PetscFunctionReturn(0);
 }
