@@ -1610,8 +1610,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
-		ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
-
+		//ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
