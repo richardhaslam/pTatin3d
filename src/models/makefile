@@ -20,7 +20,8 @@ TATIN_MODEL_DIR = \
 	geomod2008 \
 	fault_fold_plastic \
 	multilayer_folding \
-	submarinelavaflow
+	submarinelavaflow \
+	ex_subduction 
 
 
 ## DONT NOT EDIT LINES BELOW
