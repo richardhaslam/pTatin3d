@@ -837,13 +837,13 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		use_low_order_geometry = PETSC_FALSE;
 		ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
 
-		for (k=mlctx->nlevels-2; k>=0; k--) {
-			
-			ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-			ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-			ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
-			ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
+		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
+		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 
+		for (k=mlctx->nlevels-2; k>=0; k--) {
+			/* fetch smoother */
 			if (k == 0) {
 				ierr = PCMGGetCoarseSolve(pc_i,&ksp_smoother);CHKERRQ(ierr);
 			} else {
@@ -900,16 +900,21 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 				{
 					Mat Auu_k;
 					
-					if (k==mlctx->nlevels-1) {
+					if (k == mlctx->nlevels-1) {
 						SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
 					}	
 					PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
-					
+
+					/*
 					ierr = MatPtAP(mlctx->operatorA11[k+1],mlctx->interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu_k);CHKERRQ(ierr);
-					
 					ierr = KSPSetOperators(ksp_smoother,Auu_k,Auu_k,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-					
 					mlctx->operatorA11[k] = Auu_k;
+					mlctx->operatorB11[k] = Auu_k;
+					ierr = PetscObjectReference((PetscObject)Auu_k);CHKERRQ(ierr);
+					*/
+					Auu_k = mlctx->operatorA11[k];
+					ierr = MatPtAP(mlctx->operatorA11[k+1],mlctx->interpolation_v[k+1],MAT_REUSE_MATRIX,1.0,&Auu_k);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,Auu_k,Auu_k,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 					mlctx->operatorB11[k] = Auu_k;
 				}
 					break;
