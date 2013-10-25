@@ -36,7 +36,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#define PTATIN_SVN_REVISION "r4831 2013-10-13 19:54:50 +0200 dmay"
+#include "ptatin_svn_info.h"
 
 #define STR_VALUE(arg)      #arg
 #define STRINGIFY_ARG(name) STR_VALUE(name)
@@ -55,12 +55,10 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 		throw_warning = 1;
 	}
 	if (throw_warning == 1) {
-		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 		PetscPrintf(PETSC_COMM_WORLD,"** pTatin3d is configured with debug options \n");
 		PetscPrintf(PETSC_COMM_WORLD,"**   TATIN_CFLAGS = %s\n",flags);
 		PetscPrintf(PETSC_COMM_WORLD,"** For signifcant performance improvements, please consult the makefile  \n");
 		PetscPrintf(PETSC_COMM_WORLD,"** and set TATIN_CFLAGS to an optimized value suitable for your machine. \n");
-		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	}
 	
 	PetscFunctionReturn(0);
@@ -84,14 +82,18 @@ PetscErrorCode pTatinWritePreamble(void)
 	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
 	PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    \n");
-	PetscPrintf(PETSC_COMM_WORLD,"** Revision: %s #\n", PTATIN_SVN_REVISION);
 	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
+	
+	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_SVN_REPO_UUID);
+	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_SVN_REPO_REV);
+	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_SVN_REPO_LAST_CHANGE);
 	
 #ifdef COMPFLAGS
 	#define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
+	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
 #endif
-
+	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
 				 
 	PetscFunctionReturn(0);

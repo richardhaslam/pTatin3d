@@ -165,6 +165,7 @@ all:
 	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
 	-@echo ${PWD}
 	
+	-@${MAKE} svninfo
 	-@${MAKE} base_objects
 	-@${MAKE} base_objects_fortran
 	-@${MAKE} material_constants
@@ -173,6 +174,20 @@ all:
 	-@${MAKE} tests
 	-@${MAKE} drivers
 
+fast: 
+	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
+	-@echo ${PWD}
+	
+	-@${MAKE} base_objects
+	-@${MAKE} base_objects_fortran
+	-@${MAKE} material_constants
+	-@${MAKE} libs
+	-@${MAKE} models
+	-@${MAKE} tests
+	-@${MAKE} drivers
+
+svninfo:
+	-@perl ../tools/get-svninfo.pl
 
 base_objects:
 	-@echo ""
