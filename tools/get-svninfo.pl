@@ -5,8 +5,8 @@
 #my $co_name = '/Users/dmay/codes/ptat3d-rh-riftspm/ptat3d-subduction-dbg';
 my $co_name = getcwd . '/..';
 
-`svn info $co_name > .SVN_INFO`;
-`svn log $co_name --limit 1 > .SVN_LOG`;
+`svn info $co_name/src > .SVN_INFO`;
+`svn log $co_name/src --limit 1 > .SVN_LOG`;
 
 $file = '.SVN_INFO';		# Name the file
 open(INFO, $file);		# Open the file
