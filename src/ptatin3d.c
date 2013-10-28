@@ -628,7 +628,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
   user->dt_adv           = 0.0;
 	user->use_constant_dt  = PETSC_FALSE;
   
-    ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
+	ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
 	ierr = MaterialConstantsInitialize(&user->material_constants);CHKERRQ(ierr);
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
@@ -781,7 +781,7 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 		PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);
 		if (flg) {
 			ctx->use_constant_dt = PETSC_TRUE; 
-			ctx->dt              = constant_dt;
+			ctx->dt              = 0.0;
 			ctx->constant_dt     = constant_dt;
 		}
 	}
