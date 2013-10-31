@@ -1,0 +1,109 @@
+#
+# Example: Viscous sinker
+#   Launch using: ptatin_driver_linear_ts.app
+#
+#
+
+
+# ---- Select model ---- #
+-ptatin_model viscous_sinker
+
+# ---- Define model specific parameters ---- #
+-model_viscous_sinker_eta0 1.0e-2
+-model_viscous_sinker_eta1 1.0
+
+-model_viscous_sinker_rho0 1.0
+-model_viscous_sinker_rho1 1.1
+
+# Domain size
+-model_viscous_sinker_Lx 1.0
+-model_viscous_sinker_Ly 1.0
+-model_viscous_sinker_Lz 1.0
+
+# Origin of sinker
+-model_viscous_sinker_Ox 0.7
+-model_viscous_sinker_Oy 0.5
+-model_viscous_sinker_Oz 0.6
+
+-model_viscous_sinker_dx 0.4
+-model_viscous_sinker_dy 0.6
+-model_viscous_sinker_dz 0.4
+
+# If you want a cube shaped sinker, uncomment line below
+-model_viscous_sinker_cube
+
+#-model_viscous_sinker_Ox 0.5
+#-model_viscous_sinker_Oy 0.3
+#-model_viscous_sinker_Oz 0.5
+#-model_viscous_sinker_dx 0.25
+#-model_viscous_sinker_dy 0.25
+#-model_viscous_sinker_dz 0.25
+#-model_viscous_sinker_cube 0
+
+
+# Boundary condition type
+#  0 : free slip everywhere
+#  1 : no slip everywhere
+#  2 : free slip everywhere + free surface
+#  3 : no slip everywhere + free surface
+-model_viscous_sinker_bc_type 0
+
+# Deform the upper surface with a Gaussian bump with some amplitude
+-gbump_amp 0.0
+
+
+# Mesh resolution
+-mx 16
+-my 16
+-mz 16
+
+# Material point resolution per cell
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+
+-mp_popctrl_np_lower 4
+-mp_popctrl_np_upper 60
+-mp_popctrl_nxp 2
+-mp_popctrl_nyp 2
+-mp_popctrl_nzp 2
+
+# ---- Define ptatin timestepping/io parameters ---- #
+-output_path ex_sinker
+-nsteps 500
+-output_frequency 25
+
+-dt_min 1.0e-6
+-dt_max 0.5
+
+
+
+# ---- Solver configuration ---- #
+-A11_operator_type 0,1,1
+-dau_nlevels 3
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-1
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_pc_mg_log
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+-fieldsplit_u_mg_coarse_pc_type lu
+-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-ksp_type fgmres
+-ksp_rtol 1.0e-3
+-ksp_atol 1.0e-6
+-log_summary
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-snes_type ksponly
+-stk_velocity_da_mat_type aij
