@@ -738,6 +738,19 @@ void compute_surface_geometry_Q2_3D(	ConformingElementFamily e,
 	}
 }	
 
+void ElementHelper_matrix_inverse_2x2(double A[2][2],double B[2][2])
+{
+	double det;
+	
+	det = A[0][0]*A[1][1] - A[0][1]*A[1][0];
+	det = 1.0/det;
+	
+	B[0][0] = det * A[1][1];
+	B[0][1] = -det * A[0][1];
+	B[1][0] = -det * A[1][0];
+	B[1][1] = det * A[0][0];
+}
+
 void ElementHelper_matrix_inverse_3x3(double A[3][3],double B[3][3])
 {
 	double t4, t6, t8, t10, t12, t14, t17;

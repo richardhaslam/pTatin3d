@@ -34,6 +34,63 @@
 #include "element_utils_q2.h"
 
 
+void P3D_ConstructNi_Q2_2D(PetscReal _xi[],PetscReal Ni[])
+{
+	PetscReal basis_NI[2][3];
+	PetscInt  i,j,d,cnt;
+	
+	for (d=0; d<2; d++) {
+		PetscReal xi = _xi[d];
+		
+		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
+		basis_NI[d][1] = (1.0+xi) * (1.0-xi); // 1 - xi^2
+		basis_NI[d][2] = 0.5 * (1.0+xi) * xi; // 0.5 * ( xi^2 + xi )
+	}
+	
+	cnt = 0;
+	for (j=0; j<3; j++) {
+		for (i=0; i<3; i++) {
+			Ni[cnt] = basis_NI[0][i] * basis_NI[1][j];
+			cnt++;
+		}
+	}
+}
+
+/*
+ ConstructGNi()
+ + Defines the basis function derivatives wrt the local coordinates (xi,eta,zeta).
+ + _1D implies the spatial degress of freedom expected in the _xi[] array
+ */
+void P3D_ConstructGNi_Q2_2D(PetscReal _xi[],PetscReal GNi[2][Q2_NODES_PER_EL_2D])
+{
+	PetscReal basis_NI[2][3];
+	PetscReal basis_GNI[2][3];
+	PetscInt  i,j,d,cnt;
+	
+	for (d=0; d<2; d++) {
+		PetscReal xi = _xi[d];
+		
+		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
+		basis_NI[d][1] = (1.0+xi) * (1.0-xi); // 1 - xi^2
+		basis_NI[d][2] = 0.5 * (1.0+xi) * xi; // 0.5 * ( xi^2 + xi )
+		
+		basis_GNI[d][0] = 0.5 * ( 2.0*xi - 1.0 );
+		basis_GNI[d][1] = - 2.0*xi;
+		basis_GNI[d][2] = 0.5 * ( 2.0*xi + 1.0 );
+	}
+	
+	cnt = 0;
+	for (j=0; j<3; j++) {
+		for (i=0; i<3; i++) {
+			
+			GNi[0][cnt] = basis_GNI[0][i]  *  basis_NI[1][j];
+			GNi[1][cnt] =  basis_NI[0][i]  * basis_GNI[1][j];
+			
+			cnt++;
+		}
+	}
+}
+
 void P3D_ConstructNi_Q2_3D(PetscReal _xi[],PetscReal Ni[])
 {
 	PetscInt i,j,k,d,cnt;

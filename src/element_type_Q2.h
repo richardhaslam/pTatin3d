@@ -126,6 +126,7 @@ void extract_element_surface_field_Q2_3D( int face_id, int fid_node_list[][9], i
 void pTatin_ConstructNi_Q2_3D( double _xi[], double Ni[] );
 void pTatinConstructGNi_Q2_3D( double _xi[], double GNi[3][Q2_NODES_PER_EL_3D] );
 
+void ElementHelper_matrix_inverse_2x2(double A[2][2],double B[2][2]);
 void ElementHelper_matrix_inverse_3x3(double A[3][3],double B[3][3]);
 
 #endif

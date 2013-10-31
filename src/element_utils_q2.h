@@ -40,6 +40,9 @@
 #define NQP 27
 #define NPE Q2_NODES_PER_EL_3D
 
+void P3D_ConstructNi_Q2_2D(PetscReal _xi[],PetscReal Ni[]);
+void P3D_ConstructGNi_Q2_2D(PetscReal _xi[],PetscReal GNi[2][Q2_NODES_PER_EL_2D]);
+
 void P3D_ConstructNi_Q2_3D(PetscReal _xi[],PetscReal Ni[] );
 void P3D_ConstructGNi_Q2_3D(PetscReal _xi[],PetscReal GNi[3][Q2_NODES_PER_EL_3D] );
 

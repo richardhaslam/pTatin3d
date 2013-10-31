@@ -44,5 +44,12 @@ void InverseMappingDomain_3dQ2(
 															 const double coords[], const int mx, const int my, const int mz, const int element[],
 															 int np, MPntStd marker[] );
 
+void InverseMappingDomain_2dQ2( 
+															 double tolerance, int max_its,
+															 Truth use_nonzero_guess, 
+															 Truth monitor,
+															 const double coords[], const int mx, const int my, const int element[],
+															 int np, MPntStd marker[] );
+
 #endif
 
