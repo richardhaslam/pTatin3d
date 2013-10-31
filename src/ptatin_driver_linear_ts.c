@@ -1106,7 +1106,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
 		
 		/* add / remove points if cells are over populated or depleted of points */
-		//ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
+		ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 		
 		
 		/* update markers = >> gauss points */
