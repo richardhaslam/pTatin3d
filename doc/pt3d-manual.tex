@@ -98,6 +98,7 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 	\item PETSc 3.2 (http://www.mcs.anl.gov/petsc)
 	\item libz (non essential)
 	\item subversion (non essential)
+	\item ParaView (essential for visualizing simulation output)
 \end{itemize}
 
 \section{Obtaining the Code}
@@ -114,7 +115,8 @@ By default, the \unix{makefile.arch} provided for you is tailored for Mac OSX.
 If you are trying to install {\ptat} on another system,
 consult the directory
 \shellcmd{ptatin3d/src/machine.arch}
-where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). \\[8pt]
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system. The recommendation would be to copy the closest architecture file matching your system, e.g. \unix{cp machine.arch.XXX  ../makefile.arch}, then make an necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
+\\[8pt]
 %
 Once the \unix{makefile.arch} is adjusted for your operating system, type \shellcmd{make all}
 \begin{itemize}
