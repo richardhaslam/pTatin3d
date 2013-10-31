@@ -9,10 +9,10 @@
 -ptatin_model viscous_sinker
 
 # ---- Define model specific parameters ---- #
--model_viscous_sinker_eta0 1.0e-0
--model_viscous_sinker_eta1 1.0
+-model_viscous_sinker_eta0 1.0
+-model_viscous_sinker_eta1 1.0e3
 
--model_viscous_sinker_rho0 40.0
+-model_viscous_sinker_rho0 3300.0
 -model_viscous_sinker_rho1 1.0
 
 # Domain size
@@ -21,9 +21,9 @@
 -model_viscous_sinker_Lz 1.0
 
 # Origin of sinker
--model_viscous_sinker_Ox 0.8
--model_viscous_sinker_Oy 0.15
--model_viscous_sinker_Oz 0.7
+-model_viscous_sinker_Ox 0.6
+-model_viscous_sinker_Oy 0.18
+-model_viscous_sinker_Oz 0.55
 
 -model_viscous_sinker_dx 0.1
 -model_viscous_sinker_dy 0.1
@@ -40,7 +40,7 @@
 -model_viscous_sinker_bc_type 2
 
 # Deform the upper surface with a Gaussian bump with some amplitude
--gbump_amp 0.2
+-gbump_amp 0.05
 
 
 # Mesh resolution
