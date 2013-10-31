@@ -91,6 +91,7 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 
 
 
+% ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Software Requirements}
 \begin{itemize}
@@ -113,8 +114,8 @@ By default, the \unix{makefile.arch} provided for you is tailored for Mac OSX.
 If you are trying to install {\ptat} on another system,
 consult the directory
 \shellcmd{ptatin3d/src/machine.arch}
-where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). 
-
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). \\[8pt]
+%
 Once the \unix{makefile.arch} is adjusted for your operating system, type \shellcmd{make all}
 \begin{itemize}
 	\item Compiling with a particular PETSc build
@@ -125,6 +126,7 @@ Once the \unix{makefile.arch} is adjusted for your operating system, type \shell
 The following targets for make exist (all, libs,models, drivers, tests)
 
 
+% ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Building Models}
 
@@ -132,18 +134,20 @@ The following targets for make exist (all, libs,models, drivers, tests)
 The idea we have for building models is that models should be separated as much as possible
 from the core functionality of {\ptat}. That is, we want to seperate boundary conditions,
 mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (Stokes).
-
+\\[8pt]
+%%
 For this reason, we have a adopted a code structure in which models are compiled and combined into
 a separate, stand alone library. When using a {\ptat{ driver (i.e which is needed to solve something),
 we link the model library against the solver library.
-
+\\[8pt]
+%%
 Models live under the directory
 	\shellcmd{ptatin3d/src/models/}
 the models are compiled into the following static library
 	\shellcmd{ptatin3d/src/models/libptatin3dmodels.a}
-	
-We have provided, as an example, a model called ``template''.
-	
+An example model called ``template'' is provided in \unix{src/models}.
+\\[8pt]
+%%	
 To add a model, add the directory name containing your model in
 	\shellcmd{ptatin3d/src/models/makefile}
 under the variable
@@ -151,7 +155,6 @@ under the variable
 	TATIN\_MODEL\_DIR = \
         template
 	}
-	
 Within the directory
 	\shellcmd{ptatin3d/src/models/template}
 are the files which define any specific data structures needed for the model,
@@ -192,7 +195,6 @@ A ``model'' description in {\ptat} consists of defining the following operations
 	with this particular model. If no data structures were defined, then this function does not need to be defined.
 \end{enumerate}
 
-
 Following the definition of the above functions, to complete the model definition we have to perform the following steps :
 \begin{enumerate}
 	\item \unix{pTatinModelCreate()}
@@ -217,8 +219,7 @@ Example usage:
 
 	\item Register the model via the call
 \unix{pTatinModelRegister()}
-This will add your model definition into a list which ptatin will have access to.
-
+This will add your model definition into a list which {\ptat} will have access to.
 Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()}.
 
 	\item Finally, you need to edit
@@ -226,7 +227,7 @@ Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()
 and add the function call to register your model.
 This should be done within
 		\unix{pTatinModelRegisterAll()}
-as you'll note, you will see the "template" model registration function 	
+as you'll note, you will see the ``template'' model registration function 	
 		\unix{pTatinModelRegister\_Template();}
 
 So you don't have the compiler warning about ``implicitly defined function'', simply add the protoytype as an \unix{extern}, e.g.
@@ -246,7 +247,6 @@ For most new models, one would simply have to list the C files used in defining 
 MODEL\_SRC = \newline
         template.c \newline
 }
-
 Models must be compiled at the root level of the code tree.
 That is, to make a model, you must run ``make'' from 
 	\unix{ptatin3d/src}
@@ -263,7 +263,8 @@ from the directory
 
 \subsection{Implementing Dirichlet boundary conditions}
 {\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
-
+\\[8pt]
+%%
 To apply boundary conditions, the main function used is:
 \shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
  BCList list, \\
@@ -309,7 +310,8 @@ where the arguments are;
 For a simple example of a user defined boundary condition function, refer to 
 \shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
 in file \unix{dmda\_bcs.c}.
-
+\\[8pt]
+%%	
 A standard set of velocity Dirichlet boundary conditions for Stokes are defined in \unix{ptatin\_std\_dirichlet\_boundary\_conditions.c}. Please refer to  \unix{ptatin\_std\_dirichlet\_boundary\_conditions.h} for a summary of the functions available.
 
 
@@ -324,7 +326,8 @@ Notes:
 
 \subsection{Implementing initial conditions}
 Iterators are provided to allow to define the contents of PETSc vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
-
+\\[8pt]
+%%	
 The standard vector iterator is given by
 \shellcmd{PetscErrorCode DMDAVecTraverse3d( \newline
   DM da, \\
@@ -397,7 +400,7 @@ where the arguments are
 
 
 
-% -----------------------------------------------------------------------------------------
+% ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Drivers}
 {\ptat} in itself is a library which aims to enable users to build specific executables to solve a particular class of problems in lithospheric dynamics.
@@ -434,7 +437,89 @@ The most important (i.e. useful) of these are summarized below.
 	\item \unix{-checkpoint\_every\_ncpumins}: Indicates interval in terms of CPU time with which a check point files with a unique name (associated with the current time step) should be written.
 \end{itemize}
 
+% ----------------------------------------------------------------------------------------------------
+\newpage
+\section{Example models and test}
+A small number of units tests are provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The unit tests can be found in the directory \unix{src/unit\_tests}. To execute the tests, execute the following command
+\shellcmd{python ptatin3d-execute-tests.py}
+If a given test (e.g. test03a) is successful, you will see the following information display
+\shellcmd{\\
+--------------------------------------------------------\\
+-- Performing test: test03a\\
+---- Unix diff with expected file: ./expected/test01.expected}
 
+Numerous example models are provided with the source distribution. These serve as a starting point to generate your own models. The most simple model is ``viscous\_sinker'', with source files living in \unix{src/models/viscous\_sinker}. Several example options files are provided in \unix{src/models/viscous\_sinker/testjobs}. We summarize the examples below
+\begin{enumerate}
+	\item ex\_sinker.opts: Defines a dense, viscous rectangular block in a unit cube domain. The rectangular block sinks due to the buoyancy difference between the block and background material. ``Free slip'' boundaries (zero normal velocity, zero tangential stress) are applied along all boundaries. The model is time dependent with a linear viscous rheology, thus the driver \unix{ptatin\_driver\_linear\_ts.app} should be used.
+
+	\item sinker-ex2.opts: Defines a buoyant spherical viscous inclusion in a domain $\Omega = [0,1] \times [0,\tfrac{1}{4}] \times [0,1]$. Boundary conditions on the upper surface $\sigma_{ij}n_j=0$ (``free surface'') and ``free slip'' on all other sides. The upper surface is initialized to have a small amount of positive topography. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file illustrates how flexible multi-grid coarsening and coarse grid operators can be used. See Sec.~\ref{sec:configsolvers} for further details.
+
+	\item sinker-mfscaling.opts: Defines a dense, viscous spherical inclusion in a unit cube domain. A``free surface'' upper boundary is used and all other boundaries are ``free slip''. The upper surface is initially flat. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file is used for strong scaling experiments.
+\end{enumerate}
+
+% ----------------------------------------------------------------------------------------------------
+\newpage
+\section{Generated output}
+All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called ``output'' will be generated.
+
+\subsection{Diagnostics}
+The time dependent drivers will generate a log file (ptatin.log-XXX) and a file containing all options (inputs) used for the current simulation (ptatin.options-XXX). Here, ``XXX'' will be replaced with a year/date/time stamp (e.g. 2013.10.31\_11:00:54) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the timestep, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
+
+\subsection{Simulation results}
+{\ptat} generates output in format which can be visualized via the open source viz tool ParaView (\url{www.paraview.org}).
+A complete description of ParaView formats can be found here.
+The relevant summary of file extensions is provided below. \newline
+{\bf *.pvd}: Contains time dependent datasets.  \newline
+{\bf *.pvts}: Contains mesh data (nodal fields and cell fields) for the complete mesh.  \newline
+{\bf *.vts}: Contains mesh data (nodal fields and cell fields) for each sub-domain used in the parallel computation.  \newline
+{\bf *.pvtu}: Contains particle data for the complete set of material points.  \newline
+{\bf *.vtu}: Contains particle data for each sub-domain used in the parallel computation. \newline
+Depending on the particular output functions called in your model, numerous fields are generated during a {\ptat} simulation.
+
+\subsubsection{Mesh data}
+{\bf Velocity and pressure} field data are contained in the following set of files:
+\unix{timeseries\_vp.pvd}, \unix{step000000\_vp.pvts}, \unix{step000000\_vp-subdomain00000.vts}.
+Floating point numbers are stored as double precision. All data is stored in a binary format. \newline
+The function \unix{pTatin3d\_ModelOutput\_VelocityPressure\_Stokes()} generates these data files.
+\\[8pt]
+%%	
+{\bf Velocity} field data are contained in the following set of files:
+\unix{timeseries\_v.pvd}, \unix{step000000\_v.pvts}, \unix{step000000\_v-subdomain00000.vts}.
+Floating point numbers are stored as single precision. All data is stored in a binary format.\newline
+The function \unix{pTatin3d\_ModelOutputLite\_Velocity\_Stokes()} generates these data files.
+\\[8pt]
+%%	
+{\bf Temperature} field data are contained in the following set of files:
+\unix{timeseries\_T.pvd}, \unix{step000000\_T.pvts}, \unix{step000000\_T-subdomain00000.vts}.
+Floating point numbers are stored as single precision. All data is stored in a binary format.\newline
+The function \unix{pTatin3d\_ModelOutput\_Temperature\_Stokes()} generates these data files.
+
+
+\subsection{Material point data}
+Marker data can be represented as a point cloud, e.g. a set of unconnected points $x_p$ with a set of material point properties (e.g $\eta_p$, $\rho_p$, ...) defined at each $x_p$. Such representations are useful for debugging model setups, however for high resolution simulations the point cloud representation is on limited use. The limitation is two-fold: (i) the point cloud data representation requires a large amount of storage, and (ii) investigation of the 3D data set is limited as operations such as iso-surfaces, clipping, etc cannot be defined on point clouds. Furthermore, point surface do not represent a surface, so no lighting/shading can be applied, thereby limiting the user spatial perception of the data set.
+\\[8pt]
+%%	
+{\bf Material point} field data associated with the basic marker type are contained in the following set of files:
+\unix{timeseries\_mpoints\_std.pvd}, \unix{step000000\_mpoints\_std.pvtu}, \\\unix{step000000\_mpoints\_std-subdomain00000.vtu}.
+Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format.\newline
+The function \unix{pTatin3d\_ModelOutput\_MPntStd()} generates these data files.
+\\[8pt]
+%%	
+A more flexible mechanism to output material point data associated with multiple marker types is provided by the function \unix{SwarmViewGeneric\_ParaView()}. Note that this function will not generate for you a *.pvd file.  All data is stored in a binary format. Marker types which can be output in these files are identified via the the following names: \\
+\unix{MPField\_Std, MPField\_Stokes, MPField\_StokesPl, MPField\_Energy}.
+%%
+\\[8pt]
+%%	
+Marker data can alternatively be represented on the mesh used for computing the velocity/pressure solution. In this case, marker data is averaged cell wise and represented as a constant value over each element.
+\\[8pt]
+%%	
+{\bf Material point} field data represented on the mesh are contained in the following set of files:
+\unix{timeseries\_mpoints\_cell.pvd}, \unix{step000000\_mpoints\_cell.pvts},\\ \unix{step000000\_mpoints\_cell-subdomain00000.vts}. 
+Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format.
+The function \unix{pTatin3d\_ModelOutput\_MarkerCellFields()} generates these data files. This function is flexible and permits specific marker fields to be output into the file. Marker fields which can be output in these files are identified via the the following names:
+\unix{MPV\_region, MPV\_viscosity, MPV\_density, MPV\_plastic\_strain, MPV\_yield\_indicator, MPV\_diffusivity, MPV\_heat\_source}.
+
+% ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Nonlinear and Linear Solvers}
 
@@ -546,7 +631,7 @@ We will refer to the outer most solver (i.e. that for Eq.~\eqref{eq:discreteline
 In the following section we detail how to configure the solver applied to Eq.~\eqref{eq:discretelinearstokes_pc} to obtain $(u,p)$, and how to configure the solvers in steps 1 ({\tt -fieldsplit\_u\_ksp}) and 2 ({\tt -fieldsplit\_p\_ksp}) of applying the upper triangular preconditioner.
 
 
-\subsection{Configuring solvers}
+\subsection{Configuring solvers} \ref{sec:configsolvers}
 
 \subsubsection{Non-linear Stokes solver}
 Non-linear methods adopt the following sequence
@@ -580,7 +665,8 @@ The non-linear iteration sequence may be terminated for several different  reaso
 The number of multi-grid levels is set via the option:
 \shellcmd{-dau\_nlevels X}
 If $X = 3$, this will imply that the mesh specified via \unix{-mx 16 -my 16 -mz 16} will be coarsened twice, resulting (by default) in a mesh sequence with the number of elements $M_x = 16$ (fine), $M_x = 8$ and $M_x = 4$ (coarse). For clarity, level 0 is designated as the ``coarsest'' level, and level $X-1$ is designated as the ``finest'' level.
-
+\\[8pt]
+%%	
 Meshes can be coarsened by a constant factor on each level, or one can control the coarsening factor level-by level.
 In both cases, the coarsening applied is dependent on the coordinate direction $(i,j,k)$. 
 To define constant coarsening on every level, but varying in each direction, use the options
@@ -589,21 +675,20 @@ To define constant coarsening on every level, but varying in each direction, use
 \indent\indent\texttt{\hspace{5mm}}-da\_refine\_z 1}
 Note that different coarsening can be specified in each direction - here denoted via $x,y,z$ in the refinement command line option.
 Also note, that a refinement factor of 1 implies that mesh will not be coarsened in that direction. 
-
+\\[8pt]
+%%	
 To define level specific coarsening, use the options
 \shellcmd{-stk\_velocity\_da\_refine\_hierarchy\_x 4,1}
 The integer parameters are listed from coarse to fine levels (left to right). The above options will result result in the following hierarchy in the $x$ direction (from coarse to fine), $M_x = \{ 4, 16, 16 \}$.
 Note that if you have $X$ levels, you are only required to specify $X-1$ values to define the coarsening hierarchy. 
-
-
+\\[8pt]
+%%	
 Note that when using geometric multi-grid, all levels are spatial decomposed across all cores. Furthermore, it is required that every core contains at least one element. Thus, the total number of cores used to run a {\ptat} job must not exceed the number of elements within the coarse grid. If you require additional levels in your multi-grid hierarchy, we recommend you use an algebraic multi-grid preconditioner as your coarse grid preconditioner.
 
 \subsection{Coarse grid operators}
 Within {\ptat}, the style of coarse grid operator can be configured at run time. We provide support to enable three types of coarse grid operator; $\{$ matrix-free re-discretised = 0, assembled re-discretised = 1, Galerkin = 2 $\}$. Re-discretised operators imply that the viscosity is projected through the mesh hierarchy and the finite element operators are re-evaluated using the standard FE weak form defined on the fine level. Galerkin coarsening implies that the coarse grid operator at level $k$ $A_k$ is defined via $A_k = R^T A_{k+1} R$, where $R$ is the restriction operator for level $k+1$ to $k$. To define the triple matrix product required by the a Galerkin operator definition on level $k$, it is require that the operator on level $k+1$ be assembled, i.e. be of either type $\{$ assembled re-discretised = 1, Galerkin = 2 $\}$. Configuration of the coarse grid operator type is define via the option;
 \shellcmd{-A11\_operator\_type 2,2,1,0}
 where valid indices are $\{ 0, 1, 2 \}$ and operators on each level are specified from coarse to fine (left to right).
-
-
 
 \subsection{Multi-grid performance profiling}
 To activate monitors which report CPU times on each mult-grid level, one must specify the following options
@@ -616,7 +701,8 @@ Note that if the values for \unix{-dau\_nlevels X} and \unix{-fieldsplit\_u\_pc\
 When solving linear problems, two types of residuals are important to monitor for both accuracy of the Stokes problem and efficiency of the solver.
 By default, all drivers report the Stokes residuals for the individual components of the residual associated with the $u,v,w$-momentum equations and the continuity equation. The complete residual associated with the residual of the full vector $(u,v,w,p)$ can be monitored using the flag
 \shellcmd{-ksp\_monitor}
-
+\\[8pt]
+%%	
 The residuals output to the screen will typically look like the following:
 \begingroup
     \fontsize{6.5pt}{6.5pt}\selectfont
