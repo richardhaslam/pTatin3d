@@ -40,12 +40,13 @@
 #include "MPntStd_def.h"
 #include "material_point_point_location.h"
 
-#define PNTLOC_LOG
+/* debugging variable for point location routines */
+//#define PNTLOC_LOG
 
 void _compute_deltaX_3d( double J[3][3], double f[], double h[] )
 {
+	int    i;
 	double invJ[3][3];
-	int i;
 	
 	ElementHelper_matrix_inverse_3x3(J,invJ);
 
@@ -59,7 +60,7 @@ void _compute_deltaX_3d( double J[3][3], double f[], double h[] )
 
 void _compute_J_3dQ2(double xi[],double vertex[],double J[3][3])
 {
-	int i;
+	int    i;
 	double GNi[3][Q2_NODES_PER_EL_3D];
 	
 	J[0][0] = J[0][1] = J[0][2] = 0.0;
@@ -89,7 +90,7 @@ void _compute_J_3dQ2(double xi[],double vertex[],double J[3][3])
 
 void _compute_F_3dQ2(double xi[],double vertex[],double pos[],double f[])
 {
-	int i;
+	int    i;
 	double Ni[Q2_NODES_PER_EL_3D];
 	
 	/* Update F for the next iteration */
@@ -123,18 +124,17 @@ void InverseMappingDomain_3dQ2(
 	double h[dim];
 	double Jacobian[dim][dim];
 	double f[dim];
-	int i,d;
-	int its;
+	int    i,d;
+	int    its;
 	double residual2,tolerance2,F2;
-	
-	int p;
-	int mx_origin, my_origin, wil_origin;
+	int    p;
+	int    mx_origin, my_origin, wil_origin;
 	double cxip[dim],Lxip[dim],Gxip[dim];
 	double dxi,deta,dzeta,xi0,eta0,zeta0;
-	int I,J,K,wil_IJ,eid,k;
+	int    I,J,K,wil_IJ,eid,k;
 	double vertex[dim * nodesPerEl];
-	int n0, n1, n2, n3;
-	Truth point_found;
+	int    n0,n1,n2,n3;
+	Truth  point_found;
 	
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */
 	
@@ -146,7 +146,7 @@ void InverseMappingDomain_3dQ2(
 	dzeta = 2.0/((double)mz);
 	if(log)printf("Domain: (dxi,eta,zeta) = (%1.8e,%1.8e,%1.8e)\n",dxi,deta,dzeta );
 	
-	for( p=0; p<np; p++ ) {
+	for (p=0; p<np; p++) {
 		MPntStd *marker_p = &marker[p];
 		
 		/* copy these values */
@@ -155,12 +155,11 @@ void InverseMappingDomain_3dQ2(
 		cxip[2] = marker_p->xi[2];
 		
 		/* Check for an initial guess initial guess */
-		if( use_nonzero_guess == _FALSE ) {
+		if (use_nonzero_guess == _FALSE) {
 			Gxip[0] = 0.0;
 			Gxip[1] = 0.0;
 			Gxip[2] = 0.0;
-		}
-		else {
+		} else {
 			/* convert wil => IJ */
 			wil_IJ = marker_p->wil;
 			K = wil_IJ / (mx*my);
@@ -183,7 +182,7 @@ void InverseMappingDomain_3dQ2(
 			if(log)printf("[Gxi-init] = %1.8e %1.8e %1.8e \n", Gxip[0], Gxip[1], Gxip[2] );
 			
 		}
-		if(monitor) {
+		if (monitor) {
 			printf("point[%d]: pos = ( %+1.8e, %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e, %+1.8e ) \n", 
 											p, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2],
 											marker_p->xi[0], marker_p->xi[1], marker_p->xi[2] );
@@ -199,23 +198,23 @@ void InverseMappingDomain_3dQ2(
 			J = (Gxip[1]+1.0)/deta;
 			K = (Gxip[2]+1.0)/dzeta;
 			
-			if( I==mx ) I--;
-			if( J==my ) J--;
-			if( K==mz ) K--;
+			if (I == mx) { I--; }
+			if (J == my) { J--; }
+			if (K == mz) { K--; }
 			
-			if( (I<0) || (J<0) || (K<0) ) {
+			if ((I<0) || (J<0) || (K<0)) {
 				if(log)printf("  I(%d),J(%d),K(%d) negative Gxip %1.8e,%1.8e,%1.8e \n",I,J,K,Gxip[0],Gxip[1],Gxip[2]);
 				break;
 			}
-			if( I>=mx ) { 
+			if (I >= mx) { 
 				if(log)printf("  I too large \n");
 				break;
 			}
-			if( J>=my ) {
+			if (J >= my) {
 				if(log)printf("  J too large \n");
 				break;
 			}
-			if( K>=mz ) {
+			if (K >= mz) {
 				if(log)printf("  K too large \n");
 				break;
 			}
@@ -259,15 +258,15 @@ void InverseMappingDomain_3dQ2(
 			if(log)printf("  Lxi,Lxeta,Lxzeta = %1.8e, %1.8e, %1.8e (%d,%d,%d) \n", Lxip[0],Lxip[1],Lxip[2],I,J,K );
 			
 			_compute_F_3dQ2( Lxip, vertex, marker_p->coor, f );
-			if( monitor ) {
+			if (monitor) {
 				printf("%4d InverseMapping : F = ( %+1.8e, %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e, %+1.8e ) \n", 
 							 its, f[0],f[1],f[2], Lxip[0],Lxip[1],Lxip[2] );
 			}
 			
 			/* Check for convergence */
 			F2 = (f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-			if( F2 < tolerance2 ) {
-				if( monitor ) printf("%4d InverseMapping : converged : Norm of F %1.8e \n", its, sqrt(F2) );
+			if (F2 < tolerance2) {
+				if (monitor) printf("%4d InverseMapping : converged : Norm of F %1.8e \n", its, sqrt(F2) );
 				point_found = _TRUE;
 				break;
 			}
@@ -285,8 +284,8 @@ void InverseMappingDomain_3dQ2(
 			if(log)printf("  [corrected] Lxi,Lxeta,Lxzeta = %1.8e, %1.8e, %1.8e \n", Lxip[0],Lxip[1],Lxip[2] );
 			
 			residual2 = ( h[0]*h[0] + h[1]*h[1] + h[2]*h[2] );
-			if( residual2 < tolerance2 ) {
-				if( monitor ) printf("%4d InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
+			if (residual2 < tolerance2) {
+				if (monitor) printf("%4d InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
 				point_found = _TRUE;
 				break;
 			}
@@ -317,47 +316,45 @@ void InverseMappingDomain_3dQ2(
 			
 			
 			its++;
-		} while(its<max_its);
+		} while(its < max_its);
 		
-		if( monitor && point_found==_FALSE ){
-			if( its>=max_its ) {
+		if (monitor && point_found==_FALSE){
+			if (its >= max_its) {
 				printf("%4d %s : Reached maximum iterations (%d) without converging. \n", its, __FUNCTION__, max_its );
-			}
-			else {
+			}	else {
 				printf("%4d %s : Newton broke down, diverged or stagnated after (%d) iterations without converging. \n", its, __FUNCTION__, its );
 			}
 		}
 		
 		/* if at the end of the solve, it still looks like the point is outside the mapped domain, mark point as not being found */
-		if( fabs(Gxip[0]) > 1.0 ) { point_found =_FALSE; }
-		if( fabs(Gxip[1]) > 1.0 ) { point_found =_FALSE; }
-		if( fabs(Gxip[2]) > 1.0 ) { point_found =_FALSE; }
+		if (fabs(Gxip[0]) > 1.0) { point_found =_FALSE; }
+		if (fabs(Gxip[1]) > 1.0) { point_found =_FALSE; }
+		if (fabs(Gxip[2]) > 1.0) { point_found =_FALSE; }
 		
 		/* update local variables */
-		if( point_found==_FALSE ) {
+		if (point_found == _FALSE) {
 			Lxip[0] = NAN;
 			Lxip[1] = NAN;
 			Lxip[2] = NAN;
 			wil_IJ  = -1;
-		}
-		else {
+		}	else {
 			/* convert Gxi to IJ */
 			I = (Gxip[0]+1.0)/dxi;
 			J = (Gxip[1]+1.0)/deta;
 			K = (Gxip[2]+1.0)/dzeta;
-			if( I==mx ) I--;
-			if( J==my ) J--;
-			if( K==mz ) K--;
+			if (I == mx) { I--; }
+			if (J == my) { J--; }
+			if (K == mz) { K--; }
 			
-			if( I>=mx ) {
+			if (I >= mx) {
 				if(log)printf("  I too large \n");
 				break;
 			}
-			if( J>=my ) {
+			if (J >= my) {
 				if(log)printf("  J too large \n");
 				break;
 			}
-			if( K>=mz ) {
+			if (K >= mz) {
 				if(log)printf("  K too large \n");
 				break;
 			}
@@ -387,8 +384,8 @@ void InverseMappingDomain_3dQ2(
 /* 2d implementation */
 void _compute_deltaX_2d( double J[2][2], double f[], double h[] )
 {
+	int    i;
 	double invJ[2][2];
-	int i;
 	
 	ElementHelper_matrix_inverse_2x2(J,invJ);
 	
@@ -401,7 +398,7 @@ void _compute_deltaX_2d( double J[2][2], double f[], double h[] )
 
 void _compute_J_2dQ2(double xi[],double vertex[],double J[2][2])
 {
-	int i;
+	int    i;
 	double GNi[2][Q2_NODES_PER_EL_2D];
 	
 	J[0][0] = J[0][1] = 0.0;
@@ -409,7 +406,7 @@ void _compute_J_2dQ2(double xi[],double vertex[],double J[2][2])
 	
 	P3D_ConstructGNi_Q2_2D(xi,GNi);
 	for (i=0; i<Q2_NODES_PER_EL_2D; i++) {
-		int i2 = i*2;
+		int    i2 = i*2;
 		double x = vertex[i2];
 		double y = vertex[i2+1];
 		
@@ -423,7 +420,7 @@ void _compute_J_2dQ2(double xi[],double vertex[],double J[2][2])
 
 void _compute_F_2dQ2(double xi[],double vertex[],double pos[],double f[])
 {
-	int i;
+	int    i;
 	double Ni[Q2_NODES_PER_EL_2D];
 	
 	/* Update F for the next iteration */
@@ -479,7 +476,7 @@ void InverseMappingDomain_2dQ2(
 	printf("Domain: (dxi,eta) = (%1.8e,%1.8e)\n",dxi,deta );
 #endif
 	
-	for( p=0; p<np; p++ ) {
+	for (p=0; p<np; p++) {
 		MPntStd *marker_p = &marker[p];
 		
 		/* copy these values */
@@ -487,16 +484,15 @@ void InverseMappingDomain_2dQ2(
 		cxip[1] = marker_p->xi[1];
 		
 		/* Check for an initial guess initial guess */
-		if( use_nonzero_guess == _FALSE ) {
+		if (use_nonzero_guess == _FALSE) {
 			Gxip[0] = 0.0;
 			Gxip[1] = 0.0;
-		}
-		else {
+		}	else {
 			/* convert wil => IJ */
 			wil_IJ = marker_p->wil;
 			J = wil_IJ / mx;
 			I = wil_IJ - J*mx;
-			if(log)printf("init I,J = %d %d \n", I,J );
+
 			/* convert Lxip => Gxip */
 			xi0   = -1.0 + I*dxi;
 			eta0  = -1.0 + J*deta;
@@ -508,11 +504,12 @@ void InverseMappingDomain_2dQ2(
 			Gxip[0] = dxi   * (cxip[0]+1.0)/2.0 + xi0;
 			Gxip[1] = deta  * (cxip[1]+1.0)/2.0 + eta0;
 #ifdef PNTLOC_LOG
+			printf("init I,J = %d %d \n", I,J );
 			printf("[Lxi-init] = %1.8e %1.8e \n", cxip[0], cxip[1] );
 			printf("[Gxi-init] = %1.8e %1.8e \n", Gxip[0], Gxip[1] );
 #endif
 		}
-		if(monitor) {
+		if (monitor) {
 			printf("point[%d]: pos = ( %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e ) \n", 
 						 p, marker_p->coor[0],marker_p->coor[1],
 						 marker_p->xi[0], marker_p->xi[1] );
@@ -529,22 +526,22 @@ void InverseMappingDomain_2dQ2(
 			I = (Gxip[0]+1.0)/dxi;
 			J = (Gxip[1]+1.0)/deta;
 			
-			if( I==mx ) I--;
-			if( J==my ) J--;
+			if (I == mx) { I--; }
+			if (J == my) { J--; }
 			
-			if( (I<0) || (J<0) ) {
+			if ((I<0) || (J<0)) {
 #ifdef PNTLOC_LOG
 				printf("  I(%d),J(%d) negative Gxip %1.8e,%1.8e \n",I,J,Gxip[0],Gxip[1]);
 #endif
 				break;
 			}
-			if( I>=mx ) { 
+			if (I>= mx) { 
 #ifdef PNTLOC_LOG
 				printf("  I too large \n");
 #endif
 				break;
 			}
-			if( J>=my ) {
+			if (J >= my) {
 #ifdef PNTLOC_LOG
 				printf("  J too large \n");
 #endif
@@ -593,15 +590,15 @@ void InverseMappingDomain_2dQ2(
 #endif
 			
 			_compute_F_2dQ2( Lxip, vertex, marker_p->coor, f );
-			if( monitor ) {
+			if (monitor) {
 				printf("%4d InverseMapping : F = ( %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e ) \n", 
 							 its, f[0],f[1], Lxip[0],Lxip[1] );
 			}
 			
 			/* Check for convergence */
 			F2 = (f[0]*f[0]+f[1]*f[1]);
-			if( F2 < tolerance2 ) {
-				if( monitor ) printf("%4d InverseMapping : converged : Norm of F %1.8e \n", its, sqrt(F2) );
+			if (F2 < tolerance2) {
+				if (monitor) printf("%4d InverseMapping : converged : Norm of F %1.8e \n", its, sqrt(F2) );
 				point_found = _TRUE;
 				break;
 			}
@@ -622,8 +619,8 @@ void InverseMappingDomain_2dQ2(
 #endif
 			
 			residual2 = ( h[0]*h[0] + h[1]*h[1] );
-			if( residual2 < tolerance2 ) {
-				if( monitor ) printf("%4d InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
+			if (residual2 < tolerance2) {
+				if (monitor) printf("%4d InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
 				point_found = _TRUE;
 				break;
 			}
@@ -642,14 +639,14 @@ void InverseMappingDomain_2dQ2(
 #endif
 			
 			for (d=0; d<dim; d++) {
-				if (Gxip[d]<-1.0) { 
+				if (Gxip[d] < -1.0) { 
 					Gxip[d] = -1.0;
 #ifdef PNTLOC_LOG
 					printf("  correction outside box: correcting \n");
 #endif
 				}
 				
-				if (Gxip[d]>1.0) {
+				if (Gxip[d] > 1.0) {
 					Gxip[d] = 1.0;
 #ifdef PNTLOC_LOG
 					printf("  correction outside box: correcting \n");
@@ -657,43 +654,40 @@ void InverseMappingDomain_2dQ2(
 				}
 			}
 			
-			
 			its++;
-		} while(its<max_its);
+		} while(its < max_its);
 		
-		if( monitor && point_found==_FALSE ){
-			if( its>=max_its ) {
+		if (monitor && point_found == _FALSE){
+			if (its >= max_its) {
 				printf("%4d %s : Reached maximum iterations (%d) without converging. \n", its, __FUNCTION__, max_its );
-			}
-			else {
+			} else {
 				printf("%4d %s : Newton broke down, diverged or stagnated after (%d) iterations without converging. \n", its, __FUNCTION__, its );
 			}
 		}
 		
 		/* if at the end of the solve, it still looks like the point is outside the mapped domain, mark point as not being found */
-		if( fabs(Gxip[0]) > 1.0 ) { point_found =_FALSE; }
-		if( fabs(Gxip[1]) > 1.0 ) { point_found =_FALSE; }
+		if (fabs(Gxip[0]) > 1.0) { point_found =_FALSE; }
+		if (fabs(Gxip[1]) > 1.0) { point_found =_FALSE; }
 		
 		/* update local variables */
-		if( point_found==_FALSE ) {
+		if (point_found == _FALSE) {
 			Lxip[0] = NAN;
 			Lxip[1] = NAN;
 			wil_IJ  = -1;
-		}
-		else {
+		}	else {
 			/* convert Gxi to IJ */
 			I = (Gxip[0]+1.0)/dxi;
 			J = (Gxip[1]+1.0)/deta;
-			if( I==mx ) I--;
-			if( J==my ) J--;
+			if (I == mx){ I--; }
+			if (J == my){ J--; }
 			
-			if( I>=mx ) {
+			if (I >= mx) {
 #ifdef PNTLOC_LOG
 				printf("  I too large \n");
 #endif
 				break;
 			}
-			if( J>=my ) {
+			if (J >= my) {
 #ifdef PNTLOC_LOG
 				printf("  J too large \n");
 #endif
