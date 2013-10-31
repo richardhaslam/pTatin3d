@@ -55,10 +55,11 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 		throw_warning = 1;
 	}
 	if (throw_warning == 1) {
-		PetscPrintf(PETSC_COMM_WORLD,"** pTatin3d is configured with debug options \n");
-		PetscPrintf(PETSC_COMM_WORLD,"**   TATIN_CFLAGS = %s\n",flags);
-		PetscPrintf(PETSC_COMM_WORLD,"** For signifcant performance improvements, please consult the makefile  \n");
-		PetscPrintf(PETSC_COMM_WORLD,"** and set TATIN_CFLAGS to an optimized value suitable for your machine. \n");
+		PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled with debug options \n");
+		//PetscPrintf(PETSC_COMM_WORLD,"**   TATIN_CFLAGS = %s\n",flags);
+		PetscPrintf(PETSC_COMM_WORLD,"** For signifcant performance improvements, please consult the file makefile.arch  \n");
+		PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
+		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	}
 	
 	PetscFunctionReturn(0);
@@ -91,9 +92,11 @@ PetscErrorCode pTatinWritePreamble(void)
 #ifdef COMPFLAGS
 	#define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
 	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
-	ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
-#endif
+	PetscPrintf(PETSC_COMM_WORLD,"** TATIN_CFLAGS = %s\n",STR_ARG_NAME);
 	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
+	ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
+	#undef STR_ARG_NAME
+#endif
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
 				 
 	PetscFunctionReturn(0);
