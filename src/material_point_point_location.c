@@ -43,6 +43,7 @@
 /* debugging variable for point location routines */
 //#define PNTLOC_LOG
 
+#if 0
 void _compute_deltaX_3d( double J[3][3], double f[], double h[] )
 {
 	int    i;
@@ -380,6 +381,7 @@ void InverseMappingDomain_3dQ2(
 		marker_p->wil   = wil_IJ;
 	}
 }
+#endif
 
 /* 2d implementation */
 void _compute_deltaX_2d( double J[2][2], double f[], double h[] )
