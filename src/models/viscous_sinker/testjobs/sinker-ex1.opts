@@ -69,7 +69,7 @@
 -mp_popctrl_nzp 2
 
 # ---- Define ptatin timestepping/io parameters ---- #
--output_path ex_sinker
+-output_path sinker-ex1
 -nsteps 500
 -output_frequency 25
 
