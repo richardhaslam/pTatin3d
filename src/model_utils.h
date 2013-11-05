@@ -54,6 +54,6 @@ typedef struct {
 } DMDA_thermalfield_init_params;
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx);
-PetscErrorCode DMDAConvertGlobalElementIndex2IJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
+PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
 
 #endif

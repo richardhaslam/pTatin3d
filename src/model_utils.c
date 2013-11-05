@@ -97,8 +97,8 @@ PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_poi
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAConvertGlobalElementIndex2IJK"
-PetscErrorCode DMDAConvertGlobalElementIndex2IJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K)
+#define __FUNCT__ "DMDAConvertLocalElementIndex2GlobalIJK"
+PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K)
 {
 	PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;	
 	PetscErrorCode ierr;
