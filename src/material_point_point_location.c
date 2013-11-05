@@ -451,17 +451,17 @@ void InverseMappingDomain_2dQ2(
 	const int dim = 2;
 	const int nodesPerEl = Q2_NODES_PER_EL_2D; 
 	double h[dim];
-	double Jacobian[dim][dim];
-	double f[dim];
+	double Jacobian[2][2];
+	double f[2];
 	int    i,d;
 	int    its;
 	double residual2,tolerance2,F2;
 	int    p;
 	int    mx_origin, my_origin, wil_origin;
-	double cxip[dim],Lxip[dim],Gxip[dim];
+	double cxip[2],Lxip[2],Gxip[2];
 	double dxi,deta,xi0,eta0;
 	int    I,J,wil_IJ,eid,k;
-	double vertex[dim * nodesPerEl];
+	double vertex[2 * Q2_NODES_PER_EL_2D];
 	int    n0,n1,n2;
 	Truth  point_found;
 	
@@ -487,6 +487,12 @@ void InverseMappingDomain_2dQ2(
 		
 		/* Check for an initial guess initial guess */
 		if (use_nonzero_guess == _FALSE) {
+			marker_p->xi[0] = 0.0;
+			marker_p->xi[1] = 0.0;
+			
+			cxip[0] = marker_p->xi[0];
+			cxip[1] = marker_p->xi[1];
+
 			Gxip[0] = 0.0;
 			Gxip[1] = 0.0;
 		}	else {
@@ -537,7 +543,7 @@ void InverseMappingDomain_2dQ2(
 #endif
 				break;
 			}
-			if (I>= mx) { 
+			if (I >= mx) { 
 #ifdef PNTLOC_LOG
 				printf("  I too large \n");
 #endif
@@ -668,8 +674,8 @@ void InverseMappingDomain_2dQ2(
 		}
 		
 		/* if at the end of the solve, it still looks like the point is outside the mapped domain, mark point as not being found */
-		if (fabs(Gxip[0]) > 1.0) { point_found =_FALSE; }
-		if (fabs(Gxip[1]) > 1.0) { point_found =_FALSE; }
+		if (fabs(Gxip[0]) > 1.0) { point_found = _FALSE; }
+		if (fabs(Gxip[1]) > 1.0) { point_found = _FALSE; }
 		
 		/* update local variables */
 		if (point_found == _FALSE) {
