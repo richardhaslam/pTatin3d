@@ -964,17 +964,17 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		
 		ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 		
-		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 0.0)) {
+		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 20.0)) {
 			
-			/* project new material points */
+			/* reset material point coordinates and set eta/rho */
 			ierr = MultilayerFolding_Mesh2MarkerRemesh(c,data);CHKERRQ(ierr);
-			/* clean up mesh */
+			/* clean up the mesh */
 			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 			tracking_layer_phase = PETSC_FALSE;
 			
 		} else {
 			
-			/* just clean up mesh */
+			/* just clean up the mesh */
 			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 			
 		}
