@@ -66,7 +66,7 @@
 
 	!! output control
 	-output_frequency 1
-	-output_path /Users/marinec/test_multilayer_ptatin3d/lambda40
+	-output_path folding_non_cylindrical_lambda40
 
 	!! checkpoint control
 	-checkpoint_every_nsteps 1
