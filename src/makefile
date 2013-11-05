@@ -83,6 +83,7 @@ export TATIN_SRC = \
 			pc_semiredundant.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
+			spm_utils.c \
 
 export TATIN_OBJ	=	$(TATIN_SRC:.c=.o)
 
