@@ -938,7 +938,7 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	
 	
 	/* refine DM */
-	ierr = DMDASetRefinementFactor(dm_surf,ref[0],ref[1],ref[2]);CHKERRQ(ierr);
+	ierr = DMDASetRefinementFactor(dm_surf,ref[0],ref[1],1);CHKERRQ(ierr);
 	dm_surf_ref = PETSC_NULL;
 	ierr = DMRefine(dm_surf,comm,&dm_surf_ref);CHKERRQ(ierr);
 	if (!dm_surf_ref) {
@@ -993,7 +993,7 @@ PetscErrorCode test_nested_spm_utils_MPItoMPI(DM dav)
 	DM             dm_spmsurf,dm_spmsurf_overlap;
 	Vec            height;
 	PetscInt       JMAX;
-	PetscInt       ref[] = { 4, 4, 4 };
+	PetscInt       ref[] = { 10, 6 };
 	Mat            R;
 	PetscErrorCode ierr;
 	
@@ -1009,7 +1009,6 @@ PetscErrorCode test_nested_spm_utils_MPItoMPI(DM dav)
 	ierr = MatDestroy(&R);CHKERRQ(ierr);
 	ierr = DMDestroy(&dm_spmsurf);CHKERRQ(ierr);
 	ierr = DMDestroy(&dm_spmsurf_overlap);CHKERRQ(ierr);
-	
 	
 	ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
