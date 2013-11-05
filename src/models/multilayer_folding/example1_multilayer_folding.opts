@@ -18,7 +18,7 @@
 -fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
 -fieldsplit_u_mg_coarse_ksp_type cg
 -fieldsplit_u_mg_coarse_pc_type  asm
--fieldsplit_u_mg_coarse_pc_asm_overlap 3-D
+-fieldsplit_u_mg_coarse_pc_asm_overlap 3
  
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
@@ -56,7 +56,7 @@
 -ptatin_model multilayer_folding
 -nsteps 10000
 -output_frequency 1
--output_path test-mulitlayer_folding
+-output_path example1-mulitlayer_folding
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit

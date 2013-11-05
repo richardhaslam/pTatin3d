@@ -77,7 +77,7 @@
 -nsteps 5
 -output_frequency 1
 -checkpoint_every_nsteps 1
--output_path /Users/marinec/test_multilayer_ptatin3d/lx50lz50
+-output_path example2-multilayer_folding
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
