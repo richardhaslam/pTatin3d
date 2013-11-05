@@ -45,18 +45,29 @@
 #include "dmda_remesh.h"
 #include "mesh_update.h"
 #include "dmda_update_coords.h"
+#include "dmda_view_petscvtk.h"
 #include "spm_utils.h"
 
 /* 
-Contains routines to:
-  a) scatter a parallel surface mesh (MSurf) defined in the I-K plane to rank 0 (MSurf0)
-  b) perform interpolation between the MSurf0 and a user defined surface to be used in the SPM (SPMSurf)
-  c) perform interpolation between SPMSurf and MSurf0
-  d) perform the reverse scatter between the MSurf0 and the mechanical model MSurf
+Contains routines for assisting with:
+ 
+ * Parallel(mechanical model) + sequential (spm)
+     DMDAGatherIKRedundantSurfaceDMDA:  Gather a redundant surface mesh defined in the I-K plane on rank 0 (MSurf0) from a parallel mechanical model (MSurf)
+     InterpolateMSurf0ToSPMSurfIKGrid:  Perform interpolation between the MSurf0 and a user defined surface to be used in the SPM (SPMSurf)
+     InterpolateSPMSurfIKGridToMSurf0:  Perform interpolation between SPMSurf and MSurf0
+     DMDAScatterIKRedundantSurfaceDMDA: scatter between the MSurf0 and the mechanical model MSurf
+
+ * Parallel (mechanical model) + semi-redundant (spm) using only cores defined at the surface of the domain
+     DMDAGatherIKSemiRedundantSurfaceDMDA:  Gather a semi redundant parallel surface mesh defined in the I-K plane
+                                            using on all surface ranks (MSurfSR) from a parallel mechanical model (MSurf)
+     DMDAScatterIKSemiRedundantSurfaceDMDA: Scatter between the MSurfSR and the mechanical model MSurf
+ 
 */
+
+/* Parallel mechanical -> sequential spm */
 #undef __FUNCT__
-#define __FUNCT__ "DMDAExtractIKSurfaceDMDA"
-PetscErrorCode DMDAExtractIKSurfaceDMDA(DM dm_mech,DM *dm_msurf0)
+#define __FUNCT__ "DMDAGatherIKRedundantSurfaceDMDA"
+PetscErrorCode DMDAGatherIKRedundantSurfaceDMDA(DM dm_mech,DM *dm_msurf0)
 {
 	PetscErrorCode ierr;
 	DM             dm_surf;
@@ -306,14 +317,14 @@ PetscErrorCode InterpolateSPMSurfIKGridToMSurf0(PetscInt spm_mi,PetscInt spm_mj,
  Insert on each sub-domain 
 */
 #undef __FUNCT__
-#define __FUNCT__ "ScatterSPMSurfIKGridToMSurf"
-PetscErrorCode ScatterSPMSurfIKGridToMSurf(DM dm_msurf0, DM dm_mech)
+#define __FUNCT__ "DMDAScatterIKRedundantSurfaceDMDA"
+PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
 {
 	PetscErrorCode ierr;
-	PetscInt       pID,pI,pJ,pK,rI,rJ,rK,rIJ,rank,nsurface_nproc;
+	PetscInt       pID,pI,pJ,pK,rI,rJ,rK,rIJ,rank,nsurface_ranks;
 	PetscInt       i,k,ii,kk,si,ei,sk,ek,sj,ej,M,N,P,pi,pk;
 	PetscMPIInt    _rank;
-	PetscBool      surface_proc;
+	PetscBool      surface_rank;
 	PetscReal      *surface_chunk;
 	PetscInt       nchunk;
 	DM             cda_mech;
@@ -327,8 +338,8 @@ PetscErrorCode ScatterSPMSurfIKGridToMSurf(DM dm_msurf0, DM dm_mech)
 	
 	
 	PetscFunctionBegin;
-	/* --------------------------------------------- */
-	/* determine surface processors */
+	/* --------------------------------------------------- */
+	/* determine ranks living on the free surface j=JMAX-1 */
 	PetscObjectGetComm((PetscObject)dm_mech,&comm);
 	ierr = MPI_Comm_rank(comm,&_rank);CHKERRQ(ierr);
 	rank = (PetscInt)_rank;
@@ -340,11 +351,11 @@ PetscErrorCode ScatterSPMSurfIKGridToMSurf(DM dm_msurf0, DM dm_mech)
 	rJ = rIJ / pI;
 	rI = rIJ - rJ*pI;
 	
-	surface_proc = PETSC_FALSE;
+	surface_rank = PETSC_FALSE;
 	if (rJ == (pJ-1)) {
-		surface_proc = PETSC_TRUE;
+		surface_rank = PETSC_TRUE;
 	}
-	nsurface_nproc = pI * pK;
+	nsurface_ranks = pI * pK;
 	
 	
 	/* --------------------------------------------- */
@@ -366,8 +377,8 @@ PetscErrorCode ScatterSPMSurfIKGridToMSurf(DM dm_msurf0, DM dm_mech)
 	nchunk = ei * ek;
 	ierr = PetscMalloc(sizeof(PetscReal)*nchunk,&surface_chunk);CHKERRQ(ierr);
 			
-	//if (surface_proc) {
-	//	printf("rank[%d] surface proc %d [%d-%d]\n",rank,surface_proc,sj,sj+ej);
+	//if (surface_rank) {
+	//	printf("rank[%d] surface rank %d [%d-%d]\n",rank,surface_rank,sj,sj+ej);
 	//}
 	
 	if (rank == 0) {
@@ -416,9 +427,9 @@ PetscErrorCode ScatterSPMSurfIKGridToMSurf(DM dm_msurf0, DM dm_mech)
 	ierr = DMDAGetCoordinateDA(dm_mech,&cda_mech);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinates(dm_mech,&coords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda_mech,coords,&LA_coords);CHKERRQ(ierr);
-	if (surface_proc) {
+	if (surface_rank) {
 		if (rJ != (pJ-1)) {
-			SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank of processors on surface must be %D, found %D",pJ-1,rJ);
+			SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"Rank of surface sub-domain must define rJ = %D - detected %D",pJ-1,rJ);
 		}
 		
 		/* receive */
@@ -447,16 +458,15 @@ PetscErrorCode ScatterSPMSurfIKGridToMSurf(DM dm_msurf0, DM dm_mech)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
-#define __FUNCT__ "model_test_spm_utils"
-PetscErrorCode model_test_spm_utils(DM dav)
+#define __FUNCT__ "test_spm_utils_MPI2SEQ"
+PetscErrorCode test_spm_utils_MPI2SEQ(DM dav)
 {
 	DM             dm_spmsurf0;
 	PetscInt       JMAX;
 	PetscErrorCode ierr;
 	
-	ierr = DMDAExtractIKSurfaceDMDA(dav,&dm_spmsurf0);CHKERRQ(ierr);
+	ierr = DMDAGatherIKRedundantSurfaceDMDA(dav,&dm_spmsurf0);CHKERRQ(ierr);
 	if (dm_spmsurf0) {
 		ierr = DMDAViewPetscVTK(dm_spmsurf0,PETSC_NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 	}
@@ -516,7 +526,7 @@ PetscErrorCode model_test_spm_utils(DM dav)
 		PetscFree(sH);
 	}
 	
-	ierr = ScatterSPMSurfIKGridToMSurf(dm_spmsurf0,dav);CHKERRQ(ierr);
+	ierr = DMDAScatterIKRedundantSurfaceDMDA(dm_spmsurf0,dav);CHKERRQ(ierr);
 	
 	if (dm_spmsurf0) {
 		ierr = DMDestroy(&dm_spmsurf0);CHKERRQ(ierr);
@@ -527,5 +537,155 @@ PetscErrorCode model_test_spm_utils(DM dav)
 	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 	ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
 	
+	PetscFunctionReturn(0);
+}
+
+/* Parallel mechanical -> semi-redundant spm */
+
+/*
+  Create communicator for the surface ranks
+  Extract partitioning frm dm_mechanical, using this to create semi-redundant 2D DMDA defined in x,y
+  Fetch part of coordinates need from dm_mechanical
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGatherIKSemiRedundantSurfaceDMDA"
+PetscErrorCode DMDAGatherIKSemiRedundantSurfaceDMDA(DM dm_mech,DM *_dm_msurf)
+{
+	PetscErrorCode ierr;
+	DM             dm_surf;
+	MPI_Comm       comm;
+	PetscMPIInt    _rank;
+	PetscInt       rank;
+	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ;
+	PetscBool      surface_rank;
+	PetscInt       nsurface_ranks;
+	
+	
+	PetscFunctionBegin;
+	/* --------------------------------------------------- */
+	/* determine ranks living on the free surface j=JMAX-1 */
+	PetscObjectGetComm((PetscObject)dm_mech,&comm);
+	ierr = MPI_Comm_rank(comm,&_rank);CHKERRQ(ierr);
+	rank = (PetscInt)_rank;
+	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,&pI,&pJ,&pK,0,0,0,0,0,0);CHKERRQ(ierr);
+	
+	/* convert rank to rI,rJ,rK */
+	rK  = rank / (pI*pJ);
+	rIJ = rank - rK * pI*pJ;  
+	rJ = rIJ / pI;
+	rI = rIJ - rJ*pI;
+	
+	surface_rank = PETSC_FALSE;
+	if (rJ == (pJ-1)) {
+		surface_rank = PETSC_TRUE;
+	}
+	nsurface_ranks = pI * pK;
+	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAScatterIKSemiRedundantSurfaceDMDA"
+PetscErrorCode DMDAScatterIKSemiRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
+{
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	PetscFunctionReturn(0);
+}
+
+/* Parallel mechanical -> parallel spm */
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGatherIKSurfaceDMDA"
+PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
+{
+	PetscErrorCode ierr;
+	PetscInt       si,sj,sk,nx,ny,nz,M,N,P;
+	PetscInt       si2d,sj2d,nx2d,ny2d,i,j,k;
+	MPI_Comm       comm;
+	DM             dm_red_spm,dm_surf;
+	DM             dm_red_spm_coords,dm_surf_coords;
+	Vec            coords_surf,coords_red_spm;
+	DMDACoor3d     ***LA_coords_red_spm;
+	DMDACoor2d     **LA_coords_surf;
+	PetscScalar    **LA_height;
+	PetscMPIInt    rank;
+	Vec            height;
+
+	
+	PetscFunctionBegin;
+	
+	PetscObjectGetComm((PetscObject)dm_mech,&comm);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+	
+	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
+	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,PETSC_NULL,&nx2d,&ny2d,PETSC_NULL);CHKERRQ(ierr);
+	
+	/* fetch coordinates i need from the mechanical domain */
+	ierr = DMDAGetCorners(dm_mech,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	
+	//printf("rank %d: vol  si,ei=%.4d-%.4d: sj,ej=%.4d-%.4d: sk,ek=%.4d-%.4d \n", rank, si,si+nx,sj,sj+ny,sk,sk+nz);
+	//printf("rank %d: surf si,ei=%.4d-%.4d:                  sj,ej=%.4d-%.4d \n", rank, si2d,si2d+nx2d,sj2d,sj2d+ny2d);
+	
+	ierr = DMDACreate3dRedundant(dm_mech,si2d,si2d+nx2d,N-1,N,sj2d,sj2d+ny2d, 1, &dm_red_spm);CHKERRQ(ierr);
+	//sprintf(name,"surf%d.vtk",rank);
+	//ierr = DMDAViewPetscVTK(da_red_spm,0,name);CHKERRQ(ierr);
+	
+	/* copy these values into my parallel surface mesh x,y,z (vol) => x,y (surf) */
+	ierr = DMDAGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(dm_red_spm,&coords_red_spm);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA(dm_surf,&dm_surf_coords);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dm_red_spm,&dm_red_spm_coords);CHKERRQ(ierr);
+	
+	
+	ierr = DMDAVecGetArray(dm_surf_coords,coords_surf,&LA_coords_surf);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(dm_red_spm_coords,coords_red_spm,&LA_coords_red_spm);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCorners(dm_surf,&si,&sk,PETSC_NULL,&nx,&nz,PETSC_NULL);CHKERRQ(ierr);
+	for (k=sk; k<sk+nz; k++) {
+		for (i=si; i<si+nx; i++) {
+			LA_coords_surf[k][i].x = LA_coords_red_spm[k-sk][0][i-si].x;
+			LA_coords_surf[k][i].y = LA_coords_red_spm[k-sk][0][i-si].z;
+		}
+	}
+	
+	ierr = DMCreateGlobalVector(dm_surf,&height);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(dm_surf,height,&LA_height);CHKERRQ(ierr);
+	for (k=sk; k<sk+nz; k++) {
+		for (i=si; i<si+nx; i++) {
+			LA_height[k][i] = LA_coords_red_spm[k-sk][0][i-si].y;
+		}
+	}
+	ierr = DMDAVecRestoreArray(dm_surf,height,&LA_height);CHKERRQ(ierr);
+	
+	ierr = DMDAVecRestoreArray(dm_red_spm_coords,coords_red_spm,&LA_coords_red_spm);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(dm_surf_coords,coords_surf,&LA_coords_surf);CHKERRQ(ierr);
+	
+	ierr = DMDestroy(&dm_red_spm);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(dm_surf);CHKERRQ(ierr);
+	
+	ierr = DMDestroy(&dm_red_spm);CHKERRQ(ierr);
+	
+	*_elevation = height;
+	*_dm_msurf  = dm_surf;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAScatterIKSurfaceDMDA"
+PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf0, DM dm_mech)
+{
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
 	PetscFunctionReturn(0);
 }
