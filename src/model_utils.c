@@ -97,6 +97,36 @@ PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_poi
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAConvertGlobalElementIndex2IJK"
+PetscErrorCode DMDAConvertGlobalElementIndex2IJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K)
+{
+	PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;	
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+	
+	si = si/2; 
+	sj = sj/2;
+	sk = sk/2;
+
+	//global/localrank = mx*my*k + mx*j + i;
+	lk = (PetscInt)localeid/(lmx*lmy);
+	lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+	li = localeid - lk*(lmx*lmy) - lj*lmx;
+	
+	if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+	if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+	if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+	*K = lk + sk;
+	*J = lj + sj;
+	*I = li + si;
+
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModelGetOptionReal"
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 																				const char error[],
@@ -120,79 +150,77 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 	PetscFunctionReturn(0);
 }
 
-/*absolute value for double in C*/
+/* Absolute value for double in C - it's called fabs(double a) or PetscAbsReal(PetscRea a) */
 #undef __FUNCT__
 #define __FUNCT__ "absolute"
 PetscReal absolute(PetscReal a)
-{   if(a < 0)
-        return -1.0*a;
-    else
-        return a;
+{   
+	if(a < 0) {
+        return -1.0 * a;
+	} else {
+		return a;
+	}
 }
 
-/*Remove the linear trend
+/*
+ Remove the linear trend
  Assume a regular spacing and chose an appropriate coordinate system such
  sum x_i = 0
- */
-
+*/
 #undef __FUNCT__
 #define __FUNCT__ "detrend"
-void detrend(PetscReal array[], PetscInt n)
+PetscErrorCode detrend(PetscReal array[],PetscInt n)
 {
-    PetscReal x, y, a, b;
-    PetscReal sy = 0.0,
-    sxy = 0.0,
-    sxx = 0.0;
-    PetscInt i;
-
-    for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0)
-    {
-        y = array[i];
-        sy += y;
-        sxy += x * y;
-        sxx += x * x;
-    }
-    a = sxy/sxx;
-    b = sy/(PetscReal)n;
-    
-    
-    for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0){
-        array[i] -= (a*x+b);
-    }
+	PetscReal x,y,a,b;
+	PetscReal sy = 0.0,sxy = 0.0,sxx = 0.0;
+	PetscInt  i;
+	
+	for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0) {
+		y = array[i];
+		sy += y;
+		sxy += x * y;
+		sxx += x * x;
+	}
+	a = sxy/sxx;
+	b = sy/(PetscReal)n;
+	
+	for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0) {
+		array[i] -= (a*x+b);
+	}
+	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "rednoise"
-PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed)
+PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 {
-    PetscInt i;
-    PetscReal maxi;
-    PetscErrorCode ierr;
-    
-    PetscFunctionBegin;
-    
-    srand(seed);
-    rnoise[0] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-
-    for(i=1; i<n; i++){
-        rnoise[i] = rnoise[i-1] + 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-    }
-    
-
-    detrend(rnoise,n);
-    
-    maxi = 0.0;
-    for(i=1; i<n; i++){
-        
-        if (abs(rnoise[i])>maxi){
-            maxi = abs(rnoise[i]);
-        }
-    }
-    for(i=1; i<n; i++){
-        rnoise[i] /= maxi;
-    }
-    
-    PetscFunctionReturn(0);
+	PetscInt       i;
+	PetscReal      maxi;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	srand(seed);
+	rnoise[0] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+	
+	for (i=1; i<n; i++) {
+		rnoise[i] = rnoise[i-1] + 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+	}
+	
+	detrend(rnoise,n);
+	
+	maxi = 0.0;
+	for (i=1; i<n; i++) {
+		
+		if (abs(rnoise[i]) > maxi) {
+			maxi = abs(rnoise[i]);
+		}
+	}
+	for (i=1; i<n; i++) {
+		rnoise[i] /= maxi;
+	}
+	
+	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

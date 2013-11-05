@@ -39,8 +39,8 @@
 PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K);
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,const char error[],const char default_opt[],PetscBool essential);
 PetscReal absolute(PetscReal a);
-void detrend(PetscReal array[], PetscInt n);
-PetscErrorCode rednoise(PetscReal rnoise[], PetscInt n, PetscInt seed);
+PetscErrorCode detrend(PetscReal array[],PetscInt n);
+PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed);
 
 typedef struct {
         PetscScalar nlayers;
@@ -54,4 +54,6 @@ typedef struct {
 } DMDA_thermalfield_init_params;
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx);
+PetscErrorCode DMDAConvertGlobalElementIndex2IJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
+
 #endif
