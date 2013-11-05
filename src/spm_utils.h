@@ -49,5 +49,7 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech);
 /* MPI to MPI */
 PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation);
 PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech);
+PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_msurf,Mat *_R,DM *_dm_msurf_ref,Vec *_elevation_ref);
+PetscErrorCode DMDAScatterIKNestedSurfaceDMDA(DM dm_msurf,DM dm_msurf_overlap,Mat R,Vec height,DM dm_mech);
 
 #endif
