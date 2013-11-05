@@ -318,7 +318,7 @@ PetscErrorCode InterpolateSPMSurfIKGridToMSurf0(PetscInt spm_mi,PetscInt spm_mj,
 */
 #undef __FUNCT__
 #define __FUNCT__ "DMDAScatterIKRedundantSurfaceDMDA"
-PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
+PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 {
 	PetscErrorCode ierr;
 	PetscInt       pID,pI,pJ,pK,rI,rJ,rK,rIJ,rank,nsurface_ranks;
@@ -359,7 +359,7 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
 	
 	
 	/* --------------------------------------------- */
-	/* need corner info for all ranks on rank 0 */
+	/* need corner info for all ranks on rank 0      */
 	ierr = DMDAGetOwnershipRanges(dm_mech,&lni,&lnj,&lnk);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*pI,&lsi);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*pK,&lsk);CHKERRQ(ierr);
@@ -451,6 +451,8 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
 	ierr = DMDAVecRestoreArray(cda_mech,coords,&LA_coords);CHKERRQ(ierr);
 	
 	ierr = PetscFree(surface_chunk);CHKERRQ(ierr);
+	ierr = PetscFree(lsi);CHKERRQ(ierr);
+	ierr = PetscFree(lsk);CHKERRQ(ierr);
 	
 	/* update */
 	ierr = DMDAUpdateGhostedCoordinates(dm_mech);CHKERRQ(ierr);
@@ -459,8 +461,8 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "test_spm_utils_MPI2SEQ"
-PetscErrorCode test_spm_utils_MPI2SEQ(DM dav)
+#define __FUNCT__ "test_spm_utils_MPItoSEQ"
+PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 {
 	DM             dm_spmsurf0;
 	PetscInt       JMAX;
@@ -587,7 +589,7 @@ PetscErrorCode DMDAGatherIKSemiRedundantSurfaceDMDA(DM dm_mech,DM *_dm_msurf)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAScatterIKSemiRedundantSurfaceDMDA"
-PetscErrorCode DMDAScatterIKSemiRedundantSurfaceDMDA(DM dm_msurf0, DM dm_mech)
+PetscErrorCode DMDAScatterIKSemiRedundantSurfaceDMDA(DM dm_msurf,DM dm_mech)
 {
 	PetscErrorCode ierr;
 	
@@ -681,11 +683,171 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAScatterIKSurfaceDMDA"
-PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf0, DM dm_mech)
+PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech)
 {
 	PetscErrorCode ierr;
+	MPI_Comm       comm;
+	PetscMPIInt    _rank;
+	PetscInt       rank;
+	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ,pi,pk;
+	PetscBool      surface_rank;
+	PetscInt       nsurface_ranks;
+	const PetscInt *lni,*lnj,*lnk;
+	PetscInt       *lsi,*lsk;
+	PetscInt       si,sj,sk,nx,ny,nz,i,j,k,c,nsurf_nodes,*surf_indices,M2d,P2d;
+	Vec            height_self,height_natural;
+	PetscScalar    *LA_height_self;
+	IS             is_surf,is_local;
+	VecScatter     sctx;
+	Vec            coords_mech;
+	DM             cda_mech;
+	DMDACoor3d     ***LA_coords_mech;
 	
 	
 	PetscFunctionBegin;
+	/* --------------------------------------------------- */
+	/* determine ranks living on the free surface j=JMAX-1 */
+	PetscObjectGetComm((PetscObject)dm_mech,&comm);
+	ierr = MPI_Comm_rank(comm,&_rank);CHKERRQ(ierr);
+	rank = (PetscInt)_rank;
+	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,&pI,&pJ,&pK,0,0,0,0,0,0);CHKERRQ(ierr);
+	
+	/* convert rank to rI,rJ,rK */
+	rK  = rank / (pI*pJ);
+	rIJ = rank - rK * pI*pJ;  
+	rJ = rIJ / pI;
+	rI = rIJ - rJ*pI;
+	
+	surface_rank = PETSC_FALSE;
+	if (rJ == (pJ-1)) {
+		surface_rank = PETSC_TRUE;
+	}
+	nsurface_ranks = pI * pK;
+
+	/* ----------------------------- */
+	/* Get corner info for all ranks */
+	ierr = DMDAGetOwnershipRanges(dm_mech,&lni,&lnj,&lnk);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*pI,&lsi);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*pK,&lsk);CHKERRQ(ierr);
+	lsi[0] = 0;
+	for (pi=1; pi<pI; pi++) {
+		lsi[pi] = lsi[pi-1] + lni[pi-1]; 
+	}
+	lsk[0] = 0;
+	for (pk=1; pk<pK; pk++) {
+		lsk[pk] = lsk[pk-1] + lnk[pk-1]; 
+	}
+	
+	
+	/* Determine pieces i need on the volume mesh */
+	ierr = DMDAGetCorners(dm_mech,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	nsurf_nodes = nx * nz;
+	if (!surface_rank) {
+		nsurf_nodes = 1;
+	}
+	ierr = PetscMalloc(sizeof(PetscInt)*nsurf_nodes*1,&surf_indices);CHKERRQ(ierr);
+
+	ierr = DMDAGetInfo(dm_msurf,0,&M2d,&P2d,0,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	if (surface_rank) {
+		j = N - 1;
+		c = 0;
+		for (k=sk; k<sk+nz; k++){
+			for (i=si; i<si+nx; i++){
+				PetscInt nidx;
+				
+				nidx = i + k*M2d*1;
+				surf_indices[c] = nidx; 
+				c++;
+			}
+		}
+	} else {
+		/* fetch something local */
+		surf_indices[0] = si + sk*nx;
+	}
+	
+	/* Create local comm_self vector to store height */
+	ierr = VecCreate(PETSC_COMM_SELF,&height_self);CHKERRQ(ierr);
+	ierr = VecSetSizes(height_self,PETSC_DECIDE,nsurf_nodes);CHKERRQ(ierr);
+	ierr = VecSetFromOptions(height_self);CHKERRQ(ierr);
+	
+	/* Create natural ordering vector */
+	/* create natural vector in i,j ordering for height */
+	ierr = DMDACreateNaturalVector(dm_msurf,&height_natural);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalBegin( dm_msurf,height,INSERT_VALUES, height_natural );CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalEnd(   dm_msurf,height,INSERT_VALUES, height_natural );CHKERRQ(ierr);
+	
+	/* Create scatter */
+	ierr = ISCreateGeneral( comm,             nsurf_nodes, surf_indices, PETSC_USE_POINTER, &is_surf );CHKERRQ(ierr);
+	ierr = ISCreateStride(  PETSC_COMM_SELF,  nsurf_nodes,0,1,&is_local);CHKERRQ(ierr);
+	ierr = VecScatterCreate( height_natural,is_surf, height_self,is_local, &sctx );CHKERRQ(ierr);
+	
+	ierr = VecScatterBegin( sctx, height_natural,height_self,INSERT_VALUES, SCATTER_FORWARD );CHKERRQ(ierr);
+	ierr = VecScatterEnd(   sctx, height_natural,height_self,INSERT_VALUES, SCATTER_FORWARD );CHKERRQ(ierr);
+	
+	/* update volume mesh */
+	ierr = DMDAGetCoordinates(dm_mech,&coords_mech);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(dm_mech,&cda_mech);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda_mech,coords_mech,&LA_coords_mech);CHKERRQ(ierr);
+	ierr = VecGetArray(height_self,&LA_height_self);CHKERRQ(ierr);
+	
+	/* identify the nodes on the surface of the mechanical domain */
+	if (surface_rank) {
+		j = N - 1;
+		if ((j>=sj) && (j<sj+ny)) {
+			for (k=sk; k<sk+nz; k++) {
+				for (i=si; i<si+nx; i++) {
+					LA_coords_mech[k][j][i].y = LA_height_self[(i-si)+(k-sk)*nx];
+				}
+			}
+		}	
+	}
+	
+	ierr = VecRestoreArray(height_self,&LA_height_self);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda_mech,coords_mech,&LA_coords_mech);CHKERRQ(ierr);
+	
+	/* insert surface values */
+	ierr = DMDAUpdateGhostedCoordinates(dm_mech);CHKERRQ(ierr);
+	
+	
+	
+	
+	/* clean up */
+	ierr = VecScatterDestroy(&sctx);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_surf);CHKERRQ(ierr);
+	ierr = ISDestroy(&is_local);CHKERRQ(ierr);
+	
+	ierr = VecDestroy(&height_natural);CHKERRQ(ierr);	
+	ierr = VecDestroy(&height_self);CHKERRQ(ierr);
+	ierr = PetscFree(surf_indices);CHKERRQ(ierr);
+	ierr = PetscFree(lsi);CHKERRQ(ierr);
+	ierr = PetscFree(lsk);CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "test_spm_utils_MPItoMPI"
+PetscErrorCode test_spm_utils_MPItoMPI(DM dav)
+{
+	DM             dm_spmsurf;
+	Vec            height;
+	PetscInt       JMAX;
+	PetscErrorCode ierr;
+	
+	ierr = DMDAGatherIKSurfaceDMDA(dav,&dm_spmsurf,&height);CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTK(dm_spmsurf,height,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+
+	ierr = VecShift(height,0.5);CHKERRQ(ierr);
+	
+	ierr = DMDAScatterIKSurfaceDMDA(dm_spmsurf,height,dav);CHKERRQ(ierr);
+	
+	ierr = VecDestroy(&height);CHKERRQ(ierr);
+	ierr = DMDestroy(&dm_spmsurf);CHKERRQ(ierr);
+	
+	ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
+	ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
