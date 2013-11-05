@@ -14,6 +14,7 @@
 #include "ptatin3d_defs.h"
 #include "math.h"
 #include "dmda_redundant.h"
+#include "material_point_std_utils.h"
 #include <time.h>
 
 #include "model_multilayer_folding_ctx.h"
@@ -700,7 +701,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 			coord_qp[0] = coord_qp[1] = coord_qp[2] = 0.0;
 			for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
 				coord_qp[0] += Ni_p[i] * elcoords[NSD*i+0];
-				coord_qp[1] += Ni_p[i] * elcoords [NSD*i+1];
+				coord_qp[1] += Ni_p[i] * elcoords[NSD*i+1];
 				coord_qp[2] += Ni_p[i] * elcoords[NSD*i+2];
 			}
 			
@@ -708,7 +709,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 			cell_gausspoints[qp].rho  = data->rho[phase-1];
 			
 			cell_gausspoints[qp].Fu[0] = 0.0;
-			cell_gausspoints[qp].Fu[1] = -rho * GRAVITY;
+			cell_gausspoints[qp].Fu[1] = -data->rho[phase-1] * GRAVITY;
 			cell_gausspoints[qp].Fu[2] = 0.0;
 			
 			cell_gausspoints[qp].Fp = 0.0;
@@ -719,6 +720,63 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFolding_SetMaterialPointPropertiesFromLayer"
+PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c,ModelMultilayerFoldingCtx *data)
+{
+	PetscErrorCode   ierr;
+	int              p,n_mpoints;
+	DataBucket       materialpoint_db;
+	PhysCompStokes   stokes;
+	DM               stokes_pack,dav,dap;
+	MPAccess         mpX;
+	
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	/* define properties on material points */
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	
+	for (p=0; p<n_mpoints; p++) {
+		PetscInt    phase;
+		PetscInt    layer,ei,localeid_p;
+		PetscInt    I,J,K;
+		
+		ierr = MaterialPointGet_local_element_index(mpX,p,&localeid_p);CHKERRQ(ierr);
+		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,localeid_p,&I,&J,&K);CHKERRQ(ierr);
+
+		/* Set the properties based on the J index of the element containing the marker */
+		phase = -1;
+		ei = 0;
+		for (layer=0; layer<data->n_interfaces-1; layer++) {
+		
+			if ((J >= ei) && (J <ei + data->layer_res_j[layer])) {
+				phase = layer;
+				break;
+			}
+			
+			ei = ei + data->layer_res_j[layer];
+		}
+		if (phase == -1) {
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Couldn't identify marker %D in any layer",p);
+		}
+		
+		ierr = MaterialPointSet_viscosity(  mpX,p, data->eta[phase]);CHKERRQ(ierr);
+		ierr = MaterialPointSet_density(    mpX,p,-data->rho[phase] * GRAVITY);CHKERRQ(ierr);
+		ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
+	}
+	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -788,6 +846,40 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFolding_Mesh2MarkerRemesh"
+PetscErrorCode MultilayerFolding_Mesh2MarkerRemesh(pTatinCtx c,ModelMultilayerFoldingCtx *data)
+{
+	PetscErrorCode ierr;
+	PetscInt       Nxp[] = { 2, 2, 2 };
+	PetscReal      perturb = 0.1;
+	DataBucket     materialpoint_db;
+	PhysCompStokes stokes;
+	DM             stokes_pack,dav,dap;
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[MultilayerFoldingMesh2MarkerRemesh]]\n");
+	
+	
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+
+	/* Force new coordinate layout. This won't allocate any memory, it will just reset points into the current mesh configuration */
+	ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,materialpoint_db);CHKERRQ(ierr);
+	
+	/* Re-assign material properties based on element index */
+	ierr = MultilayerFolding_SetMaterialPointPropertiesFromLayer(c,data);CHKERRQ(ierr);
+	
+	/* switch coefficient projection type to use Q1 rather than null projection */
+	c->coefficient_projection_type = 1;
+	
+	
+	PetscFunctionReturn(0);
+}
+
 /*
  
  0/ Full lagrangian update
@@ -814,7 +906,9 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	PetscInt           metric_L = 5; 
 	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION, MESH_QUALITY_DIAGONAL_RATIO, MESH_QUALITY_VERTEX_ANGLE, MESH_QUALITY_FACE_AREA_RATIO };
 	PetscReal          value[100];
-	PetscBool          remesh,basal_remesh = PETSC_FALSE;
+	PetscBool          basal_remesh = PETSC_FALSE;
+	PetscBool          marker_remesh = PETSC_FALSE;
+	static PetscBool   tracking_layer_phase = PETSC_TRUE;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -864,19 +958,27 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"after");CHKERRQ(ierr);
 	}
 	
-	
-#if 0
-	//PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Marker remeshing currently deactivated \n", __FUNCT__);
-	remesh = PETSC_FALSE;
-
-	/* activate marker interpolation */	
-	if (remesh) {
-		c->coefficient_projection_type = 1;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_marker_remesh",&marker_remesh,PETSC_NULL);CHKERRQ(ierr);
+	if (marker_remesh) {
+		PetscInt JMAX;
 		
-		ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,N);CHKERRQ(ierr);
+		ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+		
+		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 0.0)) {
+			
+			/* project new material points */
+			ierr = MultilayerFolding_Mesh2MarkerRemesh(c,data);CHKERRQ(ierr);
+			/* clean up mesh */
+			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
+			tracking_layer_phase = PETSC_FALSE;
+			
+		} else {
+			
+			/* just clean up mesh */
+			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
+			
+		}
 	}
-#endif	
 	
 	PetscFunctionReturn(0);
 }
