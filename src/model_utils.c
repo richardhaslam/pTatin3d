@@ -259,22 +259,50 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
     return PETSC_TRUE;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeMeshVolume"
+PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
+{
+	DM              cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e,p;
+	const PetscInt  *el_nidx;
+	PetscInt        *gidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	PetscInt        ngp;
+	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+	PetscReal       _value,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	/* setup quadrature */
+	ngp = 27;
+	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
+	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	_value = 0.0;
+	for (e=0; e<nel; e++) {
+		PetscReal el_vol;
+		
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		P3D_evaluate_geometry_elementQ2(ngp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
+		
+		el_vol = 0.0;
+		for (p=0; p<ngp; p++) {
+			el_vol = el_vol + 1.0 * WEIGHT[p] * detJ[p];
+		}
+		_value += el_vol;
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPI_SUM,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
