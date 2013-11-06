@@ -2959,4 +2959,44 @@ PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var)
 	
 	PetscFunctionReturn(0);
 }
+/* std */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_global_coord"
+PetscErrorCode MaterialPointSet_global_coord(MPAccess X,const int p,double var[])
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdSetField_global_coord(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_local_coord"
+PetscErrorCode MaterialPointSet_local_coord(MPAccess X,const int p,double var[])
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdSetField_local_coord(point,var);
+	
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_local_element_index"
+PetscErrorCode MaterialPointSet_local_element_index(MPAccess X,const int p,int var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;	
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdSetField_local_element_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
 
