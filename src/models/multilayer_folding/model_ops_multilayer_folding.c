@@ -960,21 +960,35 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_marker_remesh",&marker_remesh,PETSC_NULL);CHKERRQ(ierr);
 	if (marker_remesh) {
-		PetscInt JMAX;
+		PetscInt   JMAX;
+		DMDACoor3d span_xz[4];
+		PetscReal  gmin[3],gmax[3];
 		
 		ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		span_xz[0].x = gmin[0];    span_xz[0].y = gmin[1];    span_xz[0].z = gmin[2];
+		span_xz[1].x = gmin[0];    span_xz[1].y = gmin[1];    span_xz[1].z = gmax[2];
+		span_xz[2].x = gmax[0];    span_xz[2].y = gmin[1];    span_xz[2].z = gmax[2];
+		span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
 		
 		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 20.0)) {
 			
 			/* reset material point coordinates and set eta/rho */
 			ierr = MultilayerFolding_Mesh2MarkerRemesh(c,data);CHKERRQ(ierr);
-			/* clean up the mesh */
+
+			/* 1 - re-initialize the basement layer element spacing */
+			ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
+
+			/* 2 - clean up the interior */
 			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 			tracking_layer_phase = PETSC_FALSE;
 			
 		} else {
+			/* 1 - re-initialize the basement layer element spacing */
+			ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
 			
-			/* just clean up the mesh */
+			/* 2 - clean up the interior */
 			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 			
 		}
