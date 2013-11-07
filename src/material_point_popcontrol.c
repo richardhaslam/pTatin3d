@@ -1095,30 +1095,32 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	ierr = pTatinGetMaterialPoints(ctx,&db,PETSC_NULL);CHKERRQ(ierr);
 	
 	/* insertion */
+#if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
 	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-#if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers before population control (%ld) \n", np_g );
 #endif
 	
 	ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
 	
+#if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
 	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-#if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers after INJECTION (%ld) \n", np_g );
 #endif
 	
 	/* removal */
-	reverse_order_removal = PETSC_TRUE;
-	ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db,reverse_order_removal);CHKERRQ(ierr);
-	
+	if (np_upper != -1) {
+		reverse_order_removal = PETSC_TRUE;
+		ierr = MPPC_SimpleRemoval(np_upper,ctx->stokes_ctx->dav,db,reverse_order_removal);CHKERRQ(ierr);
+	}	
+
+#if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
 	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-#if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers after DELETION (%ld) \n", np_g );
 #endif
 	
