@@ -448,6 +448,7 @@ extern PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void);
 extern PetscErrorCode pTatinModelRegister_MultilayerFolding(void);
 extern PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void);
 extern PetscErrorCode pTatinModelRegister_ExSubduction(void);
+extern PetscErrorCode pTatinModelRegister_iPLUS(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -479,6 +480,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ExSubduction();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_iPLUS();CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);
 }
