@@ -55,6 +55,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_project_coords.h"
 #include "monitors.h"
 #include "mp_advection.h"
+#include "material_point_popcontrol.h"
 
 #include "dmda_element_q2p1.h"
 #include "element_utils_q2.h"
@@ -1105,6 +1106,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		/* 3 Update local coordinates and communicate */
 		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
 		
+		/* 3a - Add material */
+		ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,user);CHKERRQ(ierr);
+		
 		/* add / remove points if cells are over populated or depleted of points */
 		ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 		
@@ -1437,8 +1441,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		/* 3 Update local coordinates and communicate */
 		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);
 		
+		/* 3a - Add material */
+		ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,user);CHKERRQ(ierr);
+
 		/* add / remove points if cells are over populated or depleted of points */
-		//		ierr = MaterialPointPopulationControl(user);CHKERRQ(ierr);
+		ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 		
 		
 		/* update markers = >> gauss points */
