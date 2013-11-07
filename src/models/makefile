@@ -21,7 +21,8 @@ TATIN_MODEL_DIR = \
 	fault_fold_plastic \
 	multilayer_folding \
 	submarinelavaflow \
-	ex_subduction 
+	ex_subduction \
+	iplus_slab_plume
 
 
 ## DONT NOT EDIT LINES BELOW
