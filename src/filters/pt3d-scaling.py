@@ -99,7 +99,8 @@ def StokesScalingCreate_ELV( _eta, _L, _V ):
 	fac = scales.E * (1.0/scales.L) * (scales.V/scales.L)
 	scales.rhs_factor = 1.0/fac
 
-	scales.P = 1.0 / (fac / scales.L)
+#	scales.P = 1.0 / (fac / scales.L)
+	scales.P = 1.0 / ( (1.0/fac) * (1.0/scales.L) )
 
 	return scales
 
