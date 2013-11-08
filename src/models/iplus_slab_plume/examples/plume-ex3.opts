@@ -38,8 +38,8 @@
 -fieldsplit_u_mg_levels_ksp_type chebychev
 -fieldsplit_u_mg_levels_pc_type jacobi
 -fieldsplit_u_pc_type mg
--iplus_plume_npx 20
--iplus_plume_npz 20
+-iplus_plume_npx 10
+-iplus_plume_npz 10
 -ksp_converged_reason
 -ksp_max_it 20
 -ksp_rtol 1.0e-8
