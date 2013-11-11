@@ -388,3 +388,91 @@ PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,Pe
 	PetscFunctionReturn(0);
 }
 
+
+/*
+ PetscInt dir     : Value of 0, 1, or 2 indicating in which diection you wish refiniment to occur along 
+ PetscReal factor : Controls aggressiveness of refinement in central section of domain. Values larger than one incur refinement.
+ PetscReal x0,x3 : Define the start end point of the final domain
+ PetscReal x1,x2 : Define the start end point of the sector in the domain here refinement will occur
+ Domain is mapped like this
+ 
+ xprime = slope * (x - x_ref) + xprime_ref
+ 
+ */
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetCoordinatesCentralSqueeze1D"
+PetscErrorCode DMDASetCoordinatesCentralSqueeze1D(DM da,PetscInt dir,PetscReal factor,PetscReal x0,PetscReal x1,PetscReal x2,PetscReal x3)
+{
+	PetscErrorCode ierr;
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k,M,N,P;
+	DM cda;
+	Vec coord;
+	DMDACoor3d ***_coord;
+	PetscReal x0prime,x1prime,x2prime,x3prime;
+	PetscReal xp,x,f,f0,f1;
+	
+	
+	PetscFunctionBegin;
+	
+	if ((dir < 0) || (dir > 3)) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"dir\" must be one of {0,1,2}");
+	}
+	if (factor < 1.0) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"factor\" must be >= 1.0");
+	}
+	
+	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	
+	x0prime = x0;
+	x1prime = x1;
+	// x = [(x2 - x1)/fac] * (xprime - x1prime) + x1
+	// x2prime
+	//x2prime = factor + x1prime;
+	x2prime = (x2-x1)*factor + x1;
+	// x3prime
+	x3prime = x3 - x2 + x2prime;
+	
+	ierr = DMDASetUniformCoordinates1D(da,dir,x0prime,x3prime);CHKERRQ(ierr);
+	
+	
+	
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	for (k=sk; k<sk+nz; k++) {
+		for (j=sj; j<sj+ny; j++) {
+			for (i=si; i<si+nx; i++) {
+				PetscScalar pos[3],coord_prime,new_coord;
+				
+				pos[0] = _coord[k][j][i].x;
+				pos[1] = _coord[k][j][i].y;
+				pos[2] = _coord[k][j][i].z;
+				
+				coord_prime = pos[dir];
+				
+				if (pos[dir] <= x1prime) {
+					new_coord = coord_prime;
+				} else if (pos[dir] > x1prime && pos[dir] < x2prime) {
+					//new_coord = (x2-x1) * (coord_prime - x1prime)/(factor) + x1;
+					new_coord = (1.0) * (coord_prime - x1prime)/(factor) + x1;
+				} else {
+					new_coord = 1.0 * (coord_prime - x2prime) + x2;
+				}
+
+				pos[dir] = new_coord;
+				
+				_coord[k][j][i].x = pos[0];
+				_coord[k][j][i].y = pos[1];
+				_coord[k][j][i].z = pos[2];
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coord,&_coord);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
