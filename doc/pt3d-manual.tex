@@ -20,7 +20,7 @@
 \setcounter{secnumdepth}{3}
 
 % macros
-\newcommand{\ptat}{{pTatin3d}}
+\newcommand{\ptat}{{{\sc pTatin3d}}}
 \newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\hspace{5mm}\footnotesize #1}\\}
 \newcommand{\unix}[1]{\texttt{\footnotesize #1}}
 
@@ -468,9 +468,18 @@ All output generated via {\ptat} will be written in the directory specified via 
 The time dependent drivers will generate a log file (ptatin.log-XXX) and a file containing all options (inputs) used for the current simulation (ptatin.options-XXX). Here, ``XXX'' will be replaced with a year/date/time stamp (e.g. 2013.10.31\_11:00:54) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the time step, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
 
 \subsection{Simulation results}
-{\ptat} generates output in format which can be visualized via the open source viz tool ParaView (\url{www.paraview.org}).
-A complete description of ParaView formats can be found here (\url{TODO}).
-The summary of file extensions commonly produced by {\ptat} is provided below: \newline
+{\ptat} generates output in formats which can be visualized via the open source tool ParaView (\url{www.paraview.org}).
+%A complete description of ParaView formats can be found here (\url{TODO}).
+A comprehensive ParaView tutorial can be found here (\url{http://www.paraview.org/Wiki/The\_ParaView\_Tutorial}). 
+Additional tutorial information can be found here:
+\begin{tiny}
+\begin{itemize}
+	\item[-] \url{http://www.bu.edu/tech/about/research/training/online-tutorials/paraview/}
+	\item[-] \url{http://www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}
+\end{itemize}
+\end{tiny}
+
+A summary of file extensions commonly produced by {\ptat} is provided below: \newline
 {\bf *.pvd}: Contains time dependent datasets.  \newline
 {\bf *.pvts}: Contains mesh data (nodal fields and cell fields) for the complete mesh.  \newline
 {\bf *.vts}: Contains mesh data (nodal fields and cell fields) for each sub-domain used in the parallel computation.  \newline
