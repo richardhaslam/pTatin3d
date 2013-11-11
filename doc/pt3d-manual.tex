@@ -465,46 +465,70 @@ Numerous example models are provided with the source distribution. These serve a
 All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called ``output'' will be generated.
 
 \subsection{Diagnostics}
-The time dependent drivers will generate a log file (ptatin.log-XXX) and a file containing all options (inputs) used for the current simulation (ptatin.options-XXX). Here, ``XXX'' will be replaced with a year/date/time stamp (e.g. 2013.10.31\_11:00:54) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the timestep, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
+The time dependent drivers will generate a log file (ptatin.log-XXX) and a file containing all options (inputs) used for the current simulation (ptatin.options-XXX). Here, ``XXX'' will be replaced with a year/date/time stamp (e.g. 2013.10.31\_11:00:54) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the time step, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
 
 \subsection{Simulation results}
 {\ptat} generates output in format which can be visualized via the open source viz tool ParaView (\url{www.paraview.org}).
-A complete description of ParaView formats can be found here.
-The relevant summary of file extensions is provided below. \newline
+A complete description of ParaView formats can be found here (\url{TODO}).
+The summary of file extensions commonly produced by {\ptat} is provided below: \newline
 {\bf *.pvd}: Contains time dependent datasets.  \newline
 {\bf *.pvts}: Contains mesh data (nodal fields and cell fields) for the complete mesh.  \newline
 {\bf *.vts}: Contains mesh data (nodal fields and cell fields) for each sub-domain used in the parallel computation.  \newline
 {\bf *.pvtu}: Contains particle data for the complete set of material points.  \newline
 {\bf *.vtu}: Contains particle data for each sub-domain used in the parallel computation. \newline
+
 Depending on the particular output functions called in your model, numerous fields are generated during a {\ptat} simulation.
+The term ``sub-domain'' used above refers to the piece of the mesh assigned to each core. In the mode of parallelism used in {\ptat}, there is always one sub-domain per core.
 
 \subsubsection{Mesh data}
-{\bf Velocity and pressure} field data are contained in the following set of files:
-\unix{timeseries\_vp.pvd}, \unix{step000000\_vp.pvts}, \unix{step000000\_vp-subdomain00000.vts}.
-Floating point numbers are stored as double precision. All data is stored in a binary format. \newline
-The function \unix{pTatin3d\_ModelOutput\_VelocityPressure\_Stokes()} generates these data files.
+{\bf Velocity and pressure:} Both the velocity and pressure fields are contained in the following set of files: \\
+\unix{timeseries\_vp.pvd}, \\
+\unix{step000000\_vp.pvts}, \\
+\unix{step000000\_vp-subdomain00000.vts}.\\
+Floating point numbers are stored as double precision. All data is stored in a binary format. The function \\
+\unix{pTatin3d\_ModelOutput\_VelocityPressure\_Stokes()} \\
+generates these data files.
 \\[8pt]
 %%	
-{\bf Velocity} field data are contained in the following set of files:
-\unix{timeseries\_v.pvd}, \unix{step000000\_v.pvts}, \unix{step000000\_v-subdomain00000.vts}.
-Floating point numbers are stored as single precision. All data is stored in a binary format.\newline
-The function \unix{pTatin3d\_ModelOutputLite\_Velocity\_Stokes()} generates these data files.
+{\bf Velocity:} The velocity field is contained in the following set of files: \\
+\unix{timeseries\_v.pvd}, \\
+\unix{step000000\_v.pvts}, \\
+\unix{step000000\_v-subdomain00000.vts}. \\
+Floating point numbers are stored as single precision. All data is stored in a binary format.
+The function \\
+\unix{pTatin3d\_ModelOutputLite\_Velocity\_Stokes()} \\
+generates these data files.
 \\[8pt]
 %%	
-{\bf Temperature} field data are contained in the following set of files:
-\unix{timeseries\_T.pvd}, \unix{step000000\_T.pvts}, \unix{step000000\_T-subdomain00000.vts}.
-Floating point numbers are stored as single precision. All data is stored in a binary format.\newline
-The function \unix{pTatin3d\_ModelOutput\_Temperature\_Stokes()} generates these data files.
+{\bf Temperature:} The temperature field is contained in the following set of files: \\
+\unix{timeseries\_T.pvd}, \\
+\unix{step000000\_T.pvts}, \\
+\unix{step000000\_T-subdomain00000.vts}.\\
+Floating point numbers are stored as single precision. All data is stored in a binary format.
+The function \\
+\unix{pTatin3d\_ModelOutput\_Temperature\_Stokes()} \\
+generates these data files.
 
 
-\subsection{Material point data}
-Marker data can be represented as a point cloud, e.g. a set of unconnected points $x_p$ with a set of material point properties (e.g $\eta_p$, $\rho_p$, ...) defined at each $x_p$. Such representations are useful for debugging model setups, however for high resolution simulations the point cloud representation is on limited use. The limitation is two-fold: (i) the point cloud data representation requires a large amount of storage, and (ii) investigation of the 3D data set is limited as operations such as iso-surfaces, clipping, etc cannot be defined on point clouds. Furthermore, point surface do not represent a surface, so no lighting/shading can be applied, thereby limiting the user spatial perception of the data set.
+\subsubsection{Material point data}
+Material point data can be represented in two distinct manners: 
+\begin{enumerate}
+	\item As a point cloud, e.g. a set of unconnected points $x_p$ with a set of material point properties (e.g $\eta_p$, $\rho_p$, ...) defined at each point coordinate $x_p$. 
+	We refer to this as a ``point-wise'' representation.
+	\item As cell constant values defined on the hex mesh (or sub-mesh hex) used to approximate the velocity field. 
+	We refer to this as a ``cell-wise'' representation.
+\end{enumerate}
+Each form of representing material point data has several advantages and disadvantages.
+The point-wise representation of material point data has the following limitations: (i) the point-wise representation requires a large amount of storage, and (ii) investigation of the 3D data set is limited as operations such as iso-surfaces, clipping, etc cannot be defined on point clouds. Furthermore, points do not represent a finite volume, thus they do not define a surface. Hence no lighting/shading can be applied, thereby limiting the depth perception of the material point data set. However, the point-wise representation is useful for debugging model setups. The cell-wise representation of material point data overcomes both of the two limitations of the point-wise representation. However, to define the material properties on each cell we have to introduce an interpolation (or projection) between the data defined on the material points and the mesh. This means that the result stored in the cell-wise data representation is only an {\it approximation} of the true material point data. Cell-wise representation is useful for high-resolution simulations and production runs in which the correctness of model setups has been verified.
 \\[8pt]
 %%	
-{\bf Material point} field data associated with the basic marker type are contained in the following set of files:
-\unix{timeseries\_mpoints\_std.pvd}, \unix{step000000\_mpoints\_std.pvtu}, \\\unix{step000000\_mpoints\_std-subdomain00000.vtu}.
-Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format.\newline
-The function \unix{pTatin3d\_ModelOutput\_MPntStd()} generates these data files.
+{\bf Point-wise representation:} Material point data fields associated with the basic marker type (\unix{MPField\_Std}) are contained in the following set of files: \\
+\unix{timeseries\_mpoints\_std.pvd}, \\
+\unix{step000000\_mpoints\_std.pvtu}, \\
+\unix{step000000\_mpoints\_std-subdomain00000.vtu}. \\
+Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format. The function \\
+\unix{pTatin3d\_ModelOutput\_MPntStd()} \\
+generates these data files.
 \\[8pt]
 %%	
 A more flexible mechanism to output material point data associated with multiple marker types is provided by the function \unix{SwarmViewGeneric\_ParaView()}. Note that this function will not generate for you a *.pvd file.  All data is stored in a binary format. Marker types which can be output in these files are identified via the the following names: \\
@@ -512,13 +536,18 @@ A more flexible mechanism to output material point data associated with multiple
 %%
 \\[8pt]
 %%	
-Marker data can alternatively be represented on the mesh used for computing the velocity/pressure solution. In this case, marker data is averaged cell wise and represented as a constant value over each element.
+Marker data can alternatively be represented on the mesh used for computing the velocity/pressure solution. 
+In this case, the material point data field is averaged over each element and represented as a constant value within each element.
 \\[8pt]
 %%	
-{\bf Material point} field data represented on the mesh are contained in the following set of files:
-\unix{timeseries\_mpoints\_cell.pvd}, \unix{step000000\_mpoints\_cell.pvts},\\ \unix{step000000\_mpoints\_cell-subdomain00000.vts}. 
+{\bf Cell-wise representation:} Material point data fields which are represented on the mesh are contained in the following set of files:\\
+\unix{timeseries\_mpoints\_cell.pvd}, \\
+\unix{step000000\_mpoints\_cell.pvts}, \\
+\unix{step000000\_mpoints\_cell-subdomain00000.vts}. \\
 Floating point numbers are stored in the precision associated with each material point data field. All data is stored in a binary format.
-The function \unix{pTatin3d\_ModelOutput\_MarkerCellFields()} generates these data files. This function is flexible and permits specific marker fields to be output into the file. Marker fields which can be output in these files are identified via the the following names:
+The function \\
+	\unix{pTatin3d\_ModelOutput\_MarkerCellFields()} \\
+generates these data files. This function is flexible and permits specific marker fields to be output into the file. Marker fields which can be output in these files are identified via the the following names:
 \unix{MPV\_region, MPV\_viscosity, MPV\_density, MPV\_plastic\_strain, MPV\_yield\_indicator, MPV\_diffusivity, MPV\_heat\_source}.
 
 % ----------------------------------------------------------------------------------------------------
