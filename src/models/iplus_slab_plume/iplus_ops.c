@@ -85,6 +85,8 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	
 	data->plume_radius = 0.015625;
 	data->plume_A0     = 1.0681;
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_r",&data->plume_radius,0);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_A0",&data->plume_A0,0);
 
 	data->refinement_type = 0;
 	
