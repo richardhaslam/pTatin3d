@@ -694,10 +694,10 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 		
 		if (beenhere == 0) {
 			PetscViewerASCIIPrintf(data->logviewer,"# iPLUS logfile\n");
-			PetscViewerASCIIPrintf(data->logviewer,"# [ step time | Omega0 Omega | plume (y_min y_max) ]\n");
+			PetscViewerASCIIPrintf(data->logviewer,"# step \t time \t Omega0 \t Omega \t plume (y_min y_max) \n");
 			beenhere = 1;
 		}
-		PetscViewerASCIIPrintf(data->logviewer,"[ %D %1.4e | %1.4e %1.4e | %1.4e %1.4e ] \n",
+		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%1.4e\t%1.4e\n",
 								c->step,c->time, data->intial_domain_volume, volume,range_yp[0],range_yp[1]);
 		
 	}
