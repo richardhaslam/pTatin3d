@@ -85,15 +85,15 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	
 	data->plume_radius = 0.015625;
 	data->plume_A0     = 1.0681;
-	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_r",&data->plume_radius,0);
-	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_A0",&data->plume_A0,0);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_r",&data->plume_radius,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_A0",&data->plume_A0,&flg);
 
 	data->refinement_type = 0;
 	
 	data->np_plume_x = 10;
 	data->np_plume_z = 10;
-	PetscOptionsGetInt(PETSC_NULL,"-iplus_plume_npx",&data->np_plume_x,0);
-	PetscOptionsGetInt(PETSC_NULL,"-iplus_plume_npz",&data->np_plume_z,0);
+	PetscOptionsGetInt(PETSC_NULL,"-iplus_plume_npx",&data->np_plume_x,&flg);
+	PetscOptionsGetInt(PETSC_NULL,"-iplus_plume_npz",&data->np_plume_z,&flg);
 	
 	sprintf(logfile,"%s/iplus.logfile",c->outputpath);
 	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&data->logviewer);CHKERRQ(ierr);
