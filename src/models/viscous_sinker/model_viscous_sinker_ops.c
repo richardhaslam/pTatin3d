@@ -456,6 +456,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 	PetscPrintf(PETSC_COMM_WORLD,"RUNNING DEFORMED MESH EXAMPLE \n");	
 	ierr = MeshDeformation_GaussianBump_YMAX(c->stokes_ctx->dav,-0.3,-5.6);CHKERRQ(ierr);
 	//ierr = DMDASetGraduatedCoordinates1D(c->stokes_ctx->dav,2,1,2.0);CHKERRQ(ierr);
+	//ierr = DMDASetCoordinatesCentralSqueeze1D(c->stokes_ctx->dav,1,4.0,0.0,0.4,0.6,1.0);CHKERRQ(ierr);
 	//
 	
 	PetscFunctionReturn(0);
