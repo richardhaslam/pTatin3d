@@ -39,6 +39,7 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da);
 PetscErrorCode MeshDeformation_ShearXY(DM da);
 PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,PetscReal X1);
 PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,PetscReal factor);
+PetscErrorCode DMDASetCoordinatesCentralSqueeze1D(DM da,PetscInt dir,PetscReal factor,PetscReal x0,PetscReal x1,PetscReal x2,PetscReal x3);
 
 #endif
 
