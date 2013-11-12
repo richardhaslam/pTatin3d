@@ -781,7 +781,6 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 		PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);
 		if (flg) {
 			ctx->use_constant_dt = PETSC_TRUE; 
-			ctx->dt              = 0.0;
 			ctx->constant_dt     = constant_dt;
 		}
 	}
