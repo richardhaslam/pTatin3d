@@ -1075,6 +1075,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	static double  last_cpu_time = 0.0;
 	int            exists;
 	char           prefix[PETSC_MAX_PATH_LEN],filetocheck[PETSC_MAX_PATH_LEN];
+	PetscBool      skip_existence_test = PETSC_TRUE;
 	
 	PetscFunctionBegin;
 
@@ -1085,13 +1086,11 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	
 	sprintf(prefix,"step%1.6d",step);
 
-	
 	/* -------------------------------------- */
 	/* check one - this file has a fixed name */
 	if (step%checkpoint_every==0) {
-		char command[256];
-		char file[256];
-		
+		char command[PETSC_MAX_PATH_LEN];
+		char file[PETSC_MAX_PATH_LEN];
 
 		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
 		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
@@ -1106,34 +1105,44 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 	
 	if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
-		char command[256];
-		char file[256];
+		char command[PETSC_MAX_PATH_LEN];
+		char file[PETSC_MAX_PATH_LEN];
 		
 		sprintf(filetocheck,"%s/ptat3dcpf.ctx_step%1.6d",ctx->outputpath,step);
-		FileExists(filetocheck,&exists);
-		//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files %s\n",filetocheck);
-		if (exists==0) {
+
+		if (!skip_existence_test) {
+			FileExists(filetocheck,&exists);
+			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files %s\n",filetocheck);
+			if (exists == 0) {
+				PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
+				// call checkpoint routine //
+				ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
+			}
+		} else {
 			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
-			// call checkpoint routine //
 			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
 		}
 		
 		last_cpu_time = max_current_cpu_time;
 	}
 
-	
 	/* ----------------------------------------------------------------- */
 	/* check two - these files have a file name related to the time step */
-	if (step%checkpoint_every_nsteps==0) {
-		char command[256];
-		char file[256];
+	if (step%checkpoint_every_nsteps == 0) {
+		char command[PETSC_MAX_PATH_LEN];
+		char file[PETSC_MAX_PATH_LEN];
 		
 		sprintf(filetocheck,"%s/ptat3dcpf.ctx_step%1.6d",ctx->outputpath,step);
-		FileExists(filetocheck,&exists);
-		//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files %s\n",filetocheck);
-		if (exists==0) {
+		if (!skip_existence_test) {
+			FileExists(filetocheck,&exists);
+			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files %s\n",filetocheck);
+			if (exists == 0) {
+				PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
+				// call checkpoint routine //
+				ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
+			}
+		} else {
 			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
-			// call checkpoint routine //
 			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
 		}
 	}
@@ -1220,6 +1229,9 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 		properties_db = db;
 	}
 	
+	// dbg
+	//ierr = pTatin3d_ModelOutput_MPntStd(ctx,"restart");CHKERRQ(ierr);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -1241,6 +1253,9 @@ PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data
 	ierr = DMDALoadGlobalVectorFromFile(ctx->pack,name,&Xt);CHKERRQ(ierr);
 	ierr = VecCopy(Xt,X);CHKERRQ(ierr);
 	ierr = VecDestroy(&Xt);CHKERRQ(ierr);
+	
+	// dbg
+	//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(ctx,X,"restart");CHKERRQ(ierr);	
 	
 	PetscFunctionReturn(0);
 }
@@ -1275,7 +1290,11 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	}
 
 	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
+	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatin3dRestart: Requires you specify a directory where the checkpoint files are locaated (-restart_directory)");
+	}
 	
 	/* context */
 	if (!StringEmpty(ctx->restart_prefix)) {
