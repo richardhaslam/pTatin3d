@@ -842,6 +842,7 @@ void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 */
 	db->L = L;
 	db->buffer = buffer;
+	db->allocated = L + buffer;
 	
 	*_db = db;
 }
