@@ -300,7 +300,7 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 
 	ierr = PetscViewerCreate(comm,&v);CHKERRQ(ierr);
 	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
-	ierr = PetscViewerFileSetMode(v,FILE_MODE_WRITE);CHKERRQ(ierr);
+	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
 	ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
 #endif
