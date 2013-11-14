@@ -225,22 +225,18 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 		data->go[RegionId_Slab] = G;
 	}
 	
-	
-	
-
-	
 	/* material properties */
 	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	MaterialConstantsSetDefaults(materialconstants);
-	/* water */
-	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,0,1.0);
-
-	/* lava types */
-	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,1,1.0);
-	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,2,1.0);
+	/* mantle */
+	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionId_Mantle,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionId_Mantle,data->eta[ RegionId_Mantle ]);
+	/* lower mantle */
+	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionId_LowerMantle,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionId_LowerMantle,data->eta[ RegionId_LowerMantle ]);
+	/* slab */
+	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionId_Slab,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionId_Slab,data->eta[ RegionId_Slab ]);
 	
 	
 	PetscFunctionReturn(0);
