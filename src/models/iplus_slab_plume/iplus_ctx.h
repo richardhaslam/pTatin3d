@@ -35,23 +35,37 @@
 #ifndef __ptatin3d_model_iplus_ctx_h__
 #define __ptatin3d_model_iplus_ctx_h__
 
-typedef enum { iPLUsModelA=0 } iPLUSModelType;
+#include "geometry_object.h"
+
+typedef enum { iPLUsModelSlab = 0, iPLUsModelPlume, iPLUsModelSlabPlume } iPLUSModelType;
 typedef enum { iPLUSMatMantle = 0, iPLUSMatPlume, iPLUSMatSlab } iPLUSMaterialType;
 
 /* define user model */
 typedef struct {
 	iPLUSModelType modeltype;
-	PetscReal slab_eta,slab_rho;
-	PetscReal mantle_eta,mantle_rho;
-	PetscReal plume_eta,plume_rho;
-	PetscReal plume_pos[3];
-	PetscReal plume_A0;
-	PetscReal plume_radius;
-	PetscInt  refinement_type;
-	PetscInt  nplume_elements,*plume_element;
-	PetscReal intial_domain_volume;
+	PetscReal   slab_eta,slab_rho;
+	PetscReal   mantle_eta,mantle_rho;
+	PetscReal   plume_eta,plume_rho;
+	PetscReal   plume_pos[3];
+	PetscReal   plume_A0;
+	PetscReal   plume_radius;
+	PetscInt    refinement_type;
+	PetscInt    nplume_elements,*plume_element;
+	PetscReal   intial_domain_volume;
 	PetscViewer logviewer;
 	PetscInt    np_plume_x,np_plume_z;
+	GeometryObject slab_geometry;
 } iPLUSCtx;
+
+
+/* slab prototypes */
+PetscErrorCode iPLUS_DefineSlabMaterial(DM dav,DataBucket materialpoint_db,iPLUSCtx *data);
+PetscErrorCode iPLUS_CreateSlabGeometry(iPLUSCtx *data);
+
+/* plume prototypes */
+PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data);
+PetscErrorCode iPLUS_InsertPlumeMaterial(DM dav,DataBucket materialpoint_db,iPLUSCtx *data);
+PetscBool iPLUS_Inflow_BCListEvaluator(PetscScalar position[],PetscScalar *value,void *ctx);
+PetscErrorCode iPLUS_ApplyMaterialBoundaryCondition_Plume(pTatinCtx c,iPLUSCtx *data);
 
 #endif

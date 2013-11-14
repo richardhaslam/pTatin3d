@@ -1,6 +1,8 @@
 
 ## List source files here
 MODEL_SRC = \
+	iplus_slab_description.c \
+	iplus_plume_description.c \
 	iplus_ops.c
 	
 
