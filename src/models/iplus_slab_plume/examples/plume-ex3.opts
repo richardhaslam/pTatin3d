@@ -38,6 +38,7 @@
 -fieldsplit_u_mg_levels_ksp_type chebychev
 -fieldsplit_u_mg_levels_pc_type jacobi
 -fieldsplit_u_pc_type mg
+-iplus_modeltype 1
 -iplus_plume_npx 10
 -iplus_plume_npz 10
 -ksp_converged_reason

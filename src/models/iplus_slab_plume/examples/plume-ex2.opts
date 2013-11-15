@@ -42,6 +42,7 @@
 #-fieldsplit_u_pc_mg_levels 3
 #-fieldsplit_u_pc_mg_log
 -fieldsplit_u_pc_type mg
+-iplus_modeltype 1
 -ksp_type fgmres
 -ksp_rtol 1.0e-8
 -ksp_atol 1.0e-10
