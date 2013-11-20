@@ -393,6 +393,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				break;
 				
 			case VISCOUS_Z: {
+				y_mp = mpprop_std->coor[1];
 				eta_mp = ViscZ_data[ region_idx ].eta0*exp(-(ViscZ_data[ region_idx ].zref-y_mp)/ViscZ_data[ region_idx ].zeta);
 				
 			}
