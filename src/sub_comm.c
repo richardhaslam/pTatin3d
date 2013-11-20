@@ -56,6 +56,7 @@ int MPI_Subcomm_free(MPI_Subcomm *scomm)
 	int ierr;
 	
 	if (scomm) { comm = *scomm; }
+	else { return(0); }
 	
 	if (comm->sub_comm) { ierr = MPI_Comm_free(&comm->sub_comm); }
 	if (comm->ranks_from_parent) { free(comm->ranks_from_parent); }
@@ -129,7 +130,7 @@ int MPI_Subcomm_create_MethodA(MPI_Comm parent_comm,int parent_reduction_factor,
 	
 	ierr = _MPI_Subcomm_create(&comm);
 	ierr = MPI_Comm_group(parent_comm,&parent_group);
-	sub_group = NULL;
+	//sub_group = NULL;
 	if (active == 1) {
 		ierr = MPI_Group_incl(parent_group, nsubranks, subranks, &sub_group);
 	} else {
