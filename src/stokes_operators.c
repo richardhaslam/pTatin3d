@@ -478,7 +478,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 	PetscBool is_Auu_mf = PETSC_FALSE;
 	PetscInt ii,d;
 	IS is_list[3];
-	char *label[] = { "UU", "VV", "WW" };
+	const char *label[] = { "UU", "VV", "WW" };
 	char *prefix = NULL;
 	PetscErrorCode ierr;
 	
@@ -687,7 +687,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 	PetscBool is_Auu_mf = PETSC_FALSE;
 	PetscInt ii,d;
 	IS is_list[3];
-	char *label[] = { "UU", "VV", "WW" };
+	const char *label[] = { "UU", "VV", "WW" };
 	char *prefix = NULL;
 	PetscErrorCode ierr;
 	
