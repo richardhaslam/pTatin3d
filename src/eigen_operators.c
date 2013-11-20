@@ -69,6 +69,15 @@ PetscErrorCode MatMult_MatEigenOperator(Mat A,Vec X,Vec Y)
 			ierr = PCApply(ctx->pc,X,ctx->t);CHKERRQ(ierr);
 			ierr = MatMult(ctx->A,ctx->t,Y);CHKERRQ(ierr);
 			break;
+		case PC_SYMMETRIC:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;
+		case PC_SIDE_DEFAULT:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;			
 	}
 	
   PetscFunctionReturn(0);
@@ -125,6 +134,12 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 		case PC_RIGHT:
 			ierr = MatGetVecs(ctx->A,PETSC_NULL,&ctx->t);CHKERRQ(ierr);
 			break;
+		case PC_SYMMETRIC:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;
+		case PC_SIDE_DEFAULT:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
@@ -141,6 +156,15 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 			break;
 		case PC_RIGHT: /* A.PC */
 			ierr = MatCreateShell(((PetscObject)ksp)->comm,mA,nB,MA,NB,(void*)ctx,&B);CHKERRQ(ierr);
+			break;
+		case PC_SYMMETRIC:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;
+		case PC_SIDE_DEFAULT:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			break;
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 	}
 	
