@@ -373,6 +373,16 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
 			case MPV_heat_source:
 				ierr = MaterialPointGet_heat_source(X,p,&var);CHKERRQ(ierr);
 				break;
+				
+			case MPV_region:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_region is not of type \"double\"");
+				break;
+			case MPV_plastic_strain:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_plastic_strain is not of type \"double\"");
+				break;
+			case MPV_yield_indicator:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_yield_indicator is not of type \"double\"");
+				break;
 		}
 		
 		LA_cell[eidx] += var;
@@ -443,6 +453,28 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 			case MPV_plastic_strain:
 				ierr = MaterialPointGet_plastic_strain(X,p,&var);CHKERRQ(ierr);
 				break;
+				
+			case MPV_viscosity:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_viscosity is not of type \"float\"");
+				break;
+			case MPV_density:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_density is not of type \"float\"");
+				break;
+			case MPV_diffusivity:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_diffusivity is not of type \"float\"");
+				break;
+			case MPV_heat_source:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_heat_source is not of type \"float\"");
+				break;
+				
+			case MPV_region:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_region is not of type \"float\"");
+				break;
+			case MPV_yield_indicator:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_yield_indicator is not of type \"float\"");
+				break;
+				
+				
 		}
 		
 		LA_cell[eidx] += var;
