@@ -56,6 +56,34 @@
 
 //#define HAVE_STRLCAT
 
+static const char ptatin_driver_help[] = 
+"-------------------------------------------\n"
+"---------  ptatin_write_pvts.app  ---------\n"
+"-------------------------------------------\n"
+"  This driver can be used to load in checkpoint files associated with mesh data \n"
+"  (currently only velocity and pressure) and write out paraview files. As such, \n"
+"  one can decide to eliminate all on-the-fly paraview file creation when a ptatin \n"
+"  job is running and instead simply generate the paraview files as a post-processing task \n"
+"\n"
+"  Arguments:\n"
+"    -output_path <string> : Directory where data files live \n"
+"    -file_prefix <string> : Uniqueidentifier at the beginning of the filename (see below) \n"
+"    -file_suffix <string> : Unique identifier at the end of the filename (see below) \n"
+"    -output_type <int> : 0 ==> pTatinOutputParaViewMeshVelocityPressure; 1 ==> pTatinOutputLiteParaViewMeshVelocity \n"
+"\n"
+"    Files which get loaded must have following pattern \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-velocity \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-pressure \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-Xu \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-Xp \n"
+"    or \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-velocityFILE_SUFFIX \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-pressureFILE_SUFFIX \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-XuFILE_SUFFIX \n"
+"    OUTPUT_PATH/FILE_PREFIX.dmda-XpFILE_SUFFIX \n"
+"\n";
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "_strlcat"
 PetscErrorCode _strlcat(char orig[],char append[],size_t L)
@@ -526,7 +554,7 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscLogDouble t0,t1,gt,lt;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,0,ptatin_driver_help);CHKERRQ(ierr);
 	
 //	ierr = test_DMDACheckPoint();CHKERRQ(ierr);
 
