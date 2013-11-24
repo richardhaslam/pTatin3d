@@ -52,6 +52,8 @@
 
 #include "material_constants.h"
 
+#define ETA_SCALE 1.0e2
+
 static inline void ComputeStressIsotropic3d(PetscReal eta,double D[NSD][NSD],double T[NSD][NSD])
 {
 	const double two_eta = 2.0 * eta;
@@ -180,14 +182,17 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	
 	/* access material point information */
 	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
-	DataFieldGetAccess(PField_std);
-	
 	/* PField_std global index marker, phase marker, ...*/
 	/* PField_stokes contains: etaf, rhof */
 	/* PField_pls contains: accumulated plastic strain, yield type */
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	//
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
+	//
+	DataBucketGetDataFieldByName(db,MPntPStokesPl_classname,&PField_pls);
+	DataFieldGetAccess(PField_pls);
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
@@ -232,12 +237,14 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	for (pidx=0; pidx<n_mp_points; pidx++) {
 		MPntStd       *mpprop_std;
 		MPntPStokes   *mpprop_stokes;
+		MPntPStokesPl *mpprop_pls;
 		double        *xi_p;
 		double        T_mp;
 		int           region_idx;
 		
 		DataFieldAccessPoint(PField_std,   pidx,(void**)&mpprop_std);
 		DataFieldAccessPoint(PField_stokes,pidx,(void**)&mpprop_stokes);
+		DataFieldAccessPoint(PField_pls,   pidx,(void**)&mpprop_pls);
 		
 		/* Get marker types */
 		region_idx = mpprop_std->phase;
@@ -301,29 +308,41 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 		*/
 		if (region_idx != 0) {
 			const PetscReal phi_max = 0.68;
-			const PetscReal gamma   = 0.04;
+			const PetscReal gamma   = -0.04;
 			const PetscReal T_e     = 1100.0; /* temperature in degrees C */
-			const PetscReal T_s     = 600; /* temperature in degrees C */
+			const PetscReal T_s     = 600.0; /* temperature in degrees C */
 			const PetscReal phi_0   = 0.0;
 			PetscReal eta0,ratio,t_dep,phi_f,phi;
 			
 			eta0 = ViscConst_data[ region_idx ].eta0;
 			phi_f = phi_max - phi_0;
 			phi = phi_0 + phi_f * (T_e - T_mp) / (T_e - T_s);
+			/*
 			if (phi > phi_max) {
 				phi = phi_max;
 				ratio = 1.0e32;
 			} else {
 				ratio = pow( 1.0 - phi / phi_max, -2.5 );
 			}
+			*/
+			if (phi >= phi_max) {
+				phi = phi_max - 1.0e-10;
+			}
 			
+			ratio = pow( 1.0 - phi / phi_max, -2.5 );
 			t_dep = exp( -gamma * (T_e - T_mp) );
 			
 			eta_mp = eta0 * ratio * t_dep;
-				
-			if (eta_mp > 1.0e5) {
-				eta_mp = 1.0e5;
+
+			//{
+			//	double rad = sqrt(mpprop_std->coor[0]*mpprop_std->coor[0] + mpprop_std->coor[1]*mpprop_std->coor[1]);
+			//	printf("rad %1.5e : T %1.5e : phi %1.5e : eta %1.5e \n",rad,T_mp,phi,eta_mp);
+			//}
+			
+			if (eta_mp > 1.0e5/ETA_SCALE) {
+				eta_mp = 1.0e5/ETA_SCALE;
 			}
+			
 			
 		} else {
 			eta_mp = ViscConst_data[ region_idx ].eta0;
@@ -343,7 +362,8 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 			 103(B11), pp. 27489-27502, (1998).
 			*/
 			tau_yield_mp = pow( 10.0, 11.59 - 0.0089 * T_mp );
-				
+			tau_yield_mp = tau_yield_mp / ETA_SCALE;
+			
 			/* strain rate */
 			ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
 			/* stress */
@@ -351,12 +371,16 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 			/* second inv stress */
 			ComputeSecondInvariant3d(Tpred_mp,&inv2_Tpred_mp);
 			
+			MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
+			
 			if (inv2_Tpred_mp > tau_yield_mp) {
 				ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
 				
 				eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+				MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
 				npoints_yielded++;
 			}
+			
 		}		
 		
 		/* update viscosity on marker */
@@ -367,8 +391,9 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 		if (eta_mp < min_eta) { min_eta = eta_mp; }
 	}  
 	
-	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
+	DataFieldRestoreAccess(PField_std);
     
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	

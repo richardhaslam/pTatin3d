@@ -57,26 +57,40 @@
 #include "geometry_object_evaluator.h"
 #include "rheology.h"
 #include "material_constants.h"
+#include "dmda_element_q2p1.h"
 
 #include "submarinelavaflow_ctx.h"
 
 #define geom_eps 1.0e-8
+
+#define ETA_SCALE 1.0e2
+
+#define ETA_WATER 1.0e-2
+#define ETA_LAVA  50.0
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_SubmarineLavaFlow"
 PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
-	PetscBool flg;
-	PetscReal x0[3],Lx[3];
-	GeometryObject domain,lava,crust,G;
-	DataBucket materialconstants;
-	PetscErrorCode ierr;
+	PetscBool            flg;
+	PetscReal            x0[3],Lx[3];
+	GeometryObject       domain,lava,crust,G;
+	RheologyConstants    *rheology;
+	DataBucket           materialconstants;
+	PetscErrorCode       ierr;
 	
 	PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
+	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
+	rheology->rheology_type = RHEOLOGY_LAVA;
+	rheology->nphases_active = 3;
+
+	rheology->eta_upper_cutoff_global = 1.0e+5/ETA_SCALE;
+	rheology->eta_lower_cutoff_global = 1.0e-5/ETA_SCALE;
 
 	/* set flag for thermal solver to be switched on */
 	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
@@ -87,16 +101,16 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	/* define geometry here so everyone can use it */
 	ierr = GeometryObjectCreate("domain",&domain);CHKERRQ(ierr);
 	x0[0] = -geom_eps;      x0[1] = -geom_eps;      x0[2] = -geom_eps;
-	Lx[0] = 1.0 + geom_eps; Lx[1] = 1.0 + geom_eps; Lx[2] = 1.0 + geom_eps; 
+	Lx[0] = 2.0 + geom_eps; Lx[1] = 1.0 + geom_eps; Lx[2] = 1.0 + geom_eps; 
 	ierr = GeometryObjectSetType_BoxCornerReference(domain,x0,Lx);CHKERRQ(ierr);
 	
 	ierr = GeometryObjectCreate("lava_region",&lava);CHKERRQ(ierr);
-	x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 0.5;
-	ierr = GeometryObjectSetType_Cylinder(lava,x0,0.25,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
+	x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 0.3;
+	ierr = GeometryObjectSetType_Cylinder(lava,x0,0.3,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
 	
-	ierr = GeometryObjectCreate("outercrust",&G);CHKERRQ(ierr);
+	ierr = GeometryObjectCreate("outer_lava_core",&G);CHKERRQ(ierr);
 	x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 0.5;
-	ierr = GeometryObjectSetType_Cylinder(G,x0,0.35,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_Cylinder(G,x0,0.5,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
 	
 	ierr = GeometryObjectCreate("crust_region",&crust);CHKERRQ(ierr);
 	ierr = GeometryObjectSetType_SetOperation(crust,GeomSet_Complement,x0,G,lava);CHKERRQ(ierr);
@@ -104,7 +118,7 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 
 	data->go[0] = domain;
 	data->go[1] = lava;
-	data->go[2] = G;
+	data->go[2] = crust;
 	data->ngo = 3; 
 	
 	/*
@@ -150,20 +164,20 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	
 	ierr = GeometryObjectEvalSetRegionValue(data->go_thermal_ic[0],0.0);CHKERRQ(ierr);
 	ierr = GeometryObjectEvalSetRegionValue(data->go_thermal_ic[1],1100.0);CHKERRQ(ierr);
-	ierr = GeometryObjectEvalSetRegionValue(data->go_thermal_ic[2],1200.0);CHKERRQ(ierr);
+	ierr = GeometryObjectEvalSetRegionValue(data->go_thermal_ic[2],1100.0);CHKERRQ(ierr);
 	
 	/* material properties */
 	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	MaterialConstantsSetDefaults(materialconstants);
-	/* water */
-	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,0,1.0);
+	/* water *///RHEOLOGY_LAVA //VISCOUS_CONSTANT
+	MaterialConstantsSetValues_MaterialType(materialconstants,0,RHEOLOGY_LAVA,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,0,ETA_WATER/ETA_SCALE);
 
-	/* lava types */
-	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,1,1.0);
-	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,2,1.0);
+	/* lava types *///RHEOLOGY_LAVA
+	MaterialConstantsSetValues_MaterialType(materialconstants,1,RHEOLOGY_LAVA,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,1,ETA_LAVA/ETA_SCALE);
+	MaterialConstantsSetValues_MaterialType(materialconstants,2,RHEOLOGY_LAVA,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,2,ETA_LAVA/ETA_SCALE);
 	
 	
 	PetscFunctionReturn(0);
@@ -192,6 +206,30 @@ PetscBool ApplyBasalVelocityJBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ApplyBasalVelocityJQuadraticBC"
+PetscBool ApplyBasalVelocityJQuadraticBC(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscReal *vy_values;
+	PetscReal x,y,z,rad,max;
+	
+	PetscFunctionBegin;
+	vy_values = (PetscReal*)ctx;
+	
+	x   = pos[0];
+	y   = pos[1];
+	z   = pos[2];
+	
+	rad = 0.35;
+	max = rad*rad;
+	if (x <= 0.35) {
+		*val = vy_values[0]*( rad*rad - x*x  )/max;
+	} else {
+		*val = vy_values[1];
+	}
+	return PETSC_TRUE;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SubmarineLavaFlow_VelocityBC"
 PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,SubmarineLavaFlowCtx *data)
 {
@@ -201,15 +239,23 @@ PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,Sub
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+
 	
+	val_V = 0.0;
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
+
 	basal_val_V[0] = 0.3;
 	basal_val_V[1] = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJBC,(void*)basal_val_V);CHKERRQ(ierr);
+//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJQuadraticBC,(void*)basal_val_V);CHKERRQ(ierr);
 
 	val_V = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
+	// free slip
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
-
+	// allow outflow
+	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
+	
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
 	
@@ -251,7 +297,7 @@ PetscErrorCode SubmarineLavaFlow_EnergyBC(BCList bclist,DM daT,pTatinCtx c,Subma
 	
 	basal_val_T[0] = 1100.0;
 	basal_val_T[1] = 0.0;
-	//ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,ApplyBasalThermalBC,(void*)basal_val_T);CHKERRQ(ierr);
 	
 	val_T = 0.0;
@@ -330,6 +376,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
 	PhysCompStokes       stokes;
 	DM                   stokes_pack,dav,dap;
+	PetscReal            dx,dy,dz,Lx,Ly,Lz;
+	PetscInt             mx,my,mz;
 	PetscErrorCode       ierr;
 	
 	PetscFunctionBegin;
@@ -338,8 +386,23 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-	ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,1.0,0.0,0.1);CHKERRQ(ierr);
-
+	
+	ierr = DMDAGetSizeElementQ2(dav,&mx,&my,&mz);CHKERRQ(ierr);
+	Lx = 2.0;
+	Ly = 1.0;
+	Lz = 1.0;
+	if (mz == 1) {
+		dx = Lx/((PetscReal)mx);
+		dy = Ly/((PetscReal)my);
+		dz = dx;
+		if (dy < dx) {
+			dz = dy;
+		}
+		ierr = DMDASetUniformCoordinates(dav,0.0,Lx,0.0,Ly,0.0,dz);CHKERRQ(ierr);
+	} else {
+		ierr = DMDASetUniformCoordinates(dav,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
+	}
+	
 	PetscFunctionReturn(0);
 }
 
@@ -363,7 +426,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 	DataBucketGetSizes(material_point_db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(material_point_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mp_points; p++) {
-		double  *position;
+		double  *position,kappa;
 		int     phase_index;
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
@@ -386,15 +449,18 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 			}
 		}
 
-		ierr = MaterialPointSet_viscosity(mpX,p,1.0e-5);CHKERRQ(ierr);
-		ierr = MaterialPointSet_density(mpX,p,-0.0*9.8);CHKERRQ(ierr);
+		ierr = MaterialPointSet_viscosity(mpX,p,ETA_WATER/ETA_SCALE);CHKERRQ(ierr);
+		ierr = MaterialPointSet_density(mpX,p,-0.0*9.8/ETA_SCALE);CHKERRQ(ierr);
 		
 		ierr = MaterialPointGet_phase_index(mpX,p,&phase_index);CHKERRQ(ierr);
 		if (phase_index != 0) {
-			ierr = MaterialPointSet_viscosity(mpX,p,1.0);CHKERRQ(ierr);
-			ierr = MaterialPointSet_density(mpX,p,-1600.0*9.8);CHKERRQ(ierr);
+			ierr = MaterialPointSet_viscosity(mpX,p,ETA_LAVA/ETA_SCALE);CHKERRQ(ierr);
+			ierr = MaterialPointSet_density(mpX,p,-1600.0*9.8/ETA_SCALE);CHKERRQ(ierr);
 		}
 
+		kappa = 1.0e-5;
+		ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
+		ierr = MaterialPointSet_heat_source(mpX,p,0.0);CHKERRQ(ierr);
 		
 	}
 	ierr = MaterialPointRestoreAccess(material_point_db,&mpX);CHKERRQ(ierr);
@@ -425,6 +491,32 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC(PetscScalar pos[],PetscScalar *icva
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC2"
+PetscBool EvaluateSubmarineLavaFlow_EnergyIC2(PetscScalar pos[],PetscScalar *icvalue,void *data)
+{
+	PetscInt k;
+	PetscScalar  radius,value;
+	PetscBool assigned;
+	PetscErrorCode ierr;
+
+	//radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+	//*icvalue = 1100.0*(0.5*atan(-100.0*(radius-0.5))/atan(100.0*(1.414213562373095-0.5)) + 0.5);
+	//if (*icvalue < 0.0) {
+	//	printf("*iv = %1.5e : x,y %1.5e , %1.5e\n", *icvalue,pos[0],pos[1]);
+	//}
+
+	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
+	if (radius < 1.0) {
+		*icvalue = 1100.0*(0.5*atan(-100.0*(radius-0.5))/atan(100.0*(1.0-0.5)) + 0.5);
+	} else {
+		*icvalue = 0.0;
+	}
+	
+	return PETSC_TRUE;
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_SubmarineLavaFlow"
 PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,void *ctx)
 {
@@ -446,7 +538,8 @@ PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,voi
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
 
-		ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC,(void*)data->go_thermal_ic);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC,(void*)data->go_thermal_ic);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2,PETSC_NULL);CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -490,11 +583,11 @@ PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix
 	}
 
 	output_markers = PETSC_TRUE;
-/*
+//
 	if (output_markers) {
 		DataBucket  materialpoint_db;
-		const int   nf = 1;
-		const MaterialPointField mp_prop_list[] = { MPField_Stokes };
+		const int   nf = 3;
+		const MaterialPointField mp_prop_list[] = { MPField_Stokes, MPField_StokesPl, MPField_Energy };
 		//  Write out just std, stokes and plastic variables
 		//const int nf = 4;
 		//const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
@@ -504,11 +597,12 @@ PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
-*/
+//
+//
 	if (output_markers) {
 		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
 	}
-	
+//	
 	PetscFunctionReturn(0);
 }
 
