@@ -70,6 +70,7 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	PetscBool        flg;
 	char             logfile[PETSC_MAX_PATH_LEN];
 	PetscInt         modeltype;
+	PetscReal        eta_scale;
 	PetscErrorCode   ierr;
 	
 	
@@ -81,11 +82,34 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	if (flg) {
 		data->modeltype = (iPLUSModelType)modeltype;
 	}
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using model type %D \n",(PetscInt)modeltype);
 	
 	data->mantle_eta = 85.0;    data->mantle_rho = 1413.0;
 	data->plume_eta  = 5.0;     data->plume_rho  = 1373.0;
 	data->slab_eta   = 64000.0; data->slab_rho   = 1495.0;
-		
+	
+	eta_scale = 1.0e3;
+	if (data->modeltype == iPLUsModelPlume) {
+		eta_scale = 1.0;
+	}
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using viscosity scale, eta* = %1.4e Pa.s \n", eta_scale);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: dimensional quantities \n");
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta = %1.4e Pa.s ; rho = %1.4e kg/m^3 \n",data->mantle_eta,data->mantle_rho);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta = %1.4e Pa.s ; rho = %1.4e kg/m^3 \n",data->plume_eta,data->plume_rho);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [slab]   eta = %1.4e Pa.s ; rho = %1.4e kg/m^3 \n",data->slab_eta,data->slab_rho);
+	
+	data->mantle_eta = data->mantle_eta / eta_scale;
+	data->plume_eta  = data->plume_eta / eta_scale;
+	data->slab_eta   = data->slab_eta / eta_scale;
+
+	data->mantle_rho = data->mantle_rho / eta_scale;
+	data->plume_rho  = data->plume_rho / eta_scale;
+	data->slab_rho   = data->slab_rho / eta_scale;
+	
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta* = %1.4e ; rho* = %1.4e \n",data->mantle_eta,data->mantle_rho);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta* = %1.4e ; rho* = %1.4e \n",data->plume_eta,data->plume_rho);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [slab]   eta* = %1.4e ; rho* = %1.4e \n",data->slab_eta,data->slab_rho);
+	
 	if (data->modeltype == iPLUsModelPlume) {
 		data->plume_pos[0] = 0.15;
 		data->plume_pos[2] = 0.15;
@@ -98,6 +122,7 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 		PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_z",&data->plume_pos[2],&flg);
 		
 		data->plume_pos[1] = 0.0;
+
 	}
 	
 	data->plume_radius = 0.015625;
@@ -111,6 +136,13 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	data->np_plume_z = 10;
 	PetscOptionsGetInt(PETSC_NULL,"-iplus_plume_npx",&data->np_plume_x,&flg);
 	PetscOptionsGetInt(PETSC_NULL,"-iplus_plume_npz",&data->np_plume_z,&flg);
+
+	if ( (data->modeltype == iPLUsModelPlume) || (data->modeltype == iPLUsModelSlabPlume) ) {
+		PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume origin] %1.4e m ; %1.4e m ; %1.4e m\n",data->plume_pos[0],data->plume_pos[1],data->plume_pos[2]);
+		PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume radius] %1.4e m \n",data->plume_radius);
+		PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume A0]     %1.4e 1/(ms) \n",data->plume_A0);
+		PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume points] %D x %D \n",data->np_plume_x,data->np_plume_z);
+	}
 	
 	/* slab geometry */
 	ierr = iPLUS_CreateSlabGeometry(data);CHKERRQ(ierr);
