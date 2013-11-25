@@ -491,7 +491,7 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 		
 		if (beenhere == 0) {
 			PetscViewerASCIIPrintf(data->logviewer,"# iPLUS logfile\n");
-			PetscViewerASCIIPrintf(data->logviewer,"# Note: If the slab (or plume) is not present, the min/max y coordinatate reported will be -1.0e32/1.0e32 \n");
+			PetscViewerASCIIPrintf(data->logviewer,"# Note: If the slab (or plume) is not present, the min/max y coordinatate reported will be -1.0e32/+1.0e32 \n");
 			PetscViewerASCIIPrintf(data->logviewer,"# ----------------------------------------------------------------------------------------------------------------- \n");
 			PetscViewerASCIIPrintf(data->logviewer,"# step  time            Omega(t=0)      Omega(t)        plume_{y_min,y_max}             slab_{y_min,y_max} \n");
 			beenhere = 1;
