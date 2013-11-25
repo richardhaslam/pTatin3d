@@ -496,7 +496,7 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 			PetscViewerASCIIPrintf(data->logviewer,"# step  time            Omega(t=0)      Omega(t)        plume_{y_min,y_max}             slab_{y_min,y_max} \n");
 			beenhere = 1;
 		}
-		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%1.4e\t%1.4e\t%1.4e\t%1.4e\n",
+		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%+1.4e\t%+1.4e\t%+1.4e\t%+1.4e\n",
 								c->step, c->time, 
 								data->intial_domain_volume, volume,
 								plume_range_yp[0], plume_range_yp[1] ,slab_range_yp[0], slab_range_yp[1]);
