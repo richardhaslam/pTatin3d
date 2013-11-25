@@ -430,7 +430,7 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 	
-	if (data->iplus_output_frequency%c->step == 0) {
+	if (c->step%data->iplus_output_frequency == 0) {
 		/* ---- Velocity-Pressure Mesh Output ---- */
 		/* [1] Standard viewer: v,p written out as binary in double */
 		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
@@ -491,11 +491,15 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 		
 		if (beenhere == 0) {
 			PetscViewerASCIIPrintf(data->logviewer,"# iPLUS logfile\n");
-			PetscViewerASCIIPrintf(data->logviewer,"# step \t time \t Omega0 \t Omega \t plume (y_min y_max) \t slab (y_min y_max) \n");
+			PetscViewerASCIIPrintf(data->logviewer,"# Note: If the slab (or plume) is not present, the min/max y coordinatate reported will be -1.0e32/1.0e32 \n");
+			PetscViewerASCIIPrintf(data->logviewer,"# ----------------------------------------------------------------------------------------------------------------- \n");
+			PetscViewerASCIIPrintf(data->logviewer,"# step  time            Omega(t=0)      Omega(t)        plume_{y_min,y_max}             slab_{y_min,y_max} \n");
 			beenhere = 1;
 		}
 		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%1.4e\t%1.4e\t%1.4e\t%1.4e\n",
-								c->step,c->time, data->intial_domain_volume, volume,plume_range_yp[0],plume_range_yp[1],slab_range_yp[0],slab_range_yp[1]);
+								c->step, c->time, 
+								data->intial_domain_volume, volume,
+								plume_range_yp[0], plume_range_yp[1] ,slab_range_yp[0], slab_range_yp[1]);
 		
 	}
 	
