@@ -118,6 +118,9 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	sprintf(logfile,"%s/iplus.logfile",c->outputpath);
 	ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&data->logviewer);CHKERRQ(ierr);
 	
+	data->iplus_output_frequency = 1;
+	PetscOptionsGetInt(PETSC_NULL,"-iplus_output_frequency",&data->iplus_output_frequency,&flg);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -363,9 +366,14 @@ PetscErrorCode iPLUSOutput_ComputeVerticalRangeOfRegion(DataBucket materialpoint
 	PetscReal        _range_yp[2];
 	double           *pos_p;
 	int              region_p;
+	PetscInt         found_region = 0,found_region_g;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
+
+	/* initialize */
+	_range_yp[0] =  1.0e32;
+	_range_yp[1] = -1.0e32;
 	
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
@@ -376,12 +384,21 @@ PetscErrorCode iPLUSOutput_ComputeVerticalRangeOfRegion(DataBucket materialpoint
 		if (region_p == region_idx) {
 			if (pos_p[1] < _range_yp[0]) { _range_yp[0] = pos_p[1]; }
 			if (pos_p[1] > _range_yp[1]) { _range_yp[1] = pos_p[1]; }
+			found_region = 1;
 		}
 	}
 	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
 	ierr = MPI_Allreduce(&_range_yp[0],&range_yp[0],1,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&_range_yp[1],&range_yp[1],1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+
+	ierr = MPI_Allreduce(&found_region,&found_region_g,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+
+	/* no particles of the desired region were found on any processors, set min/max accordingly */
+	if (found_region_g == 0) {
+		range_yp[0] = -1.0e32;
+		range_yp[1] =  1.0e32;
+	}
 	
 	PetscFunctionReturn(0);
 }
@@ -412,52 +429,55 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
-	/* ---- Velocity-Pressure Mesh Output ---- */
-	/* [1] Standard viewer: v,p written out as binary in double */
-	//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+	
+	if (data->iplus_output_frequency%c->step == 0) {
+		/* ---- Velocity-Pressure Mesh Output ---- */
+		/* [1] Standard viewer: v,p written out as binary in double */
+		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
-	/* [2] Light weight viewer: Only v is written out. v and coords are expressed as floats */
-	ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
-	
-	/* [3] Write out v,p into PETSc Vec. These can be used to restart pTatin */
-	/*
-	ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	*/
-
-	
-	/* ---- Material Point Output ---- */
-	/* [1] Basic viewer: Only reports coords, regionid and other internal data */
-	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-	
-	/* [2] Customized viewer: User defines specific fields they want to view - NOTE not .pvd file will be created */
-	/*
-	{
-		DataBucket                materialpoint_db;
-		const int                 nf = 4;
-		const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
-		char                      mp_file_prefix[256];
+		/* [2] Light weight viewer: Only v is written out. v and coords are expressed as floats */
+		ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
-		sprintf(mp_file_prefix,"%s_mpoints",prefix);
-		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+		/* [3] Write out v,p into PETSc Vec. These can be used to restart pTatin */
+		/*
+		ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+		*/
+
+		
+		/* ---- Material Point Output ---- */
+		/* [1] Basic viewer: Only reports coords, regionid and other internal data */
+		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+		
+		/* [2] Customized viewer: User defines specific fields they want to view - NOTE not .pvd file will be created */
+		/*
+		{
+			DataBucket                materialpoint_db;
+			const int                 nf = 4;
+			const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
+			char                      mp_file_prefix[256];
+			
+			ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+			sprintf(mp_file_prefix,"%s_mpoints",prefix);
+			ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+		}
+		*/
+		/* [3] Customized marker->cell viewer: Marker data is projected onto the velocity mesh. User defines specific fields */
+		/*
+		{
+			const int                    nf = 3;
+			const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain }; 
+			
+			ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
+		}	
+		*/
 	}
-	*/
-	/* [3] Customized marker->cell viewer: Marker data is projected onto the velocity mesh. User defines specific fields */
-	/*
-	{
-		const int                    nf = 3;
-		const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain }; 
-		
-		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
-	}	
-	*/
 	
 	/* iPlus specific output */
 	{
 		PhysCompStokes   stokes;
 		DM               stokes_pack,dav,dap;
 		DataBucket       materialpoint_db;
-		PetscReal        volume,range_yp[2];
+		PetscReal        volume,plume_range_yp[2],slab_range_yp[2];
 		
 		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 		
@@ -465,16 +485,17 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 		stokes_pack = stokes->stokes_pack;
 		ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 		
-		ierr = iPLUSOutput_ComputeVerticalRangeOfRegion(materialpoint_db,iPLUSMatPlume,range_yp);
 		ierr = iPLUSOutput_ComputeDomainVolume(dav,&volume);CHKERRQ(ierr);
+		ierr = iPLUSOutput_ComputeVerticalRangeOfRegion(materialpoint_db,iPLUSMatPlume,plume_range_yp);
+		ierr = iPLUSOutput_ComputeVerticalRangeOfRegion(materialpoint_db,iPLUSMatSlab, slab_range_yp);
 		
 		if (beenhere == 0) {
 			PetscViewerASCIIPrintf(data->logviewer,"# iPLUS logfile\n");
-			PetscViewerASCIIPrintf(data->logviewer,"# step \t time \t Omega0 \t Omega \t plume (y_min y_max) \n");
+			PetscViewerASCIIPrintf(data->logviewer,"# step \t time \t Omega0 \t Omega \t plume (y_min y_max) \t slab (y_min y_max) \n");
 			beenhere = 1;
 		}
-		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%1.4e\t%1.4e\n",
-								c->step,c->time, data->intial_domain_volume, volume,range_yp[0],range_yp[1]);
+		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%1.4e\t%1.4e\t%1.4e\t%1.4e\n",
+								c->step,c->time, data->intial_domain_volume, volume,plume_range_yp[0],plume_range_yp[1],slab_range_yp[0],slab_range_yp[1]);
 		
 	}
 	

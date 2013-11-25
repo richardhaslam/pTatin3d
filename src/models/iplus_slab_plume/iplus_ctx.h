@@ -55,6 +55,7 @@ typedef struct {
 	PetscViewer logviewer;
 	PetscInt    np_plume_x,np_plume_z;
 	GeometryObject slab_geometry;
+	PetscInt    iplus_output_frequency;
 } iPLUSCtx;
 
 
