@@ -36,44 +36,44 @@ ifeq (${PTATIN_CONTAINS_FASTSCAPE_V3},1)
 	# add the compilation flags specific for this package
 	TATIN_PACKAGES += -DPTATIN_HAVE_FASTSCAPE_V3
 
-	SPM_FSCAPE_DIR = ${TATIN_DIR}/externalpackages/FastScape_V3
+	SPM_FSCAPE_DIR = ${TATIN_DIR}/externalpackages/FastScape_V3_lib
 
 	TATIN_EXTERNAL_INC += -I${SPM_FSCAPE_DIR}
 
 	# identify all source files defined within this package
 	TATIN_EXTERNAL_OBJ += ${SPM_FSCAPE_DIR}/Concavity_f90.o \
-												${SPM_FSCAPE_DIR}/Curvature_f90.o \
-												${SPM_FSCAPE_DIR}/DEM_f90.o \
-												${SPM_FSCAPE_DIR}/Demoulin_f90.o \
-												${SPM_FSCAPE_DIR}/FastScape_f90.o \
-												${SPM_FSCAPE_DIR}/Slope_f90.o \
-												${SPM_FSCAPE_DIR}/SteepnessIndex_f90.o \
-												${SPM_FSCAPE_DIR}/bmp_f90.o \
-												${SPM_FSCAPE_DIR}/compute_sediment_flux_f90.o \
-												${SPM_FSCAPE_DIR}/diffusion_f90.o \
-												${SPM_FSCAPE_DIR}/find_donors_f90.o \
-												${SPM_FSCAPE_DIR}/find_receiver_f90.o \
-												${SPM_FSCAPE_DIR}/flexure_f90.o \
-												${SPM_FSCAPE_DIR}/fluvial_erosion_f90.o \
-												${SPM_FSCAPE_DIR}/four1_f77.o \
-												${SPM_FSCAPE_DIR}/initial_topography_f90.o \
-												${SPM_FSCAPE_DIR}/initialize_f90.o \
-												${SPM_FSCAPE_DIR}/interpol_routines_f90.o \
-												${SPM_FSCAPE_DIR}/interpolate_f90.o \
-												${SPM_FSCAPE_DIR}/local_minima_f90.o \
-												${SPM_FSCAPE_DIR}/metric_f90.o \
-												${SPM_FSCAPE_DIR}/module_definitions_f90.o \
-												${SPM_FSCAPE_DIR}/orography_f90.o \
-												${SPM_FSCAPE_DIR}/precipitation_f90.o \
-												${SPM_FSCAPE_DIR}/realft_f77.o \
-												${SPM_FSCAPE_DIR}/scanfile_f90.o \
-												${SPM_FSCAPE_DIR}/set_bc_f90.o \
-												${SPM_FSCAPE_DIR}/sinft_f77.o \
-												${SPM_FSCAPE_DIR}/tridag_f90.o \
-												${SPM_FSCAPE_DIR}/uplift_f90.o
+			${SPM_FSCAPE_DIR}/Curvature_f90.o \
+			${SPM_FSCAPE_DIR}/DEM_f90.o \
+			${SPM_FSCAPE_DIR}/Demoulin_f90.o \
+			${SPM_FSCAPE_DIR}/libFastScape_f90.o \
+			${SPM_FSCAPE_DIR}/Slope_f90.o \
+			${SPM_FSCAPE_DIR}/SteepnessIndex_f90.o \
+			${SPM_FSCAPE_DIR}/bmp_f90.o \
+			${SPM_FSCAPE_DIR}/compute_sediment_flux_f90.o \
+			${SPM_FSCAPE_DIR}/diffusion_f90.o \
+			${SPM_FSCAPE_DIR}/find_donors_f90.o \
+			${SPM_FSCAPE_DIR}/find_receiver_f90.o \
+			${SPM_FSCAPE_DIR}/flexure_f90.o \
+			${SPM_FSCAPE_DIR}/fluvial_erosion_f90.o \
+			${SPM_FSCAPE_DIR}/four1_f77.o \
+			${SPM_FSCAPE_DIR}/initial_topography_f90.o \
+			${SPM_FSCAPE_DIR}/initialize_f90.o \
+			${SPM_FSCAPE_DIR}/interpol_routines_f90.o \
+			${SPM_FSCAPE_DIR}/interpolate_f90.o \
+			${SPM_FSCAPE_DIR}/local_minima_f90.o \
+			${SPM_FSCAPE_DIR}/metric_f90.o \
+			${SPM_FSCAPE_DIR}/module_definitions_f90.o \
+			${SPM_FSCAPE_DIR}/orography_f90.o \
+			${SPM_FSCAPE_DIR}/precipitation_f90.o \
+			${SPM_FSCAPE_DIR}/realft_f77.o \
+			${SPM_FSCAPE_DIR}/scanfile_f90.o \
+			${SPM_FSCAPE_DIR}/set_bc_f90.o \
+			${SPM_FSCAPE_DIR}/sinft_f77.o \
+			${SPM_FSCAPE_DIR}/tridag_f90.o \
+			${SPM_FSCAPE_DIR}/uplift_f90.o
 endif
 # Append location of interface directory
-#TATIN_INTERFACE_DIR += interfaces/FastScape_V3
+TATIN_INTERFACE_DIR += interfaces/FastScape_V3_lib
 
 
 

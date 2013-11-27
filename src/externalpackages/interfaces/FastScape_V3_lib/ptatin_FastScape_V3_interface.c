@@ -13,13 +13,18 @@
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "dmda_element_q2p1.h"
 #include "dmda_redundant.h"
 #include "dmda_remesh.h"
 #include "dmda_view_petscvtk.h"
 #include "mesh_update.h"
 #include "spm_utils.h"
 
-PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X);
+PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
+																																	 PetscInt refinement_factor,
+																																	 PetscReal Lstar,PetscReal Vstar,
+																																	 PetscReal dt_mechanical,
+																																	 int _law,double _m,double _kf,double _kd,int _bc);
 
 
 #undef __FUNCT__
@@ -31,7 +36,7 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx
 	PetscFunctionBegin;
 	
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
-	ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X);CHKERRQ(ierr);
+	//ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X);CHKERRQ(ierr);
 #else
 	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatind3D must be compiled with external package <FastScape_V3: Landscape evolution model of Jean Braun>");
 #endif
@@ -53,6 +58,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	DM              dm_spmsurf0;
 	PetscInt        mx,my,mz,JMAX;
 	PetscReal       gmin[3],gmax[3];
+	PetscLogDouble  t0,t1;
 	PetscErrorCode  ierr;
 	
 	
