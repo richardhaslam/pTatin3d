@@ -29,14 +29,18 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 
 #undef __FUNCT__
 #define __FUNCT__ "ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3"
-PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X)
+PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
+																																	PetscInt refinement_factor,
+																																	PetscReal Lstar,PetscReal Vstar,
+																																	PetscReal dt_mechanical,
+																																	int _law,double _m,double _kf,double _kd,int _bc)
 {
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
-	//ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X);CHKERRQ(ierr);
+	ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X,refinement_factor,Lstar,Vstar,dt_mechanical,_law,_m,_kf,_kd,_bc);CHKERRQ(ierr);
 #else
 	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatind3D must be compiled with external package <FastScape_V3: Landscape evolution model of Jean Braun>");
 #endif
@@ -80,29 +84,57 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		}
 	}
 
+	PetscPrintf(PETSC_COMM_WORLD,"Mechanical mx: %D \n",mx);
+	PetscPrintf(PETSC_COMM_WORLD,"Mechanical my: %D \n",my);
+	PetscPrintf(PETSC_COMM_WORLD,"Mechanical mz: %D \n",mz);
+	PetscPrintf(PETSC_COMM_WORLD,"Mechanical dt: %1.4e \n",dt_mechanical);
+	
 	if (dm_spmsurf0) {
 		double *sheight;
-		int    nx,ny,law,bc;
+		int    snx,sny,law,bc;
 		double dx,dy,dt,m,kf,kd;
 		int    ii,jj,smx,smy;
 		double *scoord;
 		double Lx,Ly;
 		
+		
 		/* generate regular 2d mesh */
 		smx = mx * refinement_factor;
-		smy = mx * refinement_factor;
+		smy = mz * refinement_factor;
 		
-		nx = (int)smx + 1;
-		ny = (int)smy + 1;
+		snx = (int)smx + 1;
+		sny = (int)smy + 1;
+		/* FastScape requires nx be a multiple of 4.... Beware! */
+		if ((snx/4)*4 != snx) {
+			snx=(snx/4)*4;
+		}
+		if ((sny/4)*4 != sny) {
+			sny=(sny/4)*4;
+		}
+		smx = snx - 1;
+		smy = sny - 1;
 		
-		PetscMalloc(sizeof(PetscReal)*2*nx*ny,&scoord);
-		PetscMalloc(sizeof(double)*nx*ny,&sheight);
 		
-		for (jj=0; jj<smy+1; jj++) {
-			for (ii=0; ii<smx+1; ii++) {
-				scoord[2*(ii+nx*jj)+0] = 0.0 + ii * 1.0/((double)smx);
-				scoord[2*(ii+nx*jj)+1] = 0.0 + jj * 1.0/((double)smy);
-				sheight[ii+nx*jj] = 0.0;
+		PetscPrintf(PETSC_COMM_WORLD,"SPM snx: %d \n",snx);
+		PetscPrintf(PETSC_COMM_WORLD,"SPM sny: %d \n",sny);
+
+		PetscPrintf(PETSC_COMM_WORLD,"SPM smx: %d \n",smx);
+		PetscPrintf(PETSC_COMM_WORLD,"SPM smy: %d \n",smy);
+		
+		PetscMalloc(sizeof(PetscReal)*2*snx*sny,&scoord);
+		PetscMalloc(sizeof(double)*snx*sny,&sheight);
+		
+		Lx = gmax[0] - gmin[0];
+		Ly = gmax[2] - gmin[2];
+		
+		dx = Lx/((double)snx);
+		dy = Ly/((double)sny);
+		
+		for (jj=0; jj<sny; jj++) {
+			for (ii=0; ii<snx; ii++) {
+				scoord[2*(ii+snx*jj)+0] = 0.5*dx + ii * dx;
+				scoord[2*(ii+snx*jj)+1] = 0.5*dy + jj * dy;
+				sheight[ii+snx*jj] = 0.0;
 			}
 		}
 		ierr = InterpolateMSurf0ToSPMSurfIKGrid(dm_spmsurf0,(PetscInt)smx,(PetscInt)smy,scoord,sheight);CHKERRQ(ierr);
@@ -111,7 +143,30 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		
 		PetscGetTime(&t0);
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
-		//fastscape_(height,&nx,&ny,&dx,&dy,&dt,&law,&m,&kf,&kd,&bc);
+		/* scale topo */
+		for (k=0; k<snx*sny; k++) {
+			sheight[k] = sheight[k] * Lstar;
+		}
+		/* scale geometry spacing */
+		dx = dx * Lstar;
+		dy = dy * Lstar;
+
+		/* scale dt */
+		
+		
+		dt = 0.25 * dt_mechanical * (Lstar/Vstar);
+		m = 1.33;
+		kf = 1.0;
+		kd = 1.1;
+		bc = 1;
+		law = 1;
+		fastscape_(sheight,&snx,&sny,&dx,&dy,&dt,&law,&m,&kf,&kd,&bc);
+		
+		/* unscale topo */
+		for (k=0; k<snx*sny; k++) {
+			sheight[k] = sheight[k] / Lstar;
+		}
+		
 #endif
 		PetscGetTime(&t1);
 
@@ -120,6 +175,9 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		if (debug) {
 			ierr = DMDAViewPetscVTK(dm_spmsurf0,PETSC_NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
 		}
+		
+		PetscFree(sheight);
+		PetscFree(scoord);
 	}
 
 	/* scatter resulting sequential surface to mechanical model */
