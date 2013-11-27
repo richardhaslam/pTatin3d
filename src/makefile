@@ -128,33 +128,10 @@ TATIN_DRIVERS		= \
 export LIBZ_LIB = -lz
 export LIBZ_INC = -I/usr/include
 
-
-export TATIN_INC			=	-I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES} ${LIBZ_INC}
-export EXTERNAL_LIBS	=	${PETSC_LIB} ${LIBZ_LIB}
-export TATIN_LIB			=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmodels -lptatin3d ${EXTERNAL_LIBS}
-#export TATIN_LIB			=	${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels
-
-
-## Set flags here, or run >make TATIN_CFLAGS='-g -O0'
-#export TATIN_CFLAGS_DEBUG		= -O0 -g -fno-nested-functions -Wno-unused-variable -Wall
-#export TATIN_CFLAGS_DEBUG_CRAY		= -O0 -g
-#
-#export TATIN_CFLAGS_O2_OSX	= -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-#export TATIN_CFLAGS_O3_OSX	= -std=gnu99 -O3 -g -fast -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops 
-#
-#export TATIN_CFLAGS_O3_DIONYSOS = -std=gnu99 -O3 -g -ftree-vectorize -ftree-vectorizer-verbose=2  -Wall -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
-#export TATIN_CFLGAS_O2_BGP      = -O2 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
-#export TATIN_CFLGAS_O3_BGP	= -O3 -qarch=auto -qtune=auto -qcache=auto -qhot -qipa
-#
-#export TATIN_CFLAGS_O3_OCTO	= -O3 -std=gnu99 -mtune=native -march=native -funroll-loops -ffast-math
-#export TATIN_CFLAGS_O3_CRAY	= -O3 -hfp3
-#
-#export TATIN_FFLAGS_DEBUG 	= -O0 -ffree-line-length-4000
-#export TATIN_FFLAGS_O2_OSX 	= -O2 -ffree-line-length-4000
-#export TATIN_FFLAGS_O3_BRUTUS 	= -O2 -ffree-line-length-4000 -mtune=native -march=native -funroll-loops -ffast-math -Wstrict-aliasing -fstrict-aliasing
-
-#export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG_CRAY}
-#export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
+export TATIN_INC	= -I. -I${PETSC_DIR}/include ${PETSC_CC_INCLUDES} ${LIBZ_INC}
+export EXTERNAL_LIBS	= ${PETSC_LIB} ${LIBZ_LIB}
+export TATIN_LIB	= -L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmodels -lptatin3d ${EXTERNAL_LIBS}
+#export TATIN_LIB	= ${EXTERNAL_LIBS} -L${TATIN_DIR} -lptatin3d -L${TATIN_DIR}/models -lptatin3dmodels
 
 # Compilers are determined via petsc
 export TATIN_CC		= ${PCC}
@@ -164,11 +141,14 @@ export TATIN_FC		= ${FC}
 
 all: 
 	-@echo "<<<<<<<<==================[[ pTatin-3d ]]==================>>>>>>>>"
+	-@echo "Working directory:"
 	-@echo ${PWD}
+
 	
 	-@${MAKE} base_objects
 	-@${MAKE} base_objects_fortran
 	-@${MAKE} material_constants
+	-@${MAKE} interfaces
 	-@${MAKE} libs
 	-@${MAKE} models
 	-@${MAKE} tests
@@ -182,6 +162,7 @@ allsvn:
 	-@${MAKE} base_objects
 	-@${MAKE} base_objects_fortran
 	-@${MAKE} material_constants
+	-@${MAKE} interfaces
 	-@${MAKE} libs
 	-@${MAKE} models
 	-@${MAKE} tests
@@ -209,11 +190,19 @@ base_objects_fortran:
 material_constants: base_objects
 	-@${MAKE} -C material_constants
 
+
+interfaces: base_objects
+	-@echo ""
+	-@echo "*** Creating ptatin interfaces ***"
+	-@${MAKE} -C externalpackages/
+
+
 libs: base_objects material_constants
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
 	ar rcs libptatin3d.a ${TATIN_OBJ} ${TATIN_F_OBJ} material_constants/*.o
+	-@${MAKE} addtolib -C externalpackages/
 
 
 tests: libs models
@@ -264,6 +253,8 @@ clean_all:
 	-@${MAKE} clean_all -C material_constants/
 	-@echo "*** Removing models ***"
 	-@${MAKE} clean_all -C models/
+	-@echo "*** Removing interfaces ***"
+	-@${MAKE} clean_all -C externalpackages/
 	-@echo "*** Removing base_objects ***"
 	-@rm -f ${TATIN_OBJ}
 	-@rm -f ${TATIN_F_OBJ}
