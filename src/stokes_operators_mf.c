@@ -315,10 +315,10 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 			fac       = WEIGHT[p] * detJ[p];
 			
 			#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
-			f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			  f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
 			#else
-                        MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
-                        #endif
+			  MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+      #endif
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
