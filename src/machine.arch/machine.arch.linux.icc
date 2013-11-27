@@ -21,3 +21,14 @@ export TATIN_FFLAGS_OPT_b       = -g -sox -O3 -xSSSE3 -Wstrict-aliasing -fstrict
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_b}
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 
+#
+#
+#  -- pTatin external packages --
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+#
+#
+PTATIN_CONTAINS_SPMA = 0
+PTATIN_CONTAINS_FASTSCAPE_V3 = 0
+

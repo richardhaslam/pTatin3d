@@ -18,3 +18,13 @@ export TATIN_FFLAGS_OPT_b       = -O2 -ffree-line-length-4000 -qarch=auto -qtune
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
+#
+#
+#  -- pTatin external packages --
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+#
+#
+PTATIN_CONTAINS_SPMA = 0
+PTATIN_CONTAINS_FASTSCAPE_V3 = 0
