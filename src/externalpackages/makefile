@@ -85,7 +85,6 @@ export TATIN_EXTERNAL_INC
 export TATIN_EXTERNAL_OBJ
 export TATIN_EXTERNAL_LIB
 
-
 all:
 	-@echo "External packages:"
 	-@echo "    " ${TATIN_PACKAGES}
@@ -95,6 +94,7 @@ all:
 	-@echo "    " ${TATIN_EXTERNAL_OBJ}
 	-@echo "External libraries:"
 	-@echo "    " ${TATIN_EXTERNAL_LIB}
+	-@echo ${TATIN_CFLAGS}
 
 	@for m in ${TATIN_INTERFACE_DIR} ; do \
 		${MAKE} -C $${m}/; \
