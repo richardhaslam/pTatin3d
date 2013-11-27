@@ -1,3 +1,4 @@
+
 /*
  Interface to call the surface process model FastScape_V3
  - In general, this interface could be used with all SPM's
@@ -7,7 +8,6 @@
   #endif
  
 */
-
 
 #include "ptatin3d.h"
 
@@ -42,7 +42,7 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 	ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X,refinement_factor,Lstar,Vstar,dt_mechanical,_law,_m,_kf,_kd,_bc);CHKERRQ(ierr);
 #else
-	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatind3D must be compiled with external package <FastScape_V3: Landscape evolution model of Jean Braun>");
+	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatind3D must be compiled with external package <FastScape_V3_lib: Landscape evolution model of Jean Braun>");
 #endif
 	
 	PetscFunctionReturn(0);
@@ -60,7 +60,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	PhysCompStokes  stokes;
 	DM              stokes_pack,dav,dap;
 	DM              dm_spmsurf0;
-	PetscInt        mx,my,mz,JMAX;
+	PetscInt        k,mx,my,mz,JMAX;
 	PetscReal       gmin[3],gmax[3];
 	PetscLogDouble  t0,t1;
 	PetscErrorCode  ierr;
@@ -91,12 +91,11 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	
 	if (dm_spmsurf0) {
 		double *sheight;
-		int    snx,sny,law,bc;
+		int    snx,sny,law,bc,nsteps,nfreq;
 		double dx,dy,dt,m,kf,kd;
 		int    ii,jj,smx,smy;
 		double *scoord;
 		double Lx,Ly;
-		
 		
 		/* generate regular 2d mesh */
 		smx = mx * refinement_factor;
@@ -104,7 +103,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		
 		snx = (int)smx + 1;
 		sny = (int)smy + 1;
-		/* FastScape requires nx be a multiple of 4.... Beware! */
+		
+		/* FastScape requires nx,ny be a multiple of 4.... Beware! */
 		if ((snx/4)*4 != snx) {
 			snx=(snx/4)*4;
 		}
@@ -113,7 +113,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		}
 		smx = snx - 1;
 		smy = sny - 1;
-		
 		
 		PetscPrintf(PETSC_COMM_WORLD,"SPM snx: %d \n",snx);
 		PetscPrintf(PETSC_COMM_WORLD,"SPM sny: %d \n",sny);
@@ -130,6 +129,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		dx = Lx/((double)snx);
 		dy = Ly/((double)sny);
 		
+		/* generate coordinates for interpolation */
 		for (jj=0; jj<sny; jj++) {
 			for (ii=0; ii<snx; ii++) {
 				scoord[2*(ii+snx*jj)+0] = 0.5*dx + ii * dx;
@@ -137,12 +137,12 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 				sheight[ii+snx*jj] = 0.0;
 			}
 		}
+
+		/* interpolate topo: da_spmsurf0 -> 2d mesh */
 		ierr = InterpolateMSurf0ToSPMSurfIKGrid(dm_spmsurf0,(PetscInt)smx,(PetscInt)smy,scoord,sheight);CHKERRQ(ierr);
 		
-		/* interpolate topo: da_spmsurf0 -> 2d mesh */
-		
-		PetscGetTime(&t0);
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
+		PetscGetTime(&t0);
 		/* scale topo */
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] * Lstar;
@@ -152,23 +152,25 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		dy = dy * Lstar;
 
 		/* scale dt */
-		
-		
 		dt = 0.25 * dt_mechanical * (Lstar/Vstar);
+
+		/* assign */
+		nsteps = 10;
+		nfreq = 1;
 		m = 1.33;
 		kf = 1.0;
-		kd = 1.1;
-		bc = 1;
+		kd = 1.1; /* not used */
+		bc = 1;   /* four digit number 0101 */
 		law = 1;
-		fastscape_(sheight,&snx,&sny,&dx,&dy,&dt,&law,&m,&kf,&kd,&bc);
+		fastscape_(sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
 		
 		/* unscale topo */
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] / Lstar;
 		}
-		
-#endif
 		PetscGetTime(&t1);
+		PetscPrintf(PETSC_COMM_WORLD,"  FastScape: %1.4e (sec)\n",t1-t0);
+#endif
 
 		/* interpolate topo: 2d mesh -> da_spmsurf0  */
 		ierr = InterpolateSPMSurfIKGridToMSurf0((PetscInt)smx,(PetscInt)smy,scoord,sheight,dm_spmsurf0);CHKERRQ(ierr);
@@ -190,7 +192,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 	ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
-	
 	
 	PetscFunctionReturn(0);
 }
