@@ -197,7 +197,7 @@ interfaces: base_objects
 	-@${MAKE} -C externalpackages/
 
 
-libs: base_objects material_constants
+libs: base_objects material_constants interfaces
 	-@echo ""
 	-@echo "*** Creating libptatin3d ***"
 	-@rm -f libptatin3d.a
