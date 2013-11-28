@@ -94,7 +94,6 @@ all:
 	-@echo "    " ${TATIN_EXTERNAL_OBJ}
 	-@echo "External libraries:"
 	-@echo "    " ${TATIN_EXTERNAL_LIB}
-	-@echo ${TATIN_CFLAGS}
 
 	@for m in ${TATIN_INTERFACE_DIR} ; do \
 		${MAKE} -C $${m}/; \
