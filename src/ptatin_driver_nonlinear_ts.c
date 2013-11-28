@@ -983,6 +983,33 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 	}
 #endif	
 	
+	{
+		PetscBool mg_dump_coarse = PETSC_FALSE;
+		char filename[PETSC_MAX_PATH_LEN];
+		PetscInt snes_it;
+		PetscViewer viewer;
+		
+		PetscOptionsGetBool(PETSC_NULL,"-ptatin_mg_dump_coarse_operator",&mg_dump_coarse,0);
+		SNESGetIterationNumber(snes,&snes_it);
+		
+		if (mg_dump_coarse) {
+			if (mlctx->level_type[0] != OP_TYPE_REDISC_MF) {
+
+				
+				sprintf(filename,"%s/mg_coarse_operatorA_step%d_snes%d.mat",user->outputpath,user->step,snes_it);
+				PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);
+				MatView(mlctx->operatorA11[0],viewer);
+				PetscViewerDestroy(&viewer);
+				if (mlctx->operatorA11[0] != mlctx->operatorB11[0]) {
+					sprintf(filename,"%s/mg_coarse_operatorB_step%d_snes%d.mat",user->outputpath,user->step,snes_it);
+					PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);
+					MatView(mlctx->operatorB11[0],viewer);
+					PetscViewerDestroy(&viewer);
+				}
+			}
+		}
+	}
+	
 	
 	/* clean up */
 	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
