@@ -60,12 +60,13 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 	DMDACoor3d ***_coord;
 	PetscReal y_height,dy;
 	PetscReal Gmin[3],Gmax[3];
+	PetscReal xshift = 0.0,zshift = 0.0;
+	PetscBool flg;
 	
 	PetscFunctionBegin;
 
 	{
 		PetscReal tmp;
-		PetscBool flg;
 		
 		ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_amp",&tmp,&flg);CHKERRQ(ierr);
 		if (flg) {
@@ -77,6 +78,9 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 			gbump_lambda = tmp;
 		}
 	}
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_xorigin",&xshift,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_zorigin",&zshift,&flg);CHKERRQ(ierr);
+	
 	
 	ierr = DMDAGetBoundingBox(da,Gmin,Gmax);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(da,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
@@ -93,9 +97,9 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 			for( i=si; i<si+nx; i++ ) {
 				PetscReal xn,yn,zn;
 				
-				xn = _coord[k][j][i].x;
+				xn = _coord[k][j][i].x - xshift;
 				yn = _coord[k][j][i].y;
-				zn = _coord[k][j][i].z;
+				zn = _coord[k][j][i].z - zshift;
 				
 				/* scale amplitude with depth */
 				//fac_scale = (yn-(-1.0))/2.0;
