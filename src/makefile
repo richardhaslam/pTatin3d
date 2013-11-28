@@ -107,7 +107,8 @@ TATIN_TESTS	=	\
 			test_stokes_operators_approximations \
 			test_mp_advection \
 			test_material_point_load \
-			test_stokes_q1macrop1
+			test_stokes_q1macrop1 \
+			ptatin_read_matrix
 
 #			test_model
 
