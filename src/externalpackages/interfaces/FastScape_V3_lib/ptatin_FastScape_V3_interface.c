@@ -23,8 +23,12 @@
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
 																																	 PetscInt refinement_factor,
 																																	 PetscReal Lstar,PetscReal Vstar,
-																																	 PetscReal dt_mechanical,
-																																	 int _law,double _m,double _kf,double _kd,int _bc);
+																																	 PetscReal dt_mechanical,PetscReal dt_spm,
+																																	 PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc);
+#ifdef PTATIN_HAVE_FASTSCAPE_V3
+extern void fastscape_(double *sheight,int* snx,int* sny,double* dx,double* dy,int* nsteps,int* nfreq,double* dt,int* law,double* m,double* kf,double* kd,int* bc);
+#endif
+
 
 
 #undef __FUNCT__
@@ -32,15 +36,15 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
 																																	PetscInt refinement_factor,
 																																	PetscReal Lstar,PetscReal Vstar,
-																																	PetscReal dt_mechanical,
-																																	int _law,double _m,double _kf,double _kd,int _bc)
+																																	PetscReal dt_mechanical,PetscReal dt_spm,
+																																	PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
 {
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
-	ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X,refinement_factor,Lstar,Vstar,dt_mechanical,_law,_m,_kf,_kd,_bc);CHKERRQ(ierr);
+	ierr = _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pctx,X,refinement_factor,Lstar,Vstar,dt_mechanical,dt_spm,_law,_m,_kf,_kd,_bc);CHKERRQ(ierr);
 #else
 	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatind3D must be compiled with external package <FastScape_V3_lib: Landscape evolution model of Jean Braun>");
 #endif
@@ -53,8 +57,8 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
 																																	 PetscInt refinement_factor,
 																																	 PetscReal Lstar,PetscReal Vstar,
-																																	 PetscReal dt_mechanical,
-																																	 int _law,double _m,double _kf,double _kd,int _bc)
+																																	 PetscReal dt_mechanical,PetscReal dt_spm,
+																																	 PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
 {
 	PetscBool       debug = PETSC_TRUE;
 	PhysCompStokes  stokes;
@@ -63,10 +67,24 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	PetscInt        k,mx,my,mz,JMAX;
 	PetscReal       gmin[3],gmax[3];
 	PetscLogDouble  t0,t1;
+	PetscBool        flg;
 	PetscErrorCode  ierr;
 	
 	
 	PetscFunctionBegin;
+	
+	/* parse parameters */
+	flg = PETSC_FALSE;
+	PetscOptionsGetInt(PETSC_NULL,"-fastscape_refinement_factor",&refinement_factor,&flg);
+	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using refinement factor %D\n",refinement_factor); }
+
+	flg = PETSC_FALSE;
+	PetscOptionsGetReal(PETSC_NULL,"-fastscape_dt",&dt_spm,&flg);
+	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using dt %1.4e\n",dt_spm); }
+	
+	if (dt_spm > dt_mechanical) {
+		dt_spm = dt_mechanical;
+	}
 	
 	ierr = pTatinGetStokesContext(pctx,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -84,10 +102,10 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		}
 	}
 
-	PetscPrintf(PETSC_COMM_WORLD,"Mechanical mx: %D \n",mx);
-	PetscPrintf(PETSC_COMM_WORLD,"Mechanical my: %D \n",my);
-	PetscPrintf(PETSC_COMM_WORLD,"Mechanical mz: %D \n",mz);
-	PetscPrintf(PETSC_COMM_WORLD,"Mechanical dt: %1.4e \n",dt_mechanical);
+	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical mx: %D \n",mx);
+	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical my: %D \n",my);
+	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical mz: %D \n",mz);
+	PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Mechanical dt: %1.4e \n",dt_mechanical);
 	
 	if (dm_spmsurf0) {
 		double *sheight;
@@ -114,11 +132,12 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		smx = snx - 1;
 		smy = sny - 1;
 		
-		PetscPrintf(PETSC_COMM_WORLD,"SPM snx: %d \n",snx);
-		PetscPrintf(PETSC_COMM_WORLD,"SPM sny: %d \n",sny);
+		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM snx: %d \n",snx);
+		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM sny: %d \n",sny);
 
-		PetscPrintf(PETSC_COMM_WORLD,"SPM smx: %d \n",smx);
-		PetscPrintf(PETSC_COMM_WORLD,"SPM smy: %d \n",smy);
+		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM smx: %d \n",smx);
+		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM smy: %d \n",smy);
+		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] SPM dt: %1.4e \n",dt_spm);
 		
 		PetscMalloc(sizeof(PetscReal)*2*snx*sny,&scoord);
 		PetscMalloc(sizeof(double)*snx*sny,&sheight);
@@ -151,17 +170,20 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		dx = dx * Lstar;
 		dy = dy * Lstar;
 
+		nsteps = dt_mechanical / dt_spm;
+		nsteps++;
+		dt_spm = dt_mechanical/(PetscReal)nsteps;
 		/* scale dt */
-		dt = 0.25 * dt_mechanical * (Lstar/Vstar);
-
+		dt = dt_spm * (Lstar/Vstar);
+		
 		/* assign */
-		nsteps = 10;
+		nsteps = dt_mechanical / dt_spm;
 		nfreq = 1;
-		m = 1.33;
-		kf = 1.0;
-		kd = 1.1; /* not used */
-		bc = 1;   /* four digit number 0101 */
-		law = 1;
+		m   = (double)_m;
+		kf  = (double)_kf;
+		kd  = (double)_kd; /* not used */
+		bc  = (int)_bc;   /* four digit number 0101 */
+		law = (int)_law;
 		fastscape_(sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
 		
 		/* unscale topo */
@@ -169,7 +191,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 			sheight[k] = sheight[k] / Lstar;
 		}
 		PetscGetTime(&t1);
-		PetscPrintf(PETSC_COMM_WORLD,"  FastScape: %1.4e (sec)\n",t1-t0);
+		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Compute time %1.4e (sec)\n",t1-t0);
 #endif
 
 		/* interpolate topo: 2d mesh -> da_spmsurf0  */
