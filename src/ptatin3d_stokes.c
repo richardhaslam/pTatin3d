@@ -280,6 +280,21 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompStokesSetGravityVector"
+PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[])
+{
+	PetscReal      norm_g;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	norm_g = PetscSqrtScalar(grav[0]*grav[0] + grav[1]*grav[1] + grav[2]*grav[2]);
+	ctx->gravity_vector[0] = grav[0]/norm_g;
+	ctx->gravity_vector[1] = grav[1]/norm_g;
+	ctx->gravity_vector[2] = grav[2]/norm_g;
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_Velocity"
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])

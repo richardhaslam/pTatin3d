@@ -64,8 +64,7 @@
 PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 {
 	PetscErrorCode  ierr;
-	PhysCompStokes stokes;
-	
+	PhysCompStokes  stokes;
 	
 	PetscFunctionBegin;
 	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
@@ -90,7 +89,8 @@ PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 {
 	PetscErrorCode  ierr;
-	PhysCompStokes stokes;
+	PhysCompStokes  stokes;
+	PetscReal       grav[3];
 	
 	
 	PetscFunctionBegin;
@@ -117,6 +117,13 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 		ierr = pTatin3d_PhysCompStokesNew(user);CHKERRQ(ierr);
 	}	
 	
+	/* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
+	/* Model initialize function can overload the gravity value */
+	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	grav[0] = 0.0;
+	grav[1] = 1.0;
+	grav[2] = 0.0;
+	ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

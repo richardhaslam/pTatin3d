@@ -47,6 +47,7 @@ struct _p_PhysCompStokes {
 	Quadrature              volQ;
 	SurfaceQuadrature       *surfQ; /* eight faces - one for each hex */
 	PetscBool               use_mf_stokes;
+	PetscReal               gravity_vector[3];
 };
 
 #endif
