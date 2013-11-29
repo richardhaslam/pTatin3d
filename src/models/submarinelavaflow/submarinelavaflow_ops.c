@@ -357,17 +357,198 @@ PetscErrorCode ModelApplyBoundaryCondition_SubmarineLavaFlow(pTatinCtx c,void *c
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SubmarineLavaFlow_ApplyInflow"
+PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *data)
+{
+	PetscErrorCode ierr;
+	PhysCompStokes stokes;
+	DM             stokes_pack,dav,dap;
+	MPI_Comm       comm;
+	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ,lmx,lmy,lmz;
+	PetscInt       npx,pi,pk,pni,pnk;
+	PetscReal      dx,dy,dz,inlet_x0,inlet_x1,vy;
+	PetscMPIInt    rank;
+	const PetscInt *elnidx_u;
+	PetscInt       nel,nen_u,pcount;
+	DM             cda;
+	Vec            gcoords;
+	PetscReal      *LA_gcoords;
+	static PetscReal displacement = 0.0;
+	DataBucket     db;
+	DataField      PField_std,PField_stokes,PField_energy;
+	PetscReal      gmin[3],gmax[3],lmin[3],lmax[3];
+	PetscBool      contains_inlet;
+	
+	PetscFunctionBegin;
+
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	/* determine ranks living on the base j=0 */
+	PetscObjectGetComm((PetscObject)dav,&comm);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,&pI,&pJ,&pK,0,0,0,0,0,0);CHKERRQ(ierr);
+	
+	ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+	ierr = DMDAGetLocalBoundingBox(dav,lmin,lmax);CHKERRQ(ierr);
+		
+	/* insert at every time step */
+#if 0
+	/* velocity at inlet */
+	vy = 0.3;
+	/* record displacement */
+	displacement += vy * c->dt;
+	
+	/* if displacement is larger than frac.dy, inject more points */
+	dy = (gmax[1] - gmin[1])/((PetscReal)(N-1)/2);
+	dy = 0.15 * dy;
+	if (displacement < dy) {
+		PetscFunctionReturn(0);
+	}
+#endif
+	
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"  Injecting material points into base \n");
+	
+	/* convert rank to rI,rJ,rK */
+	rK  = (PetscInt)rank / (pI*pJ);
+	rIJ = (PetscInt)rank - rK * pI*pJ;  
+	rJ = rIJ / pI;
+	rI = rIJ - rJ*pI;
+	
+	dx = (gmax[0] - gmin[0])/((PetscReal)((M-1)/2));
+	dz = (gmax[2] - gmin[2])/((PetscReal)((P-1)/2));
+
+#if 0
+	/* 
+	 set the size of the inlet to be +1.5 x element spacing to account for 
+	 variation in velocity field from dirichlet vy to vy = 0
+	*/
+	inlet_x0 = 0.0;
+	inlet_x1 = 0.2 + 1.5 * dx;
+#endif	
+	
+	inlet_x0 = 0.0;
+	inlet_x1 = 0.2;
+	
+	/* compute point spacing - 4 new points per element */
+	npx = 4;
+	dx = dx / ((PetscReal)npx);
+	dz = dz / ((PetscReal)npx);
+
+	/* compute the number of points we have to insert in inflow area */
+	pni = (PetscInt)( (inlet_x1 - inlet_x0)/dx );
+	pnk = (PetscInt)( (gmax[2] - gmin[2])  /dz );
+	/* recompute spacing */
+	dx = (inlet_x1 - inlet_x0)/(PetscReal)pni;
+	dz = (gmax[2] - gmin[2])  /(PetscReal)pnk;
+	
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+	ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+	
+	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	
+	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+	DataFieldGetAccess(PField_stokes);
+
+	DataBucketGetDataFieldByName(db,MPntPEnergy_classname,&PField_energy);
+	DataFieldGetAccess(PField_energy);
+	
+	pcount = 0;
+	contains_inlet = PETSC_FALSE;
+	if (rJ == 0) {
+		
+		if ( (inlet_x0 >= lmin[0]) && (inlet_x0 <= lmax[0]) ) {
+			contains_inlet = PETSC_TRUE;
+		}
+		if ( (inlet_x1 >= lmin[0]) && (inlet_x1 <= lmax[0]) ) {
+			contains_inlet = PETSC_TRUE;
+		}
+		
+		if (contains_inlet) {
+			for (pk=0; pk<pnk; pk++) {
+				for (pi=0; pi<pni; pi++) {
+					PetscReal fac,rx,rz;
+					MPntStd   marker;
+					
+					
+					fac = 0.3333;
+					rx = 2.0 * rand()/(RAND_MAX) - 1.0;
+					rz = 2.0 * rand()/(RAND_MAX) - 1.0;
+					rx = 0.5 * dx * rx * fac;
+					rz = 0.5 * dz * rz * fac;
+					
+					marker.coor[0] = inlet_x0 + pi*dx + 0.5*dx + rx;
+					marker.coor[1] = 0.0;
+					marker.coor[2] = gmin[2] + pk*dz  + 0.5*dz + rz;
+					marker.phase   = 1;
+					
+					InverseMappingDomain_3dQ2(1.0e-8,40,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE,
+																		LA_gcoords,lmx,lmy,lmz,elnidx_u,
+																		1,&marker);
+					
+					if (marker.wil != -1) {
+						MPntStd       *mpprop_std;
+						MPntPStokes   *mpprop_stokes;
+						MPntPEnergy   *mpprop_energy;
+						int           end;
+
+						DataBucketAddPoint(db);
+						DataBucketGetSizes(db,&end,0,0);
+
+						DataFieldInsertPoint(PField_std,   end-1,&marker);
+
+						DataFieldAccessPoint(PField_stokes,end-1,(void**)&mpprop_stokes);
+						mpprop_stokes->eta = ETA_LAVA/ETA_SCALE;
+						mpprop_stokes->rho = -1600.0*9.8/ETA_SCALE;
+
+						DataFieldAccessPoint(PField_energy,end-1,(void**)&mpprop_energy);
+						mpprop_energy->diffusivity = 1.0e-5;
+						mpprop_energy->heat_source = 0.0;
+						
+						pcount++;
+					}
+				}
+			}
+			
+		}
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	DataFieldRestoreAccess(PField_energy);
+	DataFieldRestoreAccess(PField_stokes);
+	DataFieldRestoreAccess(PField_std);
+	
+	if (contains_inlet) {
+		PetscPrintf(PETSC_COMM_WORLD,"  Injected %d new material points \n",pcount);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
+	PetscBool apply_inflow;
 	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
+	apply_inflow = PETSC_TRUE;
+	if (apply_inflow) {
+		ierr = SubmarineLavaFlow_ApplyInflow(c,data);CHKERRQ(ierr);
+	}
+	
 	PetscFunctionReturn(0);
 }
+	
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_SubmarineLavaFlow"
