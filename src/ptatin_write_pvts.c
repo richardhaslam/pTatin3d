@@ -67,8 +67,8 @@ static const char ptatin_driver_help[] =
 "\n"
 "  Arguments:\n"
 "    -output_path <string> : Directory where data files live \n"
-"    -file_prefix <string> : Uniqueidentifier at the beginning of the filename (see below) \n"
-"    -file_suffix <string> : Unique identifier at the end of the filename (see below) \n"
+"    -file_prefix <string> : Unique identifier at the beginning of the filename (see below) \n"
+"    -file_suffix <string> : Unique identifier at the end of the filename. This is a non-essential option (see below) \n"
 "    -output_type <int> : 0 ==> pTatinOutputParaViewMeshVelocityPressure; 1 ==> pTatinOutputLiteParaViewMeshVelocity \n"
 "\n"
 "    Files which get loaded must have following pattern \n"
@@ -83,6 +83,9 @@ static const char ptatin_driver_help[] =
 "    OUTPUT_PATH/FILE_PREFIX.dmda-XpFILE_SUFFIX \n"
 "\n";
 
+
+PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysCompStokes *ctx);
+PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscBool zip_file,Vec *VP);
 
 #undef __FUNCT__  
 #define __FUNCT__ "_strlcat"
@@ -108,7 +111,6 @@ PetscErrorCode _strlcat(char orig[],char append[],size_t L)
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatinVecFieldWrite"
@@ -256,7 +258,6 @@ PetscErrorCode test_pTatinVecFieldLoad( void )
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "test_DMDACheckPoint"
 PetscErrorCode test_DMDACheckPoint(void)
@@ -328,46 +329,6 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	PetscFunctionReturn(0);
 }
 
-/* minimal loading from checkpoint file for viz of u,v,w,p fields */
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesLoad_DM"
-PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysCompStokes *ctx)
-{
-	PhysCompStokes stokes;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);	
-	ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
-	*ctx = stokes;
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesLoad_VP"
-PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const char pname[],PetscBool zip_file,Vec *VP)
-{
-	Vec            X,Xv,Xp;
-	DM             dav,dap;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = DMCreateGlobalVector(ctx->stokes_pack,&X);CHKERRQ(ierr);
-	
-	ierr = DMCompositeGetAccess(ctx->stokes_pack,X,&Xv,&Xp);CHKERRQ(ierr);
-	
-	/* load from file */
-	ierr = pTatinVecFieldRead(vname,zip_file,Xv);CHKERRQ(ierr);
-	ierr = pTatinVecFieldRead(pname,zip_file,Xp);CHKERRQ(ierr);
-	
-	ierr = DMCompositeRestoreAccess(ctx->stokes_pack,X,&Xv,&Xp);CHKERRQ(ierr);
-	
-	*VP = X;
-	
-	PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompStokesLoad_X"
 PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscBool zip_file,Vec *VP)
@@ -382,35 +343,6 @@ PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscB
 	ierr = pTatinVecFieldRead(xname,zip_file,X);CHKERRQ(ierr);
 	
 	*VP = X;
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesWrite_DM_X"
-PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],char name[])
-{
-	PetscInt       output_type;
-	PetscErrorCode ierr;
-
-	PetscFunctionBegin;
-	
-	output_type = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-output_type",&output_type,0);
-	switch (output_type) {
-		case 0:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
-			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
-			break;
-		case 1:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
-			ierr = pTatinOutputLiteParaViewMeshVelocity(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
-			break;
-		default:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
-			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
-			break;
-	}
 	
 	PetscFunctionReturn(0);
 }
@@ -479,9 +411,83 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 	PetscFunctionReturn(0);
 }
 
+
+
+
+
+
+/* minimal loading from checkpoint file for viz of u,v,w,p fields */
 #undef __FUNCT__  
-#define __FUNCT__ "test_LoadStokesFromCheckpoint_WriteToVTS"
-PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
+#define __FUNCT__ "PhysCompStokesLoad_DM"
+PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysCompStokes *ctx)
+{
+	PhysCompStokes stokes;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);	
+	ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
+	*ctx = stokes;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompStokesLoad_VP"
+PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const char pname[],PetscBool zip_file,Vec *VP)
+{
+	Vec            X,Xv,Xp;
+	DM             dav,dap;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = DMCreateGlobalVector(ctx->stokes_pack,&X);CHKERRQ(ierr);
+	
+	ierr = DMCompositeGetAccess(ctx->stokes_pack,X,&Xv,&Xp);CHKERRQ(ierr);
+	
+	/* load from file */
+	ierr = pTatinVecFieldRead(vname,zip_file,Xv);CHKERRQ(ierr);
+	ierr = pTatinVecFieldRead(pname,zip_file,Xp);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(ctx->stokes_pack,X,&Xv,&Xp);CHKERRQ(ierr);
+	
+	*VP = X;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompStokesWrite_DM_X"
+PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],char name[])
+{
+	PetscInt       output_type;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	output_type = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-output_type",&output_type,0);
+	switch (output_type) {
+		case 0:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+		case 1:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = pTatinOutputLiteParaViewMeshVelocity(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+		default:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_Stokes"
+PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 {
 	PhysCompStokes ctx;
 	Vec            X;
@@ -548,22 +554,154 @@ PetscErrorCode test_LoadStokesFromCheckpoint_WriteToVTS(void)
 }
 
 
+#if 0
+/* minimal loading from checkpoint file for viz of energy field */
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompEnergyLoad_DM"
+PetscErrorCode PhysCompEnergyLoad_DM(const char tname[],PhysCompEnergy *ctx)
+{
+	PhysCompEnergy energy;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = PhysCompCreate_Energy(&energy);CHKERRQ(ierr);	
+	ierr = PhysCompLoadMesh_Energy3d(energy,tname);CHKERRQ(ierr);
+	*ctx = energy;
+	
+	PetscFunctionReturn(0);
+}
 
-int main( int argc,char **argv )
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompEnergyLoad_X"
+PetscErrorCode PhysCompEnergyLoad_X(PhysCompEnergy ctx,const char tname[],PetscBool zip_file,Vec *_X)
+{
+	Vec            X;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ierr = DMCreateGlobalVector(ctx->daT,&X);CHKERRQ(ierr);
+	/* load from file */
+	ierr = pTatinVecFieldRead(tname,zip_file,X);CHKERRQ(ierr);
+	
+	*_X = X;
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompEnergyWrite_DM_X"
+PetscErrorCode PhysCompEnergyWrite_DM_X(PhysCompEnergy ctx,Vec X,const char outputpath[],char name[])
+{
+	PetscInt       output_type;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	output_type = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-output_type",&output_type,0);
+	switch (output_type) {
+		case 0:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			//ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+		default:
+			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			//ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			break;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_Energy"
+PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
+{
+	PhysCompEnergy ctx;
+	Vec            X;
+	char           dmdaname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
+	char           outputpath[PETSC_MAX_PATH_LEN];
+	char           prefix[PETSC_MAX_PATH_LEN];
+	char           suffix[PETSC_MAX_PATH_LEN];
+	char           outfilename[PETSC_MAX_PATH_LEN];
+	PetscBool      flg;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) { 
+		sprintf(outputpath,".");
+	}
+	
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(PETSC_NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) { 
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
+	}
+	
+	sprintf(dmdaname,"%s/%s.dmda-energy",outputpath,prefix);
+	sprintf(tname,"%s/%s.dmda-XT",outputpath,prefix);
+	
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(PETSC_NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg) { 
+		_strlcat(dmdaname,suffix,PETSC_MAX_PATH_LEN-1);
+		_strlcat(tname,suffix,PETSC_MAX_PATH_LEN-1);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda) %s : (vec) %s\n", dmdaname,tname);
+	
+	ierr = PhysCompEnergyLoad_DM(dmdaname,&ctx);CHKERRQ(ierr);
+	ierr = PhysCompEnergyLoad_X(ctx,tname,PETSC_FALSE,&X);CHKERRQ(ierr);
+	
+	sprintf(outfilename,"%s",prefix);
+	if (flg) { 
+		_strlcat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
+	ierr = PhysCompEnergyWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
+	
+	ierr = PhysCompDestroy_Energy(&ctx);CHKERRQ(ierr);
+	ierr = VecDestroy(&X);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+#endif
+
+
+
+int main(int nargs,char *args[])
 {
 	PetscErrorCode ierr;
 	PetscLogDouble t0,t1,gt,lt;
+	PetscBool write_stokes = PETSC_TRUE;
+	PetscBool write_energy = PETSC_FALSE;
+	PetscBool write_cell_data = PETSC_FALSE;
+	PetscBool write_mp_data = PETSC_FALSE;
 	
-	ierr = pTatinInitialize(&argc,&argv,0,ptatin_driver_help);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&nargs,&args,0,ptatin_driver_help);CHKERRQ(ierr);
 	
-//	ierr = test_DMDACheckPoint();CHKERRQ(ierr);
-
 	PetscGetTime(&t0);
-	ierr = test_LoadStokesFromCheckpoint_WriteToVTS();CHKERRQ(ierr);
+
+	if (write_stokes) {
+		ierr = pTatinLoadFromCheckpointWriteToVTS_Stokes();CHKERRQ(ierr);
+	}
+	if (write_energy) {
+		
+	}
+	if (write_cell_data) {
+		
+	}
+	if (write_mp_data) {
+		
+	}
+	
+	
 	PetscGetTime(&t1);
 	lt = t1-t0;
 	ierr = MPI_Allreduce(&lt,&gt,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"test_LoadStokesFromCheckpoint_WriteToVTS: CPU time %1.4e (sec)\n", gt);
+	PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Stokes: CPU time %1.4e (sec)\n", gt);
 	
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
