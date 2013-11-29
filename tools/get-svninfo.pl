@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
- use Cwd;
+use Cwd;
 
 #my $co_name = '/Users/dmay/codes/ptat3d-rh-riftspm/ptat3d-subduction-dbg';
 my $co_name = getcwd . '/..';
