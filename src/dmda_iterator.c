@@ -34,6 +34,7 @@
 #include "petsc.h"
 #include "petscvec.h"
 #include "petscdm.h"
+#include "dmda_update_coords.h"
 #include "dmda_iterator.h"
 
 #undef __FUNCT__
@@ -604,14 +605,14 @@ PetscBool DMDAVecTraverseIJK_ZeroInteriorMinusNmax(PetscScalar pos[],PetscInt gl
 #define __FUNCT__ "DMDACoordTraverseIJK"
 PetscErrorCode DMDACoordTraverseIJK(DM da,PetscInt plane,PetscInt index,PetscInt coord_dof,PetscBool (*eval)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)
 {
-	PetscInt i,j,k,si,sj,sk,m,n,p;
-	DM cda;
-	Vec coords;
-	DMDACoor3d ***LA_coords;	
-	PetscScalar pos[3];
-	PetscInt L[3],G[3];
-	PetscScalar val;
-	PetscBool impose_value;
+	PetscInt       i,j,k,si,sj,sk,m,n,p;
+	DM             cda;
+	Vec            coords;
+	DMDACoor3d     ***LA_coords;	
+	PetscScalar    pos[3];
+	PetscInt       L[3],G[3];
+	PetscScalar    val;
+	PetscBool      impose_value;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;	
@@ -622,9 +623,7 @@ PetscErrorCode DMDACoordTraverseIJK(DM da,PetscInt plane,PetscInt index,PetscInt
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
-	if (!coords) { 
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"coordinates not set"); 
-	}
+	if (!coords) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"coordinates not set"); }
 	
 	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	
@@ -663,6 +662,8 @@ PetscErrorCode DMDACoordTraverseIJK(DM da,PetscInt plane,PetscInt index,PetscInt
 		}
 	}
 	ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
