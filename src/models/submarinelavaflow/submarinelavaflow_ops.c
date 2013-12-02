@@ -51,6 +51,7 @@
 #include "energy_output.h"
 
 #include "dmda_bcs.h"
+#include "dmda_remesh.h"
 #include "swarm_fields.h"
 #include "dmda_iterator.h"
 #include "geometry_object.h"
@@ -58,6 +59,7 @@
 #include "rheology.h"
 #include "material_constants.h"
 #include "dmda_element_q2p1.h"
+#include "material_point_point_location.h"
 
 #include "submarinelavaflow_ctx.h"
 
@@ -105,19 +107,29 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 
 	/* define geometry here so everyone can use it */
 	ierr = GeometryObjectCreate("domain",&domain);CHKERRQ(ierr);
-	x0[0] = -geom_eps;      x0[1] = -geom_eps;      x0[2] = -geom_eps;
-	Lx[0] = 2.0 + geom_eps; Lx[1] = 1.0 + geom_eps; Lx[2] = 1.0 + geom_eps; 
+	x0[0] = -geom_eps;      x0[1] = -4.0; x0[2] = -geom_eps;
+	Lx[0] = 2.0 + geom_eps; Lx[1] =  8.0; Lx[2] = 2.0 + geom_eps; 
 	ierr = GeometryObjectSetType_BoxCornerReference(domain,x0,Lx);CHKERRQ(ierr);
 	
-	ierr = GeometryObjectCreate("lava_region",&lava);CHKERRQ(ierr);
-	x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 0.3;
-	ierr = GeometryObjectSetType_Cylinder(lava,x0,0.3,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
-	
-	ierr = GeometryObjectCreate("outer_lava_core",&G);CHKERRQ(ierr);
-	x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 0.5;
-	ierr = GeometryObjectSetType_Cylinder(G,x0,0.5,1.0+geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
-	
-	ierr = GeometryObjectCreate("crust_region",&crust);CHKERRQ(ierr);
+	if (data->model_conf != MT_3DBATHYMETRY) {
+		ierr = GeometryObjectCreate("lava_region",&lava);CHKERRQ(ierr);
+		x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 1.0;
+		ierr = GeometryObjectSetType_Cylinder(lava,x0,0.3,2.0+2.0*geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);
+		
+		ierr = GeometryObjectCreate("outer_lava_core",&G);CHKERRQ(ierr);
+		x0[0] = -geom_eps; x0[1] = -geom_eps; x0[2] = 1.0;
+		ierr = GeometryObjectSetType_Cylinder(G,x0,0.5,2.0+2.0*geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);		
+	} else {
+		ierr = GeometryObjectCreate("lava_region",&lava);CHKERRQ(ierr);
+		x0[0] = 0.0; x0[1] = 0.0; x0[2] = 1.0;
+		ierr = GeometryObjectSetType_Sphere(lava,x0,0.3);CHKERRQ(ierr);
+		
+		ierr = GeometryObjectCreate("outer_lava_core",&G);CHKERRQ(ierr);
+		x0[0] = 0.0; x0[1] = 0.0; x0[2] = 1.0;
+		ierr = GeometryObjectSetType_Sphere(G,x0,0.5);CHKERRQ(ierr);
+	}
+
+ ierr = GeometryObjectCreate("crust_region",&crust);CHKERRQ(ierr);
 	ierr = GeometryObjectSetType_SetOperation(crust,GeomSet_Complement,x0,G,lava);CHKERRQ(ierr);
 	//ierr = GeometryObjectDestroy(&G);CHKERRQ(ierr);
 
@@ -210,6 +222,29 @@ PetscBool ApplyBasalVelocityJBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ApplyBasalVelocityJBC_Spherical"
+PetscBool ApplyBasalVelocityJBC_Spherical(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscReal *vy_values;
+	PetscReal x,y,z,radius;
+	
+	PetscFunctionBegin;
+	vy_values = (PetscReal*)ctx;
+	
+	x   = pos[0];
+	y   = pos[1];
+	z   = pos[2];
+	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
+	
+	if (radius <= 0.2) {
+		*val = vy_values[0];
+	} else {
+		*val = vy_values[1];
+	}
+	return PETSC_TRUE;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ApplyBasalVelocityJQuadraticBC"
 PetscBool ApplyBasalVelocityJQuadraticBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
@@ -250,9 +285,13 @@ PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,Sub
 
 	basal_val_V[0] = 0.3;
 	basal_val_V[1] = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJBC,(void*)basal_val_V);CHKERRQ(ierr);
-//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJQuadraticBC,(void*)basal_val_V);CHKERRQ(ierr);
-
+	if (data->model_conf != MT_3DBATHYMETRY) {
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJBC,(void*)basal_val_V);CHKERRQ(ierr);
+	//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJQuadraticBC,(void*)basal_val_V);CHKERRQ(ierr);
+	} else {
+		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,ApplyBasalVelocityJBC_Spherical,(void*)basal_val_V);CHKERRQ(ierr);
+	}
+		
 	val_V = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
 	// free slip
@@ -289,6 +328,29 @@ PetscBool ApplyBasalThermalBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ApplyBasalThermalBC_Spherical"
+PetscBool ApplyBasalThermalBC_Spherical(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+	PetscReal *base_values;
+	PetscReal x,y,z,radius;
+	
+	
+	base_values = (PetscReal*)ctx;
+	
+	x   = pos[0];
+	y   = pos[1];
+	z   = pos[2];
+	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
+	
+	if (radius <= 0.2) {
+		*val = base_values[0];
+	} else {
+		*val = base_values[1];
+	}
+	return PETSC_TRUE;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SubmarineLavaFlow_EnergyBC"
 PetscErrorCode SubmarineLavaFlow_EnergyBC(BCList bclist,DM daT,pTatinCtx c,SubmarineLavaFlowCtx *data)
 {
@@ -302,8 +364,13 @@ PetscErrorCode SubmarineLavaFlow_EnergyBC(BCList bclist,DM daT,pTatinCtx c,Subma
 	basal_val_T[0] = 1100.0;
 	basal_val_T[1] = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,ApplyBasalThermalBC,(void*)basal_val_T);CHKERRQ(ierr);
-	
+
+	if (data->model_conf != MT_3DBATHYMETRY) {
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,ApplyBasalThermalBC,(void*)basal_val_T);CHKERRQ(ierr);
+	} else {
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,ApplyBasalThermalBC_Spherical,(void*)basal_val_T);CHKERRQ(ierr);
+	}
+
 	val_T = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);		
 	
@@ -554,6 +621,37 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscFunctionReturn(0);
 }
 	
+PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
+{
+	PetscScalar x,y,z,factor;
+	
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+
+	factor = *((PetscScalar*)ctx);
+	*val = 0.25 * 0.3333 * (3.5*exp(-0.7*x) 
+											+ factor * 0.18 * sin(4.4*M_PI*x) * cos(1.3*M_PI*z*x) 
+											-factor * 0.05 * cos(3.0*M_PI*z*x) + 0.3*x*z - 0.5) - 0.25;
+
+	return PETSC_TRUE;
+}
+PetscBool upper_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
+{
+	PetscScalar x,y,z,factor;
+	
+	x = pos[0];
+	y = pos[1];
+	z = pos[2];
+	
+	factor = *((PetscScalar*)ctx);
+	*val = 0.25 * 0.3333 * (3.5*exp(-0.7*x) 
+													+ factor * 0.18 * sin(4.4*M_PI*x) * cos(1.3*M_PI*z*x) 
+													-factor * 0.05 * cos(3.0*M_PI*z*x) + 0.3*x*z - 0.5) - 0.25 + 1.0;
+	
+	return PETSC_TRUE;
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_SubmarineLavaFlow"
@@ -576,7 +674,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 	ierr = DMDAGetSizeElementQ2(dav,&mx,&my,&mz);CHKERRQ(ierr);
 	Lx = 2.0;
 	Ly = 1.0;
-	Lz = 1.0;
+	Lz = 2.0;
 	if (mz == 1) {
 		dx = Lx/((PetscReal)mx);
 		dy = Ly/((PetscReal)my);
@@ -587,6 +685,26 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 		ierr = DMDASetUniformCoordinates(dav,0.0,Lx,0.0,Ly,0.0,dz);CHKERRQ(ierr);
 	} else {
 		ierr = DMDASetUniformCoordinates(dav,0.0,Lx,0.0,Ly,0.0,Lz);CHKERRQ(ierr);
+	}
+	
+	if (data->model_conf == MT_3DBATHYMETRY) {
+		PetscScalar factor;
+		PetscInt Nmax,indexN;
+
+		factor = 1.0;		
+		PetscOptionsGetScalar(PETSC_NULL,"-subdmarine_roughness_factor",&factor,PETSC_NULL);
+		if (factor < 0.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
+		if (factor > 1.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
+		indexN = 0;
+		ierr = DMDACoordTraverseIJK(dav,1,indexN,1,lower_surface,(void*)&factor);CHKERRQ(ierr);
+		
+		ierr = DMDAGetInfo(dav,0,0,&Nmax,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+		factor = 0.0;		
+		indexN = Nmax - 1;
+		ierr = DMDACoordTraverseIJK(dav,1,indexN,1,upper_surface,(void*)&factor);CHKERRQ(ierr);		
+
+		/* clean up the interior */
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,Nmax);CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -729,6 +847,25 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC2(PetscScalar pos[],PetscScalar *icv
 	return PETSC_TRUE;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC2_Spherical"
+PetscBool EvaluateSubmarineLavaFlow_EnergyIC2_Spherical(PetscScalar pos[],PetscScalar *icvalue,void *data)
+{
+	PetscInt k;
+	PetscScalar  radius,value;
+	PetscBool assigned;
+	PetscErrorCode ierr;
+	
+	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
+	if (radius < 1.0) {
+		*icvalue = 1100.0*(0.5*atan(-100.0*(radius-0.5))/atan(100.0*(1.0-0.5)) + 0.5);
+	} else {
+		*icvalue = 0.0;
+	}
+	
+	return PETSC_TRUE;
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_SubmarineLavaFlow"
@@ -753,7 +890,11 @@ PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,voi
 		daT  = energy->daT;
 
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC,(void*)data->go_thermal_ic);CHKERRQ(ierr);
-		ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2,PETSC_NULL);CHKERRQ(ierr);
+		if (data->model_conf != MT_3DBATHYMETRY) {
+			ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2,PETSC_NULL);CHKERRQ(ierr);
+		} else {
+			ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2_Spherical,PETSC_NULL);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
