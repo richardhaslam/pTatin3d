@@ -581,3 +581,88 @@ PetscBool DMDAVecTraverseIJK_ZeroInteriorMinusNmax(PetscScalar pos[],PetscInt gl
 	
 	return impose;
 }
+
+/*
+ PetscInt plane: The plane (I,J or K) we wish to sweep over. Valid values are {I=0, J=1, K=1}
+								 If plane = 0, then we sweep of J,K, taking the i-index value from the variable "index"
+ PetscInt index: The I,J or K value which defines the plane in the mesh we will sweep over.
+ PetscInt coord_dof: The degree of freedom we wish to assign in the coordinate vector. Valid values are {0,1,2}.
+ 
+ The function pointer "eval" is defined the following way;
+   PetscBool eval(PetscScalar position[],PetscInt global_ijk[],PetscInt local_ijk[],PetscScalar *val,void *ctx);
+ 
+ Input: 
+   PetscScalar position[]: the coordinate vector for node i,j,k
+   PetscInt global_ijk[]: the current value of i,j,k in the mesh in the global (natural) numbering
+   PetscInt local_ijk[]: the current value of i,j,k in the mesh in the local numbering
+   void *ctx: pointer to used defined context
+ Output:
+   PetscScalar *val: the value of the new coodinate
+   PetscBool flag: flag indicates whether the output "val" should be set into the coordinate vector for the DMDA   
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDACoordTraverseIJK"
+PetscErrorCode DMDACoordTraverseIJK(DM da,PetscInt plane,PetscInt index,PetscInt coord_dof,PetscBool (*eval)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)
+{
+	PetscInt i,j,k,si,sj,sk,m,n,p;
+	DM cda;
+	Vec coords;
+	DMDACoor3d ***LA_coords;	
+	PetscScalar pos[3];
+	PetscInt L[3],G[3];
+	PetscScalar val;
+	PetscBool impose_value;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;	
+
+	if (plane >= 3) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"0 <= plane <= 2"); }
+	if (coord_dof >= 3) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"0 <= coord_dof <= 2"); }
+
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	if (!coords) { 
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"coordinates not set"); 
+	}
+	
+	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+	
+	for (k=sk; k<sk+p; k++) {
+		if ((plane == 2) && (k != index)) { continue; }
+
+		for (j=sj; j<sj+n; j++) {
+			if ((plane == 1) && (j != index)) { continue; }
+
+			for (i=si; i<si+m; i++) {
+				if ((plane == 0) && (i != index)) { continue; }
+				
+				pos[0] = LA_coords[k][j][i].x;
+				pos[1] = LA_coords[k][j][i].y;
+				pos[2] = LA_coords[k][j][i].z;
+				
+				G[0] = i;
+				G[1] = j;
+				G[2] = k;
+				
+				L[0] = i-si;
+				L[1] = j-sj;
+				L[2] = k-sk;
+				
+				impose_value = PETSC_FALSE;
+				impose_value = eval(pos,G,L,&val,ctx);
+				if (impose_value) {
+					pos[ coord_dof ] = val;
+
+					LA_coords[k][j][i].x = pos[0];
+					LA_coords[k][j][i].y = pos[1];
+					LA_coords[k][j][i].z = pos[2];
+				}
+				
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
