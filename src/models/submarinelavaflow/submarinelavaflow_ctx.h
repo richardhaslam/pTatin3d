@@ -37,7 +37,7 @@
 
 /* define user model */
 
-typedef enum { MT_HORIZ=0 } SubmarineLavaFlowModelType;
+typedef enum { MT_HORIZ=0, MT_45DEGREES, MT_3DBATHYMETRY } SubmarineLavaFlowModelType;
 
 typedef struct {
 	SubmarineLavaFlowModelType model_conf;

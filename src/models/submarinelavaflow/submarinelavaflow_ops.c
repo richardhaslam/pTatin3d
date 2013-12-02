@@ -85,6 +85,11 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
+	
+	data->model_conf = MT_HORIZ;
+	PetscOptionsGetInt(PETSC_NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
+	
+	
 	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
 	rheology->rheology_type = RHEOLOGY_LAVA;
 	rheology->nphases_active = 3;
@@ -617,10 +622,16 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 		PetscReal      grav[3];
 		
 		ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-		
-		grav[0] =  0.0;
-		grav[1] = -1.0;
-		grav[2] =  0.0;
+
+		if (data->model_conf != MT_45DEGREES) {
+			grav[0] =  0.0;
+			grav[1] = -1.0;
+			grav[2] =  0.0;
+		} else {
+			grav[0] =  0.707106781186548;
+			grav[1] = -0.707106781186548;
+			grav[2] =  0.0;
+		}
 		ierr = PhysCompStokesSetGravityUnitVector(stokes,grav);CHKERRQ(ierr);
 		ierr = PhysCompStokesScaleGravityVector(stokes,9.8);CHKERRQ(ierr);
 	}
