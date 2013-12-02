@@ -88,5 +88,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,Vec X);
 PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptatin,Vec X);
 
+PetscErrorCode pTatin_ApplyStokesGravityModel(pTatinCtx ctx);
+
 #endif
 

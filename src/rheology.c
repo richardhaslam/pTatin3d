@@ -176,6 +176,8 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			break;
 	}
 
+	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
+	
 	been_here = 1;
   PetscFunctionReturn(0);
 }
@@ -323,3 +325,29 @@ PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptati
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_ApplyStokesGravityModel"
+PetscErrorCode pTatin_ApplyStokesGravityModel(pTatinCtx ctx)
+{
+	PetscErrorCode    ierr;
+	PhysCompStokes    stokes;
+	PetscInt          e,nel,q,nqp;
+	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+	PetscFunctionBegin;
+	
+	ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+
+	nel = stokes->volQ->n_elements;
+	nqp = stokes->volQ->npoints;
+	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
+	for (e=0; e<nel; e++) {
+		ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+		for (q=0; q<nqp; q++) {
+			cell_gausspoints[q].Fu[0] = stokes->gravity_vector[0] * cell_gausspoints[q].rho;
+			cell_gausspoints[q].Fu[1] = stokes->gravity_vector[1] * cell_gausspoints[q].rho;
+			cell_gausspoints[q].Fu[2] = stokes->gravity_vector[2] * cell_gausspoints[q].rho;
+		}
+	}
+	
+	PetscFunctionReturn(0);
+}

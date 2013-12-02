@@ -803,17 +803,22 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		
 		for (p=0; p<ngp; p++) {
 			cell_gausspoints[p].eta = 0.0;
+			cell_gausspoints[p].rho = 0.0;
+
 			cell_gausspoints[p].Fu[0] = 0.0;
 			cell_gausspoints[p].Fu[1] = 0.0;
 			cell_gausspoints[p].Fu[2] = 0.0;
+			cell_gausspoints[p].Fp = 0.0;
+			
 			for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-				cell_gausspoints[p].eta    += NIu[p][i] * Ae1[i];
-				cell_gausspoints[p].Fu[1]  += NIu[p][i] * Ae2[i];
+				cell_gausspoints[p].eta += NIu[p][i] * Ae1[i];
+				cell_gausspoints[p].rho += NIu[p][i] * Ae2[i];
+				//cell_gausspoints[p].Fu[1]  += NIu[p][i] * Ae2[i];
 			}
 			if (cell_gausspoints[p].eta < range_eta[0]) { cell_gausspoints[p].eta = range_eta[0]; }
 			if (cell_gausspoints[p].eta > range_eta[1]) { cell_gausspoints[p].eta = range_eta[1]; }
-			if (cell_gausspoints[p].Fu[1] < range_rho[0]) { cell_gausspoints[p].Fu[1] = range_rho[0]; }
-			if (cell_gausspoints[p].Fu[1] > range_rho[1]) { cell_gausspoints[p].Fu[1] = range_rho[1]; }
+			if (cell_gausspoints[p].rho < range_rho[0]) { cell_gausspoints[p].rho = range_rho[0]; }
+			if (cell_gausspoints[p].rho > range_rho[1]) { cell_gausspoints[p].rho = range_rho[1]; }
 			
 			//printf("e=%d: p=%d: eta = %1.4e: Fu1 = %1.4e \n", e, p, cell_gausspoints[p].eta, cell_gausspoints[p].Fu[1] );		
 		}
@@ -995,22 +1000,25 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_Interp
 		
 		for (p=0; p<ngp; p++) {
 			cell_gausspoints[p].eta = 0.0;
+			cell_gausspoints[p].rho = 0.0;
+			
 			cell_gausspoints[p].Fu[0] = 0.0;
 			cell_gausspoints[p].Fu[1] = 0.0;
 			cell_gausspoints[p].Fu[2] = 0.0;
-
 			cell_gausspoints[p].Fp = 0.0;
 
 			for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-				cell_gausspoints[p].eta    += NIu[p][i] * Ae1[i];
-				cell_gausspoints[p].Fu[1]  += NIu[p][i] * Ae2[i];
+				cell_gausspoints[p].eta += NIu[p][i] * Ae1[i];
+				cell_gausspoints[p].rho += NIu[p][i] * Ae2[i];
+				
+				//cell_gausspoints[p].Fu[1]  += NIu[p][i] * Ae2[i];
 			}
 			if (cell_gausspoints[p].eta < range_eta[0]) { cell_gausspoints[p].eta = range_eta[0]; }
 			if (cell_gausspoints[p].eta > range_eta[1]) { cell_gausspoints[p].eta = range_eta[1]; }
-			if (cell_gausspoints[p].Fu[1] < range_rho[0]) { cell_gausspoints[p].Fu[1] = range_rho[0]; }
-			if (cell_gausspoints[p].Fu[1] > range_rho[1]) { cell_gausspoints[p].Fu[1] = range_rho[1]; }
+			if (cell_gausspoints[p].rho < range_rho[0]) { cell_gausspoints[p].rho = range_rho[0]; }
+			if (cell_gausspoints[p].rho > range_rho[1]) { cell_gausspoints[p].rho = range_rho[1]; }
 
-			//printf("e=%d: p=%d: eta = %1.4e: Fu1 = %1.4e \n", e, p, cell_gausspoints[p].eta, cell_gausspoints[p].Fu[1] );		
+			//printf("e=%d: p=%d: eta = %1.4e: rho = %1.4e \n", e, p, cell_gausspoints[p].eta, cell_gausspoints[p].rho );		
 		}
 	}
 	
