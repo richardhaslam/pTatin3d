@@ -179,7 +179,6 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_MaterialType(materialconstants,2,RHEOLOGY_LAVA,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,2,ETA_LAVA/ETA_SCALE);
 	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -508,7 +507,7 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 
 						DataFieldAccessPoint(PField_stokes,end-1,(void**)&mpprop_stokes);
 						mpprop_stokes->eta = ETA_LAVA/ETA_SCALE;
-						mpprop_stokes->rho = -1600.0*9.8/ETA_SCALE;
+						mpprop_stokes->rho = 1600.0/ETA_SCALE;
 
 						DataFieldAccessPoint(PField_energy,end-1,(void**)&mpprop_energy);
 						mpprop_energy->diffusivity = 1.0e-5;
@@ -541,7 +540,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscBool apply_inflow;
 	PetscErrorCode ierr;
 
-	apply_inflow = PETSC_TRUE;
+	apply_inflow = PETSC_FALSE;
+	PetscOptionsGetBool(PETSC_NULL,"-submarine_inflow_bc",&apply_inflow,PETSC_NULL);
 	if (apply_inflow) {
 		ierr = SubmarineLavaFlow_ApplyInflow(c,data);CHKERRQ(ierr);
 	}
@@ -603,6 +603,28 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	
+/*
+	This is a terrible design - restarting is going to be impossible.
+	Unless we write out the gravity data to a file when PhysCompStokes is checkpointed. 
+	Why? During ModelInit() the stokes context is not created and ApplyInitialMaterialGeometry() 
+	is over-ridden when we restart....
+	This is partially avoided using the command line option
+	 -stokes_gravity_vector gx,gy,gz
+	which is parsed from ptatin3d.c:pTatin3d_PhysCompStokesCreate()
+*/
+	{
+		PhysCompStokes stokes;
+		PetscReal      grav[3];
+		
+		ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+		
+		grav[0] =  0.0;
+		grav[1] = -1.0;
+		grav[2] =  0.0;
+		ierr = PhysCompStokesSetGravityUnitVector(stokes,grav);CHKERRQ(ierr);
+		ierr = PhysCompStokesScaleGravityVector(stokes,9.8);CHKERRQ(ierr);
+	}
+	
 	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_point_db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(material_point_db,&mpX);CHKERRQ(ierr);
@@ -631,12 +653,12 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 		}
 
 		ierr = MaterialPointSet_viscosity(mpX,p,ETA_WATER/ETA_SCALE);CHKERRQ(ierr);
-		ierr = MaterialPointSet_density(mpX,p,-0.0*9.8/ETA_SCALE);CHKERRQ(ierr);
+		ierr = MaterialPointSet_density(mpX,p,0.0/ETA_SCALE);CHKERRQ(ierr);
 		
 		ierr = MaterialPointGet_phase_index(mpX,p,&phase_index);CHKERRQ(ierr);
 		if (phase_index != 0) {
 			ierr = MaterialPointSet_viscosity(mpX,p,ETA_LAVA/ETA_SCALE);CHKERRQ(ierr);
-			ierr = MaterialPointSet_density(mpX,p,-1600.0*9.8/ETA_SCALE);CHKERRQ(ierr);
+			ierr = MaterialPointSet_density(mpX,p,1600.0/ETA_SCALE);CHKERRQ(ierr);
 		}
 
 		kappa = 1.0e-5;
@@ -772,7 +794,7 @@ PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix
 		//  Write out just std, stokes and plastic variables
 		//const int nf = 4;
 		//const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
-		char mp_file_prefix[256];
+		char mp_file_prefix[PETSC_MAX_PATH_LEN];
 		
 		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
