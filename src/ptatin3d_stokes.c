@@ -281,8 +281,8 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesSetGravityVector"
-PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[])
+#define __FUNCT__ "PhysCompStokesSetGravityUnitVector"
+PetscErrorCode PhysCompStokesSetGravityUnitVector(PhysCompStokes ctx,PetscReal grav[])
 {
 	PetscReal      norm_g;
 	PetscErrorCode ierr;
@@ -292,6 +292,32 @@ PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[
 	ctx->gravity_vector[0] = grav[0]/norm_g;
 	ctx->gravity_vector[1] = grav[1]/norm_g;
 	ctx->gravity_vector[2] = grav[2]/norm_g;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompStokesScaleGravityVector"
+PetscErrorCode PhysCompStokesScaleGravityVector(PhysCompStokes ctx,PetscReal fac)
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ctx->gravity_vector[0] = ctx->gravity_vector[0]*fac;
+	ctx->gravity_vector[1] = ctx->gravity_vector[1]*fac;
+	ctx->gravity_vector[2] = ctx->gravity_vector[2]*fac;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PhysCompStokesSetGravityVector"
+PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[])
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	ctx->gravity_vector[0] = grav[0];
+	ctx->gravity_vector[1] = grav[1];
+	ctx->gravity_vector[2] = grav[2];
 	PetscFunctionReturn(0);
 }
 
