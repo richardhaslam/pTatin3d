@@ -91,7 +91,8 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	PetscErrorCode  ierr;
 	PhysCompStokes  stokes;
 	PetscReal       grav[3];
-	
+	PetscInt        ncomponents;
+	PetscBool       flg;
 	
 	PetscFunctionBegin;
 
@@ -123,6 +124,9 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	grav[0] = 0.0;
 	grav[1] = 1.0;
 	grav[2] = 0.0;
+	ncomponents = 3;
+	flg = PETSC_FALSE;
+	PetscOptionsGetRealArray(PETSC_NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
 	ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
