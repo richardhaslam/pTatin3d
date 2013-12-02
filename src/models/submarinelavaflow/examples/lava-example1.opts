@@ -63,4 +63,5 @@
 -snes_rtol 1.0e-4
 -stk_velocity_da_mat_type aij
 -stk_velocity_da_refine_hierarchy_z 1,1
+-submarine_model 0
 #End of PETSc Option Table entries
