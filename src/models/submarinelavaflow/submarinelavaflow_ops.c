@@ -234,7 +234,7 @@ PetscBool ApplyBasalVelocityJBC_Spherical(PetscScalar pos[],PetscScalar *val,voi
 	x   = pos[0];
 	y   = pos[1];
 	z   = pos[2];
-	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
+	radius = sqrt(pos[0]*pos[0] + 0.0*pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
 	
 	if (radius <= 0.2) {
 		*val = vy_values[0];
@@ -282,6 +282,7 @@ PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,Sub
 	
 	val_V = 0.0;
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
+	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
 
 	basal_val_V[0] = 0.3;
 	basal_val_V[1] = 0.0;
@@ -621,6 +622,8 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscFunctionReturn(0);
 }
 	
+#undef __FUNCT__
+#define __FUNCT__ "lower_surface"
 PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
 {
 	PetscScalar x,y,z,factor;
@@ -630,12 +633,20 @@ PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar 
 	z = pos[2];
 
 	factor = *((PetscScalar*)ctx);
+#if 0	
 	*val = 0.25 * 0.3333 * (3.5*exp(-0.7*x) 
 											+ factor * 0.18 * sin(4.4*M_PI*x) * cos(1.3*M_PI*z*x) 
 											-factor * 0.05 * cos(3.0*M_PI*z*x) + 0.3*x*z - 0.5) - 0.25;
-
+#endif
+	
+	*val = (1.0/48.0) * ( (1.5-x)*pow(4.0-z,1.5) + factor * 3.6 * sin( -6.2*z - 6.0*x*x )) + 0.15;
+	
+	
 	return PETSC_TRUE;
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "upper_surface"
 PetscBool upper_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
 {
 	PetscScalar x,y,z,factor;
@@ -645,13 +656,16 @@ PetscBool upper_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar 
 	z = pos[2];
 	
 	factor = *((PetscScalar*)ctx);
+#if 0	
 	*val = 0.25 * 0.3333 * (3.5*exp(-0.7*x) 
 													+ factor * 0.18 * sin(4.4*M_PI*x) * cos(1.3*M_PI*z*x) 
 													-factor * 0.05 * cos(3.0*M_PI*z*x) + 0.3*x*z - 0.5) - 0.25 + 1.0;
+#endif
+
+	*val = (1.0/48.0) * ( (1.5-x)*pow(4.0-z,1.5) + factor * 3.6 * sin( -6.2*z - 6.0*x*x )) + 0.15 + 1.0;
 	
 	return PETSC_TRUE;
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_SubmarineLavaFlow"
@@ -865,7 +879,6 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC2_Spherical(PetscScalar pos[],PetscS
 	
 	return PETSC_TRUE;
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_SubmarineLavaFlow"
