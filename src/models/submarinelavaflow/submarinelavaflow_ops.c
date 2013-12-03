@@ -341,7 +341,7 @@ PetscBool ApplyBasalThermalBC_Spherical(PetscScalar pos[],PetscScalar *val,void 
 	x   = pos[0];
 	y   = pos[1];
 	z   = pos[2];
-	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
+	radius = sqrt(pos[0]*pos[0] + 0.0*pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
 	
 	if (radius <= 0.2) {
 		*val = base_values[0];
@@ -870,7 +870,7 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC2_Spherical(PetscScalar pos[],PetscS
 	PetscBool assigned;
 	PetscErrorCode ierr;
 	
-	radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1] + (pos[2]-1.0)*(pos[2]-1.0));
+	radius = sqrt(pos[0]*pos[0] + (pos[1]-0.3)*(pos[1]-0.3) + (pos[2]-1.0)*(pos[2]-1.0));
 	if (radius < 1.0) {
 		*icvalue = 1100.0*(0.5*atan(-100.0*(radius-0.5))/atan(100.0*(1.0-0.5)) + 0.5);
 	} else {
