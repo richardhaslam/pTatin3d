@@ -121,11 +121,11 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 		ierr = GeometryObjectSetType_Cylinder(G,x0,0.5,2.0+2.0*geom_eps,ROTATE_AXIS_Z);CHKERRQ(ierr);		
 	} else {
 		ierr = GeometryObjectCreate("lava_region",&lava);CHKERRQ(ierr);
-		x0[0] = 0.0; x0[1] = 0.0; x0[2] = 1.0;
+		x0[0] = 0.0; x0[1] = 0.3; x0[2] = 1.0;
 		ierr = GeometryObjectSetType_Sphere(lava,x0,0.3);CHKERRQ(ierr);
 		
 		ierr = GeometryObjectCreate("outer_lava_core",&G);CHKERRQ(ierr);
-		x0[0] = 0.0; x0[1] = 0.0; x0[2] = 1.0;
+		x0[0] = 0.0; x0[1] = 0.3; x0[2] = 1.0;
 		ierr = GeometryObjectSetType_Sphere(G,x0,0.5);CHKERRQ(ierr);
 	}
 
