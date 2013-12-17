@@ -8,6 +8,7 @@ def strip_keywords(infilename,outfilename):
 	bad_words = bad_words + ['**']
 	bad_words = bad_words + ['[pTatinModel]']
 	bad_words = bad_words + ['[[']
+	bad_words = bad_words + ['[pTatin]']
 
 	#with open('t1.out') as oldfile, open('t1.strip.out', 'w') as newfile:
 

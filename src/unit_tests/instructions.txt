@@ -21,7 +21,7 @@ Structure:
   - Specific line markers and line contents are identified and stripped out of both
   the test output (TEST_NAME.output.strip) and the expected file (expected.strip).
   Lines contain (MB) and (sec) are remove primarily as memory usage and cpu time may vary from one machine to another.
-  To keep the volume of text to be compared down to a minimum, lines starting with [ '##', '[[', '[pTatinModel]' ] are omitted.
+  To keep the volume of text to be compared down to a minimum, lines starting with { '**', '[[', '[pTatinModel]', '[pTatin] } are omitted.
   See the variable "bad_words" defined in strip_keywords() for this list.
   - All tests are currently serial only.
 
