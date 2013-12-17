@@ -63,17 +63,17 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[])
 	ierr = MPI_Bcast(&error_number,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	if (error_number == EEXIST) {
-		PetscPrintf(PETSC_COMM_WORLD,"Writing output to existing directory %s \n",dirname);
+		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Writing output to existing directory: %s \n",dirname);
 	} else if (error_number == EACCES) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Write permission is denied for the parent directory in which the new directory is to be added");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] Write permission is denied for the parent directory in which the new directory is to be added");
 	} else if (error_number == EMLINK) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"The parent directory has too many links (entries)");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The parent directory has too many links (entries)");
 	} else if (error_number == ENOSPC) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"The file system doesn't have enough room to create the new directory");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The file system doesn't have enough room to create the new directory");
 	} else if (error_number == ENOSPC) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"The parent directory of the directory being created is on a read-only file system and cannot be modified");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The parent directory of the directory being created is on a read-only file system and cannot be modified");
 	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"Created output directory %s \n",dirname);
+		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created output directory: %s \n",dirname);
 	}
 	
 	ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -126,6 +126,7 @@ PetscErrorCode pTatinWriteOptionsFile(const char filename[])
 	ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
 	
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created options file: %s \n",filename);
 	
 	PetscFunctionReturn(0);
 }

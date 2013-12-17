@@ -46,8 +46,8 @@
 #define __FUNCT__ "pTatinLogOpenFile"
 PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 {
-	PetscBool stdout = PETSC_FALSE;
-	char name[PETSC_MAX_PATH_LEN];
+	PetscBool      stdout = PETSC_FALSE;
+	char           name[PETSC_MAX_PATH_LEN];
 	char           date_time[1024];
 	PetscErrorCode ierr;
 
@@ -57,6 +57,7 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&ctx->log);CHKERRQ(ierr);
+		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created log file: %s \n",name);
 	}
 	else {
 		ctx->log = PETSC_VIEWER_STDOUT_WORLD;
@@ -69,7 +70,7 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 #define __FUNCT__ "pTatinLogCloseFile"
 PetscErrorCode pTatinLogCloseFile(pTatinCtx ctx)
 {
-	PetscBool stdout = PETSC_FALSE;
+	PetscBool      stdout = PETSC_FALSE;
 	PetscErrorCode ierr;
 
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
