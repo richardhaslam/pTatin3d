@@ -49,6 +49,7 @@ int MPI_Subcomm_free(MPI_Subcomm *scomm);
 int MPI_Subcomm_get_active(MPI_Subcomm sc,int *a);
 int MPI_Subcomm_get_parent_comm(MPI_Subcomm sc,MPI_Comm *a);
 int MPI_Subcomm_get_comm(MPI_Subcomm sc,MPI_Comm *a);
+int MPI_Subcomm_get_num_sub_ranks(MPI_Subcomm sc,int *a);
 int MPI_Subcomm_get_active_ranks(MPI_Subcomm sc,int **a);
 
 int MPI_Subcomm_create_MethodA(MPI_Comm parent_comm,int parent_reduction_factor,MPI_Subcomm *scomm);

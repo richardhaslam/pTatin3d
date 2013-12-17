@@ -85,6 +85,12 @@ int MPI_Subcomm_get_comm(MPI_Subcomm sc,MPI_Comm *a)
 	return(0);
 }
 
+int MPI_Subcomm_get_num_sub_ranks(MPI_Subcomm sc,int *a)
+{
+	*a = sc->nranks_from_parent;
+	return(0);
+}
+
 int MPI_Subcomm_get_active_ranks(MPI_Subcomm sc,int **a)
 {
 	*a = sc->ranks_from_parent;
