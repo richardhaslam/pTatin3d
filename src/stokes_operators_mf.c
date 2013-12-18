@@ -307,9 +307,10 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 		ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*e],ufield);CHKERRQ(ierr);
 		
 		for (k=0; k<Q2_NODES_PER_EL_3D; k++ ) {
-			ux[k] = elu[3*k  ];
-			uy[k] = elu[3*k+1];
-			uz[k] = elu[3*k+2];
+			PetscInt idx = 3*k;
+			ux[k] = elu[  idx];
+			uy[k] = elu[++idx];
+			uz[k] = elu[++idx];
 		}
 		
 		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
@@ -318,6 +319,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
 		
 		
+#ifdef ELEMENT_MF_STANDARD
 		for (p=0; p<ngp; p++) {
 			//printf("[e=%4d,p=%d] %1.4e \n", e,p,cell_gausspoints[p].eta);
 			el_eta[p] = cell_gausspoints[p].eta;
@@ -329,6 +331,21 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 			  MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
       #endif
 		}
+#endif
+#ifdef ELEMENT_MF_OPTIMIZED
+		for (p=0; p<ngp; p++) {
+			fac = 1.0;
+			el_eta[p] = cell_gausspoints[p].eta * WEIGHT[p] * detJ[p];
+			
+		#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
+			f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+		#else
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+		#endif
+		}
+#endif
+		
+		
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}

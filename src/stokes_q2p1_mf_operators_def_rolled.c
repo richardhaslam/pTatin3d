@@ -123,12 +123,12 @@ inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double eta_gp
 	// y = A11.u at gauss point //
 	for (iu=0; iu<27; iu++) {
 		int idx = 3*iu;
-		Y[idx]   += FAC*(dNudx[iu]*tau_gp[0] + dNudy[iu]*tau_gp[3] + dNudz[iu]*tau_gp[4]);
-		Y[++idx] += FAC*(dNudx[iu]*tau_gp[3] + dNudy[iu]*tau_gp[1] + dNudz[iu]*tau_gp[5]);
-		Y[++idx] += FAC*(dNudx[iu]*tau_gp[4] + dNudy[iu]*tau_gp[5] + dNudz[iu]*tau_gp[2]);
-	} // ops = 27.[21]
+		Y[idx]   += (dNudx[iu]*tau_gp[0] + dNudy[iu]*tau_gp[3] + dNudz[iu]*tau_gp[4]);
+		Y[++idx] += (dNudx[iu]*tau_gp[3] + dNudy[iu]*tau_gp[1] + dNudz[iu]*tau_gp[5]);
+		Y[++idx] += (dNudx[iu]*tau_gp[4] + dNudy[iu]*tau_gp[5] + dNudz[iu]*tau_gp[2]);
+	} // ops = 27.[18]
   
-// total operations = 486 + 7 + 567 = 1060
+// total operations = 486 + 7 + 486 = 979
 }
 inline void MatMultMF_Stokes_MixedFEM3d_Buu(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
