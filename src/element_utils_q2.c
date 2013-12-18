@@ -33,6 +33,9 @@
 
 #include "element_utils_q2.h"
 
+#define ELEMENT_OPERATION_STANDARD
+//#define ELEMENT_OPERATION_OPTIMIZED
+
 
 void P3D_ConstructNi_Q2_2D(PetscReal _xi[],PetscReal Ni[])
 {
@@ -349,6 +352,7 @@ void P3D_prepare_elementQ2(PetscInt nqp,PetscReal WEIGHT[],PetscReal XI[][3],Pet
 	}
 }
 
+#ifdef ELEMENT_OPERATION_STANDARD
 void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
 																 PetscReal detJ[],
 																 PetscReal dNudx[][NPE],
@@ -424,7 +428,95 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 	
 	// TOTAL = [NQP*NPE]*18 + [NQP]*(14 + 58) + [NQP*NPE]*15
 }
+#endif
 
+#ifdef ELEMENT_OPERATION_OPTIMIZED
+void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
+																		PetscReal detJ[],
+																		PetscReal dNudx[][NPE],
+																		PetscReal dNudy[][NPE],
+																		PetscReal dNudz[][NPE] )
+{
+	PetscInt k,p;
+	PetscReal t4, t6, t8, t10, t12, t14, t17;
+	PetscReal iJ[3][3];
+	
+	for (p=0; p<nqp; p++) {
+		PetscReal J[][3] = { {0.0,0.0,0.0} , {0.0,0.0,0.0} , {0.0,0.0,0.0} };
+		
+		for (k=0; k<27; k++) {
+			PetscInt  idx = 3*k;
+			PetscReal xc = el_coords[  idx];
+			PetscReal yc = el_coords[++idx];
+			PetscReal zc = el_coords[++idx];
+			
+			J[0][0] += GNI[p][0][k] * xc ;
+			J[0][1] += GNI[p][0][k] * yc ;
+			J[0][2] += GNI[p][0][k] * zc ;
+			
+			J[1][0] += GNI[p][1][k] * xc ;
+			J[1][1] += GNI[p][1][k] * yc ;
+			J[1][2] += GNI[p][1][k] * zc ;
+			
+			J[2][0] += GNI[p][2][k] * xc ;
+			J[2][1] += GNI[p][2][k] * yc ;
+			J[2][2] += GNI[p][2][k] * zc ;
+		}
+		/* flops = [NQP*NPE] * 18 */
+
+/* <option_A> */
+		detJ[p] = J[0][0]*(J[1][1]*J[2][2] - J[1][2]*J[2][1])  // a
+		        - J[0][1]*(J[1][0]*J[2][2] + J[1][2]*J[2][0])  // b
+		        + J[0][2]*(J[1][0]*J[2][1] - J[1][1]*J[2][0]); // c
+		/* flops = [NQP] * 14 */
+		
+		t4  = J[2][0] * J[0][1];
+		t6  = J[2][0] * J[0][2];
+		t8  = J[1][0] * J[0][1];
+		t10 = J[1][0] * J[0][2];
+		t12 = J[0][0] * J[1][1];
+		t14 = J[0][0] * J[1][2]; // [NQP] * 6
+		
+		t17 = 1.0/detJ[p]; // [NQP] * 1
+/* </option_A> */
+#ifdef COMPUTE_DETERMINANT_OPTION_B
+	 /* 
+		 NOTE: Option A and option B are identical, however B uses 2 less operations.
+		 We elected for option A as more unit tests fail with option B variant due to small floating point differences 
+		*/
+		t4  = J[2][0] * J[0][1];
+		t6  = J[2][0] * J[0][2];
+		t8  = J[1][0] * J[0][1];
+		t10 = J[1][0] * J[0][2];
+		t12 = J[0][0] * J[1][1];
+		t14 = J[0][0] * J[1][2]; // [NQP] * 6
+		detJ[p] = (t4 * J[1][2] - t6 * J[1][1] - t8 * J[2][2] + t10 * J[2][1] + t12 * J[2][2] - t14 * J[2][1]);  // [NQP] * 12
+		t17 = 1.0/detJ[p]; // [NQP] * 1
+#endif
+		
+		iJ[0][0] = (J[1][1] * J[2][2] - J[1][2] * J[2][1]) * t17;  // 4
+		iJ[0][1] = -(J[0][1] * J[2][2] - J[0][2] * J[2][1]) * t17; // 5
+		iJ[0][2] = (J[0][1] * J[1][2] - J[0][2] * J[1][1]) * t17;  // 4
+		iJ[1][0] = (J[2][0] * J[1][2] - J[1][0] * J[2][2]) * t17;  // 4
+		iJ[1][1] = (-t6 + J[0][0] * J[2][2]) * t17;                // 4
+		iJ[1][2] = (t10 - t14) * t17;                              // 2
+		iJ[2][0] = (-J[2][0] * J[1][1] + J[1][0] * J[2][1]) * t17; // 5
+		iJ[2][1] = (t4 - J[0][0] * J[2][1]) * t17;                 // 3
+		iJ[2][2] = (-t8 + t12) * t17;                              // 3
+		/* flops = [NQP] * 34 */
+		
+		/* shape function derivatives */
+		for (k=0; k<27; k++) {
+			dNudx[p][k] = iJ[0][0]*GNI[p][0][k] + iJ[0][1]*GNI[p][1][k] + iJ[0][2]*GNI[p][2][k];
+			dNudy[p][k] = iJ[1][0]*GNI[p][0][k] + iJ[1][1]*GNI[p][1][k] + iJ[1][2]*GNI[p][2][k];
+			dNudz[p][k] = iJ[2][0]*GNI[p][0][k] + iJ[2][1]*GNI[p][1][k] + iJ[2][2]*GNI[p][2][k];
+		}
+	}
+	/* flops = [NQP*NPE] * 15 */
+	
+	// TOTAL = [NQP*NPE]*18 + [NQP]*(14 + 6 + 1 + 34) + [NQP*NPE]*15
+}
+#endif
 
 void P3D_evaluate_geometry_elementQ2_1gp(
 																		 PetscReal GNI_centre[3][NPE],

@@ -49,8 +49,17 @@
 
 #include "stokes_operators.h"
 
-#include "stokes_q2p1_mf_operators_def.c"
-#include "stokes_q2p1_mf_operators_diag_def.c"
+#define ELEMENT_MF_STANDARD
+//#define ELEMENT_MF_OPTIMIZED
+
+#ifdef ELEMENT_MF_STANDARD
+  #include "stokes_q2p1_mf_operators_def.c"
+  #include "stokes_q2p1_mf_operators_diag_def.c"
+#endif
+#ifdef ELEMENT_MF_OPTIMIZED
+  #include "stokes_q2p1_mf_operators_def_rolled.c"
+  #include "stokes_q2p1_mf_operators_diag_def.c"
+#endif
 
 //
 //#define PTAT3D_USE_FORTRAN_MF_KERNELS
