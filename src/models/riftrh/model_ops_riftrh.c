@@ -42,6 +42,7 @@
 #include "MPntPStokesPl_def.h"
 #include "ptatin3d_energy.h"
 #include "model_utils.h"
+#include "dmda_iterator.h"
 
 #include "ptatin_models.h"
 
@@ -310,13 +311,13 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2) / (data->ha - dh_vx/2);
 	
 	/* reports before scaling */
-	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_Riftrh_Lx : %+1.4e [SI]\n", data->Lx );
-	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_Riftrh_Ly : %+1.4e [SI]\n", data->Ly );
-	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_Riftrh_Lz : %+1.4e [SI]\n", data->Lz );
-	PetscPrintf(PETSC_COMM_WORLD,"  -model_Riftrh_vx_up [m/s]:  %+1.4e \n", data->vx_up);
-	PetscPrintf(PETSC_COMM_WORLD,"-model_Riftrh_rhoc [kg/m^3] :%+1.4e \n", data->rhoc );
-	PetscPrintf(PETSC_COMM_WORLD,"-model_Riftrh_rhom [kg/m^3] :%+1.4e \n", data->rhom );
-	PetscPrintf(PETSC_COMM_WORLD,"-model_Riftrh_rhoa [kg/m^3] :%+1.4e \n", data->rhoa );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  input: -model_Riftrh_Lx : %+1.4e [SI]\n", data->Lx );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  input: -model_Riftrh_Ly : %+1.4e [SI]\n", data->Ly );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  input: -model_Riftrh_Lz : %+1.4e [SI]\n", data->Lz );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  -model_Riftrh_vx_up [m/s]:  %+1.4e \n", data->vx_up);
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  -model_Riftrh_rhoc [kg/m^3] :%+1.4e \n", data->rhoc );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  -model_Riftrh_rhom [kg/m^3] :%+1.4e \n", data->rhom );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  -model_Riftrh_rhoa [kg/m^3] :%+1.4e \n", data->rhoa );
 	
 	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
 		MaterialConstantsPrintAll(materialconstants,regionidx);
@@ -329,12 +330,12 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 		data->density_bar   = data->pressure_bar / data->length_bar;
 		
 		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]:  during the solve scaling will be done using \n");
-		PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  t*    : %1.4e [s]\n", data->time_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  eta*  : %1.4e [Pa.s]\n", data->viscosity_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
-		PetscPrintf(PETSC_COMM_WORLD,"  P*    : %1.4e [Pa]\n", data->pressure_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  L*    : %1.4e [m]\n", data->length_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  t*    : %1.4e [s]\n", data->time_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  eta*  : %1.4e [Pa.s]\n", data->viscosity_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  rho*  : %1.4e [kg.m^-3]\n", data->density_bar );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh]  P*    : %1.4e [Pa]\n", data->pressure_bar );
 		//scale viscosity cutoff
 		rheology->eta_lower_cutoff_global = rheology->eta_lower_cutoff_global / data->viscosity_bar;
 		rheology->eta_upper_cutoff_global = rheology->eta_upper_cutoff_global / data->viscosity_bar;
@@ -365,15 +366,15 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 		}
 		
 		/* Reports scaled values */		
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value    -model_Riftrh_Lx   :  %+1.4e \n", data->Lx );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value    -model_Riftrh_Ly   :  %+1.4e \n", data->Ly );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value    -model_Riftrh_Lz   :  %+1.4e \n", data->Lz );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value    -model_Riftrh_Lx   :  %+1.4e \n", data->Lx );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value    -model_Riftrh_Ly   :  %+1.4e \n", data->Ly );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value    -model_Riftrh_Lz   :  %+1.4e \n", data->Lz );
 		
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_Riftrh_vx_up:%+1.4e    -model_Riftrh_vx_down:%+1.4e \n", data->vx_up ,data->vx_down);
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_Riftrh_rhoc:%+1.4e \n", data->rhoc );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_Riftrh_rhom:%+1.4e \n", data->rhom );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value   -model_Riftrh_rhoa:%+1.4e \n", data->rhoa );
-		PetscPrintf(PETSC_COMM_WORLD,"scaled value for material parameters\n");
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value   -model_Riftrh_vx_up:%+1.4e    -model_Riftrh_vx_down:%+1.4e \n", data->vx_up ,data->vx_down);
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value   -model_Riftrh_rhoc:%+1.4e \n", data->rhoc );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value   -model_Riftrh_rhom:%+1.4e \n", data->rhom );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value   -model_Riftrh_rhoa:%+1.4e \n", data->rhoa );
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] scaled value for material parameters\n");
 		for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
 			MaterialConstantsPrintAll(materialconstants,regionidx);
 		}
@@ -390,18 +391,63 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
+/* SET AN INITIAL BACK GROUND STRAIN RATE, TEMPERATURE, PRESSURE */
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_Riftrh"
-/* SET AN INITIAL BACK GROUND STRAIN RATE, TEMPERATURE, PRESSURE */
 PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscErrorCode ierr;
-    PetscBool use_energy;
+	PetscBool use_energy;
+	PhysCompStokes     stokes;
+	DM stokes_pack,dau,dap;
+	DMDAVecTraverse3d_InterpCtx IntpCtx;
+	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
+	Vec velocity,pressure;
+	PetscReal MeshMax[3],MeshMin[3],height,length,vxl,vxr,vybottom;
+	PetscBool use_initial_up_field = PETSC_FALSE;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
+
+	PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_use_initial_up_field",&use_initial_up_field,PETSC_NULL);
+	
+	if (use_initial_up_field) {
+		PetscPrintf(PETSC_COMM_WORLD,"[riftrh] Using velocity from boundary condition and mantle hydrostatic pressure as initial condition\n");
+		
+		ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+		stokes_pack = stokes->stokes_pack;
+		ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+		ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		
+		/* velocity intial condition - background strain */
+		ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
+		vxl = -data->vx_up;
+		vxr =  data->vx_up;
+		ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
+		height = MeshMax[1] - MeshMin[1];
+		length = MeshMax[0] - MeshMin[0];
+		vybottom = 2.*data->vx_up * height / length;
+		
+		ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(length),vxl,0.0);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+		
+		ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,(0.0-vybottom)/(height),vybottom,0.0);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+		
+		/* pressure initial condition - hydrostatic */
+		ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
+		HPctx.surface_pressure = 0.0;
+		HPctx.ref_height = height;
+		HPctx.ref_N      = c->stokes_ctx->my-1;
+		HPctx.grav       = 10.0;
+		HPctx.rho        = data->rhom;
+		ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
+		ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
+		
+		ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+	
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
 	if (use_energy) {
 		PhysCompEnergy energy;
@@ -687,7 +733,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	PetscPrintf(PETSC_COMM_WORLD,"Lx = %d \n", data->Lx );
+	PetscPrintf(PETSC_COMM_WORLD,"[riftrh] Lx = %1.4e \n", data->Lx );
 	
 	PetscFunctionReturn(0);
 }
