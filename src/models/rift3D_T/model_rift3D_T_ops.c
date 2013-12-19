@@ -1480,6 +1480,7 @@ PetscErrorCode ModelApplyInitialMaterialThermalProperties_Atlantic(pTatinCtx c,v
 	
 
 	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+	DataBucketGetSizes(db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
 
 	for (p=0; p<n_mp_points; p++) {
