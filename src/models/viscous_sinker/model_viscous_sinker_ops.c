@@ -463,10 +463,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_ViscousSinker"
-PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void *ctx)
+#define __FUNCT__ "ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion"
+PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(pTatinCtx c,ModelViscousSinkerCtx *data)
 {
-	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
 	int                    p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
@@ -550,6 +549,228 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "compute_inclusion_origins"
+PetscErrorCode compute_inclusion_origins(PetscInt ninclusions,PetscReal rmax,PetscReal Lx,PetscReal Ly,PetscReal Lz,
+																				 PetscReal **_pos)
+{
+	PetscErrorCode ierr;
+	PetscReal      *pos;
+	PetscInt       p,found=0,overlap,attempt,loops=0;
+	
+	PetscFunctionBegin;
+	
+	PetscMalloc(sizeof(PetscReal)*3*ninclusions,&pos);
+	
+	srand(0);
+
+	loops = 0;
+	PetscPrintf(PETSC_COMM_WORLD,"  Commencing inclusion generation \n");
+START_INCLUSION:
+	
+	loops++;
+	found = 0;
+	attempt = 0;
+	while (found < ninclusions) {
+		PetscReal xp = rand()/( (PetscReal)RAND_MAX );
+		PetscReal yp = rand()/( (PetscReal)RAND_MAX );
+		PetscReal zp = rand()/( (PetscReal)RAND_MAX );
+		PetscReal dx,dy,dz,range[3],cp[3];
+		
+		if (attempt == 50000) { goto START_INCLUSION; }
+		
+		//xp = 2.1*rmax + xp * (Lx-2.1*rmax);
+		//yp = 2.1*rmax + yp * (Ly-2.1*rmax);
+		//zp = 2.1*rmax + zp * (Lz-2.1*rmax);
+
+		xp = xp * (Lx);
+		yp = yp * (Ly);
+		zp = zp * (Lz);
+		attempt++;
+//
+		dx = 1.1*rmax;
+		range[0] = xp - dx;
+		if (range[0] < 0.0) { continue; }
+		range[0] = xp + dx;
+		if (range[0] > Lx) { continue; }
+		
+		dy = 1.1*rmax;
+		range[1] = yp - dy;
+		if (range[1] < 0.0) { continue; }
+		range[1] = yp + dy;
+		if (range[1] > Ly) { continue; }
+
+		dz = 1.1*rmax;
+		range[2] = zp - dz;
+		if (range[2] < 0.0) { continue; }
+		range[2] = zp + dz;
+		if (range[2] > Lz) { continue; }
+//		
+		/* check others for overlap */
+		cp[0] = xp;
+		cp[1] = yp;
+		cp[2] = zp;
+		overlap = 0;
+		for (p=0; p<found; p++) {
+			PetscScalar sep;
+			
+			sep = PetscSqrtReal(  
+									 (pos[3*p+0]-cp[0])*(pos[3*p+0]-cp[0]) 
+								 + (pos[3*p+1]-cp[1])*(pos[3*p+1]-cp[1])
+								 + (pos[3*p+2]-cp[2])*(pos[3*p+2]-cp[2]) );
+
+			if (sep < 2.1*rmax) {
+				overlap = 1;
+				break;
+			}
+		}
+		if (overlap == 1) { continue; }
+		
+		pos[3*found+0] = xp;
+		pos[3*found+1] = yp;
+		pos[3*found+2] = zp;
+		found++;
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"  inclusion generation performed %D loops: Made %D attempts and correctly defined %D of %D inclusions\n",loops,attempt,found,ninclusions);
+	
+	*_pos   = pos;
+	
+	PetscFunctionReturn(0);
+}
+
+	
+#undef __FUNCT__
+#define __FUNCT__ "ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions"
+PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTatinCtx c,ModelViscousSinkerCtx *data,PetscInt ninclusions)
+{
+	int                    p,n_mp_points;
+	DataBucket             db;
+	DataField              PField_std,PField_stokes;
+	int                    phase;
+	PetscInt               cc;
+	PetscReal              max_radius,*inclusion_pos;
+	PetscErrorCode         ierr;
+	
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	
+	/* define properties on material points */
+	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+	DataFieldGetAccess(PField_std);
+	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
+	
+	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+	DataFieldGetAccess(PField_stokes);
+	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
+	
+	
+	DataBucketGetSizes(db,&n_mp_points,0,0);
+	
+//	max_radius = 0.5*data->length[0];
+//	if ( 0.5*data->length[1] > max_radius ) { max_radius = 0.5*data->length[0]; }
+//	if ( 0.5*data->length[2] > max_radius ) { max_radius = 0.5*data->length[2]; }
+	max_radius = 0.25*data->length[0]*data->length[0]
+						 + 0.25*data->length[1]*data->length[1]
+						 + 0.25*data->length[2]*data->length[2];
+	max_radius = PetscSqrtReal(max_radius);
+	
+	ierr = compute_inclusion_origins(ninclusions,max_radius,data->Lx,data->Ly,data->Lz,&inclusion_pos);CHKERRQ(ierr);
+	
+	for (p=0; p<n_mp_points; p++) {
+		MPntStd     *material_point;
+		MPntPStokes *mpprop_stokes;
+		double      *position;
+		double      eta,rho;
+		PetscBool   inside_inclusion;
+		
+		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
+		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
+		
+		/* Access using the getter function provided for you (recommeneded for beginner user) */
+		MPntStdGetField_global_coord(material_point,&position);
+		
+		phase = 0;
+		eta =  data->eta0;
+		rho = -data->rho0;
+
+		inside_inclusion = PETSC_FALSE;
+
+		if (data->is_sphere) {
+			for (cc=0; cc<ninclusions; cc++) {
+				PetscReal *cp = &inclusion_pos[2*cc];
+				PetscReal sep,rx,ry,rz;
+
+				rx = (position[0]-cp[0])/(0.5*data->length[0]);
+				ry = (position[1]-cp[1])/(0.5*data->length[1]);
+				rz = (position[2]-cp[2])/(0.5*data->length[2]);
+				
+				sep = rx*rx + ry*ry + rz*rz;
+				if (sep < 1.0) {
+					inside_inclusion = PETSC_TRUE;
+					break;
+				}
+				
+			}
+		} else { /* box */
+
+			for (cc=0; cc<ninclusions; cc++) {
+				PetscReal *cp = &inclusion_pos[2*cc];
+			
+				if ( (position[0]>cp[0] - 0.5*data->length[0]) && (position[0]<cp[0] + 0.5*data->length[0]) ) {
+					if ( (position[1]>cp[1] - 0.5*data->length[1]) && (position[1]<cp[1] + 0.5*data->length[1]) ) {
+						if ( (position[2]>cp[2] - 0.5*data->length[2]) && (position[2]<cp[2] + 0.5*data->length[2]) ) {
+							inside_inclusion = PETSC_TRUE;
+							break;
+						}
+					}
+				}
+				
+			}			
+		}
+
+		if (inside_inclusion) {
+			phase = 1;
+			eta =  data->eta1;
+			rho = -data->rho1;
+		}
+				
+		/* user the setters provided for you */
+		MPntStdSetField_phase_index(material_point,phase);
+		
+		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
+		MPntPStokesSetField_density(mpprop_stokes,rho);
+	}
+	
+	DataFieldRestoreAccess(PField_std);
+	DataFieldRestoreAccess(PField_stokes);
+	
+	PetscFree(inclusion_pos);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_ViscousSinker"
+PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void *ctx)
+{
+	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
+	PetscInt              ninclusions = 1;
+	PetscErrorCode        ierr;
+
+	PetscOptionsGetInt(PETSC_NULL,"-model_viscous_sinker_ninclusions",&ninclusions,0);
+	if (ninclusions == 1) {
+		ierr = ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(c,data);CHKERRQ(ierr);
+	} else {
+		ierr = ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(c,data,ninclusions);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_ViscousSinker"
