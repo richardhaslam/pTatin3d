@@ -76,6 +76,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	
     /* Temperature flag */
     use_energy=PETSC_TRUE;
+//    use_energy=PETSC_FALSE;
     
     /* set the deffault values of the material constant for this particular model */
 	/*scaling */
@@ -121,7 +122,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->rhom = 3300.0;
 	data->rhoa = 3250.0;
 	data->etac = 1.0e28;
-	data->etam = 1.0e22;
+	data->etam = 1.0e21;
 	data->etaa = 1.0e19;
 	/* MATERIAL PARAMETERS */
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
@@ -222,7 +223,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
     phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
-	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.1,0.5);
 	
 	/* PHASE 1, MANTLE LITHOSPHERE */
 	regionidx = 1;
@@ -254,7 +255,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
     phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
-	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.1,0.5);
 	
 	/* PHASE 2, CRUST / UPPER LITHOSPHERE */
 	regionidx = 2;
@@ -286,7 +287,7 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
     phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
-	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.0,0.3);
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.1,0.5);
 	
 		
 	/* Read the options */
@@ -744,10 +745,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscInt               e,p,n_mp_points;
+        PetscInt               notch_type;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;
 	int                    phase;
-	PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center;
+	PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center,y_center,z_center;
 	PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
 	PetscErrorCode ierr;
     MPAccess           mpX;
@@ -775,11 +777,16 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	hm_dimensional = data->hm * data->length_bar;
 	hc_dimensional = data->hc * data->length_bar;
 	x_center       = 0.5 * data->Lx * data->length_bar;
+	y_center       = 0.5 * data->Ly * data->length_bar;
+	z_center       = 0.5 * data->Lz * data->length_bar;
 	notch_width    = 50.0e3;
 	notch_height   = 30.0e3;
 	
 	/* marker loop */
 	DataBucketGetSizes(db,&n_mp_points,0,0);
+       
+        /*define notch type, 1: one notch; 2 two notches/weak seeds */
+        notch_type = 2; 
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point_std;
@@ -816,10 +823,29 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 		zp_dimensional = position[2] * data->length_bar;
 		plastic_strain = 0.0;
 		
-		if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
+                if (notch_type == 1 ) {
+		   if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
 			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
 				plastic_strain = 1.0;
 			}
+		   }
+		}
+
+                if (notch_type == 2 ) {
+		   if (xp_dimensional >= 1.15*x_center - 0.5*notch_width && xp_dimensional <= 1.15*x_center + 0.5*notch_width) {
+			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+                             if (zp_dimensional <= 0.8*z_center ) {
+				plastic_strain = 1.0;
+                             }
+			}
+		   }
+		   if (xp_dimensional >= 0.85*x_center - 0.5*notch_width && xp_dimensional <= 0.85*x_center + 0.5*notch_width) {
+			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+                             if (zp_dimensional >= 1.2*z_center) {
+				plastic_strain = 1.0;
+                             }
+			}
+		   }
 		}
 		
 		/* user the setters provided for you */
