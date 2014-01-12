@@ -650,12 +650,14 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 	int                    phase;
 	PetscInt               cc;
 	PetscReal              max_radius,*inclusion_pos;
+	PetscBool              inclusion_view = PETSC_FALSE;
 	PetscErrorCode         ierr;
 	
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
+	PetscOptionsGetBool(PETSC_NULL,"-model_viscous_sinker_inclusion_view",&inclusion_view,PETSC_NULL);
 	
 	/* define properties on material points */
 	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
@@ -679,6 +681,12 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 	max_radius = PetscSqrtReal(max_radius);
 	
 	ierr = compute_inclusion_origins(ninclusions,max_radius,data->Lx,data->Ly,data->Lz,&inclusion_pos);CHKERRQ(ierr);
+	if (inclusion_view) {
+		for (cc=0; cc<ninclusions; cc++) {
+			PetscReal *cp = &inclusion_pos[2*cc];
+			PetscPrintf(PETSC_COMM_WORLD," inclusion[%d]: Ox = %1.4e %1.4e %1.4e \n",cc,cp[0],cp[1],cp[2]);
+		}
+	}
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
