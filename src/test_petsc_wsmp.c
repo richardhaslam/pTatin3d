@@ -131,8 +131,8 @@ PetscErrorCode test_wsmp_serial_petsc(void)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "test_wsmp_serial_pc_wsmp"
-PetscErrorCode test_wsmp_serial_pc_wsmp(void)
+#define __FUNCT__ "test_wsmp_pc_wsmp"
+PetscErrorCode test_wsmp_pc_wsmp(void)
 {
 	PetscInt m = 9;
 	Vec b,x;
@@ -145,7 +145,7 @@ PetscErrorCode test_wsmp_serial_pc_wsmp(void)
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
-	MatCreate(PETSC_COMM_SELF,&A);
+	MatCreate(PETSC_COMM_WORLD,&A);
 	MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);
 	MatSetFromOptions(A);
 	
@@ -200,7 +200,7 @@ PetscErrorCode test_wsmp_serial_pc_wsmp(void)
 	VecSet(b,1.0);
 	/* ------------------------------------------- */
 	
-	KSPCreate(PETSC_COMM_SELF,&ksp);
+	KSPCreate(PETSC_COMM_WORLD,&ksp);
 	KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
 	KSPSetType(ksp,KSPPREONLY);
 	KSPGetPC(ksp,&pc);
@@ -209,24 +209,24 @@ PetscErrorCode test_wsmp_serial_pc_wsmp(void)
 	
 	printf("first solve\n");
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_VIEWER_STDOUT_SELF);
+	VecView(x,PETSC_COMM_WORLD);
 
 	printf("first solve* [identical]\n");
 	VecSet(x,0.0);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_VIEWER_STDOUT_SELF);
+	VecView(x,PETSC_COMM_WORLD);
 	
 	printf("second solve [same nonzero pattern]\n");
 	VecSet(x,0.0);
 	KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_VIEWER_STDOUT_SELF);
+	VecView(x,PETSC_COMM_WORLD);
 
 	printf("third solve [different nonzero pattern]\n");
 	VecSet(x,0.0);
 	KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_VIEWER_STDOUT_SELF);
+	VecView(x,PETSC_COMM_WORLD);
 	
 	KSPDestroy(&ksp);
 	MatDestroy(&A);
@@ -248,9 +248,9 @@ int main(int argc,char **argv)
 	MPI_Comm_size(PETSC_COMM_WORLD,&size);
 	if (size == 1) {
 		//ierr = test_wsmp_serial_petsc();CHKERRQ(ierr);
-		ierr = test_wsmp_serial_pc_wsmp();CHKERRQ(ierr);
+		ierr = test_wsmp_pc_wsmp();CHKERRQ(ierr);
 	} else {
-		
+		ierr = test_wsmp_pc_wsmp();CHKERRQ(ierr);
 	}
 	
 	ierr = pTatinFinalize();CHKERRQ(ierr);
