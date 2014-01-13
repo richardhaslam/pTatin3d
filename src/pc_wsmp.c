@@ -38,6 +38,55 @@ typedef struct {
 } PC_WSMP;
 
 
+
+#undef __FUNCT__
+#define __FUNCT__ "Default_MatIsSymmetric"
+PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
+{
+	PetscErrorCode ierr;
+	Vec x,y1,y2;
+	PetscReal min,max;
+	
+	ierr = MatGetVecs(A,&y2,&y1);CHKERRQ(ierr);
+	ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+	
+	ierr = VecSetRandom(x,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatMult(A,x,y1);CHKERRQ(ierr);
+	ierr = MatMultTranspose(A,x,y2);CHKERRQ(ierr);
+	
+	ierr = VecAXPY(y1,-1.0,y2);CHKERRQ(ierr);
+	ierr = VecAbs(y1);CHKERRQ(ierr);
+	ierr = VecMin(y1,PETSC_NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y1,PETSC_NULL,&max);CHKERRQ(ierr);
+	
+	if (max < tol) {
+		*flg = PETSC_TRUE;
+	} else {
+		*flg = PETSC_FALSE;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PCWSMP_MatIsSymmetric"
+PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
+{
+	PetscErrorCode ierr;
+	PetscMPIInt size;
+	MPI_Comm comm;
+	
+	PetscObjectGetComm((PetscObject)A,&comm);
+	ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+	if (size == 1) {
+		ierr = MatIsSymmetric(A,tol,flg);CHKERRQ(ierr);
+	} else {
+		ierr = Default_MatIsSymmetric(A,tol,flg);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
 /* helpers to get AIJ info from sequential and parallel matrices */
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ"
@@ -389,7 +438,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		const PetscInt *ja;
 		
 		/* Determine if matrix is symmetric */
-		ierr = MatIsSymmetric(B,1.0e-8,&wsmp->symmetric);CHKERRQ(ierr);
+		ierr = PCWSMP_MatIsSymmetric(B,1.0e-8,&wsmp->symmetric);CHKERRQ(ierr);
 		if (!wsmp->symmetric) {
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only support for symmetric WSMP implemenatations exists");
 		}
