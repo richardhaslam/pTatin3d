@@ -140,7 +140,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 		idx = idx + nnz_i_ut;
 		cnt = cnt + nnz_i;
 	}
-	ia_ut[m] = idx + 0; /* fortran +1 */
+	ia_ut[m] = (int)idx + 0; /* fortran +1 */
 	
 	/* ja_ut */
 	idx = 0;
@@ -179,9 +179,10 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 	PetscInt *ja;
 	PetscInt m,n,M,N,nnz_i,cnt,idx,nnz_ut,i,j,start,end;
 	PetscBool done;
-	PetscInt *ia_ut,*ja_ut;
+	int *ia_ut,*ja_ut;
 	IS irow,icol;
 	Mat *smat;
+	PetscBool view = PETSC_FALSE;
 	
 	
 	ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
@@ -229,7 +230,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 				nnz_i_ut++;
 			}
 		}
-		ia_ut[i] = idx;
+		ia_ut[i] = (int)idx;
 		
 		idx = idx + nnz_i_ut;
 		cnt = cnt + nnz_i;
@@ -251,6 +252,60 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 		
 		cnt = cnt + nnz_i;
 	}
+	
+	if (view) {
+		PetscMPIInt rank;
+		FILE *fp;
+		char name[1000];
+		PetscInt nnz_i_ut = 0;
+		
+		// ia
+		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+		sprintf(name,"ia_rank%d.dat",rank);
+		fp = fopen(name,"wa");
+
+		cnt = 0;
+		idx = 0;
+		for (i=0; i<m; i++) {
+			nnz_i_ut = 0;
+
+			nnz_i = ia[i+1]-ia[i];
+			for (j=cnt; j<cnt+nnz_i; j++) {
+				if (ja[j] >= i+start) {
+					nnz_i_ut++;
+				}
+			}
+			fprintf(fp,"[%d] %d \n",i,(int)idx);
+			
+			idx = idx + nnz_i_ut;
+			cnt = cnt + nnz_i;
+		}
+		fprintf(fp,"[%d] %d \n",m,(int)idx);
+		
+		fclose(fp);
+
+		// ja
+		sprintf(name,"ja_rank%d.dat",rank);
+		fp = fopen(name,"wa");
+
+		idx = 0;
+		cnt = 0;
+		for (i=0; i<m; i++) {
+			
+			nnz_i = ia[i+1]-ia[i];
+			for (j=cnt; j<cnt+nnz_i; j++) {
+				if (ja[j] >= i+start) {
+					fprintf(fp,"[%d] %d %d \n",idx,i,(int)ja[j]);
+					idx++;
+				}
+			}
+			cnt = cnt + nnz_i;
+		}
+		
+		fclose(fp);
+		
+	}
+	
 	ierr = MatRestoreRowIJ(smat[0],0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
 	if (!done) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatRestoreRowIJ failed... aborting");
@@ -277,7 +332,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 	const PetscInt *cols;
 	const PetscScalar *vals;
 	double *vals_ut;
-	
+	PetscBool view = PETSC_FALSE;
 	
 	if (!reuse) {
 		PetscMalloc(sizeof(double)*nnz_ut,&vals_ut);
@@ -301,6 +356,27 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 		
 		ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
 	}
+
+	if (view) {
+		PetscMPIInt rank;
+		FILE *fp;
+		char name[1000];
+		
+		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+		sprintf(name,"Aut_rank%d.dat",rank);
+		fp = fopen(name,"wa");
+		for (i=start; i<start+m; i++) {
+			ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+			for (j=0; j<ncols; j++) {
+				if (cols[j] >= i) {
+					fprintf(fp,"[%d,%d] %1.4e: ",i,cols[j],vals[j]);
+				}
+			} printf(fp,"\n");
+			ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+		}
+		fclose(fp);
+	}
+	
 	
 	if (!reuse) {
 		*_vals_ut = vals_ut;
@@ -322,7 +398,7 @@ PetscErrorCode call_wsmp(PC_WSMP *wsmp)
 							&wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
 			
 			if (wsmp->IPARM[64 -1] != 0) { 
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"[wsmp] WSMP: The following error was detected: %d",wsmp->IPARM[64 -1]);
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"[wsmp] WSSMP generated the following error: %d",wsmp->IPARM[64 -1]);
 			}
 #else
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (WSSMP)");
@@ -334,7 +410,7 @@ PetscErrorCode call_wsmp(PC_WSMP *wsmp)
 							 &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
 			
 			if (wsmp->IPARM[64 -1] != 0) { 
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"[wsmp] PWSMP: The following error was detected: %d",wsmp->IPARM[64 -1]);
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"[wsmp] PWSSMP generated the following error: %d",wsmp->IPARM[64 -1]);
 			}
 #else
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
