@@ -322,10 +322,10 @@ PetscErrorCode call_wsmp(PC_WSMP *wsmp)
 							&wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
 			
 			if (wsmp->IPARM[64 -1] != 0) { 
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"WSMP: The following ERROR was detected: %d",wsmp->IPARM[64 -1]);
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"[wsmp] WSMP: The following error was detected: %d",wsmp->IPARM[64 -1]);
 			}
 #else
-			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing external package needed for type -pc_type \"wsmp\" (WSSMP)");
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (WSSMP)");
 #endif
 			
 		} else {
@@ -334,10 +334,10 @@ PetscErrorCode call_wsmp(PC_WSMP *wsmp)
 							 &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
 			
 			if (wsmp->IPARM[64 -1] != 0) { 
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"WSMP: The following ERROR was detected: %d",wsmp->IPARM[64 -1]);
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"[wsmp] PWSMP: The following error was detected: %d",wsmp->IPARM[64 -1]);
 			}
 #else
-			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
 #endif
 		}
 	} else {
@@ -408,7 +408,7 @@ PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 #ifdef HAVE_PWSSMP
 	wsetmpicomm_(&fcomm);
 #else
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
 #endif
 	
 	PetscFunctionReturn(0);
@@ -440,7 +440,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		/* Determine if matrix is symmetric */
 		ierr = PCWSMP_MatIsSymmetric(B,1.0e-8,&wsmp->symmetric);CHKERRQ(ierr);
 		if (!wsmp->symmetric) {
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only support for symmetric WSMP implemenatations exists");
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[wsmp] Only support for symmetric WSMP implemenatations exists");
 		}
 		
 		ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
@@ -449,7 +449,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		
 		/* get local size */
 		if (m != n) {
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"WSMP only supports square matrices");
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[wsmp] WSMP only supports square matrices");
 		}
 		
 		wsmp->Nglobal = (int)M;
@@ -489,8 +489,8 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		/* 2/ call wsmp */
 		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 		
-		PetscPrintf(PETSC_COMM_SELF,"[wssmp] Number of expected nonzeros in factors = 1000 X %d \n",wsmp->IPARM[24 -1]);
-		PetscPrintf(PETSC_COMM_SELF,"[wssmp] Number of expected FLOPS in factorization = %1.4e \n",wsmp->DPARM[24 -1]);
+		PetscPrintf(PETSC_COMM_SELF,"[wsmp] Number of expected nonzeros in factors = 1000 X %d \n",wsmp->IPARM[24 -1]);
+		PetscPrintf(PETSC_COMM_SELF,"[wsmp] Number of expected FLOPS in factorization = %1.4e \n",wsmp->DPARM[24 -1]);
 		
 		/* symbolic factorization */
 		/* 1/ set args for wsmp call */
@@ -502,9 +502,9 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		PetscGetTime(&t1);
 		
 		
-		PetscPrintf(PETSC_COMM_SELF,"[wssmp] Actual number of nonzeros in factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
-		PetscPrintf(PETSC_COMM_SELF,"[wssmp] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
-		PetscPrintf(PETSC_COMM_SELF,"[wssmp] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6) / (t1-t0);
+		PetscPrintf(PETSC_COMM_SELF,"[wsmp] Actual number of nonzeros in factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
+		PetscPrintf(PETSC_COMM_SELF,"[wsmp] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
+		PetscPrintf(PETSC_COMM_SELF,"[wsmp] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6) / (t1-t0);
 	} else {
 		
 		if (pc->flag != SAME_NONZERO_PATTERN) {
@@ -551,13 +551,9 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	/* numeric factorization - Cholesky */
 	/* 1/ set args for wsmp call */
 	/* 2/ call wsmp */
-	if (wsmp->sequential) {
-		wsmp->IPARM[2 -1] = 3;
-		wsmp->IPARM[3 -1] = 3;
-		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-	} else {
-		
-	}
+	wsmp->IPARM[2 -1] = 3;
+	wsmp->IPARM[3 -1] = 3;
+	ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 	
   PetscFunctionReturn(0);
 }
