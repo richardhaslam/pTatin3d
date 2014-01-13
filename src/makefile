@@ -81,6 +81,7 @@ export TATIN_SRC = \
 			eigen_operators.c \
 			ksp_chebyrn.c \
 			pc_semiredundant.c \
+			pc_wsmp.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
 			spm_utils.c \
@@ -108,7 +109,8 @@ TATIN_TESTS	=	\
 			test_mp_advection \
 			test_material_point_load \
 			test_stokes_q1macrop1 \
-			ptatin_read_matrix
+			ptatin_read_matrix \
+			test_petsc_wsmp
 
 #			test_model
 
@@ -138,6 +140,21 @@ export TATIN_LIB	= -L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmod
 export TATIN_CC		= ${PCC}
 export TATIN_FC		= ${FC}
 #export TATIN_FC	= gfortran -m64
+
+# external packages
+ifeq (${HAVE_LIBZ},1)
+
+endif
+
+ifeq (${HAVE_WSMP_SEQ},1)
+	TATIN_CFLAGS += -DHAVE_WSSMP
+	TATIN_LIB += ${WSMP_SEQ_LIB}
+endif
+
+ifeq (${HAVE_WSMP_P},1)
+	TATIN_CFLAGS += -DHAVE_WSSMP
+	TATIN_LIB += ${WSMP_P_LIB}
+endif
 
 
 all: 
