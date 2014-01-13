@@ -67,18 +67,18 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal preexpA,Ascale,entalpy,Vmol,nexp,Tref;
 	PetscInt nlayers;
-    
+	
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-    /* Temperature flag */
-    use_energy=PETSC_TRUE;
-//    use_energy=PETSC_FALSE;
-    
-    /* set the deffault values of the material constant for this particular model */
+	/* Temperature flag */
+	use_energy=PETSC_TRUE;
+	//    use_energy=PETSC_FALSE;
+	
+	/* set the deffault values of the material constant for this particular model */
 	/*scaling */
 	data->length_bar    = 100.0 * 1.0e3;
 	data->viscosity_bar = 1e26;
@@ -131,53 +131,53 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etac",&data->etac,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etam",&data->etam,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Riftrh_etaa",&data->etaa,&flg);CHKERRQ(ierr);
-    
-    /*Temperature */
-    if(use_energy) {
-        data->thermalparams.nlayers  = 3;
-        data->thermalparams.lscale   = data->length_bar;
-        
-/*         data->thermalparams.ytop[0]  = 250.0e3;
-         data->thermalparams.thick[0] = 120.0e3;
-         data->thermalparams.ttop[0]  = 0.0;
-         data->thermalparams.cond[0]  = 2.25;
-         data->thermalparams.hp[0]    = 0.0;
-         data->thermalparams.qbase[0] = 22.5e-3;
-         
-         data->thermalparams.ytop[1]  = 130.0e3;
-         data->thermalparams.thick[1] = 130.0e3;
-         data->thermalparams.ttop[1]  = 1200.0;
-         data->thermalparams.cond[1]  = 2.25;
-         data->thermalparams.hp[1]    = 0.0;
-         data->thermalparams.qbase[1] = 0.e-3;
-*/
-        data->thermalparams.ytop[0]  = 250.0e3;
-        data->thermalparams.thick[0] = 60.0e3;
-        data->thermalparams.ttop[0]  = 0.0;
-        data->thermalparams.cond[0]  = 2.25;
-        data->thermalparams.hp[0]    = 0.0;
-        data->thermalparams.qbase[0] = 22.5e-3;
-        
-        data->thermalparams.ytop[1]  = 190.0e3;
-        data->thermalparams.thick[1] = 60.0e3;
-        data->thermalparams.ttop[1]  = 600.0;
-        data->thermalparams.cond[1]  = 2.25;
-        data->thermalparams.hp[1]    = 0.0;
-        data->thermalparams.qbase[1] = 22.5e-3;
-        
-        data->thermalparams.ytop[2]  = 130.0e3;
-        data->thermalparams.thick[2] = 130.0e3;
-        data->thermalparams.ttop[2]  = 1200.0;
-        data->thermalparams.cond[2]  = 2.25;
-        data->thermalparams.hp[2]    = 0.0;
-        data->thermalparams.qbase[2] = 0.0e-3;
-
-        nlayers = data->thermalparams.nlayers;
-        data->Ttop = data->thermalparams.ttop[nlayers-1];
-        data->Tbottom = data->thermalparams.ttop[nlayers-1] + ( data->thermalparams.hp[nlayers-1]* pow(data->thermalparams.thick[nlayers-1],2) / 2.0 + data->thermalparams.qbase[nlayers-1] * data->thermalparams.thick[nlayers-1] ) / data->thermalparams.cond[nlayers-1];
-        data->Ttop=0;
-        data->Tbottom=1200;
-    }
+	
+	/*Temperature */
+	if(use_energy) {
+		data->thermalparams.nlayers  = 3;
+		data->thermalparams.lscale   = data->length_bar;
+		
+		/*         data->thermalparams.ytop[0]  = 250.0e3;
+		 data->thermalparams.thick[0] = 120.0e3;
+		 data->thermalparams.ttop[0]  = 0.0;
+		 data->thermalparams.cond[0]  = 2.25;
+		 data->thermalparams.hp[0]    = 0.0;
+		 data->thermalparams.qbase[0] = 22.5e-3;
+		 
+		 data->thermalparams.ytop[1]  = 130.0e3;
+		 data->thermalparams.thick[1] = 130.0e3;
+		 data->thermalparams.ttop[1]  = 1200.0;
+		 data->thermalparams.cond[1]  = 2.25;
+		 data->thermalparams.hp[1]    = 0.0;
+		 data->thermalparams.qbase[1] = 0.e-3;
+		 */
+		data->thermalparams.ytop[0]  = 250.0e3;
+		data->thermalparams.thick[0] = 60.0e3;
+		data->thermalparams.ttop[0]  = 0.0;
+		data->thermalparams.cond[0]  = 2.25;
+		data->thermalparams.hp[0]    = 0.0;
+		data->thermalparams.qbase[0] = 22.5e-3;
+		
+		data->thermalparams.ytop[1]  = 190.0e3;
+		data->thermalparams.thick[1] = 60.0e3;
+		data->thermalparams.ttop[1]  = 600.0;
+		data->thermalparams.cond[1]  = 2.25;
+		data->thermalparams.hp[1]    = 0.0;
+		data->thermalparams.qbase[1] = 22.5e-3;
+		
+		data->thermalparams.ytop[2]  = 130.0e3;
+		data->thermalparams.thick[2] = 130.0e3;
+		data->thermalparams.ttop[2]  = 1200.0;
+		data->thermalparams.cond[2]  = 2.25;
+		data->thermalparams.hp[2]    = 0.0;
+		data->thermalparams.qbase[2] = 0.0e-3;
+		
+		nlayers = data->thermalparams.nlayers;
+		data->Ttop = data->thermalparams.ttop[nlayers-1];
+		data->Tbottom = data->thermalparams.ttop[nlayers-1] + ( data->thermalparams.hp[nlayers-1]* pow(data->thermalparams.thick[nlayers-1],2) / 2.0 + data->thermalparams.qbase[nlayers-1] * data->thermalparams.thick[nlayers-1] ) / data->thermalparams.cond[nlayers-1];
+		data->Ttop=0;
+		data->Tbottom=1200;
+	}
 	
 	/* rheology parameters */
 	rheology                = &c->rheology_constants;
@@ -189,107 +189,107 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->runmises = PETSC_FALSE;
 	
 	//    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_Riftrh_param2",&data->param2,&flg);CHKERRQ(ierr);
-    
+	
 	/* Material constants */
 	MaterialConstantsSetDefaults(materialconstants);
-
+	
 	/* PHASE 0, ASTHENOSPHERE */
 	regionidx = 0;
-    if(use_energy == PETSC_FALSE){
-//    if(PETSC_TRUE){
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
-            DENSITY_CONSTANT);
-    }
-    else {
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-    }
-    
-    //VISCOSITY PARAMETERS - wet olivine karato
-    preexpA  = 1.393e-14;
-    Ascale  = 1.;
-    entalpy = 430.e3;
-    Vmol    = 15.e-6;
-    nexp    = 3.;
-    Tref    = 273.;
+	if(use_energy == PETSC_FALSE){
+		//    if(PETSC_TRUE){
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
+																						DENSITY_CONSTANT);
+	}
+	else {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	}
+	
+	//VISCOSITY PARAMETERS - wet olivine karato
+	preexpA  = 1.393e-14;
+	Ascale  = 1.;
+	entalpy = 430.e3;
+	Vmol    = 15.e-6;
+	nexp    = 3.;
+	Tref    = 273.;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etaa);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
-
+	
 	//DENSITY PARAMETERS
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoa);
-
-    //PLASTICITY PARAMETERS
-    phi1_rad=M_PI*15./180.;
-    phi2_rad=M_PI*2./180.;
+	
+	//PLASTICITY PARAMETERS
+	phi1_rad=M_PI*15./180.;
+	phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.1,0.5);
 	
 	/* PHASE 1, MANTLE LITHOSPHERE */
 	regionidx = 1;
-    if(use_energy == PETSC_FALSE){
-//    if(PETSC_TRUE){
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
-            DENSITY_CONSTANT);
-    }
-    else {
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-    }
-
-    //VISCOSITY PARAMETERS - wet olivine x 5, karato
-    preexpA = 1.393e-14;
-    Ascale  = 5.;
-    entalpy = 430.e3;
-    Vmol    = 0.e-6;
-    nexp    = 3.;
-    Tref    = 273.;
+	if(use_energy == PETSC_FALSE){
+		//    if(PETSC_TRUE){
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
+																						DENSITY_CONSTANT);
+	}
+	else {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	}
+	
+	//VISCOSITY PARAMETERS - wet olivine x 5, karato
+	preexpA = 1.393e-14;
+	Ascale  = 5.;
+	entalpy = 430.e3;
+	Vmol    = 0.e-6;
+	nexp    = 3.;
+	Tref    = 273.;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etam);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
-    
+	
 	//DENSITY PARAMETERS
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
-    
-    //PLASTICITY PARAMETERS
-    phi1_rad=M_PI*15./180.;
-    phi2_rad=M_PI*2./180.;
+	
+	//PLASTICITY PARAMETERS
+	phi1_rad=M_PI*15./180.;
+	phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.1,0.5);
 	
 	/* PHASE 2, CRUST / UPPER LITHOSPHERE */
 	regionidx = 2;
-    if(use_energy == PETSC_FALSE){
-//    if(PETSC_TRUE){
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
-            DENSITY_CONSTANT);
-    }
-    else {
-        MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-    }
-
-    //VISCOSITY PARAMETERS
-    preexpA = 1.393e-14;
-    Ascale  = 5.;
-    entalpy = 430.e3;
-    Vmol    = 0.e-6;
-    nexp    = 3.;
-    Tref    = 273.;
+	if(use_energy == PETSC_FALSE){
+		//    if(PETSC_TRUE){
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
+																						DENSITY_CONSTANT);
+	}
+	else {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	}
+	
+	//VISCOSITY PARAMETERS
+	preexpA = 1.393e-14;
+	Ascale  = 5.;
+	entalpy = 430.e3;
+	Vmol    = 0.e-6;
+	nexp    = 3.;
+	Tref    = 273.;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 	
 	//DENSITY PARAMETERS
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
-    
-    //PLASTICITY PARAMETERS
-    phi1_rad=M_PI*15./180.;
-    phi2_rad=M_PI*2./180.;
+	
+	//PLASTICITY PARAMETERS
+	phi1_rad=M_PI*15./180.;
+	phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,0.1,0.5);
 	
-		
+	
 	/* Read the options */
 	/* cutoff */
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
@@ -384,11 +384,11 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 	data->output_markers = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_output_markers",&data->output_markers,PETSC_NULL);CHKERRQ(ierr);
 	
-    /* USE ENERGY EQUATION */
-    if(use_energy){
-        ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
-    }
-    
+	/* USE ENERGY EQUATION */
+	if(use_energy){
+		ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	}
+	
 	PetscFunctionReturn(0);
 }
 
@@ -410,7 +410,7 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+	
 	PetscOptionsGetBool(PETSC_NULL,"-model_Riftrh_use_initial_up_field",&use_initial_up_field,PETSC_NULL);
 	
 	if (use_initial_up_field) {
@@ -458,11 +458,11 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
-        
+		
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse_InitialThermalField3D,(void*)&data->thermalparams);CHKERRQ(ierr);
 	}
-//    exit(1);
-    
+	//    exit(1);
+	
 	PetscFunctionReturn(0);
 }
 
@@ -594,16 +594,16 @@ PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, v
 PetscErrorCode ModelApplyBoundaryCondition_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
-    PetscBool use_energy;
+	PetscBool use_energy;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = ModelRiftrh_DefineBCList(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,c,data);CHKERRQ(ierr);
-    
+	
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
-    if (use_energy) {
+	if (use_energy) {
 		PetscReal      val_T;
 		PhysCompEnergy energy;
 		BCList         bclist;
@@ -613,11 +613,11 @@ PetscErrorCode ModelApplyBoundaryCondition_Riftrh(pTatinCtx c,void *ctx)
 		daT    = energy->daT;
 		bclist = energy->T_bclist;
 		
-        val_T = data->Ttop;
-        ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
-			
-        val_T = data->Tbottom;
-        ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
+		val_T = data->Ttop;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
+		
+		val_T = data->Tbottom;
+		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -745,15 +745,15 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscInt               e,p,n_mp_points;
-        PetscInt               notch_type;
+	PetscInt               notch_type;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;
 	int                    phase;
 	PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center,y_center,z_center;
 	PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
 	PetscErrorCode ierr;
-    MPAccess           mpX;
-    PetscBool use_energy;
+	MPAccess           mpX;
+	PetscBool use_energy;
 	
 	
 	PetscFunctionBegin;
@@ -784,9 +784,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	
 	/* marker loop */
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-       
-        /*define notch type, 1: one notch; 2 two notches/weak seeds */
-        notch_type = 2; 
+	
+	/*define notch type, 1: one notch; 2 two notches/weak seeds */
+	notch_type = 2; 
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point_std;
@@ -823,29 +823,29 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 		zp_dimensional = position[2] * data->length_bar;
 		plastic_strain = 0.0;
 		
-                if (notch_type == 1 ) {
-		   if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
-			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
-				plastic_strain = 1.0;
+		if (notch_type == 1 ) {
+			if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
+				if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+					plastic_strain = 1.0;
+				}
 			}
-		   }
 		}
-
-                if (notch_type == 2 ) {
-		   if (xp_dimensional >= 1.15*x_center - 0.5*notch_width && xp_dimensional <= 1.15*x_center + 0.5*notch_width) {
-			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
-                             if (zp_dimensional <= 0.8*z_center ) {
-				plastic_strain = 1.0;
-                             }
+		
+		if (notch_type == 2 ) {
+			if (xp_dimensional >= 1.15*x_center - 0.5*notch_width && xp_dimensional <= 1.15*x_center + 0.5*notch_width) {
+				if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+					if (zp_dimensional <= 0.8*z_center ) {
+						plastic_strain = 1.0;
+					}
+				}
 			}
-		   }
-		   if (xp_dimensional >= 0.85*x_center - 0.5*notch_width && xp_dimensional <= 0.85*x_center + 0.5*notch_width) {
-			if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
-                             if (zp_dimensional >= 1.2*z_center) {
-				plastic_strain = 1.0;
-                             }
+			if (xp_dimensional >= 0.85*x_center - 0.5*notch_width && xp_dimensional <= 0.85*x_center + 0.5*notch_width) {
+				if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+					if (zp_dimensional >= 1.2*z_center) {
+						plastic_strain = 1.0;
+					}
+				}
 			}
-		   }
 		}
 		
 		/* user the setters provided for you */
@@ -858,24 +858,24 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
-
-    
+	
+	
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
 	if (use_energy) {
-        ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
-        for (p=0; p<n_mp_points; p++) {
-            double kappa,H;
-		
-            ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
-        
-            kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
-            H     = 0.0;
-            ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
-            ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
-        }
-        ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-    }    
-
+		ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+		for (p=0; p<n_mp_points; p++) {
+			double kappa,H;
+			
+			ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
+			
+			kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+			H     = 0.0;
+			ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
+			ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
+		}
+		ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+	}    
+	
 	PetscFunctionReturn(0);
 }
 
@@ -965,8 +965,8 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	if (data->output_markers) { 
-	   ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-    }
+		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+	}
 	
 	if (data->output_markers) { 
 		//  Write out just the stokes variable?
@@ -982,7 +982,7 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 		sprintf(mp_file_prefix,"%s_all_mp_data",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
-
+	
 	/* ENERGY OUTPUT */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	if (active_energy) {
@@ -991,7 +991,7 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
-        
+		
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 	}
 	
