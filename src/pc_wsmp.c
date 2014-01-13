@@ -15,7 +15,7 @@ extern void wsffree_(void);
 //#define HAVE_PWSSMP
 extern void pwssmp_ ( int *n, int ia[], int ja[], double a[], double diag[], int perm[], int iperm[], double b[], int *ldb, int *nrhs, int aux[], int *naux, int mrp[], int iparam[], double dparam[] );
 extern void pwsmp_clear_(void);
-extern void wsetmpicomm_(int *comm,int *fcomm);
+extern void wsetmpicomm_(int *fcomm);
 extern void pwsffree_(void);
 
 
@@ -406,7 +406,7 @@ PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 	
 	fcomm = MPI_Comm_c2f(comm);
 #ifdef HAVE_PWSSMP
-	wsetmpicomm_(comm,fcomm);
+	wsetmpicomm_(&fcomm);
 #else
 	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
 #endif

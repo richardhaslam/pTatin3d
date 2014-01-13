@@ -209,24 +209,24 @@ PetscErrorCode test_wsmp_pc_wsmp(void)
 	
 	printf("first solve\n");
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_COMM_WORLD);
+	VecView(x,PETSC_VIEWER_STDOUT_WORLD );
 
 	printf("first solve* [identical]\n");
 	VecSet(x,0.0);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_COMM_WORLD);
+	VecView(x,PETSC_VIEWER_STDOUT_WORLD );
 	
 	printf("second solve [same nonzero pattern]\n");
 	VecSet(x,0.0);
 	KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_COMM_WORLD);
+	VecView(x,PETSC_VIEWER_STDOUT_WORLD );
 
 	printf("third solve [different nonzero pattern]\n");
 	VecSet(x,0.0);
 	KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	VecView(x,PETSC_COMM_WORLD);
+	VecView(x,PETSC_VIEWER_STDOUT_WORLD );
 	
 	KSPDestroy(&ksp);
 	MatDestroy(&A);
