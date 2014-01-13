@@ -262,7 +262,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 		// ia
 		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 		sprintf(name,"ia_rank%d.dat",rank);
-		fp = fopen(name,"wa");
+		fp = fopen(name,"w");
 
 		cnt = 0;
 		idx = 0;
@@ -286,7 +286,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 
 		// ja
 		sprintf(name,"ja_rank%d.dat",rank);
-		fp = fopen(name,"wa");
+		fp = fopen(name,"w");
 
 		idx = 0;
 		cnt = 0;
@@ -362,16 +362,19 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 		FILE *fp;
 		char name[1000];
 		
+		//ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
+		//ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+		
 		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 		sprintf(name,"Aut_rank%d.dat",rank);
-		fp = fopen(name,"wa");
+		fp = fopen(name,"w");
 		for (i=start; i<start+m; i++) {
 			ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
 			for (j=0; j<ncols; j++) {
 				if (cols[j] >= i) {
 					fprintf(fp,"[%d,%d] %1.4e: ",i,cols[j],vals[j]);
 				}
-			} printf(fp,"\n");
+			} fprintf(fp,"\n");
 			ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
 		}
 		fclose(fp);
@@ -406,7 +409,7 @@ PetscErrorCode call_wsmp(PC_WSMP *wsmp)
 			
 		} else {
 #ifdef HAVE_PWSSMP
-			pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS, 
+				pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS, 
 							 &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
 			
 			if (wsmp->IPARM[64 -1] != 0) { 
@@ -747,7 +750,6 @@ static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
   PetscErrorCode   ierr;
   PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
   PetscBool        iascii,isstring;
-  PetscViewer      subviewer;
 	
 	
   PetscFunctionBegin;
