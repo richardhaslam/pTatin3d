@@ -152,7 +152,7 @@ ifeq (${HAVE_WSMP_SEQ},1)
 endif
 
 ifeq (${HAVE_WSMP_P},1)
-	TATIN_CFLAGS += -DHAVE_WSSMP
+	TATIN_CFLAGS += -DHAVE_PWSSMP
 	TATIN_LIB += ${WSMP_P_LIB}
 endif
 
