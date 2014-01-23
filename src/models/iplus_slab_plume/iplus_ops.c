@@ -88,6 +88,16 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	data->plume_eta  = 5.0;     data->plume_rho  = 1373.0;
 	data->slab_eta   = 64000.0; data->slab_rho   = 1495.0;
 	
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_slab_eta",&data->slab_eta,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_slab_rho",&data->slab_rho,&flg);
+
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_mantle_eta",&data->mantle_eta,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_mantle_rho",&data->mantle_rho,&flg);
+
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_eta",&data->plume_eta,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_rho",&data->plume_rho,&flg);
+	
+	
 	eta_scale = 1.0e3;
 	if (data->modeltype == iPLUsModelPlume) {
 		eta_scale = 1.0;
@@ -131,6 +141,7 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_A0",&data->plume_A0,&flg);
 
 	data->refinement_type = 0;
+	PetscOptionsGetInt(PETSC_NULL,"-iplus_mesh_refinement_type",&data->refinement_type,&flg);
 	
 	data->np_plume_x = 10;
 	data->np_plume_z = 10;
@@ -163,6 +174,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 	iPLUSCtx         *data = (iPLUSCtx*)ctx;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
+	PetscBool        g3_slab = PETSC_FALSE;
 	PetscErrorCode   ierr;
 	
 	
@@ -178,15 +190,20 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 		ierr = DMDASetUniformCoordinates(dav,0.0,0.3,0.0,0.3,0.0,0.3);CHKERRQ(ierr);
 	} else {
 		/* bigger tank */
-		ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.4,0.0,0.6);CHKERRQ(ierr);
+		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_schellart_g3_2008",&g3_slab,PETSC_NULL);
+		if(!g3_slab) {
+			ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.4,0.0,0.6);CHKERRQ(ierr);
+		} else {
+			ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.38,0.0,0.6);CHKERRQ(ierr);
+		}
 	}
 	/* refine? */
 	switch (data->refinement_type) {
 		case 1:
-			PetscPrintf(PETSC_COMM_WORLD,"Mesh refinement type: 1 (Subtle)\n");
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 1 (Subtle)\n");
 			break;
 		case 2:
-			PetscPrintf(PETSC_COMM_WORLD,"Mesh refinement type: 2 (Aggressive)\n");
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 2 (Aggressive)\n");
 			break;
 	}
 	
