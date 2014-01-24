@@ -58,6 +58,7 @@
 #include "ptatin_utils.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "geometry_object.h"
+#include "mesh_deformation.h"
 
 #include "iplus_ctx.h"
 
