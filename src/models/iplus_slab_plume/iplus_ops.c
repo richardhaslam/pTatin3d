@@ -176,7 +176,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
 	PetscBool        g3_slab = PETSC_FALSE;
-	PetscReal        Gmin[3],Gmax[3],center_x,center_z,Lx,Lz;
+	PetscReal        Gmin[3],Gmax[3],center_x,center_z,Lx,Ly,Lz;
 	PetscErrorCode   ierr;
 	
 	
@@ -202,6 +202,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 	/* refine? */
 	ierr = DMDAGetBoundingBox(dav,Gmin,Gmax);CHKERRQ(ierr);
 	Lx = (Gmax[0] - Gmin[0]);
+	Ly = (Gmax[1] - Gmin[1]);
 	Lz = (Gmax[2] - Gmin[2]);
 	center_x = (Gmax[0] + Gmin[0]) * 0.5;
 	center_z = (Gmax[2] + Gmin[2]) * 0.5;
@@ -216,6 +217,12 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 2 (Aggressive)\n");
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 8.0, Gmin[0], center_x - 0.2*Lx*0.5, center_x + 0.2*Lx*0.5, Gmax[0]);CHKERRQ(ierr);
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 8.0, Gmin[2], center_z - 0.2*Lz*0.5, center_z + 0.2*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
+			break;
+		case 3:
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 3 (y-z refinement)\n");
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 4.0, Gmin[0], 0.25, 0.4, Gmax[0]);CHKERRQ(ierr);
+			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 1, 4.0, Gmin[1], 0.75*Ly, Gmax[1], Gmax[1]);CHKERRQ(ierr);
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 3.0, Gmin[2], center_z - 0.35*Lz*0.5, center_z + 0.35*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
 			break;
 	}
 	
