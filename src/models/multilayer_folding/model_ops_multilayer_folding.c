@@ -918,6 +918,7 @@ DAM: I'm really not convinced this function is
    InitialMaterialGeometryMaterialPoints_MultilayerFolding();
    InitialMaterialGeometryQuadraturePoints_MultilayerFolding()
  
+ The only useful thing I see that this function does is switch the project type.
  
 */
 #undef __FUNCT__
@@ -1046,10 +1047,15 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
 		
 		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 20.0)) {
+		//if ((tracking_layer_phase == PETSC_TRUE) && (c->step >= 30)) {
 			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing\n", __FUNCT__);
-			
+		
+			/* DAM: I think this function farts higher than its arse and should be removed */
 			/* reset material point coordinates and set eta/rho */
-			ierr = MultilayerFolding_Mesh2MarkerRemesh(c,data);CHKERRQ(ierr);
+			//ierr = MultilayerFolding_Mesh2MarkerRemesh(c,data);CHKERRQ(ierr);
+
+			/* 0 switch projection type */
+			c->coefficient_projection_type = 1;
 
 			/* 1 - re-initialize the basement layer element spacing */
 			ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
@@ -1058,7 +1064,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
 			tracking_layer_phase = PETSC_FALSE;
 			
-		} else {
+		} else if (tracking_layer_phase == PETSC_FALSE) {
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Subsequent marker remeshing\n", __FUNCT__);
 			/* 1 - re-initialize the basement layer element spacing */
 			ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
 			
