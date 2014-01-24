@@ -1371,18 +1371,21 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 
 	PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_folding_output_markers",&output_markers,0);
+	/* output raw marker fields */
+	if (output_markers) {
+		const int                 nf = 2;
+		const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes };
+		char                      name[PETSC_MAX_PATH_LEN];
+
+		sprintf(name,"%s_mpoints",prefix);
+		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
+	}
+	
+	/* output marker->cell projected fields */
 	{
 		const int                   nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
-		char                        name[PETSC_MAX_PATH_LEN];
-
-		/* output raw marker fields */
-		if (output_markers) {
-			sprintf(name,"%s_mpoints",prefix);
-			ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
-		}
 		
-		/* output marker->cell projected fields */
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}
 	
