@@ -1378,7 +1378,7 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 
 		/* output raw marker fields */
 		if (output_markers) {
-			sprintf(name,"%s_mpoints_cell",prefix);
+			sprintf(name,"%s_mpoints",prefix);
 			ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 		}
 		
