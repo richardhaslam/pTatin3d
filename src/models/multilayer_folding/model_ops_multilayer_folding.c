@@ -91,14 +91,12 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density. (-model_multilayer_folding_layer_rho)",data->n_interfaces-1);
 	}
 	
-	
 	/* define the mesh size the y-direction for the global problem  (gravity in y direction) */
 	c->my = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
 		c->my += data->layer_res_j[n];
 	}
 	data->Ly = data->interface_heights[ data->n_interfaces - 1 ];
-	
 	
 	/* initialize values */
 	data->bc_type           = 2; /* 0 use vx/vz compression ; 1 use exx/ezz compression ; 2 use exx/ezz with moving base which conserves volume */
@@ -132,7 +130,6 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	
 	n = data->n_interfaces-1;
 	
-	
 	PetscPrintf(PETSC_COMM_WORLD," Layer Depth Profile:\n");
 	for (n=data->n_interfaces-1; n>=1; n--) {
 		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
@@ -165,7 +162,6 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	 lateral face                  // to YOX at Z = 0 
 	 lateral face                  // to YOX at Z = K-1
 	 */
-	
 	
 	switch(data->bc_type) {
 			
@@ -233,8 +229,6 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknonwn boundary condition type. Valid range is: -model_multilayer_folding_bc_type {0,1,2}");
 	}
 	
-	
-	
 	/* free surface north */
 	/* do nothing! */
 	
@@ -295,7 +289,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_MultilayerFolding(pTatinCtx c
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFoldingSetMeshGeometry"
@@ -422,7 +415,6 @@ PetscErrorCode MultilayerFoldingRemeshingAccordingToTheInterfaces(DM dav, void *
 
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFoldingSetPerturbedInterfaces"
-
 PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -846,7 +838,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFolding_Mesh2MarkerRemesh"
 PetscErrorCode MultilayerFolding_Mesh2MarkerRemesh(pTatinCtx c,ModelMultilayerFoldingCtx *data)
@@ -1197,7 +1188,6 @@ PetscErrorCode MultilayerFoldingOutput_q(pTatinCtx c,ModelMultilayerFoldingCtx *
 	static int been_here = 0;
 	PetscReal arg,arg_3d,A0,q_cylindrical,eyy,q_3d,q_th_3D,q_th_2D,err,amp;
 	
-	
 	if (been_here == 0) {
 		PetscPrintf(PETSC_COMM_WORLD,"# kx %+1.4e \n",data->kx);
 		PetscPrintf(PETSC_COMM_WORLD,"# kz %+1.4e \n",data->kz);
@@ -1370,21 +1360,32 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
 	DataBucket     materialpoint_db;
 	PetscBool      verify_with_analytics = PETSC_FALSE;
+	PetscBool      output_markers = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+
+	PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_folding_output_markers",&output_markers,0);
 	{
 		const int                   nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
+		char                        name[PETSC_MAX_PATH_LEN];
+
+		/* output raw marker fields */
+		if (output_markers) {
+			sprintf(name,"%s_mpoints_cell",prefix);
+			ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
+		}
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
-		//sprintf(name,"%s_mpoints_cell",prefix);
-		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
+		/* output marker->cell projected fields */
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
-	}	
+	}
+	
 	
 	PetscOptionsGetBool(PETSC_NULL,"-verify_with_analytics",&verify_with_analytics,PETSC_NULL);
 	if (verify_with_analytics) {
