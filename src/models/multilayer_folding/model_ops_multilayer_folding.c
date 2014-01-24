@@ -589,6 +589,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 	PetscFunctionReturn(0);
 }
 
+/* DAML This function is totally fucking inefficient */
 #undef __FUNCT__
 #define __FUNCT__ "InitialMaterialGeometryQuadraturePoints_MultilayerFolding"
 PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinCtx c,void *ctx)
@@ -717,6 +718,73 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "_InitialMaterialGeometryQuadraturePoints_MultilayerFolding"
+PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinCtx c,void *ctx)
+{
+	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
+	PhysCompStokes            stokes;
+	QPntVolCoefStokes         *all_gausspoints,*cell_gausspoints;
+	DM                        stokes_pack,dav,dap,cda;
+	PetscInt                  e,nel,nen_v,nqp,qp;
+	const PetscInt            *elnidx_v;   
+	PetscInt                  phase;
+	PetscInt                  layer,jmaxlayer,jminlayer;
+	PetscInt                  I,J,K;
+	PetscErrorCode            ierr;
+	
+
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+		
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_v,&elnidx_v);CHKERRQ(ierr);
+	
+	/* get the quadrature points */
+	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
+	nqp = stokes->volQ->npoints;
+	
+	for (e=0; e<nel; e++) {
+		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,e, &I,&J,&K);CHKERRQ(ierr);
+
+		// Determine phase from layer
+		phase = -1;
+		jmaxlayer = jminlayer = 0;
+		layer = 0;
+		while ( (phase == -1) && (layer < data->n_interfaces-1) ) {
+			jmaxlayer += data->layer_res_j[layer];
+			
+			if ( (J < jmaxlayer) && (J >= jminlayer) ) {
+				phase = layer + 1;
+			}
+			jminlayer += data->layer_res_j[layer];
+			layer++;
+		}
+		if (phase == -1) {
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot locate the phase element %D is associated with",e);
+		}
+		
+		ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+		
+		for (qp=0; qp<nqp; qp++) {
+			cell_gausspoints[qp].eta  = data->eta[phase-1];
+			cell_gausspoints[qp].rho  = data->rho[phase-1];
+			
+			cell_gausspoints[qp].Fu[0] = 0.0;
+			cell_gausspoints[qp].Fu[1] = -data->rho[phase-1] * GRAVITY;
+			cell_gausspoints[qp].Fu[2] = 0.0;
+			
+			cell_gausspoints[qp].Fp = 0.0;
+		}		
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "MultilayerFolding_SetMaterialPointPropertiesFromLayer"
 PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
@@ -838,6 +906,20 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	PetscFunctionReturn(0);
 }
 
+/* 
+DAM: I'm really not convinced this function is
+ i) a good idea, and 
+ ii) even needed
+
+ For instance, this function assumes that there are 2x2x2 material points per element.
+ It's not need as 
+   ModelApplyInitialMaterialGeometry_MultilayerFolding()
+ calls both
+   InitialMaterialGeometryMaterialPoints_MultilayerFolding();
+   InitialMaterialGeometryQuadraturePoints_MultilayerFolding()
+ 
+ 
+*/
 #undef __FUNCT__
 #define __FUNCT__ "MultilayerFolding_Mesh2MarkerRemesh"
 PetscErrorCode MultilayerFolding_Mesh2MarkerRemesh(pTatinCtx c,ModelMultilayerFoldingCtx *data)
@@ -931,7 +1013,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		DMDACoor3d span_xz[4];
 		PetscReal  gmin[3],gmax[3];
 		
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Remeshing basal layer only \n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating basal layer remeshing\n", __FUNCT__);
 		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"before");CHKERRQ(ierr);
 
 		/* clean up base */
@@ -964,6 +1046,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
 		
 		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 20.0)) {
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing\n", __FUNCT__);
 			
 			/* reset material point coordinates and set eta/rho */
 			ierr = MultilayerFolding_Mesh2MarkerRemesh(c,data);CHKERRQ(ierr);
