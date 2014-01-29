@@ -35,7 +35,6 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	RheologyConstants *rheology;
 	DataBucket materialconstants = c->material_constants;
 	PetscInt regionidx;
-	
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -43,7 +42,6 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
-	
 	
 	/*box geometry*/
 	data->Lx = 12.5e5;
@@ -68,13 +66,10 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	data->C0_inf[0] = 5.0e7;
 	data->mu_inf[0] = 0.2;
 	//	data->mu_inf[0]=atan(data->mu_inf[0]);
-	
-	
-	
+
 	/*velocity boundary*/
 	data->velocity = 2.0;
-	
-	
+		
 	/*temperature*/
 	data->Ttop = 0.0;
 	data->Tbot = 1.4000; //	
@@ -87,7 +82,6 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	data->length_bar    = 1000.0 * 1.0e3;
 	data->viscosity_bar = 1.0e25;
 	data->velocity_bar  = 1.0e-9;
-	
 	
 	rheology                 = &c->rheology_constants;
 	rheology->rheology_type  = RHEOLOGY_VP_STD;
@@ -180,8 +174,6 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	data->pressure_bar  = data->viscosity_bar/data->time_bar;
 	data->density_bar   = data->pressure_bar / data->length_bar;
 	
-	
-	
 	PetscPrintf(PETSC_COMM_WORLD,"[subduction_initiation2d]:  during the solve scaling will be done using \n");
 	PetscPrintf(PETSC_COMM_WORLD,"  L*    : %1.4e [m]\n", data->length_bar );
 	PetscPrintf(PETSC_COMM_WORLD,"  U*    : %1.4e [m.s^-1]\n", data->velocity_bar );
@@ -226,7 +218,11 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-
+/*
+ If you want to define alternative inflow/output boundary conditions, write a new function e.g.
+ BCListEvaluator_type1_Subduction_Initiation2d()
+ BCListEvaluator_type2_Subduction_Initiation2d()
+ */
 #undef __FUNCT__
 #define __FUNCT__ "BCListEvaluator_X_Subduction_Initiation2d"
 PetscBool BCListEvaluator_X_Subduction_Initiation2d( PetscScalar position[], PetscScalar *value, void *ctx ) 
@@ -247,14 +243,14 @@ PetscBool BCListEvaluator_X_Subduction_Initiation2d( PetscScalar position[], Pet
 	//	Dprime = model_data_ctx->Ly/2.0;
 	Vx_max = model_data_ctx->velocity;
 	
-	vx=-Vx_max*tanh(2.0*3.1415926*(position[1]-model_data_ctx->Oy-Dprime)/(2.0*Dprime));
+	vx = -Vx_max*tanh(2.0*3.1415926*(position[1]-model_data_ctx->Oy-Dprime)/(2.0*Dprime));
 #if 0
-	if(position[1]>=-0.07){
-		vx=-Vx_max*tanh(2.0*3.1415926*(position[1]+0.07)/(2.0*0.07));
-	}else if(position[1]<=-0.18){
-		vx=-Vx_max*tanh(2.0*3.1415926*(position[1]+0.18)/(2.0*0.07));
-	}else{
-		vx=0.0;
+	if(position[1] >= -0.07) {
+		vx = -Vx_max*tanh(2.0*3.1415926*(position[1]+0.07)/(2.0*0.07));
+	} else if(position[1] <= -0.18){
+		vx = -Vx_max*tanh(2.0*3.1415926*(position[1]+0.18)/(2.0*0.07));
+	} else {
+		vx = 0.0;
 	}
 	
 #endif
@@ -282,13 +278,12 @@ PetscBool BCListEvaluator_Y_Subduction_Initiation2d( PetscScalar position[], Pet
 	
 	PetscFunctionBegin;
 	
-	
 	ierr = pTatinModelGetUserData(user->model,(void**)&model_data_ctx);CHKERRQ(ierr);
 	
 	Dprime = (model_data_ctx->Lx-model_data_ctx->Ox);
 	Vx_max = model_data_ctx->velocity;
 	
-	vx=0.0+(position[0]/Dprime)*Vx_max;
+	vx = 0.0 + (position[0]/Dprime)*Vx_max;
 	//	vx=-Vx_max*tanh(2.0*3.1415926*(position[1]-Dprime)/(2.0*Dprime));
 	*value = vx;
 	
@@ -299,12 +294,13 @@ PetscBool BCListEvaluator_Y_Subduction_Initiation2d( PetscScalar position[], Pet
 #define __FUNCT__ "Subduction_Initiation2d_VelocityBC"
 PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ModelSubduction_Initiation2dCtx *data)
 {
-	PetscScalar zero=0.0;
+	PetscScalar zero = 0.0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
 #if 1	
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_X_Subduction_Initiation2d,(void*)c);CHKERRQ(ierr);
 	//	PetscScalar vxtemp;
@@ -320,7 +316,6 @@ PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx
 	//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	
-	
 	//	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_Y_Subduction_Initiation2d,(void*)c);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -329,21 +324,19 @@ PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	
 #endif	
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_Subduction_Initiation2d"
 PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscScalar zero=0.0,velocity;
-	PetscErrorCode    ierr;
-	PetscBool active_energy;
+	PetscScalar     zero = 0.0,velocity;
+	PetscBool       active_energy;
+	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
@@ -351,12 +344,9 @@ PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,v
 	
 	ierr = Subduction_Initiation2d_VelocityBC(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,c,data);CHKERRQ(ierr);
 	
-	
-	
 #if 1	
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	if (active_energy) {
-		
 		PetscReal      val_T;
 		PhysCompEnergy energy;
 		BCList         bclist;
@@ -372,10 +362,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,v
 		
 		val_T = data->Ttop;
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&val_T);CHKERRQ(ierr);		
-		
 	}
 #endif
-	
 	
 	PetscFunctionReturn(0);
 }
@@ -385,8 +373,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,v
 PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscInt n;
-	PetscScalar zero = 0.0;
+	PetscInt       n;
+	PetscScalar    zero = 0.0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -395,13 +383,10 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
 	
 	for (n=0; n<nl; n++) {
 		ierr = Subduction_Initiation2d_VelocityBC(bclist[n],dav[n],c,data);CHKERRQ(ierr);
-		
 	}	
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d"
@@ -421,22 +406,18 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTati
 PetscErrorCode ModelApplyInitialMeshGeometry_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscReal    Lx,Ly,Lz;
-	PetscErrorCode ierr;
+	PetscReal       Lx,Ly,Lz;
+	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
 	//	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,data->Lx, 0.0,data->Ly, 0.0, data->Lz);CHKERRQ(ierr);	
 	
-	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Subduction_Initiation2d"
@@ -455,9 +436,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-#if 1	
-	
-	db = c->materialpoint_db;
+	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
@@ -472,7 +451,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-	
 	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
@@ -494,143 +472,140 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 		zcoord = position[2] * data->length_bar;
 		
 		phase = 0;
-		
 		pls   = 0.0;		
 		yield = 0; 
-#if 0  
-		if(ycoord<=0.0&&ycoord>=-0.15e5){
-			if(xcoord>=ycoord+6.25e5&&xcoord<=ycoord+6.35e5){
-				phase = 1;
-				
-			}
-		}  
-#endif	
-#if 0  
-		if(xcoord>=6.25e5&&xcoord<=6.45e5){
-			if(ycoord<=0.0&&ycoord>=-0.20e5){
-				phase = 1;
-				
-				if(xcoord>=6.27e5&&xcoord<=6.43e5){
-					if(ycoord<=0.0&&ycoord>=-0.18e5){
-						phase = 2;
-						
-						if(xcoord>=6.29e5&&xcoord<=6.41e5){
-							if(ycoord<=0.0&&ycoord>=-0.16e5){
-								phase = 3;
-							}
-						}
-						
-					}
-				}
-				pls = ptatin_RandomNumberGetDouble(0.0,0.1);
-			}
-		}  
 		
-		
-#endif		
-		
-#if 1       
-		if(ycoord<=0.0&&ycoord>=-0.70e5){
-			if(xcoord>=ycoord+6.25e5&&xcoord<=ycoord+6.45e5){
-				phase = 1;
-				
-				
-				pls = ptatin_RandomNumberGetDouble(0.0,0.1);
-			}
-		}  
-#endif		
-#if 0        
-		if(ycoord<=0.0&&ycoord>=-0.1e5){
-			if(xcoord>=ycoord+6.20e5&&xcoord<=ycoord+6.30e5){
-				phase = 1;
-				
-				if(ycoord<=0.0&&ycoord>=-0.08e5){
-					if(xcoord>=ycoord+6.22e5&&xcoord<=ycoord+6.38e5){                   
-						phase = 2;
-						
-						if(ycoord<=0.0&&ycoord>=-0.06e5){
-							if(xcoord>=ycoord+6.24e5&&xcoord<=ycoord+6.26e5){
-								phase = 3;
-							}
-						}
-						
-					}
-				}
-				pls = ptatin_RandomNumberGetDouble(0.0,0.1);
-			}
-		}  
-#endif		
-		
-#if 0        
-		if(ycoord<=0.0&&ycoord>=-0.7e5){
-			if(xcoord>=1.0*ycoord+6.15e5&&xcoord<=1.0*ycoord+6.35e5){
-				phase = 1;
-				
-				//                   if(ycoord<=0.0&&ycoord>=-0.15e5){
-				if(xcoord>=1.0*ycoord+6.18e5&&xcoord<=1.0*ycoord+6.32e5){                   
-					phase = 2;
-					
-					//                       if(ycoord<=0.0&&ycoord>=-0.10e5){
-					if(xcoord>=1.0*ycoord+6.21e5&&xcoord<=1.0*ycoord+6.29e5){
-						phase = 3;
-					}
-					//                       }
-					
-				}
-				//                    }
-				
-			}
-		}  
-#endif		
-#if 0        
-		if(ycoord<=0.0&&ycoord>=-0.55e5){
-			if(xcoord>=2.0*ycoord+5.75e5&&xcoord<=5.35e5-0.35e5*log(1.04979-(ycoord+0.35e5)/0.35e5)){
-				phase = 1;
-				
-				//                   if(ycoord<=0.0&&ycoord>=-0.15e5){
-				if(xcoord>=2.0*ycoord+5.77e5&&xcoord<=5.33e5-0.35e5*log(1.04979-(ycoord+0.35e5)/0.35e5)){                   
-					phase = 2;
-					
-					//                       if(ycoord<=0.0&&ycoord>=-0.10e5){
-					if(xcoord>=2.0*ycoord+5.79e5&&xcoord<=5.31e5-0.35e5*log(1.04979-(ycoord+0.35e5)/0.35e5)){
-						phase = 3;
-					}
-					//                       }
-					
-				}
-				//                    }
-				
-			}
-		}  
-#endif		
 #if 0
-		double  eta_mp;
-		PetscScalar temperature;
-		
-#if 1     
-		PetscReal agesin[100],a;
-		PetscInt i,i0;
-		PetscScalar x,y,z;
-		
-		x = position[0];
-		y = position[1];
-		z = position[2];
-		
-		a=0.878132429842795;
-		i0=0;
-		for (i=0; i<100; i++) {
-			agesin[i]=1.0/3.1536e7*pow(data->length_bar*(0.05+0.005*sin(6.0*3.1415926/1.25*(i*1.25/99)))/(2.0*a),2);
-			if (x>=i*1.25/99.0&&x<=(i+1)*1.25/99.0){
-				i0=i;
+		if (ycoord <= 0.0 && ycoord >= -0.15e5) {
+			if (xcoord >= ycoord+6.25e5 && xcoord <= ycoord+6.35e5) {
+				phase = 1;
 			}
-		}
-		temperature = data->Ttop+(data->Tbot-data->Ttop)*(1.0-erfc((-y)*data->length_bar/2.0/sqrt(1.e-6*agesin[i0]*3.1536e13)));
-#endif		
-		eta_mp=data->eta[0]/data->viscosity_bar*exp(-6.0*temperature);
-		MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);                               
+		}  
 #endif
 		
+#if 0
+		if (xcoord >= 6.25e5 && xcoord <= 6.45e5) {
+			if (ycoord <= 0.0 && ycoord >= -0.20e5) {
+				phase = 1;
+				
+				if ( xcoord >= 6.27e5&&xcoord<=6.43e5) {
+					if ( ycoord <= 0.0&&ycoord>=-0.18e5) {
+						phase = 2;
+						
+						if (xcoord >= 6.29e5 && xcoord <= 6.41e5) {
+							if (ycoord <= 0.0 && ycoord >= -0.16e5) {
+								phase = 3;
+							}
+						}
+						
+					}
+				}
+				pls = ptatin_RandomNumberGetDouble(0.0,0.1);
+			}
+		}  
+#endif
 		
+#if 1
+		if (ycoord <= 0.0 && ycoord >= -0.70e5) {
+			if (xcoord >= ycoord+6.25e5 && xcoord <= ycoord+6.45e5) {
+				phase = 1;
+				pls = ptatin_RandomNumberGetDouble(0.0,0.1);
+			}
+		}  
+#endif
+		
+#if 0
+		if (ycoord <= 0.0 && ycoord >= -0.1e5) {
+			if (xcoord >= ycoord+6.20e5 && xcoord <= ycoord+6.30e5) {
+				phase = 1;
+				
+				if (ycoord <= 0.0 && ycoord >= -0.08e5){
+					if (xcoord >= ycoord+6.22e5 && xcoord <= ycoord+6.38e5) {
+						phase = 2;
+						
+						if (ycoord <= 0.0 && ycoord >= -0.06e5){
+							if (xcoord >= ycoord+6.24e5 &&x coord <= ycoord+6.26e5) {
+								phase = 3;
+							}
+						}
+						
+					}
+				}
+				pls = ptatin_RandomNumberGetDouble(0.0,0.1);
+			}
+		}  
+#endif
+		
+#if 0
+		if (ycoord<=0.0&&ycoord>=-0.7e5){
+			if (xcoord >= 1.0*ycoord+6.15e5 && xcoord <= 1.0*ycoord+6.35e5) {
+				phase = 1;
+				
+				//                   if(ycoord<=0.0&&ycoord>=-0.15e5) {
+				if (xcoord >= 1.0*ycoord+6.18e5 && xcoord <= 1.0*ycoord+6.32e5) {
+					phase = 2;
+					
+					//                       if(ycoord<=0.0&&ycoord>=-0.10e5) {
+					if (xcoord >= 1.0*ycoord+6.21e5 && xcoord <= 1.0*ycoord+6.29e5) {
+						phase = 3;
+					}
+					//                       }
+					
+				}
+				//                    }
+				
+			}
+		}
+#endif
+
+#if 0
+		if (ycoord <= 0.0 && ycoord >= -0.55e5) {
+			if (xcoord >= 2.0*ycoord+5.75e5 && xcoord <= 5.35e5-0.35e5*log(1.04979-(ycoord+0.35e5)/0.35e5)) {
+				phase = 1;
+				
+				//                   if(ycoord<=0.0&&ycoord>=-0.15e5){
+				if (xcoord >= 2.0*ycoord+5.77e5 && xcoord <= 5.33e5-0.35e5*log(1.04979-(ycoord+0.35e5)/0.35e5)) {
+					phase = 2;
+					
+					//                       if(ycoord<=0.0&&ycoord>=-0.10e5){
+					if (xcoord >= 2.0*ycoord+5.79e5 && xcoord<=5.31e5-0.35e5*log(1.04979-(ycoord+0.35e5)/0.35e5)) {
+						phase = 3;
+					}
+					//                       }
+				}
+				//                    }
+			}
+		}  
+#endif
+		
+#if 0
+		{
+			double      eta_mp;
+			PetscScalar temperature;
+			PetscReal   agesin[100],a;
+			PetscInt    i,i0;
+			PetscScalar x,y,z;
+			
+#if 1
+			
+			x = position[0];
+			y = position[1];
+			z = position[2];
+			
+			a=0.878132429842795;
+			i0 = 0;
+			for (i=0; i<100; i++) {
+				agesin[i] = 1.0/3.1536e7*pow(data->length_bar*(0.05+0.005*sin(6.0*3.1415926/1.25*(i*1.25/99)))/(2.0*a),2);
+				if (x >= i*1.25/99.0&&x<=(i+1)*1.25/99.0) {
+					i0 = i;
+				}
+			}
+			temperature = data->Ttop+(data->Tbot-data->Ttop)*(1.0-erfc((-y)*data->length_bar/2.0/sqrt(1.e-6*agesin[i0]*3.1536e13)));
+#endif
+			eta_mp = data->eta[0]/data->viscosity_bar*exp(-6.0*temperature);
+			MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);                               
+		}
+#endif
 		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
@@ -655,8 +630,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	}
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
 	
-#endif
-	
 	PetscFunctionReturn(0);
 }
 
@@ -670,8 +643,7 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar p
 	PetscReal  L_bar,Tbot,age,Ttop,Ly,Oy,length_bar,diffusivity;
 	PetscReal cm_yr2m_s;
 	
-	cm_yr2m_s=1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
-	
+	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
 	
 	/* get coordinates */
 	x = position[0];
@@ -694,12 +666,11 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar p
 	//        *val = Ttop+(Tbot-Ttop)*(1.0-erfc((-y)*length_bar/2.0/sqrt(1.e-6*length_bar*(cabs(x-0.625)+0.02)/(2.0*cm_yr2m_s))));
 	//       }
 	
-	
 #if 1
-	if(x<=0.625){
+	if (x <= 0.625) {
 		*val = Ttop+(Tbot-Ttop)*(1.0-erfc((-y)*length_bar/2.0/sqrt(1.e-6*30.0*3.1536e13)));
 	}
-	else{
+	else {
 		*val = Ttop+(Tbot-Ttop)*(1.0-erfc((-y)*length_bar/2.0/sqrt(1.e-6*30.0*3.1536e13)));
 	}
 #endif
@@ -710,31 +681,32 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar p
 	
 #if 0
 	/*read age from file*/
-	PetscReal agesin[100],a;
-	PetscInt i,ii,i0;
-	
-	a=0.878132429842795;
-	i0=0;
-	for (i=0; i<100; i++) {
-		agesin[i]=1.0/3.1536e7*pow(length_bar*(0.05+0.005*sin(6.0*3.1415926/1.25*(i*1.25/99)))/(2.0*a),2);
-		if (x>=i*1.25/99.0&&x<=(i+1)*1.25/99.0){
-			i0=i;
+	{
+		PetscReal agesin[100],a;
+		PetscInt i,ii,i0;
+		
+		a = 0.878132429842795;
+		i0 = 0;
+		for (i=0; i<100; i++) {
+			agesin[i]=1.0/3.1536e7*pow(length_bar*(0.05+0.005*sin(6.0*3.1415926/1.25*(i*1.25/99)))/(2.0*a),2);
+			if ( x>= i*1.25/99.0 && x <= (i+1)*1.25/99.0) {
+				i0 = i;
+			}
 		}
+		*val = Ttop+(Tbot-Ttop)*(1.0-erfc((-y)*length_bar/2.0/sqrt(1.e-6*agesin[i0]*3.1536e13)));
 	}
-	*val = Ttop+(Tbot-Ttop)*(1.0-erfc((-y)*length_bar/2.0/sqrt(1.e-6*agesin[i0]*3.1536e13)));
-#endif    
+#endif
+	
 	/* indicate you want to set this value into the vector */
 	impose = PETSC_TRUE;
 	
 	return impose;
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d"
 PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,PetscInt dof_idx,ModelSubduction_Initiation2dCtx *data)
 {
-#if 1
 	PetscInt i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
 	DM cda;
 	Vec coords;
@@ -743,10 +715,8 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	PetscScalar val;
 	PetscBool impose_value;
 	PetscScalar ****LA_X;
-	
 	PetscScalar vx,Vx_max;
 	PetscReal Dprime;
-	
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;	
@@ -766,9 +736,6 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	}
 	ierr = DMDAVecGetArrayDOF(da,X,&LA_X);CHKERRQ(ierr);
 	
-	
-	
-	
 	for (k=sk; k<sk+p; k++) {
 		for (j=sj; j<sj+n; j++) {
 			for (i=si; i<si+m; i++) {
@@ -780,18 +747,15 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 				} else {
 					pos[0] = pos[1] = pos[2] = 0.0;
 				}
-				
+
 				Dprime = (data->Ly-data->Oy)/2.0;
 				Vx_max = data->velocity;
 				
-				
 				//                vx=-Vx_max*tanh(2.0*3.1415926*(pos[1]-data->Oy-Dprime)/(2.0*Dprime));
-				vx=-Vx_max*(tanh(2.0*3.1415926*(pos[1]-data->Oy-Dprime)/(2.0*Dprime))+(1.0+pos[1]/Dprime))/2.0;
+				vx = -Vx_max*(tanh(2.0*3.1415926*(pos[1]-data->Oy-Dprime)/(2.0*Dprime))+(1.0+pos[1]/Dprime))/2.0;
 				
 				
 				LA_X[k][j][i][dof_idx] = 0.0+pos[0]/data->Lx*vx;
-				
-				
 			}
 		}
 	}
@@ -801,11 +765,7 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	}
 	
 	PetscFunctionReturn(0);
-#endif
 }
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_Subduction_Initiation2d"
@@ -828,13 +788,11 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-#if 1	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
-#if 1	
 	//	ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,-data->velocity/(data->Lx-data->Ox),0.0,0.0);CHKERRQ(ierr);
 	//	ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
 	
@@ -845,7 +803,6 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	
 	//	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,0.0/(data->Lz),0.0,0.0);CHKERRQ(ierr);
 	//	ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-#endif	
 	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	
@@ -863,9 +820,6 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
 	ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-#endif	
-	
-#if 1	
 	
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	
@@ -883,7 +837,6 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 		
 		ierr = DMDAVecTraverse3d(daT,temperature,0, DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d, (void*)vals);CHKERRQ(ierr);
 	}
-#endif	
 	
 	PetscFunctionReturn(0);
 }
@@ -892,7 +845,6 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 #define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pTatinCtx c,Vec X,void *ctx)
 {
-#if 1	
 	DM                stokes_pack,dau,dap;
 	PhysCompStokes    stokes;
 	Vec               Uloc,Ploc;
@@ -902,6 +854,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pT
 	MaterialConst_MaterialType   *truc;
 	PetscErrorCode    ierr;
 	PetscInt regionidx;	
+	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -921,10 +874,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pT
 	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
-	
-	
-	
-#endif
+
 	PetscFunctionReturn(0);
 }
 
@@ -941,7 +891,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	
+
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
@@ -958,9 +908,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,
 	
 	PetscFunctionReturn(0);
 }
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Subduction_Initiation2d"
@@ -1021,7 +968,6 @@ PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char 
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelDestroy_Subduction_Initiation2d"
