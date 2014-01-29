@@ -22,7 +22,8 @@ TATIN_MODEL_DIR = \
 	multilayer_folding \
 	submarinelavaflow \
 	ex_subduction \
-	iplus_slab_plume
+	iplus_slab_plume \
+	subduction_initiation2d
 
 
 ## DONT NOT EDIT LINES BELOW
