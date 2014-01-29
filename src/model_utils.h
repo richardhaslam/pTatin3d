@@ -57,4 +57,8 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
 PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
 PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value);
 
+PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c);
+PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c);
+PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[]);
+
 #endif

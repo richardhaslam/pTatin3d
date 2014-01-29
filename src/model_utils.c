@@ -306,3 +306,104 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_DefineVelocityMeshQuasi2D"
+PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c)
+{
+	c->mz = 1;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_DefineVelocityMeshGeometryQuasi2D"
+PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
+{
+	PhysCompStokes    stokes;
+	DM                stokes_pack,dav,dap;
+	PetscReal Lz,min_dl[3],max_dl[3];
+	PetscBool geom_max,flg;
+	PetscErrorCode ierr;
+
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	/* determine min/max dx,dy,dz for mesh */
+	ierr = DMDAComputeQ2ElementBoundingBox(dav,min_dl,max_dl);CHKERRQ(ierr);
+	
+	geom_max = PETSC_FALSE;
+	Lz = 1.0e32;
+	Lz = PetscMin(Lz,min_dl[0]);
+	Lz = PetscMin(Lz,min_dl[1]);
+
+	PetscOptionsGetBool(PETSC_NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,PETSC_NULL);
+	if (geom_max) {
+		Lz = 1.0e-32;
+		Lz = PetscMax(Lz,max_dl[0]);
+		Lz = PetscMax(Lz,max_dl[1]);
+	}
+
+	if (geom_max) {
+		PetscPrintf(PETSC_COMM_WORLD,"[[pTatin3d_DefineVelocityMeshGeometryQuasi2D]] Using Lz = %1.4e from max(dx,dy) \n",Lz );
+	} else {
+		PetscPrintf(PETSC_COMM_WORLD,"[[pTatin3d_DefineVelocityMeshGeometryQuasi2D]] Using Lz = %1.4e from min(dx,dy) \n",Lz );
+	}
+	
+	ierr = DMDASetUniformCoordinates1D(dav,2,0.0,Lz);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeQ2ElementBoundingBox"
+PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
+{
+	DM              cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e;
+	const PetscInt  *el_nidx;
+	PetscInt        *gidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	PetscReal       dx,dy,dz,dl_min[3],dl_max[3];
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+	
+	dl_min[0] = dl_min[1] = dl_min[2] = 1.0e32;
+	dl_max[0] = dl_max[1] = dl_max[2] = 1.0e-32;
+	
+	for (e=0;e<nel;e++) {
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		
+		dx = fabs( el_coords[3*Q2_FACE_NODE_EAST +0] - el_coords[3*Q2_FACE_NODE_WEST +0]  );
+		dy = fabs( el_coords[3*Q2_FACE_NODE_NORTH+1] - el_coords[3*Q2_FACE_NODE_SOUTH+1] );
+		dz = fabs( el_coords[3*Q2_FACE_NODE_FRONT+2] - el_coords[3*Q2_FACE_NODE_BACK +2]  );
+		
+		if (dx < dl_min[0]) { dl_min[0] = dx; }
+		if (dy < dl_min[1]) { dl_min[1] = dy; }
+		if (dz < dl_min[2]) { dl_min[2] = dz; }
+		
+		if (dx > dl_max[0]) { dl_max[0] = dx; }
+		if (dy > dl_max[1]) { dl_max[1] = dy; }
+		if (dz > dl_max[2]) { dl_max[2] = dz; }
+		
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPI_MAX,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+

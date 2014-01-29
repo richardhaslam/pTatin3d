@@ -80,34 +80,6 @@
 #include "mesh_quality_metrics.h"
 
 
-
-#define Q2_CELL_NODE_CENTER 13
-
-#define Q2_FACE_NODE_WEST   12
-#define Q2_FACE_NODE_EAST   14
-#define Q2_FACE_NODE_SOUTH  10
-#define Q2_FACE_NODE_NORTH  16
-#define Q2_FACE_NODE_BACK   4
-#define Q2_FACE_NODE_FRONT  22
-
-#define Q2_VERTEX_0   0
-#define Q2_VERTEX_1   2
-#define Q2_VERTEX_2   6
-#define Q2_VERTEX_3   8
-#define Q2_VERTEX_4   18
-#define Q2_VERTEX_5   20
-#define Q2_VERTEX_6   24
-#define Q2_VERTEX_7   26
-
-typedef enum {
-	Q2_FACE_WEST = 1,
-	Q2_FACE_EAST,
-	Q2_FACE_SOUTH,
-  Q2_FACE_NORTH,
-  Q2_FACE_BACK,
-  Q2_FACE_FRONT
-} Q2Face;
-
 /*
 #define Q2_FACE_WEST   2
 #define Q2_FACE_EAST   3
