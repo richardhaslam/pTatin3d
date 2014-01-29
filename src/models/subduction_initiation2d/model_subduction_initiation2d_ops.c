@@ -31,11 +31,11 @@
 PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscReal cm_yr2m_s;
+	PetscReal         cm_yr2m_s;
 	RheologyConstants *rheology;
-	DataBucket materialconstants = c->material_constants;
-	PetscInt regionidx;
-	PetscErrorCode ierr;
+	DataBucket        materialconstants;
+	PetscInt          regionidx;
+	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
 	
@@ -83,7 +83,7 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	data->viscosity_bar = 1.0e25;
 	data->velocity_bar  = 1.0e-9;
 	
-	rheology                 = &c->rheology_constants;
+	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
 	rheology->rheology_type  = RHEOLOGY_VP_STD;
 	rheology->nphases_active = 4;
 	rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
@@ -118,10 +118,10 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	
-	
 	data->velocity = data->velocity*cm_yr2m_s;
+
 	
-	
+	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	MaterialConstantsSetDefaults(materialconstants);
 	
 	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
