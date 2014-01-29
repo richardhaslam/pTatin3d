@@ -1,0 +1,104 @@
+#PETSc Option Table entries:
+-ptatin_model thermal_convection2d
+
+-nsteps 20000 
+#-restart
+
+-da_processors_x 4
+-da_processors_y 2
+-da_processors_z 1
+
+
+
+-mx 100
+-my 100
+-mz 1
+
+#-dt_max 1.e-2
+-constant_dt 2.e0
+
+
+-lattice_layout_Nx 4
+-lattice_layout_Ny 4
+-lattice_layout_Nz 2
+
+-mp_popctrl_np_lower 28
+-mp_popctrl_np_upper 40
+#-mp_popctrl_np_lower 100
+#-mp_popctrl_np_upper 200
+
+
+-T_snes_type ksponly
+-T_ksp_type fgmres
+#-T_ksp_atol 1.0e-3
+-T_ksp_rtol 1.0e-15
+-T_pc_type bjacobi
+-T_ksp_monitor_true_residual
+-T_ksp_converged_reason
+
+-snes_atol 1.0e-7
+-snes_rtol 1.0e-6
+-snes_converged_reason
+-snes_ksp_ew
+-snes_ksp_ew_rtol0 1.0e-2
+-snes_max_it 30
+-snes_max_linear_solve_fail 100000
+-snes_mf_operator
+-snes_monitor
+-snes_type ls
+
+#-newton_its 0
+#-picard_its 10
+
+-A11_operator_type 0,1,1,1,1
+
+-dau_nlevels 3
+-fieldsplit_u_pc_mg_levels 3
+-stk_velocity_da_refine_hierarchy_x 2,2
+-stk_velocity_da_refine_hierarchy_y 2,2
+-stk_velocity_da_refine_hierarchy_z 1,1
+
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 1
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-4
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+-fieldsplit_u_mg_coarse_pc_type lu
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_pc_type jacobi
+
+#-fieldsplit_u_pc_mg_galerkin
+
+-ksp_converged_reason
+-ksp_max_it 50
+-ksp_atol 7.e-8
+-ksp_rtol 1.0e-7
+-ksp_type fgmres
+-ksp_monitor 
+
+#-ksp_gmres_restart 300
+
+-log_summary
+
+
+
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+
+
+# use baij with coarse (asm)
+#-stk_velocity_da_mat_type baij
+
+
+# use aij with coarse (direct)
+-stk_velocity_da_mat_type aij
+-use_quasi_newton_coordinate_update
+#End of PETSc Option Table entries

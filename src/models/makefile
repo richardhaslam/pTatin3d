@@ -23,7 +23,8 @@ TATIN_MODEL_DIR = \
 	submarinelavaflow \
 	ex_subduction \
 	iplus_slab_plume \
-	subduction_initiation2d
+	subduction_initiation2d \
+	convection2d
 
 
 ## DONT NOT EDIT LINES BELOW
