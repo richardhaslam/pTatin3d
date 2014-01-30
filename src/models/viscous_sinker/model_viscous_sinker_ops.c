@@ -46,6 +46,7 @@
 #include "dmda_iterator.h"
 #include "mesh_deformation.h"
 #include "mesh_update.h"
+#include "dmda_remesh.h"
 
 #include "viscous_sinker_ctx.h"
 
@@ -456,8 +457,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 	PetscPrintf(PETSC_COMM_WORLD,"RUNNING DEFORMED MESH EXAMPLE \n");	
 	ierr = MeshDeformation_GaussianBump_YMAX(c->stokes_ctx->dav,-0.3,-5.6);CHKERRQ(ierr);
 	//ierr = DMDASetGraduatedCoordinates1D(c->stokes_ctx->dav,2,1,2.0);CHKERRQ(ierr);
-	//ierr = DMDASetCoordinatesCentralSqueeze1D(c->stokes_ctx->dav,1,4.0,0.0,0.4,0.6,1.0);CHKERRQ(ierr);
-	//
+	// [test c] remesh interp
+	//ierr = DMDASetCoordinatesCentralSqueeze1D(c->stokes_ctx->dav,0,4.0,0.0,0.4,0.8,1.0);CHKERRQ(ierr);
+	//ierr = DMDASetCoordinatesColumnRefinement(c->stokes_ctx->dav,1,4.0,0.66,1.0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -799,6 +801,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void
 
 	//ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,c->dt);CHKERRQ(ierr);
   ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,c->dt);CHKERRQ(ierr);
+
+	// [test c] remesh interp
+	//ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,PETSC_NULL,c->dt);CHKERRQ(ierr);
+	//ierr = DMDASetCoordinatesColumnRefinement(dav,1,4.0,0.75,1.0);CHKERRQ(ierr);
 
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 //
