@@ -1,7 +1,7 @@
 
 ## List source files here
 MODEL_SRC = \
-	model_thermal_convection2d_ops.c
+	model_convection2d_ops.c
 	
 
 ## USER SHOULD NOT NEED TO EDIT ANYTHING BELOW
