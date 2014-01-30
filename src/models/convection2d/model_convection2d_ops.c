@@ -97,33 +97,28 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global = 1.0e+26;
 	rheology->eta_lower_cutoff_global = 1.0e+20;
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ly",&data->Ly,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Oy",&data->Oy,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Lz",&data->Lz,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Oz",&data->Oz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Ly",&data->Ly,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Oy",&data->Oy,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Lz",&data->Lz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Oz",&data->Oz,PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_velocity",&data->velocity,PETSC_NULL);CHKERRQ(ierr); 	
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_velocity",&data->velocity,PETSC_NULL);CHKERRQ(ierr); 	
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_density_bar",&data->density_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_viscosity_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_velocity_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_viscosity_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_velocity_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ttop",&data->Ttop,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Tbot",&data->Tbot,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Thermal_age",&data->Thermal_age,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Ttop",&data->Ttop,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Tbot",&data->Tbot,PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta0",&data->eta[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_rho0",&data->rho[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_diffusivity0",&data->diffusivity[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_alpha0",&data->alpha[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_H0",&data->H[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_eta0",&data->eta[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_rho0",&data->rho[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_diffusivity0",&data->diffusivity[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_alpha0",&data->alpha[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_H0",&data->H[0],PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-		
 	PetscPrintf(PETSC_COMM_WORLD,"[thermal_convection2d]: Ra = %1.4e \n",data->alpha[0]*10*DeltaT*data->Lx*data->Lx*data->Lx/(data->diffusivity[0]*data->eta[0]));
 	
 	data->velocity = data->velocity * cm_yr2m_s;
@@ -155,7 +150,6 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[thermal_convection2d]:  parameters \n");
 	PetscPrintf(PETSC_COMM_WORLD,"  alpha    : %1.4e [K^-1]\n", data->alpha[0] );
-	PetscPrintf(PETSC_COMM_WORLD,"  Thermal_age   : %1.4e [Ma]\n", data->Thermal_age );
 	PetscPrintf(PETSC_COMM_WORLD,"  eta_upper_cutoff   : %1.4e [Pas]\n", rheology->eta_upper_cutoff_global );
 	PetscPrintf(PETSC_COMM_WORLD,"  eta_lower_cutoff   : %1.4e [Pas]\n", rheology->eta_lower_cutoff_global );
 	
