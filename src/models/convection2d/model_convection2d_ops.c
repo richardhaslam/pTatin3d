@@ -38,7 +38,7 @@
 #include "ptatin3d_energy.h"
 #include "model_utils.h"
 
-#include "model_thermal_convection2d_ctx.h"
+#include "model_convection2d_ctx.h"
 
 
 #undef __FUNCT__
