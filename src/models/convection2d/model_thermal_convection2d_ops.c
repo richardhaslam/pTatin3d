@@ -1,8 +1,22 @@
 
 /*
+ 
  Developed by 
  Xiaolin Mao [xlmao@gps.caltech.edu]
- */
+ 
+ Defines the iso-viscous models described here
+ 
+ @article {GJI:GJI23,
+   author = {Blankenbach, B. and Busse, F. and Christensen, U. and Cserepes, L. and Gunkel, D. and Hansen, U. and Harder, H. and Jarvis, G. and Koch, M. and Marquart, G. and Moore, D. and Olson, P. and Schmeling, H. and Schnaubelt, T.},
+   title = {A benchmark comparison for mantle convection codes},
+   journal = {Geophysical Journal International},
+   volume = {98},
+   number = {1},
+   pages = {23--38},
+   year = {1989},
+ }
+ 
+*/
 
 
 #define _GNU_SOURCE
@@ -22,6 +36,8 @@
 #include "energy_output.h"
 #include "geometry_object.h"
 #include "ptatin3d_energy.h"
+#include "model_utils.h"
+
 #include "model_thermal_convection2d_ctx.h"
 
 
@@ -34,16 +50,19 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	RheologyConstants *rheology;
 	DataBucket        materialconstants;
 	PetscInt          regionidx;
+	PetscReal         DeltaT;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
+	ierr = pTatin3d_DefineVelocityMeshQuasi2D(c);CHKERRQ(ierr);
+	
 	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
 	
 	/*box geometry*/
-	data->Lx = 10.e5;
+	data->Lx = 10.0e5;
 	data->Ly = 0.0e5;
 	data->Lz = 0.01e5;
 	data->Ox = 0.0;
@@ -52,31 +71,31 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	
 	/*material constants*/	
 	data->diffusivity[0] = 1.0e-6;
-	data->alpha[0] = 2.5e-2;
-	data->H[0] = 0.0;/*heat generation*/
+	data->alpha[0]       = 2.5e-2; /* 2.5e-5 - table 1 */
+	data->H[0]           = 0.0; /* heat generation */
 	
-	/*density*/
+	/* density */
 	data->rho[0] = 4000.0;
-	
-	
-	/*temperature*/
+		
+	/* temperature */
 	data->Ttop = 0.0;
 	data->Tbot = 1.0; //	
 	
-	/*viscousity*/
-	data->eta[0] = 1.0e21;
+	/* viscosity */
+	data->eta[0] = 1.0e21; /* 2.5e19 Pa.s */
 	
-	/*scaling bar*/
+	/* scaling bar */
 	data->length_bar    = 1000.0 * 1.0e3;
 	data->viscosity_bar = 1.0e21;
 	data->velocity_bar  = 1.0e-6;
-
+	DeltaT              = 1.0e3;
+	
 	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
 	rheology->rheology_type = RHEOLOGY_VP_STD;
 	rheology->nphases_active = 1;
 	rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
-	rheology->eta_upper_cutoff_global = 1.e+26;
-	rheology->eta_lower_cutoff_global = 1.e+20;
+	rheology->eta_upper_cutoff_global = 1.0e+26;
+	rheology->eta_lower_cutoff_global = 1.0e+20;
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr);
@@ -104,7 +123,8 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	
+		
+	PetscPrintf(PETSC_COMM_WORLD,"[thermal_convection2d]: Ra = %1.4e \n",data->alpha[0]*10*DeltaT*data->Lx*data->Lx*data->Lx/(data->diffusivity[0]*data->eta[0]));
 	
 	data->velocity = data->velocity * cm_yr2m_s;
 	
@@ -120,7 +140,7 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 		MaterialConstantsPrintAll(materialconstants,regionidx);
 	} 
 	
-	/*Compute additional scaling parameters*/
+	/* Compute additional scaling parameters */
 	data->time_bar      = data->length_bar / data->velocity_bar;
 	data->pressure_bar  = data->viscosity_bar/data->time_bar;
 	data->density_bar   = data->pressure_bar / data->length_bar;
@@ -139,10 +159,10 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"  eta_upper_cutoff   : %1.4e [Pas]\n", rheology->eta_upper_cutoff_global );
 	PetscPrintf(PETSC_COMM_WORLD,"  eta_lower_cutoff   : %1.4e [Pas]\n", rheology->eta_lower_cutoff_global );
 	
-	//scale viscosity cutoff
+	/* scale viscosity cutoff */
 	rheology->eta_lower_cutoff_global = rheology->eta_lower_cutoff_global / data->viscosity_bar;
 	rheology->eta_upper_cutoff_global = rheology->eta_upper_cutoff_global / data->viscosity_bar;
-	//scale length 
+	/* scale length */
 	data->Lx = data->Lx / data->length_bar;
 	data->Ly = data->Ly / data->length_bar;
 	data->Lz = data->Lz / data->length_bar;
@@ -150,18 +170,22 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	data->Oy = data->Oy / data->length_bar;
 	data->Oz = data->Oz / data->length_bar;
 	
-	//scale velocity
+	/* scale velocity */
 	data->velocity = data->velocity/data->velocity_bar;
 	
-	//scale rho0
+	/* scale rho0 */
 	data->rho[0] = data->rho[0]/data->density_bar;
 	
-	data->diffusivity[0]=data->diffusivity[0]/data->length_bar/data->length_bar*data->time_bar;
+	/* scale diffusivity and alpha */
+	data->diffusivity[0] = data->diffusivity[0]/data->length_bar/data->length_bar*data->time_bar;
+	/* Since you scaled temperature by \Delta T = 1000, alphs should be increased by a factor 1000 */
+	//data->alpha[0]       = data->alpha[0] * DeltaT;
 #if 1
 	// scale material properties
 	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
 		MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
 	}
+
 	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
 #endif	
 	
@@ -284,6 +308,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Thermal_Convection2d(pTatinCtx c,vo
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
+	ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
