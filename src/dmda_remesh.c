@@ -592,5 +592,216 @@ PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da)
 	PetscFunctionReturn(0);
 }
 
+/*
+ PetscInt dir     : Value of 0, 1, or 2 indicating in which diection you wish refiniment to occur along 
+ PetscReal factor : Controls aggressiveness of refinement in central section of domain. Values larger than one incur refinement.
+ PetscReal x1_frac,x2_frac : Define the start end fraction of the sector in the domain here refinement will occur
+ Domain is mapped like this
+ 
+ xprime = slope * (x - x_ref) + xprime_ref
+ 
+ */
+#undef __FUNCT__
+#define __FUNCT__ "DMDASetCoordinatesColumnRefinement"
+PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal factor,PetscReal x1_frac,PetscReal x2_frac)
+{
+	PetscErrorCode ierr;
+	PetscInt si,sj,sk,nx,ny,nz,i,j,k,M,N,P;
+	DM cda,da_min,da_max,cda_min,cda_max;
+	Vec coord,coord_min,coord_max;
+	DMDACoor3d ***LA_coords,***LA_coords_da_min,***LA_coords_da_max;
+	PetscReal x0prime,x1prime,x2prime,x3prime;
+	PetscReal xp,x,f,f0,f1;
+	PetscReal x0,x1,x2,x3;
+	
+	
+	PetscFunctionBegin;
+	
+	if ((dir < 0) || (dir > 3)) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"dir\" must be one of {0,1,2}");
+	}
+	if (factor < 1.0) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"factor\" must be >= 1.0");
+	}
+	
+	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	
+	switch (dir) {
+		case 0:
+			ierr = DMDACreate3dRedundant(da,M-1,M,sj,sj+ny,sk,sk+nz, 1, &da_max);CHKERRQ(ierr);
+			ierr = DMDACreate3dRedundant(da,0,1,  sj,sj+ny,sk,sk+nz, 1, &da_min);CHKERRQ(ierr);
+			break;
+		case 1:
+			ierr = DMDACreate3dRedundant(da,si,si+nx,N-1,N,sk,sk+nz, 1, &da_max);CHKERRQ(ierr);
+			ierr = DMDACreate3dRedundant(da,si,si+nx,0,1,  sk,sk+nz, 1, &da_min);CHKERRQ(ierr);
+			break;
+		case 2:
+			ierr = DMDACreate3dRedundant(da,si,si+nx,sj,sj+ny,P-1,P, 1, &da_max);CHKERRQ(ierr);
+			ierr = DMDACreate3dRedundant(da,si,si+nx,sj,sj+ny,0,1,   1, &da_min);CHKERRQ(ierr);
+			break;
+	}
+	
+	
+	
+	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda,coord,&LA_coords);CHKERRQ(ierr);
 
+	ierr = DMDAGetCoordinateDA(da_min,&cda_min);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da_min,&coord_min);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
+	
+	ierr = DMDAGetCoordinateDA(da_max,&cda_max);CHKERRQ(ierr);
+	ierr = DMDAGetCoordinates(da_max,&coord_max);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
 
+	/* uniformily set coordinates between [x0prime,x3prime] */
+	/*
+	switch (dir) {
+		case 0:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dir = I unsupported: Requires DMDARemeshSetUniformCoordinatesBetweenILayers3d()");
+			break;
+		case 1:
+			ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(da,0,N-1);CHKERRQ(ierr);
+			break;
+		case 2:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dir = K unsupported: Requires DMDARemeshSetUniformCoordinatesBetweenKLayers3d()");
+			break;
+	}	
+	*/
+	
+	// ierr = DMDASetUniformCoordinates1D(da,dir,x0prime,x3prime);CHKERRQ(ierr);
+	for (k=sk; k<sk+nz; k++) {
+		for (j=sj; j<sj+ny; j++) {
+			for (i=si; i<si+nx; i++) {
+				PetscScalar pos[3],coord_prime,dl;
+				PetscInt ii;
+				
+				if (dir == 0) {
+					/* fetch x0,x3 from surface mesh */
+					x0 = LA_coords_da_min[k-sk][j-sj][0].x;
+					x3 = LA_coords_da_max[k-sk][j-sj][0].x;
+					ii = i;
+					dl = (x3prime-x0prime)/((PetscReal)(M-1));
+				} else if (dir == 1) {
+					/* fetch x0,x3 from surface mesh */
+					x0 = LA_coords_da_min[k-sk][0][i-si].y;
+					x3 = LA_coords_da_max[k-sk][0][i-si].y;
+					ii = j;
+					dl = (x3prime-x0prime)/((PetscReal)(N-1));
+				} else {
+					/* fetch x0,x3 from surface mesh */
+					x0 = LA_coords_da_min[0][j-sj][i-si].z;
+					x3 = LA_coords_da_max[0][j-sj][i-si].z;
+					ii = k;
+					dl = (x3prime-x0prime)/((PetscReal)(P-1));
+				}
+				
+				/* compute x1,x2 from x0,x3 */
+				x1 = x0 + (x3-x0) * x1_frac;
+				x2 = x0 + (x3-x0) * x2_frac;
+				
+				x0prime = x0;
+				x1prime = x1;
+				// x = [(x2 - x1)/fac] * (xprime - x1prime) + x1
+				// x2prime
+				//x2prime = factor + x1prime;
+				x2prime = (x2-x1)*factor + x1;
+				// x3prime
+				x3prime = x3 - x2 + x2prime;
+				
+				if (dir == 0) {
+					/* fetch x0,x3 from surface mesh */
+					ii = i;
+					dl = (x3prime-x0prime)/((PetscReal)(M-1));
+				} else if (dir == 1) {
+					/* fetch x0,x3 from surface mesh */
+					ii = j;
+					dl = (x3prime-x0prime)/((PetscReal)(N-1));
+				} else {
+					/* fetch x0,x3 from surface mesh */
+					ii = k;
+					dl = (x3prime-x0prime)/((PetscReal)(P-1));
+				}
+				
+				pos[0] = LA_coords[k][j][i].x;
+				pos[1] = LA_coords[k][j][i].y;
+				pos[2] = LA_coords[k][j][i].z;
+				
+				coord_prime = x0prime + ii*dl;
+				
+				pos[dir] = coord_prime;
+				
+				LA_coords[k][j][i].x = pos[0];
+				LA_coords[k][j][i].y = pos[1];
+				LA_coords[k][j][i].z = pos[2];
+			}
+		}
+	}
+	
+	
+	for (k=sk; k<sk+nz; k++) {
+		for (j=sj; j<sj+ny; j++) {
+			for (i=si; i<si+nx; i++) {
+				PetscScalar pos[3],coord_prime,new_coord;
+
+				if (dir == 0) {
+					/* fetch x0,x3 from surface mesh */
+					x0 = LA_coords_da_min[k-sk][j-sj][0].x;
+					x3 = LA_coords_da_max[k-sk][j-sj][0].x;
+				} else if (dir == 1) {
+					/* fetch x0,x3 from surface mesh */
+					x0 = LA_coords_da_min[k-sk][0][i-si].y;
+					x3 = LA_coords_da_max[k-sk][0][i-si].y;
+				} else {
+					/* fetch x0,x3 from surface mesh */
+					x0 = LA_coords_da_min[0][j-sj][i-si].z;
+					x3 = LA_coords_da_max[0][j-sj][i-si].z;
+				}
+
+				/* compute x1,x2 from x0,x3 */
+				x1 = x0 + (x3-x0) * x1_frac;
+				x2 = x0 + (x3-x0) * x2_frac;
+				
+				x0prime = x0;
+				x1prime = x1;
+				// x = [(x2 - x1)/fac] * (xprime - x1prime) + x1
+				// x2prime
+				//x2prime = factor + x1prime;
+				x2prime = (x2-x1)*factor + x1;
+				// x3prime
+				x3prime = x3 - x2 + x2prime;
+				
+				
+				pos[0] = LA_coords[k][j][i].x;
+				pos[1] = LA_coords[k][j][i].y;
+				pos[2] = LA_coords[k][j][i].z;
+				
+				coord_prime = pos[dir];
+				
+				if (pos[dir] <= x1prime) {
+					new_coord = coord_prime;
+				} else if (pos[dir] > x1prime && pos[dir] < x2prime) {
+					//new_coord = (x2-x1) * (coord_prime - x1prime)/(factor) + x1;
+					new_coord = (1.0) * (coord_prime - x1prime)/(factor) + x1;
+				} else {
+					new_coord = 1.0 * (coord_prime - x2prime) + x2;
+				}
+				
+				pos[dir] = new_coord;
+				
+				LA_coords[k][j][i].x = pos[0];
+				LA_coords[k][j][i].y = pos[1];
+				LA_coords[k][j][i].z = pos[2];
+			}
+		}
+	}
+	ierr = DMDAVecRestoreArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda,coord,&LA_coords);CHKERRQ(ierr);
+	
+	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
