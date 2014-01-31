@@ -248,7 +248,8 @@ PetscBool iPLUS_Inflow_BCListEvaluator(PetscScalar position[],PetscScalar *value
 	} else {
 		vy = 0.0;
 	}
-	*value = vy;
+	/* scale inflow velocity */
+	*value = vy * (1.0/ model_data->v_scale); /* make velocity non-dimensional */
 	return impose_dirichlet;
 }
 
@@ -276,7 +277,7 @@ PetscErrorCode iPLUS_ApplyMaterialBoundaryCondition_Plume(pTatinCtx c,iPLUSCtx *
 	r02 = data->plume_radius * data->plume_radius;
 	vy = data->plume_A0 * r02;
 	/* record displacement */
-	displacement += vy * c->dt;
+	displacement += vy * c->dt * (1.0/data->v_scale); /* dimensionalize time, t = T' hat{dt}, T' = L'/V' */
 	
 	/* if displacement is larger than frac.dy, inject more points */
 	ierr = DMDAGetInfo(dav,0,0,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);

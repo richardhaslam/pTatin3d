@@ -52,13 +52,14 @@
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
 #include "dmda_element_q2p1.h"
+#include "mesh_deformation.h"
+#include "dmda_remesh.h"
 #include "mesh_update.h"
 #include "ptatin_models.h"
 #include "model_utils.h"
 #include "ptatin_utils.h"
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 #include "geometry_object.h"
-#include "mesh_deformation.h"
 
 #include "iplus_ctx.h"
 
@@ -71,7 +72,6 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	PetscBool        flg;
 	char             logfile[PETSC_MAX_PATH_LEN];
 	PetscInt         modeltype;
-	PetscReal        eta_scale;
 	PetscErrorCode   ierr;
 	
 	
@@ -98,24 +98,29 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_eta",&data->plume_eta,&flg);
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_rho",&data->plume_rho,&flg);
 	
-	
-	eta_scale = 1.0e3;
+	data->v_scale   = 1.0;
+	data->eta_scale = 1.0e3;
 	if (data->modeltype == iPLUsModelPlume) {
-		eta_scale = 1.0;
+		data->eta_scale = 1.0;
 	}
-	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using viscosity scale, eta* = %1.4e Pa.s \n", eta_scale);
-	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: dimensional quantities \n");
-	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta = %1.4e Pa.s ; rho = %1.4e kg/m^3 \n",data->mantle_eta,data->mantle_rho);
-	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta = %1.4e Pa.s ; rho = %1.4e kg/m^3 \n",data->plume_eta,data->plume_rho);
-	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [slab]   eta = %1.4e Pa.s ; rho = %1.4e kg/m^3 \n",data->slab_eta,data->slab_rho);
-	
-	data->mantle_eta = data->mantle_eta / eta_scale;
-	data->plume_eta  = data->plume_eta / eta_scale;
-	data->slab_eta   = data->slab_eta / eta_scale;
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_eta_scale",&data->eta_scale,&flg);
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_velocity_scale",&data->v_scale,&flg);
 
-	data->mantle_rho = data->mantle_rho / eta_scale;
-	data->plume_rho  = data->plume_rho / eta_scale;
-	data->slab_rho   = data->slab_rho / eta_scale;
+	
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using viscosity scale, eta* = %1.4e Pa s \n", data->eta_scale);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using velocity scale,    v* = %1.4e m/s \n", data->v_scale);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: dimensional quantities \n");
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta = %1.4e Pa s ; rho = %1.4e kg/m^3 \n",data->mantle_eta,data->mantle_rho);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta = %1.4e Pa s ; rho = %1.4e kg/m^3 \n",data->plume_eta,data->plume_rho);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [slab]   eta = %1.4e Pa s ; rho = %1.4e kg/m^3 \n",data->slab_eta,data->slab_rho);
+	
+	data->mantle_eta = data->mantle_eta / data->eta_scale;
+	data->plume_eta  = data->plume_eta / data->eta_scale;
+	data->slab_eta   = data->slab_eta / data->eta_scale;
+
+	data->mantle_rho = data->mantle_rho / (data->eta_scale * data->v_scale);
+	data->plume_rho  = data->plume_rho / (data->eta_scale * data->v_scale);
+	data->slab_rho   = data->slab_rho / (data->eta_scale * data->v_scale);
 	
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta* = %1.4e ; rho* = %1.4e \n",data->mantle_eta,data->mantle_rho);
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta* = %1.4e ; rho* = %1.4e \n",data->plume_eta,data->plume_rho);
@@ -418,7 +423,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_iPLUS(pTatinCtx c,Vec X,void *ctx)
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
+	//ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
+	ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,PETSC_NULL,c->dt);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
@@ -561,11 +567,11 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 			PetscViewerASCIIPrintf(data->logviewer,"# iPLUS logfile\n");
 			PetscViewerASCIIPrintf(data->logviewer,"# Note: If the slab (or plume) is not present, the min/max y coordinatate reported will be -1.0e32/+1.0e32 \n");
 			PetscViewerASCIIPrintf(data->logviewer,"# ----------------------------------------------------------------------------------------------------------------- \n");
-			PetscViewerASCIIPrintf(data->logviewer,"# step  time            Omega(t=0)      Omega(t)        plume_{y_min,y_max}             slab_{y_min,y_max} \n");
+			PetscViewerASCIIPrintf(data->logviewer,"# step  time (ND)       time (sec)      Omega(t=0)      Omega(t)        plume_{y_min,y_max}             slab_{y_min,y_max} \n");
 			beenhere = 1;
 		}
-		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.6e\t%1.6e\t%+1.4e\t%+1.4e\t%+1.4e\t%+1.4e\n",
-								c->step, c->time, 
+		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.4e\t%1.6e\t%1.6e\t%+1.4e\t%+1.4e\t%+1.4e\t%+1.4e\n",
+								c->step, c->time,c->time*(1.0/data->v_scale), 
 								data->intial_domain_volume, volume,
 								plume_range_yp[0], plume_range_yp[1] ,slab_range_yp[0], slab_range_yp[1]);
 		
