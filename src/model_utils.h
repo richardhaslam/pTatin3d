@@ -60,5 +60,6 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value);
 PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c);
 PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c);
 PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[]);
+PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[]);
 
 #endif

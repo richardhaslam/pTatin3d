@@ -407,3 +407,75 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscFunctionReturn(0);
 }
 
+/*
+ This should only ever be used for debugging.
+ We scatter the vector created from a DMDA into the natural i+j*nx+k*nx*ny ordering,
+ then we scatter this i,j,k ordered vector onto rank 0 and write the contents out in ascii.
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDAFieldViewAscii"
+PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
+{
+	PetscErrorCode ierr;
+	Vec natural_field,natural_field_red;
+	VecScatter ctx;
+	FILE *fp;
+	PetscInt M,N,P,dofs;
+	const char *oname = NULL;
+	MPI_Comm comm;
+	PetscMPIInt rank;
+	PetscInt i,n;
+	PetscScalar *LA_field;
+	
+
+	PetscFunctionBegin;
+	
+	ierr = DMDACreateNaturalVector(dm,&natural_field);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalBegin(dm,field,INSERT_VALUES,natural_field);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalEnd(dm,field,INSERT_VALUES,natural_field);CHKERRQ(ierr);
+
+	ierr = VecScatterCreateToZero(natural_field,&ctx,&natural_field_red);CHKERRQ(ierr);
+	ierr = VecScatterBegin(ctx,natural_field,natural_field_red,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	ierr = VecScatterEnd(ctx,natural_field,natural_field_red,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+	
+	ierr = VecDestroy(&natural_field);CHKERRQ(ierr);
+	
+	/*
+	 # DMDAFieldViewAscii: 
+	 # DMDA Vec (name) 
+	 # M N P x y z
+	 # dofs x
+	*/
+	ierr = DMDAGetInfo(dm,0,&M,&N,&P, 0,0,0, &dofs,0, 0,0,0, 0);CHKERRQ(ierr);
+	ierr = PetscObjectGetName((PetscObject)field,&oname);CHKERRQ(ierr);
+	ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+	
+	if (rank == 0) {
+		
+		fp = fopen(filename,"w");
+		if (fp == NULL) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open file %s on rank 0",filename); }
+
+		fprintf(fp,"# DMDAFieldViewAscii\n");
+		if (oname) {
+			fprintf(fp,"# DMDA Vec %s\n",oname);
+		} else {
+			fprintf(fp,"# DMDA Vec\n");
+		}
+		fprintf(fp,"# M N P %d %d %d\n",M,N,P);
+		fprintf(fp,"# dofs %d\n",dofs);
+		ierr = VecGetSize(natural_field_red,&n);CHKERRQ(ierr);
+		ierr = VecGetArray(natural_field_red,&LA_field);CHKERRQ(ierr);
+		for (i=0; i<n; i++) {
+			fprintf(fp,"%1.6e\n",LA_field[i]);
+		}
+		ierr = VecRestoreArray(natural_field_red,&LA_field);CHKERRQ(ierr);
+		
+		fclose(fp);
+	}
+	ierr = VecDestroy(&natural_field_red);CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
