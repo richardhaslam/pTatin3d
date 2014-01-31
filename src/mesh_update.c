@@ -604,3 +604,44 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Ve
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "UpdateMeshGeometry_ComputeSurfaceCourantTimestep"
+PetscErrorCode UpdateMeshGeometry_ComputeSurfaceCourantTimestep(DM dav,Vec velocity,PetscReal vert_displacement_max,PetscReal *step)
+{
+	PetscReal vy;
+	DMDACoor3d ***LA_vel;
+	PetscReal dt,dt_min_local,dt_min;
+	PetscInt M,N,P,i,k,si,sj,sk,nx,ny,nz;
+	MPI_Comm comm;
+	PetscErrorCode ierr;
+
+	dt_min_local = 1.0e32;
+	
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(dav,velocity,&LA_vel);CHKERRQ(ierr);
+
+	if (sj + ny == N) {
+		
+		for (k=sk; k<sk+nz; k++) {
+			for (i=si; i<si+nx; i++) {
+				vy = PetscRealPart(LA_vel[k][N-1][i].y);
+				
+				dt = vert_displacement_max / PetscAbsReal(vy);
+				if (dt < dt_min_local) {
+					dt_min_local = dt;
+				}
+			}
+		}
+		
+	}
+	ierr = DMDAVecRestoreArray(dav,velocity,&LA_vel);CHKERRQ(ierr);
+
+	ierr = PetscObjectGetComm((PetscObject)dav,&comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&dt_min_local,&dt_min,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+	
+	*step = dt_min;
+	
+	PetscFunctionReturn(0);
+}
