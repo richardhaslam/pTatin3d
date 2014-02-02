@@ -62,7 +62,7 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 		ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
 		ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 		
-		ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
+		ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 		ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 		ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 		ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
 	ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 	
-	ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
+	ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 	ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);

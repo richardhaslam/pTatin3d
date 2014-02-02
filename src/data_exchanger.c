@@ -470,7 +470,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	 code to run on one cpu (even if this seems slightly odd).
 	 */
 	is_seqaij = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
 //	if (is_seqaij==PETSC_FALSE) {
 //		ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
 //	} else {

@@ -131,7 +131,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 
 		JE = PETSC_NULL;
 		if (!use_JFNK_T) {
-			ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+			ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
 			ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 		}
 

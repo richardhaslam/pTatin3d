@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "private/daimpl.h" 
+#include "petsc-private/daimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -130,6 +130,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 	ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
 	
 	for( k=1; k<nlevels; k++ ){
 		ierr = PCMGSetInterpolation(pc_i,k,interpolation_v[k]);CHKERRQ(ierr);
@@ -310,7 +311,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 		
 		/* Schur complement */
-		ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
@@ -359,12 +360,12 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
-				ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
-				ierr = PetscTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-				ierr = PetscTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
 				if (same1||same2||same3) {
 					ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 				}
@@ -520,13 +521,13 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 		
 
 		/* Schur complement */
-		ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
 
 		/* Empty Schur complement slot */
-		ierr = DMGetMatrix(dap,MATSBAIJ,&Spp_null);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp_null);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp_null,"A22_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp_null,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp_null);CHKERRQ(ierr);
@@ -597,12 +598,12 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
-				ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
-				ierr = PetscTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-				ierr = PetscTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
 				if (same1||same2||same3) {
 					ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 				}
@@ -754,9 +755,9 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 #endif	
 	
 	/* operator */
-	ierr = PetscTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
-	ierr = PetscTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
-	ierr = PetscTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
 
 	if (is_nest) {
 		Mat Auu;
@@ -764,7 +765,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		ierr = MatGetSubMatrix(*A,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
 		if (!is_shell) {
 			ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
 			ierr = MatAssemble_StokesA_AUU(Auu,dau,user->stokes_ctx->u_bclist,user->stokes_ctx->volQ);CHKERRQ(ierr);
@@ -786,14 +787,14 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		ierr = MatGetSubMatrix(*B,mlctx->is_stokes_field[1],mlctx->is_stokes_field[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
 		if (!is_shell) {
 			ierr = MatZeroEntries(Buu);CHKERRQ(ierr);
 			ierr = MatAssemble_StokesA_AUU(Buu,dau,user->stokes_ctx->u_bclist,user->stokes_ctx->volQ);CHKERRQ(ierr);
 		}
 		
 		is_shell = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)Bpp,MATSHELL,&is_shell);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)Bpp,MATSHELL,&is_shell);CHKERRQ(ierr);
 		if (!is_shell) {
 			ierr = MatZeroEntries(Bpp);CHKERRQ(ierr);
 			ierr = MatAssemble_StokesPC_ScaledMassMatrix(Bpp,dau,dap,user->stokes_ctx->p_bclist,user->stokes_ctx->volQ);CHKERRQ(ierr);
@@ -847,7 +848,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 						
 						ierr = KSPGetPC(ksp_smoother,&pc_smoother);CHKERRQ(ierr);
 						is_nested_ksp = PETSC_FALSE;
-						ierr = PetscTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
+						ierr = PetscObjectTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
 						if (is_nested_ksp) {
 							ierr = PCKSPGetKSP(pc_smoother,&ksp_nested);CHKERRQ(ierr);
 							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -932,7 +933,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 						
 						ierr = KSPGetPC(ksp_smoother,&pc_smoother);CHKERRQ(ierr);
 						is_nested_ksp = PETSC_FALSE;
-						ierr = PetscTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
+						ierr = PetscObjectTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
 						if (is_nested_ksp) {
 							ierr = PCKSPGetKSP(pc_smoother,&ksp_nested);CHKERRQ(ierr);
 							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -1109,7 +1110,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
 
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 
 		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
@@ -1144,7 +1145,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	/* Coarse grid setup: Define interpolation operators for velocity space */
 	interpolation_v[0] = PETSC_NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
 	}
 
 	/* Coarse grid setup: Define interpolation operators for scalar space */
@@ -1822,7 +1823,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
@@ -1857,7 +1858,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	/* Coarse grid setup: Define interpolation operators for velocity space */
 	interpolation_v[0] = PETSC_NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for scalar space */
@@ -2577,7 +2578,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMGetMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
@@ -2612,7 +2613,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	/* Coarse grid setup: Define interpolation operators for velocity space */
 	interpolation_v[0] = PETSC_NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for scalar space */

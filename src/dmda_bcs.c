@@ -484,7 +484,7 @@ PetscErrorCode BCListInsertLocal(BCList list,Vec y)
 	
 	/* debug error checking */
 	if (L!=M) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
-	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
 	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<M; k++) {
@@ -520,7 +520,7 @@ PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
 	
 	/* debug error checking */
 	if (L!=M) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
-	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
 	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<M; k++) {
@@ -970,7 +970,7 @@ PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
 	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
 	
 	/* debug error checking */
-	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
 	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<L; k++) {

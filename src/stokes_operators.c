@@ -55,7 +55,7 @@
 #include "petsc.h"
 #include "petscvec.h"
 #include "petscdm.h"
-#include "private/matimpl.h" /*I   "petscmat.h"   I*/
+#include "petsc-private/matimpl.h" /*I   "petscmat.h"   I*/
 
 
 #include "ptatin3d_defs.h"
@@ -127,7 +127,7 @@ PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
   /* Fetch the DA's */
@@ -547,7 +547,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 			PetscPrintf(PETSC_COMM_WORLD,"Fetching UVW block = A(1,1)\n");
 			if (!is_Auu_mf) {
 				if (cll==MAT_INITIAL_MATRIX) {
-					ierr = DMGetMatrix(ctx->daUVW,MATAIJ,B);CHKERRQ(ierr);
+					ierr = DMCreateMatrix(ctx->daUVW,MATAIJ,B);CHKERRQ(ierr);
 				} else {
 					ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 				}
@@ -598,7 +598,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 				
 				if (!is_Auu_ii_mf) {
 					if (cll==MAT_INITIAL_MATRIX) {
-						ierr = DMGetMatrix(ctx->daU,MATAIJ,B);CHKERRQ(ierr);
+						ierr = DMCreateMatrix(ctx->daU,MATAIJ,B);CHKERRQ(ierr);
 					} else {
 						ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 					}
@@ -626,7 +626,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 			PetscPrintf(PETSC_COMM_WORLD,"  ***** !!!WARNING!!! Stokes operator A has been requested to fetch the NULL block A(2,2), returning the pressure mass matrix *****\n");
 			
 			if (cll==MAT_INITIAL_MATRIX) {
-				ierr = DMGetMatrix(ctx->dap,MATAIJ,B);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(ctx->dap,MATAIJ,B);CHKERRQ(ierr);
 			} else {
 				ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 			}
@@ -678,7 +678,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		/* check if full column space */
 		isFullCol = PETSC_FALSE;
 		same = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
 		if (same) {
 			PetscInt n,first,step;
 			ierr = ISStrideGetInfo(isc,&first,&step);CHKERRQ(ierr);
@@ -777,7 +777,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 				
 				if (!is_Auu_ii_mf) {
 					if (cll==MAT_INITIAL_MATRIX) {
-						ierr = DMGetMatrix(ctx->daU,MATAIJ,B);CHKERRQ(ierr);
+						ierr = DMCreateMatrix(ctx->daU,MATAIJ,B);CHKERRQ(ierr);
 					} else {
 						ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 					}
@@ -799,7 +799,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 		/* check if full column space */
 		isFullCol = PETSC_FALSE;
 		same = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
 		if (same) {
 			PetscInt n,first,step;
 			ierr = ISStrideGetInfo(isc,&first,&step);CHKERRQ(ierr);
@@ -1886,7 +1886,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
 	/* Create submatrices */
@@ -1965,7 +1965,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
   /* Fetch the DA's */
@@ -1976,7 +1976,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 
 	/* A11 */
 	if (tA11==0) {
-		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 		ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
@@ -2053,7 +2053,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
   /* Fetch the DA's */
@@ -2064,9 +2064,9 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	
 	/* A11 */
 	if (tA11==0) {
-//		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
+//		ierr = DMCreateMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
 //
-		ierr = DMGetMatrix(dau,MATSBAIJ,&Auu);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dau,MATSBAIJ,&Auu);CHKERRQ(ierr);
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 // 
 	} else {
@@ -2076,9 +2076,9 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 	
 	/* Schur complement */
-//	ierr = DMGetMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
+//	ierr = DMCreateMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
 
-	ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
 	ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
 	ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
@@ -2311,17 +2311,17 @@ PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],M
 	pack = user->stokes_pack;
   ierr = DMCompositeGetEntries(pack,&dav,&dap);CHKERRQ(ierr);
 
-	ierr = DMGetMatrix(dav,MATAIJ,&Auu);CHKERRQ(ierr);
-	//ierr = DMGetMatrix(dav,MATSBAIJ,&Auu);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dav,MATAIJ,&Auu);CHKERRQ(ierr);
+	//ierr = DMCreateMatrix(dav,MATSBAIJ,&Auu);CHKERRQ(ierr);
 
 	if (prefix) {
 		ierr = MatSetOptionsPrefix(Auu,prefix);CHKERRQ(ierr);
 	}
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
-	ierr = PetscTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-	ierr = PetscTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
 	if (same1||same2||same3) {
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}

@@ -509,7 +509,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	
 		
 	/* trash old entries */
-	ierr = PetscTypeCompare((PetscObject)(*A),MATMFFD,&mat_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD,&mat_mffd);CHKERRQ(ierr);
 
 	if (!mat_mffd) {
 		ierr = MatZeroEntries(*A);CHKERRQ(ierr);

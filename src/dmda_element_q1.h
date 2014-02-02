@@ -36,7 +36,7 @@
 
 #include "petsc.h"
 #include "petscdm.h"
-#include "private/daimpl.h" 
+#include "petsc-private/daimpl.h" 
 
 PetscErrorCode DMDASetElementType_Q1(DM da);
 PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx);

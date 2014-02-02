@@ -65,7 +65,7 @@ PetscErrorCode test_1(void)
 	
 	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)A,MATSBAIJ,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
 		ierr = MatSetOption(A,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}
@@ -130,9 +130,9 @@ PetscErrorCode test_2(void)
 	ierr = DMSetOptionsPrefix(da,"vel_");CHKERRQ(ierr);
 	ierr = DMSetFromOptions(da);CHKERRQ(ierr);
 	
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
 		ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}

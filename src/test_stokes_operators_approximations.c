@@ -165,7 +165,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	/* assembled */
 	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
 
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 	PetscGetTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	PetscGetTime(&t1);

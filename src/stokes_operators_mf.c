@@ -34,7 +34,7 @@
 #include "petsc.h"
 #include "petscvec.h"
 #include "petscdm.h"
-#include "private/matimpl.h" /*I   "petscmat.h"   I*/
+#include "petsc-private/matimpl.h" /*I   "petscmat.h"   I*/
 
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"

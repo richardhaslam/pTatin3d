@@ -32,7 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 #define _GNU_SOURCE
-#include "private/daimpl.h" 
+#include "petsc-private/daimpl.h" 
 #include "petsc.h"
 
 #include "ptatin3d.h"

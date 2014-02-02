@@ -1216,7 +1216,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 				Vec scale;
 
 				/* This introduces scaling effects I need to deal with */
-				ierr = DMGetInterpolationScale(clone[k-1],clone[k],R[k],&scale);CHKERRQ(ierr);
+				ierr = DMCreateInterpolationScale(clone[k-1],clone[k],R[k],&scale);CHKERRQ(ierr);
 				
 				ierr = MatRestrict(R[k],properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
 				ierr = MatRestrict(R[k],properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
@@ -1232,7 +1232,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 			{
 				VecScatter inject;
 
-				ierr = DMGetInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
+				ierr = DMCreateInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
 				
 				ierr = VecScatterBegin(inject,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 				ierr = VecScatterEnd(inject  ,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

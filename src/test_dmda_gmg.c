@@ -39,7 +39,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "petscmat.h"
 #include "petscksp.h"
 #include "petscdm.h"
-#include "private/daimpl.h" 
+#include "petsc-private/daimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -194,7 +194,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	ierr = PetscMalloc(sizeof(Mat)*nlevels,&interpolatation);CHKERRQ(ierr);
 	interpolatation[0] = PETSC_NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
 	}
 	
 #if 0
@@ -427,7 +427,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	ierr = PetscMalloc(sizeof(Mat)*nlevels,&interpolatation);CHKERRQ(ierr);
 	interpolatation[0] = PETSC_NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
 	}
 	
 	/* define boundary conditions */
@@ -519,6 +519,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation[k]);CHKERRQ(ierr);

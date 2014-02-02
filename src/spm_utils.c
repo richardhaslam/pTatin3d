@@ -946,7 +946,7 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	}
 	
 	/* refine height vector */
-	ierr = DMGetInterpolation(dm_surf,dm_surf_ref,&R,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMCreateInterpolation(dm_surf,dm_surf_ref,&R,PETSC_NULL);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(dm_surf_ref,&height_ref);CHKERRQ(ierr);
 	ierr = MatInterpolate(R,height,height_ref);CHKERRQ(ierr);
 	
@@ -972,7 +972,7 @@ PetscErrorCode DMDAScatterIKNestedSurfaceDMDA(DM dm_msurf,DM dm_msurf_overlap,Ma
 	ierr = DMGetGlobalVector(dm_msurf_overlap,&height_vol);CHKERRQ(ierr);
 	
 	/* Interpolate height to height_mech */
-	ierr = DMGetInterpolationScale(dm_msurf_overlap,dm_msurf,R,&scale);CHKERRQ(ierr);
+	ierr = DMCreateInterpolationScale(dm_msurf_overlap,dm_msurf,R,&scale);CHKERRQ(ierr);
 	ierr = MatRestrict(R,height,height_vol);CHKERRQ(ierr);
 	ierr = VecPointwiseMult(height_vol,height_vol,scale);CHKERRQ(ierr);
 	ierr = VecDestroy(&scale);CHKERRQ(ierr);

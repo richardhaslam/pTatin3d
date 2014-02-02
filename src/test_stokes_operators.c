@@ -152,9 +152,9 @@ PetscErrorCode ass_A11(PhysCompStokes stk)
 	PetscPrintf(PETSC_COMM_WORLD,"+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,stk->mx,stk->my,stk->mz );
 	da = stk->dav;
 
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 	
-	ierr = PetscTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
 		ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}
@@ -195,9 +195,9 @@ PetscErrorCode ass_B22(PhysCompStokes stk)
 	dau = stk->dav;
 	dap = stk->dap;
 	
-	ierr = DMGetMatrix(dap,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dap,MATAIJ,&B);CHKERRQ(ierr);
 	
-	ierr = PetscTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
 		ierr = MatSetOption(B,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}
@@ -272,7 +272,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	/* assembled */
 	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
 
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 	PetscGetTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	PetscGetTime(&t1);
@@ -568,7 +568,7 @@ PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
 	/* assembled */
 	ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
 	
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	
 	ierr = MatGetDiagonal(B,y2);CHKERRQ(ierr);
@@ -690,7 +690,7 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 	PetscGetTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	PetscGetTime(&t1);
@@ -758,7 +758,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
-	ierr = DMGetMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
 	PetscGetTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	PetscGetTime(&t1);

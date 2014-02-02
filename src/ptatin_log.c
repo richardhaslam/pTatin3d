@@ -164,7 +164,7 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
 	ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)snes,SNESKSPONLY,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)snes,SNESKSPONLY,&same);CHKERRQ(ierr);
 
 	if (!same) {
 		PetscViewerASCIIPrintf(ctx->log,"  SNES: (%18.18s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  total linear its. %1.4d;  reason %s;  \n", snesname,prefix,rnorm,its,lits,SNESConvergedReasons[reason]);
