@@ -984,12 +984,8 @@ PetscErrorCode  KSPCreate_ChebychevRN(KSP ksp)
   ksp->ops->setfromoptions       = KSPSetFromOptions_ChebychevRN;
   ksp->ops->view                 = KSPView_ChebychevRN;
 	
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",
-																					 "KSPChebychevSetEigenvalues_ChebychevRN",
-																					 KSPChebychevSetEigenvalues_ChebychevRN);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C",
-																					 "KSPChebychevSetEstimateEigenvalues_ChebychevRN",
-																					 KSPChebychevSetEstimateEigenvalues_ChebychevRN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C","KSPChebychevSetEigenvalues_ChebychevRN",KSPChebychevSetEigenvalues_ChebychevRN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C","KSPChebychevSetEstimateEigenvalues_ChebychevRN",KSPChebychevSetEstimateEigenvalues_ChebychevRN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
