@@ -148,8 +148,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	
 	tc = 0.0;
 	tq = 0.0;
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		/* get local indices */
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -187,9 +187,9 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ae, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS );
 		
-		PetscGetTime(&t0c);
+		PetscTime(&t0c);
 		P3D_evaluate_geometry_elementQ2(ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
-		PetscGetTime(&t1c);
+		PetscTime(&t1c);
 		tc += (t1c-t0c);
 		
 		/* evaluate the viscosity */
@@ -198,7 +198,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 		}
 		
 #if 0		
-		PetscGetTime(&t0q);
+		PetscTime(&t0q);
 		for (p=0; p<ngp; p++) {
 			
 			fac = WEIGHT[p] * detJ[p];
@@ -213,12 +213,12 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 			
 			FormStokes3D_transB_isoD_B( Q2_NODES_PER_EL_3D, dNudx[p],dNudy[p],dNudz[p], D, Ae );
 		}
-		PetscGetTime(&t1q);
+		PetscTime(&t1q);
 		tq += (t1q-t0q);
 #endif
 		
 //#if 0
-		PetscGetTime(&t0q);
+		PetscTime(&t0q);
 		for (p=0; p<ngp; p++) {
 			
 			fac = WEIGHT[p] * detJ[p];
@@ -269,7 +269,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 				Ae[jj*81+ii] = Ae[ii*81+jj];
 			}
 		}
-		PetscGetTime(&t1q);
+		PetscTime(&t1q);
 		tq += (t1q-t0q);
 //#endif	
 		
@@ -278,7 +278,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	}
 	ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A11 <geom>: %1.4e (sec)\n",tc);
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A11 <quad>: %1.4e (sec)\n",tq);
@@ -290,7 +290,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble Auu:        %1.4e (sec)[final]\n",t1-t0);
 #endif
@@ -334,8 +334,8 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dap,&NUM_GINDICES_p,&GINDICES_p);CHKERRQ(ierr);
@@ -348,7 +348,7 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		/* get local indices */
 		ierr = StokesPressure_GetElementLocalIndices(p_el_lidx,(PetscInt*)&elnidx_p[nen_p*e]);CHKERRQ(ierr);
@@ -430,7 +430,7 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	}
 	ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A22: %1.4e (sec)[flush]\n",t1-t0);
 #endif	
@@ -441,7 +441,7 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP	
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A22: %1.4e (sec)[final]\n",t1-t0);
 #endif
@@ -485,8 +485,8 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,&NUM_GINDICES_u,&GINDICES_u);CHKERRQ(ierr);
@@ -503,7 +503,7 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		/* get local indices */
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -564,7 +564,7 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	}
 	ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A12: %1.4e (sec)[flush]\n",t1-t0);
 #endif	
@@ -577,7 +577,7 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP	
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A12: %1.4e (sec)[final]\n",t1-t0);
 #endif	
@@ -621,8 +621,8 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,&NUM_GINDICES_u,&GINDICES_u);CHKERRQ(ierr);
@@ -639,7 +639,7 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		/* get local indices */
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -700,7 +700,7 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	}
 	ierr = MatAssemblyBegin(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP	
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A21: %1.4e (sec)[flush]\n",t1-t0);
 #endif	
@@ -713,7 +713,7 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_ASM_OP	
 	PetscPrintf(PETSC_COMM_WORLD,"  Assemble A21: %1.4e (sec)[final]\n",t1-t0);
 #endif

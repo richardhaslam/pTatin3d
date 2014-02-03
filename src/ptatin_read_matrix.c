@@ -22,7 +22,7 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	flg = PETSC_FALSE;
-	PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,&flg);
+	PetscOptionsGetString(NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must provide a filename for the matrix to read using -matrix");
 	}
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 	
 	ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
-	ierr = VecSetRandom(b,PETSC_NULL);CHKERRQ(ierr);
+	ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
 	
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 	

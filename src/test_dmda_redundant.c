@@ -64,7 +64,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
 	
 	PetscFunctionBegin;
 	perturb = perturbA;
-	ierr = PetscOptionsGetScalar(PETSC_NULL,"-perturb",&perturb,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetScalar(NULL,"-perturb",&perturb,&flg);CHKERRQ(ierr);
 	
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
@@ -80,8 +80,8 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
 	ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 	ierr = PetscRandomSetInterval(rand,-1.0,1.0);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	for(k=sk;k<sk+nz;k++) {
 		for(j=sj;j<sj+ny;j++) {
@@ -121,7 +121,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -145,7 +145,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = DMDACreate3dRedundant(da, si,si+nxs, sj,sj+nys, P-1,P, 3, &da_red );CHKERRQ(ierr);
 	
 	/* output */
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_redundant_in.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_redundant_in.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -157,9 +157,9 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	{
 		char *name;
 		PetscMPIInt rank;
-		MPI_Comm_rank(((PetscObject)(da))->comm,&rank);
+		MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);
 		asprintf(&name,"test_dmda_redundant_out_%d.vtk",rank);
-		ierr = PetscViewerASCIIOpen(((PetscObject)(da_red))->comm, name, &vv);CHKERRQ(ierr);
+		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da_red), name, &vv);CHKERRQ(ierr);
 		free(name);
 	}
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -183,12 +183,12 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscInt mx,my,mz;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	mx = my = mz = 10;
-	PetscOptionsGetInt( PETSC_NULL, "-mx", &mx, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-my", &my, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-mz", &mz, 0 );
+	PetscOptionsGetInt( NULL, "-mx", &mx, 0 );
+	PetscOptionsGetInt( NULL, "-my", &my, 0 );
+	PetscOptionsGetInt( NULL, "-mz", &mz, 0 );
 	
 	ierr = test_DMDACreate3dRedundant(mx,my,mz);CHKERRQ(ierr);
 

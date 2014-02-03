@@ -1,6 +1,6 @@
 
 
-#include <private/kspimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc-private/kspimpl.h>                    /*I "petscksp.h" I*/
 
 /*  
  Private data structure for Chebychev Iteration 
@@ -53,11 +53,11 @@ static PetscErrorCode KSPVecNorm_ChebychevRN(KSP ksp,Vec x,NormType type,PetscRe
 PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 {
   KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
-  MPI_Comm         comm = ((PetscObject)ksp)->comm,subcomm;
+  MPI_Comm         comm = PetscObjectComm((PetscObject)ksp),subcomm;
   PetscErrorCode   ierr;
 	
   PetscFunctionBegin;
-  ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
+  ierr = KSPSetWorkVecs(ksp,3);CHKERRQ(ierr);
   cheb->estimate_current = PETSC_FALSE;
 	
 	if (cheb->use_red_norm) {
@@ -65,7 +65,7 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
       ierr = PetscSubcommCreate(comm,&cheb->psubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetNumber(cheb->psubcomm,cheb->nsubcomm);CHKERRQ(ierr);
       ierr = PetscSubcommSetType(cheb->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(ksp,sizeof(PetscSubcomm));CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(PetscSubcomm));CHKERRQ(ierr);
 			
       subcomm = cheb->psubcomm->comm;
     } else {
@@ -82,8 +82,8 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 			PetscMPIInt     subsize,subrank;
 			const PetscInt  *range;
 			
-			ierr = KSPGetOperators(ksp,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-			ierr = MatGetVecs(mat,PETSC_NULL,&vec);CHKERRQ(ierr);
+			ierr = KSPGetOperators(ksp,&mat,NULL,NULL);CHKERRQ(ierr);
+			ierr = MatGetVecs(mat,NULL,&vec);CHKERRQ(ierr);
 
 			/* create working vectors xsub */
 			ierr = VecGetSize(vec,&m);CHKERRQ(ierr);
@@ -106,8 +106,8 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 			MPI_Barrier(PETSC_COMM_WORLD);
 
 			/* create xsub with empty local arrays, because xdup's arrays will be placed into it */
-			ierr = VecCreateMPIWithArray(subcomm,mloc_sub,PETSC_DECIDE,PETSC_NULL,&cheb->xsub);CHKERRQ(ierr);
-			/* create xdup. Note: we use communicator dupcomm, not ((PetscObject)pc)->comm! */      
+			ierr = VecCreateMPIWithArray(subcomm,1,mloc_sub,PETSC_DECIDE,NULL,&cheb->xsub);CHKERRQ(ierr);
+			/* create xdup. Note: we use communicator dupcomm, not PetscObjectComm((PetscObject)pc)! */      
 			ierr = VecCreateMPI(cheb->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&cheb->xdup);CHKERRQ(ierr);
 			
 			/* create vec scatters */
@@ -115,7 +115,7 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 				IS       is1,is2;
 				PetscInt *idx1,*idx2,i,j,k;
 				
-				ierr = PetscMalloc2(cheb->psubcomm->n*mlocal,PetscInt,&idx1,cheb->psubcomm->n*mlocal,PetscInt,&idx2);CHKERRQ(ierr);
+				ierr = PetscMalloc2(cheb->psubcomm->n*mlocal,&idx1,cheb->psubcomm->n*mlocal,&idx2);CHKERRQ(ierr);
 				j = 0;
 				for (k=0; k<cheb->psubcomm->n; k++){
 					for (i=mstart; i<mend; i++){
@@ -146,8 +146,8 @@ PetscErrorCode  KSPChebychevSetEigenvalues_ChebychevRN(KSP ksp,PetscReal emax,Pe
   KSP_ChebychevRN *chebychevP = (KSP_ChebychevRN*)ksp->data;
 	
   PetscFunctionBegin;
-  if (emax <= emin) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %G",emax,emin);
-  if (emax*emin <= 0.0) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %G min %G",emax,emin);
+  if (emax <= emin) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Maximum eigenvalue must be larger than minimum: max %g min %G",emax,emin);
+  if (emax*emin <= 0.0) SETERRQ2(PetscObjectComm((PetscObject)ksp),PETSC_ERR_ARG_INCOMP,"Both eigenvalues must be of the same sign: max %G min %G",emax,emin);
   chebychevP->emax = emax;
   chebychevP->emin = emin;
   PetscFunctionReturn(0);
@@ -167,7 +167,7 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_ChebychevRN(KSP ksp,PetscReal
     if (!cheb->kspest) {
       PetscBool nonzero;
 			
-      ierr = KSPCreate(((PetscObject)ksp)->comm,&cheb->kspest);CHKERRQ(ierr);
+      ierr = KSPCreate(PetscObjectComm((PetscObject)ksp),&cheb->kspest);CHKERRQ(ierr);
 			
       ierr = KSPGetPC(cheb->kspest,&cheb->pcnone);CHKERRQ(ierr);
       ierr = PetscObjectReference((PetscObject)cheb->pcnone);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_ChebychevRN(KSP ksp,PetscReal
       ierr = KSPSetComputeSingularValues(cheb->kspest,PETSC_TRUE);CHKERRQ(ierr);
 			
       /* Estimate with a fixed number of iterations */
-      ierr = KSPSetConvergenceTest(cheb->kspest,KSPSkipConverged,0,0);CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest(cheb->kspest,KSPConvergedSkip,0,0);CHKERRQ(ierr);
       ierr = KSPSetNormType(cheb->kspest,KSP_NORM_NONE);CHKERRQ(ierr);
       ierr = KSPSetTolerances(cheb->kspest,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,5);CHKERRQ(ierr);
 			
@@ -305,7 +305,7 @@ PetscErrorCode KSPSetFromOptions_ChebychevRN(KSP ksp)
     ierr = KSPSetPC(cheb->kspest,ksp->pc);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_size(((PetscObject)ksp)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRQ(ierr);
 	if (cheb->nsubcomm != size) {
 		cheb->use_red_norm = PETSC_TRUE;
 	}
@@ -329,7 +329,7 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 	
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 	
   if (cheb->kspest && !cheb->estimate_current) {
     PetscReal max,min;
@@ -383,9 +383,9 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
   ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);
 	
   for (i=0; i<maxit; i++) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 		
@@ -405,9 +405,9 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 					else {
 						ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
 					}
-					ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+					ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
 					ksp->rnorm                              = rnorm;
-					ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+					ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
 					ksp->vec_sol = p[k]; 
 					KSPLogResidualHistory(ksp,rnorm);
 					ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -416,9 +416,9 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 				}
 			} else {
 				/* lagging */
-				ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+				ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
 				ksp->rnorm                              = rnorm;
-				ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+				ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
 				KSPLogResidualHistory(ksp,rnorm);
 				ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
 				ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -434,9 +434,9 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 				else {
 					ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
 				}
-				ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+				ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
 				ksp->rnorm                              = rnorm;
-				ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+				ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
 				ksp->vec_sol = p[k]; 
 				KSPLogResidualHistory(ksp,rnorm);
 				ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -469,9 +469,9 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 				ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
 				ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
-      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
-      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -513,7 +513,7 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
 	
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 	
   if (cheb->kspest && !cheb->estimate_current) {
     PetscReal max,min;
@@ -567,9 +567,9 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
   ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);
 	
   for (i=0; i<maxit; i++) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 		
@@ -593,9 +593,9 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
 					ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
 				}
 			}
-			ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+			ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
 			ksp->rnorm                              = rnorm;
-			ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+			ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
 			ksp->vec_sol = p[k]; 
 			KSPLogResidualHistory(ksp,rnorm);
 			ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -636,9 +636,9 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
 					ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
 				}
       }
-      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
-      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -681,7 +681,7 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 	
   PetscFunctionBegin;
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (diagonalscale) SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 	
   if (cheb->kspest && !cheb->estimate_current) {
     PetscReal max,min;
@@ -736,9 +736,9 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
   ierr = VecAYPX(p[k],scale,x);CHKERRQ(ierr);
 	
   for (i=0; i<maxit; i++) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
     c[kp1] = 2.0*mu*c[k] - c[km1];
     omega = omegaprod*c[k]/c[kp1];
 		
@@ -751,9 +751,9 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 			
 			ierr = VecNormEnd(residual,NORM_2,&rnorm);CHKERRQ(ierr);
 
-			ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+			ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
 			ksp->rnorm                              = rnorm;
-			ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+			ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
 
 			KSPLogResidualHistory(ksp,rnorm);
 			ierr = KSPMonitor(ksp,valid_for_iteration,rnorm);CHKERRQ(ierr);
@@ -793,9 +793,9 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 		
 		ierr = VecNormEnd(residual,NORM_2,&rnorm);CHKERRQ(ierr);
 		
-		ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+		ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
 		ksp->rnorm                              = rnorm;
-		ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+		ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
 		
 		KSPLogResidualHistory(ksp,rnorm);
 		ierr = KSPMonitor(ksp,valid_for_iteration,rnorm);CHKERRQ(ierr);
@@ -813,9 +813,9 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 				ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
 				ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
       }
-      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
-      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ierr = PetscObjectSAWsGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
       ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
@@ -851,7 +851,7 @@ PetscErrorCode KSPSolve_ChebychevRN(KSP ksp)
 	
   PetscFunctionBegin;
 	
-	PetscOptionsGetInt(PETSC_NULL,"-cheby_type",&cheby_type,PETSC_NULL);
+	PetscOptionsGetInt(NULL,"-cheby_type",&cheby_type,NULL);
 	switch (cheby_type) {
 		case 0:
 			ierr = KSPSolve_ChebychevRN_red_norm(ksp);CHKERRQ(ierr);
@@ -900,7 +900,7 @@ PetscErrorCode KSPView_ChebychevRN(KSP ksp,PetscViewer viewer)
 		}			
 		
   } else {
-    SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
+    SETERRQ1(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Viewer type %s not supported for KSP Chebychev",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -921,9 +921,9 @@ PetscErrorCode KSPDestroy_ChebychevRN(KSP ksp)
 	}
   ierr = KSPDestroy(&cheb->kspest);CHKERRQ(ierr);
   ierr = PCDestroy(&cheb->pcnone);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevRNSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevRNSetEstimateEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevRNSetEigenvalues_C",NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevRNSetEstimateEigenvalues_C",NULL);CHKERRQ(ierr);
+  ierr = KSPDestroyDefault(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -958,7 +958,7 @@ PetscErrorCode  KSPCreate_ChebychevRN(KSP ksp)
   PetscMPIInt      size;
 	
   PetscFunctionBegin;
-  ierr = PetscNewLog(ksp,KSP_ChebychevRN,&chebychevP);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,&chebychevP);CHKERRQ(ierr);
 	
   ksp->data                      = (void*)chebychevP;
   ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
@@ -973,19 +973,19 @@ PetscErrorCode  KSPCreate_ChebychevRN(KSP ksp)
   chebychevP->tform[2]           = 1.1;
 	
 	chebychevP->use_red_norm       = PETSC_FALSE;
-  ierr = MPI_Comm_size(((PetscObject)ksp)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)ksp),&size);CHKERRQ(ierr);
   chebychevP->nsubcomm           = size;
 	
   ksp->ops->setup                = KSPSetUp_ChebychevRN;
   ksp->ops->solve                = KSPSolve_ChebychevRN;
   ksp->ops->destroy              = KSPDestroy_ChebychevRN;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution        = KSPBuildSolutionDefault;
+  ksp->ops->buildresidual        = KSPBuildResidualDefault;
   ksp->ops->setfromoptions       = KSPSetFromOptions_ChebychevRN;
   ksp->ops->view                 = KSPView_ChebychevRN;
 	
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C","KSPChebychevSetEigenvalues_ChebychevRN",KSPChebychevSetEigenvalues_ChebychevRN);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C","KSPChebychevSetEstimateEigenvalues_ChebychevRN",KSPChebychevSetEstimateEigenvalues_ChebychevRN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEigenvalues_C",KSPChebychevSetEigenvalues_ChebychevRN);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPChebychevSetEstimateEigenvalues_C",KSPChebychevSetEstimateEigenvalues_ChebychevRN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

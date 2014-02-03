@@ -201,7 +201,7 @@ PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 	*index = -1;
 	cnt = 0;
 	item = registered_model_list[0];
-	while (item!=PETSC_NULL) {
+	while (item!=NULL) {
 		match = PETSC_FALSE;
 		PetscStrcmp(modelname,item->model_name,&match);
 		if (match) {
@@ -225,15 +225,15 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (registered_model_list==PETSC_NULL) {
+	if (registered_model_list==NULL) {
 		registered_model_list = malloc( sizeof(pTatinModel) );
-		registered_model_list[0] = PETSC_NULL;
+		registered_model_list[0] = NULL;
 	} 
 	
 	/* find list size */
 	cnt = 0;
 	ii = registered_model_list[0];
-	while (ii!=PETSC_NULL) {
+	while (ii!=NULL) {
 		cnt++;
 		ii = registered_model_list[cnt];
 	}
@@ -251,7 +251,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	registered_model_list = tmp;
 	
 	registered_model_list[list_length  ] = model;
-	registered_model_list[list_length+1] = PETSC_NULL;
+	registered_model_list[list_length+1] = NULL;
 	
 	if (model->disable_output) {
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Output functionality for \"%s\" has been deactivated\n",model->model_name);
@@ -268,7 +268,7 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
 	PetscInt index;
 	PetscFunctionBegin;
 	
-	*model = PETSC_NULL;
+	*model = NULL;
 	ierr = ptatin_match_model_index(name,&index);CHKERRQ(ierr);
 	if ( index==-1 ) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't identified in list registered_model_list[]",name );

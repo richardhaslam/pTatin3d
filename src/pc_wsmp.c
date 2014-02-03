@@ -3,7 +3,7 @@
 #include <petscvec.h>
 #include <petscmat.h>
 #include <petscpc.h>
-#include <private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>
 
 
@@ -52,16 +52,16 @@ PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 	PetscReal min,max;
 	
 	ierr = MatGetVecs(A,&y2,&y1);CHKERRQ(ierr);
-	ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
 	
-	ierr = VecSetRandom(x,PETSC_NULL);CHKERRQ(ierr);
+	ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
 	ierr = MatMult(A,x,y1);CHKERRQ(ierr);
 	ierr = MatMultTranspose(A,x,y2);CHKERRQ(ierr);
 	
 	ierr = VecAXPY(y1,-1.0,y2);CHKERRQ(ierr);
 	ierr = VecAbs(y1);CHKERRQ(ierr);
-	ierr = VecMin(y1,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y1,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y1,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y1,NULL,&max);CHKERRQ(ierr);
 	
 	if (max < tol) {
 		*flg = PETSC_TRUE;
@@ -509,7 +509,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	
     PetscFunctionBegin;
 	
-	ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PCGetOperators(pc,&A,&B,NULL);CHKERRQ(ierr);
 	
 	if (!pc->setfromoptionscalled) {
 		/* -- [wsmp] : initialize with default parameters -- */
@@ -569,10 +569,10 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		/* -- [wsmp] : symbolic factorization -- */
 		wsmp->IPARM[2 -1] = 2;
 		wsmp->IPARM[3 -1] = 2;
-		PetscGetTime(&t0);
+		PetscTime(&t0);
 		ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
 		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-		PetscGetTime(&t1);
+		PetscTime(&t1);
 		
 		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
 		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
@@ -604,10 +604,10 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			/* -- [wsmp] : symbolic factorization -- */
 			wsmp->IPARM[2 -1] = 2;
 			wsmp->IPARM[3 -1] = 2;
-            PetscGetTime(&t0);
+            PetscTime(&t0);
 			ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
 			ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-            PetscGetTime(&t1);
+            PetscTime(&t1);
             
 			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
 			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
@@ -859,7 +859,7 @@ static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
     } else if (isstring) {
 		ierr = PetscViewerStringSPrintf(viewer," WSMP preconditioner");CHKERRQ(ierr);
     } else {
-        SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC WSMP",((PetscObject)viewer)->type_name);
+        SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Viewer type %s not supported for PC WSMP",((PetscObject)viewer)->type_name);
     }
 	
     PetscFunctionReturn(0);
@@ -876,11 +876,11 @@ PetscErrorCode PCCreate_WSMP(PC pc)
     
 	
     PetscFunctionBegin;
-    ierr = PetscNewLog(pc,PC_WSMP,&wsmp);CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,&wsmp);CHKERRQ(ierr);
     pc->data            = (void*)wsmp;
 	
 	/* determine if sequential call or parallel call required */
-	ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
 	if (size == 1) {
 		wsmp->sequential = PETSC_TRUE;
 	} else {

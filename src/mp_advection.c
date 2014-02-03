@@ -600,8 +600,8 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 	PetscFunctionBegin;
 	
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	/* setup velocity */
@@ -714,7 +714,7 @@ PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates(DataBucket materialpoint
 	DataField      PField;
 	
 	PetscFunctionBegin;
-	DataBucketGetSizes(materialpoints,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
 	mp_std = PField->data;
 	
@@ -746,13 +746,13 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 
 	PetscFunctionBegin;
 	/* get marker fields */
-	DataBucketGetSizes(materialpoints,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
 	mp_std = PField->data;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dav,0,&gidx);CHKERRQ(ierr);
@@ -790,7 +790,7 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
 	
 	PetscFunctionBegin;
 	/* get marker fields */
-	DataBucketGetSizes(materialpoints,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
 	mp_std = PField->data;
 	
@@ -841,12 +841,12 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	PetscFunctionBegin;
 	
 	/* communucate */
-	ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
 	if (size==1) {
 		PetscFunctionReturn(0);
 	}
 	
-	ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
 	
 	neighborcount  = de->n_neighbour_procs;
 	neighborranks2 = de->neighbour_procs;
@@ -991,8 +991,8 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		const PetscInt *elnidx_u;
 		
 		/* setup for coords */
-		ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-		ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+		ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 		ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 		
 		ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
@@ -1087,25 +1087,25 @@ PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM d
 	PetscLogDouble t0,t1,tl,tg,tgmn;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MaterialPointStd_UpdateLocalCoordinates(materialpoints,dav);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = t1 - t0;
 	ierr = MPI_Allreduce(&tl,&tg,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_UpdateLocalCoordinates   %10.2e (sec) efficiency %1.1lf%%\n", tg, 100.0 - 100.0*(tg-tgmn)/tg );
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = SwarmUpdatePosition_Communication_Generic(materialpoints,dav,de);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	ierr = MPI_Allreduce(&tl,&tg,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"    	SwarmUpdatePosition_Communication_Generic %10.2e (sec) efficiency %1.1lf%%\n", tg, 100.0 - 100.0*(tg-tgmn)/tg );
 	tl = t1 - t0;
 
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MaterialPointStd_Removal(materialpoints);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = t1 - t0;
 	ierr = MPI_Allreduce(&tl,&tg,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);

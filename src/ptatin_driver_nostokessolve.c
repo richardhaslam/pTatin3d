@@ -180,7 +180,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 //		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 		
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 		ierr = VecDestroy(&X);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = VecGetLocalSize(u,&mu);CHKERRQ(ierr);
 		ierr = VecGetSize(p,&Mp);CHKERRQ(ierr);
 		ierr = VecGetLocalSize(p,&mp);CHKERRQ(ierr);
-		ierr = VecGetOwnershipRange(u,&start,PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecGetOwnershipRange(u,&start,NULL);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
 		
 		n = (mu/3);
@@ -301,7 +301,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	
 	
 	/* test viewer */
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	
 	{

@@ -83,8 +83,8 @@ PetscErrorCode test_1(void)
 	ierr = MatAssemblyEnd  (A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 
 	/* create an array of values to insert - only insert some of them */
-	ierr = MatGetVecs(A,&diag,PETSC_NULL);CHKERRQ(ierr);
-	ierr = VecSetRandom(diag,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(A,&diag,NULL);CHKERRQ(ierr);
+	ierr = VecSetRandom(diag,NULL);CHKERRQ(ierr);
 	
 	ierr = VecGetArray(diag,&LA_diag);CHKERRQ(ierr);
 	for (i=s; i<e; i++) {
@@ -126,11 +126,12 @@ PetscErrorCode test_2(void)
 	M = 4;
 	N = 5;
 	
-	ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+	ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
 	ierr = DMSetOptionsPrefix(da,"vel_");CHKERRQ(ierr);
 	ierr = DMSetFromOptions(da);CHKERRQ(ierr);
 	
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
 
 	ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
@@ -139,7 +140,7 @@ PetscErrorCode test_2(void)
 	
 	ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
-	ierr = MatGetSize(B,&m,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetSize(B,&m,NULL);CHKERRQ(ierr);
 	ierr = MatGetOwnershipRange(B,&s,&e);CHKERRQ(ierr);
 	for (i=s; i<e; i++) {
 		if (i!=0) {   ierr = MatSetValue(B,i,i-1,-1.0,ADD_VALUES);CHKERRQ(ierr); }
@@ -153,8 +154,8 @@ PetscErrorCode test_2(void)
 	ierr = MatAssemblyEnd  (B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* create an array of values to insert - only insert some of them */
-	ierr = MatGetVecs(B,&diag,PETSC_NULL);CHKERRQ(ierr);
-	ierr = VecSetRandom(diag,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(B,&diag,NULL);CHKERRQ(ierr);
+	ierr = VecSetRandom(diag,NULL);CHKERRQ(ierr);
 	
 	ierr = VecGetArray(diag,&LA_diag);CHKERRQ(ierr);
 	for (i=s; i<e; i++) {
@@ -184,7 +185,7 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	ierr = test_1();CHKERRQ(ierr);
 	ierr = test_2();CHKERRQ(ierr);

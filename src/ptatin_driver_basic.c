@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -244,13 +244,13 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,NULL);CHKERRQ(ierr);
 
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&is);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"u",is[0]);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"p",is[1]);CHKERRQ(ierr);
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
 	ierr = pTatinLogBasicSNES(user,"ic_stk",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
@@ -273,7 +273,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 		ierr = pTatinModel_UpdateMeshGeometry(user->model,user,X);CHKERRQ(ierr);
 				
 		/* SOLVE */
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
 		/* increment time step */
 		user->time += user->dt;
@@ -442,7 +442,7 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	restart = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-test_restart",&restart,0);
+	PetscOptionsGetBool(NULL,"-test_restart",&restart,0);
 	if (restart) {
 		ierr = pTatin3d_material_points_restart(argc,argv);CHKERRQ(ierr);
 	} else {

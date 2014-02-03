@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -86,7 +86,7 @@ PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
 	PetscContainer container;
 	
 	PetscFunctionBegin;
-	ierr = PetscContainerCreate(((PetscObject)snes)->comm,&container);CHKERRQ(ierr);
+	ierr = PetscContainerCreate(PetscObjectComm((PetscObject)snes),&container);CHKERRQ(ierr);
 	ierr = PetscContainerSetPointer(container,(void*)mgctx);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)snes,"AuuMultiLevelCtx",(PetscObject)container);CHKERRQ(ierr);
 
@@ -102,7 +102,7 @@ PetscErrorCode SNESDestroyMGCtx(SNES snes)
 	
 	PetscFunctionBegin;
 
-	container = PETSC_NULL;
+	container = NULL;
 	ierr = PetscObjectQuery((PetscObject)snes,"AuuMultiLevelCtx",(PetscObject*)&container);CHKERRQ(ierr);
 	if (container) {
 		ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
@@ -127,10 +127,10 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	
 	ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 	ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-	ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 	ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 	ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 	
 	for( k=1; k<nlevels; k++ ){
 		ierr = PCMGSetInterpolation(pc_i,k,interpolation_v[k]);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 		ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
 		
 		// use A for smoother, B for residual
-		ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 		if (use_low_order_geometry==PETSC_TRUE) {
 			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 			//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -242,7 +242,7 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	for (k=0; k<nlevels; k++) {
 		PetscInt mp,np,pp,*_mx,*_my,*_mz,ii,jj,kk;
 		
-		ierr = DMDAGetOwnershipRangesElementQ2(dav_hierarchy[k],&mp,&np,&pp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&_mx,&_my,&_mz);CHKERRQ(ierr);
+		ierr = DMDAGetOwnershipRangesElementQ2(dav_hierarchy[k],&mp,&np,&pp,NULL,NULL,NULL,&_mx,&_my,&_mz);CHKERRQ(ierr);
 
 		PetscPrintf(PETSC_COMM_WORLD,"level [%2D]: [total cores %4D]: np-I [%4D]: element range I [ ", k,size,mp );
 		for (ii=0; ii<mp; ii++) { 
@@ -297,7 +297,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		
 		ierr = MatShellGetMatStokesMF(A,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-		mf->daU = PETSC_NULL;
+		mf->daU = NULL;
 		ierr = ISDestroy(&mf->isU);CHKERRQ(ierr);
 		ierr = ISDestroy(&mf->isV);CHKERRQ(ierr);
 		ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
@@ -311,7 +311,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 		
 		/* Schur complement */
-		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
@@ -327,7 +328,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
 		
 		/* nest */
-		bA[0][0] = PETSC_NULL; bA[0][1] = Aup;
+		bA[0][0] = NULL; bA[0][1] = Aup;
 		bA[1][0] = Apu;        bA[1][1] = Spp;
 		
 		ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&B);CHKERRQ(ierr);
@@ -348,7 +349,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		
 		switch (level_type[k]) {
@@ -360,7 +361,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
@@ -393,7 +395,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				/* memory saving - only need daU IF you want to split A11 into A11uu,A11vv,A11ww */
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;
+				mf->daU = NULL;
 				ierr = ISDestroy(&mf->isU);CHKERRQ(ierr);
 				ierr = ISDestroy(&mf->isV);CHKERRQ(ierr);
 				ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
@@ -403,7 +405,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
 					
-					ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
@@ -412,7 +414,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 						/* memory saving - only need daU IF you want to split A11 into A11uu,A11vv,A11ww */
 						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-						mf->daU = PETSC_NULL;				
+						mf->daU = NULL;				
 						ierr = ISDestroy(&mf->isU);CHKERRQ(ierr);
 						ierr = ISDestroy(&mf->isV);CHKERRQ(ierr);
 						ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
@@ -510,7 +512,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 		
 		ierr = MatShellGetMatStokesMF(Amf,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-		mf->daU = PETSC_NULL;
+		mf->daU = NULL;
 	}
 
 	{
@@ -521,13 +523,15 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 		
 
 		/* Schur complement */
-		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
 
 		/* Empty Schur complement slot */
-		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp_null);CHKERRQ(ierr);
+		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp_null);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp_null,"A22_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp_null,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp_null);CHKERRQ(ierr);
@@ -544,7 +548,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 		
 		/* A operator */
 		/* nest */
-		bA[0][0] = PETSC_NULL; bA[0][1] = Aup;
+		bA[0][0] = NULL; bA[0][1] = Aup;
 		bA[1][0] = Apu;        bA[1][1] = Spp_null;
 		
 		ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&A);CHKERRQ(ierr);
@@ -557,7 +561,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 		
 		/* B operator */
 		/* nest */
-		bA[0][0] = PETSC_NULL; bA[0][1] = Aup;
+		bA[0][0] = NULL; bA[0][1] = Aup;
 		bA[1][0] = Apu;        bA[1][1] = Spp;
 		
 		ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&B);CHKERRQ(ierr);
@@ -586,7 +590,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		
 		switch (level_type[k]) {
@@ -598,7 +602,8 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
@@ -630,13 +635,13 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;				
+				mf->daU = NULL;				
 				operatorA11[k] = Auu;
 				
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
 					
-					ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
@@ -644,7 +649,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 						ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
 						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-						mf->daU = PETSC_NULL;				
+						mf->daU = NULL;				
 						operatorB11[k] = Buu;
 						
 					} else {
@@ -746,7 +751,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -817,7 +822,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		PetscInt  nsplits;
 		
 		use_low_order_geometry = PETSC_FALSE;
-		ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -971,7 +976,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		PetscInt snes_it;
 		PetscViewer viewer;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-ptatin_mg_dump_coarse_operator",&mg_dump_coarse,0);
+		PetscOptionsGetBool(NULL,"-ptatin_mg_dump_coarse_operator",&mg_dump_coarse,0);
 		SNESGetIterationNumber(snes,&snes_it);
 		
 		if (mg_dump_coarse) {
@@ -1040,9 +1045,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1060,7 +1065,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Generated vel/pressure mesh --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Pack all physics together */
 	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
@@ -1082,9 +1087,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,NULL);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Generated material points --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
@@ -1098,7 +1103,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -1107,14 +1112,15 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		
 		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
-		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,NULL);CHKERRQ(ierr);
 
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+		ierr = DMSetMatType(energy->daT,MATAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(energy->daT,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 
 		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 	}
 	
 	/* interpolate material point coordinates (needed if mesh was modified) */
@@ -1125,13 +1131,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	if (active_energy) {
 		ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 	}
-	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1143,18 +1149,18 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for velocity space */
-	interpolation_v[0] = PETSC_NULL;
+	interpolation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 
 	/* Coarse grid setup: Define interpolation operators for scalar space */
-	interpolation_eta[0] = PETSC_NULL;
+	interpolation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolation_v[k],1,&interpolation_eta[k]);CHKERRQ(ierr);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Generated velocity mesh hierarchy --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Coarse grid setup: Define material properties on gauss points */
 	for (k=0; k<nlevels-1; k++) {
@@ -1168,7 +1174,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	}
 	volQ[nlevels-1] = stokes->volQ;
 	PetscPrintf(PETSC_COMM_WORLD,"Generated quadrature point hierarchy --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 
 	/* Coarse grid setup: Define boundary conditions */
 	for (k=0; k<nlevels-1; k++) {
@@ -1203,7 +1209,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	mlctx.operatorB11 = operatorB11;
 	/* ============================================== */
 	PetscPrintf(PETSC_COMM_WORLD,"Generated stokes operators --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	
 	
@@ -1263,9 +1269,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 	
 	/* configure for fieldsplit */
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -1280,7 +1286,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"PreSolve(0) --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 #if 1
 {
 	PetscInt snes_its;
@@ -1294,9 +1300,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	/* do a linear solve */
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
-	PetscGetTime(&time[0]);
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-	PetscGetTime(&time[1]);
+	PetscTime(&time[0]);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+	PetscTime(&time[1]);
 	ierr = pTatinLogBasicSNES(user,"Stokes[LinearStage]",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicCPUtime(user,"Stokes[LinearStage]",time[1]-time[0]);CHKERRQ(ierr);
 	ierr = pTatinLogPetscLog(user,"Stokes[LinearStage]");CHKERRQ(ierr);
@@ -1309,13 +1315,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 	/* do a picard solve */
 	picard_its = snes_its;
-	PetscOptionsGetInt(PETSC_NULL,"-picard_its",&picard_its,PETSC_NULL);
+	PetscOptionsGetInt(NULL,"-picard_its",&picard_its,NULL);
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
-	PetscGetTime(&time[0]);
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-	PetscGetTime(&time[1]);
+	PetscTime(&time[0]);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+	PetscTime(&time[1]);
 	ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicCPUtime(user,"Stokes[PicardStage]",time[1]-time[0]);CHKERRQ(ierr);
 	ierr = pTatinLogPetscLog(user,"Stokes[PicardStage]");CHKERRQ(ierr);
@@ -1325,10 +1331,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 }
 #endif
 	PetscPrintf(PETSC_COMM_WORLD,"PostSolve(0) --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 
 	newton_its = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,PETSC_NULL);
+	PetscOptionsGetInt(NULL,"-newton_its",&newton_its,NULL);
 	if (newton_its>0) {
 		SNES snes_newton;
 		
@@ -1352,8 +1358,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		/* configure KSP */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
 
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+//		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -1365,9 +1371,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		
 		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
-		PetscGetTime(&time[0]);
-		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
-		PetscGetTime(&time[1]);
+		PetscTime(&time[0]);
+		ierr = SNESSolve(snes_newton,NULL,X);CHKERRQ(ierr);
+		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[NewtonStage]",time[1]-time[0]);CHKERRQ(ierr);
 		ierr = pTatinLogPetscLog(user,"Stokes[NewtonStage]");CHKERRQ(ierr);
@@ -1467,7 +1473,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			MPntStd *mp_std;
 			DataField PField;
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
 			mp_std = PField->data;
 			
@@ -1506,7 +1512,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			mp_std    = PField_std->data; /* should write a function to do this */
 			mp_stokes = PField_stokes->data; /* should write a function to do this */
 			
@@ -1546,9 +1552,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			
 			PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
 
-			PetscGetTime(&time[0]);
-			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
-			PetscGetTime(&time[1]);
+			PetscTime(&time[0]);
+			ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
+			PetscTime(&time[1]);
 			ierr = pTatinLogBasicSNES(user,"Energy",snesT);CHKERRQ(ierr);
 			ierr = pTatinLogBasicCPUtime(user,"Energy",time[1]-time[0]);CHKERRQ(ierr);
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
@@ -1595,21 +1601,21 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			PetscBool moniter_set;
 
 			moniter_set = PETSC_FALSE;
-			ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+			ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 
 			moniter_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-			if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+			ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+			if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 
 			moniter_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-			if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+			ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+			if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 		}
 		{
 			PetscBool cvg_test_set;
 			
 			cvg_test_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_converged_upstol",&cvg_test_set,PETSC_NULL);CHKERRQ(ierr);
+			ierr = PetscOptionsGetBool(NULL,"-stokes_snes_converged_upstol",&cvg_test_set,NULL);CHKERRQ(ierr);
 			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,user);CHKERRQ(ierr); }
 		}
 		
@@ -1624,9 +1630,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		
 		/* e) solve mechanical model */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
-		PetscGetTime(&time[0]);
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-		PetscGetTime(&time[1]);
+		PetscTime(&time[0]);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
 		//ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
@@ -1754,9 +1760,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1773,7 +1779,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Generated vel/pressure mesh --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Pack all physics together */
 	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
@@ -1795,9 +1801,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,NULL);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Generated material points --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
@@ -1811,7 +1817,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -1820,14 +1826,15 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		
 		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
-		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+		ierr = DMSetMatType(energy->daT,MATAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(energy->daT,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 	}
 	
 	/* interpolate material point coordinates (needed if mesh was modified) */
@@ -1838,13 +1845,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	if (active_energy) {
 		ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 	}
-	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1856,18 +1863,18 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for velocity space */
-	interpolation_v[0] = PETSC_NULL;
+	interpolation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for scalar space */
-	interpolation_eta[0] = PETSC_NULL;
+	interpolation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolation_v[k],1,&interpolation_eta[k]);CHKERRQ(ierr);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Generated velocity mesh hierarchy --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Coarse grid setup: Define material properties on gauss points */
 	for (k=0; k<nlevels-1; k++) {
@@ -1881,7 +1888,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	}
 	volQ[nlevels-1] = stokes->volQ;
 	PetscPrintf(PETSC_COMM_WORLD,"Generated quadrature point hierarchy --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Coarse grid setup: Define boundary conditions */
 	for (k=0; k<nlevels-1; k++) {
@@ -1912,7 +1919,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	mlctx.operatorB11 = operatorB11;
 	/* ============================================== */
 	PetscPrintf(PETSC_COMM_WORLD,"Generated stokes operators --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	
 	/* work vector for solution and residual */
@@ -1949,7 +1956,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		PetscInt snes_its;
 
 		PetscPrintf(PETSC_COMM_WORLD,"PreLinearSolve(0) --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 		/* --------------------------------------------------------- */
 		/* Define operators */
 		// DONE ABOVE //
@@ -1971,9 +1978,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 		ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 		
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -1996,9 +2003,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* do a linear solve */
 		SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
-		PetscGetTime(&time[0]);
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-		PetscGetTime(&time[1]);
+		PetscTime(&time[0]);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[LinearStage]",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[LinearStage]",time[1]-time[0]);CHKERRQ(ierr);
 		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
@@ -2007,7 +2014,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"PostLinearSolve(0) --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 		
 		/* tidy up assembled operators */
 		for (k=0; k<nlevels; k++) {
@@ -2026,7 +2033,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		user->rheology_constants.rheology_type = init_rheology_type;
 
 		PetscPrintf(PETSC_COMM_WORLD,"PrePicardSolve(0) --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 		/* --------------------------------------------------------- */
 		/* Define operators */
 		ierr = pTatin3dCreateStokesOperators(stokes,is_stokes_field,
@@ -2048,9 +2055,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* configure KSP */
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 		/* monitors */
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 		ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
@@ -2063,13 +2070,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* --------------------------------------------------------- */
 		
 		picard_its = snes_its;
-		PetscOptionsGetInt(PETSC_NULL,"-picard_its",&picard_its,PETSC_NULL);
+		PetscOptionsGetInt(NULL,"-picard_its",&picard_its,NULL);
 		SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
-		PetscGetTime(&time[0]);
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-		PetscGetTime(&time[1]);
+		PetscTime(&time[0]);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[PicardStage]",time[1]-time[0]);CHKERRQ(ierr);
 		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
@@ -2078,7 +2085,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"PostPicardSolve(0) --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 		
 		/* tidy up assembled operators */
 		for (k=0; k<nlevels; k++) {
@@ -2094,7 +2101,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 #endif
 	
 	newton_its = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,PETSC_NULL);
+	PetscOptionsGetInt(NULL,"-newton_its",&newton_its,NULL);
 	if (newton_its>0) {
 		SNES snes_newton;
 		
@@ -2118,8 +2125,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* configure KSP */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
 		
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		//		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		//		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2131,9 +2138,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		
 		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
-		PetscGetTime(&time[0]);
-		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
-		PetscGetTime(&time[1]);
+		PetscTime(&time[0]);
+		ierr = SNESSolve(snes_newton,NULL,X);CHKERRQ(ierr);
+		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[NewtonStage]",time[1]-time[0]);CHKERRQ(ierr);
 		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
@@ -2225,7 +2232,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			MPntStd *mp_std;
 			DataField PField;
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
 			mp_std = PField->data;
 			
@@ -2264,7 +2271,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			mp_std    = PField_std->data; /* should write a function to do this */
 			mp_stokes = PField_stokes->data; /* should write a function to do this */
 			
@@ -2304,9 +2311,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			
 			PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
 			
-			PetscGetTime(&time[0]);
-			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
-			PetscGetTime(&time[1]);
+			PetscTime(&time[0]);
+			ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
+			PetscTime(&time[1]);
 			ierr = pTatinLogBasicSNES(user,"Energy",snesT);CHKERRQ(ierr);
 			ierr = pTatinLogBasicCPUtime(user,"Energy",time[1]-time[0]);CHKERRQ(ierr);
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
@@ -2350,21 +2357,21 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			PetscBool moniter_set;
 			
 			moniter_set = PETSC_FALSE;
-			ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+			ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 			
 			moniter_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-			if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+			ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+			if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 			
 			moniter_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-			if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+			ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+			if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 		}
 		{
 			PetscBool cvg_test_set;
 			
 			cvg_test_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_converged_upstol",&cvg_test_set,PETSC_NULL);CHKERRQ(ierr);
+			ierr = PetscOptionsGetBool(NULL,"-stokes_snes_converged_upstol",&cvg_test_set,NULL);CHKERRQ(ierr);
 			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,user);CHKERRQ(ierr); }
 		}
 		
@@ -2379,9 +2386,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		
 		/* e) solve mechanical model */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
-		PetscGetTime(&time[0]);
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-		PetscGetTime(&time[1]);
+		PetscTime(&time[0]);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
 		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
@@ -2508,9 +2515,9 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -2528,7 +2535,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Generated vel/pressure mesh --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Pack all physics together */
 	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
@@ -2550,9 +2557,9 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,NULL);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Generated material points --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
@@ -2566,7 +2573,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -2575,14 +2582,15 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		
 		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
-		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
-		ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+		ierr = DMSetMatType(energy->daT,MATAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(energy->daT,&JE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"Generated energy mesh + J/T/F --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 	}
 	
 	/* interpolate material point coordinates (needed if mesh was modified) */
@@ -2593,13 +2601,13 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	if (active_energy) {
 		ierr = pTatinPhysCompEnergy_MPProjectionQ1(user);CHKERRQ(ierr);
 	}
-	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), materialpoint_db,"MaterialPoints StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -2611,18 +2619,18 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for velocity space */
-	interpolation_v[0] = PETSC_NULL;
+	interpolation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	/* Coarse grid setup: Define interpolation operators for scalar space */
-	interpolation_eta[0] = PETSC_NULL;
+	interpolation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolation_v[k],1,&interpolation_eta[k]);CHKERRQ(ierr);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Generated velocity mesh hierarchy --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Coarse grid setup: Define material properties on gauss points */
 	for (k=0; k<nlevels-1; k++) {
@@ -2636,7 +2644,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	}
 	volQ[nlevels-1] = stokes->volQ;
 	PetscPrintf(PETSC_COMM_WORLD,"Generated quadrature point hierarchy --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	/* Coarse grid setup: Define boundary conditions */
 	for (k=0; k<nlevels-1; k++) {
@@ -2671,7 +2679,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	mlctx.operatorB11 = operatorB11;
 	/* ============================================== */
 	PetscPrintf(PETSC_COMM_WORLD,"Generated stokes operators --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
 	
 	
@@ -2727,9 +2735,9 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 	
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-	//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-	//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+	//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+	//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 	
 	/* configure for fieldsplit */
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2741,7 +2749,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"PreSolve(0) --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
@@ -2758,7 +2766,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		/* do a linear solve */
 		SNESSetTolerances(snes_picard,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
-		ierr = SNESSolve(snes_picard,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes_picard,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinLogBasicSNES(user,"Stokes[LinearStage]",snes_picard);CHKERRQ(ierr);
 		ierr = pTatinLogPetscLog(user,"Stokes[LinearStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
@@ -2769,14 +2777,14 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		user->rheology_constants.rheology_type = init_rheology_type;
 		
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
-		ierr = SNESSolve(snes_picard,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes_picard,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes_picard);CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
 		}
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"PostSolve(0) --> ");
-	pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+	pTatinGetRangeCurrentMemoryUsage(NULL);
 
 	ierr = SNESDestroyMGCtx(snes_picard);CHKERRQ(ierr);
 	ierr = SNESDestroy(&snes_picard);CHKERRQ(ierr);
@@ -2802,7 +2810,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		/* configure KSP */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
 		
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2813,14 +2821,14 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
-		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes_newton,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
 		}
 
 		PetscPrintf(PETSC_COMM_WORLD,"PostNewtonSolve(0) --> ");
-		pTatinGetRangeCurrentMemoryUsage(PETSC_NULL);
+		pTatinGetRangeCurrentMemoryUsage(NULL);
 		
 		ierr = SNESDestroyMGCtx(snes_newton);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes_newton);CHKERRQ(ierr);
@@ -2913,7 +2921,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 			MPntStd *mp_std;
 			DataField PField;
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
 			mp_std = PField->data;
 			
@@ -2952,7 +2960,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			mp_std    = PField_std->data; /* should write a function to do this */
 			mp_stokes = PField_stokes->data; /* should write a function to do this */
 			
@@ -2991,7 +2999,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			
 			PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", step );
-			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
+			ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
 			ierr = pTatinLogBasicSNES(user,"Energy",snesT);CHKERRQ(ierr);
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
 		}
@@ -3032,7 +3040,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 		
 		/* monitors */
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		
 		/* c) configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -3044,7 +3052,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 		
 		/* e) solve mechanical model */
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
 
 		ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
@@ -3073,7 +3081,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 		
 		/* monitors */
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		
 		/* c) configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -3085,7 +3093,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
 		
 		/* e) solve mechanical model */
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes);CHKERRQ(ierr);
 
 		ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
@@ -3190,10 +3198,10 @@ int main(int argc,char **argv)
 	ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
 
 	experimental_driver = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-experimental",&experimental_driver,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-experimental",&experimental_driver,NULL);
 
 	experimental_driver1 = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-nonlinear_driver_v1",&experimental_driver1,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-nonlinear_driver_v1",&experimental_driver1,NULL);
 	
 	if (experimental_driver) {
 		PetscPrintf(PETSC_COMM_WORLD,"[[Using \"experimental_pTatin3d_nonlinear_viscous_forward_model_driver\"]]\n");
@@ -3210,7 +3218,7 @@ int main(int argc,char **argv)
 	//PetscPrintf(PETSC_COMM_SELF,"[%D] MaxMemory = %1.4e MB \n",rank,mem*1.0e-6);
 	//ierr = PetscMallocGetMaximumUsage(&mem);CHKERRQ(ierr);
 	//PetscPrintf(PETSC_COMM_SELF,"[%D] MaxMemory = %1.4e MB \n",rank,mem*1.0e-6);
-	ierr = pTatinGetRangeMaximumMemoryUsage(PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetRangeMaximumMemoryUsage(NULL);CHKERRQ(ierr);
 	
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;

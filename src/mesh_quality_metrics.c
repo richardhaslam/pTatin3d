@@ -364,8 +364,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 	PetscFunctionBegin;
 
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
@@ -399,7 +399,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(&max_ar,&max_ar_g,1,MPI_DOUBLE,MPI_MAX,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&max_ar,&max_ar_g,1,MPI_DOUBLE,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 											 
 	*value = (PetscReal)max_ar_g;
 		
@@ -435,8 +435,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
@@ -464,7 +464,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&min_dist,&min_dist_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&min_dist,&min_dist_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	*value = (PetscReal)(min_dist_g);
 	
@@ -492,8 +492,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	PetscFunctionBegin;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
@@ -536,7 +536,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&dr_min,&dr_min_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&dr_min,&dr_min_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	*value = (PetscReal)dr_min_g;
 	
@@ -564,8 +564,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	PetscFunctionBegin;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
@@ -600,7 +600,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&ratio_min,&ratio_min_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&ratio_min,&ratio_min_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	*value = (PetscReal)ratio_min_g;
 	
@@ -624,8 +624,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	PetscFunctionBegin;
 
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
@@ -677,7 +677,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     
-	ierr = MPI_Allreduce(&val_min,&val_min_g,1,MPI_DOUBLE,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&val_min,&val_min_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     
 	*value = (PetscReal)val_min_g;
     

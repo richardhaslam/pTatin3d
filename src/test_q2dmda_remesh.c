@@ -118,12 +118,12 @@ PetscErrorCode pTatin3d_remesh(void)
 	{
 		PetscReal value;
 		
-		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_ASPECT_RATIO,&value);CHKERRQ(ierr);     PetscPrintf(PETSC_NULL,"MESH_QUALITY_ASPECT_RATIO      : %1.4e \n", value);
-		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_DISTORTION,&value);CHKERRQ(ierr);       PetscPrintf(PETSC_NULL,"MESH_QUALITY_DISTORTION        : %1.4e \n", value);
-		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_DIAGONAL_RATIO,&value);CHKERRQ(ierr);   PetscPrintf(PETSC_NULL,"MESH_QUALITY_DIAGONAL_RATIO    : %1.4e \n", value);
+		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_ASPECT_RATIO,&value);CHKERRQ(ierr);     PetscPrintf(NULL,"MESH_QUALITY_ASPECT_RATIO      : %1.4e \n", value);
+		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_DISTORTION,&value);CHKERRQ(ierr);       PetscPrintf(NULL,"MESH_QUALITY_DISTORTION        : %1.4e \n", value);
+		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_DIAGONAL_RATIO,&value);CHKERRQ(ierr);   PetscPrintf(NULL,"MESH_QUALITY_DIAGONAL_RATIO    : %1.4e \n", value);
         
-		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_VERTEX_ANGLE,&value);CHKERRQ(ierr);     PetscPrintf(PETSC_NULL,"MESH_QUALITY_VERTEX_ANGLE      : %1.4e \n", value);
-		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_FACE_AREA_RATIO,&value);CHKERRQ(ierr);  PetscPrintf(PETSC_NULL,"MESH_QUALITY_FACE_AREA_RATIO   : %1.4e \n", value);	
+		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_VERTEX_ANGLE,&value);CHKERRQ(ierr);     PetscPrintf(NULL,"MESH_QUALITY_VERTEX_ANGLE      : %1.4e \n", value);
+		ierr = DMDAComputeMeshQualityMetric(dav,MESH_QUALITY_FACE_AREA_RATIO,&value);CHKERRQ(ierr);  PetscPrintf(NULL,"MESH_QUALITY_FACE_AREA_RATIO   : %1.4e \n", value);	
 	}
 	
 	/////////////////
@@ -142,7 +142,7 @@ int main( int argc,char **argv )
 {
 	PetscErrorCode ierr;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_remesh();CHKERRQ(ierr);
 	

@@ -1,5 +1,5 @@
 
-#include <private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>           /*I "petscksp.h" I*/
 #include "sub_comm.h"
 
@@ -73,7 +73,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 		PetscMemzero(onnz,sizeof(PetscInt)*(end-start));
 		
 		for (i=0; i<(end-start); i++) {
-			ierr = MatGetRow(Alocal,i,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+			ierr = MatGetRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 			for (j=0; j<ncols; j++) {
 				if ( (cols[j] >= startc) && (cols[j] < endc) ) {
 					nnz[i]++;
@@ -81,10 +81,10 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 					onnz[i]++;
 				}
 			}
-			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 		}
-		ierr = MatSeqAIJSetPreallocation(red,PETSC_NULL,nnz);CHKERRQ(ierr);
-		ierr = MatMPIAIJSetPreallocation(red,PETSC_NULL,nnz,PETSC_NULL,onnz);CHKERRQ(ierr);
+		ierr = MatSeqAIJSetPreallocation(red,NULL,nnz);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocation(red,NULL,nnz,NULL,onnz);CHKERRQ(ierr);
 		
 		PetscFree(nnz);
 		PetscFree(onnz);
@@ -97,7 +97,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 			rowidx = i + start;
 			ierr = MatSetValues(red,1,&rowidx,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
 			
-			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 		}
 		
 		ierr = MatAssemblyBegin(red,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 	ierr = ISDestroy(&iscol);CHKERRQ(ierr);
 	ierr = MatDestroy(&Alocal);CHKERRQ(ierr);
 	
-	*_red = PETSC_NULL;
+	*_red = NULL;
 	if (subcomm->parent_rank_active_in_subcomm) {
 		*_red = red;
 	}
@@ -205,7 +205,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReu
 		PetscMemzero(onnz,sizeof(PetscInt)*(end-start));
 		
 		for (i=0; i<(end-start); i++) {
-			ierr = MatGetRow(Alocal,i,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+			ierr = MatGetRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 			for (j=0; j<ncols; j++) {
 				if ( (cols[j] >= startc) && (cols[j] < endc) ) {
 					nnz[i]++;
@@ -213,10 +213,10 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReu
 					onnz[i]++;
 				}
 			}
-			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 		}
-		ierr = MatSeqAIJSetPreallocation(red,PETSC_NULL,nnz);CHKERRQ(ierr);
-		ierr = MatMPIAIJSetPreallocation(red,PETSC_NULL,nnz,PETSC_NULL,onnz);CHKERRQ(ierr);
+		ierr = MatSeqAIJSetPreallocation(red,NULL,nnz);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocation(red,NULL,nnz,NULL,onnz);CHKERRQ(ierr);
 		
 		PetscFree(nnz);
 		PetscFree(onnz);
@@ -229,7 +229,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReu
 			rowidx = i + start;
 			ierr = MatSetValues(red,1,&rowidx,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
 			
-			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 		}
 		
 		ierr = MatAssemblyBegin(red,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReu
 	ierr = ISDestroy(&iscol);CHKERRQ(ierr);
 	ierr = MatDestroy(&Alocal);CHKERRQ(ierr);
 	
-	*_red = PETSC_NULL;
+	*_red = NULL;
 	if (subcomm->parent_rank_active_in_subcomm) {
 		*_red = red;
 	}
@@ -273,17 +273,17 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 		red->subcomm = sc;
 		ierr = MPI_Comm_size(sc->sub_comm,&red->nsubcomm_size);CHKERRQ(ierr);
 		
-		red->Ared = PETSC_NULL;
-		red->Bred = PETSC_NULL;
+		red->Ared = NULL;
+		red->Bred = NULL;
 		ierr = PCGetOperators(pc,&red->A,&red->B,&str);CHKERRQ(ierr);
 		
-		red->ksp = PETSC_NULL;
+		red->ksp = NULL;
 		if (red->subcomm->parent_rank_active_in_subcomm) {
 			const char     *prefix;
 
 			ierr = KSPCreate(red->subcomm->sub_comm,&red->ksp);CHKERRQ(ierr);
 			ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-			ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+			ierr = PetscLogObjectParent((PetscObject)pc,red->ksp);CHKERRQ(ierr);
 
 			ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 			ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
@@ -309,16 +309,16 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 			ierr = PetscObjectReference((PetscObject)red->Ared);CHKERRQ(ierr);
 		}
 		
-		red->xred = PETSC_NULL;
-		red->yred = PETSC_NULL;
+		red->xred = NULL;
+		red->yred = NULL;
 		if (red->Ared) {
 			PetscInt m,n;
 			
 			ierr = MatGetLocalSize(red->Ared,&m,&n);CHKERRQ(ierr);
 			/* create xred with empty local arrays, because xdup's arrays will be placed into it */
-			ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,m,PETSC_DECIDE,PETSC_NULL,&red->xred);CHKERRQ(ierr);
+			ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,1,m,PETSC_DECIDE,NULL,&red->xred);CHKERRQ(ierr);
 
-			ierr = MatGetVecs(red->Ared,PETSC_NULL,&red->yred);CHKERRQ(ierr);
+			ierr = MatGetVecs(red->Ared,NULL,&red->yred);CHKERRQ(ierr);
 		}
 		
 	} else {
@@ -339,7 +339,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 		Vec      x;
 	
 		ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-		ierr = MatGetVecs(red->A,&x,PETSC_NULL);CHKERRQ(ierr);
+		ierr = MatGetVecs(red->A,&x,NULL);CHKERRQ(ierr);
 		
 		if (red->xred) {
 			ierr = VecGetOwnershipRange(red->xred,&st,&ed);CHKERRQ(ierr);
@@ -351,10 +351,10 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 		
 		ierr = ISGetLocalSize(red->isin,&n);CHKERRQ(ierr);
 		ierr = ISGetSize(red->isin,&N);CHKERRQ(ierr);
-		ierr = VecCreate(((PetscObject)red->isin)->comm,&red->xtmp);CHKERRQ(ierr);
+		ierr = VecCreate(PetscObjectComm((PetscObject)red->isin),&red->xtmp);CHKERRQ(ierr);
 		ierr = VecSetSizes(red->xtmp,n,N);CHKERRQ(ierr);
 		ierr = VecSetType(red->xtmp,((PetscObject)x)->type_name);CHKERRQ(ierr);
-		ierr = VecScatterCreate(x,red->isin,red->xtmp,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
+		ierr = VecScatterCreate(x,red->isin,red->xtmp,NULL,&red->scatter);CHKERRQ(ierr);
 
 		ierr = VecDestroy(&x);CHKERRQ(ierr);
 	}
@@ -522,7 +522,7 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
   } else if (isstring) { 
 		ierr = PetscViewerStringSPrintf(viewer," SemiRedundant preconditioner");CHKERRQ(ierr);
   } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC SemiRedundant",((PetscObject)viewer)->type_name);
+    SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Viewer type %s not supported for PC SemiRedundant",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -537,11 +537,11 @@ PetscErrorCode PCCreate_SemiRedundant(PC pc)
   PetscMPIInt      size;
   
   PetscFunctionBegin;
-  ierr = PetscNewLog(pc,PC_SemiRedundant,&red);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
   pc->data            = (void*)red; 
 	
   red->nsubcomm_factor = 1;
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
   red->nsubcomm_size   = size;
 	red->fuse_blocks     = PETSC_FALSE;
 	

@@ -52,9 +52,9 @@ PetscErrorCode DMDAUpdateGhostedCoordinates(DM da)
 	DM _dac;
 	
 	PetscFunctionBegin;
-	ierr = DMDAGetCoordinateDA(da,&_dac);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&da_coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&_dac);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&da_coordinates);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalBegin(_dac,da_coordinates,INSERT_VALUES,gcoords);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalEnd(_dac,da_coordinates,INSERT_VALUES,gcoords);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
@@ -69,10 +69,10 @@ PetscErrorCode DMDASetCoordinatesFromLocalVector(DM da,Vec local_coords)
 	DM dac;
 	
 	PetscFunctionBegin;
-	ierr = DMDAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
 	
 	/* scatter new existing coords into global_coords */
-	ierr = DMDAGetCoordinates( da, &da_coordinates );CHKERRQ(ierr);
+	ierr = DMGetCoordinates( da, &da_coordinates );CHKERRQ(ierr);
 	ierr = VecZeroEntries(da_coordinates);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalBegin( dac, local_coords, INSERT_VALUES, da_coordinates );CHKERRQ(ierr);
 	ierr = DMLocalToGlobalEnd  ( dac, local_coords, INSERT_VALUES, da_coordinates );CHKERRQ(ierr);
@@ -90,7 +90,7 @@ PetscErrorCode DMDASetCoordinatesU(DM da,Vec coords)
 	Vec da_coords;
 	
 	PetscFunctionBegin;
-	ierr = DMDAGetCoordinates(da,&da_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
 	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 	
@@ -105,12 +105,12 @@ PetscErrorCode DMDACloneCoordinates(DM da,DM da_clone)
 	Vec coords, coords_clone;
 	
 	PetscFunctionBegin;
-	ierr = DMDAGetCoordinates( da, &coords ); CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates( da_clone, &coords_clone ); CHKERRQ(ierr);
+	ierr = DMGetCoordinates( da, &coords ); CHKERRQ(ierr);
+	ierr = DMGetCoordinates( da_clone, &coords_clone ); CHKERRQ(ierr);
 	ierr = VecCopy( coords, coords_clone ); CHKERRQ(ierr);
 
-	ierr = DMDAGetGhostedCoordinates( da, &coords ); CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( da_clone, &coords_clone ); CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( da, &coords ); CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( da_clone, &coords_clone ); CHKERRQ(ierr);
 	ierr = VecCopy( coords, coords_clone ); CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);

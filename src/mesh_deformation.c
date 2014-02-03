@@ -68,18 +68,18 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 	{
 		PetscReal tmp;
 		
-		ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_amp",&tmp,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,"-gbump_amp",&tmp,&flg);CHKERRQ(ierr);
 		if (flg) {
 			gbump_amp    = tmp;
 		}
 
-		ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_lambda",&tmp,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,"-gbump_lambda",&tmp,&flg);CHKERRQ(ierr);
 		if (flg) {
 			gbump_lambda = tmp;
 		}
 	}
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_xorigin",&xshift,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-gbump_zorigin",&zshift,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-gbump_xorigin",&xshift,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-gbump_zorigin",&zshift,&flg);CHKERRQ(ierr);
 	
 	
 	ierr = DMDAGetBoundingBox(da,Gmin,Gmax);CHKERRQ(ierr);
@@ -87,8 +87,8 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 
 	ierr = DMDAGetInfo(da,0,0,&MY,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 
 	/* apply bump */
@@ -155,18 +155,18 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 	theta  = 0.7;
 	phi    = 1.2;
 	offset = 0.1;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-offset",&offset,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-amp",&amp,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-theta",&theta,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-phi",&phi,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-offset",&offset,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-amp",&amp,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-theta",&theta,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-phi",&phi,NULL);CHKERRQ(ierr);
 	
 	ierr = DMDAGetBoundingBox(da,MeshMin,MeshMax);CHKERRQ(ierr);
 
 	
 	ierr = DMDAGetInfo(da,0,0,0,&MZ, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	if ((sk+nz) == MZ) {
@@ -206,7 +206,7 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	
 	PetscFunctionBegin;
 	y_displacement = 0.5;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-y_displacement",&y_displacement,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-y_displacement",&y_displacement,NULL);CHKERRQ(ierr);
 	
 	
 	//ierr = DMDASetUniformCoordinates(da,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
@@ -217,8 +217,8 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	
 	ierr = DMDAGetInfo(da,0,0,&MY,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	for( j=sj; j<sj+ny; j++ ) {
@@ -276,8 +276,8 @@ PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,Petsc
 	}
 	delta = (X1-X0)/((PetscReal)ML - 1.0);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	for( k=sk; k<sk+nz; k++ ) {
 		for( j=sj; j<sj+ny; j++ ) {
@@ -345,8 +345,8 @@ PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,Pe
 	Lx[1] = (MeshMax[1] - MeshMin[1]);
 	Lx[2] = (MeshMax[2] - MeshMin[2]);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 
 	if (side == 0) {
@@ -445,8 +445,8 @@ PetscErrorCode DMDASetCoordinatesCentralSqueeze1D(DM da,PetscInt dir,PetscReal f
 	
 	
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	for (k=sk; k<sk+nz; k++) {

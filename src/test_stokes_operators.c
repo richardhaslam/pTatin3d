@@ -64,8 +64,8 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 	
 	ierr = DMDAGetGlobalIndices( da, &NUM_GINDICES, &GINDICES );CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&tmp);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&tmp);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
 	
 	ierr = DMDAVecGetArray(cda,tmp,&coors);CHKERRQ(ierr);
@@ -152,7 +152,8 @@ PetscErrorCode ass_A11(PhysCompStokes stk)
 	PetscPrintf(PETSC_COMM_WORLD,"+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,stk->mx,stk->my,stk->mz );
 	da = stk->dav;
 
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
 	
 	ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
@@ -195,7 +196,8 @@ PetscErrorCode ass_B22(PhysCompStokes stk)
 	dau = stk->dav;
 	dap = stk->dap;
 	
-	ierr = DMCreateMatrix(dap,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMSetMatType(dap,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dap,&B);CHKERRQ(ierr);
 	
 	ierr = PetscObjectTypeCompare((PetscObject)B,MATSBAIJ,&same);CHKERRQ(ierr);
 	if (same) {
@@ -260,9 +262,9 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -272,18 +274,19 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	/* assembled */
 	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
 
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
-	PetscGetTime(&t0);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+	PetscTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -303,8 +306,8 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
 		
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
-	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[A11_mfo.x-A11_asm.x]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[A11_mfo.x-A11_asm.x]  = %+1.8e \n", max );
 
@@ -374,8 +377,8 @@ PetscErrorCode compare_mf_A21(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
 	
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
-	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[A21_mfo.x-A21_asm.x]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[A21_mfo.x-A21_asm.x]  = %+1.8e \n", max );
 	
@@ -448,8 +451,8 @@ PetscErrorCode compare_mf_A12(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
 	
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
-	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[A12_mfo.x-A12_asm.x]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[A12_mfo.x-A12_asm.x]  = %+1.8e \n", max );
 	
@@ -489,8 +492,8 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 	/* matrix free */
 	ierr = DMCreateGlobalVector(pack,&x);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
-		ierr = VecSetRandom(xu,PETSC_NULL);CHKERRQ(ierr);
-		ierr = VecSetRandom(xp,PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecSetRandom(xu,NULL);CHKERRQ(ierr);
+		ierr = VecSetRandom(xp,NULL);CHKERRQ(ierr);
 //		ierr = VecZeroEntries(xp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
 	
@@ -519,8 +522,8 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
 	
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
-	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[A_mfo.x-A_asm.x]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[A_mfo.x-A_asm.x]  = %+1.8e \n", max );
 	
@@ -568,7 +571,8 @@ PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
 	/* assembled */
 	ierr = VecDuplicate(y,&y2);CHKERRQ(ierr);
 	
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
 	
 	ierr = MatGetDiagonal(B,y2);CHKERRQ(ierr);
@@ -580,8 +584,8 @@ PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
 	
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
-	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[diagA11_mfo-diagA11_asm]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[diagA11_mfo-diagA11_asm]  = %+1.8e \n", max );
 	
@@ -616,7 +620,7 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	iterations = 5;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the mf operators */
 	da = user->dav;
@@ -635,11 +639,11 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (ii=0; ii<iterations; ii++) {
 		ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -676,7 +680,7 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	iterations = 5;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the assembled operator */
 	da = user->dav;
@@ -690,20 +694,21 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
-	PetscGetTime(&t0);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+	PetscTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (ii=0; ii<iterations; ii++) {
 		ierr = MatMult(B,x,y);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -743,7 +748,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	iterations = 5;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the assembled operator */
 	da = user->dav;
@@ -758,17 +763,18 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
-	PetscGetTime(&t0);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+	PetscTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	use_mf_A = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mf_A11",&use_mf_A,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-use_mf_A11",&use_mf_A,NULL);CHKERRQ(ierr);
 	if (use_mf_A) {
 		ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
 		ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
@@ -785,9 +791,9 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr); 
@@ -795,22 +801,22 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUpA11:                        time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	
-	ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,PETSC_NULL,&monviewer);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),NULL,&monviewer);CHKERRQ(ierr);
 	ierr = KSPMonitorSet(ksp,KSPMonitorDefault,PETSC_VIEWER_STDOUT_WORLD,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
 
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
 
 	for (ii=1; ii<iterations; ii++) {
 		ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	ierr = KSPGetTolerances(ksp,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its);CHKERRQ(ierr);
+	ierr = KSPGetTolerances(ksp,NULL,NULL,NULL,&its);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %d,cycles = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: average                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
@@ -824,8 +830,8 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 		ierr = VecDot(y,y,&ydy);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  y.y     = %+1.8e \n", ydy );
 		
-		ierr = VecMin(y,PETSC_NULL,&min);CHKERRQ(ierr);
-		ierr = VecMax(y,PETSC_NULL,&max);CHKERRQ(ierr);
+		ierr = VecMin(y,NULL,&min);CHKERRQ(ierr);
+		ierr = VecMax(y,NULL,&max);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  min[y]  = %+1.8e \n", min );
 		PetscPrintf(PETSC_COMM_WORLD,"  max[y]  = %+1.8e \n", max );
 		
@@ -919,7 +925,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -934,7 +940,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-compare_operators",&found,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-compare_operators",&found,0);CHKERRQ(ierr);
 	if (found) {
 		ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 
@@ -947,19 +953,19 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	}
 	
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-apply_A11mf_operator",&found,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-apply_A11mf_operator",&found,NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = apply_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 	}
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-apply_A11asm_operator",&found,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-apply_A11asm_operator",&found,NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = apply_asm_A11(user->stokes_ctx);CHKERRQ(ierr);		
 	}
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-perform_viscous_solve_A11asm_operator",&found,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-perform_viscous_solve_A11asm_operator",&found,NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = perform_viscous_solve(user->stokes_ctx);CHKERRQ(ierr);		
 	}

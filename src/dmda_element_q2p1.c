@@ -536,7 +536,7 @@ PetscErrorCode DMDAGetElements_DA_Q2(DM dm,PetscInt *nel,PetscInt *nen,const Pet
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (da->dim==-1) {
-    *nel = 0; *nen = 0; *e = PETSC_NULL;
+    *nel = 0; *nen = 0; *e = NULL;
   } else if (da->dim==1) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMDA doesn't support Q2 in 1D");
   } else if (da->dim==2) {
@@ -617,7 +617,7 @@ PetscErrorCode DMDAGetElements_DA_P1(DM dm,PetscInt *nel,PetscInt *nen,const Pet
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (da->dim==-1) {
-    *nel = 0; *nen = 0; *e = PETSC_NULL;
+    *nel = 0; *nen = 0; *e = NULL;
   } else if (da->dim==1) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMDA doesn't support P1 in 1D");
   } else if (da->dim==2) {
@@ -670,7 +670,7 @@ PetscErrorCode  DMDASetElementType_Q2(DM da)
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
   //da->ops->getelements = DMGetElements_DA_Q2;
 	
@@ -691,7 +691,7 @@ PetscErrorCode  DMDASetElementType_P1(DM da)
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
 	//da->ops->getelements = DMGetElements_DA_P1;
 	

@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -225,7 +225,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -413,7 +413,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -421,7 +421,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
-		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,NULL);CHKERRQ(ierr);
 	}
 	
 	/* interpolate material point coordinates (needed if mesh was modified) */
@@ -434,7 +434,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -492,15 +492,15 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
 	
 	/* Define interpolation operators for velocity space */
-	interpolatation_v[0] = PETSC_NULL;
+	interpolatation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	mlctx.interpolatation_v = interpolatation_v;
 
 	/* Define interpolation operators for scalar space */
-	interpolatation_eta[0] = PETSC_NULL;
+	interpolatation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolatation_v[k],1,&interpolatation_eta[k]);CHKERRQ(ierr);
 	}
@@ -532,7 +532,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -561,7 +561,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		ierr = MatShellGetMatStokesMF(A,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-		mf->daU = PETSC_NULL;
+		mf->daU = NULL;
 	}
 
 	/* B operator */
@@ -574,7 +574,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 
 		/* Schur complement */
-		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
@@ -590,7 +591,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
 	
 		/* nest */
-		bA[0][0] = PETSC_NULL; bA[0][1] = Aup;
+		bA[0][0] = NULL; bA[0][1] = Aup;
 		bA[1][0] = Apu;        bA[1][1] = Spp;
 	
 		/* Set fine A11 into nest */
@@ -619,7 +620,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 
 		switch (level_type[k]) {
@@ -631,7 +632,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
@@ -663,14 +665,14 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;				
+				mf->daU = NULL;				
 				operatorA11[k] = Auu;
 				ierr = MatShellSetOperation(Auu,MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))MatMultTransposeAdd_generic);CHKERRQ(ierr);
 				
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
 					
-					ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
@@ -678,7 +680,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 						ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
 						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-						mf->daU = PETSC_NULL;				
+						mf->daU = NULL;				
 						operatorB11[k] = Buu;
 						ierr = MatShellSetOperation(Buu,MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))MatMultTransposeAdd_generic);CHKERRQ(ierr);
 					} else {
@@ -790,9 +792,9 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
@@ -810,10 +812,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation_v[k]);CHKERRQ(ierr);
@@ -830,7 +832,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
 
 			// use A for smoother, B for residual
-			ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+			ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 			if (use_low_order_geometry==PETSC_TRUE) {
 				ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 				
@@ -849,7 +851,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 #if 0
           
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);        
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"continuation");CHKERRQ(ierr);
         
 #endif
@@ -867,32 +869,32 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* do a linear solve */
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);
 	PetscPrintf(PETSC_COMM_WORLD,"############## LINEAR STAGE ##############\n");
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"linear_stage");CHKERRQ(ierr);
 	
 	/* switch to non-linear rheology */
 	user->rheology_constants.rheology_type = RHEOLOGY_VP_STD;
 
 	/* do a picard solve */
-	//ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	//ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	
 	//SNESGetTolerances(snes,0,0,0,&snes_its,0);
 	picard_its = snes_its;
-	PetscOptionsGetInt(PETSC_NULL,"-picard_its",&picard_its,0);
+	PetscOptionsGetInt(NULL,"-picard_its",&picard_its,0);
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
 	PetscPrintf(PETSC_COMM_WORLD,"############## PICARD STAGE ##############\n");
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	ierr = pTatinModel_Output(user->model,user,X,"picard_stage");CHKERRQ(ierr);
 
 	
 	/*
 	newton_its = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
+	PetscOptionsGetInt(NULL,"-newton_its",&newton_its,0);
 	if (newton_its>0) {
 		// Force mffd
 		ierr = SNESSetJacobian(snes,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"############## NEWTON STAGE ##############\n");
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinModel_Output(user->model,user,X,"newton_stage");CHKERRQ(ierr);
 	}
 	*/
@@ -900,7 +902,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 #endif
 
 	newton_its = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-newton_its",&newton_its,0);
+	PetscOptionsGetInt(NULL,"-newton_its",&newton_its,0);
 	if (newton_its>0) {
 		SNES snes_newton;
 		PetscContainer container;
@@ -919,8 +921,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		/* configure for fieldsplit */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
@@ -937,10 +939,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			
 			ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 			ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-			ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+			ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 			ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 			ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 			
 			for( k=1; k<nlevels; k++ ){
 				ierr = PCMGSetInterpolation(pc_i,k,interpolatation_v[k]);CHKERRQ(ierr);
@@ -955,7 +957,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				
 				ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
 				// use A for smoother, B for residual
-				ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+				ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 				if (use_low_order_geometry==PETSC_TRUE) {
 					ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 				} else {
@@ -967,7 +969,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		SNESSetTolerances(snes_newton,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,newton_its,PETSC_DEFAULT);
 		PetscPrintf(PETSC_COMM_WORLD,"############## NEWTON STAGE ##############\n");
-		ierr = SNESSolve(snes_newton,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes_newton,NULL,X);CHKERRQ(ierr);
 		ierr = pTatinModel_Output(user->model,user,X,"newton_stage");CHKERRQ(ierr);
 
 		ierr = SNESDestroy(&snes_newton);CHKERRQ(ierr);

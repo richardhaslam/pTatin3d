@@ -126,7 +126,7 @@ PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		

@@ -93,8 +93,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(Quadrature Q,DM daT,Vec X,const c
 	ierr = DMDAGetGhostCorners(daT,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAEGetCornersElement(daT,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(daT,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(daT,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daT,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(daT,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(daT,&local_fields);CHKERRQ(ierr);
@@ -264,8 +264,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(Quadrature Q,DM daT,Vec X,const 
 	ierr = DMDAGetGhostCorners(daT,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAEGetCornersElement(daT,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(daT,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(daT,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daT,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(daT,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(daT,&local_fields);CHKERRQ(ierr);
@@ -617,7 +617,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	daT  = energy->daT;
 	volQ = energy->volQ;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
 		asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
@@ -648,7 +648,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	
 	ierr = pTatinOutputParaViewMeshEnergy(volQ,daT,X,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);

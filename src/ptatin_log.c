@@ -54,7 +54,7 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 	pTatinGenerateFormattedTimestamp(date_time);
 	sprintf(name,"%s/ptatin.log-%s",ctx->outputpath,date_time);
 	
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&ctx->log);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created log file: %s \n",name);
@@ -73,7 +73,7 @@ PetscErrorCode pTatinLogCloseFile(pTatinCtx ctx)
 	PetscBool      stdout = PETSC_FALSE;
 	PetscErrorCode ierr;
 
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerDestroy(&ctx->log);CHKERRQ(ierr);
 	}
@@ -254,7 +254,7 @@ PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM 
 	PetscErrorCode ierr;
 	
 //	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-	ierr = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
 	ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 
 	ierr = DMCompositeGetAccess(pack,F,&Fu,&Fp);CHKERRQ(ierr);
@@ -319,10 +319,10 @@ PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 	ierr = DMDAGetInfo(dm,0,&M,&N,&P,&m,&n,&p, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dm,&lx,&ly,&lz);CHKERRQ(ierr);
 	
-	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,PETSC_NULL,M,N,P);
+	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,NULL,M,N,P);
 
-	coords = PETSC_NULL;
-	ierr = DMDAGetCoordinates(dm,&coords);CHKERRQ(ierr);
+	coords = NULL;
+	ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
 	if (coords) {
 		ierr = DMDAGetBoundingBox(dm,min,max);CHKERRQ(ierr);
 		PetscViewerASCIIPrintf(ctx->log,"                                               span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);

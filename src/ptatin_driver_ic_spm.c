@@ -73,12 +73,12 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 	
 	PetscFunctionBegin;
 	
-	comm = ((PetscObject)dav)->comm;
+	comm = PetscObjectComm((PetscObject)dav);
 	MPI_Comm_rank(comm,&rank);
 	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&da_surf);CHKERRQ(ierr);	
-	ierr = DMDASetUniformCoordinates(da_surf, 0.0,1.0, 0.0,1.0, PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&da_surf);CHKERRQ(ierr);	
+	ierr = DMDASetUniformCoordinates(da_surf, 0.0,1.0, 0.0,1.0, 0.,0.);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da_surf,&si2d,&sj2d,0,&nx2d,&ny2d,0);CHKERRQ(ierr);
 
 	/* fetch coordinates i need from the mechanical domain */
@@ -92,11 +92,11 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 	//ierr = DMDAViewPetscVTK(da_red_spm,0,name);CHKERRQ(ierr);
 	
 	/* copy these values into my parallel surface mesh x,y,z (vol) => x,y (surf) */
-	ierr = DMDAGetCoordinates(da_surf,&coords_surf);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da_red_spm,&coords_red_spm);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_surf,&coords_surf);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_red_spm,&coords_red_spm);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinateDA(da_surf,&da_surf_coords);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da_red_spm,&da_red_spm_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_surf,&da_surf_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_red_spm,&da_red_spm_coords);CHKERRQ(ierr);
 	
 	
 	ierr = DMDAVecGetArray(da_surf_coords,coords_surf,&LA_coords_surf);CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 	
 	PetscFunctionBegin;
 	
-	comm = ((PetscObject)da_vol)->comm;
+	comm = PetscObjectComm((PetscObject)da_vol);
 	MPI_Comm_rank(comm,&rank);
 	
 
@@ -220,8 +220,8 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 	
 	
 	/* update mesh */
-	ierr = DMDAGetCoordinates(da_vol,&coords_vol);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da_vol,&cda_vol);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_vol,&coords_vol);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_vol,&cda_vol);CHKERRQ(ierr);
 	
 	ierr = DMDAVecGetArray(cda_vol,coords_vol,&LA_coords_vol);CHKERRQ(ierr);
 	ierr = VecGetArray(height_self,&LA_height_self);CHKERRQ(ierr);
@@ -280,11 +280,11 @@ PetscErrorCode pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh(DM da_vol,DM 
 	ierr = DMDACreate3dRedundant(da_vol,si2d,si2d+nx2d,N-1,N,sj2d,sj2d+ny2d, 1, &da_red_vol);CHKERRQ(ierr);
 	
 	
-	ierr = DMDAGetCoordinates(da_surf,&coords_surf);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da_red_vol,&coords_red_vol);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_surf,&coords_surf);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_red_vol,&coords_red_vol);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da_surf,&cda_surf);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da_red_vol,&cda_red_vol);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_surf,&cda_surf);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_red_vol,&cda_red_vol);CHKERRQ(ierr);
 	
 	
 	/* do the copy */
@@ -394,7 +394,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	}
 	
 	/* test data bucket viewer */
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	DataBucketView(PETSC_COMM_SELF, user->material_constants,"material_constants",DATABUCKET_VIEW_STDOUT);
 	
 
@@ -444,7 +444,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 		Vec rand;
 		
 		VecDuplicate(height,&rand);
-		VecSetRandom(rand,PETSC_NULL);
+		VecSetRandom(rand,NULL);
 		VecScale(rand,0.5);
 		VecAXPY(height,1.0,rand);
 		ierr = VecDestroy(&rand);CHKERRQ(ierr);

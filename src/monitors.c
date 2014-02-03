@@ -33,7 +33,7 @@
 
 
 
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 #include "petscdm.h"
 
 #include "ptatin3d.h"

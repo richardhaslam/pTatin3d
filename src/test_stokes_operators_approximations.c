@@ -65,8 +65,8 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 	
 	ierr = DMDAGetGlobalIndices( da, &NUM_GINDICES, &GINDICES );CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&tmp);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&tmp);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
 	
 	ierr = DMDAVecGetArray(cda,tmp,&coors);CHKERRQ(ierr);
@@ -143,9 +143,9 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
 	
 	/* matrix free */
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MatMult(Auu,x,y);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
 	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
@@ -153,9 +153,9 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 
 
 	/* matrix free 2x2x2 */
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MatMult(Auu2x2x2,x,y);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
 	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
@@ -165,18 +165,19 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	/* assembled */
 	ierr = VecDuplicate(x,&y2);CHKERRQ(ierr);
 
-	ierr = DMCreateMatrix(da,MATAIJ,&B);CHKERRQ(ierr);
-	PetscGetTime(&t0);
+	ierr = DMSetMatType(da,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+	PetscTime(&t0);
 	ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
 	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM): time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = MatMult(B,x,y2);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = (double)(t1 - t0);
 	MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);	
 	MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD); 
@@ -196,8 +197,8 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	PetscPrintf(PETSC_COMM_WORLD,"  y2.y2  = %+1.8e [asm]\n", cmp );
 		
 	ierr = VecAXPY(y2,-1.0,y);CHKERRQ(ierr); /* y2 = y2 - y */
-	ierr = VecMin(y2,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y2,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y2,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y2,NULL,&max);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  min[A11_mfo.x-A11_asm.x]  = %+1.8e \n", min );
 	PetscPrintf(PETSC_COMM_WORLD,"  max[A11_mfo.x-A11_asm.x]  = %+1.8e \n", max );
 
@@ -284,7 +285,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -311,7 +312,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		

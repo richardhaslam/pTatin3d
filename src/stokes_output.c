@@ -81,8 +81,8 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ,&all_qpoint);CHKERRQ(ierr);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);

@@ -71,10 +71,10 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 
 	/* bc type */
 	data->boundary_conditon_type = VSBC_FreeSlip;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_indentor_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-model_indentor_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
 	
 	data->dimensional   = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_indentor_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_indentor_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
 
 	/* default scales for non-dimensionalisation */
 	km2m                 = 1.0e3;
@@ -103,9 +103,9 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	data->Ly = 120.0;
 	data->Lz = 500.0;
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 
 	/* convert input to meters */
 	data->Lx = data->Lx * 1.0e3;
@@ -122,10 +122,10 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	rheology->const_eta0[2] = 5.0*1.0e23; /* mantle */
 	rheology->const_eta0[3] = 5.0*1.0e21; /* mantle - lower */
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr);
 	
 	/* density */
 	rheology->const_rho0[0] = 2700.0; /* crust */
@@ -133,16 +133,16 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	rheology->const_rho0[2] = 3200.0; /* mantle */
 	rheology->const_rho0[3] = 3200.0; /* mantle */
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr);
 	
 	data->cutoff_time = 1.0;
 	data->indentation_velocity = 1.5;
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_cutofftime",&data->cutoff_time,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_indentor_indentation_velocity",&data->indentation_velocity,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_cutofftime",&data->cutoff_time,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_indentor_indentation_velocity",&data->indentation_velocity,&flg);CHKERRQ(ierr);
 
 	/* convert input time Ma => sec */
 	data->cutoff_time = data->cutoff_time * Ma2sec;
@@ -512,24 +512,24 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 
-	ierr = VecStrideMin(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,0,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|P0|   = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,0,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|P0|   = %+1.4e \n",fp);
 
-	ierr = VecStrideMin(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,1,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdx| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,1,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdx| = %+1.4e \n",fp);
 
-	ierr = VecStrideMin(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,2,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdy| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,2,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdy| = %+1.4e \n",fp);
 
-	ierr = VecStrideMin(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdz| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
 	
 	
@@ -538,7 +538,7 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 	
 	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
 
 	ierr = DMCompositeGetAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
@@ -559,7 +559,7 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
 	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
@@ -576,7 +576,7 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
 	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);

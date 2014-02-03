@@ -37,8 +37,8 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
 	PetscFunctionBegin;
 
 	
-	ierr = MPI_Comm_size(((PetscObject)dm)->comm,&nproc);CHKERRQ(ierr);
-	ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dm),&nproc);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo( dm,0,&nx,&ny,&nz,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( dm, &si,&sj,&sk, 0,0,0 );CHKERRQ(ierr);
@@ -66,7 +66,7 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
 	}
 	ierr = DMDACreate3dRedundant( dm, si_p,ei_p, sj_p,ej_p, sk_p,ek_p, 1, &da_surf );CHKERRQ(ierr);
 
-	x = y = z = PETSC_NULL;
+	x = y = z = NULL;
 	if (rank == output_rank) {
 		DM         cda_surf;
 		Vec        coor_surf;
@@ -78,8 +78,8 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
 		PetscMalloc(sizeof(double)*nx*nz,&y);
 		PetscMalloc(sizeof(double)*nx*nz,&z);
 		
-		ierr = DMDAGetCoordinates(da_surf,&coor_surf);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinateDA(da_surf,&cda_surf);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(da_surf,&coor_surf);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(da_surf,&cda_surf);CHKERRQ(ierr);
 		ierr = DMDAVecGetArray(cda_surf,coor_surf,&LA_coor_surf);CHKERRQ(ierr);
 		j = 0;
 		for (k=0; k<nz; k++) {
@@ -221,8 +221,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 	
-	ierr = MPI_Comm_size(((PetscObject)dau)->comm,&nproc);CHKERRQ(ierr);
-	ierr = MPI_Comm_rank(((PetscObject)dau)->comm,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dau),&nproc);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dau),&rank);CHKERRQ(ierr);
 	spm_rank = nproc - 1;
 	
 	ierr= DMDAGetBoundingBox(dau,min,max);CHKERRQ(ierr);

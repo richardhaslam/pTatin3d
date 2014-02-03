@@ -428,8 +428,8 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	P3D_prepare_elementQ2(NQP,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -440,7 +440,7 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
 
@@ -451,7 +451,7 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 //		evaluate_geometry_elementQ2(NQP,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 	
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"Element geometry = %1.4e (sec)\n",t1-t0);
 	{
 		double ops = 105.0 * (double)( nel * NQP * NPE );
@@ -492,8 +492,8 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -503,7 +503,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		PetscScalar int_P, int_divu;
 		
@@ -670,7 +670,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Ru, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -707,8 +707,8 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 	/* quadrature */
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -717,7 +717,7 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	
 	for (edge=0; edge<HEX_EDGES; edge++) {
 		ConformingElementFamily element;
@@ -797,7 +797,7 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 			ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 		}
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assembled int_S N traction[i].n[i] dS, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -839,8 +839,8 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -851,7 +851,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = StokesPressure_GetElementLocalIndices(p_el_lidx,(PetscInt*)&elnidx_p[nen_p*e]);CHKERRQ(ierr);
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
@@ -906,7 +906,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 		}
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Rp, p_el_lidx,Fe);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Rp, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -1050,8 +1050,8 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -1061,7 +1061,7 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1094,15 +1094,15 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			//MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
-			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			//MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 
 		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,&Ye[0]);CHKERRQ(ierr);
 		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMult, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -1226,7 +1226,7 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		PetscScalar int_P, int_divu;
 		
@@ -1329,7 +1329,7 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Ru, = %1.4e (sec)\n",t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -1374,7 +1374,7 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = StokesPressure_GetElementLocalIndices(p_el_lidx,(PetscInt*)&elnidx_p[nen_p*e]);CHKERRQ(ierr);
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
@@ -1429,7 +1429,7 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 		}
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Rp, p_el_lidx,Fe);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Rp, = %1.4e (sec)\n",t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -1472,10 +1472,10 @@ PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx)
 
 	/* fetch DM's */
   ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
 	/* fetch coordinates */
-	ierr = DMDAGetCoordinates(dau,&x);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dau,&x);CHKERRQ(ierr);
 	
 	/* fetch local vectors */
   ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);

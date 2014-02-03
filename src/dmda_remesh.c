@@ -56,11 +56,11 @@ PetscErrorCode DMDAGetCornerCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACoor3d co
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&MX,&MY,&MZ, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da, &si,&sj,&sk, &nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coordinates);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
 	
-	comm = ((PetscObject)da)->comm;
+	comm = PetscObjectComm((PetscObject)da);
 	if ( (K>=sk) && (K<sk+nz) ) {
 		if ( (si==0) && (sj==0) ) {
 			ii = 0;
@@ -135,8 +135,8 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACo
 	ierr = DMDAGetInfo(da,0,&MX,&MY,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	if ( (K>=sk) && (K<sk+nz) ) {
@@ -192,8 +192,8 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IK(DM da,PetscInt J,DMDACo
 	ierr = DMDAGetInfo(da,0,&MX,0,&MZ, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	if ( (J>=sj) && (J<sj+ny) ) {
@@ -259,7 +259,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	{
 		PetscViewer vv;
 		Vec x;
-		ierr = PetscViewerASCIIOpen(((PetscObject)(surface1_da))->comm, "test_dmda_remesh_s1.vtk", &vv);CHKERRQ(ierr);
+		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)surface1_da), "test_dmda_remesh_s1.vtk", &vv);CHKERRQ(ierr);
 		ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(surface1_da,&x);CHKERRQ(ierr);
 		ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -271,7 +271,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	{
 		PetscViewer vv;
 		Vec x;
-		ierr = PetscViewerASCIIOpen(((PetscObject)(surface2_da))->comm, "test_dmda_remesh_s2.vtk", &vv);CHKERRQ(ierr);
+		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)surface2_da), "test_dmda_remesh_s2.vtk", &vv);CHKERRQ(ierr);
 		ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(surface2_da,&x);CHKERRQ(ierr);
 		ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -283,20 +283,20 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	*/
 	
 
-//	ierr = DMDAGetCoordinateDA( surface1_da, &surface1_cda);CHKERRQ(ierr); /* don't access coordinate da's on these guys */
-	ierr = DMDAGetCoordinates( surface1_da,&surface1_coords );CHKERRQ(ierr);
+//	ierr = DMGetCoordinateDM( surface1_da, &surface1_cda);CHKERRQ(ierr); /* don't access coordinate da's on these guys */
+	ierr = DMGetCoordinates( surface1_da,&surface1_coords );CHKERRQ(ierr);
 //	ierr = DMDAVecGetArray(surface1_cda,surface1_coords,&surface1_nodes);CHKERRQ(ierr);
 	ierr = VecGetArray(surface1_coords,&surface1_nodes);CHKERRQ(ierr);
 	
-//	ierr = DMDAGetCoordinateDA( surface2_da, &surface2_cda);CHKERRQ(ierr); /* don't access coordinate da's on these guys! */
-	ierr = DMDAGetCoordinates( surface2_da,&surface2_coords );CHKERRQ(ierr);
+//	ierr = DMGetCoordinateDM( surface2_da, &surface2_cda);CHKERRQ(ierr); /* don't access coordinate da's on these guys! */
+	ierr = DMGetCoordinates( surface2_da,&surface2_coords );CHKERRQ(ierr);
 //	ierr = DMDAVecGetArray(surface2_cda,surface2_coords,&surface2_nodes);CHKERRQ(ierr);
 	ierr = VecGetArray(surface2_coords,&surface2_nodes);CHKERRQ(ierr);
 
 	
-	ierr = DMDAGetCoordinateDA( da, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( da, &cda);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinates( da,&coords );CHKERRQ(ierr);
+	ierr = DMGetCoordinates( da,&coords );CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coords,&nodes);CHKERRQ(ierr);
 
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -330,7 +330,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	}
 	DL = end - start;
 	if( DL < 0 ) {
-		SETERRQ( ((PetscObject)da)->comm, PETSC_ERR_USER, "DL cannot be negative" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "DL cannot be negative" );
 	}
 	
 	/* total range of k indices to span */
@@ -420,15 +420,15 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( DM da, Petsc
 	ierr = DMDACreate3dRedundant( da, si,si+nx, startJ,  startJ+1, sk,sk+nz, 1, &surface1_da );CHKERRQ(ierr);
 	ierr = DMDACreate3dRedundant( da, si,si+nx, endJ-1,  endJ,     sk,sk+nz, 1, &surface2_da );CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates( surface1_da,&surface1_coords );CHKERRQ(ierr);
+	ierr = DMGetCoordinates( surface1_da,&surface1_coords );CHKERRQ(ierr);
 	ierr = VecGetArray(surface1_coords,&surface1_nodes);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates( surface2_da,&surface2_coords );CHKERRQ(ierr);
+	ierr = DMGetCoordinates( surface2_da,&surface2_coords );CHKERRQ(ierr);
 	ierr = VecGetArray(surface2_coords,&surface2_nodes);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA( da, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( da, &cda);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates( da,&coords );CHKERRQ(ierr);
+	ierr = DMGetCoordinates( da,&coords );CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coords,&nodes);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -540,11 +540,11 @@ PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da)
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	if (sj+ny == N) { /* we contain the surface mesh */
@@ -644,16 +644,16 @@ PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal f
 	
 	
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coords);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinateDA(da_min,&cda_min);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da_min,&coord_min);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_min,&cda_min);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_min,&coord_min);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da_max,&cda_max);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da_max,&coord_max);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da_max,&cda_max);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_max,&coord_max);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
 
 	/* uniformily set coordinates between [x0prime,x3prime] */

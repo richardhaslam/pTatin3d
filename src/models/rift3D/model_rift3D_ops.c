@@ -139,34 +139,34 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
  
 	/* Read the options */
 	/*cutoff */
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_runwithmises",&data->runmises,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
 	/*scaling */     
 	nondim = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_nondimensional",&nondim,NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
 	} else {
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vis_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vel_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_length_bar",&data->length_bar,NULL);CHKERRQ(ierr); 
 	}
 	/* box geometry, m */	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Ly",&data->Ly,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Lz",&data->Lz,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Oy",&data->Oy,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_Oz",&data->Oz,PETSC_NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Lx",&data->Lx,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Ly",&data->Ly,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Lz",&data->Lz,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Ox",&data->Ox,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Oy",&data->Oy,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Oz",&data->Oz,NULL);CHKERRQ(ierr); 
 	
 	/* velocity cm/y */    
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vx",&vx,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_vz",&vz,PETSC_NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vx",&vx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vz",&vz,NULL);CHKERRQ(ierr); 
 	
 	/* rho0 for initial pressure */
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_rho0",&data->rho0,PETSC_NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_rho0",&data->rho0,NULL);CHKERRQ(ierr); 
 	
 	/* Material constant */
 	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
@@ -510,24 +510,24 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	
-	ierr = VecStrideMin(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,0,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|P0|   = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,0,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|P0|   = %+1.4e \n",fp);
 	
-	ierr = VecStrideMin(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,1,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdx| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,1,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdx| = %+1.4e \n",fp);
 	
-	ierr = VecStrideMin(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,2,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdy| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,2,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdy| = %+1.4e \n",fp);
 	
-	ierr = VecStrideMin(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdz| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
 	
 	
@@ -536,7 +536,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	
 	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
 	
 	ierr = DMCompositeGetAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
@@ -557,7 +557,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
 	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
@@ -574,7 +574,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
 	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);

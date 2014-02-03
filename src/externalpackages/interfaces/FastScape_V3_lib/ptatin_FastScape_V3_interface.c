@@ -75,11 +75,11 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	
 	/* parse parameters */
 	flg = PETSC_FALSE;
-	PetscOptionsGetInt(PETSC_NULL,"-fastscape_refinement_factor",&refinement_factor,&flg);
+	PetscOptionsGetInt(NULL,"-fastscape_refinement_factor",&refinement_factor,&flg);
 	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using refinement factor %D\n",refinement_factor); }
 
 	flg = PETSC_FALSE;
-	PetscOptionsGetReal(PETSC_NULL,"-fastscape_dt",&dt_spm,&flg);
+	PetscOptionsGetReal(NULL,"-fastscape_dt",&dt_spm,&flg);
 	if (flg) { PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Using dt %1.4e\n",dt_spm); }
 	
 	if (dt_spm > dt_mechanical) {
@@ -98,7 +98,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	/* debug - write out extracted surface */
 	if (debug) {
 		if (dm_spmsurf0) {
-			ierr = DMDAViewPetscVTK(dm_spmsurf0,PETSC_NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+			ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 		}
 	}
 
@@ -161,7 +161,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		ierr = InterpolateMSurf0ToSPMSurfIKGrid(dm_spmsurf0,(PetscInt)smx,(PetscInt)smy,scoord,sheight);CHKERRQ(ierr);
 		
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
-		PetscGetTime(&t0);
+		PetscTime(&t0);
 		/* scale topo */
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] * Lstar;
@@ -190,14 +190,14 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] / Lstar;
 		}
-		PetscGetTime(&t1);
+		PetscTime(&t1);
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Compute time %1.4e (sec)\n",t1-t0);
 #endif
 
 		/* interpolate topo: 2d mesh -> da_spmsurf0  */
 		ierr = InterpolateSPMSurfIKGridToMSurf0((PetscInt)smx,(PetscInt)smy,scoord,sheight,dm_spmsurf0);CHKERRQ(ierr);
 		if (debug) {
-			ierr = DMDAViewPetscVTK(dm_spmsurf0,PETSC_NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
+			ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
 		}
 		
 		PetscFree(sheight);

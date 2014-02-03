@@ -51,7 +51,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	PetscMPIInt    rank;
 	PetscInt       i,L, dim, M,N,P, dof, sw;
 	PetscInt       refine_x, refine_y, refine_z;
-	DMDABoundaryType wrap[3];
+	DMBoundaryType wrap[3];
 	DMDAStencilType  st;
 	PetscScalar      val;
 	Vec              dd,coords;
@@ -59,9 +59,9 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	
 	
 	PetscFunctionBegin;
-	if (da == PETSC_NULL) SETERRQ( PETSC_COMM_WORLD,PETSC_ERR_USER, "da is NULL" );
+	if (da == NULL) SETERRQ( PETSC_COMM_WORLD,PETSC_ERR_USER, "da is NULL" );
 
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (coords)  { has_coords = PETSC_TRUE;  }
 	if (!coords) { has_coords = PETSC_FALSE; }
 	
@@ -71,7 +71,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 
 		sprintf(coord_file,"%s.coords",name);
 		
-		ierr = PetscViewerCreate(((PetscObject)da)->comm,&v);CHKERRQ(ierr);
+		ierr = PetscViewerCreate(PetscObjectComm((PetscObject)da),&v);CHKERRQ(ierr);
 		ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 		ierr = PetscViewerFileSetMode(v,FILE_MODE_WRITE);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
@@ -109,16 +109,16 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	//
 	for (i=0; i<3; i++) {
 		switch (wrap[i]) {
-			case DMDA_BOUNDARY_NONE:
+			case DM_BOUNDARY_NONE:
 				val = 0.1;
 				break;
-			case DMDA_BOUNDARY_GHOSTED:
+			case DM_BOUNDARY_GHOSTED:
 				val = 1.1;
 				break;
-			case DMDA_BOUNDARY_MIRROR:
+			case DM_BOUNDARY_MIRROR:
 				val = 2.1;
 				break;
-			case DMDA_BOUNDARY_PERIODIC:
+			case DM_BOUNDARY_PERIODIC:
 				val = 3.1;
 				break;
 		}
@@ -168,7 +168,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 	PetscScalar    *data;
 	PetscInt       dim, M,N,P, dof, sw;
 	PetscInt       refine_x, refine_y, refine_z;
-	DMDABoundaryType wrap[3];
+	DMBoundaryType wrap[3];
 	DMDAStencilType  st;
 	PetscInt         i,L,convert;
 	PetscBool        has_coords;
@@ -210,16 +210,16 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 
 		switch (convert) {
 			case 0:
-				wrap[i] = DMDA_BOUNDARY_NONE;
+				wrap[i] = DM_BOUNDARY_NONE;
 				break;
 			case 1:
-				wrap[i] = DMDA_BOUNDARY_GHOSTED;
+				wrap[i] = DM_BOUNDARY_GHOSTED;
 				break;
 			case 2:
-				wrap[i] = DMDA_BOUNDARY_MIRROR;
+				wrap[i] = DM_BOUNDARY_MIRROR;
 				break;
 			case 3:
-				wrap[i] = DMDA_BOUNDARY_PERIODIC;
+				wrap[i] = DM_BOUNDARY_PERIODIC;
 				break;
 		}
 	}
@@ -260,11 +260,11 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 		Vec  da_coords;
 		
 		ierr = DMDASetUniformCoordinates(*da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(*da, &da_coords);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(*da, &da_coords);CHKERRQ(ierr);
 		
 		sprintf(coord_file,"%s.coords",name);
 
-		ierr = PetscViewerCreate(((PetscObject)(*da))->comm,&v);CHKERRQ(ierr);
+		ierr = PetscViewerCreate(PetscObjectComm((PetscObject)*da),&v);CHKERRQ(ierr);
 		ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 		ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
@@ -298,7 +298,7 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 
 	PetscFunctionBegin;
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	if (da == PETSC_NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
+	if (da == NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
 	
 	ierr = DMCreateGlobalVector(da, &xn);CHKERRQ(ierr);
 
@@ -333,16 +333,16 @@ PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 	
 	
 	PetscFunctionBegin;
-	if (da == PETSC_NULL) SETERRQ( ((PetscObject)da)->comm,PETSC_ERR_USER, "da is NULL" );
+	if (da == NULL) SETERRQ( PetscObjectComm((PetscObject)da),PETSC_ERR_USER, "da is NULL" );
 	
 	/* make sure the vector is present */
 	ierr = DMDASetUniformCoordinates(da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMDALoadGlobalVectorFromFile(cda,name,&coords);CHKERRQ(ierr);
 	
 	/* set the global coordinates */
-	ierr = DMDAGetCoordinates(da,&da_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
 	
 	/* make sure the local coordinates are upto date */
@@ -369,7 +369,7 @@ PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 		sprintf(fieldname,"%s",name);
 	}
 	
-  ierr = PetscViewerCreate(((PetscObject)x)->comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO	
@@ -394,7 +394,7 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 	
 	PetscFunctionBegin;
 	
-	ierr = PetscViewerCreate(((PetscObject)x)->comm,&v);CHKERRQ(ierr);
+	ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&v);CHKERRQ(ierr);
 	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO

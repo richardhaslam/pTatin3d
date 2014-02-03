@@ -61,14 +61,14 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
 
 	/* output */
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -85,7 +85,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 
 	ierr = DMDARemeshSetUniformCoordinatesInPlane_IJ(da, 0, plane );CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -113,14 +113,14 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
 	
 	/* output */
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -137,7 +137,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	
 	ierr = DMDARemeshSetUniformCoordinatesInPlane_IJ(da, 0, plane );CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_in1.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in1.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d(da,0,P);CHKERRQ(ierr);
 	
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -178,14 +178,14 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
 	
 	/* output */
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -197,7 +197,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
 	ierr = MeshDeformation_ShearXY(da);CHKERRQ(ierr);
 	
 	/* output sheared mesh */
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
@@ -216,12 +216,12 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscInt mx,my,mz;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	mx = my = mz = 10;
-	PetscOptionsGetInt( PETSC_NULL, "-mx", &mx, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-my", &my, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-mz", &mz, 0 );
+	PetscOptionsGetInt( NULL, "-mx", &mx, 0 );
+	PetscOptionsGetInt( NULL, "-my", &my, 0 );
+	PetscOptionsGetInt( NULL, "-mz", &mz, 0 );
 	
 //	ierr = test_DMDARemeshSetUniformCoordinatesInPlane_IJ(mx,my,mz);CHKERRQ(ierr);
 

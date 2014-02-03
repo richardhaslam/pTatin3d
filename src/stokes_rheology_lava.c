@@ -178,10 +178,10 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	
 	/* access material point information */
-	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
 	/* PField_std global index marker, phase marker, ...*/
 	/* PField_stokes contains: etaf, rhof */
 	/* PField_pls contains: accumulated plastic strain, yield type */
@@ -198,8 +198,8 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	/* get u,p element information */
@@ -210,7 +210,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	
 	if (daT) {
 		/* access the coordinates for the temperature mesh */ /* THIS IS NOT ACTUALLY NEEDED */
-		ierr = DMDAGetGhostedCoordinates(daT,&gcoords_T);CHKERRQ(ierr);
+		ierr = DMGetCoordinatesLocal(daT,&gcoords_T);CHKERRQ(ierr);
 		ierr = VecGetArray(gcoords_T,&LA_gcoords_T);CHKERRQ(ierr);
 		
 		ierr = DMDAGetElementsQ1(daT,&nel_T,&nen_T,&elnidx_T);CHKERRQ(ierr);
@@ -407,7 +407,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (LAVA) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
                 min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
@@ -432,7 +432,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user,DM dau,
 	ierr = pTatinContextValid_Energy(user,&found);CHKERRQ(ierr);
 	if (found) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(user,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(user,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
         
 		ierr = DMGetLocalVector(daT,&temperature_l);CHKERRQ(ierr);
@@ -447,7 +447,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user,DM dau,
 		ierr = DMRestoreLocalVector(daT,&temperature_l);CHKERRQ(ierr);
 		
 	} else {
-		ierr = private_EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,ufield,dap,pfield,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+		ierr = private_EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,ufield,dap,pfield,NULL,NULL);CHKERRQ(ierr);
 	}
 	
 	

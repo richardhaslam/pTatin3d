@@ -75,9 +75,9 @@ void sort_PSortCx(const PetscInt np, PSortCtx list[])
 {
 	PetscLogDouble t0,t1;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	qsort( list, np, sizeof(PSortCtx), sort_ComparePSortCtx );
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  sort_PSortCx [npoints = %ld] -> qsort %1.4e (sec)\n", np,t1-t0 );
 #endif
@@ -311,7 +311,7 @@ PetscErrorCode apply_mppc_nn_patch(
 	/* find max np_per_cell I will need */
 	np_per_cell_max = 0;
 	cells_needing_new_points = 0;
-	DataBucketGetSizes(db,&Lnew,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&Lnew,NULL,NULL);
 	for (c=0; c<nel; c++) {
 		PetscInt points_per_cell;
 		PetscInt points_per_patch;
@@ -369,8 +369,8 @@ PetscErrorCode apply_mppc_nn_patch(
 	ierr = PetscMalloc(sizeof(int)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
 	
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
@@ -495,10 +495,10 @@ PetscErrorCode apply_mppc_nn_patch(
 						}
 						
 						/* locate nearest point */
-						PetscGetTime(&t0_nn);
+						PetscTime(&t0_nn);
 						ierr = _find_min(xp_rand,point_count,patch_point_coords,&idx);CHKERRQ(ierr);
 						//ierr = _find_min_fast(xp_rand,point_count,patch_point_coords,&idx);CHKERRQ(ierr);
-						PetscGetTime(&t1_nn);
+						PetscTime(&t1_nn);
 						time_nn += (t1_nn - t0_nn);
 						
 						marker_index = patch_point_idx[ idx ];
@@ -536,9 +536,9 @@ PetscErrorCode apply_mppc_nn_patch(
 	ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
 	ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&Lnew,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&Lnew,NULL,NULL);
 	
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,npoints_init,Lnew);CHKERRQ(ierr);
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init,Lnew);CHKERRQ(ierr);
 	
 #if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
@@ -585,7 +585,7 @@ PetscErrorCode apply_mppc_nn_patch2(
 	/* find max np_per_cell I will need */
 	np_per_cell_max = 0;
 	cells_needing_new_points = 0;
-	DataBucketGetSizes(db,&Lnew,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&Lnew,NULL,NULL);
 	for (c=0; c<nel; c++) {
 		PetscInt points_per_cell;
 		PetscInt points_per_patch;
@@ -642,8 +642,8 @@ PetscErrorCode apply_mppc_nn_patch2(
 	ierr = PetscMalloc(sizeof(NNSortCtx)*np_per_cell_max,&patch_points);CHKERRQ(ierr);
 	
   /* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
@@ -767,10 +767,10 @@ PetscErrorCode apply_mppc_nn_patch2(
 						}
 						
 						/* locate nearest point */
-						PetscGetTime(&t0_nn);
+						PetscTime(&t0_nn);
 						//ierr = _find_min_sep_brute_force(xp_rand,point_count,patch_points,&idx);CHKERRQ(ierr);
 						ierr = _find_min_sep_qsort(xp_rand,point_count,patch_points,&idx);CHKERRQ(ierr);
-						PetscGetTime(&t1_nn);
+						PetscTime(&t1_nn);
 						time_nn += (t1_nn - t0_nn);
 						
 						marker_index = patch_points[ idx ].point_index;
@@ -807,9 +807,9 @@ PetscErrorCode apply_mppc_nn_patch2(
   ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	ierr = PetscFree(patch_points);CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&Lnew,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&Lnew,NULL,NULL);
 	
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,npoints_init,Lnew);CHKERRQ(ierr);
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init,Lnew);CHKERRQ(ierr);
 	
 #if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
@@ -853,7 +853,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	
 	ierr = PetscMalloc( sizeof(PetscInt)*(nel+1),&pcell_list );CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&npoints,NULL,NULL);
 	ierr = PetscMalloc( sizeof(PSortCtx)*(npoints), &plist);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
@@ -898,13 +898,13 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 #endif
 	
 	/* apply point injection routine */
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = apply_mppc_nn_patch(
 											nel, pcell_list,
 											npoints, plist,
 											np_lower,
 											patch_extend, nxp,nyp,nzp, pertub, da,db);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_nn_patch): %1.4e (sec)\n", t1-t0);
 #endif
@@ -938,7 +938,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	ierr = PetscMalloc( sizeof(PetscInt)*(nel),&cell_count );CHKERRQ(ierr);
 	ierr = PetscMemzero( cell_count, sizeof(PetscInt)*(nel) );CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&npoints,NULL,NULL);
 
 	/* compute number of points per cell */
 	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
@@ -971,7 +971,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 		PetscFunctionReturn(0);
 	}
 
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 
 	if (!reverse_order_removal) {
 		/* remove points from cells with excessive number */
@@ -1046,7 +1046,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 		
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	
 	
 #if (MPPC_LOG_LEVEL >= 1)
@@ -1076,23 +1076,23 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	/* options for control number of points per cell */
 	np_lower = 0;
 	np_upper = 60;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
 
 	/* options for injection of markers */
 	nxp = 2;
 	nyp = 2;
 	nzp = 2;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
 	
 	perturb = 0.1;
-	ierr = PetscOptionsGetScalar(PETSC_NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetScalar(NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
 	patch_extent = 1;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
 
-	ierr = pTatinGetMaterialPoints(ctx,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
 	
 	/* insertion */
 #if (MPPC_LOG_LEVEL >= 1)
@@ -1306,9 +1306,9 @@ PetscErrorCode apply_mppc_region_assignment(
 			pos_p = marker_p->coor;
 			
 			/* locate nearest point */
-			PetscGetTime(&t0_nn);
+			PetscTime(&t0_nn);
 			ierr = _find_min(pos_p, point_count,patch_point_coords, &nearest_idx);CHKERRQ(ierr);
-			PetscGetTime(&t1_nn);
+			PetscTime(&t1_nn);
 			time_nn += (t1_nn - t0_nn);
 
 			/* marker index of nearest point */
@@ -1383,7 +1383,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	
 	PetscFunctionBegin;
 
-	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&npoints,NULL,NULL);
 
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
@@ -1472,12 +1472,12 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	
 	patch_extend = 1;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = apply_mppc_region_assignment(
 														 nel, cell_count, pcell_list,
 														 npoints, plist,
 														 patch_extend, da,db);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
@@ -1656,9 +1656,9 @@ PetscErrorCode apply_mppc_region_assignment_v2(
 			pos_p = marker_p->coor;
 			
 			/* locate nearest point */
-			PetscGetTime(&t0_nn);
+			PetscTime(&t0_nn);
 			ierr = _find_min(pos_p, point_count,patch_point_coords, &nearest_idx);CHKERRQ(ierr);
-			PetscGetTime(&t1_nn);
+			PetscTime(&t1_nn);
 			time_nn += (t1_nn - t0_nn);
 			
 			/* marker index of nearest point */
@@ -1721,7 +1721,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 	
 	PetscFunctionBegin;
 	
-	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&npoints,NULL,NULL);
 	
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
@@ -1810,12 +1810,12 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 	
 	patch_extend = 1;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	ierr = apply_mppc_region_assignment_v2(
 																			nel, cell_count, pcell_list,
 																			npoints, plist,
 																			patch_extend, da,db);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif

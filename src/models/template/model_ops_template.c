@@ -53,8 +53,8 @@ PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
 	PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_template_param1",&data->param1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL, "-model_template_param2",&data->param2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_template_param1",&data->param1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL, "-model_template_param2",&data->param2,&flg);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -227,7 +227,7 @@ PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *
 		const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
 		char                      mp_file_prefix[256];
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}

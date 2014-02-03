@@ -72,7 +72,7 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 	
   /* model geometry */
   PetscPrintf(PETSC_COMM_WORLD,"reading model initial geometry from options\n");
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-initial_geom",(PetscInt *) & data->initial_geom, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL, "-initial_geom",(PetscInt *) & data->initial_geom, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide a type of material index initialisation \n");
 	}
@@ -80,33 +80,33 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
   /* box geometry */
   PetscPrintf(PETSC_COMM_WORLD, "reading box geometry from options\n");
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Lx", &data->Lx, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Lx", &data->Lx, &flg);CHKERRQ(ierr);
   if (found == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Expected user to provide model length Lx \n");
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Ly", &data->Ly, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Ly", &data->Ly, &flg);CHKERRQ(ierr);
   if (found == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "Expected user to provide model length Ly \n");
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Lz", &data->Lz, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Lz", &data->Lz, &flg);CHKERRQ(ierr);
   if (found == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide model length Lz \n");
 	}
 	
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Ox", &data->Ox, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Ox", &data->Ox, &flg);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide model Origin Ox \n");
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Oy", &data->Oy, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Oy", &data->Oy, &flg);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide model Origin Oy \n");
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Oz", &data->Oz, &flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Oz", &data->Oz, &flg);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide model Origin Oz \n");
 	}

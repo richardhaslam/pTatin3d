@@ -106,7 +106,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
-	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,NULL);CHKERRQ(ierr);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr);
@@ -117,21 +117,22 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 
-		ierr = PetscOptionsGetBool(PETSC_NULL,"-use_jfnk_energy",&use_JFNK_T,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,"-use_jfnk_energy",&use_JFNK_T,NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
 
-		JE = PETSC_NULL;
+		JE = NULL;
 		if (!use_JFNK_T) {
-			ierr = DMCreateMatrix(energy->daT,MATAIJ,&JE);CHKERRQ(ierr);
+			ierr = DMSetMatType(energy->daT,MATAIJ);CHKERRQ(ierr);
+			ierr = DMCreateMatrix(energy->daT,&JE);CHKERRQ(ierr);
 			ierr = MatSetFromOptions(JE);CHKERRQ(ierr);
 		}
 
@@ -148,8 +149,8 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	}
 
 	/* test data bucket viewer */
-	DataBucketView(((PetscObject)multipys_pack)->comm, materialpoint_db,"materialpoints",DATABUCKET_VIEW_STDOUT);
-	DataBucketView(((PetscObject)multipys_pack)->comm, materialconstants_db,"materialconstants",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), materialpoint_db,"materialpoints",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), materialconstants_db,"materialconstants",DATABUCKET_VIEW_STDOUT);
 	
 	/* initial condition */
 	ierr = pTatinModel_ApplyInitialSolution(model,user,X);CHKERRQ(ierr);
@@ -190,7 +191,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		
 		/* MAP V into adv_diff_v TODO */
 		/* map velocity vector from Q2 space onto Q1 space */
-		//ierr = DMDAGetCoordinateDA(daT,&cdaT);CHKERRQ(ierr);   
+		//ierr = DMGetCoordinateDM(daT,&cdaT);CHKERRQ(ierr);   
 		//ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		//ierr = DMDAProjectVectorQ2toQ1(dav,velocity,cdaT,energy->u_minus_V,energy->energy_mesh_type);CHKERRQ(ierr);
 		//ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -255,7 +256,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 
 			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
 			if (use_JFNK_T) {
-				ierr = SNESSetJacobian(snesT,PETSC_NULL,PETSC_NULL,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+				ierr = SNESSetJacobian(snesT,NULL,NULL,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
 			} else {
 				ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
 			}
@@ -263,7 +264,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 
-			ierr = SNESSolve(snesT,PETSC_NULL,T);CHKERRQ(ierr);
+			ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
 			
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
 	#endif

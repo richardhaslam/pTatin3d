@@ -407,7 +407,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 
 	n_ = n;
 	ierr = PetscMalloc( sizeof(PetscInt) * n_, &proc_neighbours_ );CHKERRQ(ierr);
@@ -425,11 +425,11 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
 	
 	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
-	ierr = MatSeqAIJSetPreallocation(A,n_,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatSeqAIJSetPreallocation(A,n_,NULL);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %D \n", max_nnz );
 	//printf("[%d]: nnz = %d \n", rank_i,n_ );
 	{
-		ierr = MatMPIAIJSetPreallocation(A,1,PETSC_NULL,n_,PETSC_NULL);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocation(A,1,NULL,n_,NULL);CHKERRQ(ierr);
 	}
 		
 		
@@ -500,7 +500,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
 
 	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] ************************** \n",t1-t0);
 	
 	PetscFunctionReturn(0);

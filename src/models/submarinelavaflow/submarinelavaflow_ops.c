@@ -89,7 +89,7 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 
 	
 	data->model_conf = MT_HORIZ;
-	PetscOptionsGetInt(PETSC_NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
+	PetscOptionsGetInt(NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
 	
 	
 	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
 	
 	
-	//ierr = PetscOptionsGetReal(PETSC_NULL,"-model_submarinelavaflow_param1",&data->param1,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,"-model_submarinelavaflow_param1",&data->param1,&flg);CHKERRQ(ierr);
 
 	/* define geometry here so everyone can use it */
 	ierr = GeometryObjectCreate("domain",&domain);CHKERRQ(ierr);
@@ -516,14 +516,14 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 	dx = (inlet_x1 - inlet_x0)/(PetscReal)pni;
 	dz = (gmax[2] - gmin[2])  /(PetscReal)pnk;
 	
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
 	ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	
-	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
 
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
@@ -614,7 +614,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscErrorCode ierr;
 
 	apply_inflow = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-submarine_inflow_bc",&apply_inflow,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-submarine_inflow_bc",&apply_inflow,NULL);
 	if (apply_inflow) {
 		ierr = SubmarineLavaFlow_ApplyInflow(c,data);CHKERRQ(ierr);
 	}
@@ -706,7 +706,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 		PetscInt Nmax,indexN;
 
 		factor = 1.0;		
-		PetscOptionsGetScalar(PETSC_NULL,"-subdmarine_roughness_factor",&factor,PETSC_NULL);
+		PetscOptionsGetScalar(NULL,"-subdmarine_roughness_factor",&factor,NULL);
 		if (factor < 0.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
 		if (factor > 1.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
 		indexN = 0;
@@ -768,7 +768,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 		ierr = PhysCompStokesScaleGravityVector(stokes,9.8);CHKERRQ(ierr);
 	}
 	
-	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_point_db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(material_point_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mp_points; p++) {
@@ -899,14 +899,14 @@ PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,voi
 		PetscReal      coeffs[8];
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
 
 		//ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC,(void*)data->go_thermal_ic);CHKERRQ(ierr);
 		if (data->model_conf != MT_3DBATHYMETRY) {
-			ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2,PETSC_NULL);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2,NULL);CHKERRQ(ierr);
 		} else {
-			ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2_Spherical,PETSC_NULL);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(daT,temperature,0,EvaluateSubmarineLavaFlow_EnergyIC2_Spherical,NULL);CHKERRQ(ierr);
 		}
 	}
 	
@@ -945,7 +945,7 @@ PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix
 		Vec            temperature;
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 	}
@@ -961,7 +961,7 @@ PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix
 		//const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
 		char mp_file_prefix[PETSC_MAX_PATH_LEN];
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}

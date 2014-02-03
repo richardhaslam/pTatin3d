@@ -40,23 +40,23 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	/* assign defaults */
 	data->max_layers = 100;
 	
-	PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_n_interfaces",&data->n_interfaces,&flg);
+	PetscOptionsGetInt(NULL,"-model_basin_comp_n_interfaces",&data->n_interfaces,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_basin_comp_n_interfaces)");
 	}
     
-	PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_Lx",&data->Lx,&flg);
+	PetscOptionsGetReal(NULL,"-model_basin_comp_Lx",&data->Lx,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_basin_comp_Lx)");
 	}
 	
-	PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_Ly",&data->Ly,&flg);
+	PetscOptionsGetReal(NULL,"-model_basin_comp_Ly",&data->Ly,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the y direction (-model_basin_comp_Ly)");
 	}
     
 	n_int = data->n_interfaces;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_interface_heights_f",data->interface_heights_f,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_basin_comp_interface_heights_f",data->interface_heights_f,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide front interface heights relative from the base of the model including the top and bottom boundaries. Interface heights taken from the top of the slope (-model_basin_comp_interface_heights_f)");
 	}
@@ -67,7 +67,7 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
     }
     
 	n_int = data->n_interfaces;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_interface_heights_b",data->interface_heights_b,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_basin_comp_interface_heights_b",data->interface_heights_b,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide back interface heights relative from the base of the model including the top and bottom boundaries. Interface heights taken from the top of the slope (-model_basin_comp_interface_heights_b)");
 	}
@@ -78,7 +78,7 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
     }    
 	data->Lz = data->interface_heights_f[data->n_interfaces-1];
 
-    PetscOptionsGetIntArray(PETSC_NULL,"-model_basin_comp_layer_res_k",data->layer_res_k,&n_int,&flg);
+    PetscOptionsGetIntArray(NULL,"-model_basin_comp_layer_res_k",data->layer_res_k,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_basin_comp_layer_res_k)");
 	}
@@ -87,7 +87,7 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	}
     
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_eta_f",data->eta_f,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_basin_comp_layer_eta_f",data->eta_f,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list at the front (-model_basin_comp_layer_eta_f)");
 	}
@@ -96,7 +96,7 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	}
     
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_eta_b",data->eta_b,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_basin_comp_layer_eta_b",data->eta_b,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list at the back (-model_basin_comp_layer_eta_b)");
 	}
@@ -105,7 +105,7 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	}	
     
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_rho_f",data->rho_f,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_basin_comp_layer_rho_f",data->rho_f,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list at the front (-model_basin_comp_layer_rho_f)");
 	}
@@ -114,7 +114,7 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	}
 
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_basin_comp_layer_rho_b",data->rho_b,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_basin_comp_layer_rho_b",data->rho_b,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list at the back (-model_basin_comp_layer_rho_b)");
 	}
@@ -136,25 +136,25 @@ PetscErrorCode ModelInitialize_BasinComp(pTatinCtx c,void *ctx)
 	data->perturbation_width = (PetscInt)((2*c->my+1)/4);
     data->layering_type = 0;
 	/* parse from command line or input file */
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_perturbation_width",&data->perturbation_width,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-model_basin_comp_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-model_basin_comp_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-model_basin_comp_perturbation_width",&data->perturbation_width,&flg);CHKERRQ(ierr);
     if (data->perturbation_width > (PetscInt)((2*c->my+1)/2) ){
         data->perturbation_width = (PetscInt)((2*c->my+1)/2);
     }
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_basin_comp_exx",&data->exx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_basin_comp_vx",&data->vx_commpression,&flg);CHKERRQ(ierr);
     
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_basin_comp_layering_type",&data->layering_type,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-model_basin_comp_layering_type",&data->layering_type,&flg);CHKERRQ(ierr);
     /* Data for layering type 1*/
     data->depth = 1.0;
     data->midleslope = data->Ly/4.0;
     data->slope = data->depth/data->midleslope;
     
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_depth",&data->depth,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_midleslope",&data->midleslope,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-model_basin_comp_depth",&data->depth,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-model_basin_comp_midleslope",&data->midleslope,&flg);CHKERRQ(ierr);
     data->slope = 1.0/data->midleslope;
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_slope",&data->slope,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-model_basin_comp_slope",&data->slope,&flg);CHKERRQ(ierr);
 
     
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Basin Compression\"\n");
@@ -319,13 +319,13 @@ PetscErrorCode BasinCompSetMeshGeometry(DM dav, void *ctx)
     
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
     
     /*Layering type 0: the remeshing is already included*/
     if (data->layering_type == 0 ){
-        ierr = PetscMalloc(ny*sizeof(PetscScalar), &dzs);CHKERRQ(ierr);
+        ierr = PetscMalloc1(ny, &dzs);CHKERRQ(ierr);
         
         kinter_max = 0;
         for(interf = 0; interf < n_interfaces-1; interf++){ 
@@ -408,8 +408,8 @@ PetscErrorCode BasinCompRemeshingAccordingToTheInterfaces(DM dav, void *ctx)
     n_interfaces = data->n_interfaces;
     
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
     
     /* Loop again through the layers  to set the perturbation around the layer.*/    
@@ -424,10 +424,10 @@ PetscErrorCode BasinCompRemeshingAccordingToTheInterfaces(DM dav, void *ctx)
         ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_min, kinter_min + 1, 1, &botinterface_da );CHKERRQ(ierr);
         ierr = DMDACreate3dRedundant( dav, si,si+nx, sj,sj+ny, kinter_max, kinter_max+1, 1, &topinterface_da );CHKERRQ(ierr);
         
-        ierr = DMDAGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
+        ierr = DMGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
         ierr = VecGetArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
         
-        ierr = DMDAGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
+        ierr = DMGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
         ierr = VecGetArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
         
         for(i=0; i<nx; i++){
@@ -484,8 +484,8 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
     
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
 
@@ -495,7 +495,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
     kinter = 0;
     attenuation = -log(0.01)/(PetscScalar)(data->perturbation_width);
     
-    MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
+    MPI_Comm_rank(PetscObjectComm((PetscObject)dav),&rank);
 	for(interf = 1; interf < n_interfaces-1; interf++){
 		kinter += 2*layer_res_k[interf-1];
 		PetscPrintf(PETSC_COMM_WORLD,"jinter = %d (max=%d)\n", kinter,N-1 );
@@ -561,7 +561,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
         
         kinter_min = 0;
         kinter_max = 0;
-        MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
+        MPI_Comm_rank(PetscObjectComm((PetscObject)dav),&rank);
         for(interf = 1; interf < n_interfaces-1; interf++){
             DM botinterface_da, topinterface_da;
             Vec botinterface_coords, topinterface_coords;
@@ -570,7 +570,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
             kinter_min = kinter_max;
             kinter_max += 2*layer_res_k[interf-1];
             
-            ierr = PetscMalloc(N*M*sizeof(PetscReal),&rnoise);CHKERRQ(ierr);
+            ierr = PetscMalloc1(N*M,&rnoise);CHKERRQ(ierr);
             ierr = PetscMemzero(rnoise,N*M*sizeof(PetscReal));CHKERRQ(ierr);
             
             ierr = rednoise(rnoise, N*M,time(NULL)*(interf+2));CHKERRQ(ierr);
@@ -602,10 +602,10 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
                 
             }        
 
-            ierr = DMDAGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
+            ierr = DMGetCoordinates( botinterface_da,&botinterface_coords );CHKERRQ(ierr);
             ierr = VecGetArray(botinterface_coords,&botinterface_nodes);CHKERRQ(ierr);
             
-            ierr = DMDAGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
+            ierr = DMGetCoordinates( topinterface_da,&topinterface_coords );CHKERRQ(ierr);
             ierr = VecGetArray(topinterface_coords,&topinterface_nodes);CHKERRQ(ierr);
             
             if ( (kinter_max>=sk) && (kinter_max<sk+nz) ) {
@@ -629,7 +629,7 @@ PetscErrorCode BasinCompSetPerturbedInterfaces(DM dav, void *ctx)
     }else if (data->perturbation_type == 3){/*White noise*/
         kinter = 0;
         
-        MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
+        MPI_Comm_rank(PetscObjectComm((PetscObject)dav),&rank);
         
         for(interf = 1; interf < n_interfaces-1; interf++){
             kinter += 2*layer_res_k[interf-1];
@@ -791,8 +791,8 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_BasinComp(pTatinCtx c,voi
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 
-    ierr = DMDAGetCoordinateDA(dav, &cda);CHKERRQ(ierr);
-    ierr = DMDAGetGhostedCoordinates(dav,&gcoords );CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dav, &cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(dav,&gcoords );CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     
     ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_v,&elnidx_v);CHKERRQ(ierr);
@@ -931,7 +931,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_BasinComp(pTatinCtx c,void *ctx)
 
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, data->interface_heights_f[0],Lz);CHKERRQ(ierr);
 	factor = 0.1;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_basin_comp_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_basin_comp_amp_factor",&factor,NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside BasinCompSetPerturbedInterfaces() */
 	/*if ( (amp < 0.0) || (amp >1.0) ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_basin_comp_amp_factor must be 0 < amp < 1");
@@ -1066,7 +1066,7 @@ PetscErrorCode ModelOutput_BasinComp(pTatinCtx c,Vec X,const char prefix[],void 
 		const int                   nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		//sprintf(name,"%s_mpoints_cell",prefix);
 		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);

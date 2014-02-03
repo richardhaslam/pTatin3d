@@ -77,7 +77,7 @@ PetscErrorCode DMDAEQ1Macro_FetchContext(DM da,DMDAEQ1MacroCtx *ctx)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	container = PETSC_NULL;
+	container = NULL;
 	ierr = PetscObjectQuery((PetscObject)da,DMDAEQ1MacroCtxName,(PetscObject*)&container);CHKERRQ(ierr);
 	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with this DAE",DMDAEQ1MacroCtxName);
 	ierr = PetscContainerGetPointer(container,(void**)ctx);CHKERRQ(ierr);
@@ -778,7 +778,7 @@ PetscErrorCode DMDASetElementType_Q1Macro(DM da)
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
   //da->ops->getelements = DMGetElements_DA_Q1;
 	
@@ -963,7 +963,7 @@ PetscErrorCode  DMDAESetType_Q1Macro(DM da)
 	ierr = _DMDAEQ1Macro_MixedSpace_GetElements3D(da,&nel,&npe,&ctx->element_node_map_mixed_space);CHKERRQ(ierr);
 	
 	/* attach bucket to dm */
-  ierr = PetscContainerCreate(((PetscObject)da)->comm,&container);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)da),&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,(void*)ctx);CHKERRQ(ierr);
 	
 	ierr = PetscObjectCompose((PetscObject)da,DMDAEQ1MacroCtxName,(PetscObject)container);CHKERRQ(ierr);

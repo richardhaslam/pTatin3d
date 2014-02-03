@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -241,7 +241,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,NULL);CHKERRQ(ierr);
 
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -250,7 +250,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	ierr = PCFieldSplitSetIS(pc,"u",is[0]);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"p",is[1]);CHKERRQ(ierr);
 	
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
 	
 	
@@ -266,7 +266,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"stokesmp");CHKERRQ(ierr);
 	}
 	
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	
 	
@@ -355,7 +355,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
@@ -404,9 +404,9 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	
 	/* define interpolation operators */
 	ierr = PetscMalloc(sizeof(Mat)*nlevels,&interpolatation);CHKERRQ(ierr);
-	interpolatation[0] = PETSC_NULL;
+	interpolatation[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	/* work vector for solution and residual */
@@ -430,7 +430,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,NULL);CHKERRQ(ierr);
 	
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_TRUE);CHKERRQ(ierr); /* OUCH - GALERKIN */
 		
@@ -461,7 +461,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	}
 	
 	
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	
 	
 	
@@ -477,7 +477,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"stokesmp");CHKERRQ(ierr);
 	}
 	
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	
 	
@@ -581,7 +581,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
@@ -630,9 +630,9 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	
 	/* define interpolation operators */
 	ierr = PetscMalloc(sizeof(Mat)*nlevels,&interpolatation);CHKERRQ(ierr);
-	interpolatation[0] = PETSC_NULL;
+	interpolatation[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	/* define material properties on gauss points */
@@ -653,7 +653,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 			ierr = DMCreateGlobalVector(scalarDA[k],&sca[k]);CHKERRQ(ierr);
 		}
 		
-		ierr = VecSetRandom(sca[nlevels-1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecSetRandom(sca[nlevels-1],NULL);CHKERRQ(ierr);
 		for (k=nlevels-1; k>=1; k--) {
 			ierr = MatMAIJRedimension(interpolatation[k],1,&R1[k]);CHKERRQ(ierr);
 			ierr = MatRestrict(R1[k],sca[k],sca[k-1]);CHKERRQ(ierr);
@@ -670,7 +670,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			mp_std    = PField_std->data; /* should write a function to do this */
 			mp_stokes = PField_stokes->data; /* should write a function to do this */
 			
@@ -722,7 +722,8 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	for (k=0; k<nlevels-1; k++) {
 		Mat Auu;
 		
-		ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+		ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
 		ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
@@ -730,7 +731,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 		
 		operatorA11[k] = Auu;
 	}
-	operatorA11[nlevels-1] = PETSC_NULL;
+	operatorA11[nlevels-1] = NULL;
 	
 	/* Fetch from the nest */
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
@@ -748,7 +749,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatinStokesKSPMonitorBlocks,(void*)user,NULL);CHKERRQ(ierr);
 	
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -767,10 +768,10 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation[k]);CHKERRQ(ierr);
@@ -786,7 +787,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 		
 	}
 	
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	
 	
 	
@@ -802,7 +803,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"stokesmp");CHKERRQ(ierr);
 	}
 	
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	for (k=1; k<nlevels; k++) {
 		ierr = MatDestroy(&R1[k]);CHKERRQ(ierr);
@@ -934,7 +935,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -988,13 +989,13 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
 	
 	/* Define interpolation operators for velocity space */
-	interpolatation_v[0] = PETSC_NULL;
+	interpolatation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 
 	/* Define interpolation operators for scalar space */
-	interpolatation_eta[0] = PETSC_NULL;
+	interpolatation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolatation_v[k],1,&interpolatation_eta[k]);CHKERRQ(ierr);
 	}
@@ -1032,7 +1033,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -1051,7 +1052,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -1088,7 +1089,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		ierr = MatShellGetMatStokesMF(A,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-		mf->daU = PETSC_NULL;
+		mf->daU = NULL;
 	}
 
 	/* B operator */
@@ -1101,7 +1102,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 
 		/* Schur complement */
-		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
@@ -1117,7 +1119,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
 	
 		/* nest */
-		bA[0][0] = PETSC_NULL; bA[0][1] = Aup;
+		bA[0][0] = NULL; bA[0][1] = Aup;
 		bA[1][0] = Apu;        bA[1][1] = Spp;
 	
 		/* Set fine A11 into nest */
@@ -1144,7 +1146,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	for (k=0; k<nlevels; k++) {
 		Mat Auu;
 		
-		ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+		ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		
@@ -1165,7 +1168,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 
 		switch (level_type[k]) {
@@ -1177,7 +1180,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
@@ -1209,7 +1213,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;				
+				mf->daU = NULL;				
 
 				operatorA11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
@@ -1223,7 +1227,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;				
+				mf->daU = NULL;				
 				
 				operatorB11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
@@ -1286,8 +1290,8 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
@@ -1305,10 +1309,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation_v[k]);CHKERRQ(ierr);
@@ -1324,7 +1328,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		}
 	}
 	
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
 
 	

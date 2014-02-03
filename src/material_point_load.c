@@ -235,8 +235,8 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 	PetscErrorCode ierr;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
@@ -319,7 +319,7 @@ PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,Pe
 	ierr = MaterialPointStdRemoval(db,start,N1,-1);CHKERRQ(ierr);
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,n_mp_points);CHKERRQ(ierr);
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,n_mp_points);CHKERRQ(ierr);
 	
 	
 	free(coords_mp);

@@ -189,7 +189,7 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
-	ierr = PetscOptionsGetReal(PETSC_NULL,option,val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,option,val,&flg);CHKERRQ(ierr);
 	if (essential) {
 		if (!flg) {
 			if (!default_opt) {
@@ -334,8 +334,8 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
@@ -354,7 +354,7 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 		_value += el_vol;
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPI_SUM,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -389,7 +389,7 @@ PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 	Lz = PetscMin(Lz,min_dl[0]);
 	Lz = PetscMin(Lz,min_dl[1]);
 
-	PetscOptionsGetBool(PETSC_NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,NULL);
 	if (geom_max) {
 		Lz = 1.0e-32;
 		Lz = PetscMax(Lz,max_dl[0]);
@@ -424,8 +424,8 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscFunctionBegin;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
@@ -453,8 +453,8 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPI_MAX,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -561,8 +561,8 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	ierr = DMDAGetGlobalIndices(dav,0,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&el_nidx);CHKERRQ(ierr);

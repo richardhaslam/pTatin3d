@@ -116,9 +116,9 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	
 	ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
 
-	ierr = KSPRegisterDynamic("chebychevrn","./","KSPCreate_ChebychevRN",KSPCreate_ChebychevRN);CHKERRQ(ierr);
-	ierr = PCRegisterDynamic("semiredundant","./","PCCreate_SemiRedundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
-	ierr = PCRegisterDynamic("wsmp","./","PCCreate_WSMP",PCCreate_WSMP);CHKERRQ(ierr);
+	ierr = KSPRegister("chebychevrn",KSPCreate_ChebychevRN);CHKERRQ(ierr);
+	ierr = PCRegister("semiredundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
+	ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
 
 	
 	ierr = pTatinWritePreamble();CHKERRQ(ierr);

@@ -63,7 +63,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturb)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	ierr = PetscOptionsGetScalar(PETSC_NULL,"-perturb",&perturb,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetScalar(NULL,"-perturb",&perturb,&flg);CHKERRQ(ierr);
 	
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
@@ -79,8 +79,8 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturb)
 	ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 	ierr = PetscRandomSetInterval(rand,-1.0,1.0);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	for(k=sk;k<sk+nz;k++) {
 		for(j=sj;j<sj+ny;j++) {
@@ -120,14 +120,14 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	PetscFunctionBegin;
 	
 	/* create da1 */
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 
 	/* set an aspect ratio box, then perturb the coords */	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 
 	ierr = VecStrideScale(coords,0,10.0);CHKERRQ(ierr);
 	ierr = VecStrideScale(coords,1,20.0);CHKERRQ(ierr);
@@ -150,8 +150,8 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = DMDADuplicateLayout(da,5,PETSC_DECIDE,PETSC_DECIDE,&da2);CHKERRQ(ierr);
 	
 	/* output */
-	ierr = DMDAViewPetscVTK(da, PETSC_NULL, "test_dmda_dup_1.vtk");CHKERRQ(ierr);
-	ierr = DMDAViewPetscVTK(da2, PETSC_NULL, "test_dmda_dup_2.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTK(da, NULL, "test_dmda_dup_1.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTK(da2, NULL, "test_dmda_dup_2.vtk");CHKERRQ(ierr);
 
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	ierr = DMDestroy(&da2);CHKERRQ(ierr);
@@ -165,12 +165,12 @@ int main( int argc,char **argv )
 	PetscErrorCode ierr;
 	PetscInt mx,my,mz;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	mx = my = mz = 10;
-	PetscOptionsGetInt( PETSC_NULL, "-mx", &mx, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-my", &my, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-mz", &mz, 0 );
+	PetscOptionsGetInt( NULL, "-mx", &mx, 0 );
+	PetscOptionsGetInt( NULL, "-my", &my, 0 );
+	PetscOptionsGetInt( NULL, "-mz", &mz, 0 );
 	
 	ierr = test_DMDADuplicateLayout(mx,my,mz);CHKERRQ(ierr);
 	ierr = pTatinFinalize();CHKERRQ(ierr);

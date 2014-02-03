@@ -107,7 +107,7 @@ PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
   if (ctx->Xold) {      ierr = VecDestroy(&ctx->Xold);CHKERRQ(ierr); }
 	if (ctx) { ierr = PetscFree(ctx);CHKERRQ(ierr); }
 	
-	*E = PETSC_NULL;
+	*E = NULL;
 	PetscFunctionReturn(0);
 }
 
@@ -232,7 +232,7 @@ PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,Pe
 	/* create aux vectors */
 	ierr = DMCreateGlobalVector(energy->daT,&energy->Told);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinateDA(energy->daT,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(energy->daT,&cda);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(cda,&energy->u_minus_V);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(cda,&energy->Xold);CHKERRQ(ierr);
 	
@@ -300,7 +300,7 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreEnergy(PetscInt nsd,PetscInt 
 	if (ncells!=0) {
 		
 		DataBucketCreate(&Q->properties_db);
-		DataBucketRegisterField(Q->properties_db,QPntVolCoefEnergy_classname, sizeof(QPntVolCoefEnergy),PETSC_NULL);
+		DataBucketRegisterField(Q->properties_db,QPntVolCoefEnergy_classname, sizeof(QPntVolCoefEnergy),NULL);
 		DataBucketFinalize(Q->properties_db);
 		
 		DataBucketSetInitialSizes(Q->properties_db,Q->npoints*ncells,1);
@@ -347,7 +347,7 @@ PetscErrorCode PhysCompAddMaterialPointCoefficients_Energy(DataBucket db)
 {
 	PetscFunctionBegin;
 	/* register marker structures here */
-	DataBucketRegisterField(db,MPntPEnergy_classname,sizeof(MPntPEnergy),PETSC_NULL);
+	DataBucketRegisterField(db,MPntPEnergy_classname,sizeof(MPntPEnergy),NULL);
 
 	PetscFunctionReturn(0);
 }

@@ -34,7 +34,7 @@
 
 #define _GNU_SOURCE
 #include "petsc.h"
-#include <private/snesimpl.h>
+#include <petsc-private/snesimpl.h>
 
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
@@ -121,7 +121,7 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
 		for (e=0; e<HEX_EDGES; e++) {
 			if (user->surfQ[e]) { 
 				ierr = SurfaceQuadratureDestroy(&user->surfQ[e]);CHKERRQ(ierr);
-				user->surfQ[e] = PETSC_NULL;
+				user->surfQ[e] = NULL;
 			}
 		}
 		ierr = PetscFree(user->surfQ);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
   if (user->dav) { ierr = DMDestroy(&user->dav);CHKERRQ(ierr); }
 	if (user) { ierr = PetscFree(user);CHKERRQ(ierr); }
 	
-	*ctx = PETSC_NULL;
+	*ctx = NULL;
 	PetscFunctionReturn(0);
 }
 
@@ -158,7 +158,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 #if 0
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, pbasis_dofs,0, 0,0,0, &dap );CHKERRQ(ierr);
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, pbasis_dofs,0, 0,0,0, &dap );CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dap,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -177,7 +177,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	
 	/* velocity */
 	vbasis_dofs = 3;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
 	ierr = PetscFree(lxv);CHKERRQ(ierr);
 	ierr = PetscFree(lyv);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 
 	/* velocity */
 	vbasis_dofs = 3;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,2, PETSC_NULL,PETSC_NULL,PETSC_NULL, &dav );CHKERRQ(ierr);
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,2, NULL,NULL,NULL, &dav );CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -195,7 +195,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
 	
@@ -254,7 +254,7 @@ PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx)
 	ierr = DMDABCListCreate(dav,&ctx->u_bclist);CHKERRQ(ierr);
 	
 	/* pressure bc's */
-	ctx->p_bclist = PETSC_NULL;
+	ctx->p_bclist = NULL;
 	
 	PetscFunctionReturn(0);
 }
@@ -433,7 +433,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	MZ = ctx->mz;
 	
 	vbasis_dofs = 3;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, vbasis_dofs,2, lxv,lyv,lzv, &dav );CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
 	ierr = PetscFree(lxv);CHKERRQ(ierr);
 	ierr = PetscFree(lyv);CHKERRQ(ierr);
@@ -458,7 +458,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	MZ = ctx->mz;
 	
 	pbasis_dofs = P_BASIS_FUNCTIONS;
-	ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
 	
@@ -523,8 +523,8 @@ PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	/* coords */
 	/* Why is this even here? - DMDAPackDataToFile() writes out the coordinates */
 	if (fname_coors) {
-		ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
-		ierr = PetscViewerBinaryOpen( ((PetscObject)dav)->comm,fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+		ierr = PetscViewerBinaryOpen( PetscObjectComm((PetscObject)dav),fname_coors,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 		ierr = VecView(coords,viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
@@ -604,7 +604,7 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 	if (ncells!=0) {
 		
 		DataBucketCreate(&Q->properties_db);
-		DataBucketRegisterField(Q->properties_db,QPntVolCoefStokes_classname, sizeof(QPntVolCoefStokes),PETSC_NULL);
+		DataBucketRegisterField(Q->properties_db,QPntVolCoefStokes_classname, sizeof(QPntVolCoefStokes),NULL);
 		DataBucketFinalize(Q->properties_db);
 		
 		DataBucketSetInitialSizes(Q->properties_db,Q->npoints*ncells,1);
@@ -692,19 +692,19 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 	// note: the parallel viewer wont work if db passed in is null //
 	if (nfaces != 0) {
 		DataBucketCreate(&Q->properties_db);
-		DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),PETSC_NULL);
+		DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),NULL);
 		DataBucketFinalize(Q->properties_db);
 		
 		DataBucketSetInitialSizes(Q->properties_db,Q->ngp*nfaces,1);
 		
 		DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	} else {
-		Q->properties_db = PETSC_NULL;
+		Q->properties_db = NULL;
 	}
 	*/
 
 	DataBucketCreate(&Q->properties_db);
-	DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),PETSC_NULL);
+	DataBucketRegisterField(Q->properties_db,QPntSurfCoefStokes_classname, sizeof(QPntSurfCoefStokes),NULL);
 	DataBucketFinalize(Q->properties_db);
 		
 	if (nfaces != 0) {
@@ -713,7 +713,7 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 		DataBucketSetInitialSizes(Q->properties_db,1,1);
         DataBucketSetSizes(Q->properties_db,0,-1);
 	}
-//	DataBucketView(((PetscObject)da)->comm, Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+//	DataBucketView(PetscObjectComm((PetscObject)da), Q->properties_db,"SurfaceGaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 	
 	*quadrature = Q;
   PetscFunctionReturn(0);
@@ -751,8 +751,8 @@ PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da
 	PetscFunctionBegin;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
@@ -850,8 +850,8 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
 	if (Q->nfaces == 0) { PetscFunctionReturn(0); }
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
@@ -927,7 +927,7 @@ PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSu
 		quadraturepoint_data = PField->data;
 		*coeffs = quadraturepoint_data;
 	} else {
-		*coeffs = PETSC_NULL;
+		*coeffs = NULL;
 	}
 	
   PetscFunctionReturn(0);
@@ -944,7 +944,7 @@ PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfC
 	if (Q->nfaces) {
 		*cell = &coeffs[cidx*Q->ngp];
 	} else {
-		*cell = PETSC_NULL;
+		*cell = NULL;
 	}
   PetscFunctionReturn(0);
 }
@@ -963,7 +963,7 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 	
 	ierr = PetscMalloc(sizeof(SurfaceQuadrature)*HEX_EDGES,&ctx->surfQ);CHKERRQ(ierr);
 	for (face_index=0; face_index<HEX_EDGES; face_index++) {
-		ctx->surfQ[face_index] = PETSC_NULL;
+		ctx->surfQ[face_index] = NULL;
 	}
 
 	for (face_index=0; face_index<HEX_EDGES; face_index++) {
@@ -983,7 +983,7 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 		char name[256];
 
 		sprintf(name,"SurfaceGaussLegendre StokesCoefficients[face %d]",face_index);
-    DataBucketView(((PetscObject)dav)->comm, ctx->surfQ[face_index]->properties_db,name,DATABUCKET_VIEW_STDOUT);
+    DataBucketView(PetscObjectComm((PetscObject)dav), ctx->surfQ[face_index]->properties_db,name,DATABUCKET_VIEW_STDOUT);
 	}
 	
     
@@ -1043,8 +1043,8 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 	if (it && !*reason) {	
     ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
 
-		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (U): %14.12e ?<? %14.12e \n",(double)snormUP[0]/(double)xnormUP[0],(double)snes->xtol);CHKERRQ(ierr);
-		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (P): %14.12e ?<? %14.12e \n",(double)snormUP[1]/(double)xnormUP[1],(double)snes->xtol);CHKERRQ(ierr);
+		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (U): %14.12e ?<? %14.12e \n",(double)snormUP[0]/(double)xnormUP[0],(double)snes->stol);CHKERRQ(ierr);
+		ierr = PetscInfo2(snes,"ConvergenceTest : small update length (P): %14.12e ?<? %14.12e \n",(double)snormUP[1]/(double)xnormUP[1],(double)snes->stol);CHKERRQ(ierr);
 
 		ierr = PetscInfo2(snes,"ConvergenceTest : function norm %14.12e ?<? %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
 		
@@ -1052,12 +1052,12 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 		alpha[0] = 1.0;
 		alpha[1] = 0.0;
 		if ( snormUP[0] < alpha[0] * stol * xnormUP[0] ) {
-			*reason = SNES_CONVERGED_PNORM_RELATIVE;
-      ierr = PetscInfo3(snes,"Converged due to small update length (U): %14.12e < %14.12e * %14.12e\n",(double)snormUP[0],(double)snes->xtol,(double)xnormUP[0]);CHKERRQ(ierr);
+			*reason = SNES_CONVERGED_SNORM_RELATIVE;
+      ierr = PetscInfo3(snes,"Converged due to small update length (U): %14.12e < %14.12e * %14.12e\n",(double)snormUP[0],(double)snes->stol,(double)xnormUP[0]);CHKERRQ(ierr);
 		}
 		if ( snormUP[1] < alpha[1] * stol * xnormUP[1] ) {
-			*reason = SNES_CONVERGED_PNORM_RELATIVE;
-      ierr = PetscInfo3(snes,"Converged due to small update length (P): %14.12e < %14.12e * %14.12e\n",(double)snormUP[1],(double)snes->xtol,(double)xnormUP[1]);CHKERRQ(ierr);
+			*reason = SNES_CONVERGED_SNORM_RELATIVE;
+      ierr = PetscInfo3(snes,"Converged due to small update length (P): %14.12e < %14.12e * %14.12e\n",(double)snormUP[1],(double)snes->stol,(double)xnormUP[1]);CHKERRQ(ierr);
 		}
 	
 		if (fnorm <= snes->ttol) {
@@ -1083,7 +1083,7 @@ PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user)
 	PetscPrintf(PETSC_COMM_WORLD,"Activating \"ConvergenceTest_UPstol\" on SNES (%s)\n",prefix);
 	
 	//ierr = SNESSetApplicationContext(snes,(void*)user);CHKERRQ(ierr);
-	ierr = SNESSetConvergenceTest(snes,SNESStokes_ConvergenceTest_UPstol,(void**)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = SNESSetConvergenceTest(snes,SNESStokes_ConvergenceTest_UPstol,(void**)user,NULL);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

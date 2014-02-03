@@ -128,7 +128,7 @@ PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
 		sprintf(fieldname,"%s",name);
 	}
 
-  ierr = PetscViewerCreate(((PetscObject)x)->comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO	
@@ -166,7 +166,7 @@ PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
 #endif
 	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 	
-//	ierr = VecCreate(((PetscObject)viewer)->comm,x);CHKERRQ(ierr);
+//	ierr = VecCreate(PetscObjectComm((PetscObject)viewer),x);CHKERRQ(ierr);
 	ierr = VecLoad(x,viewer);CHKERRQ(ierr);
 //	ierr = VecSetBlockSize(*x,6);CHKERRQ(ierr);
 	ierr = PetscOptionsClearValue("-vecload_block_size"); CHKERRQ(ierr);
@@ -192,11 +192,11 @@ PetscErrorCode test_pTatinVecFieldWrite(void)
 
 	/* create the da */
 	nx = ny = nz = 10;
-	PetscOptionsGetInt( PETSC_NULL, "-mx", &nx, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-my", &ny, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-mz", &nz, 0 );
+	PetscOptionsGetInt( NULL, "-mx", &nx, 0 );
+	PetscOptionsGetInt( NULL, "-my", &ny, 0 );
+	PetscOptionsGetInt( NULL, "-mz", &nz, 0 );
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -206,7 +206,7 @@ PetscErrorCode test_pTatinVecFieldWrite(void)
 	
 	/* create a field */
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = VecSetRandom( x, PETSC_NULL );CHKERRQ(ierr);
+	ierr = VecSetRandom( x, NULL );CHKERRQ(ierr);
 	ierr = VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );CHKERRQ(ierr);
 	ierr = VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );CHKERRQ(ierr);
 	ierr = VecMin( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );CHKERRQ(ierr);
@@ -267,13 +267,13 @@ PetscErrorCode test_DMDACheckPoint(void)
 	
 	PetscFunctionBegin;
 	checkpoint = PETSC_FALSE;
-	PetscOptionsGetBool( PETSC_NULL, "-checkpoint", &checkpoint, &flg );
+	PetscOptionsGetBool( NULL, "-checkpoint", &checkpoint, &flg );
 	if( checkpoint == PETSC_TRUE ) {
 		ierr = test_pTatinVecFieldWrite();CHKERRQ(ierr);
 	}
 	
 	restart = PETSC_FALSE;
-	PetscOptionsGetBool( PETSC_NULL, "-restart", &restart, &flg );
+	PetscOptionsGetBool( NULL, "-restart", &restart, &flg );
 	if( restart == PETSC_TRUE ) {
 		ierr = test_pTatinVecFieldLoad();CHKERRQ(ierr);
 	}
@@ -294,7 +294,7 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	
 	PetscFunctionBegin;
 
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	/* dav,dap */
 	if (prefix) {
 		sprintf(f1,"%s/pt3d_stokes.dmda-velocity%s",outputpath,prefix);
@@ -306,7 +306,7 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
 	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f3 );
 	
-	ierr = PhysCompSaveMesh_Stokes3d(ctx,f1,f3,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PhysCompSaveMesh_Stokes3d(ctx,f1,f3,NULL);CHKERRQ(ierr);
 	
 	
 	ierr = DMCompositeGetAccess(ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	ierr = pTatinVecFieldWrite(Xp,f1,zip_file);CHKERRQ(ierr);
 
 	ierr = DMCompositeRestoreAccess(ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	tl = t1-t0;
 	ierr = MPI_Allreduce(&tl,&tg,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);	
 
@@ -370,13 +370,13 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 	PetscFunctionBegin;
 
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(outputpath,".");
 	}
 
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
 	}
@@ -386,7 +386,7 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 	sprintf(xname,"%s/%s.dmda-X",outputpath,prefix);
 
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg) { 
 		sprintf(vname,"%s%s",vname,suffix);
 		sprintf(pname,"%s%s",pname,suffix);
@@ -466,7 +466,7 @@ PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char out
 	PetscFunctionBegin;
 	
 	output_type = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-output_type",&output_type,0);
+	PetscOptionsGetInt(NULL,"-output_type",&output_type,0);
 	switch (output_type) {
 		case 0:
 			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
@@ -502,13 +502,13 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 	PetscFunctionBegin;
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(outputpath,".");
 	}
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
 	}
@@ -519,7 +519,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 	sprintf(xpname,"%s/%s.dmda-Xp",outputpath,prefix);
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg) { 
 		//sprintf(vname,"%s%s",vname,suffix);
 		//sprintf(pname,"%s%s",pname,suffix);
@@ -598,7 +598,7 @@ PetscErrorCode PhysCompEnergyWrite_DM_X(PhysCompEnergy ctx,Vec X,const char outp
 	PetscFunctionBegin;
 	
 	output_type = 0;
-	PetscOptionsGetInt(PETSC_NULL,"-output_type",&output_type,0);
+	PetscOptionsGetInt(NULL,"-output_type",&output_type,0);
 	switch (output_type) {
 		case 0:
 			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
@@ -630,13 +630,13 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	PetscFunctionBegin;
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(outputpath,".");
 	}
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
 	}
@@ -645,7 +645,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	sprintf(tname,"%s/%s.dmda-XT",outputpath,prefix);
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg) { 
 		_strlcat(dmdaname,suffix,PETSC_MAX_PATH_LEN-1);
 		_strlcat(tname,suffix,PETSC_MAX_PATH_LEN-1);
@@ -682,7 +682,7 @@ int main(int nargs,char *args[])
 	
 	ierr = pTatinInitialize(&nargs,&args,0,ptatin_driver_help);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 
 	if (write_stokes) {
 		ierr = pTatinLoadFromCheckpointWriteToVTS_Stokes();CHKERRQ(ierr);
@@ -698,7 +698,7 @@ int main(int nargs,char *args[])
 	}
 	
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	lt = t1-t0;
 	ierr = MPI_Allreduce(&lt,&gt,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Stokes: CPU time %1.4e (sec)\n", gt);

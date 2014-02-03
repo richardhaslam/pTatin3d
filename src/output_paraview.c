@@ -294,8 +294,8 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -426,8 +426,8 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const
 	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -581,8 +581,8 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -732,8 +732,8 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,co
 	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);

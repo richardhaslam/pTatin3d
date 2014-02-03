@@ -56,11 +56,11 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 		daf = da[L];
 		dac = da[L-1];
 		
-		ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinateDA(daf,&cdaf);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
 		
-		ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 		
 		ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 		ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -88,11 +88,11 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(daf,&cdaf);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dac,&cdac);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daf,&cdaf);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dac,&coordsc);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 	
 	ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
 	ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

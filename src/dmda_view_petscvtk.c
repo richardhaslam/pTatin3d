@@ -48,7 +48,7 @@ PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[])
 	
 	
 	PetscFunctionBegin;
-	ierr = PetscViewerASCIIOpen(((PetscObject)(da))->comm, name, &vv);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), name, &vv);CHKERRQ(ierr);
 	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 
 	/* view mesh */
@@ -58,7 +58,7 @@ PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[])
 	/* if the vector is valid, write it out - else create an empty field */
 	if (field) {
 		const char *name;
-		name = PETSC_NULL;
+		name = NULL;
 		/* temp work around - calling GetName forces a name to be inserted if you isn't there 
 		- in parallel an error will occur if [1]PETSC ERROR: VecView_MPI_DA() line 464 in src/dm/impls/da/gr2.c
 		if the name is null

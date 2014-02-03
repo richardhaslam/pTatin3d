@@ -117,7 +117,7 @@ PetscErrorCode BCListDestroy(BCList *list)
 	
 	ierr = DMDestroy(&ll->dm);CHKERRQ(ierr);
 	ierr = PetscFree(ll);CHKERRQ(ierr);
-	*list = PETSC_NULL;
+	*list = NULL;
 	PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -142,8 +142,8 @@ PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_loca
 	ierr = BCListInitialize(list);CHKERRQ(ierr);
 	
 	mem_usage = mem_usage * 1.0e-6;
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,((PetscObject)list->dm)->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,((PetscObject)list->dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	PetscFunctionReturn(0);
@@ -547,8 +547,8 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
@@ -589,8 +589,8 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
@@ -652,8 +652,8 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (!coords) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Coordinates must be set"); }
 	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	
@@ -876,7 +876,7 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	}
 	F->L = count;
 	
-	ierr = MPI_Comm_size(((PetscObject)std->dm)->comm,&nproc);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)std->dm),&nproc);CHKERRQ(ierr);
 	if (nproc==1) {
 		F->vals_local   = F->vals_global;
 		F->dofidx_local = F->dofidx_global;
@@ -908,8 +908,8 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	}
 	
 	mem_usage = mem_usage * 1.0e-6;
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,((PetscObject)std->dm)->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,((PetscObject)std->dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	
@@ -997,8 +997,8 @@ PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;

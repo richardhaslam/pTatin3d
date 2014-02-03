@@ -63,7 +63,7 @@ PetscErrorCode DMDAEDestroy(DMDAE *dae)
 	if (!dae){ PetscFunctionReturn(0); }
 	d = (*dae);
 	ierr = PetscFree(d);CHKERRQ(ierr);
-	*dae = PETSC_NULL;
+	*dae = NULL;
 	
 	PetscFunctionReturn(0);
 }

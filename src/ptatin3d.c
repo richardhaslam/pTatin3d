@@ -32,7 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 #define _GNU_SOURCE
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -126,7 +126,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	grav[2] = 0.0;
 	ncomponents = 3;
 	flg = PETSC_FALSE;
-	PetscOptionsGetRealArray(PETSC_NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
+	PetscOptionsGetRealArray(NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
 	ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -146,7 +146,7 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	static char    *pvdfilename;
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
 
@@ -188,7 +188,7 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	UP = X;
 	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -208,7 +208,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	static char    *pvdfilename;
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
 		
@@ -233,7 +233,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 			asprintf(&vtkfilename, "v.pvts");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, PETSC_NULL);CHKERRQ(ierr);
+		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, NULL);CHKERRQ(ierr);
 		free(vtkfilename);
 	}
 	
@@ -248,7 +248,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	UP = X;
 	ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -269,7 +269,7 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	char           f3[PETSC_MAX_PATH_LEN];
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
 		
@@ -311,7 +311,7 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		//sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
 		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
 	}
-	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,NULL);CHKERRQ(ierr);
 	
 	/* dump the vectors */
 	{
@@ -338,7 +338,7 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	}	
 	
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -359,7 +359,7 @@ PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 	
 	PetscFunctionBegin;
 	
-	ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
 	ierr = DMDAGetNeighbors(da,&neighborranks);CHKERRQ(ierr);
 	
 	neighborcount = 0;
@@ -371,15 +371,15 @@ PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 		}
 	}
 	
-	PetscGetTime(&t0);
-	de = DataExCreate(((PetscObject)da)->comm,0);
+	PetscTime(&t0);
+	de = DataExCreate(PetscObjectComm((PetscObject)da),0);
 	//	de = DataExCreate(PETSC_COMM_WORLD,0);
 	ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
 	for (i=0; i<neighborcount; i++) {
 		ierr = DataExTopologyAddNeighbour(de,neighborranks2[i]);CHKERRQ(ierr);
 	}
 	ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(de->comm,"[[SwarmDMDA3dDataExchangerCreate: time = %1.4e (sec)]]\n",t1-t0);
 	
 	*_de = de;
@@ -401,17 +401,17 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 	
 	PetscFunctionBegin;
 	/* register marker structures here */
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	DataBucketCreate(&db);
-	DataBucketRegisterField(db,MPntStd_classname,    sizeof(MPntStd),PETSC_NULL);
-	DataBucketRegisterField(db,MPntPStokes_classname,sizeof(MPntPStokes),PETSC_NULL);
+	DataBucketRegisterField(db,MPntStd_classname,    sizeof(MPntStd),NULL);
+	DataBucketRegisterField(db,MPntPStokes_classname,sizeof(MPntPStokes),NULL);
 	DataBucketFinalize(db);
-    DataBucketRegisterField(db,MPntPStokesPl_classname,sizeof(MPntPStokesPl),PETSC_NULL);
+    DataBucketRegisterField(db,MPntPStokesPl_classname,sizeof(MPntPStokesPl),NULL);
 	DataBucketFinalize(db);
 	
 	/* Choose type of projection (for eta and rho) */
 	ctx->coefficient_projection_type = 1;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&flg);CHKERRQ(ierr);
 	switch (ctx->coefficient_projection_type) {
 		case -1:
 			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using null projection\n");
@@ -440,10 +440,10 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 	/* set initial size */
   ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	DataBucketSetInitialSizes(db,lmx*lmy*lmz*2*2*2,1000);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm initialization: %1.4lf (sec)]]\n", t1-t0);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	{
 		/* defaults for lattice layout */
 		PetscInt   Nxp[] = {2,2,2}; /* change with -lattice_layout_N{x,y,z} */
@@ -453,15 +453,15 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 		
 		PetscInt mplayout = 0;
 		
-		PetscOptionsGetInt(PETSC_NULL,"-mp_layout",&mplayout,PETSC_NULL);
+		PetscOptionsGetInt(NULL,"-mp_layout",&mplayout,NULL);
 		if (mplayout==0) {
 			ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
 		} else if (mplayout==1) {
 			ierr = SwarmMPntStd_CoordAssignment_RandomLayout3d(dav,nPerCell,db);CHKERRQ(ierr);
 		}
 	}
-	PetscGetTime(&t1);
-	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	PetscTime(&t1);
+	DataBucketGetSizes(db,&npoints,NULL,NULL);
 	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm->coordinate assignment: %d points : %1.4lf (sec)]]\n", npoints,t1-t0);
 	
 	
@@ -495,8 +495,8 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 	db = ctx->materialpoint_db;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
@@ -551,7 +551,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
 		asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath);
@@ -583,7 +583,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 
 	PetscFunctionReturn(0);
@@ -601,15 +601,15 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	
 	PetscFunctionBegin;
 	
-  ierr = PetscNew(struct _p_pTatinCtx,&user);CHKERRQ(ierr);
+  ierr = PetscNew(&user);CHKERRQ(ierr);
 	
 	
 	/* init */
-	user->stokes_ctx = PETSC_NULL;
-	user->energy_ctx = PETSC_NULL;
-//	user->coords_ctx = PETSC_NULL;
+	user->stokes_ctx = NULL;
+	user->energy_ctx = NULL;
+//	user->coords_ctx = NULL;
   
-	user->pack     = PETSC_NULL; /* DM composite for velocity and pressure */
+	user->pack     = NULL; /* DM composite for velocity and pressure */
 	
 	/* set defaults */
 	user->restart_from_file         = PETSC_FALSE;
@@ -652,7 +652,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	
 	/* create output directory */
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(user->outputpath,"./output");
 	}
@@ -716,7 +716,7 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 
 	ierr = PetscFree(user);CHKERRQ(ierr);
 	
-	*ctx = PETSC_NULL;
+	*ctx = NULL;
 	
 	PetscFunctionReturn(0);
 }
@@ -762,42 +762,42 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 	PetscErrorCode ierr;
 	
 	/* parse options */
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
-	flg = PETSC_FALSE; ierr = PetscOptionsGetInt(PETSC_NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
+	flg = PETSC_FALSE; ierr = PetscOptionsGetInt(NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
 	if (flg) {
 		ctx->mx = mx3;
 		ctx->my = mx3;
 		ctx->mz = mx3;
 	}
 	
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(ctx->outputpath,"./output");
 	}
 	ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
 	
 	/* checkpointing */
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
 	
 	/* time stepping */
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
 	{
 		PetscReal constant_dt;
 		
-		ierr = PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
 		if (flg) {
 			ctx->use_constant_dt = PETSC_TRUE; 
 			ctx->constant_dt     = constant_dt;
@@ -826,7 +826,7 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 	PetscFunctionBegin;
 	
 	flgname = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
 	if (flgname) {
 		ierr = pTatinModelGetByName(modelname,&model);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: -ptatin_model \"%s\" was detected\n",model->model_name);
@@ -915,14 +915,14 @@ PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	 
 	/* zero out any pointers */
-	cc->stokes_ctx = PETSC_NULL;
-	cc->energy_ctx = PETSC_NULL;
-	cc->materialpoint_db = PETSC_NULL;
-	cc->materialpoint_ex = PETSC_NULL;
-	cc->material_constants = PETSC_NULL;
-	cc->model = PETSC_NULL;
-	cc->model_data = PETSC_NULL;
-	cc->log = PETSC_NULL;
+	cc->stokes_ctx = NULL;
+	cc->energy_ctx = NULL;
+	cc->materialpoint_db = NULL;
+	cc->materialpoint_ex = NULL;
+	cc->material_constants = NULL;
+	cc->model = NULL;
+	cc->model_data = NULL;
+	cc->log = NULL;
 
 	*ctx = cc;
 	PetscFunctionReturn(0);
@@ -1114,12 +1114,12 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
 		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
 		// call checkpoint routine //
-		ierr = pTatin3dCheckpoint(ctx,X,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
 	}
 	
 	/* -------------------------------------------------------------------- */
 	/* check three - look at cpu time and decide if we need to write or not */
-	PetscGetTime(&current_cpu_time);
+	PetscTime(&current_cpu_time);
 	ierr = MPI_Allreduce(&current_cpu_time,&max_current_cpu_time,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 	
@@ -1296,9 +1296,9 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	
 	PetscFunctionBegin;
 	
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_TRUE) {
 		ctx->restart_from_file = PETSC_TRUE;
 	}	
@@ -1310,7 +1310,7 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 
 	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatin3dRestart: Requires you specify a directory where the checkpoint files are locaated (-restart_directory)");
 	}
@@ -1331,9 +1331,9 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 
 	/* force these again */
 	ctx->restart_from_file = PETSC_TRUE;
-	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
-	ierr = PetscOptionsGetString(PETSC_NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	
 	ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
 	ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
@@ -1361,40 +1361,40 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 	
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  if (nlevels < 0) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
+  if (nlevels < 0) SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_OUTOFRANGE,"nlevels cannot be negative");
   if (nlevels == 0) PetscFunctionReturn(0);
   PetscValidPointer(dac,3);
 	
   /* Get refinement factors, defaults taken from the coarse DMDA */
-  ierr = PetscMalloc3(nlevels,PetscInt,&refx,nlevels,PetscInt,&refy,nlevels,PetscInt,&refz);CHKERRQ(ierr);
+  ierr = PetscMalloc3(nlevels,&refx,nlevels,&refy,nlevels,&refz);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
     ierr = DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
   }
   n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL);CHKERRQ(ierr);
   n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL);CHKERRQ(ierr);
   n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
 	
 	
 	ierr = DMDASetRefinementFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
-  ierr = DMCoarsen(da,((PetscObject)da)->comm,&dac[0]);CHKERRQ(ierr);
+  ierr = DMCoarsen(da,PetscObjectComm((PetscObject)da),&dac[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
     ierr = DMDASetRefinementFactor(dac[i-1],refx[nlevels-1-i],refy[nlevels-1-i],refz[nlevels-1-i]);CHKERRQ(ierr);
-    ierr = DMCoarsen(dac[i-1],((PetscObject)da)->comm,&dac[i]);CHKERRQ(ierr);
+    ierr = DMCoarsen(dac[i-1],PetscObjectComm((PetscObject)da),&dac[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
 
 	view = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(((PetscObject)da)->prefix,"-da_view_hierarchy",&view,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(((PetscObject)da)->prefix,"-da_view_hierarchy",&view,NULL);CHKERRQ(ierr);
   if (view) {
 		char levelname[128];
 		
-		ierr = DMDAViewPetscVTK(da,PETSC_NULL,"dav_fine.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTK(da,NULL,"dav_fine.vtk");CHKERRQ(ierr);
 		for (i=0; i<nlevels; i++) {
 			sprintf(levelname,"dav_level%d.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
-			ierr = DMDAViewPetscVTK(dac[i],PETSC_NULL,levelname);CHKERRQ(ierr);
+			ierr = DMDAViewPetscVTK(dac[i],NULL,levelname);CHKERRQ(ierr);
 		}
 	}
 	

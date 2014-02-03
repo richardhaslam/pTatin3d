@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -242,7 +242,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -296,13 +296,13 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
 	
 	/* Define interpolation operators for velocity space */
-	interpolatation_v[0] = PETSC_NULL;
+	interpolatation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation_v[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 
 	/* Define interpolation operators for scalar space */
-	interpolatation_eta[0] = PETSC_NULL;
+	interpolatation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
 		ierr = MatMAIJRedimension(interpolatation_v[k],1,&interpolatation_eta[k]);CHKERRQ(ierr);
 	}
@@ -330,7 +330,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
@@ -367,7 +367,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		
 		ierr = MatShellGetMatStokesMF(A,&mf);CHKERRQ(ierr);
 		ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-		mf->daU = PETSC_NULL;
+		mf->daU = NULL;
 	}
 
 	/* B operator */
@@ -380,7 +380,8 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 
 		/* Schur complement */
-		ierr = DMCreateMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
@@ -396,7 +397,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
 	
 		/* nest */
-		bA[0][0] = PETSC_NULL; bA[0][1] = Aup;
+		bA[0][0] = NULL; bA[0][1] = Aup;
 		bA[1][0] = Apu;        bA[1][1] = Spp;
 	
 		/* Set fine A11 into nest */
@@ -422,7 +423,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(PETSC_NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 
 		switch (level_type[k]) {
@@ -434,7 +435,8 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMCreateMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
@@ -466,7 +468,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = PETSC_NULL;				
+				mf->daU = NULL;				
 
 				operatorA11[k] = Auu;
 				operatorB11[k] = Auu;
@@ -530,8 +532,8 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
@@ -549,10 +551,10 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation_v[k]);CHKERRQ(ierr);
@@ -569,7 +571,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	}
 
 	/* solve once, then advect */
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%d]: time %lf Myr \n", user->step, user->time );
 	for (kk=0; kk<user->nsteps; kk++) {
@@ -603,7 +605,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 			DataField PField;
 			Vec velocity,pressure;
 			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
 			mp_std = PField->data;
 			

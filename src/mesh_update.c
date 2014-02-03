@@ -87,8 +87,8 @@ PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 	}	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen,&elnidx);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ PetscErrorCode UpdateMeshGeometry_FullLagrangian(DM dav,Vec velocity,PetscReal s
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(coordinates,step,velocity);CHKERRQ(ierr); /* x = x + dt.vel_advect_mesh */
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
@@ -177,7 +177,7 @@ PetscErrorCode UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(DM dav,Vec vel
 
 	ierr = DMDAVecTraverseIJK(dav,velocity_ale,1,DMDAVecTraverseIJK_ZeroInteriorMinusNmax,(void*)&N);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(coordinates,step,velocity_ale);CHKERRQ(ierr); /* x = x + dt.vel_ale */
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
@@ -216,8 +216,8 @@ PetscErrorCode UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh(DM dav
 		/* resample bottom nodes so they are equi-distance in x */
 		ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 		
-		ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
 		ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
 
 		if (sj == 0) { /* bottom layer nodes */
@@ -276,8 +276,8 @@ PetscErrorCode UpdateMeshGeometry_DecoupledHorizontalVerticalMeshMovement(DM dav
 		
 		ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 		
-		ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
 		ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
 		
 		if (sj == 0) { /* bottom layer nodes */
@@ -382,7 +382,7 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX_Interpola
 		}
 	}
 	
-	ierr = DMDAGetCoordinates(dm_msurf,&msurf_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_msurf,&msurf_coords);CHKERRQ(ierr);
 	ierr = VecGetArray(msurf_coords,&LA_msurf_coords);CHKERRQ(ierr);
 	
 	for (k=0; k<ni*nk; k++) {
@@ -394,8 +394,8 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX_Interpola
 	ierr = DMDAGetInfo(dm_vol,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dm_vol,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates(dm_vol,&v_coords);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dm_vol,&v_cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_vol,&v_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_vol,&v_cda);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(v_cda,v_coords,&LA_v_coords);CHKERRQ(ierr);
 	
 	/* a) Insert coords of vol->surf into material point structure for interpolation purposes */
@@ -498,8 +498,8 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Ve
 	
 	/* [a] Surface advection only: take a full lagrangian step */
 	//PetscPrintf(PETSC_COMM_WORLD,"[a] --- \n");
-	ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(dav,vel_fluid,&LA_vel);CHKERRQ(ierr);
 
@@ -544,8 +544,8 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Ve
 
 
 	/* push advected surface back - it's a local operation so there are no concerns regarding efficiency */
-	ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coordinates,&LA_coords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(dav,vel_fluid,&LA_vel);CHKERRQ(ierr);
 	if (sj + ny == N) { /* top layer nodes */
@@ -575,7 +575,7 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Ve
 		ierr = VecCopy(vel_mesh,vel_mesh_copy);CHKERRQ(ierr);
 		ierr = VecStrideSet(vel_mesh_copy,1,0.0);CHKERRQ(ierr); // zero y component //
 		
-		ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
 		ierr = VecAXPY(coordinates,step,vel_mesh_copy);CHKERRQ(ierr); // x = x + dt.vel_mesh[i]; z = z + dt.vel_mesh[k] //
 		ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 		
@@ -584,7 +584,7 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Ve
 	*/
 	if (vel_mesh) {
 		//PetscPrintf(PETSC_COMM_WORLD,"[c] --- \n");
-		ierr = DMDAGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dav,&coordinates);CHKERRQ(ierr);
 		ierr = VecAXPY(coordinates,step,vel_mesh);CHKERRQ(ierr); // (x,y,z) = (x,y,z) + dt.vel_mesh(i,j,k) //
 		ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	}		
@@ -731,14 +731,14 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
     PetscPrintf(PETSC_COMM_WORLD,"  [time step size] dt_explicit = %1.4e \n",dt_explicit);
     
     /* extract height */
-    ierr = DMDAGetCoordinateDA(daH,&cda);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(daH,&coords);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(daH,&cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(daH,&coords);CHKERRQ(ierr);
     ierr = VecStrideGather(coords,1,H,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecCopy(H,Hinit);CHKERRQ(ierr);
     
 	/* setup for coords */
-    ierr = DMDAGetCoordinateDA(daH,&cda);CHKERRQ(ierr);
-    ierr = DMDAGetGhostedCoordinates(daH,&gcoords);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(daH,&cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(daH,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
     ierr = DMGetLocalVector(daH,&local_H);CHKERRQ(ierr);
@@ -917,8 +917,8 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
             Vec coordsH;
             DM cdaH;
             
-            ierr = DMDAGetCoordinateDA(daH,&cdaH);CHKERRQ(ierr);
-            ierr = DMDAGetCoordinates(daH,&coordsH);CHKERRQ(ierr);
+            ierr = DMGetCoordinateDM(daH,&cdaH);CHKERRQ(ierr);
+            ierr = DMGetCoordinates(daH,&coordsH);CHKERRQ(ierr);
             ierr = VecStrideScatter(H,1,coordsH,INSERT_VALUES);CHKERRQ(ierr);
             
             sprintf(name,"surface_diffusion_%.4d.vtk",s);
@@ -951,8 +951,8 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
         ierr = DMDAVecGetArray(daH,local_H,&LA_H3);CHKERRQ(ierr);
         
         ierr = DMDAGetCorners(dav,&siv,&sjv,&skv,&niv,&njv,&nkv);CHKERRQ(ierr);
-        ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = DMDAVecGetArray(cda,coords,&LA_coords3);CHKERRQ(ierr);
 
         if (only_update_surface) {

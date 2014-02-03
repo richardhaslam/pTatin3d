@@ -527,7 +527,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 		*mstr = SAME_NONZERO_PATTERN;
 	}
 
-	if (*B==PETSC_NULL) {
+	if (*B==NULL) {
 		PetscFunctionReturn(0);
 	}
 	
@@ -542,12 +542,12 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	
   
 	/* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
   /* get acces to the vector V */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetLocalVector(cda,&local_V);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(  cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
@@ -597,7 +597,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 			ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_TezduyarOsawa : tau = %1.4e\n",tau);
 			
-			//ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
+			//ierr = AdvDiffComputeTau_UserDefinedConstant(NULL,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_UserDefinedConstant : tau = %1.4e\n",tau);
 			
 			ierr = AElement_FormJacobian_T_tau( ADe,dt,tau,el_coords, qp_kappa, el_V, nqp,qp_xi,qp_weight );CHKERRQ(ierr);
@@ -825,8 +825,8 @@ PetscErrorCode FormFunctionLocal_T(
 	ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_quadpoints);CHKERRQ(ierr);
 	
 	/* setup for coords */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-  ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
 	/* setup for old coordinates */
@@ -886,7 +886,7 @@ PetscErrorCode FormFunctionLocal_T(
 			ierr = AdvDiffComputeTau_TezduyarOsawa(el_coords,el_V,kappa_cell,theta,dt,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_TezduyarOsawa : tau = %1.4e\n",tau);
 			
-			//ierr = AdvDiffComputeTau_UserDefinedConstant(PETSC_NULL,&tau);CHKERRQ(ierr);
+			//ierr = AdvDiffComputeTau_UserDefinedConstant(NULL,&tau);CHKERRQ(ierr);
 			//printf("AdvDiffComputeTau_UserDefinedConstant : tau = %1.4e\n",tau);
 			
 			ierr = AElement_FormFunction_T_tau(Re,dt,tau,el_coords,el_coords_old,el_V,el_phi,el_philast,qp_kappa,qp_Q,nqp,qp_xi,qp_weight);CHKERRQ(ierr);
@@ -912,7 +912,7 @@ PetscErrorCode FormFunctionLocal_T(
 		}
 		*/
 	}
-  //ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
+  //ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 	//PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
 	
   /* tidy up local arrays (input) */
@@ -970,7 +970,7 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 	/* FORM_FUNCTION */
 	
   /* get acces to the vector V */
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(  cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
@@ -1123,7 +1123,7 @@ PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscSc
 
 	if (been_here==0) {
 		flg = PETSC_FALSE;
-		ierr = PetscOptionsGetReal(PETSC_NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
 		been_here = 1;
 	}
 	

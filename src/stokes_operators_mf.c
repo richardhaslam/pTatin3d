@@ -105,8 +105,8 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -115,7 +115,7 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -133,13 +133,13 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -186,8 +186,8 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 	P3D_ConstructGNi_Q2_3D(xiC,GNIC);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -219,10 +219,10 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 #endif
 #ifdef AFFINEGEOM_LOWORDER_OPERATORS
 		/* this appears to be broken */
-		//P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+		//P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, NULL, elcoords, GNI,dNudx,dNudy,dNudz );
 		
 		/* double the iteration count */
-		P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+		P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, NULL, elcoords, GNI,dNudx,dNudy,dNudz );
 #endif
 		
 		
@@ -233,13 +233,13 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP	
 	PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -285,8 +285,8 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -326,9 +326,9 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 			fac       = WEIGHT[p] * detJ[p];
 			
 			#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
-			  f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			  f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 			#else
-			  MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			  MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
       #endif
 		}
 #endif
@@ -338,9 +338,9 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 			el_eta[p] = cell_gausspoints[p].eta * WEIGHT[p] * detJ[p];
 			
 		#ifdef PTAT3D_USE_FORTRAN_MF_KERNELS
-			f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			f_matmultmf_stokes_mixedfem3d_b11_(&fac,&el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		#else
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		#endif
 		}
 #endif
@@ -350,7 +350,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11(MF): %1.4e (sec)\n",t1-t0);
 	{
@@ -432,8 +432,8 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 		ierr = DMDAGetSizeElementQ2(dau,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 		ncells = lmx * lmy * lmz;
 		
-		PetscMalloc(ncells*sizeof(PetscReal),&cell_detJ);
-		PetscMalloc(3*ncells*sizeof(PetscReal),&cell_J);
+		PetscMalloc1(ncells,&cell_detJ);
+		PetscMalloc1(3*ncells,&cell_J);
 		
 		
 		beenhere = PETSC_TRUE;
@@ -441,8 +441,8 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	 */	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -451,7 +451,7 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -482,10 +482,10 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 #endif
 #ifdef AFFINEGEOM_LOWORDER_OPERATORS
 		/* this appears to be broken */
-		//P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+		//P3D_evaluate_geometry_affine_appliedQ2(ngp,detJ, NULL, elcoords, GNI,dNudx,dNudy,dNudz );
 
 		/* double the iteration count */
-		P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, PETSC_NULL, elcoords, GNI,dNudx,dNudy,dNudz );
+		P3D_evaluate_geometry_affine2_appliedQ2(ngp,detJ, NULL, elcoords, GNI,dNudx,dNudy,dNudz );
 #endif
 		
 		/* initialise element stiffness matrix */
@@ -495,7 +495,7 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		/*
 		 // this doesn't work //
@@ -505,13 +505,13 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		*/
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11PC(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -557,8 +557,8 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -567,7 +567,7 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -635,13 +635,13 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 		for (p=0; p<ngp; p++) {
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11PC(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -689,8 +689,8 @@ PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar uf
 	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -699,7 +699,7 @@ PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar uf
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -735,13 +735,13 @@ PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar uf
 		for (p=0; p<ngp; p++) {
 			fac       = 8.0 * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA11PC(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -783,8 +783,8 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -794,7 +794,7 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -827,14 +827,14 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,&Ye[0]);CHKERRQ(ierr);
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -873,8 +873,8 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -884,7 +884,7 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -909,13 +909,13 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 		for (p=0; p<ngp; p++) {
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_A12(fac,0,0,0,0,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			MatMultMF_Stokes_MixedFEM3d_A12(fac,0,0,0,0,elp,NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA12(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -955,8 +955,8 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
@@ -966,7 +966,7 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1003,7 +1003,7 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA21(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -1047,7 +1047,7 @@ PetscErrorCode MFStokesWrapper_diagA11_UPX(Quadrature volQ,DM dau,DM dax,PetscSc
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1065,13 +1065,13 @@ PetscErrorCode MFStokesWrapper_diagA11_UPX(Quadrature volQ,DM dau,DM dax,PetscSc
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_diagB11(fac,el_eta[p],NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatGetDiagonalA11_UPX(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -1115,7 +1115,7 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1141,13 +1141,13 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,PETSC_NULL,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],PETSC_NULL,Ye);
+			MatMultMF_Stokes_MixedFEM3d_B11(fac,el_eta[p],ux,uy,uz,NULL,NULL,dNudx[p],dNudy[p],dNudz[p],NULL,Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu, vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	
 	PetscFunctionReturn(0);
 }
@@ -1191,7 +1191,7 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1231,7 +1231,7 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -1276,7 +1276,7 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1307,7 +1307,7 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA12(MF): %1.4e (sec)\n",t1-t0);
 #endif	
@@ -1353,7 +1353,7 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1390,7 +1390,7 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  Ye);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 #ifdef PTAT3D_LOG_MF_OP
 	PetscPrintf(PETSC_COMM_WORLD,"MatMultA21(MF): %1.4e (sec)\n",t1-t0);
 #endif	

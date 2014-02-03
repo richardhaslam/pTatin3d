@@ -201,13 +201,13 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 	} else {
 		/* bigger tank */
 		wouter_slab = PETSC_FALSE;
-		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,NULL);
 
 		ribe_slab = PETSC_FALSE;
-		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,NULL);
 		
 		shallow_mantle = PETSC_FALSE;
-		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_domain_shallow_mantle",&shallow_mantle,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-iplus_slab_domain_shallow_mantle",&shallow_mantle,NULL);
 		
 		if(wouter_slab || ribe_slab) {
 
@@ -243,7 +243,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 8.0, Gmin[2], center_z - 0.2*Lz*0.5, center_z + 0.2*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
 			break;
 		case 3:
-			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 3 (x-z refinement)\n");
+		PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 3 (x-z refinement)\n");
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 4.0, Gmin[0], 0.25, 0.4, Gmax[0]);CHKERRQ(ierr);
 			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 1, 4.0, Gmin[1], 0.75*Ly, Gmax[1], Gmax[1]);CHKERRQ(ierr);
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 3.0, Gmin[2], center_z - 0.35*Lz*0.5, center_z + 0.35*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
@@ -284,7 +284,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mpoints; p++) {

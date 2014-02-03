@@ -75,7 +75,7 @@ PetscErrorCode QuadratureDestroy(Quadrature *quadrature)
 	if (Q->properties_db) { DataBucketDestroy(&Q->properties_db); }
 	
 	ierr = PetscFree(Q);CHKERRQ(ierr);
-	*quadrature = PETSC_NULL;
+	*quadrature = NULL;
 	
 	PetscFunctionReturn(0);
 }
@@ -204,7 +204,7 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	if (nfaces != 0) {
 		ierr = PetscMalloc( sizeof(PetscInt)*nfaces, &quadrature->element_list);CHKERRQ(ierr);
 	} else {
-		quadrature->element_list = PETSC_NULL;
+		quadrature->element_list = NULL;
 	}
 	
   PetscFunctionReturn(0);
@@ -329,7 +329,7 @@ PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 
 	ierr = PetscFree(Q);CHKERRQ(ierr);
 	
-	*quadrature = PETSC_NULL;
+	*quadrature = NULL;
 	
 	PetscFunctionReturn(0);
 }

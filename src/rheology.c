@@ -66,7 +66,7 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
   
   
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-eta_lower_cutoff_global",&vis,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,"-eta_lower_cutoff_global",&vis,&flg);CHKERRQ(ierr);
   
   if (flg == PETSC_TRUE) { 
     R->apply_viscosity_cutoff_global = PETSC_TRUE;
@@ -74,7 +74,7 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
   }
   
 	flg = PETSC_FALSE;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-eta_upper_cutoff_global",&vis,&flg);CHKERRQ(ierr);  
+  ierr = PetscOptionsGetReal(NULL,"-eta_upper_cutoff_global",&vis,&flg);CHKERRQ(ierr);  
   
   if (flg == PETSC_TRUE) { 
     R->apply_viscosity_cutoff_global = PETSC_TRUE;
@@ -148,7 +148,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 	DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 	DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 	
-	DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 	mp_std    = PField_std->data; /* should write a function to do this */
 	mp_stokes = PField_stokes->data; /* should write a function to do this */
 
@@ -260,7 +260,7 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 			
 			if (been_here == 0) {
 				/* access material point information */
-				ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+				ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
 				/* check plastic marker type is loaded */
 				DataBucketQueryDataFieldByName(db,MPntPStokesPl_classname,&found);
 				if (found == BFALSE) {

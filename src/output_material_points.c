@@ -334,7 +334,7 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
 	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&cell_count);CHKERRQ(ierr);
 	ierr = PetscMemzero(cell_count,sizeof(int)*mx*my*mz);CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&n_mp,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&n_mp,NULL,NULL);
 	
 	ierr = MaterialPointGetAccess(db,&X);CHKERRQ(ierr);
 	
@@ -423,7 +423,7 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&cell_count);CHKERRQ(ierr);
 	ierr = PetscMemzero(cell_count,sizeof(int)*mx*my*mz);CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&n_mp,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&n_mp,NULL,NULL);
 	
 	ierr = MaterialPointGetAccess(db,&X);CHKERRQ(ierr);
 	
@@ -525,7 +525,7 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
 	
-	DataBucketGetSizes(db,&n_mp,PETSC_NULL,PETSC_NULL);	
+	DataBucketGetSizes(db,&n_mp,NULL,NULL);	
 	ierr = MaterialPointGetAccess(db,&X);CHKERRQ(ierr);
 	
 	for (p=0; p<n_mp; p++) {
@@ -771,8 +771,8 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 	ierr = DMDAGetGhostCorners(dau,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(dau,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	
@@ -811,7 +811,7 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 		
 		t = 0;
 		mpv_name = MaterialPointVariableName[t];
-		while (mpv_name != PETSC_NULL) {
+		while (mpv_name != NULL) {
 			
 			fprintf( vtk_fp, "      <DataArray Name=\"%s\" type=\"%s\" NumberOfComponents=\"1\" format=\"ascii\">\n",MaterialPointVariableName[t],MaterialPointVariableParaviewDataType[t]);
 			
@@ -1044,7 +1044,7 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_PVTS(DM dau,const int nvars,cons
 
 		t = 0;
 		mpv_name = MaterialPointVariableName[t];
-		while (mpv_name != PETSC_NULL) {
+		while (mpv_name != NULL) {
 			if(vtk_fp) fprintf( vtk_fp, "      <PDataArray type=\"%s\" Name=\"%s\" NumberOfComponents=\"1\"/>\n",MaterialPointVariableParaviewDataType[t],MaterialPointVariableName[t]);
 			t++;
 			mpv_name = MaterialPointVariableName[t];
@@ -1131,7 +1131,7 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 	DataBucket     material_points;
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere == 0) {
 		
@@ -1167,12 +1167,12 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 		asprintf(&name,"mpoints_cell");
 	}
 	
-	ierr = pTatinGetMaterialPoints(ctx,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(ctx,&material_points,NULL);CHKERRQ(ierr);
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	ierr = pTatinOutputParaViewMarkerFields(stokes_pack,material_points,nvars,vars,ctx->outputpath,name);CHKERRQ(ierr);
 	
 	free(name);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);

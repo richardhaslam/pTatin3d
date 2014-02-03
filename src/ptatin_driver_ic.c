@@ -122,7 +122,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(PETSC_NULL,"-activate_energy",&load_energy,PETSC_NULL);
+		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -131,7 +131,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 		
 		ierr = pTatinLogBasicDMDA(user,"Energy",energy->daT);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
-		ierr = pTatinPhysCompAttachData_Energy(user,T,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompAttachData_Energy(user,T,NULL);CHKERRQ(ierr);
 	}
     
     
@@ -172,7 +172,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	}
 	
 	/* test data bucket viewer */
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	DataBucketView(PETSC_COMM_SELF, user->material_constants,"material_constants",DATABUCKET_VIEW_STDOUT);
 	
 
