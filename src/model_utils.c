@@ -475,7 +475,279 @@ PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 		fclose(fp);
 	}
 	ierr = VecDestroy(&natural_field_red);CHKERRQ(ierr);
+		
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelUtilsComputeAiryIsostaticHeights_SEQ"
+PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
+{
+	DM              stokes_pack,dav,dap,cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e,q;
+	const PetscInt  *el_nidx;
+	PetscInt        *gidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	PetscInt        nqp;
+	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+	PetscReal       detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+	PetscReal         *vol_col,*rho_col;
+	PetscInt          idx,I,J,K,MX,MY,MZ;
+	PetscErrorCode  ierr;
 	
+	PetscFunctionBegin;
+	
+	/* setup quadrature */
+	nqp = 27;
+	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
+	
+	/* get dav */
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	ierr = DMDAGetGlobalIndices(dav,0,&gidx);CHKERRQ(ierr);
+	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+
+	/* quadrature for all cells */
+	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
+	
+	ierr = DMDAGetSizeElementQ2(dav,&MX,&MY,&MZ);CHKERRQ(ierr);
+	
+	PetscMalloc(sizeof(PetscReal)*MX*MZ,&vol_col);  PetscMemzero(vol_col,sizeof(PetscReal)*MX*MZ);
+	PetscMalloc(sizeof(PetscReal)*MX*MZ,&rho_col);  PetscMemzero(rho_col,sizeof(PetscReal)*MX*MZ);
+	
+	for (e=0; e<nel; e++) {
+		PetscReal el_rho,el_vol;
+		
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+		P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
+
+		ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+		
+		el_rho = 0.0;
+		el_vol = 0.0;
+		for (q=0; q<nqp; q++) {
+			el_rho = el_rho + cell_gausspoints[q].rho * WEIGHT[q] * detJ[q];
+			el_vol = el_vol + 1.0 * WEIGHT[q] * detJ[q];
+		}
+		
+		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,e,&I,&J,&K);CHKERRQ(ierr);
+		idx = I + K*MX;
+		rho_col[idx] = rho_col[idx] + el_rho;
+		vol_col[idx] = vol_col[idx] + el_vol;
+		
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	for (e=0; e<MX*MZ; e++) {
+		rho_col[e] = rho_col[e] / vol_col[e];
+	}
+	
+	PetscFree(vol_col);
+	PetscFree(rho_col);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelUtilsComputeAiryIsostaticHeights"
+PetscErrorCode ModelUtilsComputeAiryIsostaticHeights(PhysCompStokes stokes)
+{
+	PetscErrorCode ierr;
+
+	
+	ierr = ModelUtilsComputeAiryIsostaticHeights_SEQ(stokes);CHKERRQ(ierr);
+	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntStdComputeBoundingBox"
+PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal gmin[],PetscReal gmax[])
+{
+	MPAccess         mpX;
+	PetscInt         p,n_mpoints;
+	PetscReal        min[3],max[3];
+	double           *pos_p;
+	PetscErrorCode   ierr;
+	
+	PetscFunctionBegin;
+	
+	/* initialize */
+	min[0] =  1.0e32;
+	min[1] =  1.0e32;
+	min[2] =  1.0e32;
+	max[0] = -1.0e32;
+	max[1] = -1.0e32;
+	max[2] = -1.0e32;
+	
+	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mpoints; p++) {
+		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+
+		min[0] = PetscMin(min[0],pos_p[0]);
+		min[1] = PetscMin(min[1],pos_p[1]);
+		min[2] = PetscMin(min[2],pos_p[2]);
+
+		max[0] = PetscMax(max[0],pos_p[0]);
+		max[1] = PetscMax(max[1],pos_p[1]);
+		max[2] = PetscMax(max[2],pos_p[2]);
+	}
+	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntStdComputeBoundingBoxInRange"
+PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscReal gmin[],PetscReal gmax[])
+{
+	MPAccess         mpX;
+	PetscInt         p,n_mpoints;
+	PetscReal        min[3],max[3];
+	double           *pos_p;
+	PetscErrorCode   ierr;
+	
+	PetscFunctionBegin;
+	
+	/* initialize */
+	min[0] =  1.0e32;
+	min[1] =  1.0e32;
+	min[2] =  1.0e32;
+	max[0] = -1.0e32;
+	max[1] = -1.0e32;
+	max[2] = -1.0e32;
+	
+	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mpoints; p++) {
+		PetscReal p_i, range_min, range_max;
+		PetscInt  idx;
+		
+		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+		
+		idx = 0;
+		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+		p_i = pos_p[idx];
+		if ( (p_i >= range_min) && (p_i <= range_max) ) {
+			min[idx] = PetscMin(min[idx],p_i);
+			max[idx] = PetscMax(max[idx],p_i);
+		}
+
+		idx = 1;
+		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+		p_i = pos_p[idx];
+		if ( (p_i >= range_min) && (p_i <= range_max) ) {
+			min[idx] = PetscMin(min[idx],p_i);
+			max[idx] = PetscMax(max[idx],p_i);
+		}
+		
+		idx = 2;
+		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+		p_i = pos_p[idx];
+		if ( (p_i >= range_min) && (p_i <= range_max) ) {
+			min[idx] = PetscMin(min[idx],p_i);
+			max[idx] = PetscMax(max[idx],p_i);
+		}
+		
+	}
+	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntStdComputeBoundingBoxInRangeInRegion"
+PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscInt region_idx,PetscReal gmin[],PetscReal gmax[])
+{
+	MPAccess         mpX;
+	PetscInt         p,n_mpoints;
+	PetscReal        min[3],max[3];
+	double           *pos_p;
+	int              region_p;
+	PetscInt         found_region = 0,found_region_g;
+	PetscErrorCode   ierr;
+	
+	PetscFunctionBegin;
+	
+	/* initialize */
+	min[0] =  1.0e32;
+	min[1] =  1.0e32;
+	min[2] =  1.0e32;
+	max[0] = -1.0e32;
+	max[1] = -1.0e32;
+	max[2] = -1.0e32;
+	
+	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mpoints; p++) {
+		PetscReal p_i, range_min, range_max;
+		PetscInt  idx;
+		
+		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+		ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
+		
+		if ( (region_idx == -1) && (region_p != region_idx) ) { continue; }
+
+		idx = 0;
+		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+		p_i = pos_p[idx];
+		if ( (p_i >= range_min) && (p_i <= range_max) ) {
+			min[idx] = PetscMin(min[idx],p_i);
+			max[idx] = PetscMax(max[idx],p_i);
+		}
+		
+		idx = 1;
+		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+		p_i = pos_p[idx];
+		if ( (p_i >= range_min) && (p_i <= range_max) ) {
+			min[idx] = PetscMin(min[idx],p_i);
+			max[idx] = PetscMax(max[idx],p_i);
+		}
+		
+		idx = 2;
+		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+		p_i = pos_p[idx];
+		if ( (p_i >= range_min) && (p_i <= range_max) ) {
+			min[idx] = PetscMin(min[idx],p_i);
+			max[idx] = PetscMax(max[idx],p_i);
+		}
+		
+		found_region = 1;
+	}
+	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	ierr = MPI_Allreduce(&found_region,&found_region_g,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	
+	/* no particles of the desired region were found on any processors, set min/max accordingly */
+	if (found_region_g == 0) {
+		gmin[0] = gmin[1] = gmin[2] = NAN;
+		gmax[0] = gmax[1] = gmax[2] = NAN;
+	}
 	
 	PetscFunctionReturn(0);
 }
