@@ -55,6 +55,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_project_coords.h"
 #include "monitors.h"
 #include "mp_advection.h"
+#include "mesh_update.h"
 
 #include "ptatin3d_energy.h"
 #include "energy_assembly.h"
