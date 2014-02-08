@@ -75,11 +75,13 @@ TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(
 ptatin-tests-y = $(notdir $(ptatin-tests-y.c))
 tests: $(ptatin-tests-y:%.c=$(BINDIR)/%.app)
 $(ptatin-tests-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
+.SECONDARY: $(ptatin-tests-y.c:%.c=$(OBJDIR)/%.o) # don't delete the intermediate files
 
 # Drivers
 ptatin-drivers-y = $(notdir $(ptatin-drivers-y.c))
 drivers: $(ptatin-drivers-y:%.c=$(BINDIR)/%.app)
 $(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
+.SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
@@ -95,7 +97,6 @@ $(OBJDIR)/%.o: %.f90 | $$(@D)/.DIR
 	@touch $@
 
 .PRECIOUS: %/.DIR
-
 .SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
 .DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
 
