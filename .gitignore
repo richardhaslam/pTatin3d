@@ -1,5 +1,7 @@
 *.a
+*.d
 *.o
+*.DIR
 *.app
 *.aux
 *.log
