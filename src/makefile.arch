@@ -17,6 +17,8 @@ export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
+export LIBZ_LIB = -lz
+# export LIBZ_INC = -I/usr/include
 
 #
 #
