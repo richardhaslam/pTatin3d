@@ -64,6 +64,10 @@ else
   cc_name := CC
 endif
 
+# gcc/gfortran style dependency flags; these are set in petscvariables starting with petsc-3.5
+C_DEPFLAGS ?= -MMD -MP
+FC_DEPFLAGS ?= -MMD -MP
+
 TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
 
@@ -81,10 +85,10 @@ $(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
 	$(call quiet,CLINKER) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
-	$(TATIN_COMPILE.c) $(abspath $^) -o $@
+	$(TATIN_COMPILE.c) $(abspath $<) -o $@
 
 $(OBJDIR)/%.o: %.f90 | $$(@D)/.DIR
-	$(TATIN_COMPILE.f90) $(abspath $^) -o $@
+	$(TATIN_COMPILE.f90) $(abspath $<) -o $@
 
 %/.DIR :
 	@mkdir -p $(@D)
@@ -104,10 +108,12 @@ clean:
 print:
 	@echo $($(VAR))
 
-allobj.d := $(srcs.o:%.o=%.d)
-# Tell make that allobj.d are all up to date.  Without this, the include
+srcs.c := $(libptatin3d-y.c) $(libptatin3dmodels-y.c) $(ptatin-tests-y.c) $(ptatin-drivers-y.c)
+srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o)
+srcs.d := $(srcs.o:%.o=%.d)
+# Tell make that srcs.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a
 # do-nothing build of PETSc (much worse for larger projects)
-$(allobj.d) : ;
+$(srcs.d) : ;
 
--include $(allobj.d)
+-include $(srcs.d)
