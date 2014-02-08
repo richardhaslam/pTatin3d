@@ -1,0 +1,10 @@
+*.a
+*.o
+*.app
+*.aux
+*.log
+*.out
+pt3d-manual.pdf
+*.toc
+run/
+output/
