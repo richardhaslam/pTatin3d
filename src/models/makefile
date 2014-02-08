@@ -26,9 +26,15 @@ TATIN_MODEL_DIR = \
 	subduction_initiation2d \
 	convection2d
 
+TATIN_MODEL_SRC = \
+	ptatin_models_reg.c
 
 ## DONT NOT EDIT LINES BELOW
 export TATIN_MODEL_LIB = ${TATIN_DIR}/models/libptatin3dmodels.a
+
+TATIN_MODEL_INC		=	-I${TATIN_DIR} ${TATIN_INC}
+%.o: %.c
+	${TATIN_CC} ${TATIN_CFLAGS} -c $*.c ${TATIN_MODEL_INC}
 
 all:
 	-@rm -f ${TATIN_MODEL_LIB}
@@ -40,14 +46,14 @@ build:
 		${MAKE} -C $${m}/; \
 	done
 
-modellib:
+modellib: $(TATIN_MODEL_SRC:%.c=%.o)
 	-@echo ""
 	-@echo "***  Assembling model library using object files:" 
+	ar rcs ${TATIN_MODEL_LIB} $^
 	@for m in ${TATIN_MODEL_DIR} ; do \
 		${MAKE} addtolib -C $${m}/; \
 	done
 
-	
 clean_all:
 	@for m in ${TATIN_MODEL_DIR} ; do \
 		${MAKE} clean_all -C $${m}/; \
