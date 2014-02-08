@@ -1,7 +1,7 @@
 
 #include <private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>           /*I "petscksp.h" I*/
-#include <sub_comm.h>
+#include "sub_comm.h"
 
 typedef struct {
 	PetscInt nsubcomm_factor;

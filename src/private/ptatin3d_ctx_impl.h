@@ -35,14 +35,14 @@
 #ifndef __private_ptatin3d_ctx_impl_h__
 #define __private_ptatin3d_ctx_impl_h__
 
-#include "petsc.h"
-#include "dmda_bcs.h"
-#include "swarm_fields.h"
-#include "data_exchanger.h"
-#include "ptatin3d_stokes.h"
-#include "ptatin_models.h"
-#include "rheology.h"
-#include "material_constants.h"
+#include <petsc.h>
+#include "../dmda_bcs.h"
+#include "../swarm_fields.h"
+#include "../data_exchanger.h"
+#include "../ptatin3d_stokes.h"
+#include "../ptatin_models.h"
+#include "../rheology.h"
+#include "../material_constants.h"
 
 struct _p_pTatinCtx {
 	PhysCompStokes stokes_ctx;

@@ -34,8 +34,8 @@
 #ifndef __private_ptatin_models_impl_h__
 #define __private_ptatin_models_impl_h__
 
-#include "petsc.h"
-#include "ptatin3d.h"
+#include <petsc.h>
+#include "../ptatin3d.h"
 
 struct _p_pTatinModel {
 	pTatinCtx ptat_ctx;
