@@ -36,6 +36,7 @@ git ls-files '*.[ch]' | xargs perl -pi -e '
   s@^(\s+)ierr = DMCreateMatrix\(([^,]+),([^,]+),@$1ierr = DMSetMatType($2,$3);CHKERRQ(ierr);\n$1ierr = DMCreateMatrix($2,@;
   s@PetscGetTime\(@PetscTime\(@;
   s@MatGetArray@MatSeqAIJGetArray@;
+  s@MatRestoreArray@MatSeqAIJRestoreArray@;
   s@^.*DMView_DA_Private.*\n@@;
 '
 
