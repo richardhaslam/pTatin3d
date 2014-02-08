@@ -37,6 +37,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_init.h"
 
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
