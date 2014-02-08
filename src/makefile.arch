@@ -11,10 +11,12 @@ export TATIN_CFLAGS_OPT_b	= -std=gnu99 -fgnu89-inline -O3 -fast -ftree-vectorize
 export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
 
+TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety)
+
 #
 #  Select optimized or debug compilation flags
 #
-export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
+export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG)
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
 export LIBZ_LIB = -lz
