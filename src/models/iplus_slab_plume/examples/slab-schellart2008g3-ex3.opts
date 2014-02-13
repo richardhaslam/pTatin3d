@@ -43,11 +43,14 @@
 -A11_operator_type 0,1,1
 
 -iplus_eta_scale 1.0e3
--iplus_v_scale 1.0e-4
+-iplus_velocity_scale 1.0e-4
 
 #-constant_dt 1.0
 -dt_max 0.5e-4
 -dt_min 1.0e-8
+
+# restrict surface displacement to be less than 1 mm at each time step (1/10 of the slab thickness)
+-dt_max_surface_displacement 0.001
 
 -dau_nlevels 3
 -fieldsplit_p_ksp_type preonly
