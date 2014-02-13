@@ -715,29 +715,29 @@ PetscErrorCode GeometryObjectSetFromOptions_Cylinder(GeometryObject go)
 PetscErrorCode GeometryObjectPointInside_Cylinder(GeometryObject go,double pos[],int *inside)
 {
 	GeomTypeCylinder ctx;
-	double r2,sep2;
+	double r2,l2;
 	
 	
 	ctx = (GeomTypeCylinder)go->ctx;
 	
 	r2 = ctx->radius * ctx->radius;
-	
+	l2 = ctx->length * ctx->length * 0.25;
 	
 	*inside = 0;
 	switch (ctx->axis) {
 			
 		case ROTATE_AXIS_Z: // check in x-y
-			if ((pos[2]*pos[2]) > ctx->length) { PetscFunctionReturn(0); }
+			if ((pos[2]*pos[2]) > l2) { PetscFunctionReturn(0); }
 			if (pos[0]*pos[0]+pos[1]*pos[1] > r2) { PetscFunctionReturn(0); } 
 			break;
 			
 		case ROTATE_AXIS_Y: // check in x-z
-			if ((pos[1]*pos[1]) > ctx->length) { PetscFunctionReturn(0); }
+			if ((pos[1]*pos[1]) > l2) { PetscFunctionReturn(0); }
 			if (pos[0]*pos[0]+pos[2]*pos[2] > r2) { PetscFunctionReturn(0); } 
 			break;			
 			
 		case ROTATE_AXIS_X: // check in y-z
-			if ((pos[0]*pos[0]) > ctx->length) { PetscFunctionReturn(0); }
+			if ((pos[0]*pos[0]) > l2) { PetscFunctionReturn(0); }
 			if (pos[1]*pos[1]+pos[2]*pos[2] > r2) { PetscFunctionReturn(0); } 
 			break;			
 
