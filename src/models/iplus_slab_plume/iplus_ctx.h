@@ -56,7 +56,7 @@ typedef struct {
 	PetscInt    np_plume_x,np_plume_z;
 	GeometryObject slab_geometry;
 	PetscInt    iplus_output_frequency;
-	PetscReal   eta_scale,v_scale;
+	PetscReal   eta_scale,vel_scale,time_scale,length_scale;
 } iPLUSCtx;
 
 

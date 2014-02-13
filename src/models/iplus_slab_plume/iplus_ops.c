@@ -98,17 +98,20 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_eta",&data->plume_eta,&flg);
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_plume_rho",&data->plume_rho,&flg);
 	
-	data->v_scale   = 1.0;
-	data->eta_scale = 1.0e3;
+	data->length_scale = 1.0;
+	data->vel_scale    = 1.0;
+	data->time_scale   = data->length_scale / data->vel_scale;
+	data->eta_scale    = 1.0e3;
 	if (data->modeltype == iPLUsModelPlume) {
 		data->eta_scale = 1.0;
 	}
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_eta_scale",&data->eta_scale,&flg);
-	PetscOptionsGetReal(PETSC_NULL,"-iplus_velocity_scale",&data->v_scale,&flg);
-
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_velocity_scale",&data->vel_scale,&flg);
+	data->time_scale   = data->length_scale / data->vel_scale;
 	
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using viscosity scale, eta* = %1.4e Pa s \n", data->eta_scale);
-	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using velocity scale,    v* = %1.4e m/s \n", data->v_scale);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using velocity scale,    v* = %1.4e m/s \n", data->vel_scale);
+	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using time scale,        t* = %1.4e sec \n", data->time_scale);
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: dimensional quantities \n");
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta = %1.4e Pa s ; rho = %1.4e kg/m^3 \n",data->mantle_eta,data->mantle_rho);
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta = %1.4e Pa s ; rho = %1.4e kg/m^3 \n",data->plume_eta,data->plume_rho);
@@ -118,9 +121,9 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	data->plume_eta  = data->plume_eta / data->eta_scale;
 	data->slab_eta   = data->slab_eta / data->eta_scale;
 
-	data->mantle_rho = data->mantle_rho / (data->eta_scale * data->v_scale);
-	data->plume_rho  = data->plume_rho / (data->eta_scale * data->v_scale);
-	data->slab_rho   = data->slab_rho / (data->eta_scale * data->v_scale);
+	data->mantle_rho = data->mantle_rho * data->length_scale * data->length_scale / (data->eta_scale * data->vel_scale);
+	data->plume_rho  = data->plume_rho * data->length_scale * data->length_scale  / (data->eta_scale * data->vel_scale);
+	data->slab_rho   = data->slab_rho * data->length_scale * data->length_scale   / (data->eta_scale * data->vel_scale);
 	
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [mantle] eta* = %1.4e ; rho* = %1.4e \n",data->mantle_eta,data->mantle_rho);
 	PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume]  eta* = %1.4e ; rho* = %1.4e \n",data->plume_eta,data->plume_rho);
@@ -224,10 +227,19 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 8.0, Gmin[2], center_z - 0.2*Lz*0.5, center_z + 0.2*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
 			break;
 		case 3:
-			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 3 (y-z refinement)\n");
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 3 (x-z refinement)\n");
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 4.0, Gmin[0], 0.25, 0.4, Gmax[0]);CHKERRQ(ierr);
 			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 1, 4.0, Gmin[1], 0.75*Ly, Gmax[1], Gmax[1]);CHKERRQ(ierr);
 			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 3.0, Gmin[2], center_z - 0.35*Lz*0.5, center_z + 0.35*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
+
+			break;
+		case 4:
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 4 (x-y-z refinement)\n");
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 4.0, Gmin[0], 0.25, 0.4, Gmax[0]);CHKERRQ(ierr);
+			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 1, 4.0, Gmin[1], 0.75*Ly, Gmax[1], Gmax[1]);CHKERRQ(ierr);
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 3.0, Gmin[2], center_z - 0.35*Lz*0.5, center_z + 0.35*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
+			
+			ierr = DMDASetCoordinatesColumnRefinement(dav,1,4.0, 0.75,1.0);CHKERRQ(ierr);
 			break;
 	}
 	
@@ -424,7 +436,15 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_iPLUS(pTatinCtx c,Vec X,void *ctx)
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 	//ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
+
 	ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,PETSC_NULL,c->dt);CHKERRQ(ierr);
+	/* perform vertical remeshing column wise */
+	switch (data->refinement_type) {
+		case 4:
+			ierr = DMDASetCoordinatesColumnRefinement(dav,1,4.0, 0.75,1.0);CHKERRQ(ierr);
+			break;
+	}
+	
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
@@ -571,7 +591,7 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
 			beenhere = 1;
 		}
 		PetscViewerASCIIPrintf(data->logviewer,"%D\t%1.4e\t%1.4e\t%1.6e\t%1.6e\t%+1.4e\t%+1.4e\t%+1.4e\t%+1.4e\n",
-								c->step, c->time,c->time*(1.0/data->v_scale), 
+								c->step, c->time,c->time*data->time_scale, 
 								data->intial_domain_volume, volume,
 								plume_range_yp[0], plume_range_yp[1] ,slab_range_yp[0], slab_range_yp[1]);
 		
