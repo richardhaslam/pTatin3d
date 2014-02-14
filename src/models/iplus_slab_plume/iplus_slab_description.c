@@ -90,6 +90,138 @@ PetscErrorCode iPLUS_CreateSlabGeometry_Schellart_G3_2008(iPLUSCtx *data)
 	PetscFunctionReturn(0);
 }
 
+/* ------------- Li & Ribe, JGR, 2012 slab geometry ------------- */
+#undef __FUNCT__
+#define __FUNCT__ "iPLUS_CreateSlabGeometry_LiRibe_JGR_2012"
+PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
+{
+	GeometryObject plate,tail,nose;
+	GeometryObject l_segment,otip,itip,annulus,clip_vert,clip_angle,clipper;
+
+	PetscReal      x0[3],Lx[3],tip_thickness,tip_length,tip_angle;
+	PetscReal      l,L,theta_0,h,W,x_0,y_0,z_0;
+	PetscReal      R,r,xT[3];
+	PetscBool      arcuate_slab_ends = PETSC_FALSE;
+	PetscErrorCode ierr;
+
+	x_0 = 0.2;   /* plate offset in x direction - subducting end */
+	y_0 = 0.367; /* base of plate in y direction */
+	z_0 = 0.225; /* plate edge offset in z direction */ 
+	h  = 0.013;  /* plate thickness */
+	L  = 0.55;   /* plate length */
+	W  = 0.15;   /* plate width */
+	
+	l = 4.0 * h; /* input from paper, use default of l/h = 4 */
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_liribe_jgr_2012_l",&l,PETSC_NULL);
+
+	theta_0 = 60.0; /* input from paper */
+	PetscOptionsGetReal(PETSC_NULL,"-iplus_liribe_jgr_2012_theta0",&theta_0,PETSC_NULL);
+	
+	arcuate_slab_ends = PETSC_FALSE;
+	PetscOptionsGetBool(PETSC_NULL,"-iplus_liribe_jgr_2012_arcuate_slab_ends",&arcuate_slab_ends,PETSC_NULL);
+	
+	
+	/* horizontal plate ------------------------- */	
+	ierr = GeometryObjectCreate("plate",&plate);CHKERRQ(ierr);
+	x0[0] = x_0;  x0[1] = y_0;   x0[2] = z_0;
+	Lx[0] = L;    Lx[1] = h;     Lx[2] = W;
+	ierr = GeometryObjectSetType_BoxCornerReference(plate,x0,Lx);CHKERRQ(ierr);
+
+	
+	/* arcuate slab tail ------------------------- */
+	ierr = GeometryObjectCreate("slab_tail",&tail);CHKERRQ(ierr);
+	x0[0] = x_0 + L;
+	x0[1] = y_0 + 0.5*h;
+	x0[2] = z_0 + 0.5*W;
+	ierr = GeometryObjectSetType_Cylinder(tail,x0,0.5*h,W,ROTATE_AXIS_Z);CHKERRQ(ierr);
+	
+	
+	/* arcuate trench - l_segment ------------------------- */
+	r = l / (theta_0 * M_PI / 180.0); /* theta.r = segment_length */
+	R = r + h; /* outer radius = inner + slab_thickness */
+	
+	/* a) create annulus */
+	ierr = GeometryObjectCreate("otip",&otip);CHKERRQ(ierr);
+	x0[0] = x_0;
+	x0[1] = y_0 + h - R;
+	x0[2] = z_0 + 0.5*W;
+	ierr = GeometryObjectSetType_Cylinder(otip,x0,R,W,ROTATE_AXIS_Z);CHKERRQ(ierr);
+
+	ierr = GeometryObjectCreate("itip",&itip);CHKERRQ(ierr);
+	x0[0] = x_0;
+	x0[1] = y_0 + h - R;
+	x0[2] = z_0 + 0.5*W;
+	ierr = GeometryObjectSetType_Cylinder(itip,x0,r,W,ROTATE_AXIS_Z);CHKERRQ(ierr);
+
+	ierr = GeometryObjectCreate("annulus",&annulus);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_SetOperationDefault(annulus,GeomSet_Complement,otip,itip);CHKERRQ(ierr);
+	
+	/* b) create clippers */
+	ierr = GeometryObjectCreate("clip_vert",&clip_vert);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_HalfSpace(clip_vert,x0,SIGN_NEGATIVE,ROTATE_AXIS_X);CHKERRQ(ierr);
+
+	ierr = GeometryObjectCreate("clip_angle",&clip_angle);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_HalfSpace(clip_angle,x0,SIGN_POSITIVE,ROTATE_AXIS_X);CHKERRQ(ierr);
+	ierr = GeometryObjectRotate(clip_angle,ROTATE_AXIS_Z,theta_0);CHKERRQ(ierr);
+
+	ierr = GeometryObjectCreate("clipper",&clipper);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_SetOperationDefault(clipper,GeomSet_Intersection,clip_vert,clip_angle);CHKERRQ(ierr);
+	
+	/* merge objects */
+	ierr = GeometryObjectCreate("l_segment",&l_segment);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_SetOperationDefault(l_segment,GeomSet_Intersection,annulus,clipper);CHKERRQ(ierr);
+
+	/* arcuate slab nose ------------------------- */
+	/* radius = R - 0.5h */
+	xT[0] = x0[0] - (R-0.5*h)*sin(theta_0 * M_PI/180.0);
+	xT[1] = x0[1] + (R-0.5*h)*cos(theta_0 * M_PI/180.0);
+	xT[2] = x0[2];
+	
+	ierr = GeometryObjectCreate("slab_nose",&nose);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_Cylinder(nose,xT,0.5*h,W,ROTATE_AXIS_Z);CHKERRQ(ierr);
+
+	
+	/* merge plate + slab (l_segment) */
+	if (!arcuate_slab_ends) {
+		ierr = GeometryObjectCreate("slab",&data->slab_geometry);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_SetOperationDefault(data->slab_geometry,GeomSet_Union,plate,l_segment);CHKERRQ(ierr);
+		
+	} else {
+		GeometryObject tmp_slab,tmp_slab1;
+		
+		/* merge plate + slab */
+		ierr = GeometryObjectCreate("slab_1",&tmp_slab);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_SetOperationDefault(tmp_slab,GeomSet_Union,plate,l_segment);CHKERRQ(ierr);
+
+		/* merge nose */
+		ierr = GeometryObjectCreate("slab_1a",&tmp_slab1);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_SetOperationDefault(tmp_slab1,GeomSet_Union,tmp_slab,nose);CHKERRQ(ierr);
+		
+		/* merge tail */
+		ierr = GeometryObjectCreate("slab",&data->slab_geometry);CHKERRQ(ierr);
+		ierr = GeometryObjectSetType_SetOperationDefault(data->slab_geometry,GeomSet_Union,tmp_slab1,tail);CHKERRQ(ierr);
+
+		ierr = GeometryObjectDestroy(&tmp_slab);CHKERRQ(ierr);
+		ierr = GeometryObjectDestroy(&tmp_slab1);CHKERRQ(ierr);
+	}
+	
+	
+	ierr = GeometryObjectDestroy(&tail);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&nose);CHKERRQ(ierr);
+
+	ierr = GeometryObjectDestroy(&l_segment);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&annulus);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&clip_vert);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&clip_angle);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&clipper);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&otip);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&itip);CHKERRQ(ierr);
+		
+	ierr = GeometryObjectDestroy(&plate);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "iPLUS_DefineSlabMaterial"
 PetscErrorCode iPLUS_DefineSlabMaterial(DM dav,DataBucket materialpoint_db,iPLUSCtx *data)
@@ -126,13 +258,20 @@ PetscErrorCode iPLUS_DefineSlabMaterial(DM dav,DataBucket materialpoint_db,iPLUS
 PetscErrorCode iPLUS_CreateSlabGeometry(iPLUSCtx *data)
 {
 	PetscErrorCode ierr;
-	PetscBool      g3_slab = PETSC_FALSE;
+	PetscBool      wouter_slab  = PETSC_FALSE;
+	PetscBool      ribe_slab = PETSC_FALSE;
 	
-	PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_schellart_g3_2008",&g3_slab,PETSC_NULL);
-	if (!g3_slab) {
-		ierr = iPLUS_CreateSlabGeometry_Standard(data);CHKERRQ(ierr);
-	} else {
+	PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,PETSC_NULL);
+	PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,PETSC_NULL);
+	if (wouter_slab) {
 		ierr = iPLUS_CreateSlabGeometry_Schellart_G3_2008(data);CHKERRQ(ierr);
+	}
+	if (ribe_slab) {
+		ierr = iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(data);CHKERRQ(ierr);
+	}
+	
+	if ( (!wouter_slab) && (!ribe_slab) ) {
+		ierr = iPLUS_CreateSlabGeometry_Standard(data);CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
