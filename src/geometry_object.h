@@ -43,6 +43,7 @@ typedef enum {
 	GeomType_Ellipsoid,
 	GeomType_InfLayer,
 	GeomType_SetOperation,
+	GeomType_HalfSpace,
 	GeomType_NULL
 } GeomType;
 extern const char *GeomTypeNames[];
@@ -127,6 +128,11 @@ struct _p_GeomTypeSetOperation {
 	GeometryObject A,B;
 };
 
+typedef struct _p_GeomTypeHalfSpace *GeomTypeHalfSpace;
+struct _p_GeomTypeHalfSpace {
+	GeomRotateAxis axis;
+};
+
 /* 
  API
 */
@@ -155,6 +161,8 @@ PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x
 PetscErrorCode GeometryObjectSetType_Ellipsoid(GeometryObject go,double x0[],double radia,double radib,double radic);
 
 PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],double Lx,GeomRotateAxis axis);
+
+PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],GeomRotateAxis axis);
 
 PetscErrorCode GeomTypeNameGetId(const char name[],int *id);
 PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],GeometryObject *g);

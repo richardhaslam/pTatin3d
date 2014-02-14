@@ -153,7 +153,6 @@ PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double 
 	PetscFunctionReturn(0);
 }
 
-
 /* point inside */
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside"
@@ -401,8 +400,6 @@ PetscErrorCode GeometryObjectSetFromOptions_Box(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Box"
 PetscErrorCode GeometryObjectPointInside_Box(GeometryObject go,double pos[],int *inside)
@@ -507,8 +504,6 @@ PetscErrorCode GeometryObjectSetFromOptions_Sphere(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Sphere"
 PetscErrorCode GeometryObjectPointInside_Sphere(GeometryObject go,double pos[],int *inside)
@@ -603,8 +598,6 @@ PetscErrorCode GeometryObjectSetFromOptions_Ellipsoid(GeometryObject go)
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Ellipsoid"
@@ -707,8 +700,6 @@ PetscErrorCode GeometryObjectSetFromOptions_Cylinder(GeometryObject go)
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_Cylinder"
@@ -832,8 +823,6 @@ PetscErrorCode GeometryObjectSetFromOptions_EllipticCylinder(GeometryObject go)
 	PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_EllipticCylinder"
 PetscErrorCode GeometryObjectPointInside_EllipticCylinder(GeometryObject go,double pos[],int *inside)
@@ -910,7 +899,7 @@ PetscErrorCode GeometryObjectSetType_EllipticCylinder(GeometryObject go,double x
 
 /* ------------------------------------------------------------------------------------------- */
 /* ------------------------------------------------------------------------------------------- */
-/* Elliptic CYLINDER: implementation */
+/* InfLayer: implementation */
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectDestroy_InfLayer"
 PetscErrorCode GeometryObjectDestroy_InfLayer(GeometryObject go)
@@ -955,8 +944,6 @@ PetscErrorCode GeometryObjectSetFromOptions_InfLayer(GeometryObject go)
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_InfLayer"
@@ -1018,8 +1005,108 @@ PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],doub
 }
 
 /* ------------------------------------------------------------------------------------------- */
+/* HalfSpace: implementation */
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectDestroy_HalfSpace"
+PetscErrorCode GeometryObjectDestroy_HalfSpace(GeometryObject go)
+{
+	GeomTypeHalfSpace ctx;
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeHalfSpace)go->ctx;
+	ierr = PetscFree(ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetFromOptions_HalfSpace"
+PetscErrorCode GeometryObjectSetFromOptions_HalfSpace(GeometryObject go)
+{
+	GeomTypeHalfSpace ctx;
+	PetscReal val;
+	PetscInt ival;
+	PetscBool flg;
+	char name[1024];
+	PetscErrorCode ierr;
+	
+	
+	ctx = (GeomTypeHalfSpace)go->ctx;
+	
+	sprintf(name,"%s_",go->name);
+	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[0] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[1] = val; }
+	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	if (flg) { go->centroid[2] = val; }
+	
+	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
+	
+	PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectPointInside_HalfSpace"
+PetscErrorCode GeometryObjectPointInside_HalfSpace(GeometryObject go,double pos[],int *inside)
+{
+	GeomTypeHalfSpace ctx;
+	
+	
+	ctx = (GeomTypeHalfSpace)go->ctx;
+	*inside = 0;
+	switch (ctx->axis) {
+			
+		case ROTATE_AXIS_Z: // check in x-y
+			if (pos[2] > 0.0) { PetscFunctionReturn(0); }
+			break;
+			
+		case ROTATE_AXIS_Y: // check in x-z
+			if (pos[1] > 0.0) { PetscFunctionReturn(0); }
+			break;			
+			
+		case ROTATE_AXIS_X: // check in y-z
+			if (pos[0] > 0.0) { PetscFunctionReturn(0); }
+			break;			
+			
+		case ROTATE_AXIS_UNDEFINED:
+			PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
+			break;
+			
+	}
+	*inside = 1;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "GeometryObjectSetType_HalfSpace"
+PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],GeomRotateAxis axis)
+{
+	GeomTypeHalfSpace ctx;
+	PetscErrorCode ierr;
+	
+	
+	ierr = PetscMalloc(sizeof(struct _p_GeomTypeHalfSpace),&ctx);CHKERRQ(ierr);
+	ierr = PetscMemzero(ctx,sizeof(struct _p_GeomTypeHalfSpace));CHKERRQ(ierr);
+	go->centroid[0] = x0[0];
+	go->centroid[1] = x0[1];
+	go->centroid[2] = x0[2];
+	
+	ctx->axis       = axis;
+	
+	go->type                     = GeomType_HalfSpace;
+	go->geom_point_inside        = GeometryObjectPointInside_HalfSpace;
+	go->geom_destroy             = GeometryObjectDestroy_HalfSpace;
+	go->ctx = (void*)ctx;
+	
+	ierr = GeometryObjectSetFromOptions_HalfSpace(go);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/* ------------------------------------------------------------------------------------------- */
 /* SetOperation: Implementation */
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectDestroy_SetOperation"
@@ -1037,8 +1124,6 @@ PetscErrorCode GeometryObjectDestroy_SetOperation(GeometryObject go)
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectPointInside_SetOperation"
@@ -1144,5 +1229,3 @@ PetscErrorCode GeometryObjectSetType_SetOperationDefault(GeometryObject go,GeomS
 	
 	PetscFunctionReturn(0);
 }
-
-
