@@ -55,7 +55,6 @@ typedef enum {
 } GeomSetOperatorType;
 extern const char *GeomTypeSetOperatorNames[];
 
-
 typedef enum { 
 	ROTATE_AXIS_X = 0,
 	ROTATE_AXIS_Y = 1,
@@ -64,6 +63,11 @@ typedef enum {
 } GeomRotateAxis;
 extern const char *GeomRotateAxisNames[];
 
+typedef enum { 
+	SIGN_POSITIVE = 0,
+	SIGN_NEGATIVE = 1,
+	SIGN_UNDEFINED
+} GeomSign;
 
 
 #define GEOM_SHAPE_MAX_ROTATIONS 25
@@ -130,6 +134,7 @@ struct _p_GeomTypeSetOperation {
 
 typedef struct _p_GeomTypeHalfSpace *GeomTypeHalfSpace;
 struct _p_GeomTypeHalfSpace {
+	GeomSign       sign;
 	GeomRotateAxis axis;
 };
 
@@ -162,7 +167,7 @@ PetscErrorCode GeometryObjectSetType_Ellipsoid(GeometryObject go,double x0[],dou
 
 PetscErrorCode GeometryObjectSetType_InfLayer(GeometryObject go,double x0[],double Lx,GeomRotateAxis axis);
 
-PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],GeomRotateAxis axis);
+PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],GeomSign sign,GeomRotateAxis axis);
 
 PetscErrorCode GeomTypeNameGetId(const char name[],int *id);
 PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],GeometryObject *g);

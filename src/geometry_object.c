@@ -1044,6 +1044,9 @@ PetscErrorCode GeometryObjectSetFromOptions_HalfSpace(GeometryObject go)
 	
 	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
+
+	ierr = PetscOptionsGetInt(name,"-sign",&ival,&flg);CHKERRQ(ierr);
+	if (flg) { ctx->sign = (GeomRotateAxis)ival; }
 	
 	PetscFunctionReturn(0);
 }
@@ -1057,24 +1060,46 @@ PetscErrorCode GeometryObjectPointInside_HalfSpace(GeometryObject go,double pos[
 	
 	ctx = (GeomTypeHalfSpace)go->ctx;
 	*inside = 0;
-	switch (ctx->axis) {
-			
-		case ROTATE_AXIS_Z: // check in x-y
-			if (pos[2] > 0.0) { PetscFunctionReturn(0); }
-			break;
-			
-		case ROTATE_AXIS_Y: // check in x-z
-			if (pos[1] > 0.0) { PetscFunctionReturn(0); }
-			break;			
-			
-		case ROTATE_AXIS_X: // check in y-z
-			if (pos[0] > 0.0) { PetscFunctionReturn(0); }
-			break;			
-			
-		case ROTATE_AXIS_UNDEFINED:
-			PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
-			break;
-			
+	if (ctx->sign == SIGN_POSITIVE) {
+		
+		switch (ctx->axis) {
+			case ROTATE_AXIS_Z: // check in x-y
+				if (pos[2] <= 0.0) { PetscFunctionReturn(0); }
+				break;
+				
+			case ROTATE_AXIS_Y: // check in x-z
+				if (pos[1] <= 0.0) { PetscFunctionReturn(0); }
+				break;			
+				
+			case ROTATE_AXIS_X: // check in y-z
+				if (pos[0] <= 0.0) { PetscFunctionReturn(0); }
+				break;			
+				
+			case ROTATE_AXIS_UNDEFINED:
+				PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
+				break;
+		}
+		
+	} else {
+		
+		switch (ctx->axis) {
+			case ROTATE_AXIS_Z: // check in x-y
+				if (pos[2] >= 0.0) { PetscFunctionReturn(0); }
+				break;
+				
+			case ROTATE_AXIS_Y: // check in x-z
+				if (pos[1] >= 0.0) { PetscFunctionReturn(0); }
+				break;			
+				
+			case ROTATE_AXIS_X: // check in y-z
+				if (pos[0] >= 0.0) { PetscFunctionReturn(0); }
+				break;			
+				
+			case ROTATE_AXIS_UNDEFINED:
+				PetscPrintf(PETSC_COMM_SELF,"ERROR: Cannot rotate as axis isn't defined");
+				break;
+		}
+		
 	}
 	*inside = 1;
 	PetscFunctionReturn(0);
@@ -1082,7 +1107,7 @@ PetscErrorCode GeometryObjectPointInside_HalfSpace(GeometryObject go,double pos[
 
 #undef __FUNCT__
 #define __FUNCT__ "GeometryObjectSetType_HalfSpace"
-PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],GeomRotateAxis axis)
+PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],GeomSign sign,GeomRotateAxis axis)
 {
 	GeomTypeHalfSpace ctx;
 	PetscErrorCode ierr;
@@ -1094,6 +1119,7 @@ PetscErrorCode GeometryObjectSetType_HalfSpace(GeometryObject go,double x0[],Geo
 	go->centroid[1] = x0[1];
 	go->centroid[2] = x0[2];
 	
+	ctx->sign       = sign;
 	ctx->axis       = axis;
 	
 	go->type                     = GeomType_HalfSpace;
