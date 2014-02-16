@@ -123,7 +123,7 @@ def main():
 	print '**'
 
 	# set environment variable for bin directory
-	ptatin_bin_dir = os.getcwd() + '/..'
+	ptatin_bin_dir = os.path.join('..', '..', os.environ['PETSC_ARCH'], 'bin')
 	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
 
 	# remove contents of directory where all ptatin output is sent
