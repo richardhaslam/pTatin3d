@@ -74,6 +74,9 @@ libptatin3d-y.c += $(call thisdir, \
 			spm_utils.c \
 	)
 
+libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
+			stokes_operators_avx.c \
+	)
 # One file needs special flags.
 $(OBJDIR)/$(call thisdir,ptatin_init.o) : CFLAGS += -DCOMPFLAGS='$(TATIN_CFLAGS)'
 
