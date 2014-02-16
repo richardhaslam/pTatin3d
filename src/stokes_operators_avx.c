@@ -4,6 +4,9 @@
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
+#include <immintrin.h>
+
+#define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
 #define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
 #define NEV 4			/* Number of elements over which to vectorize */
@@ -18,10 +21,10 @@ typedef enum {
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
-static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
+static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
 {
 	PetscReal R[3][3],S[3][3],T[3][3];
-	PetscReal u[3][NQP][NEV],v[3][NQP][NEV];
+	PetscReal u[3][NQP][NEV] ALIGN32,v[3][NQP][NEV] ALIGN32;
 
 	PetscFunctionBegin;
 	for (PetscInt j=0; j<3; j++) {
@@ -72,7 +75,8 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 	PetscFunctionReturn(0);
 }
 
-static PetscErrorCode JacobianInvertNEV(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
+__attribute__((noinline))
+static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
 {
 	PetscInt i,j,k,e;
 
@@ -106,12 +110,13 @@ static PetscErrorCode JacobianInvertNEV(PetscScalar dx[3][3][NQP][NEV],PetscScal
 	return 0;
 }
 
-static PetscErrorCode QuadratureAction(const QPntVolCoefStokes *gausspt[],
-				       PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
-				       PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
-				       PetscReal w[Q2_NODES_PER_EL_3D],
-				       PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
-				       PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV])
+__attribute__((noinline))
+static PetscErrorCode QuadratureAction_AVX(const QPntVolCoefStokes *gausspt[],
+					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
+					   PetscReal w[Q2_NODES_PER_EL_3D],
+					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV])
 {
 	PetscInt i,l,k,e;
 
@@ -205,8 +210,8 @@ PetscErrorCode MFStokesWrapper_A11_AVX(Quadrature volQ,DM dau,PetscScalar ufield
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
 	for (e=0;e<nel;e+=NEV) {
-		PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
-		PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
+		PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
+		PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
 		PetscInt ee,l;
 
 		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
@@ -223,23 +228,23 @@ PetscErrorCode MFStokesWrapper_A11_AVX(Quadrature volQ,DM dau,PetscScalar ufield
 		}
 
 		ierr = PetscMemzero(dx,sizeof dx);CHKERRQ(ierr);
-		ierr = TensorContractNEV(D,B,B,GRAD,elx,dx[0]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,D,B,GRAD,elx,dx[1]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,B,D,GRAD,elx,dx[2]);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);CHKERRQ(ierr);
 
-		ierr = JacobianInvertNEV(dx,dxdet);CHKERRQ(ierr);
+		ierr = JacobianInvertNEV_AVX(dx,dxdet);CHKERRQ(ierr);
 
 		ierr = PetscMemzero(du,sizeof du);CHKERRQ(ierr);
-		ierr = TensorContractNEV(D,B,B,GRAD,elu,du[0]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,D,B,GRAD,elu,du[1]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,B,D,GRAD,elu,du[2]);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);CHKERRQ(ierr);
 
-		ierr = QuadratureAction(cell_gausspoints,dx,dxdet,w,du,dv);CHKERRQ(ierr);
+		ierr = QuadratureAction_AVX(cell_gausspoints,dx,dxdet,w,du,dv);CHKERRQ(ierr);
 
 		ierr = PetscMemzero(elv,sizeof elv);CHKERRQ(ierr);
-		ierr = TensorContractNEV(D,B,B,GRAD_TRANSPOSE,dv[0],elv);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,D,B,GRAD_TRANSPOSE,dv[1],elv);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,B,D,GRAD_TRANSPOSE,dv[2],elv);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);CHKERRQ(ierr);
+		ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);CHKERRQ(ierr);
 
 		for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
 			for (i=0; i<NQP; i++) {
