@@ -104,11 +104,11 @@ PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
 	PetscBool      arcuate_slab_ends = PETSC_FALSE;
 	PetscErrorCode ierr;
 
-	x_0 = 0.2;   /* plate offset in x direction - subducting end */
+	x_0 = 0.31+0.025;   /* plate offset in x direction - subducting end */
 	y_0 = 0.367; /* base of plate in y direction */
 	z_0 = 0.225; /* plate edge offset in z direction */ 
 	h  = 0.013;  /* plate thickness */
-	L  = 0.55;   /* plate length */
+	L  = 0.55-0.025;   /* plate length */
 	W  = 0.15;   /* plate width */
 	
 	l = 4.0 * h; /* input from paper, use default of l/h = 4 */
