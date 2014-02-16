@@ -32,7 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
-#ifndef __ptatinmodel_indendor_ctx_h__
+#ifndef __ptatinmodel_indentor_ctx_h__
 #define __ptatinmodel_indentor_ctx_h__
 
 typedef enum { VSBC_FreeSlip=0, VSBC_NoSlip, VSBC_FreeSlipFreeSurface, VSBC_NoSlipFreeSurface } ModelBC;
