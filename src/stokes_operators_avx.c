@@ -93,7 +93,7 @@ static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],Petsc
 	PetscInt i,j,k,e;
 
 	for (i=0; i<NQP; i++) {
-		PetscScalar a[3][3][NEV];
+		PetscScalar a[3][3][NEV] ALIGN32;
 		for (e=0; e<NEV; e++) {
 			PetscScalar b0,b3,b6,det,idet;
 			for (j=0; j<3; j++) {
@@ -133,21 +133,24 @@ static PetscErrorCode QuadratureAction_AVX(const QPntVolCoefStokes *gausspt[],
 	PetscInt i,l,k,e;
 
 	for (i=0; i<NQP; i++) {
-		PetscScalar Du[6][NEV],Dv[6][NEV]; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
-		for (e=0; e<NEV; e++) {
-			PetscScalar dux[3][3];
+		PetscScalar Du[6][NEV] ALIGN32,Dv[6][NEV] ALIGN32; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
+		__m256d dux[3][3],mhalf = _mm256_set1_pd(0.5),dvx[3][3];
+		__m256d mweight = _mm256_mul_pd(_mm256_set1_pd(w[i]),_mm256_load_pd(dxdet[i]));
+
+		for (k=0; k<3; k++) { // directions
+			__m256d dxk[3] = {_mm256_load_pd(dx[k][0][i]),_mm256_load_pd(dx[k][1][i]),_mm256_load_pd(dx[k][2][i])};
 			for (l=0; l<3; l++) { // fields
-				for (k=0; k<3; k++) { // directions
-					dux[k][l] = du[0][l][i][e] * dx[k][0][i][e] + du[1][l][i][e] * dx[k][1][i][e] + du[2][l][i][e] * dx[k][2][i][e];
-				}
+				dux[k][l] = _mm256_mul_pd(_mm256_load_pd(du[0][l][i]),dxk[0]);
+				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[1][l][i]),dxk[1],dux[k][l]);
+				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[2][l][i]),dxk[2],dux[k][l]);
 			}
-			Du[0][e] = dux[0][0];
-			Du[1][e] = dux[1][1];
-			Du[2][e] = dux[2][2];
-			Du[3][e] = 0.5*(dux[0][1] + dux[1][0]);
-			Du[4][e] = 0.5*(dux[0][2] + dux[2][0]);
-			Du[5][e] = 0.5*(dux[1][2] + dux[2][1]);
 		}
+		_mm256_store_pd(Du[0],dux[0][0]);
+		_mm256_store_pd(Du[1],dux[1][1]);
+		_mm256_store_pd(Du[2],dux[2][2]);
+		_mm256_store_pd(Du[3],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][1],dux[1][0])));
+		_mm256_store_pd(Du[4],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][2],dux[2][0])));
+		_mm256_store_pd(Du[5],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[1][2],dux[2][1])));
 
 		for (e=0; e<NEV; e++) {
 			for (k=0; k<6; k++) { /* Stress is coefficient of test function */
@@ -155,22 +158,22 @@ static PetscErrorCode QuadratureAction_AVX(const QPntVolCoefStokes *gausspt[],
 			}
 		}
 
-		for (e=0; e<NEV; e++) {
-			PetscScalar dvx[3][3];
-			dvx[0][0] = Dv[0][e];
-			dvx[0][1] = Dv[3][e];
-			dvx[0][2] = Dv[4][e];
-			dvx[1][0] = Dv[3][e];
-			dvx[1][1] = Dv[1][e];
-			dvx[1][2] = Dv[5][e];
-			dvx[2][0] = Dv[4][e];
-			dvx[2][1] = Dv[5][e];
-			dvx[2][2] = Dv[2][e];
+		dvx[0][0] = _mm256_load_pd(Dv[0]);
+		dvx[0][1] = _mm256_load_pd(Dv[3]);
+		dvx[0][2] = _mm256_load_pd(Dv[4]);
+		dvx[1][0] = _mm256_load_pd(Dv[3]);
+		dvx[1][1] = _mm256_load_pd(Dv[1]);
+		dvx[1][2] = _mm256_load_pd(Dv[5]);
+		dvx[2][0] = _mm256_load_pd(Dv[4]);
+		dvx[2][1] = _mm256_load_pd(Dv[5]);
+		dvx[2][2] = _mm256_load_pd(Dv[2]);
 
-			for (l=0; l<3; l++) { // fields
-				for (k=0; k<3; k++) { // directions
-					dv[k][l][i][e] = w[i] * dxdet[i][e] * (dvx[0][l] * dx[0][k][i][e] + dvx[1][l] * dx[1][k][i][e] + dvx[2][l] * dx[2][k][i][e]);
-				}
+		for (l=0; l<3; l++) { // fields
+			for (k=0; k<3; k++) { // directions
+				__m256d sum = _mm256_mul_pd(dvx[0][l],_mm256_load_pd(dx[0][k][i]));
+				sum = _mm256_fmadd_pd(dvx[1][l],_mm256_load_pd(dx[1][k][i]),sum);
+				sum = _mm256_fmadd_pd(dvx[2][l],_mm256_load_pd(dx[2][k][i]),sum);
+				_mm256_store_pd(dv[k][l][i],_mm256_mul_pd(mweight,sum));
 			}
 		}
 	}
