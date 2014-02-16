@@ -106,6 +106,7 @@ PetscErrorCode pTatinWritePreamble(void)
 extern PetscErrorCode KSPCreate_ChebychevRN(KSP ksp);
 extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
 extern PetscErrorCode PCCreate_WSMP(PC pc);
+extern PetscLogEvent MAT_MultMFA11;
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinInitialize"
@@ -119,8 +120,8 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = KSPRegister("chebychevrn",KSPCreate_ChebychevRN);CHKERRQ(ierr);
 	ierr = PCRegister("semiredundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
 	ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
 
-	
 	ierr = pTatinWritePreamble();CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);

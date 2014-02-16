@@ -71,7 +71,7 @@
 #include "stokes_operators_mf.h"
 #include "stokes_assembly.h"
 
-
+PetscLogEvent MAT_MultMFA11;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatStokesMFCreate"
@@ -1131,6 +1131,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	
   PetscFunctionBegin;
   
+	ierr = PetscLogEventBegin(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
 //	ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
@@ -1179,6 +1180,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 //		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
 //		ierr = VecCopy(X,Y);CHKERRQ(ierr);
 //	}
+	ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
