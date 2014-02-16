@@ -91,13 +91,21 @@ PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 #define __FUNCT__ "MatA11MFCreate"
 PetscErrorCode MatA11MFCreate(MatA11MF *B)
 {
+	PetscFunctionList flist = NULL;
 	PetscErrorCode ierr;
 	MatA11MF A11;
+	char optype[64] = "ref";
 	PetscFunctionBegin;
 	
 	ierr = PetscMalloc(sizeof(struct _p_MatA11MF),&A11);CHKERRQ(ierr);
 	ierr = PetscMemzero(A11,sizeof(struct _p_MatA11MF));CHKERRQ(ierr);
-	
+
+	ierr = PetscFunctionListAdd(&flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(flist,optype,&A11->Wrapper_A11);CHKERRQ(ierr);
+	if (!A11->Wrapper_A11) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
+	ierr = PetscFunctionListDestroy(&flist);CHKERRQ(ierr);
 	*B = A11;
 	PetscFunctionReturn(0);
 }
@@ -1148,11 +1156,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* momentum */
-//	if (use_low_order_geometry==PETSC_FALSE) {
-		ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-//	} else {
-//		ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-//	}
+	ierr = (*ctx->Wrapper_A11)(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);

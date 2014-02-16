@@ -64,6 +64,7 @@ struct _p_MatA11MF {
 	PetscInt    level;
 	PetscInt    ii;
 	Vec         nodal_viscosity;
+	PetscErrorCode (*Wrapper_A11)(Quadrature,DM,PetscScalar[],PetscScalar[]);
 };
 
 

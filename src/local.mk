@@ -55,6 +55,7 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_form_function.c \
 			stokes_operators_mf.c \
 			stokes_operators.c \
+			stokes_operators_tensor.c \
 			quadrature.c \
 			phase_map.c \
 			element_utils_q2.c \
