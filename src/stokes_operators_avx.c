@@ -6,6 +6,10 @@
 #include <dmda_element_q2p1.h>
 #include <immintrin.h>
 
+#ifndef __FMA__
+#  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
+#endif
+
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
 #define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
