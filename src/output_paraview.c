@@ -91,13 +91,13 @@ PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],cha
 PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 {
 	PetscMPIInt rank;
-	FILE *fp;
+	FILE        *fp;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	/* only master generates this file */
-	ierr = MPI_Comm_rank( PETSC_COMM_WORLD, &rank );CHKERRQ(ierr);
-	if( rank != 0 ) { PetscFunctionReturn(0); }
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	if(rank != 0) { PetscFunctionReturn(0); }
 	
 	fp = fopen(pvdfilename,"w");
 	fprintf(fp,"<?xml version=\"1.0\"?>\n");
@@ -110,7 +110,7 @@ PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 	fprintf(fp,"<Collection>\n");
 	
 	fprintf(fp,"</Collection>\n");
-	fprintf(fp,"</VTKFile>\n");
+	fprintf(fp,"</VTKFile>");
 	fclose(fp);
 	PetscFunctionReturn(0);
 }
@@ -120,51 +120,31 @@ PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char datafile[], const char DirectoryName[])
 {
 	PetscMPIInt rank;
-	FILE *fp;
-	char line[10000];
-	int key_L;
-	char key[] = "</Collection>";
-	char *copy,*tmp;
+	FILE        *fp;
+	char        line[10000];
+	int         key_L,position;
+	char        key[] = "</Collection>";
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	/* only master generates this file */
-	ierr = MPI_Comm_rank( PETSC_COMM_WORLD, &rank );CHKERRQ(ierr);
-	if( rank != 0 ) { PetscFunctionReturn(0); }
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	if (rank != 0) { PetscFunctionReturn(0); }
 	
-	
-	fp = fopen(pvdfilename,"r");
+	fp = fopen(pvdfilename,"r+");
 	/* reset to start of file */
 	rewind(fp);
 	
-	copy = NULL;
-	key_L = strlen( key );
-	while( !feof(fp) ) {
-		fgets( line, 10000-1, fp );
-		if ( strncmp(key,line,key_L)!=0 ) {
-			
-			/* copy line */
-			if (copy!=NULL) {
-			  asprintf(&tmp,"%s",copy);
-			  free(copy);
-				asprintf(&copy,"%s%s",tmp,line);
-				free(tmp);
-			}
-			else {
-			  asprintf(&copy,"%s",line);
-			}
-		}
-		else {
+	key_L = strlen(key);
+	while (!feof(fp)) {
+		position = ftell(fp);
+		fgets(line,10000-1,fp);
+		if (strncmp(key,line,key_L) != 0) {
 			break;
 		}
 	}
-	fclose(fp);
 	
-	/* open new file - clobbering the old */
-	fp = fopen(pvdfilename,"w");
-	
-	/* write all copied chars */
-	fprintf(fp,"%s",copy);
+	fseek(fp,position,SEEK_SET);
 	
 	/* write new data */
 	if (DirectoryName == NULL) {
@@ -172,15 +152,14 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	} else if ( (strlen(DirectoryName) == 0) ) {
 		fprintf(fp,"  <DataSet timestep=\"%1.6e\" file=\"./%s\"/>\n",time, datafile );
 	} else {
-		fprintf(fp,"  <DataSet timestep=\"%1.6e\" file=\"./%s/%s\"/>\n",time, DirectoryName, datafile );
+		fprintf(fp,"  <DataSet timestep=\"%1.6e\" file=\"%s/%s\"/>\n",time, DirectoryName, datafile );
 	}
 	
 	/* close tag */
 	fprintf(fp,"</Collection>\n");
-	fprintf(fp,"</VTKFile>\n");
+	fprintf(fp,"</VTKFile>");
 	
 	fclose(fp);
-	free(copy);
 	
 	PetscFunctionReturn(0);
 }
