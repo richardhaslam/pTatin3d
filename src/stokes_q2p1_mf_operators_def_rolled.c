@@ -31,6 +31,7 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
+#include <petsclog.h>           /* for PetscLogFlops() */
 
 static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
@@ -89,6 +90,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double e
 		Y[idx] += tmp*Np[ip];
 	} // ops = 2 + 4.[2] 
 	// total operations = 8 + 490 + 7 + 729 + 10 = 1244
+	PetscLogFlops(1244);
 }
 static inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
@@ -129,6 +131,7 @@ static inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double
 	} // ops = 27.[18]
   
 // total operations = 486 + 7 + 486 = 979
+	PetscLogFlops(979);
 }
 static inline void MatMultMF_Stokes_MixedFEM3d_Buu(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {

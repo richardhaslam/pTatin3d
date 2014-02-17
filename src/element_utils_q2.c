@@ -427,6 +427,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 	/* flops = [NQP*NPE] * 15 */
 	
 	// TOTAL = [NQP*NPE]*18 + [NQP]*(14 + 58) + [NQP*NPE]*15
+	PetscLogFlops(NQP*NPE*18 + NQP*(14+58) + NQP*NPE*15);
 }
 #endif
 
@@ -515,6 +516,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 	/* flops = [NQP*NPE] * 15 */
 	
 	// TOTAL = [NQP*NPE]*18 + [NQP]*(14 + 6 + 1 + 34) + [NQP*NPE]*15
+	PetscLogFlops(NQP*NPE*18 + NQP*(14+6+1+34) + NQP*NPE*15);
 }
 #endif
 
