@@ -87,7 +87,7 @@ static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],
 			}
 		}
 	}
-	PetscLogFlops(3*NQP*NEV*(18+18+18));
+	PetscLogFlops(3*NQP*NEV*(6+6+6));
 	PetscFunctionReturn(0);
 }
 
