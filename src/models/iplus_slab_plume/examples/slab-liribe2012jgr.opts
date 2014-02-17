@@ -45,7 +45,7 @@
 
 -iplus_mesh_refinement_type 3
 
--A11_operator_type 0,1,1
+-A11_operator_type 0,1,1,1
 
 -iplus_eta_scale 1.0e3
 -iplus_velocity_scale 1.0e-4
@@ -57,12 +57,14 @@
 # restrict surface displacement to be less than 1 mm at each time step (1/10 of the slab thickness)
 -dt_max_surface_displacement 0.001
 
--dau_nlevels 3
+-nonlinear_driver_v1
+
+-dau_nlevels 4
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
--fieldsplit_u_ksp_max_it 1
+-fieldsplit_u_ksp_max_it 10
 -fieldsplit_u_ksp_monitor
--fieldsplit_u_ksp_rtol 1.0e-4
+-fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
 -fieldsplit_u_mg_coarse_ksp_max_it 4
 -fieldsplit_u_mg_coarse_ksp_type fgmres
@@ -88,7 +90,7 @@
 -mz 64
 -nsteps 180
 -output_frequency 2
--output_path slab-Schellart2008G3-ex1
+-output_path slab-LiRibe2012JGR-ex1
 -pc_fieldsplit_schur_factorization_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
