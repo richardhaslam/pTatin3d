@@ -591,7 +591,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 		
 		/* Schur complement */
-		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
 		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
@@ -641,7 +640,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
 				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
