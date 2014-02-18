@@ -69,6 +69,7 @@ struct _p_MatA11MF {
 
 
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B);
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes user,Mat *B);
 
 PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt tA11,PetscInt tA12,PetscInt tA21,Mat *B);
 
@@ -86,9 +87,13 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B);
 
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A);
-PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,Mat *A);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12(MatStokesMF Stk,Mat *A12);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21(MatStokesMF Stk,Mat *A21);
+
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,Mat *A11);
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,Mat *A);
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12_QuasiNewtonX(MatStokesMF Stk,Mat *A12);
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX(MatStokesMF Stk,Mat *A21);
 
 /* non-optimal preallocation routines for A12,A21 */
 PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat);
