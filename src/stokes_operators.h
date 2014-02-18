@@ -97,5 +97,8 @@ PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat);
 PetscErrorCode MatShellGetMatStokesMF(Mat A,MatStokesMF *mf);
 PetscErrorCode MatShellGetMatA11MF(Mat A,MatA11MF *mf);
 
+PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3);
+PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3);
+
 #endif
 

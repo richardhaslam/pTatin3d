@@ -59,24 +59,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
-PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
-{
-	Vec vt;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = VecDuplicate(v1,&vt);CHKERRQ(ierr);
-	ierr = VecCopy(v1,vt);CHKERRQ(ierr);
-	
-	ierr = MatMult(mat,v1,vt);CHKERRQ(ierr);
-	ierr = VecAXPY(vt,1.0,v2);
-	ierr = VecCopy(vt,v3);CHKERRQ(ierr);
-	ierr = VecDestroy(&vt);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
-
 typedef struct {
 	PetscInt     nlevels;
 	OperatorType *level_type;

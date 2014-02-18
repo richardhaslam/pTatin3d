@@ -695,26 +695,6 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeAdd_generic"
-PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
-{
-	Vec vt;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	
-	ierr = VecDuplicate(v1,&vt);CHKERRQ(ierr);
-	ierr = VecCopy(v1,vt);CHKERRQ(ierr);
-	
-	ierr = MatMult(mat,v1,vt);CHKERRQ(ierr);
-	ierr = VecAXPY(vt,1.0,v2);
-	ierr = VecCopy(vt,v3);CHKERRQ(ierr);
-	ierr = VecDestroy(&vt);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_StokesMGAuu"
 PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
 {
