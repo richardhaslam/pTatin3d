@@ -126,7 +126,8 @@ void get_node_coordinate(double el_coords[],int index,double pos[])
 void get_face_coordinates(double el_coords[],Q2Face face,double coords[][3])
 {
 	int nodes[4], i;
-	
+
+	nodes[0] = nodes[1] = nodes[2] = nodes[3] = -1;	
 	switch (face) {
 			
 		case Q2_FACE_WEST:
@@ -176,7 +177,8 @@ void get_face_coordinates(double el_coords[],Q2Face face,double coords[][3])
 void get_vertex_vectors(double el_coords[],int vertex,double vectors[][3])
 {
 	int nodes[4], i;
-	
+
+	nodes[0] = nodes[1] = nodes[2] = nodes[3] = -1;	
 	switch (vertex) {
 			
 		case Q2_VERTEX_0:
