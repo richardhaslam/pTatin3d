@@ -136,6 +136,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	rewind(fp);
 	
 	key_L = strlen(key);
+	position = -1;
 	while (!feof(fp)) {
 		position = ftell(fp);
 		fgets(line,10000-1,fp);
@@ -143,6 +144,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 			break;
 		}
 	}
+	if (position == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot locate keyword in pvd file"); }
 	
 	fseek(fp,position,SEEK_SET);
 	
