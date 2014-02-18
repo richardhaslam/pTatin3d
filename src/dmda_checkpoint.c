@@ -224,6 +224,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 		}
 	}
 	convert = (PetscInt)data[DMDA_ST];
+	st = DMDA_STENCIL_STAR;
 	switch (convert) {
 		case 0:
 			st = DMDA_STENCIL_STAR;
@@ -231,6 +232,8 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 		case 1:
 			st = DMDA_STENCIL_BOX;
 			break;
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown stenctil type detected");
 	}			
 	
 	/* ref x,y,z */
