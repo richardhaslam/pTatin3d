@@ -183,7 +183,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 	iPLUSCtx         *data = (iPLUSCtx*)ctx;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
-	PetscBool        g3_slab = PETSC_FALSE;
+	PetscBool        ribe_slab,wouter_slab,shallow_mantle;
 	PetscReal        Gmin[3],Gmax[3],center_x,center_z,Lx,Ly,Lz;
 	PetscErrorCode   ierr;
 	
@@ -200,12 +200,28 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 		ierr = DMDASetUniformCoordinates(dav,0.0,0.3,0.0,0.3,0.0,0.3);CHKERRQ(ierr);
 	} else {
 		/* bigger tank */
-		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_schellart_g3_2008",&g3_slab,PETSC_NULL);
-		if(!g3_slab) {
-			ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.4,0.0,0.6);CHKERRQ(ierr);
+		wouter_slab = PETSC_FALSE;
+		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,PETSC_NULL);
+
+		ribe_slab = PETSC_FALSE;
+		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,PETSC_NULL);
+		
+		shallow_mantle = PETSC_FALSE;
+		PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_domain_shallow_mantle",&shallow_mantle,PETSC_NULL);
+		
+		if(wouter_slab || ribe_slab) {
+
+			if (shallow_mantle) {
+				ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,0.12, 0.0,0.6);CHKERRQ(ierr);
+			} else {
+				ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,0.38, 0.0,0.6);CHKERRQ(ierr);
+			}
+			
 		} else {
-			ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,0.38, 0.0,0.6);CHKERRQ(ierr);
+			ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.4,0.0,0.6);CHKERRQ(ierr);
 		}
+
+		
 	}
 	/* refine? */
 	ierr = DMDAGetBoundingBox(dav,Gmin,Gmax);CHKERRQ(ierr);
