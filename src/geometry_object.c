@@ -31,7 +31,7 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
-
+#define _GNU_SOURCE
 #include "stdio.h"
 #include "stdlib.h"
 #include "ctype.h"
@@ -294,7 +294,10 @@ void PointRotate(double xin[],GeomRotateAxis axis,double angle,double xout[])
 	
 	c_ang = cos(angle);
 	s_ang = sin(angle);
-	
+
+	RR[0][0] = RR[0][1] = RR[0][2] = 0.0;
+	RR[1][0] = RR[1][1] = RR[1][2] = 0.0;
+	RR[2][0] = RR[2][1] = RR[2][2] = 0.0;	
 	switch (axis) {
 			
 		case ROTATE_AXIS_X:
