@@ -234,6 +234,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown stenctil type detected");
+			break;
 	}			
 	
 	/* ref x,y,z */

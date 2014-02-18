@@ -259,6 +259,7 @@ PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,Petsc
 	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 
+	ML = 0;
 	switch (dir) {
 		case 0:
 			ML = M;
@@ -268,6 +269,9 @@ PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,Petsc
 			break;
 		case 2:
 			ML = P;
+			break;
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"direction specified must be 0, 1, 2");
 			break;
 	}
 	delta = (X1-X0)/((PetscReal)ML - 1.0);
