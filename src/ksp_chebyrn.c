@@ -670,7 +670,7 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 {
   KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
   PetscErrorCode   ierr;
-  PetscInt         k,kp1,km1,maxit,ktmp,i,valid_for_iteration;
+  PetscInt         k,kp1,km1,maxit,ktmp,i,valid_for_iteration = 0;
   PetscScalar      alpha,omegaprod,mu,omega,Gamma,c[3],scale;
   PetscReal        rnorm = 0.0;
   Vec              x,b,p[3],r,residual;
