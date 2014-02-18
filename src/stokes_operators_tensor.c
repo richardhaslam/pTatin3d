@@ -102,7 +102,7 @@ static PetscErrorCode JacobianInvertNEV(PetscScalar dx[3][3][NQP][NEV],PetscScal
 			dxdet[i][e] =  det;
 		}
 	}
-	PetscLogFlops(NQP*NEV*(14 + 1/* division */ + 29));
+	PetscLogFlops(NQP*NEV*(14 + 1/* division */ + 27));
 	return 0;
 }
 
