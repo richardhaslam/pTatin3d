@@ -114,6 +114,7 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
 	n_markers = atol( line );
 
 	// write field types
+	datasize = 0;
 	switch (vtk_data_type) {
 		case 0:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot read vtk data type VTK_VOID");
@@ -163,6 +164,9 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
 			break;
 		case 12:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot read vtk data type VTK_ID_TYPE");
+			break;
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No assumed default vtk data type");
 			break;
 	}
 	
