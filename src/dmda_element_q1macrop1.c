@@ -165,6 +165,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 	
 	/* ======================================================================================== */
 	// x
+	start = -1;
 	for (i=si; i<si+m; i++) {
 		if (i%2==0 && i==si && i!=0) { continue; } /* reject first ghost if its's even */
 		if (i%2==0) {
@@ -172,6 +173,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 			break;
 		}
 	}
+	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in I"); }
 	while (start + 2 * cntx < si+m) {
 		PetscInt n0,n2;
 		
@@ -197,6 +199,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 	
 	/* ======================================================================================== */
 	// y
+	start = -1;
 	for (j=sj; j<sj+n; j++) {
 		if (j%2==0 && j==sj && j!=0) { continue; } /* reject first ghost if its's even */
 		if (j%2==0) {
@@ -204,7 +207,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 			break;
 		}
 	}
-	
+	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in J"); }
 	while (start + 2 * cnty < sj+n) {
 		PetscInt n0,n2;
 		
@@ -231,6 +234,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 	
 	/* ======================================================================================== */
 	// z
+	start = -1;
 	for (k=sk; k<sk+p; k++) {
 		if (k%2==0 && k==sk && k!=0) { continue; } /* reject first ghost if its's even */
 		if (k%2==0) {
@@ -238,6 +242,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 			break;
 		}
 	}
+	if (start == -1) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot determine start index in K"); }
 	while (start + 2 * cntz < p+sk) {
 		PetscInt n0,n2;
 		
