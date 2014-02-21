@@ -616,6 +616,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	user->checkpoint_every          = 1000;
 	user->checkpoint_every_nsteps   = 1000;
 	user->checkpoint_every_ncpumins = 90.0;
+	user->checkpoint_disable        = PETSC_FALSE;
 		
 	user->mx               = 4;
 	user->my               = 4;
@@ -756,14 +757,20 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
 PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 {
   char           optionsfile[PETSC_MAX_PATH_LEN];
-	PetscInt       mx,my,mz;
+	PetscInt       mx3 = 4;
 	PetscBool      flg;
 	PetscErrorCode ierr;
 	
 	/* parse options */
-	PetscOptionsGetInt(PETSC_NULL,"-mx",&ctx->mx,0);
-	PetscOptionsGetInt(PETSC_NULL,"-my",&ctx->my,0);
-	PetscOptionsGetInt(PETSC_NULL,"-mz",&ctx->mz,0);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
+	flg = PETSC_FALSE; ierr = PetscOptionsGetInt(PETSC_NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
+	if (flg) {
+		ctx->mx = mx3;
+		ctx->my = mx3;
+		ctx->mz = mx3;
+	}
 	
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
@@ -776,20 +783,21 @@ PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
 	ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
 	
 	/* checkpointing */
-	PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);
-	PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);
-	PetscOptionsGetReal(PETSC_NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
 	
 	/* time stepping */
-	PetscOptionsGetInt(PETSC_NULL,"-nsteps",&ctx->nsteps,&flg);
-	PetscOptionsGetReal(PETSC_NULL,"-dt_min",&ctx->dt_min,&flg);
-	PetscOptionsGetReal(PETSC_NULL,"-dt_max",&ctx->dt_max,&flg);
-	PetscOptionsGetReal(PETSC_NULL,"-time_max",&ctx->time_max,&flg);
-	PetscOptionsGetInt(PETSC_NULL,"-output_frequency",&ctx->output_frequency,&flg);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
 	{
 		PetscReal constant_dt;
 		
-		PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);
+		ierr = PetscOptionsGetReal(PETSC_NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
 		if (flg) {
 			ctx->use_constant_dt = PETSC_TRUE; 
 			ctx->constant_dt     = constant_dt;
@@ -983,6 +991,7 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 	
 	PetscFunctionBegin;
 
+	if (ctx->checkpoint_disable) { PetscFunctionReturn(0); }
 	
 	/* context */
 	if (prefix) {

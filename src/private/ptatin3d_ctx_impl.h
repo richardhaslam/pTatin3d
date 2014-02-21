@@ -54,6 +54,7 @@ struct _p_pTatinCtx {
 	char			 restart_dir[PETSC_MAX_PATH_LEN];
 	PetscInt   checkpoint_every, checkpoint_every_nsteps;
 	PetscReal  checkpoint_every_ncpumins;
+	PetscBool  checkpoint_disable;
 	PetscBool  use_mf_stokes;
 	
 	/* rheology */
