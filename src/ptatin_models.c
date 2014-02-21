@@ -51,6 +51,27 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	
 	ierr = PetscMalloc(sizeof(struct _p_pTatinModel),&m);CHKERRQ(ierr);
 	ierr = PetscMemzero(m,sizeof(struct _p_pTatinModel));CHKERRQ(ierr);
+
+	m->disable_initial_solution          = PETSC_FALSE;
+	m->disable_initial_stokes_variables  = PETSC_FALSE;
+	m->disable_apply_bc                  = PETSC_FALSE;
+	m->disable_apply_bc_mg               = PETSC_FALSE;
+	m->disable_apply_material_bc         = PETSC_FALSE;
+	m->disable_initial_mesh_geometry     = PETSC_FALSE;
+	m->disable_initial_material_geometry = PETSC_FALSE;
+	m->disable_update_mesh_geometry      = PETSC_FALSE;
+	m->disable_output                    = PETSC_FALSE;
+
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_intial_solution_disable",&m->disable_initial_solution,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_initial_stokes_variables_disable",&m->disable_initial_stokes_variables,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_apply_bc_disable",&m->disable_apply_bc,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_apply_bc_mg_disable",&m->disable_apply_bc_mg,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_apply_material_bc_disable",&m->disable_apply_material_bc,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_initial_mesh_geometry_disable",&m->disable_initial_mesh_geometry,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_initial_material_geometry_disable",&m->disable_initial_material_geometry,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_update_mesh_geometry_disable",&m->disable_update_mesh_geometry,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_output_disable",&m->disable_output,0);CHKERRQ(ierr);
+	
 	*model = m;
 	PetscFunctionReturn(0);
 }
@@ -142,7 +163,7 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 		case PTATIN_MODEL_APPLY_INIT_SOLUTION:
 			model->FP_pTatinModel_ApplyInitialSolution = ( PetscErrorCode(*)(pTatinCtx,Vec,void*) )func;
 			break;
-        case PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS:
+		case PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS:
 			model->FP_pTatinModel_ApplyInitialStokesVariableMarkers = ( PetscErrorCode(*)(pTatinCtx,Vec,void*) )func;
 			break;
 		case PTATIN_MODEL_APPLY_INIT_MESH_GEOM:
@@ -232,8 +253,6 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	registered_model_list[list_length  ] = model;
 	registered_model_list[list_length+1] = PETSC_NULL;
 	
-	model->disable_output = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_output_disable",&model->disable_output,0);CHKERRQ(ierr);
 	if (model->disable_output) {
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Output functionality for \"%s\" has been deactivated\n",model->model_name);
 	}
@@ -286,8 +305,8 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_Output) {
-		if (!model->disable_output) {
+	if (!model->disable_output) {
+		if (model->FP_pTatinModel_Output) {
 			ierr = model->FP_pTatinModel_Output(ctx,X,name,model->model_data);CHKERRQ(ierr);
 		}
 	}
@@ -302,8 +321,10 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyInitialSolution) {
-		ierr = model->FP_pTatinModel_ApplyInitialSolution(ctx,X,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_initial_solution) {
+		if (model->FP_pTatinModel_ApplyInitialSolution) {
+			ierr = model->FP_pTatinModel_ApplyInitialSolution(ctx,X,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
@@ -316,14 +337,14 @@ PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,p
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyInitialStokesVariableMarkers) {
-		ierr = model->FP_pTatinModel_ApplyInitialStokesVariableMarkers(ctx,X,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_initial_stokes_variables) {
+		if (model->FP_pTatinModel_ApplyInitialStokesVariableMarkers) {
+			ierr = model->FP_pTatinModel_ApplyInitialStokesVariableMarkers(ctx,X,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModel_UpdateMeshGeometry"
@@ -332,8 +353,10 @@ PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Ve
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_UpdateMeshGeometry) {
-		ierr = model->FP_pTatinModel_UpdateMeshGeometry(ctx,X,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_update_mesh_geometry) {
+		if (model->FP_pTatinModel_UpdateMeshGeometry) {
+			ierr = model->FP_pTatinModel_UpdateMeshGeometry(ctx,X,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
@@ -346,8 +369,10 @@ PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatin
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyInitialMaterialGeometry) {
-		ierr = model->FP_pTatinModel_ApplyInitialMaterialGeometry(ctx,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_initial_material_geometry) {
+		if (model->FP_pTatinModel_ApplyInitialMaterialGeometry) {
+			ierr = model->FP_pTatinModel_ApplyInitialMaterialGeometry(ctx,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
@@ -360,8 +385,10 @@ PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx 
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyInitialMeshGeometry) {
-		ierr = model->FP_pTatinModel_ApplyInitialMeshGeometry(ctx,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_initial_mesh_geometry) {
+		if (model->FP_pTatinModel_ApplyInitialMeshGeometry) {
+			ierr = model->FP_pTatinModel_ApplyInitialMeshGeometry(ctx,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
@@ -388,8 +415,10 @@ PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ct
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyBoundaryCondition) {
-		ierr = model->FP_pTatinModel_ApplyBoundaryCondition(ctx,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_apply_bc) {
+		if (model->FP_pTatinModel_ApplyBoundaryCondition) {
+			ierr = model->FP_pTatinModel_ApplyBoundaryCondition(ctx,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
@@ -402,10 +431,12 @@ PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyBoundaryConditionMG) {
-		ierr = model->FP_pTatinModel_ApplyBoundaryConditionMG(nl,bclist,dav,ctx,model->model_data);CHKERRQ(ierr);
-	} else {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't prodivided with the operation \"ApplyBoundaryConditionMG\"",model->model_name );
+	if (!model->disable_apply_bc_mg) {
+		if (model->FP_pTatinModel_ApplyBoundaryConditionMG) {
+			ierr = model->FP_pTatinModel_ApplyBoundaryConditionMG(nl,bclist,dav,ctx,model->model_data);CHKERRQ(ierr);
+		} else {
+			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't prodivided with the operation \"ApplyBoundaryConditionMG\"",model->model_name );
+		}
 	}
 	
 	PetscFunctionReturn(0);
@@ -418,8 +449,10 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (model->FP_pTatinModel_ApplyMaterialBoundaryCondition) {
-		ierr = model->FP_pTatinModel_ApplyMaterialBoundaryCondition(ctx,model->model_data);CHKERRQ(ierr);
+	if (!model->disable_apply_material_bc) {
+		if (model->FP_pTatinModel_ApplyMaterialBoundaryCondition) {
+			ierr = model->FP_pTatinModel_ApplyMaterialBoundaryCondition(ctx,model->model_data);CHKERRQ(ierr);
+		}
 	}
 	
 	PetscFunctionReturn(0);
