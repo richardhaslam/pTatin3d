@@ -1044,7 +1044,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscPrintf(PETSC_COMM_WORLD,"  timestep[] dt_courant = %1.4e \n", user->dt );
 	}
 	/* checkpoint step 0 */
-	ierr = pTatin3dCheckpoint(user,X,"step000000");CHKERRQ(ierr);
+	// ierr = pTatin3dCheckpoint(user,X,"step000000");CHKERRQ(ierr);
 	
 	/*
 	{
