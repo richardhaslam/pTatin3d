@@ -1038,7 +1038,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
@@ -1751,7 +1751,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
@@ -2501,7 +2501,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor_stages",&monitor_stages,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);

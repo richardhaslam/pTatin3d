@@ -753,8 +753,8 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "pTatin3dParseOptions"
-PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx)
+#define __FUNCT__ "pTatin3dSetFromOptions"
+PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 {
   char           optionsfile[PETSC_MAX_PATH_LEN];
 	PetscInt       mx3 = 4;
@@ -1339,7 +1339,7 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
 	
 	
-	ierr = pTatin3dParseOptions(ctx);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(ctx);CHKERRQ(ierr);
 	ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
 	
 	/* set new function pointers for loading model */

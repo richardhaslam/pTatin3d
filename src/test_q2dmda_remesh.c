@@ -68,7 +68,7 @@ PetscErrorCode pTatin3d_remesh(void)
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);

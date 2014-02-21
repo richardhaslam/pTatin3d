@@ -93,7 +93,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[]);
 
 PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx);
 PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx);
-PetscErrorCode pTatin3dParseOptions(pTatinCtx ctx);
+PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx);
 PetscErrorCode pTatinModelLoad(pTatinCtx ctx);
 
 PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt);

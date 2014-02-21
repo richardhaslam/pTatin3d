@@ -175,7 +175,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -535,7 +535,7 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -877,7 +877,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);

@@ -57,7 +57,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
