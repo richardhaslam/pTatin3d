@@ -171,11 +171,8 @@ PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufi
 	const PetscReal *LA_gcoords;
 	PetscInt nel,nen_u,e,i,j,k;
 	const PetscInt *elnidx_u,*gidx;
-	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	QPntVolCoefStokes *all_gausspoints;
 	const QPntVolCoefStokes *cell_gausspoints[NEV];
-	PetscQuadrature q;
-	PetscFE fe;
 	PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
 
 	PetscFunctionBegin;
