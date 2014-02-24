@@ -266,7 +266,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
 	
 	while (user->step < user->nsteps) {
-		char prefix[256];
+		char prefix[PETSC_MAX_PATH_LEN];
 
 				
 		/* UPDATE */
@@ -279,7 +279,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 		user->time += user->dt;
 		user->step++;
 		
-		PetscPrintf(PETSC_COMM_WORLD,"[Step %1.6d:] time = %1.4e dt = %1.4e \n",user->step,user->time,user->dt);
+		PetscPrintf(PETSC_COMM_WORLD,"[Step %1.6D:] time = %1.4e dt = %1.4e \n",user->step,user->time,user->dt);
 		ierr = pTatinLogBasic(user);
 		
 		
@@ -290,7 +290,7 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 		/* ------------------- */
 		/* OUTPUT */
 		if (user->step%user->output_frequency==0) {
-			sprintf(prefix,"step%1.6d",user->step);
+			PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%1.6D",user->step);
 			ierr = pTatinModel_Output(user->model,user,X,prefix);CHKERRQ(ierr);
 		}
 		/* CHECKPOINT */
@@ -386,7 +386,7 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	
 	
 	while (user->step < user->nsteps) {
-		char prefix[256];
+		char prefix[PETSC_MAX_PATH_LEN];
 		
 		/* UPDATE */
 		
@@ -396,7 +396,7 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 		user->time += user->dt;
 		user->step++;
 		
-		PetscPrintf(PETSC_COMM_WORLD,"[Step %1.6d:] time = %1.4e dt = %1.4e \n",user->step,user->time,user->dt);
+		PetscPrintf(PETSC_COMM_WORLD,"[Step %1.6D:] time = %1.4e dt = %1.4e \n",user->step,user->time,user->dt);
 		
 		
 		/* COMPUTE DT */
@@ -405,7 +405,7 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 		/* ------------------- */
 		/* OUTPUT */
 		if (user->step%user->output_frequency==0) {
-			sprintf(prefix,"step%1.6d",user->step);
+			PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%1.6D",user->step);
 			ierr = pTatinModel_Output(user->model,user,X,prefix);CHKERRQ(ierr);
 		}
 		/* CHECKPOINT */

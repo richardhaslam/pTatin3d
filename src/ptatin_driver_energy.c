@@ -224,7 +224,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		energy->time = user->time;
 		
 		for (tk=1; tk<=user->nsteps; tk++) {
-			char stepname[256];
+			char stepname[PETSC_MAX_PATH_LEN];
 			
 			/* MAP Tin into Told */
 			//ierr = VecCopy(T,Told);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			
 			user->time = user->time + user->dt;
 			
-			sprintf(stepname,"step%.4d",tk);
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%.4D",tk);
 			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
 		
 		}

@@ -48,6 +48,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "stokes_operators.h"
 #include "stokes_operators_mf.h"
 #include "stokes_assembly.h"
+#include "stokes_output.h"
 #include "dmda_element_q2p1.h"
 #include "dmda_duplicate.h"
 #include "dmda_project_coords.h"
@@ -1369,13 +1370,13 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	
 	
 	{
-		char name[100];
+		char name[PETSC_MAX_PATH_LEN];
 		
-		sprintf(name,"ic_step%.6d",user->step);
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ic_step%.6D",user->step);
 		ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
 	}
 
-	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%d]: time %lf Myr \n", user->step, user->time );
+	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%D]: time %lf Myr \n", user->step, user->time );
 	for (kk=0; kk<user->nsteps; kk++) {
 		PetscInt tk = user->step+1;
 		
@@ -1387,25 +1388,25 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		user->time += 0.12;
 		user->step++;
-		PetscPrintf(PETSC_COMM_WORLD,"Timestep[%d] : Cycle[%d/%d] : time %lf Myr \n", tk, kk, user->nsteps-1, user->time );
+		PetscPrintf(PETSC_COMM_WORLD,"Timestep[%D] : Cycle[%D/%D] : time %lf Myr \n", tk, kk, user->nsteps-1, user->time );
 
 		
 		if ((kk+1)%5==0) {
-			char name[100];
+			char name[PETSC_MAX_PATH_LEN];
 			
-			sprintf(name,"step%.6d",tk);
+			PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%.6D",tk);
 			ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
 		}
 		
 		if ((kk+1)%10==0) {
-			char name[100];
+			char name[PETSC_MAX_PATH_LEN];
 			
-			PetscPrintf(PETSC_COMM_WORLD,"  checkpointing ptatin :: Model timestep %d : time %lf Myr : cycle[%d/%d] \n", tk,user->time,kk, user->nsteps-1 );
+			PetscPrintf(PETSC_COMM_WORLD,"  checkpointing ptatin :: Model timestep %D : time %lf Myr : cycle[%D/%D] \n", tk,user->time,kk, user->nsteps-1 );
 			/* check point test */
 			//	ierr = pTatin3dContextSave(user,"checkpoint.file");CHKERRQ(ierr);
 			//	ierr = pTatin3dContextLoad(user,"checkpoint.file");CHKERRQ(ierr);
 			
-			sprintf(name,"step%.6d",tk);
+			PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%.6D",tk);
 			ierr = pTatin3dCheckpoint(user,X,name);CHKERRQ(ierr);
 		}
 

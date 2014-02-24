@@ -86,13 +86,14 @@ static const char ptatin_driver_help[] =
 
 PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysCompStokes *ctx);
 PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscBool zip_file,Vec *VP);
+PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],char name[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "_strlcat"
-PetscErrorCode _strlcat(char orig[],char append[],size_t L)
+PetscErrorCode _strlcat(char orig[],const char append[],size_t L)
 {
 #ifdef HAVE_STRLCAT
-	strlcat(orig,append,L);
+	strlcat((const char*)orig,(const char*)append,L);
 #else	
 	char *new;
 	size_t l1,l2;
