@@ -404,16 +404,30 @@ void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer )
 
 void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated )
 {
-	if(L){ *L = db->L; }
-	if(buffer){ *buffer = db->buffer; }
-	if(allocated){ *allocated = db->allocated; }
+	if (L) { *L = db->L; }
+	if (buffer) { *buffer = db->buffer; }
+	if (allocated) { *allocated = db->allocated; }
 }
+
+void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated )
+{
+	long int _L,_buffer,_allocated;
+	int ierr;
+	
+	_L = (long int)db->L;
+	_buffer = (long int)db->buffer;
+	_allocated = (long int)db->allocated;
+	
+	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm); }
+	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm); }
+	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm); }
+}
+
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] )
 {
 	if(L){      *L      = db->nfields; }
 	if(fields){ *fields = db->field; }
 }
-
 
 void DataFieldGetAccess( const DataField gfield )
 {
