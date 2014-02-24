@@ -589,12 +589,12 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 			ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
 
 			ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", tk, timestep );
+			PetscPrintf(PETSC_COMM_WORLD,"  timestep[%D] dt_courant = %1.4e \n", tk, timestep );
 
 			user->dt = timestep;
 			user->dt = 1.0e-1 * user->dt;
 		}
-		PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt = %1.4e \n", tk, user->dt );
+		PetscPrintf(PETSC_COMM_WORLD,"  timestep[%D] dt = %1.4e \n", tk, user->dt );
 
 		ierr = SwarmUpdateProperties_MPntStd(user->materialpoint_db,user,X);CHKERRQ(ierr);
 		
@@ -618,22 +618,22 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		
 		user->time += user->dt;
 		user->step++;
-		PetscPrintf(PETSC_COMM_WORLD,"Timestep[%d] : Cycle[%d/%d] : time %lf Myr \n", tk, kk, user->nsteps-1, user->time );
+		PetscPrintf(PETSC_COMM_WORLD,"Timestep[%D] : Cycle[%D/%D] : time %lf Myr \n", tk, kk, user->nsteps-1, user->time );
 
 		
 		if ((kk+1)%user->output_frequency==0) {
-			char name[100];
+			char name[PETSC_MAX_PATH_LEN];
 			
-			sprintf(name,"step%.6d",tk);
+			PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%.6D",tk);
 			ierr = pTatinModel_Output(user->model,user,X,name);CHKERRQ(ierr);
 		}
 		
 		if ((kk+1)%user->output_frequency==0) {
-			char name[100];
+			char name[PETSC_MAX_PATH_LEN];
 			
-			PetscPrintf(PETSC_COMM_WORLD,"  checkpointing ptatin :: Model timestep %d : time %lf Myr : cycle[%d/%d] \n", tk,user->time,kk, user->nsteps-1 );
+			PetscPrintf(PETSC_COMM_WORLD,"  checkpointing ptatin :: Model timestep %D : time %lf Myr : cycle[%D/%D] \n", tk,user->time,kk, user->nsteps-1 );
 			
-			sprintf(name,"step%.6d",tk);
+			PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%.6D",tk);
 			ierr = pTatin3dCheckpoint(user,X,name);CHKERRQ(ierr);
 		}
 

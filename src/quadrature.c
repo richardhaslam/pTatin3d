@@ -187,6 +187,7 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 {
 	ConformingElementFamily e;
 	double size;
+	int ngp32;
 	PetscErrorCode ierr;
 	
   PetscFunctionBegin;
@@ -195,7 +196,8 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	ElementTypeCreate_Q2(&e,3);
 	quadrature->e       = e;
 	quadrature->face_id = index;
-	e->generate_surface_quadrature_3D(e,index,&quadrature->ngp,quadrature->gp2,quadrature->gp3);	
+	e->generate_surface_quadrature_3D(e,index,&ngp32,quadrature->gp2,quadrature->gp3);	
+	quadrature->ngp = (PetscInt)ngp32;
 	
 	quadrature->nfaces = nfaces;
 	

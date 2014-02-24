@@ -829,7 +829,7 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
 	double         Ni[27];
 	QPntSurfCoefStokes *all_qpoint;
 	QPntSurfCoefStokes *cell_qpoint;
-	char fname[256];
+	char fname[PETSC_MAX_PATH_LEN];
 	PetscMPIInt rank;
 	FILE *file;
 	
@@ -838,17 +838,17 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (name) {
-		sprintf(fname,"%s-surfquadrature-face%d-r%d.gp",name,Q->face_id,rank);
+		PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s-surfquadrature-face%D-r%D.gp",name,Q->face_id,rank);
 	} else {
-		sprintf(fname,"surfquadrature-face%d-r%d.gp",Q->face_id,rank);
+		PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"surfquadrature-face%D-r%D.gp",Q->face_id,rank);
 	}
 	file = fopen(fname,"w");
 	if (!file) {
 		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",fname);
 	}
 
-	fprintf(file,"# Surface quadrature data (n,t1,t1,traction) for face %d \n",Q->face_id);
-	fprintf(file,"# nfaces = %d \n",Q->nfaces);
+	PetscFPrintf(PETSC_COMM_SELF,file,"# Surface quadrature data (n,t1,t1,traction) for face %D \n",Q->face_id);
+	PetscFPrintf(PETSC_COMM_SELF,file,"# nfaces = %D \n",Q->nfaces);
 	
 	if (Q->nfaces == 0) { PetscFunctionReturn(0); }
 	
@@ -983,9 +983,9 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 
 	
 	for (face_index=0; face_index<HEX_EDGES; face_index++) {
-		char name[256];
+		char name[PETSC_MAX_PATH_LEN];
 
-		sprintf(name,"SurfaceGaussLegendre StokesCoefficients[face %d]",face_index);
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"SurfaceGaussLegendre StokesCoefficients[face %D]",face_index);
     DataBucketView(PetscObjectComm((PetscObject)dav), ctx->surfQ[face_index]->properties_db,name,DATABUCKET_VIEW_STDOUT);
 	}
 	
@@ -1176,7 +1176,7 @@ PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglo
 		ierr = KSPGetPC(split_ksp[0],&split_pc);CHKERRQ(ierr);
 		ierr = PCMGGetLevels(split_pc,&nlevels);CHKERRQ(ierr);
 		
-		sprintf(opt,"-fieldsplit_u_pc_mg_levels %d",nlevels);
+		PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_pc_mg_levels %D",nlevels);
 		ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	}
 	
@@ -1188,7 +1188,7 @@ PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglo
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_type chebychev");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_norm_type NONE");CHKERRQ(ierr);
 	
-	sprintf(opt,"-fieldsplit_u_mg_levels_ksp_max_it %d",maxits);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_levels_ksp_max_it %D",maxits);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
@@ -1213,15 +1213,15 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_IterativeASM(SNES snes,PetscReal r
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
 	
-	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_max_it %d",maxits);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_coarse_ksp_max_it %D",maxits);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 
-	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_rtol %1.4e",rtol);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_coarse_ksp_rtol %1.4e",rtol);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type asm");CHKERRQ(ierr);
 	
-	sprintf(opt,"-fieldsplit_u_mg_coarse_pc_asm_overlap %d",overlap);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_coarse_pc_asm_overlap %D",overlap);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_sub_pc_type ilu");CHKERRQ(ierr);
@@ -1242,7 +1242,7 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type fgmres");CHKERRQ(ierr);
 	
-	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_max_it %d",maxits);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_coarse_ksp_max_it %D",maxits);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	
 	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_rtol %1.4e",rtol);
@@ -1251,7 +1251,7 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 	/* defined nested ksp solver on coarse grid */
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_pc_type ksp");CHKERRQ(ierr);
 
-	sprintf(opt,"-fieldsplit_u_mg_coarse_ksp_ksp_max_it %d",maxitsnested);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_coarse_ksp_ksp_max_it %D",maxitsnested);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_type chebychev");CHKERRQ(ierr);
@@ -1260,7 +1260,7 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_pc_type asm");CHKERRQ(ierr);
-	sprintf(opt,"-fieldsplit_u_coarse_ksp_pc_asm_overlap %d",overlap);
+	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_coarse_ksp_pc_asm_overlap %D",overlap);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_sub_pc_type ilu");CHKERRQ(ierr);
 	
