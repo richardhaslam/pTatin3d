@@ -975,15 +975,14 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 		case DATABUCKET_VIEW_STDOUT:
 		{
 			int f;
-			int L,buffer,allocated;
+			long int L,buffer,allocated;
 			double memory_usage_total,memory_usage_total_local = 0.0;
 			int rank;
+			int ierr;
 			
-			MPI_Comm_rank(comm,&rank);
+			ierr = MPI_Comm_rank(comm,&rank);
 			
-			MPI_Allreduce(&db->L,&L,1,MPI_INT,MPI_SUM,comm);
-			MPI_Allreduce(&db->buffer,&buffer,1,MPI_INT,MPI_MAX,comm);
-			MPI_Allreduce(&db->allocated,&allocated,1,MPI_INT,MPI_SUM,comm);
+			DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
 			
 			for( f=0; f<db->nfields; f++ ) {
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
@@ -994,9 +993,9 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 
 			if (rank==0) {
 				printf("DataBucketView(MPI): (\"%s\")\n",filename);
-				printf("  L                  = %d \n", L );
-				printf("  buffer (max)       = %d \n", buffer );
-				printf("  allocated          = %d \n", allocated );
+				printf("  L                  = %ld \n", L );
+				printf("  buffer (max)       = %ld \n", buffer );
+				printf("  allocated          = %ld \n", allocated );
 				
 				printf("  nfields registered = %d \n", db->nfields );
 				for( f=0; f<db->nfields; f++ ) {

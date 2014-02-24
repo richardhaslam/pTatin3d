@@ -338,13 +338,12 @@ PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,Pe
 PetscErrorCode SwarmDataWriteToPetscVec(DataBucket db,const char suffix[])
 {
 	PetscErrorCode ierr;
-	int n_points,ng_points;
+	int n_points;
 	Vec point_field_data;
 	BTruth found;
 	PetscBool write_to_tgz = PETSC_FALSE;
 	
 	DataBucketGetSizes(db,&n_points,0,0);
-	ierr = MPI_Allreduce(&n_points,&ng_points,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	ierr = VecCreate(PETSC_COMM_WORLD,&point_field_data);CHKERRQ(ierr);
 	ierr = VecSetSizes(point_field_data,(PetscInt)n_points,PETSC_DECIDE);CHKERRQ(ierr);

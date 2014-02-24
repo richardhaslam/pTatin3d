@@ -174,7 +174,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
   /* structs or material constants */
 	MaterialConst_MaterialType      *MatType_data;
 	MaterialConst_ViscosityConst    *ViscConst_data;
-	int            npoints_yielded,npoints_yielded_g;
+	long int       npoints_yielded,npoints_yielded_g;
 	
 	PetscFunctionBegin;
 	
@@ -405,11 +405,11 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (LAVA) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
+	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (LAVA) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %ld; cpu time %1.2e (sec)\n",
                 min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
 	
 	

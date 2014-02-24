@@ -212,7 +212,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	MaterialConst_SoftExpo          *SoftExpo_data;
 	
 	int            viscous_type,plastic_type,softening_type,density_type;
-	int            npoints_yielded,npoints_yielded_g;
+	long int       npoints_yielded,npoints_yielded_g;
 	
 	
 	PetscFunctionBegin;
@@ -669,11 +669,11 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
+	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %ld; cpu time %1.2e (sec)\n",
                 min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
 	
 	
@@ -732,7 +732,7 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	PetscLogDouble    t0,t1;
 	RheologyConstants *rheology;
 	double            eta_mp;
-	int               npoints_cutoff,npoints_cutoff_g;
+	long int          npoints_cutoff,npoints_cutoff_g;
 	
 	
 	PetscFunctionBegin;
@@ -793,11 +793,11 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&npoints_cutoff,&npoints_cutoff_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&npoints_cutoff,&npoints_cutoff_g,1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %d; cpu time %1.2e (sec)\n",
+	PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %ld; cpu time %1.2e (sec)\n",
                 min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g, t1-t0 );
 	
 	
