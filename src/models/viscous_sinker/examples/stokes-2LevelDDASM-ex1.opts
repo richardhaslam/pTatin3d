@@ -70,4 +70,4 @@
 -ptatin_model viscous_sinker
 -snes_type ksponly
 #-snes_view
--stk_velocity_da_mat_type aij
+-stk_velocity_dm_mat_type aij
