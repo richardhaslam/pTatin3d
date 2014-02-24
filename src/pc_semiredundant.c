@@ -83,8 +83,8 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 			}
 			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 		}
-		ierr = MatSeqAIJSetPreallocation(red,NULL,nnz);CHKERRQ(ierr);
-		ierr = MatMPIAIJSetPreallocation(red,NULL,nnz,NULL,onnz);CHKERRQ(ierr);
+		ierr = MatSeqAIJSetPreallocation(red,PETSC_DEFAULT,nnz);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocation(red,PETSC_DEFAULT,nnz,PETSC_DEFAULT,onnz);CHKERRQ(ierr);
 		
 		PetscFree(nnz);
 		PetscFree(onnz);
@@ -215,8 +215,8 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReu
 			}
 			ierr = MatRestoreRow(Alocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
 		}
-		ierr = MatSeqAIJSetPreallocation(red,NULL,nnz);CHKERRQ(ierr);
-		ierr = MatMPIAIJSetPreallocation(red,NULL,nnz,NULL,onnz);CHKERRQ(ierr);
+		ierr = MatSeqAIJSetPreallocation(red,PETSC_DEFAULT,nnz);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocation(red,PETSC_DEFAULT,nnz,PETSC_DEFAULT,onnz);CHKERRQ(ierr);
 		
 		PetscFree(nnz);
 		PetscFree(onnz);
@@ -283,7 +283,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 
 			ierr = KSPCreate(red->subcomm->sub_comm,&red->ksp);CHKERRQ(ierr);
 			ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-			ierr = PetscLogObjectParent((PetscObject)pc,red->ksp);CHKERRQ(ierr);
+			ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
 
 			ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 			ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 

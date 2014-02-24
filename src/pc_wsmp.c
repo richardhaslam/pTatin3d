@@ -97,8 +97,8 @@ PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
 	PetscErrorCode ierr;
-	PetscInt *ia;
-	PetscInt *ja;
+	const PetscInt *ia;
+	const PetscInt *ja;
 	PetscInt m,nnz_i,cnt,idx,nnz_full,nnz_ut,i,j;
 	PetscBool done;
 	int *ia_ut,*ja_ut;
@@ -179,8 +179,8 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
 	PetscErrorCode ierr;
-	PetscInt *ia;
-	PetscInt *ja;
+	const PetscInt *ia;
+	const PetscInt *ja;
 	PetscInt m,n,M,N,nnz_i,cnt,idx,nnz_ut,i,j,start,end;
 	PetscBool done;
 	int *ia_ut,*ja_ut;
@@ -262,10 +262,13 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 		FILE *fp;
 		char name[1000];
 		PetscInt nnz_i_ut = 0;
+		MPI_Comm comm;
+		
 		
 		// ia
-		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-		sprintf(name,"ia_rank%d.dat",rank);
+		PetscObjectGetComm((PetscObject)A,&comm);
+		ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+		PetscSNPrintf(name,1000-1,"ia_rank%D.dat",rank);
 		fp = fopen(name,"w");
         
 		cnt = 0;
@@ -279,17 +282,17 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 					nnz_i_ut++;
 				}
 			}
-			fprintf(fp,"[%d] %d \n",i,(int)idx);
+			PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D \n",i,idx);
 			
 			idx = idx + nnz_i_ut;
 			cnt = cnt + nnz_i;
 		}
-		fprintf(fp,"[%d] %d \n",m,(int)idx);
+		PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D \n",m,idx);
 		
 		fclose(fp);
         
 		// ja
-		sprintf(name,"ja_rank%d.dat",rank);
+		PetscSNPrintf(name,1000-1,"ja_rank%D.dat",rank);
 		fp = fopen(name,"w");
         
 		idx = 0;
@@ -299,7 +302,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 			nnz_i = ia[i+1]-ia[i];
 			for (j=cnt; j<cnt+nnz_i; j++) {
 				if (ja[j] >= i+start) {
-					fprintf(fp,"[%d] %d %d \n",idx,i,(int)ja[j]);
+					PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D %D \n",idx,i,ja[j]);
 					idx++;
 				}
 			}
@@ -365,18 +368,20 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 		PetscMPIInt rank;
 		FILE *fp;
 		char name[1000];
+		MPI_Comm comm;
 		
 		//ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
 		//ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 		
-		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-		sprintf(name,"Aut_rank%d.dat",rank);
+		PetscObjectGetComm((PetscObject)A,&comm);
+		ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+		PetscSNPrintf(name,1000-1,"Aut_rank%D.dat",rank);
 		fp = fopen(name,"w");
 		for (i=start; i<start+m; i++) {
 			ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
 			for (j=0; j<ncols; j++) {
 				if (cols[j] >= i) {
-					fprintf(fp,"[%d,%d] %1.4e: ",i,cols[j],vals[j]);
+					PetscFPrintf(PETSC_COMM_SELF,fp,"[%D,%D] %1.4e: ",i,cols[j],vals[j]);
 				}
 			} fprintf(fp,"\n");
 			ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
