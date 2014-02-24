@@ -90,9 +90,12 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	PetscReal      el_coords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
 	PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
 	PetscReal      fac,D[NSTRESS][NSTRESS],diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
-	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
-	PetscInt       NUM_GINDICES_cell,*GINDICES_cell,ge_eqnums_cell[3*Q2_NODES_PER_EL_3D];
-	PetscInt       NUM_GINDICES_coarse,*GINDICES_coarse,ge_eqnums_coarse[3*Q2_NODES_PER_EL_3D];
+	PetscInt       NUM_GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *GINDICES;
+	const PetscInt *GINDICES_cell;
+	const PetscInt *GINDICES_coarse;
+	PetscInt       NUM_GINDICES_cell,ge_eqnums_cell[3*Q2_NODES_PER_EL_3D];
+	PetscInt       NUM_GINDICES_coarse,ge_eqnums_coarse[3*Q2_NODES_PER_EL_3D];
 	PetscScalar    *Ac_entries;
 	PetscLogDouble t0,t1,t[6];
   PetscErrorCode ierr;
