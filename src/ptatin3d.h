@@ -40,6 +40,7 @@
 #include "petscdm.h"
 
 
+extern PetscClassId PTATIN_CLASSID;
 
 typedef struct _p_pTatinCtx *pTatinCtx;
 typedef struct _p_pTatinModel *pTatinModel;

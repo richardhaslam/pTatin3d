@@ -37,6 +37,7 @@
 #include "stdlib.h"
 
 #include "ptatin_svn_info.h"
+#include "ptatin3d.h"
 
 #define STR_VALUE(arg)      #arg
 #define STRINGIFY_ARG(name) STR_VALUE(name)
@@ -107,6 +108,30 @@ extern PetscErrorCode KSPCreate_ChebychevRN(KSP ksp);
 extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
 extern PetscErrorCode PCCreate_WSMP(PC pc);
 extern PetscLogEvent MAT_MultMFA11;
+extern PetscLogEvent MAT_MultMFA; /* stokes operator */
+extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient opertor */
+extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence opertor */
+
+PetscClassId PTATIN_CLASSID;
+extern PetscLogEvent PTATIN_DataExchangerTopologySetup;
+extern PetscLogEvent PTATIN_DataExchangerBegin;
+extern PetscLogEvent PTATIN_DataExchangerEnd;
+
+extern PetscLogEvent PTATIN_MaterialPointCommunication;
+extern PetscLogEvent PTATIN_MaterialPointProjection;
+extern PetscLogEvent PTATIN_MaterialPointPopulationControl;
+
+extern PetscLogEvent PTATIN_ModelInitialize;
+extern PetscLogEvent PTATIN_ModelApplyInitialSolution;
+extern PetscLogEvent PTATIN_ModelApplyInitialMeshGeometry;
+extern PetscLogEvent PTATIN_ModelApplyInitialMaterialGeometry;
+extern PetscLogEvent PTATIN_ModelApplyInitialStokesVariableMarkers;
+extern PetscLogEvent PTATIN_ModelApplyBoundaryCondition;
+extern PetscLogEvent PTATIN_ModelApplyBoundaryConditionMG;
+extern PetscLogEvent PTATIN_ModelApplyMaterialBoundaryCondition;
+extern PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
+extern PetscLogEvent PTATIN_ModelOutput;
+
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinInitialize"
@@ -122,6 +147,23 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
 
+	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("DataExBegin",    PTATIN_CLASSID,&PTATIN_DataExchangerBegin);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("DataExEnd",      PTATIN_CLASSID,&PTATIN_DataExchangerEnd);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("ModelInit",      PTATIN_CLASSID,&PTATIN_ModelInitialize);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelInitSoln",  PTATIN_CLASSID,&PTATIN_ModelApplyInitialSolution);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelInitMesh",  PTATIN_CLASSID,&PTATIN_ModelApplyInitialMeshGeometry);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelInitMat",   PTATIN_CLASSID,&PTATIN_ModelApplyInitialMaterialGeometry);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelInitStkVar",PTATIN_CLASSID,&PTATIN_ModelApplyInitialStokesVariableMarkers);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelBC",        PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryCondition);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelBCMG",      PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryConditionMG);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
+	
+	
 	ierr = pTatinWritePreamble();CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);

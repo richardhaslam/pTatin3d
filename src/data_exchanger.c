@@ -119,6 +119,11 @@ DataExEnd()
 
 const char *status_names[] = { "initialized", "finalized", "unknown" };
 
+PetscLogEvent PTATIN_DataExchangerTopologySetup;
+PetscLogEvent PTATIN_DataExchangerBegin;
+PetscLogEvent PTATIN_DataExchangerEnd;
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "DataExCreate"
 DataEx DataExCreate(MPI_Comm comm,const PetscInt count)
@@ -521,6 +526,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
 	if (d->topology_status != DEOBJECT_INITIALIZED) {
 		SETERRQ( d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first" );
 	}
+	ierr = PetscLogEventBegin(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
 	
 	/* given infomation about all my neighbours, make map symmetric */
 	ierr = _DataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
@@ -573,6 +579,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
 	}
 	
 	d->topology_status = DEOBJECT_FINALIZED;
+	ierr = PetscLogEventEnd(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -915,6 +922,7 @@ PetscErrorCode DataExBegin(DataEx de)
 		SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
 	}
 	
+	ierr = PetscLogEventBegin(PTATIN_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
 	np = de->n_neighbour_procs;
 	
 	/* == NON BLOCKING == */
@@ -924,6 +932,7 @@ PetscErrorCode DataExBegin(DataEx de)
 		ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );CHKERRQ(ierr);
 	}
 	
+	ierr = PetscLogEventEnd(PTATIN_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -949,6 +958,7 @@ PetscErrorCode DataExEnd(DataEx de)
 		SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
 	}
 	
+	ierr = PetscLogEventBegin(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
 	np = de->n_neighbour_procs;
 	
 	message_recv_offsets = (PetscInt*)malloc( sizeof(PetscInt) * np );
@@ -970,6 +980,7 @@ PetscErrorCode DataExEnd(DataEx de)
 	free(message_recv_offsets);
 	
 	de->communication_status = DEOBJECT_FINALIZED;
+	ierr = PetscLogEventEnd(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 

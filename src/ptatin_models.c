@@ -39,6 +39,16 @@
 
 pTatinModel *registered_model_list = NULL;
 
+PetscLogEvent PTATIN_ModelInitialize;
+PetscLogEvent PTATIN_ModelApplyInitialSolution;
+PetscLogEvent PTATIN_ModelApplyInitialMeshGeometry;
+PetscLogEvent PTATIN_ModelApplyInitialMaterialGeometry;
+PetscLogEvent PTATIN_ModelApplyInitialStokesVariableMarkers;
+PetscLogEvent PTATIN_ModelApplyBoundaryCondition;
+PetscLogEvent PTATIN_ModelApplyBoundaryConditionMG;
+PetscLogEvent PTATIN_ModelApplyMaterialBoundaryCondition;
+PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
+PetscLogEvent PTATIN_ModelOutput;
 
 
 #undef __FUNCT__
@@ -75,7 +85,6 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	*model = m;
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelSetName"
@@ -305,11 +314,13 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelOutput,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_output) {
 		if (model->FP_pTatinModel_Output) {
 			ierr = model->FP_pTatinModel_Output(ctx,X,name,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelOutput,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -321,11 +332,13 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialSolution,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_solution) {
 		if (model->FP_pTatinModel_ApplyInitialSolution) {
 			ierr = model->FP_pTatinModel_ApplyInitialSolution(ctx,X,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialSolution,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -337,11 +350,13 @@ PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,p
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialStokesVariableMarkers,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_stokes_variables) {
 		if (model->FP_pTatinModel_ApplyInitialStokesVariableMarkers) {
 			ierr = model->FP_pTatinModel_ApplyInitialStokesVariableMarkers(ctx,X,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialStokesVariableMarkers,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -353,11 +368,13 @@ PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Ve
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelUpdateMeshGeometry,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_update_mesh_geometry) {
 		if (model->FP_pTatinModel_UpdateMeshGeometry) {
 			ierr = model->FP_pTatinModel_UpdateMeshGeometry(ctx,X,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelUpdateMeshGeometry,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -369,11 +386,13 @@ PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatin
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialMaterialGeometry,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_material_geometry) {
 		if (model->FP_pTatinModel_ApplyInitialMaterialGeometry) {
 			ierr = model->FP_pTatinModel_ApplyInitialMaterialGeometry(ctx,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialMaterialGeometry,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -385,11 +404,13 @@ PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx 
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyInitialMeshGeometry,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_initial_mesh_geometry) {
 		if (model->FP_pTatinModel_ApplyInitialMeshGeometry) {
 			ierr = model->FP_pTatinModel_ApplyInitialMeshGeometry(ctx,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyInitialMeshGeometry,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -401,9 +422,11 @@ PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 
+	ierr = PetscLogEventBegin(PTATIN_ModelInitialize,0,0,0,0);CHKERRQ(ierr);
 	if (model->FP_pTatinModel_Initialize) {
 		ierr = model->FP_pTatinModel_Initialize(ctx,model->model_data);CHKERRQ(ierr);
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelInitialize,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -415,11 +438,13 @@ PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ct
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_apply_bc) {
 		if (model->FP_pTatinModel_ApplyBoundaryCondition) {
 			ierr = model->FP_pTatinModel_ApplyBoundaryCondition(ctx,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -431,6 +456,7 @@ PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyBoundaryConditionMG,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_apply_bc_mg) {
 		if (model->FP_pTatinModel_ApplyBoundaryConditionMG) {
 			ierr = model->FP_pTatinModel_ApplyBoundaryConditionMG(nl,bclist,dav,ctx,model->model_data);CHKERRQ(ierr);
@@ -438,6 +464,7 @@ PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],
 			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't prodivided with the operation \"ApplyBoundaryConditionMG\"",model->model_name );
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyBoundaryConditionMG,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -449,11 +476,13 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_ModelApplyMaterialBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	if (!model->disable_apply_material_bc) {
 		if (model->FP_pTatinModel_ApplyMaterialBoundaryCondition) {
 			ierr = model->FP_pTatinModel_ApplyMaterialBoundaryCondition(ctx,model->model_data);CHKERRQ(ierr);
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_ModelApplyMaterialBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
