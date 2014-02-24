@@ -350,7 +350,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	KSP       ksp;
 	PC        pc;
 	PetscBool flg;
-	OperatorType  level_type[10];
+	PetscInt  level_type[10];
 	
 	PetscMPIInt    rank;
 	DM             dav_hierarchy[10];
@@ -614,18 +614,18 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	/* A11 operator */
 	
 	/* defaults */
-	level_type[0] = OP_TYPE_REDISC_ASM;
+	level_type[0] = (PetscInt)OP_TYPE_REDISC_ASM;
 	for (k=1; k<nlevels; k++) {
-		level_type[k] = OP_TYPE_REDISC_MF;
+		level_type[k] = (PetscInt)OP_TYPE_REDISC_MF;
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 
-		switch (level_type[k]) {
+		switch ((OperatorType)level_type[k]) {
 
-			case 0:
+			case OP_TYPE_REDISC_ASM:
 			{
 				Mat Auu;
 				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
@@ -653,7 +653,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			}
 				break;
 
-			case 1:
+			case OP_TYPE_REDISC_MF:
 			{
 				Mat Auu;
 				MatA11MF mf,A11Ctx;
@@ -694,7 +694,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			}
 				break;
 				
-			case 2:
+			case OP_TYPE_GALERKIN:
 			{
 				Mat Auu;
 
@@ -718,7 +718,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		}
 	}	
 	
-	mlctx.level_type  = level_type;
+	//mlctx.level_type  = level_type;
+	for (k=nlevels-1; k>=0; k--) {
+		mlctx.level_type[k] = (OperatorType)level_type[k];
+	}
 	mlctx.operatorA11 = operatorA11;
 	mlctx.operatorB11 = operatorB11;
 	

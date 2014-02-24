@@ -97,14 +97,14 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	ierr = VecSetSizes( dd, PETSC_DECIDE, L );CHKERRQ(ierr);
 	ierr = VecSetType( dd, VECSEQ );CHKERRQ(ierr);
 	
-	val = (PetscScalar)dim + 0.1;		VecSetValue( dd, DMDA_DIM, val, INSERT_VALUES );
+	val = (PetscScalar)dim + 0.1;		VecSetValue( dd, (PetscInt)DMDA_DIM, val, INSERT_VALUES );
 	
-	val = (PetscScalar)M + 0.1;			VecSetValue( dd, DMDA_M, val, INSERT_VALUES );
-	val = (PetscScalar)N + 0.1;			VecSetValue( dd, DMDA_N, val, INSERT_VALUES );
-	val = (PetscScalar)P + 0.1;			VecSetValue( dd, DMDA_P, val, INSERT_VALUES );
+	val = (PetscScalar)M + 0.1;			VecSetValue( dd, (PetscInt)DMDA_M, val, INSERT_VALUES );
+	val = (PetscScalar)N + 0.1;			VecSetValue( dd, (PetscInt)DMDA_N, val, INSERT_VALUES );
+	val = (PetscScalar)P + 0.1;			VecSetValue( dd, (PetscInt)DMDA_P, val, INSERT_VALUES );
 	
-	val = (PetscScalar)dof + 0.1;		VecSetValue( dd, DMDA_DOF, val, INSERT_VALUES );
-	val = (PetscScalar)sw + 0.1;		VecSetValue( dd, DMDA_SW, val, INSERT_VALUES );
+	val = (PetscScalar)dof + 0.1;		VecSetValue( dd, (PetscInt)DMDA_DOF, val, INSERT_VALUES );
+	val = (PetscScalar)sw + 0.1;		VecSetValue( dd, (PetscInt)DMDA_SW, val, INSERT_VALUES );
 	
 	//
 	for (i=0; i<3; i++) {
@@ -122,9 +122,9 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 				val = 3.1;
 				break;
 		}
-		if (i == 0) { ierr = VecSetValue( dd, DMDA_WRAPX, val, INSERT_VALUES );CHKERRQ(ierr); }
-		if (i == 1) { ierr = VecSetValue( dd, DMDA_WRAPY, val, INSERT_VALUES );CHKERRQ(ierr); }
-		if (i == 2) { ierr = VecSetValue( dd, DMDA_WRAPZ, val, INSERT_VALUES );CHKERRQ(ierr); }
+		if (i == 0) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPX, val, INSERT_VALUES );CHKERRQ(ierr); }
+		if (i == 1) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPY, val, INSERT_VALUES );CHKERRQ(ierr); }
+		if (i == 2) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPZ, val, INSERT_VALUES );CHKERRQ(ierr); }
 	}
 	//
 	
@@ -136,17 +136,17 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 			val = 1.1;
 			break;
 	}			
-	ierr = VecSetValue( dd, DMDA_ST, val, INSERT_VALUES );CHKERRQ(ierr);
+	ierr = VecSetValue( dd, (PetscInt)DMDA_ST, val, INSERT_VALUES );CHKERRQ(ierr);
 	
 	/* ref x,y,z */
-	val = (PetscScalar)refine_x + 0.1;			ierr = VecSetValue( dd, DMDA_RX, val, INSERT_VALUES );CHKERRQ(ierr);
-	val = (PetscScalar)refine_y + 0.1;			ierr = VecSetValue( dd, DMDA_RY, val, INSERT_VALUES );CHKERRQ(ierr);
-	val = (PetscScalar)refine_z + 0.1;			ierr = VecSetValue( dd, DMDA_RZ, val, INSERT_VALUES );CHKERRQ(ierr);
+	val = (PetscScalar)refine_x + 0.1;			ierr = VecSetValue( dd, (PetscInt)DMDA_RX, val, INSERT_VALUES );CHKERRQ(ierr);
+	val = (PetscScalar)refine_y + 0.1;			ierr = VecSetValue( dd, (PetscInt)DMDA_RY, val, INSERT_VALUES );CHKERRQ(ierr);
+	val = (PetscScalar)refine_z + 0.1;			ierr = VecSetValue( dd, (PetscInt)DMDA_RZ, val, INSERT_VALUES );CHKERRQ(ierr);
 	
 	if (has_coords == PETSC_TRUE) {
-		ierr = VecSetValue( dd, DMDA_COORD, 1, INSERT_VALUES );CHKERRQ(ierr);
+		ierr = VecSetValue( dd, (PetscInt)DMDA_COORD, 1, INSERT_VALUES );CHKERRQ(ierr);
 	} else {
-		ierr = VecSetValue( dd, DMDA_COORD, 0, INSERT_VALUES );CHKERRQ(ierr);
+		ierr = VecSetValue( dd, (PetscInt)DMDA_COORD, 0, INSERT_VALUES );CHKERRQ(ierr);
 	}
 	
 	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_WRITE, &v );CHKERRQ(ierr);

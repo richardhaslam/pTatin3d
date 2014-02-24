@@ -563,7 +563,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 																						 Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
 {
 	Mat            A,B;
-	OperatorType   level_type[10];
+	PetscInt       level_type[10];
 	DM             dav,dap;
 	PetscInt       k,max;
 	PetscBool      flg;
@@ -625,16 +625,16 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	
 	/* A11 operator */	
 	/* defaults */
-	level_type[0] = OP_TYPE_REDISC_ASM;
+	level_type[0] = (PetscInt)OP_TYPE_REDISC_ASM;
 	for (k=1; k<nlevels; k++) {
-		level_type[k] = OP_TYPE_REDISC_MF;
+		level_type[k] = (PetscInt)OP_TYPE_REDISC_MF;
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		
-		switch (level_type[k]) {
+		switch ((OperatorType)level_type[k]) {
 				
 			case OP_TYPE_REDISC_ASM:
 			{

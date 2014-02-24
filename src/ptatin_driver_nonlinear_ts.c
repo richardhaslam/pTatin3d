@@ -281,6 +281,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	DM             dav,dap;
 	PetscInt       k,max;
 	PetscBool      flg;
+	PetscInt       _level_type[MAX_MG_LEVELS];
 	static int     been_here = 0;
 	PetscErrorCode ierr;
 	
@@ -343,13 +344,16 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	
 	/* A11 operator */	
 	/* defaults */
-	level_type[0] = OP_TYPE_REDISC_ASM;
+	_level_type[0] = (PetscInt)OP_TYPE_REDISC_ASM;
 	for (k=1; k<nlevels; k++) {
-		level_type[k] = OP_TYPE_REDISC_MF;
+		_level_type[k] = (PetscInt)OP_TYPE_REDISC_MF;
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",_level_type,&max,&flg);CHKERRQ(ierr);
+	for (k=nlevels-1; k>=0; k--) {
+		level_type[k] = (OperatorType)_level_type[k];
+	}
 	for (k=nlevels-1; k>=0; k--) {
 		
 		switch (level_type[k]) {
@@ -496,6 +500,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 	DM             dav,dap;
 	PetscInt       k,max;
 	PetscBool      flg;
+	PetscInt       _level_type[MAX_MG_LEVELS];
 	static int     been_here = 0;
 	PetscErrorCode ierr;
 	
@@ -584,13 +589,17 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 
 	/* A11 operator */	
 	/* defaults */
-	level_type[0] = OP_TYPE_REDISC_ASM;
+	_level_type[0] = (PetscInt)OP_TYPE_REDISC_ASM;
 	for (k=1; k<nlevels; k++) {
-		level_type[k] = OP_TYPE_REDISC_MF;
+		_level_type[k] = (PetscInt)OP_TYPE_REDISC_MF;
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",_level_type,&max,&flg);CHKERRQ(ierr);
+	for (k=nlevels-1; k>=0; k--) {
+		level_type[k] = (OperatorType)_level_type[k];
+	}
+	
 	for (k=nlevels-1; k>=0; k--) {
 		
 		switch (level_type[k]) {
