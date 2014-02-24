@@ -1087,19 +1087,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		
 		
 		/* update markers */
-		{
-			int npoints;
-			MPntStd *mp_std;
-			DataField PField;
-			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
-			mp_std = PField->data;
-			
-			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		}
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(user->model,user,X);CHKERRQ(ierr);
@@ -1428,19 +1418,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 		/* update markers */
-		{
-			int npoints;
-			MPntStd *mp_std;
-			DataField PField;
-			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
-			mp_std = PField->data;
-			
-			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		}
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(user->model,user,X);CHKERRQ(ierr);

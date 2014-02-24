@@ -1468,19 +1468,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(user,X);CHKERRQ(ierr);
 		
 		/* update marker positions */
-		{
-			int npoints;
-			MPntStd *mp_std;
-			DataField PField;
-			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
-			mp_std = PField->data;
-			
-			ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		}
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
@@ -2227,19 +2217,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(user,X);CHKERRQ(ierr);
 		
 		/* update marker positions */
-		{
-			int npoints;
-			MPntStd *mp_std;
-			DataField PField;
-			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
-			mp_std = PField->data;
-			
-			ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		}
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
@@ -2916,19 +2896,9 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(user,X);CHKERRQ(ierr);
 		
 		/* update marker positions */
-		{
-			int npoints;
-			MPntStd *mp_std;
-			DataField PField;
-			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
-			mp_std = PField->data;
-			
-			ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		}
+		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
+		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);

@@ -56,6 +56,10 @@
 #include "element_utils_q2.h"
 #include "dmda_element_q2p1.h"
 
+PetscLogEvent PTATIN_MaterialPointAdvGlobalCoordUpdate;
+PetscLogEvent PTATIN_MaterialPointAdvLocalCoordUpdate;
+PetscLogEvent PTATIN_MaterialPointAdvCommunication;
+PetscLogEvent PTATIN_MaterialPointAdvRemoval;
 
 
 #undef __FUNCT__
@@ -714,11 +718,13 @@ PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates(DataBucket materialpoint
 	DataField      PField;
 	
 	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
 	mp_std = PField->data;
 	
 	ierr = SwarmUpdatePosition_MPntStd_Euler(dav,velocity,dt,npoints,mp_std);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -745,6 +751,7 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	
 
 	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvLocalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
 	/* get marker fields */
 	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
@@ -774,6 +781,7 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 														npoints, mp_std );
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvLocalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -786,9 +794,11 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
 	int       p,npoints,escaped;
 	MPntStd   *mp_std;
 	DataField PField;
+	PetscErrorCode ierr;
 	
 	
 	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvRemoval,0,0,0,0);CHKERRQ(ierr);
 	/* get marker fields */
 	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
@@ -817,6 +827,7 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
 			}
 		}
 	}
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvRemoval,0,0,0,0);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -845,6 +856,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	if (size==1) {
 		PetscFunctionReturn(0);
 	}
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvCommunication,0,0,0,0);CHKERRQ(ierr);
 	
 	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
 	
@@ -1073,6 +1085,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	ierr = MPI_Allreduce(&npoints,&npoints_global_fin,1,MPI_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"  SwarmUpdatePosition_GENERIC(Communication): num. points global ( init. = %d : final = %d )\n", npoints_global_init,npoints_global_fin);
 	ierr = PetscFree(data_p);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvCommunication,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

@@ -600,21 +600,14 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		
 		/* 2 Advect markers */
 		{
-			int npoints;
-			MPntStd *mp_std;
-			DataField PField;
 			Vec velocity,pressure;
-			
-			DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-			DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname ,&PField);
-			mp_std = PField->data;
-			
-			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
-			ierr = SwarmUpdatePosition_MPntStd_Euler(dav_hierarchy[nlevels-1],velocity,user->dt,npoints,mp_std);CHKERRQ(ierr);
-			
+			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+			ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
 			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+			
 		}
+
 		
 		/* 3 Update local coordinates and communicate */
 		ierr = MaterialPointStd_UpdateCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],user->materialpoint_ex);CHKERRQ(ierr);

@@ -117,7 +117,11 @@ extern PetscLogEvent PTATIN_DataExchangerTopologySetup;
 extern PetscLogEvent PTATIN_DataExchangerBegin;
 extern PetscLogEvent PTATIN_DataExchangerEnd;
 
-extern PetscLogEvent PTATIN_MaterialPointCommunication;
+extern PetscLogEvent PTATIN_MaterialPointAdvGlobalCoordUpdate;
+extern PetscLogEvent PTATIN_MaterialPointAdvLocalCoordUpdate;
+extern PetscLogEvent PTATIN_MaterialPointAdvCommunication;
+extern PetscLogEvent PTATIN_MaterialPointAdvRemoval;
+
 extern PetscLogEvent PTATIN_MaterialPointProjection;
 extern PetscLogEvent PTATIN_MaterialPointPopulationControl;
 
@@ -162,6 +166,11 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
+	
+	ierr = PetscLogEventRegister("MPAdvGCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvGlobalCoordUpdate);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MPAdvLCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvLocalCoordUpdate);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MPAdvComm",   PTATIN_CLASSID,&PTATIN_MaterialPointAdvCommunication);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MPAdvRemove", PTATIN_CLASSID,&PTATIN_MaterialPointAdvRemoval);CHKERRQ(ierr);
 	
 	
 	ierr = pTatinWritePreamble();CHKERRQ(ierr);
