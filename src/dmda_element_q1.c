@@ -299,19 +299,19 @@ PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
 */	
 	for( k=sk1; k<sk1+nz1; k++ ) {
 		if ( (2*k<sk2) || (2*k>sk2+nz2) ) {
-			printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+			PetscPrintf(PETSC_COMM_SELF,"sk1=%D, sk2=%D, : sk1+nz1=%D, sk2+nz=%D \n", sk1,sk2, sk1+nz1,sk2+nz2 );
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
 		}
 		
 		for( j=sj1; j<sj1+ny1; j++ ) {
 			if ( (2*j<sj2) || (2*j>sj2+ny2) ) {
-				printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+				PetscPrintf(PETSC_COMM_SELF,"sj1=%D, sj2=%D, : sj1+ny1=%D, sj2+ny=%D \n", sj1,sj2, sj1+ny1,sj2+ny2 );
 				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
 			}
 			
 			for( i=si1; i<si1+nx1; i++ ) {
 				if ( (2*i<si2) || (2*i>si2+nx2) ) {
-					printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+					PetscPrintf(PETSC_COMM_SELF,"si1=%D, si2=%D, : si1+nx1=%D, si2+nx=%D \n", si1,si2, si1+nx1,si2+nx2 );
 					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
 				}
 				
@@ -397,13 +397,13 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	/*
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
-			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startI = %D: lmxq1 = %D \n",i,lsip[i],lxq1[i]);
 		}
 		for (j=0; j<Np; j++) {
-			printf("rank[%d] startJ = %d: lmyq1 = %d \n",j,lsjp[j],lyq1[j]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startJ = %D: lmyq1 = %D \n",j,lsjp[j],lyq1[j]);
 		}
 		for (k=0; k<Pp; k++) {
-			printf("rank[%d] startK = %d: lmzq1 = %d \n",k,lskp[k],lzq1[k]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startK = %D: lmzq1 = %D \n",k,lskp[k],lzq1[k]);
 		}
 	}
 	*/
@@ -510,17 +510,17 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	for (i=0; i<Mp; i++) {
 		lsip[i] = siq2[i];
-		printf("[%d]: si[%d] %d \n", rank,i,lsip[i]);
+		PetscPrintf(PETSC_COMM_SELF,"[%D]: si[%D] %D \n", rank,i,lsip[i]);
 	}
 	
 	for (j=0; j<Np; j++) {
 		lsjp[j] = sjq2[j];
-		printf("[%d]: sj[%d] %d \n", rank,j,lsjp[j]);
+		PetscPrintf(PETSC_COMM_SELF,"[%D]: sj[%D] %D \n", rank,j,lsjp[j]);
 	}
 	
 	for (k=0; k<Pp; k++) {
 		lskp[k] = skq2[k];
-		printf("[%d]: sk[%d] %d \n", rank,k,lskp[k]);
+		PetscPrintf(PETSC_COMM_SELF,"[%D]: sk[%D] %D \n", rank,k,lskp[k]);
 	}
 
 /*
@@ -564,13 +564,13 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
-			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startI = %D: lmxq1 = %D \n",i,lsip[i],lxq1[i]);
 		}
 		for (j=0; j<Np; j++) {
-			printf("rank[%d] startJ = %d: lmyq1 = %d \n",j,lsjp[j],lyq1[j]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startJ = %D: lmyq1 = %D \n",j,lsjp[j],lyq1[j]);
 		}
 		for (k=0; k<Pp; k++) {
-			printf("rank[%d] startK = %d: lmzq1 = %d \n",k,lskp[k],lzq1[k]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startK = %D: lmzq1 = %D \n",k,lskp[k],lzq1[k]);
 		}
 	}
 	
@@ -823,19 +823,19 @@ PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec 
 	
 	for( k=sk1; k<sk1+nz1; k++ ) {
 		if ( (2*k<sk2) || (2*k>sk2+nz2) ) {
-			printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+			PetscPrintf(PETSC_COMM_SELF,"sk1=%D, sk2=%D, : sk1+nz1=%D, sk2+nz=%D \n", sk1,sk2, sk1+nz1,sk2+nz2 );
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
 		}
 		
 		for( j=sj1; j<sj1+ny1; j++ ) {
 			if ( (2*j<sj2) || (2*j>sj2+ny2) ) {
-				printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+				PetscPrintf(PETSC_COMM_SELF,"sj1=%D, sj2=%D, : sj1+ny1=%D, sj2+ny=%D \n", sj1,sj2, sj1+ny1,sj2+ny2 );
 				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
 			}
 			
 			for( i=si1; i<si1+nx1; i++ ) {
 				if ( (2*i<si2) || (2*i>si2+nx2) ) {
-					printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+					PetscPrintf(PETSC_COMM_SELF,"si1=%D, si2=%D, : si1+nx1=%D, si2+nx=%D \n", si1,si2, si1+nx1,si2+nx2 );
 					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
 				}
 				

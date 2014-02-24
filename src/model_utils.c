@@ -67,7 +67,8 @@
 #define __FUNCT__ "MPntGetField_global_element_IJKindex"
 PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K)
 {
-	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localeid;	
+	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk;
+	int         localeid;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -506,25 +507,25 @@ PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 	
 	if (rank == 0) {
 		
-		fp = fopen(filename,"w");
+		PetscFOpen(PETSC_COMM_SELF,filename,"w",&fp);
 		if (fp == NULL) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open file %s on rank 0",filename); }
 
-		fprintf(fp,"# DMDAFieldViewAscii\n");
+		PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDAFieldViewAscii\n");
 		if (oname) {
-			fprintf(fp,"# DMDA Vec %s\n",oname);
+			PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec %s\n",oname);
 		} else {
-			fprintf(fp,"# DMDA Vec\n");
+			PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec\n");
 		}
-		fprintf(fp,"# M N P %d %d %d\n",M,N,P);
-		fprintf(fp,"# dofs %d\n",dofs);
+		PetscFPrintf(PETSC_COMM_SELF,fp,"# M N P %D %D %D\n",M,N,P);
+		PetscFPrintf(PETSC_COMM_SELF,fp,"# dofs %D\n",dofs);
 		ierr = VecGetSize(natural_field_red,&n);CHKERRQ(ierr);
 		ierr = VecGetArray(natural_field_red,&LA_field);CHKERRQ(ierr);
 		for (i=0; i<n; i++) {
-			fprintf(fp,"%1.6e\n",LA_field[i]);
+			PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e\n",LA_field[i]);
 		}
 		ierr = VecRestoreArray(natural_field_red,&LA_field);CHKERRQ(ierr);
 		
-		fclose(fp);
+		PetscFClose(PETSC_COMM_SELF,fp);
 	}
 	ierr = VecDestroy(&natural_field_red);CHKERRQ(ierr);
 		
@@ -626,7 +627,7 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights(PhysCompStokes stokes)
 PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	PetscReal        min[3],max[3];
 	double           *pos_p;
 	PetscErrorCode   ierr;
@@ -667,7 +668,7 @@ PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal g
 PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	PetscReal        min[3],max[3];
 	double           *pos_p;
 	PetscErrorCode   ierr;
@@ -731,7 +732,7 @@ PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,Pets
 PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscInt region_idx,PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	PetscReal        min[3],max[3];
 	double           *pos_p;
 	int              region_p;
