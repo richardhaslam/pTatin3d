@@ -983,12 +983,12 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 			if (mlctx->level_type[0] != OP_TYPE_REDISC_MF) {
 
 				
-				sprintf(filename,"%s/mg_coarse_operatorA_step%d_snes%d.mat",user->outputpath,user->step,snes_it);
+				PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mg_coarse_operatorA_step%D_snes%D.mat",user->outputpath,user->step,snes_it);
 				PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);
 				MatView(mlctx->operatorA11[0],viewer);
 				PetscViewerDestroy(&viewer);
 				if (mlctx->operatorA11[0] != mlctx->operatorB11[0]) {
-					sprintf(filename,"%s/mg_coarse_operatorB_step%d_snes%d.mat",user->outputpath,user->step,snes_it);
+					PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mg_coarse_operatorB_step%D_snes%D.mat",user->outputpath,user->step,snes_it);
 					PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);
 					MatView(mlctx->operatorB11[0],viewer);
 					PetscViewerDestroy(&viewer);
@@ -1143,8 +1143,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
-		char name[128];
-		sprintf(name,"vel_dmda_Lv%d",k);
+		char name[PETSC_MAX_PATH_LEN];
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"vel_dmda_Lv%D",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
 	}
 	
@@ -1629,7 +1629,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
-			sprintf(stepname,"step%1.6d",step);
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
 			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
 		}
 		
@@ -1847,8 +1847,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
-		char name[128];
-		sprintf(name,"vel_dmda_Lv%d",k);
+		char name[PETSC_MAX_PATH_LEN];
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"vel_dmda_Lv%D",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
 	}
 	
@@ -2376,7 +2376,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
-			sprintf(stepname,"step%1.6d",step);
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
 			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
 		}
 		
@@ -2593,8 +2593,8 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
-		char name[128];
-		sprintf(name,"vel_dmda_Lv%d",k);
+		char name[PETSC_MAX_PATH_LEN];
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"vel_dmda_Lv%D",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
 	}
 	
@@ -3073,7 +3073,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
-			sprintf(stepname,"step%1.6d",step);
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
 			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
 		}
 		
