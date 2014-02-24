@@ -910,8 +910,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
-		char name[128];
-		sprintf(name,"vel_dmda_Lv%d",k);
+		char name[PETSC_MAX_PATH_LEN];
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"vel_dmda_Lv%D",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
 
 		//sprintf(name,"vel_dmda_Lv%d.vtk",k);
@@ -1072,7 +1072,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	
 	
 	for (step=1; step <= user->nsteps; step++) {
-		char stepname[128];
+		char stepname[PETSC_MAX_PATH_LEN];
 		Vec velocity,pressure;
 		PetscReal timestep;
 
@@ -1179,7 +1179,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
-			sprintf(stepname,"step%1.6d",step);
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
 			ierr = pTatinModel_Output(user->model,user,X,stepname);CHKERRQ(ierr);
 		}
 		
@@ -1331,8 +1331,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatinLogNote(user,"  [Velocity multi-grid hierarchy]");CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
-		char name[128];
-		sprintf(name,"vel_dmda_Lv%d",k);
+		char name[PETSC_MAX_PATH_LEN];
+		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"vel_dmda_Lv%D",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
 	}
 	
@@ -1406,7 +1406,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	/* loaded step N, solving for next step */
 	user->step = user->step + 1;
 	while (user->step <= user->nsteps) {
-		char      stepname[128];
+		char      stepname[PETSC_MAX_PATH_LEN];
 		Vec       velocity,pressure;
 		PetscReal timestep;
 		
@@ -1496,7 +1496,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		
 		/* output */
 		if ( (user->step%user->output_frequency == 0) || (user->step == 1) ) {
-			sprintf(stepname,"step%1.6d",user->step);
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",user->step);
 			ierr = pTatinModel_Output(user->model,user,X,stepname);CHKERRQ(ierr);
 		}
 		
