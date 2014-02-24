@@ -840,7 +840,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 {
 	PetscInt        *pcell_list;
 	PSortCtx        *plist;
-	PetscInt        p,npoints;
+	int             p,npoints;
 	PetscInt        tmp,c,count,cells_np_lower,cells_np_upper;
 	const PetscInt  *elnidx;
 	PetscInt        nel,nen;
@@ -927,7 +927,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBool reverse_order_removal)
 {
 	PetscInt        *cell_count,count;
-	PetscInt        p,npoints;
+	int             p,npoints;
 	PetscInt        c,nel,nen;
 	const PetscInt  *elnidx;
 	DataField       PField;
@@ -1378,7 +1378,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 {
 	PetscInt       *pcell_list;
 	PSortCtx       *plist;
-	PetscInt       p,npoints;
+	int            p,npoints;
 	PetscInt       tmp,c,count;
 	const PetscInt *elnidx;
 	PetscInt       nel,nen;
@@ -1716,7 +1716,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 {
 	PetscInt       *pcell_list;
 	PSortCtx       *plist;
-	PetscInt       p,npoints;
+	int            p,npoints;
 	PetscInt       tmp,c,count;
 	const PetscInt *elnidx;
 	PetscInt       nel,nen;

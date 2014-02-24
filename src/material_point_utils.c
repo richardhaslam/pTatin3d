@@ -1255,9 +1255,9 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 
 		if (view) {
 			PetscViewer viewer;
-			char name[512];
+			char name[PETSC_MAX_PATH_LEN];
 			
-			sprintf(name,"SwarmUpdateProperties_LocalL2Proj_Stokes_%d.vtk",k-1);
+			PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"SwarmUpdateProperties_LocalL2Proj_Stokes_%D.vtk",k-1);
 			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, name, &viewer);CHKERRQ(ierr);
 			ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 			ierr = DMView(clone[k-1], viewer);CHKERRQ(ierr);
@@ -2432,10 +2432,10 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 	view = PETSC_FALSE;
 	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
-		char filename[256];
+		char filename[PETSC_MAX_PATH_LEN];
 		PetscViewer viewer;
 		
-		sprintf(filename,"MProjectionQ1_stokes_eta_Lv%d.vtk",level );
+		PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"MProjectionQ1_stokes_eta_Lv%D.vtk",level );
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, filename, &viewer);CHKERRQ(ierr);
 		ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 		ierr = DMView(clone, viewer);CHKERRQ(ierr);

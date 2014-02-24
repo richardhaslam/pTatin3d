@@ -561,8 +561,7 @@ PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 {
 	PetscMPIInt rank;
 	FILE *vtk_fp;
-	PetscInt k;
-	int npoints;
+	int k,npoints;
 	PetscLogDouble t0,t1;
 	DataField PField;
 	PetscErrorCode ierr;
