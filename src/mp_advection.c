@@ -746,7 +746,7 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	PetscScalar    *LA_gcoords;
 	const PetscInt *elnidx_u;
 	PetscInt       nel,nen_u;
-	PetscInt       *gidx;
+	const PetscInt *gidx;
 	PetscInt       lmx,lmy,lmz;
 	
 

@@ -59,7 +59,8 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 	DMDACoor3d ***coors;
 	PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
 	DM cda;
-	PetscInt NUM_GINDICES, *GINDICES;
+	PetscInt NUM_GINDICES;
+	const PetscInt *GINDICES;
 	
 	
 	

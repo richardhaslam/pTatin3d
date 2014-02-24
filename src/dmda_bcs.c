@@ -170,7 +170,8 @@ PetscErrorCode BCListUpdateCache(BCList list)
 #define __FUNCT__ "BCListInitGlobal"
 PetscErrorCode BCListInitGlobal(BCList list)
 {
-	PetscInt i,max,*indices,lsize;
+	PetscInt i,max,lsize;
+	const PetscInt *indices;
 	Vec dindices,dindices_g;
 	PetscScalar *_dindices;
 	PetscErrorCode ierr;
@@ -285,7 +286,8 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 	PetscInt bs,N,m,n,p,Ng,mg,ng,pg;
 	PetscInt gidx,gdofidx,blockloc,loc,dof_idx,dim,ndof;
 	PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz,i,j,k;
-	PetscInt max_index,*globalindices;
+	PetscInt max_index;
+	const PetscInt *globalindices;
 	PetscErrorCode ierr;
 	
 	ierr = DMDAGetInfo(da,0, 0,0,0, 0,0,0, &bs,0, 0,0,0, 0);CHKERRQ(ierr);

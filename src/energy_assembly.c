@@ -493,7 +493,8 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	PetscInt       nel,nen,e,n,ii;
 	const PetscInt *elnidx;
 	BCList         bclist;
-	PetscInt       NUM_GINDICES,*GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
+	PetscInt       NUM_GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
+	const PetscInt *GINDICES;
 	Vec            V;
   Vec            local_V;
   PetscScalar    *LA_V;
@@ -795,8 +796,8 @@ PetscErrorCode FormFunctionLocal_T(
 	PetscInt       nel,nen,e,n;
 	const PetscInt *elnidx;
 	BCList         bclist;
-	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[NODES_PER_EL_Q1_3D];
-	
+	PetscInt       NUM_GINDICES,ge_eqnums[NODES_PER_EL_Q1_3D];
+	const PetscInt *GINDICES;
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
 	Quadrature        volQ;

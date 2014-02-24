@@ -356,7 +356,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	double          dx,dy,dz,dl_min,dl_max,el_ar,max_ar,max_ar_g;
 	PetscErrorCode  ierr;
@@ -418,7 +418,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e,p;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	double          el_dist,min_dist,min_dist_g,el_vol;
 	PetscInt        ngp;
@@ -483,7 +483,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	double          posA[3],posB[3];
 	double          diag,dl_min,dl_max,dr,dr_min,dr_min_g;
@@ -555,7 +555,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	double          a1,a2,vertices[4][3];
 	double          ratio,ratio_min,ratio_min_g;
@@ -616,7 +616,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	double          val, val_min, val_min_g, cossin[2], vectors[3][3];
 	PetscErrorCode  ierr;

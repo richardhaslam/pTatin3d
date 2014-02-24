@@ -129,7 +129,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	PetscInt       vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	const PetscInt *elnidx_u;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
-	PetscInt       NUM_GINDICES,*GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *GINDICES;
+	PetscInt       NUM_GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
 	PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
 	PetscReal      fac,D[NSTRESS][NSTRESS],diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
 	
@@ -316,7 +317,8 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	const PetscInt *elnidx_p;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal      el_gp_eta[MAX_QUAD_PNTS],one_el_gp_eta[MAX_QUAD_PNTS];
-	PetscInt       NUM_GINDICES_p,*GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
+	const PetscInt *GINDICES_p;
+	PetscInt       NUM_GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
 	PetscReal      Ae[P_BASIS_FUNCTIONS * P_BASIS_FUNCTIONS];
 	PetscReal      fac,el_volume,int_eta,avg_eta,o_avg_eta;
 	PetscInt       IJ;
@@ -466,8 +468,10 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
-	PetscInt       NUM_GINDICES_p,*GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
-	PetscInt       NUM_GINDICES_u,*GINDICES_u,ge_eqnums_u[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *GINDICES_p;
+	const PetscInt *GINDICES_u;
+	PetscInt       NUM_GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
+	PetscInt       NUM_GINDICES_u,ge_eqnums_u[3*Q2_NODES_PER_EL_3D];
 	PetscReal      Ae[3*Q2_NODES_PER_EL_3D * P_BASIS_FUNCTIONS];
 	PetscReal      fac;
 	PetscInt       IJ;
@@ -602,8 +606,10 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
-	PetscInt       NUM_GINDICES_p,*GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
-	PetscInt       NUM_GINDICES_u,*GINDICES_u,ge_eqnums_u[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *GINDICES_p;
+	PetscInt       NUM_GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
+	const PetscInt *GINDICES_u;
+	PetscInt       NUM_GINDICES_u,ge_eqnums_u[3*Q2_NODES_PER_EL_3D];
 	PetscReal      Ae[3*Q2_NODES_PER_EL_3D * P_BASIS_FUNCTIONS];
 	PetscReal      fac;
 	PetscInt       IJ;

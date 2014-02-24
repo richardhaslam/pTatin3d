@@ -463,7 +463,8 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscI
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
 	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
 	PetscInt *el;
-	PetscInt *gidx,ngidx,dof;
+	const PetscInt *gidx;
+	PetscInt ngidx,dof;
 	int rank;
 	PetscFunctionBegin;
 	
@@ -560,7 +561,8 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 	PetscInt ei,ej,ek,i,j,k,ii,jj,kk,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,d,X,Y,Z,width;
 	PetscInt mx_natural,my_natural,mz_natural;
 	PetscInt *el;
-	PetscInt *gidx,ngidx,dof;
+	const PetscInt *gidx;
+	PetscInt ngidx,dof;
 	int rank;
 	PetscFunctionBegin;
 	

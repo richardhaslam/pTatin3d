@@ -270,7 +270,7 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
 	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
-	int rank;
+	PetscMPIInt rank;
 	
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
@@ -432,8 +432,9 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
 	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
 	PetscInt *el;
-	PetscInt *gidx,ngidx,dof;
-	int rank;
+	const PetscInt *gidx;
+	PetscInt ngidx,dof;
+	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -558,7 +559,7 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
 	PetscInt *idx,mx,my,mz,_npe;
 	PetscInt ei,ej,ek,i,j,k,elcnt,cnt,esi,esj,esk,gsi,gsj,gsk,nid[100],d,X,width;
 	PetscInt *el,M,N,P,dof;
-	int rank;
+	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

@@ -320,7 +320,7 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e,p;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscInt        ngp;
 	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
@@ -416,7 +416,7 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscReal       dx,dy,dz,dl_min[3],dl_max[3];
 	PetscErrorCode  ierr;
@@ -540,7 +540,7 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e,q;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
+	const PetscInt  *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscInt        nqp;
 	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];

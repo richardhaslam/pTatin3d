@@ -415,8 +415,10 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscScalar nx[Q2_NODES_PER_EL_3D],ny[Q2_NODES_PER_EL_3D],nz[Q2_NODES_PER_EL_3D];
 	PetscInt p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
-	PetscInt *gidx_p,elgidx_p[P_BASIS_FUNCTIONS];
+	const PetscInt *gidx;
+	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *gidx_p;
+	PetscInt elgidx_p[P_BASIS_FUNCTIONS];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
@@ -480,7 +482,8 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Fe[3*Q2_NODES_PER_EL_3D],Be[3*Q2_NODES_PER_EL_3D];
 	PetscInt vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *gidx;
+	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -826,8 +829,10 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 	PetscScalar Fe[P_BASIS_FUNCTIONS];
 	PetscScalar Be[P_BASIS_FUNCTIONS];
 	PetscInt p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
-	PetscInt *gidx_p,elgidx_p[P_BASIS_FUNCTIONS];
+	const PetscInt *gidx;
+	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *gidx_p;
+	PetscInt elgidx_p[P_BASIS_FUNCTIONS];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -1037,7 +1042,8 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D + P_BASIS_FUNCTIONS];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt  *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
+	const PetscInt  *gidx;
+	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -1208,7 +1214,8 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Fe[3*Q2_NODES_PER_EL_3D],Be[3*Q2_NODES_PER_EL_3D];
 	PetscInt vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *gidx;
+	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -1354,8 +1361,10 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	PetscScalar Fe[P_BASIS_FUNCTIONS];
 	PetscScalar Be[P_BASIS_FUNCTIONS];
 	PetscInt p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
-	PetscInt *gidx_p,elgidx_p[P_BASIS_FUNCTIONS];
+	const PetscInt *gidx;
+	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
+	const PetscInt *gidx_p;
+	PetscInt elgidx_p[P_BASIS_FUNCTIONS];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];

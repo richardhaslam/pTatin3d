@@ -159,7 +159,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	PetscReal      elu[3*Q2_NODES_PER_EL_3D];
 	PetscReal      elT[Q1_NODES_PER_EL_3D];
 	PetscReal      ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
-	PetscInt       *gidx;
+	const PetscInt *gidx;
 	
 	PetscReal NI_T[Q1_NODES_PER_EL_3D];
 	PetscReal NI[Q2_NODES_PER_EL_3D],GNI[3][Q2_NODES_PER_EL_3D];
