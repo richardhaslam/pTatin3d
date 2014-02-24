@@ -122,8 +122,10 @@ extern PetscLogEvent PTATIN_MaterialPointAdvLocalCoordUpdate;
 extern PetscLogEvent PTATIN_MaterialPointAdvCommunication;
 extern PetscLogEvent PTATIN_MaterialPointAdvRemoval;
 
-extern PetscLogEvent PTATIN_MaterialPointProjection;
-extern PetscLogEvent PTATIN_MaterialPointPopulationControl;
+//extern PetscLogEvent PTATIN_MaterialPointProjection;
+
+extern PetscLogEvent PTATIN_MaterialPointPopulationControlInsert;
+extern PetscLogEvent PTATIN_MaterialPointPopulationControlRemove;
 
 extern PetscLogEvent PTATIN_ModelInitialize;
 extern PetscLogEvent PTATIN_ModelApplyInitialSolution;
@@ -172,6 +174,8 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MPAdvComm",   PTATIN_CLASSID,&PTATIN_MaterialPointAdvCommunication);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MPAdvRemove", PTATIN_CLASSID,&PTATIN_MaterialPointAdvRemoval);CHKERRQ(ierr);
 	
+	ierr = PetscLogEventRegister("MPPCInsert", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlInsert);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MPPCRemove", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlRemove);CHKERRQ(ierr);
 	
 	ierr = pTatinWritePreamble();CHKERRQ(ierr);
 	

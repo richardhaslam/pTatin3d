@@ -50,6 +50,10 @@
 
 #define MPPC_LOG_LEVEL 0 /* 0 - no logging; 1 - logging per mesh; 2 - logging per cell */
 
+PetscLogEvent PTATIN_MaterialPointPopulationControlInsert;
+PetscLogEvent PTATIN_MaterialPointPopulationControlRemove;
+
+
 typedef struct _p_PSortCtx {
 	long int point_index;
 	long int cell_index;
@@ -846,6 +850,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	
 	PetscFunctionBegin;
 	
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
 #endif	
@@ -912,6 +917,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	
 	ierr = PetscFree(plist);CHKERRQ(ierr);
 	ierr = PetscFree(pcell_list);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
 		
 	PetscFunctionReturn(0);
 }
@@ -929,6 +935,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
 	
 #if (MPPC_LOG_LEVEL >= 1)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
@@ -968,6 +975,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	
 	if (count == 0) {
 		ierr = PetscFree(cell_count);CHKERRQ(ierr);
+		ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
 		PetscFunctionReturn(0);
 	}
 
@@ -1054,6 +1062,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 #endif
 	
 	ierr = PetscFree(cell_count);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
