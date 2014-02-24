@@ -873,7 +873,7 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntStd(DataBucket db,const char suffix
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
 	BTruth found;
-	PetscInt m,d,p;
+	int m,d,p;
 	MPntStd *points;
 	int field_n_members;
 	const char *field_classname;

@@ -101,8 +101,8 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 				rend_sub = m; 
 			}
 			mloc_sub = rend_sub - rstart_sub;
-			printf("mloc_sub = %d \n",mloc_sub);
-			printf("nsubcomm %d \n",cheb->nsubcomm);
+			PetscPrintf(PETSC_COMM_SELF,"mloc_sub = %D \n",mloc_sub);
+			PetscPrintf(PETSC_COMM_SELF,"nsubcomm %D \n",cheb->nsubcomm);
 			MPI_Barrier(PETSC_COMM_WORLD);
 
 			/* create xsub with empty local arrays, because xdup's arrays will be placed into it */

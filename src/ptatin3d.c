@@ -1103,7 +1103,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	checkpoint_every_nsteps   = ctx->checkpoint_every_nsteps;
 	checkpoint_every_ncpumins = ctx->checkpoint_every_ncpumins;
 	
-	sprintf(prefix,"step%1.6d",step);
+	PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
 
 	/* -------------------------------------- */
 	/* check one - this file has a fixed name */
@@ -1127,7 +1127,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 		char command[PETSC_MAX_PATH_LEN];
 		char file[PETSC_MAX_PATH_LEN];
 		
-		sprintf(filetocheck,"%s/ptat3dcpf.ctx_step%1.6d",ctx->outputpath,step);
+		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
 
 		if (!skip_existence_test) {
 			FileExists(filetocheck,&exists);
@@ -1151,7 +1151,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 		char command[PETSC_MAX_PATH_LEN];
 		char file[PETSC_MAX_PATH_LEN];
 		
-		sprintf(filetocheck,"%s/ptat3dcpf.ctx_step%1.6d",ctx->outputpath,step);
+		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
 		if (!skip_existence_test) {
 			FileExists(filetocheck,&exists);
 			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files %s\n",filetocheck);
@@ -1389,11 +1389,11 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 	view = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(((PetscObject)da)->prefix,"-da_view_hierarchy",&view,NULL);CHKERRQ(ierr);
   if (view) {
-		char levelname[128];
+		char levelname[PETSC_MAX_PATH_LEN];
 		
 		ierr = DMDAViewPetscVTK(da,NULL,"dav_fine.vtk");CHKERRQ(ierr);
 		for (i=0; i<nlevels; i++) {
-			sprintf(levelname,"dav_level%d.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
+			PetscSNPrintf(levelname,PETSC_MAX_PATH_LEN-1,"dav_level%D.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
 			ierr = DMDAViewPetscVTK(dac[i],NULL,levelname);CHKERRQ(ierr);
 		}
 	}

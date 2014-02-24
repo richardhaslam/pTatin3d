@@ -52,7 +52,7 @@
 PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,DM da,const char name[])
 {
 	PetscErrorCode ierr;
-	PetscInt fe,n,c,e,k,ngp,npoints;
+	PetscInt fe,n,e,k,ngp,npoints;
 	QPntSurfCoefStokes *all_qpoint;
 	QPntSurfCoefStokes *cell_qpoint;
 	FILE*	fp = NULL;
@@ -66,6 +66,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	const PetscInt *elnidx;
 	PetscInt       nel,nen;
 	ConformingElementFamily element;
+	int            c,npoints32;
 
 	
 	PetscFunctionBegin;
@@ -76,7 +77,8 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	element = surfQ->e;
 	ngp = surfQ->ngp;
 	npoints = surfQ->nfaces * surfQ->ngp;
-
+	PetscMPIIntCast(npoints,&npoints32);
+	
 	/* setup for quadrature point properties */
 	ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ,&all_qpoint);CHKERRQ(ierr);
 	
@@ -95,7 +97,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	fprintf(fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
   fprintf(fp, "  <UnstructuredGrid>\n");
-	fprintf(fp, "    <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\" >\n",npoints,npoints);
+	fprintf(fp, "    <Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\" >\n",npoints32,npoints32);
 	
 	/* POINT COORDS */
 	fprintf(fp, "    <Points>\n");
@@ -106,7 +108,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 		e = surfQ->element_list[fe];
 		
 		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
-		ierr =  SurfaceQuadratureGetCellData_Stokes(surfQ,all_qpoint,fe,&cell_qpoint);CHKERRQ(ierr);
+		ierr = SurfaceQuadratureGetCellData_Stokes(surfQ,all_qpoint,fe,&cell_qpoint);CHKERRQ(ierr);
 		
 		for (n=0; n<ngp; n++) {
 			qpoint = &cell_qpoint[n];
@@ -194,7 +196,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	// connectivity //
 	fprintf(fp, "      <DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
 	fprintf(fp,"      ");		
-	for (c=0; c<npoints; c++) {
+	for (c=0; c<npoints32; c++) {
 		fprintf(fp,"%d ", c);
 	}
 	fprintf(fp,"\n");		
@@ -203,7 +205,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	// offsets //
 	fprintf(fp, "      <DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
 	fprintf(fp,"      ");		
-	for (c=0; c<npoints; c++) {
+	for (c=0; c<npoints32; c++) {
 		fprintf(fp,"%d ", (c+1));		
 	}
 	fprintf(fp,"\n");		
@@ -212,7 +214,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	// types //
 	fprintf(fp, "      <DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n");
 	fprintf(fp,"      ");		
-	for (c=0; c<npoints; c++) {
+	for (c=0; c<npoints32; c++) {
 		fprintf(fp,"%d ", 1);		
 	}
 	fprintf(fp,"\n");		
