@@ -1,0 +1,44 @@
+#BSUB -J Zagros_visco100  #job name 
+#BSUB -o log.out.%J # name of output file
+#BUSB -e log.err.%J # name of error message 
+#BSUB -W 08:00 # time needed
+#BSUB -B # receive email when job starts 
+#BSUB -N # receive email when job ends
+#BSUB -R 'rusage[mem=2000]'  # memory required per core 
+#BSUB -n 64 # number of processors
+
+
+mpirun /cluster/home03/erdw/marinec/software/ptatin3d/src/ptatin_driver_linear_ts.app \
+-options_file /cluster/work/scr6/marinec/test_ptat/setup_lamem/visco100/test1/multilayer_folding_setup_ND.opts \
+-output_path /cluster/work/scr6/marinec/test_ptat/setup_lamem/visco100/test1 \
+-mx 96 \
+-mz 96 \
+-dau_nlevels 3 \
+-A11_operator_type 2,2,0 \
+-stk_velocity_da_refine_hierarchy_x 2,4 \
+-stk_velocity_da_refine_hierarchy_y 2,2 \
+-stk_velocity_da_refine_hierarchy_z 2,2 \
+-fieldsplit_u_ksp_max_it 3 \
+-nsteps 200 \
+-fieldsplit_u_mg_levels_ksp_max_it 10 \
+-fieldsplit_u_mg_levels_pc_type bjacobi \
+-model_multilayer_folding_output_markers \
+-model_multilayer_folding_output_markers \
+-model_multilayer_marker_remesh \
+-lattice_layout_Nx 3 \
+-lattice_layout_Ny 3 \
+-lattice_layout_Nz 3 \
+-da_processors_y 1 \
+-mp_popctrl_np_upper -1 \
+-fieldsplit_u_ksp_max_it 100000 \
+-fieldsplit_u_mg_coarse_ksp_converged_reason \
+-fieldsplit_u_mg_coarse_ksp_max_it 20 \
+-fieldsplit_u_mg_coarse_ksp_type fgmres \
+-fieldsplit_u_mg_coarse_pc_type asm \
+-fieldsplit_u_mg_coarse_pc_asm_overlap 2 \
+-fieldsplit_u_mg_levels_ksp_max_it 4 \
+-fieldsplit_u_pc_mg_levels 3 \
+-fieldsplit_u_pc_mg_log \
+-snes_view \
+-da_processors_y 1 \
+
