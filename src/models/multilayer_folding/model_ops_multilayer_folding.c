@@ -14,6 +14,7 @@
 #include "ptatin3d_defs.h"
 #include "math.h"
 #include "dmda_redundant.h"
+#include "dmda_iterator.h"
 #include "material_point_std_utils.h"
 #include <time.h>
 
@@ -1079,6 +1080,333 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MultilayerFoldingUpdate_RemeshBasalLayer"
+PetscErrorCode MultilayerFoldingUpdate_RemeshBasalLayer(PetscReal AR,DM dav,ModelMultilayerFoldingCtx *data)
+{
+	PetscInt       res_j;
+	DMDACoor3d     span_xz[4];
+	PetscReal      gmin[3],gmax[3];
+	PetscReal      AR_max = 20.0;
+	PetscErrorCode ierr;
+	
+	/* Remesh only the first layer if the aspect ratio is > AR */
+	if (AR > AR_max) {
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating basal layer remeshing\n", __FUNCT__);
+		
+		/* clean up base */
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		span_xz[0].x = gmin[0];    span_xz[0].y = gmin[1];    span_xz[0].z = gmin[2];
+		span_xz[1].x = gmin[0];    span_xz[1].y = gmin[1];    span_xz[1].z = gmax[2];
+		span_xz[2].x = gmax[0];    span_xz[2].y = gmin[1];    span_xz[2].z = gmax[2];
+		span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
+		ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
+		
+		/* interpolate between base and top of first layer */
+		res_j = 2 * data->layer_res_j[0] + 1; /* use nodal indices */
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,res_j);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);	
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFoldingUpdate_RemeshMarkerProjection_v1"
+PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v1(PetscReal AR,DM dav,pTatinCtx c)
+{
+	PetscInt         JMAX;
+	DMDACoor3d       span_xz[4];
+	PetscReal        gmin[3],gmax[3];
+	PetscReal        AR_max = 20.0;
+	static PetscBool tracking_layer_phase = PETSC_TRUE;
+	PetscErrorCode   ierr;
+	
+	ierr = DMDAGetInfo(dav,0,0,&JMAX,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	
+	ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+	span_xz[0].x = gmin[0];    span_xz[0].y = gmin[1];    span_xz[0].z = gmin[2];
+	span_xz[1].x = gmin[0];    span_xz[1].y = gmin[1];    span_xz[1].z = gmax[2];
+	span_xz[2].x = gmax[0];    span_xz[2].y = gmin[1];    span_xz[2].z = gmax[2];
+	span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
+	
+	if (AR > AR_max) {
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", __FUNCT__);
+
+		if (tracking_layer_phase ) {
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", __FUNCT__);
+			
+			/* 0 switch projection type */
+			c->coefficient_projection_type = 1;
+			tracking_layer_phase = PETSC_FALSE;
+		} 
+
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Performing remeshing\n", __FUNCT__);
+		/* 1 - re-initialize the basement layer element spacing */
+		ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
+		/* 2 - clean up the interior */
+		ierr = DMDARemeshSetUniformCoordinatesBetweenJLayers3d(dav,0,JMAX);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFoldingUpdate_RemeshMarkerProjection_v2"
+PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v2(PetscReal AR,DM dav,Vec velocity,PetscReal dt,ModelMultilayerFoldingCtx *data,pTatinCtx c)
+{
+	Vec              mesh_velocity;
+	PetscReal        AR_max = 20.0;
+	static PetscBool tracking_layer_phase = PETSC_TRUE;
+	DMDAVecTraverse3d_InterpCtx IntpCtx;
+	PetscReal        Lx,Lz,Ox,Oz;
+	PetscReal        gmin[3],gmax[3];
+	PetscErrorCode   ierr;
+	
+	if (AR > AR_max) {
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", __FUNCT__);
+		
+		if (tracking_layer_phase ) {
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", __FUNCT__);
+			
+			/* 0 switch projection type */
+			c->coefficient_projection_type = 1;
+			tracking_layer_phase = PETSC_FALSE;
+		} 
+		
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Performing remeshing\n", __FUNCT__);
+
+		
+		/* [A] create mesh advection velocity field in x-z */
+		ierr = DMCreateGlobalVector(dav,&mesh_velocity);CHKERRQ(ierr);
+		
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		Lx = gmax[0] - gmin[0];		Ox = gmin[0];
+		Lz = gmax[2] - gmin[2];   Oz = gmin[2];
+		
+		if (data->bc_type == 0) {
+			PetscReal vx_E,vx_W;
+			/* compression east/west in the x-direction (0) [east-west] using constant velocity */
+
+			vx_E = -data->vx_compression;
+			vx_W =  data->vx_compression;
+
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vx_E - vx_W)/(Lx),vx_W,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 0, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+
+			ierr = VecStrideSet(mesh_velocity,1,0.0);CHKERRQ(ierr); // zero y component //
+			ierr = VecStrideSet(mesh_velocity,2,0.0);CHKERRQ(ierr); // zero z component //
+		} else if (data->bc_type == 1) {
+			PetscReal vx_E,vx_W;
+			PetscReal vz_F,vz_B;
+			PetscReal cx[3];
+
+			
+			/* center of domain */
+			cx[0] = 0.5 * (gmax[0] + gmin[0]);
+			cx[1] = 0.0;
+			cx[2] = 0.5 * (gmax[2] + gmin[2]);
+			
+			/* x component */
+			vx_E = data->exx * ( gmax[0] - cx[0] );
+			vx_W = data->exx * ( gmin[0] - cx[0] );
+			PetscPrintf(PETSC_COMM_WORLD,"  x: pos(min/max) = %+1.4e / %+1.4e  vx = %+1.4e / %+1.4e \n",gmin[0],gmax[0],vx_W,vx_E);
+			
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vx_E - vx_W)/(Lx),vx_W,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 0, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+
+			/* y component */
+			ierr = VecStrideSet(mesh_velocity,1,0.0);CHKERRQ(ierr); // zero y component //
+
+			/* z component */
+			vz_F = data->ezz * ( gmax[2] - cx[2] );
+			vz_B = data->ezz * ( gmin[2] - cx[2] );
+			PetscPrintf(PETSC_COMM_WORLD,"  z: pos(min/max) = %+1.4e / %+1.4e  vz = %+1.4e / %+1.4e \n",gmin[2],gmax[2],vz_B,vz_F);
+
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vz_F - vz_B)/(Lz),vz_B,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 2, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+		} else if (data->bc_type == 2) {
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unsupported boundary condition type <move base down to accomodate pure thickening : case 2>");			
+		} else {
+			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unsupported boundary condition type %D",data->bc_type);
+		}
+		
+		/* [B] Advect surface with fluid velocity, internal mesh geometry in x-z is advected with background strain-rate */
+		ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,mesh_velocity,dt);CHKERRQ(ierr);
+		
+		
+		ierr = VecDestroy(&mesh_velocity);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MultilayerFoldingUpdate_RemeshResampleSurface"
+PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav,Vec velocity,PetscReal dt,ModelMultilayerFoldingCtx *data,pTatinCtx c)
+{
+	Vec              mesh_velocity;
+	PetscReal        AR_max = 20.0;
+	DMDAVecTraverse3d_InterpCtx IntpCtx;
+	PetscReal        Lx,Lz,Ox,Oz;
+	PetscReal        gmin[3],gmax[3];
+	PetscErrorCode   ierr;
+	
+	if (AR > AR_max) {
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating remeshing \n", __FUNCT__);
+		
+		/* [A] create mesh advection velocity field in x-z */
+		ierr = DMCreateGlobalVector(dav,&mesh_velocity);CHKERRQ(ierr);
+		
+		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
+		Lx = gmax[0] - gmin[0];		Ox = gmin[0];
+		Lz = gmax[2] - gmin[2];   Oz = gmin[2];
+		
+		if (data->bc_type == 0) {
+			PetscReal vx_E,vx_W;
+			/* compression east/west in the x-direction (0) [east-west] using constant velocity */
+			
+			vx_E = -data->vx_compression;
+			vx_W =  data->vx_compression;
+			
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vx_E - vx_W)/(Lx),vx_W,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 0, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+			
+			ierr = VecStrideSet(mesh_velocity,1,0.0);CHKERRQ(ierr); // zero y component //
+			ierr = VecStrideSet(mesh_velocity,2,0.0);CHKERRQ(ierr); // zero z component //
+		} else if (data->bc_type == 1) {
+			PetscReal vx_E,vx_W;
+			PetscReal vz_F,vz_B;
+			PetscReal cx[3];
+			
+			
+			/* center of domain */
+			cx[0] = 0.5 * (gmax[0] + gmin[0]);
+			cx[1] = 0.0;
+			cx[2] = 0.5 * (gmax[2] + gmin[2]);
+			
+			/* x component */
+			vx_E = data->exx * ( gmax[0] - cx[0] );
+			vx_W = data->exx * ( gmin[0] - cx[0] );
+			PetscPrintf(PETSC_COMM_WORLD,"  x: pos(min/max) = %+1.4e / %+1.4e  vx = %+1.4e / %+1.4e \n",gmin[0],gmax[0],vx_W,vx_E);
+			
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vx_E - vx_W)/(Lx),vx_W,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 0, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+			
+			/* y component */
+			ierr = VecStrideSet(mesh_velocity,1,0.0);CHKERRQ(ierr); // zero y component //
+			
+			/* z component */
+			vz_F = data->ezz * ( gmax[2] - cx[2] );
+			vz_B = data->ezz * ( gmin[2] - cx[2] );
+			PetscPrintf(PETSC_COMM_WORLD,"  z: pos(min/max) = %+1.4e / %+1.4e  vz = %+1.4e / %+1.4e \n",gmin[2],gmax[2],vz_B,vz_F);
+			
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vz_F - vz_B)/(Lz),vz_B,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 2, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+		} else if (data->bc_type == 2) {
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unsupported boundary condition type <move base down to accomodate pure thickening : case 2>");			
+		} else {
+			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unsupported boundary condition type %D",data->bc_type);
+		}
+		
+		/* [B] Advect surface with fluid velocity, internal mesh geometry in x-z is advected with background strain-rate */
+		ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,mesh_velocity,dt);CHKERRQ(ierr);
+		
+		
+		ierr = VecDestroy(&mesh_velocity);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_ModelApplyUpdateMeshGeometry_MultilayerFolding"
+PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,void *ctx)
+{
+	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
+	PetscErrorCode ierr;
+	PetscReal      step;
+	PhysCompStokes stokes;
+	DM             stokes_pack,dav,dap;
+	Vec            velocity,pressure;
+	PetscInt           metric_L = 5; 
+	MeshQualityMeasure metric_list[] = { MESH_QUALITY_ASPECT_RATIO, MESH_QUALITY_DISTORTION, MESH_QUALITY_DIAGONAL_RATIO, MESH_QUALITY_VERTEX_ANGLE, MESH_QUALITY_FACE_AREA_RATIO };
+	PetscReal          value[100];
+	PetscBool          basal_remesh    = PETSC_FALSE;
+	PetscBool          marker_remesh_v1 = PETSC_FALSE;
+	PetscBool          marker_remesh_v2 = PETSC_FALSE;
+	PetscBool          surface_remesh = PETSC_FALSE;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	
+	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+
+	/* advect the mesh with the full velocity field */
+	stokes_pack = stokes->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,step);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	/* check mesh quality */
+	ierr = DMDAComputeMeshQualityMetricList(dav,metric_L,metric_list,value);CHKERRQ(ierr);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_ASPECT_RATIO\"    %1.4e \n", value[0]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DISTORTION\"      %1.4e \n", value[1]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_DIAGONAL_RATIO\"  %1.4e \n", value[2]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_VERTEX_ANGLE\"    %1.4e \n", value[3]);
+	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_FACE_AREA_RATIO\" %1.4e \n", value[4]);
+	
+
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_basal_remesh",&basal_remesh,PETSC_NULL);CHKERRQ(ierr);
+	if (basal_remesh) {
+		ierr = MultilayerFoldingUpdate_RemeshBasalLayer(value[0],dav,data);CHKERRQ(ierr);
+	}
+	
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_marker_remesh",&marker_remesh_v1,PETSC_NULL);CHKERRQ(ierr);
+	if (marker_remesh_v1) {
+		ierr = MultilayerFoldingUpdate_RemeshMarkerProjection_v1(value[0],dav,c);CHKERRQ(ierr);
+	}
+
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_marker_remesh_v2",&marker_remesh_v2,PETSC_NULL);CHKERRQ(ierr);
+	if (marker_remesh_v2) {
+		/* 
+		 Reset position of mesh 
+		 This is required as (i) AR is estimated on the deformed mesh
+		                     (ii) UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX() advects the free surface 
+		*/
+		ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-step);CHKERRQ(ierr);
+		
+		ierr = MultilayerFoldingUpdate_RemeshMarkerProjection_v2(value[0],dav,velocity,step,data,c);CHKERRQ(ierr);
+
+		ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+	
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_surface_remesh",&surface_remesh,PETSC_NULL);CHKERRQ(ierr);
+	if (surface_remesh) {
+		/* 
+		 Reset position of mesh 
+		 This is required as (i) AR is estimated on the deformed mesh
+		 (ii) UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX() advects the free surface 
+		 */
+		ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-step);CHKERRQ(ierr);
+		
+		ierr = MultilayerFoldingUpdate_RemeshResampleSurface(value[0],dav,velocity,step,data,c);CHKERRQ(ierr);
+		
+		ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+
+
+
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelInitialCondition_MultilayerFolding"
 PetscErrorCode ModelInitialCondition_MultilayerFolding(pTatinCtx c,Vec X,void *ctx)
 {
@@ -1538,7 +1866,7 @@ PetscErrorCode pTatinModelRegister_MultilayerFolding(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_MultilayerFolding);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_MultilayerFolding);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_MultilayerFolding);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_MultilayerFolding);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))_ModelApplyUpdateMeshGeometry_MultilayerFolding);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_MultilayerFolding);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_MultilayerFolding);CHKERRQ(ierr);
 	
