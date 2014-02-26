@@ -57,7 +57,7 @@
 -model_multilayer_folding_n_interfaces 9
 -model_multilayer_folding_output_markers
 -model_multilayer_folding_perturbation_type 0
--model_multilayer_marker_remesh
+-model_multilayer_marker_remesh_v2
 -mp_popctrl_np_upper -1
 -mx 96
 -mz 96

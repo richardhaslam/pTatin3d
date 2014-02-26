@@ -15,7 +15,6 @@
 -A11_operator_type 2,2,0
 -checkpoint_every 1
 -checkpoint_every_nsteps 1
--coefficient_projection_type -1
 -da_processors_y 1
 -dau_nlevels 3
 -dt_max 1.0e-2
@@ -57,7 +56,7 @@
 -model_multilayer_folding_n_interfaces 9
 -model_multilayer_folding_output_markers
 -model_multilayer_folding_perturbation_type 0
--model_multilayer_marker_remesh
+-model_multilayer_surface_remesh
 -mp_popctrl_np_upper -1
 -mx 96
 -mz 96
