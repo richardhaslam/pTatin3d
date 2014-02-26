@@ -140,7 +140,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	while (!feof(fp)) {
 		position = ftell(fp);
 		fgets(line,10000-1,fp);
-		if (strncmp(key,line,key_L) != 0) {
+		if (strncmp(key,line,key_L) == 0) {
 			break;
 		}
 	}
