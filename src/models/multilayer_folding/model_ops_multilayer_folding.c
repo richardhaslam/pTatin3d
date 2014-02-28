@@ -1164,6 +1164,13 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v2(PetscReal AR,DM
 	if (AR > AR_max) {
 		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", __FUNCT__);
 		
+		/*
+		 Reset position of mesh 
+		 This is required as (i) AR is estimated on the deformed mesh
+		 (ii) UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX() advects the free surface 
+		 */
+		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-dt);CHKERRQ(ierr);
+		
 		if (tracking_layer_phase ) {
 			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", __FUNCT__);
 			
@@ -1252,6 +1259,12 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav
 	
 	if (AR > AR_max) {
 		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating remeshing \n", __FUNCT__);
+		/*
+		 Reset position of mesh 
+		 This is required as (i) AR is estimated on the deformed mesh
+		 (ii) UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX() advects the free surface 
+		 */
+		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-dt);CHKERRQ(ierr);
 		
 		/* [A] create mesh advection velocity field in x-z */
 		ierr = DMCreateGlobalVector(dav,&mesh_velocity);CHKERRQ(ierr);
@@ -1377,7 +1390,6 @@ PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X
 		                     (ii) UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX() advects the free surface 
 		*/
 		ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-step);CHKERRQ(ierr);
 		
 		ierr = MultilayerFoldingUpdate_RemeshMarkerProjection_v2(value[0],dav,velocity,step,data,c);CHKERRQ(ierr);
 
@@ -1392,7 +1404,6 @@ PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X
 		 (ii) UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX() advects the free surface 
 		 */
 		ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-step);CHKERRQ(ierr);
 		
 		ierr = MultilayerFoldingUpdate_RemeshResampleSurface(value[0],dav,velocity,step,data,c);CHKERRQ(ierr);
 		
