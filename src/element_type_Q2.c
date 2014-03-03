@@ -895,7 +895,6 @@ void compute_element_normal_Q2_2D(	ConformingElementFamily e,
 	
 	
 	GNi_st[0] = &__GNi_st[0];
-	GNi_st[1] = &__GNi_st[Q2_NPS];
 	
 	ConstructGNi_Q2_1D( xi0, GNi_st );
 	
