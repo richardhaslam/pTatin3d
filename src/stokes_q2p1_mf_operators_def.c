@@ -32,7 +32,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
-inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -151,7 +151,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double eta_gp,c
   
 // total operations = 1243
 }
-inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -266,7 +266,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_B11(const double FAC,const double eta_gp
   
 // total operations = 1058
 }
-inline void MatMultMF_Stokes_MixedFEM3d_Buu(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_Buu(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -327,7 +327,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_Buu(const double FAC,const double eta_gp
   
 // total operations = 352
 }
-inline void MatMultMF_Stokes_MixedFEM3d_Bvv(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_Bvv(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -388,7 +388,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_Bvv(const double FAC,const double eta_gp
   
 // total operations = 352
 }
-inline void MatMultMF_Stokes_MixedFEM3d_Bww(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_Bww(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -449,7 +449,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_Bww(const double FAC,const double eta_gp
   
 // total operations = 352
 }
-inline void MatMultMF_Stokes_MixedFEM3d_A12(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_A12(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -564,7 +564,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_A12(const double FAC,const double eta_gp
   
 // total operations = 331
 }
-inline void MatMultMF_Stokes_MixedFEM3d_A21(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_A21(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
@@ -602,7 +602,7 @@ inline void MatMultMF_Stokes_MixedFEM3d_A21(const double FAC,const double eta_gp
   
 // total operations = 507
 }
-inline void MatMultMF_Stokes_MixedFEM3d_A22(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
+static inline void MatMultMF_Stokes_MixedFEM3d_A22(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   const int nsd = 3;
   const int ntens = 6;
