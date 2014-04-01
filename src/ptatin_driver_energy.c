@@ -215,6 +215,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		{ 
 			PetscReal timestep;
 			ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,energy->Told,&timestep);CHKERRQ(ierr);
+			ierr = pTatin_SetTimestep(user,"EnergyCFL",timestep);CHKERRQ(ierr);
 		}
 		energy->dt   = user->dt;
 		
