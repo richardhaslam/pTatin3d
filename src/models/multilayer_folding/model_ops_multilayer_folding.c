@@ -30,6 +30,8 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	PetscInt       n_int,n;
 	PetscBool      flg;
+	RheologyConstants   *rheology;
+	DataBucket          materialconstants;
 	
 	PetscFunctionBegin;
 	
@@ -139,7 +141,23 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 		PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	}
 	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
-	
+
+
+#if 0
+    /* Rheology prescription */
+	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
+	rheology->rheology_type = RHEOLOGY_VP_STD;
+
+    /* Material constant */
+    ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
+	MaterialConstantsSetDefaults(materialconstants);
+    for (n=0; n<data->n_interfaces-1; n++) {
+        ierr = MaterialConstantsSetValues_MaterialType(materialconstants,   n ,VISCOUS_CONSTANT,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);CHKERRQ(ierr);
+        ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants, n, data->eta[n]);CHKERRQ(ierr);
+        ierr = MaterialConstantsSetValues_DensityConst(materialconstants,   n, data->rho[n]);CHKERRQ(ierr);
+        ierr = MaterialConstantsSetValues_PlasticMises(materialconstants,   n, data->sigma_y[n],data->sigma_y[n]);CHKERRQ(ierr);
+    }
+#endif
 	PetscFunctionReturn(0);
 }
 
