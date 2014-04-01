@@ -1131,6 +1131,12 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 		}
 
+		/* Update boundary conditions */
+		/* Fine level setup */
+		ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
+		/* Coarse grid setup: Configure boundary conditions */
+		ierr = pTatinModel_ApplyBoundaryConditionMG(nlevels,u_bclist,dav_hierarchy,model,user);CHKERRQ(ierr);
+		
 		/* solve */
 		/* a) configure stokes opertors */
 		ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
@@ -1465,6 +1471,12 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 			
 			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 		}
+
+		/* Update boundary conditions */
+		/* Fine level setup */
+		ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
+		/* Coarse grid setup: Configure boundary conditions */
+		ierr = pTatinModel_ApplyBoundaryConditionMG(nlevels,u_bclist,dav_hierarchy,model,user);CHKERRQ(ierr);
 		
 		/* solve */
 		/* a) configure stokes opertors */
