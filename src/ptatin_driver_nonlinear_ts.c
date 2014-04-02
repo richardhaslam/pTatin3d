@@ -1746,6 +1746,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	DataBucket       materialpoint_db;
 	PetscLogDouble   time[2];
 	PetscReal        surface_displacement_max = 1.0e32;
+	PetscReal        dt_factor = 10.0;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
@@ -1999,6 +2000,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[LinearStage]",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[LinearStage]",time[1]-time[0]);CHKERRQ(ierr);
+		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
 		ierr = pTatinLogPetscLog(user,"Stokes[LinearStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"linear_stage");CHKERRQ(ierr);
@@ -2069,6 +2071,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[PicardStage]",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[PicardStage]",time[1]-time[0]);CHKERRQ(ierr);
+		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
 		ierr = pTatinLogPetscLog(user,"Stokes[PicardStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
@@ -2132,6 +2135,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[NewtonStage]",time[1]-time[0]);CHKERRQ(ierr);
+		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
 		ierr = pTatinLogPetscLog(user,"Stokes[NewtonStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
@@ -2379,6 +2383,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		PetscGetTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
+		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
 		//ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
 		
 		/* output */
@@ -2394,7 +2399,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		user->dt = 1.0e32;
 		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
-		timestep = timestep/10.0;
+		timestep = timestep/dt_factor;
 		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
 
 		ierr = UpdateMeshGeometry_ComputeSurfaceCourantTimestep(dav_hierarchy[nlevels-1],velocity,surface_displacement_max,&timestep);CHKERRQ(ierr);
