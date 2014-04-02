@@ -678,6 +678,132 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal_U_tractionBC"
+PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Ru[])
+{	
+	PetscErrorCode ierr;
+	PetscInt p,ngp;
+	DM cda;
+	Vec gcoords;
+	PetscReal *LA_gcoords;
+	PetscInt nel,nen_u,nen_p,k,e,edge,fe,nfaces;
+	const PetscInt *elnidx_u;
+	const PetscInt *elnidx_p;
+	PetscReal elcoords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
+	PetscReal elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
+	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
+	PetscReal Fe[3*Q2_NODES_PER_EL_3D],Be[3*Q2_NODES_PER_EL_2D];
+	PetscInt vel_el_lidx[3*U_BASIS_FUNCTIONS];
+	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
+	PetscLogDouble t0,t1;
+	QPntSurfCoefStokes *quadpoints,*cell_quadpoints;
+	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS],NIu_surf[NQP][Q2_NODES_PER_EL_2D];
+	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	SurfaceQuadrature surfQ;
+	
+	PetscFunctionBegin;
+	
+	/* quadrature */
+	
+	/* setup for coords */
+	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
+	
+	
+	PetscGetTime(&t0);
+	
+	for (edge=0; edge<HEX_EDGES; edge++) {
+		ConformingElementFamily element;
+		int *face_local_indices;
+		PetscInt nfaces,ngp;
+		QPoint2d *gp2;
+		QPoint3d *gp3;
+		
+		surfQ   = user->surfQ[edge];
+		element = surfQ->e;
+		nfaces  = surfQ->nfaces;
+		gp2     = surfQ->gp2;
+		gp3     = surfQ->gp3;
+		ngp     = surfQ->ngp;
+		ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ,&quadpoints);CHKERRQ(ierr);
+
+		
+		/* evaluate the quadrature points using the 1D basis for this edge */
+		for (p=0; p<ngp; p++) {
+			element->basis_NI_2D(&gp2[p],NIu_surf[p]);
+		}
+
+		face_local_indices = element->face_node_list[edge];
+		
+		for (fe=0; fe<nfaces; fe++) { /* for all elements on this domain face */
+			/* get element index of the face element we want to integrate */
+			e = surfQ->element_list[fe];
+
+			ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+			ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
+			ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*e],ufield);CHKERRQ(ierr);
+			ierr = DMDAGetScalarElementField(elp,nen_p,(PetscInt*)&elnidx_p[nen_p*e],pfield);CHKERRQ(ierr);
+		
+			ierr = SurfaceQuadratureGetCellData_Stokes(surfQ,quadpoints,fe,&cell_quadpoints);CHKERRQ(ierr);
+			
+			
+			/* initialise element stiffness matrix */
+			PetscMemzero( Fe, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D*3 );
+			PetscMemzero( Be, sizeof(PetscScalar)* Q2_NODES_PER_EL_2D*3 );
+			
+			for (p=0; p<ngp; p++) {
+				PetscScalar fac,surfJ_p;
+
+				element->compute_surface_geometry_3D(	
+																						 element, 
+																						 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+																						 surfQ->face_id,	 // edge index 0,...,7 //
+																						 &gp2[p], // should contain 1 point with dimension 2 (xi,eta)   //
+																						 NULL,NULL, &surfJ_p ); // n0[],t0 contains 1 point with dimension 3 (x,y,z) //
+				fac = gp2[p].w * surfJ_p;
+								
+				for (k=0; k<Q2_NODES_PER_EL_2D; k++) { 
+					Be[3*k  ] = Be[3*k  ] - fac * NIu_surf[p][k] * cell_quadpoints[p].traction[0]; 
+					Be[3*k+1] = Be[3*k+1] - fac * NIu_surf[p][k] * cell_quadpoints[p].traction[1]; 
+					Be[3*k+2] = Be[3*k+2] - fac * NIu_surf[p][k] * cell_quadpoints[p].traction[2]; 
+				}
+				
+				/*
+				printf("[edge=%d : face=%d : qp=%d : normal = %+1.4e,%+1.4e,%+1.4e : t1 = %+1.4e,%+1.4e,%+1.4e : t1 = %+1.4e,%+1.4e,%+1.4e \n",
+							 edge,fe,p, cell_quadpoints[p].normal[0],cell_quadpoints[p].normal[1], cell_quadpoints[p].normal[2],
+							 cell_quadpoints[p].tangent1[0],cell_quadpoints[p].tangent1[1], cell_quadpoints[p].tangent1[2],
+							 cell_quadpoints[p].tangent2[0],cell_quadpoints[p].tangent2[1], cell_quadpoints[p].tangent2[2]);
+			*/
+			}
+
+			/* combine body force with A.x */
+			for (k=0; k<Q2_NODES_PER_EL_2D; k++) { 
+				int nidx3d;
+				
+				/* map 1D index over element edge to 2D element space */
+				nidx3d = face_local_indices[k];
+				Fe[3*nidx3d  ] = Be[3*k  ];
+				Fe[3*nidx3d+1] = Be[3*k+1];
+				Fe[3*nidx3d+2] = Be[3*k+2];
+			}
+
+			ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
+		}
+	}
+	PetscGetTime(&t1);
+	//PetscPrintf(PETSC_COMM_WORLD,"Assembled int_S N traction[i].n[i] dS, = %1.4e (sec)\n",t1-t0);
+	
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal_P"
