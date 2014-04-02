@@ -9,6 +9,7 @@ typedef struct {
     PetscInt  layer_res_j[99];
 	PetscReal eta[100];
 	PetscReal rho[100];
+	PetscReal cohesion[100];
 	PetscInt  bc_type, perturbation_type;
 	PetscReal ezz; 
 	PetscReal exx;
@@ -18,6 +19,7 @@ typedef struct {
     PetscReal amp;
     PetscReal kx,kz; 
     PetscReal A0;
+	PetscBool visco_plastic,quasi2d;
 } ModelMultilayerFoldingCtx;
 
 #endif

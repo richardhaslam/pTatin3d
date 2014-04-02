@@ -41,6 +41,9 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	/* assign defaults */
 	data->max_layers = 100;
 	
+	data->quasi2d = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_folding_quasi2d",&data->quasi2d,&flg);CHKERRQ(ierr);
+	
 	PetscOptionsGetInt(PETSC_NULL,"-model_multilayer_folding_n_interfaces",&data->n_interfaces,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_multilayer_folding_n_interfaces)");
@@ -52,8 +55,12 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	}
 	
 	PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_Lz",&data->Lz,&flg);
-	if (!flg) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_multilayer_folding_Lz)");
+	if (!data->quasi2d) {
+		if (!flg) {
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_multilayer_folding_Lz)");
+		}
+	} else {
+		data->Lz = 1.0;		
 	}
 	
 	n_int = data->n_interfaces;
@@ -83,6 +90,19 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	}
 	if (n_int != data->n_interfaces-1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity. (-model_multilayer_folding_layer_eta)",data->n_interfaces-1);
+	}
+
+	data->visco_plastic = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_folding_visco_plastic",&data->visco_plastic,&flg);CHKERRQ(ierr);
+	if (data->visco_plastic) {
+		n_int = data->max_layers;
+		PetscOptionsGetRealArray(PETSC_NULL,"-model_multilayer_folding_layer_cohesion",data->cohesion,&n_int,&flg);
+		if (!flg) {
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list.(-model_multilayer_folding_layer_cohesion)");
+		}
+		if (n_int != data->n_interfaces-1) {
+			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer cohesion. (-model_multilayer_folding_layer_cohesion)",data->n_interfaces-1);
+		}
 	}
 	
 	n_int = data->max_layers;
@@ -137,27 +157,35 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	for (n=data->n_interfaces-1; n>=1; n--) {
 		PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[n]);
 		PetscPrintf(PETSC_COMM_WORLD,"|\n"); 
-		PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		if (!data->visco_plastic) {
+			PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		} else {
+			PetscPrintf(PETSC_COMM_WORLD,"|      eta = %1.4e , cohesion = %1.4e , rho = %1.4e , my = %.4D \n",data->eta[n-1],data->cohesion[n-1],data->rho[n-1],data->layer_res_j[n-1]);
+		}
 		PetscPrintf(PETSC_COMM_WORLD,"|\n");
 	}
 	PetscPrintf(PETSC_COMM_WORLD," ---------------------------- y = %1.4e ----------------------------\n",data->interface_heights[0],data->layer_res_j[0]);
 
 
-#if 0
-    /* Rheology prescription */
+	/* Rheology prescription */
 	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
 	rheology->rheology_type = RHEOLOGY_VP_STD;
-
-    /* Material constant */
-    ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
+	
+	/* Material constant */
+	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	MaterialConstantsSetDefaults(materialconstants);
-    for (n=0; n<data->n_interfaces-1; n++) {
-        ierr = MaterialConstantsSetValues_MaterialType(materialconstants,   n ,VISCOUS_CONSTANT,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);CHKERRQ(ierr);
-        ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants, n, data->eta[n]);CHKERRQ(ierr);
-        ierr = MaterialConstantsSetValues_DensityConst(materialconstants,   n, data->rho[n]);CHKERRQ(ierr);
-        ierr = MaterialConstantsSetValues_PlasticMises(materialconstants,   n, data->sigma_y[n],data->sigma_y[n]);CHKERRQ(ierr);
-    }
-#endif
+	for (n=0; n<data->n_interfaces-1; n++) {
+		if (data->visco_plastic) {
+			ierr = MaterialConstantsSetValues_MaterialType(materialconstants,   n ,VISCOUS_CONSTANT,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);CHKERRQ(ierr);
+			ierr = MaterialConstantsSetValues_PlasticMises(materialconstants,   n, data->cohesion[n],data->cohesion[n]);CHKERRQ(ierr);
+		} else {
+			ierr = MaterialConstantsSetValues_MaterialType(materialconstants,   n ,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);CHKERRQ(ierr);
+		}
+		ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants, n, data->eta[n]);CHKERRQ(ierr);
+		ierr = MaterialConstantsSetValues_DensityConst(materialconstants,   n, data->rho[n]);CHKERRQ(ierr);
+	}
+	
+	
 	PetscFunctionReturn(0);
 }
 
@@ -562,8 +590,8 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
 		double      *position;
-		PetscReal      eta,rho;
-		PetscInt    phase;
+		PetscReal   eta,rho;
+		PetscInt    region_idx,phase;
 		PetscInt    layer, jmaxlayer, jminlayer;
 		PetscInt    I, J, K;
 		
@@ -578,6 +606,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 		rho = 0.0;
 		jmaxlayer = jminlayer = 0;
 		layer = 0;
+		region_idx = -1;
 		// gets the global element index (i,j,k)
 		//....
 		
@@ -589,15 +618,19 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 				phase = layer + 1;
 				eta = data->eta[layer];
 				rho = data->rho[layer];
+				region_idx = layer;
 				
 				rho = -rho * GRAVITY;
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
 		}
-		
+		if (region_idx == -1) {
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Failed to located material point within any layer");
+		}
 		/* user the setters provided for you */
-		MPntStdSetField_phase_index(material_point,phase);
+		
+		MPntStdSetField_phase_index(material_point,region_idx);
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta);
 		MPntPStokesSetField_density(mpprop_stokes,rho);
 	}
@@ -921,6 +954,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	ierr = MultilayerFoldingRemeshingAccordingToTheInterfaces(c->stokes_ctx->dav, data);CHKERRQ(ierr);
 	
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
+
+	if (data->quasi2d) {
+		ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
+	}
 	
 	PetscFunctionReturn(0);
 }
@@ -1273,10 +1310,16 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav
 	DMDAVecTraverse3d_InterpCtx IntpCtx;
 	PetscReal        Lx,Lz,Ox,Oz;
 	PetscReal        gmin[3],gmax[3];
+	static PetscBool remesh = PETSC_FALSE;
 	PetscErrorCode   ierr;
 	
 	if (AR > AR_max) {
 		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating remeshing \n", __FUNCT__);
+		remesh = PETSC_TRUE;
+	}
+	
+	if (remesh) {
+		PetscPrintf(PETSC_COMM_WORLD,"Performing surface remeshing \n", __FUNCT__);
 		/*
 		 Reset position of mesh 
 		 This is required as (i) AR is estimated on the deformed mesh
@@ -1315,22 +1358,26 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav
 			cx[2] = 0.5 * (gmax[2] + gmin[2]);
 			
 			/* x component */
-			vx_E = data->exx * ( gmax[0] - cx[0] );
-			vx_W = data->exx * ( gmin[0] - cx[0] );
+			//vx_E = data->exx * ( gmax[0] - cx[0] );
+			//vx_W = data->exx * ( gmin[0] - cx[0] );
+			vx_E = 0.5 * data->exx * Lx;
+			vx_W = -vx_E;
 			PetscPrintf(PETSC_COMM_WORLD,"  x: pos(min/max) = %+1.4e / %+1.4e  vx = %+1.4e / %+1.4e \n",gmin[0],gmax[0],vx_W,vx_E);
 			
-			ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vx_E - vx_W)/(Lx),vx_W,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vx_E - vx_W)/(Lx),vx_W,Ox);CHKERRQ(ierr);
 			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 0, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
 			
 			/* y component */
 			ierr = VecStrideSet(mesh_velocity,1,0.0);CHKERRQ(ierr); // zero y component //
 			
 			/* z component */
-			vz_F = data->ezz * ( gmax[2] - cx[2] );
-			vz_B = data->ezz * ( gmin[2] - cx[2] );
+			//vz_F = data->ezz * ( gmax[2] - cx[2] );
+			//vz_B = data->ezz * ( gmin[2] - cx[2] );
+			vz_F = 0.5 * data->ezz * Lz;
+			vz_B = -vz_F;
 			PetscPrintf(PETSC_COMM_WORLD,"  z: pos(min/max) = %+1.4e / %+1.4e  vz = %+1.4e / %+1.4e \n",gmin[2],gmax[2],vz_B,vz_F);
 			
-			ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vz_F - vz_B)/(Lz),vz_B,0.0);CHKERRQ(ierr);
+			ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vz_F - vz_B)/(Lz),vz_B,Oz);CHKERRQ(ierr);
 			ierr = DMDAVecTraverse3d(dav,mesh_velocity, 2, DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
 		} else if (data->bc_type == 2) {
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unsupported boundary condition type <move base down to accomodate pure thickening : case 2>");			
@@ -1340,7 +1387,7 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav
 		
 		/* [B] Advect surface with fluid velocity, internal mesh geometry in x-z is advected with background strain-rate */
 		ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,mesh_velocity,dt);CHKERRQ(ierr);
-		
+
 		
 		ierr = VecDestroy(&mesh_velocity);CHKERRQ(ierr);
 	}
