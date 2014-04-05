@@ -82,8 +82,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	if (n_int != data->n_interfaces-1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_multilayer_folding_layer_res_j)",data->n_interfaces-1);
 	}
-	
-	n_int = data->max_layers;
+    n_int = data->max_layers;
 	PetscOptionsGetRealArray(PETSC_NULL,"-model_multilayer_folding_layer_eta",data->eta,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list.(-model_multilayer_folding_layer_eta)");
@@ -543,9 +542,28 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 				}
 				
 				break;
+            
+            case 2: 
+            
+                if ( (jinter>=sj) && (jinter<sj+ny) ) {
+					for (i=si; i<si+nx; i++) {
+						for (k=sk; k<sk+nz; k++) {
+                
+                            if ( (i>0.5*N-2) && (i<0.5*N+2)){
+                                pertu = 1; 
+                            } else{
+                                pertu = 0; 
+                            }
+                         LA_coord[k][jinter][i].y += amp * 0.1 * pertu;
+                        
+                        }
+                    }
+                }
+
+                break;
 
 			default:
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown perturbation type selected. Should be {0,1}");
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown perturbation type selected. Should be {0,1,2}");
 				break;
 		}
 		
