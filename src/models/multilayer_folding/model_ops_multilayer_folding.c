@@ -549,7 +549,7 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 					for (i=si; i<si+nx; i++) {
 						for (k=sk; k<sk+nz; k++) {
                 
-                            if ( (i>0.5*N-2) && (i<0.5*N+2)){
+                            if ( (i>0.5*M-2) && (i<0.5*M+2)){
                                 pertu = 1; 
                             } else{
                                 pertu = 0; 
