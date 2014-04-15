@@ -127,6 +127,58 @@ PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,Pe
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAConvertLocalNodeIndex2GlobalIJK"
+PetscErrorCode DMDAConvertLocalNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K)
+{
+	PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+	
+	//global/localrank = mx*my*k + mx*j + i;
+	lk = (PetscInt)localnid/(lnx*lny);
+	lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
+	li = localnid - lk*(lnx*lny) - lj*lnx;
+	
+	if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+	if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+	if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+	*K = lk + sk;
+	*J = lj + sj;
+	*I = li + si;
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAConvertLocalGhostNodeIndex2GlobalIJK"
+PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K)
+{
+	PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+	
+	//global/localrank = mx*my*k + mx*j + i;
+	lk = (PetscInt)localnid/(lnx*lny);
+	lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
+	li = localnid - lk*(lnx*lny) - lj*lnx;
+	
+	if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+	if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+	if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+	*K = lk + sk;
+	*J = lj + sj;
+	*I = li + si;
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModelGetOptionReal"
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 																				const char error[],
