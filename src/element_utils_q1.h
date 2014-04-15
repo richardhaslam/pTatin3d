@@ -71,6 +71,13 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 																						PetscReal dNudyQ2[][27],
 																						PetscReal dNudzQ2[][27] );
 
+void P3D_ConstructNi_Q1_2D(PetscReal _xi[],PetscReal Ni[]);
+
+void P3D_ConstructGNi_Q1_2D(PetscReal _xi[],PetscReal GNix[],PetscReal GNiy[]);
+
+void P3D_evaluate_geometry_elementQ1_2D(PetscReal el_coords[],PetscReal GNIx[],PetscReal GNIy[],
+                                        PetscReal *detJ,PetscReal dNudx[],PetscReal dNudy[]);
+
 
 #endif
 

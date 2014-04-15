@@ -449,5 +449,65 @@ void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
 }
 
 
+void P3D_ConstructNi_Q1_2D(PetscReal _xi[],PetscReal Ni[])
+{
+	PetscReal xi   = _xi[0];
+	PetscReal eta  = _xi[1];
+	
+	Ni[0] = 0.25 * ( 1.0 - xi ) * ( 1.0 - eta );
+	Ni[1] = 0.25 * ( 1.0 + xi ) * ( 1.0 - eta );
+	Ni[2] = 0.25 * ( 1.0 - xi ) * ( 1.0 + eta );
+	Ni[3] = 0.25 * ( 1.0 + xi ) * ( 1.0 + eta );
+}
+
+void P3D_ConstructGNi_Q1_2D(PetscReal _xi[],PetscReal GNix[],PetscReal GNiy[])
+{
+	PetscReal xi   = _xi[0];
+	PetscReal eta  = _xi[1];
+	
+	GNix[0] = - 0.25 * ( 1.0 - eta );
+	GNix[1] =   0.25 * ( 1.0 - eta );
+	GNix[2] = - 0.25 * ( 1.0 + eta );
+	GNix[3] =   0.25 * ( 1.0 + eta );
+	//
+	GNiy[0] = - 0.25 * ( 1.0 - xi );
+	GNiy[1] = - 0.25 * ( 1.0 + xi );
+	GNiy[2] =   0.25 * ( 1.0 - xi );
+	GNiy[3] =   0.25 * ( 1.0 + xi );
+}
+
+void P3D_evaluate_geometry_elementQ1_2D(PetscReal el_coords[],PetscReal GNIx[],PetscReal GNIy[],
+                                     PetscReal *detJ,PetscReal dNudx[],PetscReal dNudy[])
+{
+	PetscInt k,p;
+	PetscReal dJ,J[2][2],iJ[2][2];
+	
+    J[0][0] = J[0][1] = 0.0;
+    J[1][0] = J[1][1] = 0.0;
+
+    for (k=0; k<4; k++) {
+        PetscReal xc = el_coords[2*k+0];
+        PetscReal yc = el_coords[2*k+1];
+        
+        J[0][0] += GNIx[k] * xc ;
+        J[0][1] += GNIx[k] * yc ;
+        
+        J[1][0] += GNIy[k] * xc ;
+        J[1][1] += GNIy[k] * yc ;
+    }
+    dJ = (J[0][0]*J[1][1] - J[0][1]*J[1][0]);
+
+    iJ[0][0] =  J[1][1]/dJ;
+    iJ[0][1] = -J[0][1]/dJ;
+    iJ[1][0] = -J[1][0]/dJ;
+    iJ[1][1] =  J[0][0]/dJ;
+    *detJ = dJ;
+    
+    /* shape function derivatives */
+    for (k=0; k<4; k++) {
+        dNudx[k] = iJ[0][0]*GNIx[k] + iJ[0][1]*GNIy[k];
+        dNudy[k] = iJ[1][0]*GNIx[k] + iJ[1][1]*GNIy[k];
+    }
+}
 
 
