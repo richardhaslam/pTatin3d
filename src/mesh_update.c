@@ -645,3 +645,381 @@ PetscErrorCode UpdateMeshGeometry_ComputeSurfaceCourantTimestep(DM dav,Vec veloc
 	
 	PetscFunctionReturn(0);
 }
+
+/*
+
+ Applies a diffusion operator on the surface, j = JMAX-1
+ 
+ dh(x,z,t)/dt = -kappa \nabla . (\nabla h(x,z,t))
+ 
+ where h(x,z) is the height of the nodes along the surface j = JMAX-1.
+ \nabla = ( \partial / \partial x, \partial / \partial z )
+
+ The solution is discretised in space using Q1 finite elements. 
+ Solution is updated using a first order explicit time integration.
+ 
+ The user must specify at least two dirichlet boundary conditions.
+ These will fix the hieght of the surface h(x,z) at walls {east,west,front,back}
+ 
+ M h^{k+1} = M h^k + dt K h^k
+ which is approximated as
+ h^{k+1} = h^k + dt inv(diag(M)) K h^k
+ One point quadrature rule is used to evaluate all matrices.
+ 
+ 
+*/
+#undef __FUNCT__
+#define __FUNCT__ "UpdateMeshGeometry_ApplyDiffusionJMAX"
+PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivity,PetscReal timespan,
+                                                     PetscBool dirichlet_east,PetscBool dirichlet_west,PetscBool dirichlet_front,PetscBool dirichlet_back,PetscBool only_update_surface)
+{
+	PetscErrorCode ierr;
+    DM daH,cda;
+    PetscInt nsteps,s,nM;
+    PetscReal dt_explicit;
+	Vec Hinit,H,local_H,coords,gcoords,diagM,rhs,local_rhs,local_M;
+    PetscScalar *LA_Hinit,*LA_H,*LA_gcoords,*LA_rhs,*LA_M;
+    PetscInt i,j,k,e,nel,nen,*elnidx,MX,MY,MZ;
+    PetscInt ge_eqnums[NODES_PER_EL_Q1_3D];
+    PetscScalar el_coords[NSD*NODES_PER_EL_Q1_3D];
+	PetscScalar el_h[NODES_PER_EL_Q1_3D];
+    PetscScalar ***LA_H3,***LA_Hinit3;
+    PetscInt NI,NJ,NK,si,sj,sk,ni,nj,nk;
+    PetscReal MeshMin[3],MeshMax[3],ds;
+    PetscBool view_surface_diffusion = PETSC_FALSE;
+    
+	PetscFunctionBegin;
+    PetscPrintf(PETSC_COMM_WORLD,"Applying surface diffision. Dirichlet sides: { east=%D , west=%D , front=%D , back=%D } \n",dirichlet_east,dirichlet_west,dirichlet_front,dirichlet_back);
+    if (only_update_surface) {
+        PetscPrintf(PETSC_COMM_WORLD,"  [Only applying diffusion operator to JMAX surface] \n");
+    }
+    if (view_surface_diffusion) {
+        PetscPrintf(PETSC_COMM_WORLD,"  [Surface diffusion vizualisation on <debugging>] \n");
+    }
+    
+    /* clone the Q2 DMDA and make a Q1 representation */
+    /* duplicate DMDA for a scalar field */
+    ierr = DMDACreateOverlappingQ1FromQ2(dav,1,&daH);CHKERRQ(ierr);
+
+    ierr = DMCreateGlobalVector(daH,&H);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daH,&Hinit);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daH,&diagM);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(daH,&rhs);CHKERRQ(ierr);
+    
+    ierr = VecGetLocalSize(diagM,&nM);CHKERRQ(ierr);
+    
+	ierr = DMDAGetInfo(daH,0,&NI,&NJ,&NK,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(daH,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+    ierr = DMDAGetBoundingBox(daH,MeshMin,MeshMax);CHKERRQ(ierr);
+    
+    ds = (MeshMax[0] - MeshMin[0])/((PetscReal)(NI-1));
+    ds = PetscMin(ds, (MeshMax[2] - MeshMin[2])/((PetscReal)(NK-1)));
+    PetscPrintf(PETSC_COMM_WORLD,"  [approximate min. element size] ds = %1.4e \n",ds);
+    
+    /* compute a time step based on x,z cell sizes and a CFL of 0.5 */
+    dt_explicit = 0.1 *(ds*ds) / diffusivity;
+    PetscPrintf(PETSC_COMM_WORLD,"  [time step] dt_explicit = %1.4e \n",dt_explicit);
+    
+    nsteps = timespan / dt_explicit;
+    nsteps++;
+    if (nsteps < 1) { nsteps = 1; }
+    dt_explicit = timespan/((PetscReal)nsteps);
+
+    
+    PetscPrintf(PETSC_COMM_WORLD,"  [time period of diffusion] timespan = %1.4e \n",timespan);
+    PetscPrintf(PETSC_COMM_WORLD,"  [number of explicit time steps] nsteps = %d \n",nsteps);
+    PetscPrintf(PETSC_COMM_WORLD,"  [time step size] dt_explicit = %1.4e \n",dt_explicit);
+    
+    /* extract height */
+    ierr = DMDAGetCoordinateDA(daH,&cda);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(daH,&coords);CHKERRQ(ierr);
+    ierr = VecStrideGather(coords,1,H,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecCopy(H,Hinit);CHKERRQ(ierr);
+    
+	/* setup for coords */
+    ierr = DMDAGetCoordinateDA(daH,&cda);CHKERRQ(ierr);
+    ierr = DMDAGetGhostedCoordinates(daH,&gcoords);CHKERRQ(ierr);
+    ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+    ierr = DMGetLocalVector(daH,&local_H);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(daH,&local_rhs);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(daH,&local_M);CHKERRQ(ierr);
+
+    ierr = DMDAGetSizeElementQ2(dav,&MX,&MY,&MZ);CHKERRQ(ierr);
+	ierr = DMDAGetElementsQ1(daH,&nel,&nen,&elnidx);CHKERRQ(ierr);
+
+    for (s=0; s<nsteps; s++) {
+    
+        /* get acces to the vector V */
+        ierr = DMGlobalToLocalBegin(daH,H,INSERT_VALUES,local_H);CHKERRQ(ierr);
+        ierr = DMGlobalToLocalEnd(  daH,H,INSERT_VALUES,local_H);CHKERRQ(ierr);
+        ierr = VecGetArray(local_H,&LA_H);CHKERRQ(ierr);
+
+        ierr = VecZeroEntries(rhs);CHKERRQ(ierr);
+        ierr = VecZeroEntries(local_rhs);CHKERRQ(ierr);
+        ierr = VecGetArray(local_rhs,&LA_rhs);CHKERRQ(ierr);
+
+        ierr = VecZeroEntries(diagM);CHKERRQ(ierr);
+        ierr = VecZeroEntries(local_M);CHKERRQ(ierr);
+        ierr = VecGetArray(local_M,&LA_M);CHKERRQ(ierr);
+        
+        /* compute rhs */
+        for (e=0; e<nel; e++) {
+            PetscInt idx2d[] = { 2, 3, 6, 7 };
+            PetscInt ii;
+            PetscReal xi[] = {0.0,0.0};
+            PetscReal Ni[4],GNix[4],GNiz[4],dNdx[4],dNdz[4];
+            PetscReal dhdx,dhdz,el_rhs[4],el_M[4],detJ,el_h2d[4],el_coords2d[2*4];
+            PetscInt gI,gJ,gK;
+            PetscInt ge_eqnums2d[4];
+            PetscReal el_rhs3d[8],el_M3d[8];
+            
+            /* extract equation numbers for element */
+            ierr = DMDAEQ1_GetElementLocalIndicesDOF(ge_eqnums,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+            
+            /* extract x,z coords for element */
+            ierr = DMDAEQ1_GetVectorElementField_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+
+            /* extract height for element */
+            ierr = DMDAEQ1_GetScalarElementField_3D(el_h,(PetscInt*)&elnidx[nen*e],LA_H);CHKERRQ(ierr);
+
+            /* extract face values */
+            for (i=0; i<4; i++) {
+                PetscInt idx3;
+                
+                idx3 = idx2d[i];
+                
+                el_h2d[i] = el_h[idx3];
+
+                el_coords2d[2*i  ] = el_coords[3*idx3    ]; // x coordinate
+                el_coords2d[2*i+1] = el_coords[3*idx3 + 2]; // z coordinate
+                                 
+                ge_eqnums2d[i] = ge_eqnums[idx3]; // face indices
+            }
+            
+            /* determine if element is located on surface */
+            if (only_update_surface) {
+                PetscBool surface_face = PETSC_FALSE;
+                
+                for (i=0; i<4; i++) {
+                    ierr = DMDAConvertLocalGhostNodeIndex2GlobalIJK(daH,ge_eqnums2d[i],&gI,&gJ,&gK);CHKERRQ(ierr);
+                    if (gJ == NJ-1) {
+                        surface_face = PETSC_TRUE;
+                        break;
+                    }
+                }
+                if (!surface_face) {
+                    continue;
+                }
+            }
+            
+            
+            /* compute grad(h) at xi = (0 , 0) */
+            /* compute grad(N) at xi = (0 , 0) */
+            /* Ni[0] = 0.25 * (1-x)*(1-z) ; GNix[] = -0.25*(1-z) ; GNiz[] = -0.25*(1-x) */
+            /* Ni[1] = 0.25 * (1+x)*(1-z) ; GNix[] =  0.25*(1-z) ; GNiz[] = -0.25*(1+x) */
+            /* Ni[2] = 0.25 * (1-x)*(1+z) ; GNix[] =  0.25*(1+z) ; GNiz[] =  0.25*(1-x) */
+            /* Ni[3] = 0.25 * (1+x)*(1+z) ; GNix[] = -0.25*(1+z) ; GNiz[] =  0.25*(1+x) */
+            
+            P3D_ConstructNi_Q1_2D(xi,Ni);
+            P3D_ConstructGNi_Q1_2D(xi,GNix,GNiz);
+            P3D_evaluate_geometry_elementQ1_2D(el_coords2d,GNix,GNiz,&detJ,dNdx,dNdz);
+            
+            dhdx = dNdx[0]*el_h2d[0] + dNdx[1]*el_h2d[1] + dNdx[2]*el_h2d[2] + dNdx[3]*el_h2d[3];
+            dhdz = dNdz[0]*el_h2d[0] + dNdz[1]*el_h2d[1] + dNdz[2]*el_h2d[2] + dNdz[3]*el_h2d[3];
+            
+            // 1 pnt quadrature rule, so w_q = 4.0 and there is no summation to perform
+            //PetscMemzero(el_rhs,sizeof(PetscReal)*4);
+            //PetscMemzero(el_M,sizeof(PetscReal)*4);
+            for (ii=0; ii<4; ii++) {
+                /* Kij = GNix[i].GNix[j] + GNiz[i].GNiz[j] */
+                el_rhs[ii] = -4.0 * diffusivity * (dNdx[ii] * dhdx + dNdz[ii] * dhdz) * detJ;
+                
+                /* compute diag(M) */
+                el_M[ii]   = 4.0 * (Ni[ii] * Ni[ii]) * detJ;
+            }
+            //printf("el_rhs %1.4e %1.4e %1.4e %1.4e \n",el_rhs[0],el_rhs[1],el_rhs[2],el_rhs[3]);
+            //printf("el_M %1.4e %1.4e %1.4e %1.4e \n",el_M[0],el_M[1],el_M[2],el_M[3]);
+            
+            PetscMemzero(el_rhs3d,sizeof(PetscReal)*8);
+            PetscMemzero(el_M3d,sizeof(PetscReal)*8);
+            /* I drop in 1.0 here as later, post assembly we will invert this vector */
+            /*
+            for (i=0; i<8; i++) {
+                el_M3d[i] = 1.0;
+            }
+            */
+            /* map 2d diffusion into 3d dmda vector */
+            for (i=0; i<4; i++) {
+                el_rhs3d[ idx2d[i] ] = el_rhs[i];
+                el_M3d[   idx2d[i] ] = el_M[i];
+            }
+            
+            ierr = DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(LA_rhs,1,ge_eqnums,el_rhs3d);CHKERRQ(ierr);
+            ierr = DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(LA_M,1,ge_eqnums,el_M3d);CHKERRQ(ierr);
+        }
+
+        ierr = VecRestoreArray(local_H,&LA_H);CHKERRQ(ierr);
+        ierr = VecRestoreArray(local_M,&LA_M);CHKERRQ(ierr);
+        ierr = VecRestoreArray(local_rhs,&LA_rhs);CHKERRQ(ierr);
+
+        /* assemble rhs, diag(M) */
+        ierr = DMLocalToGlobalBegin(daH,local_rhs,ADD_VALUES,rhs);CHKERRQ(ierr);
+        ierr = DMLocalToGlobalEnd(  daH,local_rhs,ADD_VALUES,rhs);CHKERRQ(ierr);
+
+        ierr = DMLocalToGlobalBegin(daH,local_M,ADD_VALUES,diagM);CHKERRQ(ierr);
+        ierr = DMLocalToGlobalEnd(  daH,local_M,ADD_VALUES,diagM);CHKERRQ(ierr);
+
+        /* update */
+        //ierr = VecPointwiseDivide(rhs,rhs,diagM);CHKERRQ(ierr);
+        ierr = VecGetArray(diagM,&LA_M);CHKERRQ(ierr);
+        for (i=0; i<nM; i++) {
+            if (fabs(PetscRealPart(LA_M[i])) > 1.0e-20) {
+                LA_M[i] = 1.0/LA_M[i];
+            }
+        }
+        ierr = VecRestoreArray(diagM,&LA_M);CHKERRQ(ierr);
+        
+        ierr = VecPointwiseMult(rhs,rhs,diagM);CHKERRQ(ierr);
+        
+        ierr = VecAXPY(H,dt_explicit,rhs);CHKERRQ(ierr);
+        
+        /* force boundary conditions */
+        ierr = DMDAVecGetArray(daH,H,&LA_H3);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(daH,Hinit,&LA_Hinit3);CHKERRQ(ierr);
+
+        for (k=sk; k<sk+nk; k++) {
+            for (j=sj; j<sj+nj; j++) {
+                for (i=si; i<si+ni; i++) {
+                    
+                    if (dirichlet_west) {
+                        if (i == 0) { LA_H3[k][j][i]    = LA_Hinit3[k][j][i]; }
+                    }
+                    if (dirichlet_east) {
+                        if (i == NI-1) { LA_H3[k][j][i] = LA_Hinit3[k][j][i]; }
+                    }
+                    if (dirichlet_front) {
+                        if (k == 0) { LA_H3[k][j][i]    = LA_Hinit3[k][j][i]; }
+                    }
+                    if (dirichlet_back) {
+                        if (k == NK-1) { LA_H3[k][j][i] = LA_Hinit3[k][j][i]; }
+                    }
+                }
+            }
+        }
+        
+        ierr = DMDAVecRestoreArray(daH,Hinit,&LA_Hinit3);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(daH,H,&LA_H3);CHKERRQ(ierr);
+
+        // output
+        if (view_surface_diffusion){
+            char name[1000];
+            Vec coordsH;
+            DM cdaH;
+            
+            ierr = DMDAGetCoordinateDA(daH,&cdaH);CHKERRQ(ierr);
+            ierr = DMDAGetCoordinates(daH,&coordsH);CHKERRQ(ierr);
+            ierr = VecStrideScatter(H,1,coordsH,INSERT_VALUES);CHKERRQ(ierr);
+            
+            sprintf(name,"surface_diffusion_%.4d.vtk",s);
+            ierr = DMDAViewPetscVTK(daH,H,name);CHKERRQ(ierr);
+        }
+        //
+        
+    }
+    ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+    
+    ierr = DMRestoreLocalVector(daH,&local_rhs);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(daH,&local_M);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(daH,&local_H);CHKERRQ(ierr);
+    
+    
+    ierr = DMGetLocalVector(daH,&local_H);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(daH,H,INSERT_VALUES,local_H);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(  daH,H,INSERT_VALUES,local_H);CHKERRQ(ierr);
+    
+    {
+        DMDACoor3d ***LA_coords3;
+        PetscInt siv,niv,sjv,njv,skv,nkv;
+        PetscInt sig,nig,sjg,njg,skg,nkg;
+        PetscInt NIv,NJv,NKv;
+        
+        ierr = DMDAGetInfo(dav,0,&NIv,&NJv,&NKv,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+        
+        ierr = DMDAGetGhostCorners(daH,&sig,&sjg,&skg,&nig,&njg,&nkg);CHKERRQ(ierr);
+        
+        ierr = DMDAVecGetArray(daH,local_H,&LA_H3);CHKERRQ(ierr);
+        
+        ierr = DMDAGetCorners(dav,&siv,&sjv,&skv,&niv,&njv,&nkv);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMDAVecGetArray(cda,coords,&LA_coords3);CHKERRQ(ierr);
+
+        if (only_update_surface) {
+            /* copy only heights from JMAX surface onto Q2 mesh */
+            if ( NJv == sjv+njv ) {
+                j = NJv - 1;
+                for (k=skv; k<skv+nkv; k++) {
+                    for (i=siv; i<siv+niv; i++) {
+                        if (i%2 != 0) { continue; }
+                        if (j%2 != 0) { continue; }
+                        if (k%2 != 0) { continue; }
+                        
+                        if (i/2 < sig) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"i min bound failed"); }
+                        if (i/2 >= sig+nig) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"i max bound failed"); }
+
+                        if (j/2 < sjg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"j min bound failed"); }
+                        if (j/2 >= sjg+njg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"j max bound failed"); }
+
+                        if (k/2 < skg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"k min bound failed"); }
+                        if (k/2 >= skg+nkg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"k max bound failed"); }
+
+                        LA_coords3[k][j][i].y = LA_H3[k/2][j/2][i/2];
+                    }
+                }
+            }
+        } else {
+            /* copy all heights onto Q2 mesh */
+            for (k=skv; k<skv+nkv; k++) {
+                for (j=sjv; j<sjv+njv; j++) {
+                    for (i=siv; i<siv+niv; i++) {
+                        if (i%2 != 0) { continue; }
+                        if (j%2 != 0) { continue; }
+                        if (k%2 != 0) { continue; }
+                        
+                        if (i/2 < sig) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"i min bound failed"); }
+                        if (i/2 >= sig+nig) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"i max bound failed"); }
+                        
+                        if (j/2 < sjg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"j min bound failed"); }
+                        if (j/2 >= sjg+njg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"j max bound failed"); }
+                        
+                        if (k/2 < skg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"k min bound failed"); }
+                        if (k/2 >= skg+nkg) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"k max bound failed"); }
+                        
+                        LA_coords3[k][j][i].y = LA_H3[k/2][j/2][i/2];
+                    }
+                }
+            }
+        }
+        
+        ierr = DMDAVecRestoreArray(cda,coords,&LA_coords3);CHKERRQ(ierr);
+        ierr = DMDAVecRestoreArray(daH,local_H,&LA_H3);CHKERRQ(ierr);
+
+        ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
+    }
+    
+    ierr = DMRestoreLocalVector(daH,&local_H);CHKERRQ(ierr);
+    
+    
+    /* billinearize Q2 mesh */
+    ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
+    
+    ierr = VecDestroy(&rhs);CHKERRQ(ierr);
+    ierr = VecDestroy(&diagM);CHKERRQ(ierr);
+    ierr = VecDestroy(&H);CHKERRQ(ierr);
+    ierr = VecDestroy(&Hinit);CHKERRQ(ierr);
+    
+    ierr = DMDestroy(&daH);CHKERRQ(ierr);
+
+	PetscFunctionReturn(0);
+}
