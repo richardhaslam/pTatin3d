@@ -461,6 +461,12 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 	//ierr = DMDASetCoordinatesCentralSqueeze1D(c->stokes_ctx->dav,0,4.0,0.0,0.4,0.8,1.0);CHKERRQ(ierr);
 	//ierr = DMDASetCoordinatesColumnRefinement(c->stokes_ctx->dav,1,4.0,0.66,1.0);CHKERRQ(ierr);
 	
+    /* diffusion example */
+    /*
+    ierr = UpdateMeshGeometry_ApplyDiffusionJMAX(c->stokes_ctx->dav,1.0e-2,0.44,
+                                                 PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE, PETSC_FALSE);CHKERRQ(ierr);
+    */
+    
 	PetscFunctionReturn(0);
 }
 
