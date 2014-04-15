@@ -394,7 +394,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	lzq1[Pp-1] = (2*MZ - skq2[Pp-1])/2;
 	lzq1[Pp-1]++;
 	
-	
+	/*
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
 			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
@@ -406,7 +406,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 			printf("rank[%d] startK = %d: lmzq1 = %d \n",k,lskp[k],lzq1[k]);
 		}
 	}
-	
+	*/
 	
 	ierr = DMDACreate3d(((PetscObject)dmq2)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, Mp,Np,Pp, ndofs,1, lxq1,lyq1,lzq1, &dm );CHKERRQ(ierr);
 	
