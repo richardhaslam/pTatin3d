@@ -532,7 +532,7 @@ PetscErrorCode MaterialConstantsScaleValues_DensityBoussinesq(DataBucket db,cons
 	
 	/* scaling for beta */
   MaterialConst_DensityBoussinesqGetField_compressibility(data,&beta);
-	beta=beta/sigma_star;
+	beta=beta*sigma_star;
 	MaterialConst_DensityBoussinesqSetField_compressibility(data,beta);
 	
 	DataFieldRestoreAccess(PField);
