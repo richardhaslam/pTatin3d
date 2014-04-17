@@ -176,7 +176,6 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	
 	if (active_energy) {
 		Vec          Told,velocity,pressure;
-		MatStructure mstr;
 		BCList       bclist;
 		DM           daT,cdaT;
 		PetscReal    dx;
@@ -234,7 +233,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			
 			// crappy way - make it non-linear
 	#if 0		
-			ierr = TS_FormJacobianEnergy(user->time,T,user->dt,&JE,&JE,&mstr,(void*)energy);CHKERRQ(ierr);
+			ierr = TS_FormJacobianEnergy(user->time,T,user->dt,JE,JE,(void*)energy);CHKERRQ(ierr);
 			ierr = TS_FormFunctionEnergy(user->time,T,user->dt,f,(void*)energy);CHKERRQ(ierr);
 
 			//ierr = VecSetRandom(f,0);CHKERRQ(ierr);
@@ -242,7 +241,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 					
 			ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
 			ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
-			ierr = KSPSetOperators(kspT,JE,JE,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(kspT,JE,JE);CHKERRQ(ierr);
 			ierr = KSPSetFromOptions(kspT);CHKERRQ(ierr);
 			
 			ierr = KSPSolve(kspT,f,T);CHKERRQ(ierr);

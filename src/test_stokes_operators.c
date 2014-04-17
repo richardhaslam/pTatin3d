@@ -789,7 +789,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	
 	
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
 	ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 

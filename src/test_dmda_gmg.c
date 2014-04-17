@@ -57,7 +57,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
-PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PetscErrorCode    ierr;
 	
@@ -530,10 +530,10 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		}
 		
 		ierr = PCMGGetCoarseSolve(pc_i,&ksp_smoother);CHKERRQ(ierr);
-		ierr = KSPSetOperators(ksp_smoother,A11MF[0],A11MF[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+		ierr = KSPSetOperators(ksp_smoother,A11MF[0],A11MF[0]);CHKERRQ(ierr);
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
-			ierr = KSPSetOperators(ksp_smoother,A11MF[k],A11MF[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,A11MF[k],A11MF[k]);CHKERRQ(ierr);
 		}
 		
 	}

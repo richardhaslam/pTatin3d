@@ -116,7 +116,7 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	
 	PetscFunctionBegin;
 
-	ierr = KSPGetOperators(ksp,&Aop,&Bop,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&Aop,&Bop);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = KSPGetPCSide(ksp,&side);CHKERRQ(ierr);
 	
@@ -201,7 +201,7 @@ PetscErrorCode MatCreateEigenOperatorFromKSP(KSP ksp,Mat *A)
 	
 	PetscFunctionBegin;
 	
-	ierr = KSPGetOperators(ksp,&Aop,&Bop,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&Aop,&Bop);CHKERRQ(ierr);
 	
 	ierr = MatGetSize(Aop,&MA,&NA);CHKERRQ(ierr);
 	ierr = MatGetLocalSize(Aop,&mA,&nA);CHKERRQ(ierr);

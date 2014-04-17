@@ -475,7 +475,7 @@ PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,Petsc
  */
 #undef __FUNCT__  
 #define __FUNCT__ "TS_FormJacobianEnergy"
-PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat B,void *ctx)
 {
   PhysCompEnergy data = (PhysCompEnergy)ctx;
 	PetscInt          nqp;
@@ -510,25 +510,20 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 	
 		
 	/* trash old entries */
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD,&mat_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD,&mat_mffd);CHKERRQ(ierr);
 
 	if (!mat_mffd) {
-		ierr = MatZeroEntries(*A);CHKERRQ(ierr);
+		ierr = MatZeroEntries(A);CHKERRQ(ierr);
 	} else {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	}
 
-	if (*B) {
-		ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+	if (B) {
+		ierr = MatZeroEntries(B);CHKERRQ(ierr);
 	}
 
-	*mstr = DIFFERENT_NONZERO_PATTERN;
-	if ((*A) == (*B)) {
-		*mstr = SAME_NONZERO_PATTERN;
-	}
-
-	if (*B==NULL) {
+	if (B==NULL) {
 		PetscFunctionReturn(0);
 	}
 	
@@ -614,7 +609,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 		}
 		
 		/* insert element matrix into global matrix */
-		ierr = MatSetValues(*B,NODES_PER_EL_Q1_3D,ge_eqnums, NODES_PER_EL_Q1_3D,ge_eqnums, ADe, ADD_VALUES );CHKERRQ(ierr);
+		ierr = MatSetValues(B,NODES_PER_EL_Q1_3D,ge_eqnums, NODES_PER_EL_Q1_3D,ge_eqnums, ADe, ADD_VALUES );CHKERRQ(ierr);
   }
 	/* tidy up */
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -623,21 +618,20 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
   ierr = DMRestoreLocalVector(cda,&local_V);CHKERRQ(ierr);
 	
 	/* partial assembly */
-	ierr = MatAssemblyBegin(*B, MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd(*B, MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(B, MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd(B, MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* boundary conditions */
 	ierr = BCListRemoveDirichletMask(NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
-	ierr = BCListInsertScaling(*B,NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
+	ierr = BCListInsertScaling(B,NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
 	
 	/* assemble */
-	ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
  
-	if (*A != *B) {
-		*mstr = DIFFERENT_NONZERO_PATTERN;
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (A != B) {
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
 	
   PetscFunctionReturn(0);
@@ -645,13 +639,13 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_FormJacobianEnergy"
-PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   PhysCompEnergy data  = (PhysCompEnergy)ctx;
   PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	ierr = TS_FormJacobianEnergy(data->time,X,data->dt,A,B,mstr,ctx);CHKERRQ(ierr);
+	ierr = TS_FormJacobianEnergy(data->time,X,data->dt,A,B,ctx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

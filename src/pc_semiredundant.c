@@ -275,7 +275,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 		
 		red->Ared = NULL;
 		red->Bred = NULL;
-		ierr = PCGetOperators(pc,&red->A,&red->B,&str);CHKERRQ(ierr);
+		ierr = PCGetOperators(pc,&red->A,&red->B);CHKERRQ(ierr);
 		
 		red->ksp = NULL;
 		if (red->subcomm->parent_rank_active_in_subcomm) {
@@ -360,10 +360,10 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 	}
 	
 	/* common - no construction */
-	ierr = PCGetOperators(pc,&red->A,&red->B,&str);CHKERRQ(ierr);
+	ierr = PCGetOperators(pc,&red->A,&red->B);CHKERRQ(ierr);
 	if (red->Ared) {
 		//MatView(red->Ared,PETSC_VIEWER_STDOUT_(red->subcomm->sub_comm));
-		ierr = KSPSetOperators(red->ksp,red->Ared,red->Bred,str);CHKERRQ(ierr);
+		ierr = KSPSetOperators(red->ksp,red->Ared,red->Bred);CHKERRQ(ierr);
 		
 		if (pc->setfromoptionscalled){
 			ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr); 

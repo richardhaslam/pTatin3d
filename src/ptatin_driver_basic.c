@@ -57,7 +57,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
-PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
   DM                stokes_pack,dau,dap;
@@ -88,14 +88,14 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 	/* Jacobian */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 	
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD, &is_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST, &is_nest);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSHELL,&is_shell);CHKERRQ(ierr);
 
 	if (is_nest) {
 		Mat Auu;
 		
-		ierr = MatGetSubMatrix(*A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
 
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -109,15 +109,15 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 	/* If shell, do nothing */
 	/* If mffd,  do nothing */
 	
-	ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* preconditioner for Jacobian */
 	{
 		Mat Buu,Bpp;
 		
-		ierr = MatGetSubMatrix(*B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(*B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 //		ierr = Assemble_Stokes_A11_Q2(user,dau,u,dap,p,Buu);CHKERRQ(ierr);
 //		ierr = Assemble_Stokes_B22_P1(user,dau,u,dap,p,Bpp);CHKERRQ(ierr);
@@ -139,10 +139,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 		ierr = MatDestroy(&Buu);CHKERRQ(ierr);
 		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);		
   }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	
-	*mstr = DIFFERENT_NONZERO_PATTERN;
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* clean up */
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);

@@ -74,7 +74,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
-PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
   DM                stokes_pack,dau,dap;
@@ -105,14 +105,14 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 	/* Jacobian */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 	
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD, &is_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST, &is_nest);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSHELL,&is_shell);CHKERRQ(ierr);
 
 	if (is_nest) {
 		Mat Auu;
 		
-		ierr = MatGetSubMatrix(*A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
 
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -126,15 +126,15 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 	/* If shell, do nothing */
 	/* If mffd,  do nothing */
 	
-	ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* preconditioner for Jacobian */
 	{
 		Mat Buu,Bpp;
 		
-		ierr = MatGetSubMatrix(*B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(*B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 //		ierr = Assemble_Stokes_A11_Q2(user,dau,u,dap,p,Buu);CHKERRQ(ierr);
 //		ierr = Assemble_Stokes_B22_P1(user,dau,u,dap,p,Bpp);CHKERRQ(ierr);
@@ -156,10 +156,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 		ierr = MatDestroy(&Buu);CHKERRQ(ierr);
 		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);		
   }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	
-	*mstr = DIFFERENT_NONZERO_PATTERN;
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* clean up */
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
@@ -176,7 +174,7 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_StokesMGAuu"
-PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
 	AuuMultiLevelCtx  *mlctx;
@@ -234,14 +232,14 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 #endif	
 	
 	/* operator */
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD, &is_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST, &is_nest);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSHELL,&is_shell);CHKERRQ(ierr);
 
 	if (is_nest) {
 		Mat Auu;
 		
-		ierr = MatGetSubMatrix(*A,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(A,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -255,15 +253,15 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 	/* If shell, do nothing */
 	/* If mffd,  do nothing */
 	
-	ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* preconditioner operator for Jacobian */
 	{
 		Mat Buu,Bpp;
 		
-		ierr = MatGetSubMatrix(*B,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(*B,mlctx->is_stokes_field[1],mlctx->is_stokes_field[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,mlctx->is_stokes_field[1],mlctx->is_stokes_field[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -282,10 +280,8 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		ierr = MatDestroy(&Buu);CHKERRQ(ierr);
 		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);		
   }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	
-	*mstr = DIFFERENT_NONZERO_PATTERN;
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 #if 1	
 	/* Buu preconditioner for all other levels in the hierarchy */
 	for (k=mlctx->nlevels-2; k>=0; k--) {
@@ -827,7 +823,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		/* drop the operators in - i presume this will also need to be performed inside the jacobian each time the operators are modified */
 		/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
 		ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
-		ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+		ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0]);CHKERRQ(ierr);
 		for( k=1; k<nlevels; k++ ){
 			PetscBool use_low_order_geometry = PETSC_FALSE;
 
@@ -837,12 +833,12 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			// use A for smoother, B for residual
 			ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 			if (use_low_order_geometry==PETSC_TRUE) {
-				ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
 				
-				//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
 			} else {
 				// Use A for smoother, lo
-				ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+				ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
 			}
 		
 		}
@@ -954,7 +950,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 			/* drop the operators in - i presume this will also need to be performed inside the jacobian each time the operators are modified */
 			/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
 			ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
-			ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0]);CHKERRQ(ierr);
 			for( k=1; k<nlevels; k++ ){
 				PetscBool use_low_order_geometry = PETSC_FALSE;
 				
@@ -962,10 +958,10 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 				// use A for smoother, B for residual
 				ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 				if (use_low_order_geometry==PETSC_TRUE) {
-					ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
 				} else {
 					// Use A for smoother, low
-					ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
 				}
 			}
 		}

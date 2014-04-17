@@ -514,7 +514,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	
     PetscFunctionBegin;
 	
-	ierr = PCGetOperators(pc,&A,&B,NULL);CHKERRQ(ierr);
+	ierr = PCGetOperators(pc,&A,&B);
 	
 	if (!pc->setfromoptionscalled) {
 		/* -- [wsmp] : initialize with default parameters -- */

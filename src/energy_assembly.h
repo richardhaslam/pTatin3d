@@ -96,10 +96,10 @@ PetscErrorCode AElement_FormFunction_T_tau(
 																 PetscScalar gp_kappa[],PetscScalar gp_Q[],
 																 PetscInt ngp,PetscScalar gp_xi[],PetscScalar gp_weight[] );
 
-PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
+PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat B,void *ctx);
 PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx);
 
-PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx);
+PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx);
 PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx);
 
 #endif

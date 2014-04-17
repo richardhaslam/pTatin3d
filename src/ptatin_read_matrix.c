@@ -38,7 +38,7 @@ int main(int argc,char **argv)
 	ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 	
 	ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);

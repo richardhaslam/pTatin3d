@@ -547,7 +547,7 @@ PetscErrorCode pTatinStokesKSPMonitorBlocks(KSP ksp,PetscInt n,PetscReal rnorm,v
 	
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
-	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
 	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);

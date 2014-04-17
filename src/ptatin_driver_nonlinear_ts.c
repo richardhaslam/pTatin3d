@@ -139,7 +139,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	/* drop the operators in - i presume this will also need to be performed inside the jacobian each time the operators are modified */
 	/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
 	ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0]);CHKERRQ(ierr);
 	for( k=1; k<nlevels; k++ ){
 		PetscBool use_low_order_geometry = PETSC_FALSE;
 		
@@ -148,11 +148,11 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 		// use A for smoother, B for residual
 		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 		if (use_low_order_geometry==PETSC_TRUE) {
-			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-			//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
+			//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
 		} else {
 			// Use A for smoother, lo
-			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
 		}
 	}
 	PetscFunctionReturn(0);
@@ -711,7 +711,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_StokesMGAuu"
-PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
 	AuuMultiLevelCtx  *mlctx;
@@ -769,14 +769,14 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 #endif	
 	
 	/* operator */
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD, &is_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST, &is_nest);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSHELL,&is_shell);CHKERRQ(ierr);
 
 	if (is_nest) {
 		Mat Auu;
 		
-		ierr = MatGetSubMatrix(*A,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(A,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -790,15 +790,15 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 	/* If shell, do nothing */
 	/* If mffd,  do nothing */
 	
-	ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* preconditioner operator for Jacobian */
 	{
 		Mat Buu,Bpp;
 		
-		ierr = MatGetSubMatrix(*B,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(*B,mlctx->is_stokes_field[1],mlctx->is_stokes_field[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,mlctx->is_stokes_field[0],mlctx->is_stokes_field[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,mlctx->is_stokes_field[1],mlctx->is_stokes_field[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -817,10 +817,8 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 		ierr = MatDestroy(&Buu);CHKERRQ(ierr);
 		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);		
   }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	
-	*mstr = DIFFERENT_NONZERO_PATTERN;
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 #if 1	
 	/* Buu preconditioner for all other levels in the hierarchy */
@@ -853,7 +851,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 					ierr = MatZeroEntries(mlctx->operatorB11[k]);CHKERRQ(ierr);
 					ierr = MatAssemble_StokesA_AUU(mlctx->operatorB11[k],mlctx->dav_hierarchy[k],mlctx->u_bclist[k],mlctx->volQ[k]);CHKERRQ(ierr);
 
-					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 					/* hack for nested coarse solver */
 					{
 						KSP ksp_nested;
@@ -865,16 +863,16 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 						ierr = PetscObjectTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
 						if (is_nested_ksp) {
 							ierr = PCKSPGetKSP(pc_smoother,&ksp_nested);CHKERRQ(ierr);
-							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 						}
 					}
 					
 					/* no low order assembly */
 					/*
 					if (use_low_order_geometry==PETSC_TRUE) {
-						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 					} else {
-						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k]);CHKERRQ(ierr);
 					}
 					*/
 				}
@@ -883,11 +881,11 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 				case OP_TYPE_REDISC_MF:
 				{
 					if (use_low_order_geometry == PETSC_TRUE) {
-						//	ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						//	ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 					} else {
-						//	ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						//	ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k]);CHKERRQ(ierr);
 					}
 				}
 					break;
@@ -903,14 +901,14 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 
 					/*
 					ierr = MatPtAP(mlctx->operatorA11[k+1],mlctx->interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu_k);CHKERRQ(ierr);
-					ierr = KSPSetOperators(ksp_smoother,Auu_k,Auu_k,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,Auu_k,Auu_k);CHKERRQ(ierr);
 					mlctx->operatorA11[k] = Auu_k;
 					mlctx->operatorB11[k] = Auu_k;
 					ierr = PetscObjectReference((PetscObject)Auu_k);CHKERRQ(ierr);
 					*/
 					Auu_k = mlctx->operatorA11[k];
 					ierr = MatPtAP(mlctx->operatorA11[k+1],mlctx->interpolation_v[k+1],MAT_REUSE_MATRIX,1.0,&Auu_k);CHKERRQ(ierr);
-					ierr = KSPSetOperators(ksp_smoother,Auu_k,Auu_k,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,Auu_k,Auu_k);CHKERRQ(ierr);
 					mlctx->operatorB11[k] = Auu_k;
 				}
 					break;
@@ -938,7 +936,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 					
 				case OP_TYPE_REDISC_ASM:
 				{
-					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 					/* hack for nested coarse solver */
 					{
 						KSP ksp_nested;
@@ -950,7 +948,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 						ierr = PetscObjectTypeCompare((PetscObject)pc_smoother,PCKSP,&is_nested_ksp);CHKERRQ(ierr);
 						if (is_nested_ksp) {
 							ierr = PCKSPGetKSP(pc_smoother,&ksp_nested);CHKERRQ(ierr);
-							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+							ierr = KSPSetOperators(ksp_nested,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 						}
 					}
 				}
@@ -959,16 +957,16 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat *A,Mat *B,MatStructu
 				case OP_TYPE_REDISC_MF:
 				{
 					if (use_low_order_geometry == PETSC_TRUE) {
-						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorB11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 					} else {
-						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+						ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k]);CHKERRQ(ierr);
 					}
 				}
 					break;
 					
 				case OP_TYPE_GALERKIN:
 				{
-					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+					ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
 				}
 					break;
 			}

@@ -82,7 +82,7 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 			PetscMPIInt     subsize,subrank;
 			const PetscInt  *range;
 			
-			ierr = KSPGetOperators(ksp,&mat,NULL,NULL);CHKERRQ(ierr);
+			ierr = KSPGetOperators(ksp,&mat,NULL);CHKERRQ(ierr);
 			ierr = MatGetVecs(mat,NULL,&vec);CHKERRQ(ierr);
 
 			/* create working vectors xsub */
@@ -347,7 +347,7 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
   }
 	
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 	
   /* These three point to the three active solutions, we
@@ -531,7 +531,7 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
   }
 	
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 	
   /* These three point to the three active solutions, we
@@ -699,7 +699,7 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
   }
 	
   ksp->its = 0;
-  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
+  ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat);CHKERRQ(ierr);
   maxit    = ksp->max_it;
 	
   /* These three point to the three active solutions, we

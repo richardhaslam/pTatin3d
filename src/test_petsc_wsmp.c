@@ -112,7 +112,7 @@ PetscErrorCode test_wsmp_serial_petsc(void)
 	/* ------------------------------------------- */
 	
 	KSPCreate(PETSC_COMM_SELF,&ksp);
-	KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
+	KSPSetOperators(ksp,A,A);
 	KSPSetType(ksp,KSPPREONLY);
 	KSPGetPC(ksp,&pc);
 	PCSetType(pc,PCLU);
@@ -201,7 +201,7 @@ PetscErrorCode test_wsmp_pc_wsmp(void)
 	/* ------------------------------------------- */
 	
 	KSPCreate(PETSC_COMM_WORLD,&ksp);
-	KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
+	KSPSetOperators(ksp,A,A);
 	KSPSetType(ksp,KSPPREONLY);
 	KSPGetPC(ksp,&pc);
 	PCSetType(pc,"wsmp");
@@ -218,13 +218,13 @@ PetscErrorCode test_wsmp_pc_wsmp(void)
 	
 	printf("second solve [same nonzero pattern]\n");
 	VecSet(x,0.0);
-	KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);
+	KSPSetOperators(ksp,A,A);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 	VecView(x,PETSC_VIEWER_STDOUT_WORLD );
 
 	printf("third solve [different nonzero pattern]\n");
 	VecSet(x,0.0);
-	KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);
+	KSPSetOperators(ksp,A,A);
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
 	VecView(x,PETSC_VIEWER_STDOUT_WORLD );
 	

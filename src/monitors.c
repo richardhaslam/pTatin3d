@@ -58,7 +58,7 @@ PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,Pets
 	
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
-	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
 	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
-	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
 	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);

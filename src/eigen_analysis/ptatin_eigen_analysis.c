@@ -29,7 +29,7 @@ typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } Opera
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
-PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
   DM                stokes_pack,dau,dap;
@@ -110,8 +110,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
   }
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	
-	*mstr = DIFFERENT_NONZERO_PATTERN;
 	
 	/* clean up */
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
@@ -415,7 +413,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	/* drop the operators in - i presume this will also need to be performed inside the jacobian each time the operators are modified */
 	/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
 	ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+	ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0]);CHKERRQ(ierr);
 	for( k=1; k<nlevels; k++ ){
 		PetscBool use_low_order_geometry = PETSC_FALSE;
 		
@@ -424,11 +422,11 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 		// use A for smoother, B for residual
 		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 		if (use_low_order_geometry==PETSC_TRUE) {
-			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-			//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
+			//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
 		} else {
 			// Use A for smoother, lo
-			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
 		}
 	}
 	PetscFunctionReturn(0);
@@ -535,7 +533,7 @@ PetscErrorCode ptatinEigenAnalyser_Stokes(SNES snes,PetscBool view)
 	PetscFunctionBegin;
 
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 	
 	ierr = _slepc_eigen(As,EPS_NHEP,"StokesA");CHKERRQ(ierr);
@@ -555,7 +553,7 @@ PetscErrorCode ptatinEigenAnalyser_StokesPC(SNES snes,PetscBool view)
 	PetscFunctionBegin;
 
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 
 	ierr = MatCreateEigenOperatorFromKSPOperators(ksp_stokes,&Ae);CHKERRQ(ierr);
@@ -583,7 +581,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PC(SNES snes,PetscBool view)
 	PetscFunctionBegin;
 	
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 
 	ierr = PCFieldSplitGetSubKSP(pc_stokes,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -615,7 +613,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
 	PetscFunctionBegin;
 	
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 	
 	ierr = PCFieldSplitGetSubKSP(pc_stokes,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -641,9 +639,9 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
 		PC mm;
 		Mat A11,Aii;
 		
-		ierr = KSPGetOperators(ksp_A11,&A11,0,0);CHKERRQ(ierr);
+		ierr = KSPGetOperators(ksp_A11,&A11,0);CHKERRQ(ierr);
 		ierr = PCCreate(PETSC_COMM_WORLD,&mm);CHKERRQ(ierr);
-		ierr = PCSetOperators(mm,A11,A11,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+		ierr = PCSetOperators(mm,A11,A11);CHKERRQ(ierr);
 		ierr = PCSetType(mm,PCMAT);CHKERRQ(ierr);
 
 		PetscTime(&t0);
@@ -676,7 +674,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmoother(SNES snes,PetscBool view)
 	PetscFunctionBegin;
 	
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 	
 	ierr = PCFieldSplitGetSubKSP(pc_stokes,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -686,7 +684,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmoother(SNES snes,PetscBool view)
 	ierr = PCMGGetLevels(pc_A11,&nlevels);CHKERRQ(ierr);
 	
 	ierr = PCMGGetCoarseSolve(pc_A11,&ksp_level);CHKERRQ(ierr);
-	//ierr = KSPGetOperators(ksp_level,&A_lv,&B_lv,NULL);CHKERRQ(ierr);
+	//ierr = KSPGetOperators(ksp_level,&A_lv,&B_lv);CHKERRQ(ierr);
 
 	ierr = MatCreateEigenOperatorFromKSPOperators(ksp_level,&Ae);CHKERRQ(ierr);
 	if (view) {
@@ -732,7 +730,7 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 	PetscFunctionBegin;
 	
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 	
 	ierr = PCFieldSplitGetSubKSP(pc_stokes,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -742,14 +740,14 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 	/* matlab agrees */
 	/*
 	{
-		ierr = KSPGetOperators(ksp_A11,&Ae,NULL,NULL);CHKERRQ(ierr);
+		ierr = KSPGetOperators(ksp_A11,&Ae,NULL);
 		ierr = _slepc_eigen(Ae,EPS_HEP,"StokesA11");CHKERRQ(ierr);
 	}
 	*/
 	ierr = PCMGGetLevels(pc_A11,&nlevels);CHKERRQ(ierr);
 	
 	ierr = PCMGGetCoarseSolve(pc_A11,&ksp_level);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_level,&Ai,0,0);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_level,&Ai,0);CHKERRQ(ierr);
 	ierr = MatComputeExplicitOperator(Ai,&Ae);CHKERRQ(ierr);
 
 	if (ascii_view) {
@@ -768,7 +766,7 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 		sprintf(name,"A_level_%d.mat",k);
 
 		ierr = PCMGGetSmoother(pc_A11,k,&ksp_level);CHKERRQ(ierr);
-		ierr = KSPGetOperators(ksp_level,&Ai,0,0);CHKERRQ(ierr);
+		ierr = KSPGetOperators(ksp_level,&Ai,0);CHKERRQ(ierr);
 		ierr = MatComputeExplicitOperator(Ai,&Ae);CHKERRQ(ierr);
 
 		if (ascii_view) {
@@ -800,7 +798,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 	PetscFunctionBegin;
 	
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 	
 	ierr = PCFieldSplitGetSubKSP(pc_stokes,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -889,7 +887,7 @@ PetscErrorCode ptatinEigenAnalyser_A11KSPSmoother(SNES snes,PetscBool view)
 	PetscFunctionBegin;
 	
 	ierr = SNESGetKSP(snes,&ksp_stokes);CHKERRQ(ierr);
-	ierr = KSPGetOperators(ksp_stokes,&As,&Bs,NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp_stokes,&As,&Bs);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp_stokes,&pc_stokes);CHKERRQ(ierr);
 	
 	ierr = PCFieldSplitGetSubKSP(pc_stokes,&nsplits,&sub_ksp);CHKERRQ(ierr);
