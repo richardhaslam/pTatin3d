@@ -40,12 +40,11 @@ static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],
 	}
 
 	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
-	PetscMemzero(u,sizeof u);
 	for (PetscInt l=0; l<3; l++) {
 		for (PetscInt c=0; c<3; c++) {
 			__m256d r[3] = {_mm256_set1_pd(R[c][0]),_mm256_set1_pd(R[c][1]),_mm256_set1_pd(R[c][2])};
 			for (PetscInt kj=0; kj<9; kj++) {
-				__m256d u_lkjc = _mm256_load_pd(u[l][kj*3+c]);
+				__m256d u_lkjc = _mm256_setzero_pd();
 				for (PetscInt i=0; i<3; i++) {
 					__m256d x_lkji = _mm256_load_pd(x[l][kj*3+i]);
 					u_lkjc = _mm256_fmadd_pd(r[i],x_lkji,u_lkjc);
@@ -56,13 +55,12 @@ static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],
 	}
 
 	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
-	PetscMemzero(v,sizeof v);
 	for (PetscInt l=0; l<3; l++) {
 		for (PetscInt k=0; k<3; k++) {
 			for (PetscInt b=0; b<3; b++) {
 				__m256d s[3] = {_mm256_set1_pd(S[b][0]),_mm256_set1_pd(S[b][1]),_mm256_set1_pd(S[b][2])};
 				for (PetscInt c=0; c<3; c++) {
-					__m256d v_lkbc = _mm256_load_pd(v[l][(k*3+b)*3+c]);
+					__m256d v_lkbc = _mm256_setzero_pd();
 					for (PetscInt j=0; j<3; j++) {
 						__m256d u_lkjc = _mm256_load_pd(u[l][(k*3+j)*3+c]);
 						v_lkbc = _mm256_fmadd_pd(s[j],u_lkjc,v_lkbc);
