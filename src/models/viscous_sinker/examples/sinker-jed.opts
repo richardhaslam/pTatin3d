@@ -35,7 +35,7 @@
 -stk_velocity_dm_mat_type aij
 -dau_nlevels 3
 -snes_type ksponly
--snes_view
+-snes_view_once
 -ksp_type fgmres
 -ksp_gmres_restart 100
 -pc_type fieldsplit

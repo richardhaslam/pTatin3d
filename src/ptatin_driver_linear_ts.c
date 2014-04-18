@@ -1034,6 +1034,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscTime(&time[0]);
 	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	PetscTime(&time[1]);
+	ierr = SNESViewFromOptions(snes,NULL,"-snes_view_once");CHKERRQ(ierr);
 	ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
 	ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
