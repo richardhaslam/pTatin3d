@@ -76,6 +76,9 @@
 -model_multilayer_folding_interface_heights 0.0,1.0e-2,1.25e-2,1.5e-2,1.75e-2,2.0e-2,2.25e-2,2.5e-2,2.75e-2
 
 -model_multilayer_folding_layer_eta      1.0e-2,1.0,1.0e-2,1.0,1.0e-2,1.0,1.0e-2,1.0
+-model_multilayer_seed_eta 1.0-1
+-model_multilayer_seed_layer_1 1
+-model_multilayer_seed_rho 5.4
 
 -model_multilayer_folding_layer_cohesion 1.0e6,3.8,1.0e6,3.8,1.0e6,3.8,1.0e6,8.0
 #-model_multilayer_folding_layer_cohesion 1.0e6,5.0,1.0e6,5.0,1.0e6,5.0,1.0e6,8.0

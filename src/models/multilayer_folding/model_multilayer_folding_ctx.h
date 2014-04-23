@@ -3,7 +3,7 @@
 
 /* define user model */
 typedef struct {
-	PetscInt  max_layers;
+	PetscInt  max_layers,seed_layer_1;
 	PetscInt  n_interfaces;
 	PetscReal interface_heights[100];
     PetscInt  layer_res_j[99];

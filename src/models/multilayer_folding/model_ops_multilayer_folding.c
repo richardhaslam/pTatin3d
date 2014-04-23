@@ -20,7 +20,7 @@
 
 #include "model_multilayer_folding_ctx.h"
 #include "model_utils.h"
-
+#include "ptatin_utils.h"
 
 #undef __FUNCT__ 
 #define __FUNCT__ "ModelInitialize_MultilayerFolding"
@@ -90,6 +90,9 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	if (n_int != data->n_interfaces-1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer viscosity. (-model_multilayer_folding_layer_eta)",data->n_interfaces-1);
 	}
+    
+    n_int=data->n_interfaces-1;
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_seed_eta",&data->eta[n_int],&flg); CHKERRQ(ierr);
 
 	data->visco_plastic = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_multilayer_folding_visco_plastic",&data->visco_plastic,&flg);CHKERRQ(ierr);
@@ -113,6 +116,10 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer density. (-model_multilayer_folding_layer_rho)",data->n_interfaces-1);
 	}
 	
+    n_int=data->n_interfaces-1;
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_seed_rho",&data->rho[n_int],&flg); CHKERRQ(ierr);
+    
+    
 	/* define the mesh size the y-direction for the global problem  (gravity in y direction) */
 	c->my = 0;
 	for (n=0; n<data->n_interfaces-1; n++) {
@@ -145,7 +152,8 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_exx",&data->exx,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_multilayer_folding_ezz",&data->ezz,&flg); CHKERRQ(ierr); 
-	
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-model_multilayer_seed_layer_1",&data->seed_layer_1,&flg);CHKERRQ(ierr);
+  
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Multilayer Folding\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e]\n", data->Lx,data->Ly,data->Lz );
 	PetscPrintf(PETSC_COMM_WORLD," Mesh:   %.4D x %.4D x %.4D \n", c->mx,c->my,c->mz ); 
@@ -184,6 +192,10 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 		ierr = MaterialConstantsSetValues_DensityConst(materialconstants,   n, data->rho[n]);CHKERRQ(ierr);
 	}
 	
+    if (data->seed_layer_1==1){
+        ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants, data->n_interfaces-1, data->eta[data->n_interfaces-1]);CHKERRQ(ierr);
+        ierr = MaterialConstantsSetValues_DensityConst(materialconstants, data->n_interfaces-1, data->rho[data->n_interfaces-1]);CHKERRQ(ierr);
+    }
 	
 	PetscFunctionReturn(0);
 }
@@ -608,10 +620,10 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
 		double      *position;
-		PetscReal   eta,rho;
+		PetscReal   eta,rho,pls;
 		PetscInt    region_idx,phase;
 		PetscInt    layer, jmaxlayer, jminlayer;
-		PetscInt    I, J, K;
+		PetscInt    I, J, K, Jmid;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
@@ -627,6 +639,8 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 		region_idx = -1;
 		// gets the global element index (i,j,k)
 		//....
+        
+        Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;     
 		
 		//Set the properties
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
@@ -634,12 +648,22 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 			
 			if( (J<jmaxlayer) && (J>=jminlayer) ){
 				phase = layer + 1;
+                
+                if( (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2) || (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2)){
+                eta = data->eta[data->n_interfaces-1]; 
+                rho = data->rho[data->n_interfaces-1];
+                region_idx = data->n_interfaces-1;   
+                    
+                }
+                else{
 				eta = data->eta[layer];
-				rho = data->rho[layer];
-				region_idx = layer;
-				
+                rho = data->rho[layer];  
+                region_idx = layer;
+				}
+            
 				rho = -rho * GRAVITY;
-			}
+		
+            }
 			jminlayer += data->layer_res_j[layer];
 			layer++;
 		}
@@ -706,15 +730,16 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 	user = c->stokes_ctx;
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	nqp = user->volQ->npoints;
+
 	
-	for (p=0; p<n_mp_points; p++) {
+    for (p=0; p<n_mp_points; p++) {
 		MPntStd     *material_point;
 		MPntPStokes *mpprop_stokes;
 		double      *position;
 		PetscReal      eta,rho, Ly;
 		PetscInt    phase;
 		PetscInt    layer, jmaxlayer, j, jminlayer, localeid_p;
-		PetscInt    I, J, K;
+		PetscInt    I, J, K, Jmid;
 		PetscScalar     elcoords[Q2_NODES_PER_EL_3D*NSD];
 		PetscScalar     Ni_p[Q2_NODES_PER_EL_3D], coord_qp[NSD];
 		
@@ -731,14 +756,27 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 		rho = 0.0;
 		jmaxlayer = jminlayer = 0;
 		layer = 0;
+        
+        
+       Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;  
+        
 		while ( (phase == -1) && (layer < data->n_interfaces-1) ) {
 			jmaxlayer += data->layer_res_j[layer];
 			
 			if ( (J<jmaxlayer) && (J>=jminlayer) ) {
 				phase = layer + 1;
+                
+                if( (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2) || (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2) ){
+                    eta = data->eta[data->n_interfaces-1]; 
+                    rho = data->rho[data->n_interfaces-1];
+                    phase = data->n_interfaces;
+                }
+                else{
 				eta = data->eta[layer];
-				rho = data->rho[layer];
-				rho = -rho * GRAVITY;
+                rho = data->rho[layer];
+                }
+				
+                rho = -rho * GRAVITY;
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
@@ -777,7 +815,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 			
 			cell_gausspoints[qp].Fp = 0.0;
 		}		
-		
+                 
 	}
 	
 	DataFieldRestoreAccess(PField_std);
@@ -799,7 +837,7 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 	const PetscInt            *elnidx_v;   
 	PetscInt                  phase;
 	PetscInt                  layer,jmaxlayer,jminlayer;
-	PetscInt                  I,J,K;
+	PetscInt                  I,J,K,Jmid;
 	PetscErrorCode            ierr;
 	
 
@@ -816,6 +854,8 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
 	nqp = stokes->volQ->npoints;
 	
+     Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;  
+    
 	for (e=0; e<nel; e++) {
 		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,e, &I,&J,&K);CHKERRQ(ierr);
 
@@ -827,7 +867,12 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 			jmaxlayer += data->layer_res_j[layer];
 			
 			if ( (J < jmaxlayer) && (J >= jminlayer) ) {
+                if((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2) || (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2) ){
+                    phase = data->n_interfaces;    
+                }
+                else{
 				phase = layer + 1;
+                }
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
@@ -847,7 +892,8 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 			cell_gausspoints[qp].Fu[2] = 0.0;
 			
 			cell_gausspoints[qp].Fp = 0.0;
-		}		
+        }
+		
 	}
 	
 	PetscFunctionReturn(0);
@@ -881,7 +927,7 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 	for (p=0; p<n_mpoints; p++) {
 		PetscInt    phase;
 		PetscInt    layer,ei,localeid_p;
-		PetscInt    I,J,K;
+		PetscInt    I,J,K,Jmid;
 		
 		ierr = MaterialPointGet_local_element_index(mpX,p,&localeid_p);CHKERRQ(ierr);
 		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,localeid_p,&I,&J,&K);CHKERRQ(ierr);
@@ -889,11 +935,18 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 		/* Set the properties based on the J index of the element containing the marker */
 		phase = -1;
 		ei = 0;
+        Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0; 
+        
 		for (layer=0; layer<data->n_interfaces-1; layer++) {
 		
 			if ((J >= ei) && (J <ei + data->layer_res_j[layer])) {
+                if( (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2) || (data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2) ){
+                    phase = data->n_interfaces-1;    
+                }
+                else{
 				phase = layer;
-				break;
+                }    
+                break;
 			}
 			
 			ei = ei + data->layer_res_j[layer];
@@ -905,7 +958,8 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 		ierr = MaterialPointSet_viscosity(  mpX,p, data->eta[phase]);CHKERRQ(ierr);
 		ierr = MaterialPointSet_density(    mpX,p,-data->rho[phase] * GRAVITY);CHKERRQ(ierr);
 		ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
-	}
+        
+    }
 	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
