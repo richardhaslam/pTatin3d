@@ -3012,3 +3012,126 @@ PetscErrorCode MaterialPointSet_local_element_index(MPAccess X,const int p,int v
 	PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointScale_global_coord"
+PetscErrorCode MaterialPointScale_global_coord(MPAccess X,double var)
+{
+    int np,p;
+    PetscErrorCode ierr;
+    
+    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    for (p=0; p<np; p++) {
+        double *field;
+        
+        ierr = MaterialPointGet_global_coord(X,p,&field);CHKERRQ(ierr);
+        
+        field[0] = field[0] * var;
+        field[1] = field[1] * var;
+        field[2] = field[2] * var;
+        
+        ierr = MaterialPointSet_global_coord(X,p,field);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointScale_viscosity"
+PetscErrorCode MaterialPointScale_viscosity(MPAccess X,double var)
+{
+    int np,p;
+    PetscErrorCode ierr;
+    
+    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    for (p=0; p<np; p++) {
+        double field;
+        
+        ierr = MaterialPointGet_viscosity(X,p,&field);CHKERRQ(ierr);
+        
+        field = field * var;
+        
+        ierr = MaterialPointSet_viscosity(X,p,field);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointScale_density"
+PetscErrorCode MaterialPointScale_density(MPAccess X,double var)
+{
+    int np,p;
+    PetscErrorCode ierr;
+    
+    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    for (p=0; p<np; p++) {
+        double field;
+        
+        ierr = MaterialPointGet_density(X,p,&field);CHKERRQ(ierr);
+        
+        field = field * var;
+        
+        ierr = MaterialPointSet_density(X,p,field);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointScale_plastic_strain"
+PetscErrorCode MaterialPointScale_plastic_strain(MPAccess X,double var)
+{
+    int np,p;
+    PetscErrorCode ierr;
+    
+    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    for (p=0; p<np; p++) {
+        float field;
+        
+        ierr = MaterialPointGet_plastic_strain(X,p,&field);CHKERRQ(ierr);
+        
+        field = field * var;
+        
+        ierr = MaterialPointSet_plastic_strain(X,p,field);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointScale_diffusivity"
+PetscErrorCode MaterialPointScale_diffusivity(MPAccess X,double var)
+{
+    int np,p;
+    PetscErrorCode ierr;
+    
+    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    for (p=0; p<np; p++) {
+        double field;
+        
+        ierr = MaterialPointGet_diffusivity(X,p,&field);CHKERRQ(ierr);
+        
+        field = field * var;
+        
+        ierr = MaterialPointSet_diffusivity(X,p,field);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointScale_heat_source"
+PetscErrorCode MaterialPointScale_heat_source(MPAccess X,double var)
+{
+    int np,p;
+    PetscErrorCode ierr;
+    
+    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    for (p=0; p<np; p++) {
+        double field;
+        
+        ierr = MaterialPointGet_heat_source(X,p,&field);CHKERRQ(ierr);
+        
+        field = field * var;
+        
+        ierr = MaterialPointSet_heat_source(X,p,field);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
