@@ -101,6 +101,48 @@ PetscErrorCode DirichletBC_FreeSlip(BCList bclist,DM dav,BoundaryFaceType face)
 	PetscFunctionReturn(0);	
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DirichletBC_SetConstant"
+PetscErrorCode DirichletBC_SetConstant(BCList bclist,DM dav,BoundaryFaceType face,PetscInt dof,PetscScalar value)
+{
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+    
+	switch (face) {
+            
+		case EAST_FACE:
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+			break;
+            
+		case WEST_FACE:
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+			break;
+            
+		case NORTH_FACE:
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+			break;
+			
+		case SOUTH_FACE:
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+			break;
+            
+		case FRONT_FACE:
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+			break;
+            
+		case BACK_FACE:
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+			break;
+            
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
+			break;
+	}
+    
+	PetscFunctionReturn(0);	
+}
+
 /* 
  Note: This is not general and will not work on deformed boundaries.
 */

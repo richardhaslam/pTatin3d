@@ -38,6 +38,7 @@
 typedef enum { FRONT_FACE=1, BACK_FACE, EAST_FACE, NORTH_FACE, SOUTH_FACE, WEST_FACE } BoundaryFaceType;
 
 PetscErrorCode DirichletBC_FreeSlip(BCList list,DM dav,BoundaryFaceType face);
+PetscErrorCode DirichletBC_SetConstant(BCList bclist,DM dav,BoundaryFaceType face,PetscInt dof,PetscScalar value);
 PetscErrorCode DirichletBC_ApplyNormalVelocity(BCList list,DM dav,BoundaryFaceType face,PetscReal v_normal);
 PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal Evalue,PetscInt direction);
 PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList list,DM dav,PetscReal exx_bc);
