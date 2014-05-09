@@ -521,9 +521,9 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 		da->ne = elcnt;
 	}
 	
-	*eidx = da->e;
-	*npe = _npe;
-	*nel = da->ne;
+	if (eidx) { *eidx = da->e; }
+	if (npe)  {  *npe = _npe; }
+	if (nel)  {  *nel = da->ne; }
 	
 	PetscFunctionReturn(0);
 }
