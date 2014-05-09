@@ -36,6 +36,9 @@
 
 #define GRAVITY 9.8
 
+#include "ptatin_std_dirichlet_boundary_conditions.h"
+
+
 PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K);
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,const char error[],const char default_opt[],PetscBool essential);
 PetscReal absolute(PetscReal a);
@@ -63,5 +66,10 @@ PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c);
 PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c);
 PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[]);
 PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[]);
+
+PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal gmin[],PetscReal gmax[]);
+PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscReal gmin[],PetscReal gmax[]);
+PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscInt region_idx,PetscReal gmin[],PetscReal gmax[]);
+PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal gmin[],PetscReal gmax[]);
 
 #endif

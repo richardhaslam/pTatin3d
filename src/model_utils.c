@@ -757,8 +757,13 @@ PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint
 		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
 		ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
 		
-		if ( (region_idx == -1) && (region_p != region_idx) ) { continue; }
-
+		//if ( (region_idx == -1) && (region_p != region_idx) ) { continue; }
+        if (region_p != region_idx) {
+            if (region_idx != -1) {
+                continue;
+            }
+        }
+        
 		idx = 0;
 		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
 		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
@@ -801,5 +806,137 @@ PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint
 		gmax[0] = gmax[1] = gmax[2] = NAN;
 	}
 	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeBoundingBoxBoundaryFace"
+PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal min[],PetscReal max[])
+{
+    DM cda;
+    Vec coords;
+    PetscInt i,j,k,si,sj,sk,ni,nj,nk,M,N,P;
+    DMDACoor3d ***LA_coords;
+    PetscReal gmin[3],gmax[3];
+    PetscErrorCode ierr;
+    
+    ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+    ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+    
+    gmax[0] = gmax[1] = gmax[2] = PETSC_MIN_REAL;
+    gmin[0] = gmin[1] = gmin[2] = PETSC_MAX_REAL;
+    
+    ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+    
+    switch (ft) {
+        case NORTH_FACE:
+            if (sj+nj == N) {
+                j = N-1;
+                for (k=sk; k<sk+nk; k++) {
+                    for (i=si; i<si+ni; i++) {
+                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+                        
+                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+                    }
+                }
+            }
+            break;
+            
+        case SOUTH_FACE:
+            if (sj == 0) {
+                j = 0;
+                for (k=sk; k<sk+nk; k++) {
+                    for (i=si; i<si+ni; i++) {
+                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+                        
+                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+                    }
+                }
+            }
+            break;
+
+        case EAST_FACE:
+            if (si+ni == N) {
+                i = N-1;
+                for (k=sk; k<sk+nk; k++) {
+                    for (j=sj; j<sj+nj; j++) {
+                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+                        
+                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+                    }
+                }
+            }
+            break;
+            
+        case WEST_FACE:
+            if (si == 0) {
+                i = 0;
+                for (k=sk; k<sk+nk; k++) {
+                    for (j=sj; j<sj+nj; j++) {
+                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+                        
+                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+                    }
+                }
+            }
+            break;
+            
+        case FRONT_FACE:
+            if (sk+nk == P) {
+                k = P-1;
+                for (j=sj; j<sj+nj; j++) {
+                    for (i=si; i<si+ni; i++) {
+                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+                        
+                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+                    }
+                }
+            }
+            break;
+            
+        case BACK_FACE:
+            if (sk == 0) {
+                k = 0;
+                for (j=sj; j<sj+nj; j++) {
+                    for (i=si; i<si+ni; i++) {
+                        gmin[0] = PetscMin(gmin[0],LA_coords[k][j][i].x);
+                        gmin[1] = PetscMin(gmin[1],LA_coords[k][j][i].y);
+                        gmin[2] = PetscMin(gmin[2],LA_coords[k][j][i].z);
+                        
+                        gmax[0] = PetscMax(gmax[0],LA_coords[k][j][i].x);
+                        gmax[1] = PetscMax(gmax[1],LA_coords[k][j][i].y);
+                        gmax[2] = PetscMax(gmax[2],LA_coords[k][j][i].z);
+                    }
+                }
+            }
+            break;
+    }
+    ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+
+    if (min) { ierr = MPI_Allreduce(gmin,min,3,MPIU_REAL,MPI_MIN,((PetscObject)dav)->comm);CHKERRQ(ierr); }
+	if (max) { ierr = MPI_Allreduce(gmax,max,3,MPIU_REAL,MPI_MAX,((PetscObject)dav)->comm);CHKERRQ(ierr); }
+    
 	PetscFunctionReturn(0);
 }
