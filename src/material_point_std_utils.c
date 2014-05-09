@@ -1010,7 +1010,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
                 mp_std.coor[1] += vert_coord[3*n+1] * Nip[n];
                 mp_std.coor[2] += vert_coord[3*n+2] * Nip[n];
             }
-            printf("%1.4e %1.4e %1.4e \n",mp_std.coor[0],mp_std.coor[1],mp_std.coor[2]);
             
             InverseMappingDomain_3dQ2(tolerance,max_its,
                                       use_nonzero_guess,
