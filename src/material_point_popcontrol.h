@@ -34,8 +34,18 @@
 #ifndef __ptatin_material_point_popcontrol_h__
 #define __ptatin_material_point_popcontrol_h__
 
+typedef struct _p_PSortCtx {
+	long int point_index;
+	long int cell_index;
+} PSortCtx;
+
 PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx);
 PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da);
 PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da);
+
+PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_nc,PSortCtx **_plist,PetscInt **_pcell_list);
+PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscInt **_pcell_list);
+PetscErrorCode MPPCSortedCtxGetNumberOfPointsPerCell(DataBucket db,PetscInt cell_idx,PetscInt pcell_list[],PetscInt *np);
+PetscErrorCode MPPCSortedCtxGetPointByCell(DataBucket db,PetscInt cell_idx,PetscInt pidx,PSortCtx plist[],PetscInt pcell_list[],MPntStd **point);
 
 #endif

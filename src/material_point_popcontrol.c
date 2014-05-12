@@ -46,14 +46,11 @@
 #include "dmda_element_q2p1.h"
 #include "material_point_utils.h"
 #include "material_point_std_utils.h"
+#include "material_point_popcontrol.h"
 
 
 #define MPPC_LOG_LEVEL 0 /* 0 - no logging; 1 - logging per mesh; 2 - logging per cell */
 
-typedef struct _p_PSortCtx {
-	long int point_index;
-	long int cell_index;
-} PSortCtx;
 
 int sort_ComparePSortCtx(const void *dataA,const void *dataB)
 {
@@ -1828,3 +1825,121 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MPPCCreateSortedCtx"
+PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_nc,PSortCtx **_plist,PetscInt **_pcell_list)
+{
+	PetscInt        *pcell_list;
+	PSortCtx        *plist;
+	PetscInt        p,npoints;
+	PetscInt        tmp,c,count;
+	const PetscInt  *elnidx;
+	PetscInt        nel,nen;
+	DataField       PField;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+	ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
+	
+	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	ierr = PetscMalloc(sizeof(PSortCtx)*(npoints),&plist);CHKERRQ(ierr);
+	
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+	DataFieldGetAccess(PField);
+	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+	for (p=0; p<npoints; p++) {
+		MPntStd *marker_p;
+		
+		DataFieldAccessPoint(PField,p,(void**)&marker_p);
+		plist[p].point_index = p;
+		plist[p].cell_index  = marker_p->wil;
+	}
+	DataFieldRestoreAccess(PField);
+	
+	sort_PSortCx(npoints,plist);
+	
+	/* sum points per cell */
+	ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
+	for (p=0; p<npoints; p++) {
+		pcell_list[ plist[p].cell_index ]++;
+	}
+	
+	/* create offset list */
+	count = 0;
+	for (c=0; c<nel; c++) {
+		tmp = pcell_list[c];
+		pcell_list[c] = count;
+		count = count + tmp;
+	}
+	pcell_list[c] = count;
+	
+    *_np = (PetscInt)npoints;
+    *_nc = (PetscInt)nel;
+	*_plist      = plist;
+    *_pcell_list = pcell_list;
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPPCDestroySortedCtx"
+PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscInt **_pcell_list)
+{
+	PetscInt        *pcell_list;
+	PSortCtx        *plist;
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+    if (_plist)      { plist      = *_plist; }
+    if (_pcell_list) { pcell_list = *_pcell_list; }
+    
+	ierr = PetscFree(plist);CHKERRQ(ierr);
+	ierr = PetscFree(pcell_list);CHKERRQ(ierr);
+
+    *_plist      = PETSC_NULL;
+    *_pcell_list = PETSC_NULL;
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPPCSortedCtxGetNumberOfPointsPerCell"
+PetscErrorCode MPPCSortedCtxGetNumberOfPointsPerCell(DataBucket db,PetscInt cell_idx,PetscInt pcell_list[],PetscInt *np)
+{
+    PetscInt       points_per_cell;
+    
+    points_per_cell = pcell_list[cell_idx+1] - pcell_list[cell_idx];
+    *np = points_per_cell;
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPPCSortedCtxGetPointByCell"
+PetscErrorCode MPPCSortedCtxGetPointByCell(DataBucket db,PetscInt cell_idx,PetscInt pidx,PSortCtx plist[],PetscInt pcell_list[],MPntStd **point)
+{
+    PetscInt       points_per_cell;
+	DataField      PField;
+    MPntStd        *mp_std,*marker_p;
+    PetscInt       pid,pid_unsorted;
+    
+    points_per_cell = pcell_list[cell_idx+1] - pcell_list[cell_idx];
+    if (pidx > points_per_cell) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requesting a marker index which is larger than the number of points per cell");
+    }
+    
+	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+    mp_std = PField->data;
+    
+    pid = pcell_list[cell_idx] + pidx;
+    pid_unsorted = plist[pid].point_index;
+
+    marker_p = &mp_std[pid_unsorted];
+    *point = marker_p;
+    
+	PetscFunctionReturn(0);
+}
