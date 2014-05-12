@@ -23,9 +23,11 @@
 # ----------
 # dt = 50,000 years, using characteristic time of 6.6e15 sec
 #-dt_max 0.00023890909091
+
 # ----------
 # dt = 100,000 years, using characteristic time of 6.6e15 sec
 -dt_max 0.00047781818182
+
 # ----------
 #-dt_min 1.0e-4
 
