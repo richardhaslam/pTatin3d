@@ -47,6 +47,8 @@
 #include "mesh_deformation.h"
 #include "mesh_update.h"
 #include "dmda_remesh.h"
+#include "material_point_std_utils.h"
+#include "material_point_popcontrol.h"
 
 #include "viscous_sinker_ctx.h"
 
@@ -783,7 +785,107 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 	} else {
 		ierr = ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(c,data,ninclusions);CHKERRQ(ierr);
 	}
-	
+
+#if 0
+    /* test surface insertition based on tagged elements */
+    {
+        PetscInt Nxp[] = { 20, 20 };
+        PetscInt start_pidx,n_pidx,face_idx,p;
+        DataBucket db;
+        DM dav;
+        PetscInt ncells_list,*cell_list;
+        PetscInt e,si,sj,sk,lnx,lny,lnz,M,N,P,nel,nen,elnidx,lmx,lmy,lmz,ei,ej,ek;
+        PetscBool contains_north_face;
+        MPAccess mpX;
+        PetscInt ncc,npp,*pcell_list;
+        PSortCtx *plist;
+        
+        face_idx = 2;
+        dav = c->stokes_ctx->dav;
+        db = c->materialpoint_db;
+        
+        /* generate cell surface list */
+        
+        ierr = DMDAGetCorners(dav,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+        ierr = DMDAGetInfo(dav,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
+        contains_north_face = PETSC_FALSE; if (sj+lny == N) { contains_north_face = PETSC_TRUE; }
+        
+        ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+        ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
+
+        //
+        ncells_list = 0;
+        cell_list = PETSC_NULL;
+        
+        if (contains_north_face) {
+            PetscInt ecnt;
+            
+            ncells_list = lmx*lmy*lmz;
+            PetscMalloc(sizeof(PetscInt)*lmx*lmy*lmz,&cell_list);
+            
+            // init //
+            for (e=0; e<lmx*lmy*lmz; e++) { cell_list[e] = -1; }
+
+            // label each cell on the north surface //
+            ej = lmy-1;
+            for (ek=0; ek<lmz; ek++) {
+                for (ei=0; ei<lmx; ei++) {
+                    ecnt = ei + ej * lmx + ek * lmx * lmy;
+                    
+                    cell_list[ecnt] = ecnt;
+                }
+            }
+        }
+        //
+        
+        /* mask out empty cells */
+        ierr = MPPCCreateSortedCtx(db,dav,&npp,&ncc,&plist,&pcell_list);CHKERRQ(ierr);
+        
+        if (contains_north_face) {
+            ej = lmy-1;
+            for (ek=0; ek<lmz; ek++) {
+                for (ei=0; ei<lmx; ei++) {
+                    PetscInt nppercell,p;
+                    PetscInt eidx;
+                    MPntStd *point;
+                    
+                    eidx = ei + ej * lmx + ek * lmx * lmy;
+                    ierr = MPPCSortedCtxGetNumberOfPointsPerCell(db,eidx,pcell_list,&nppercell);CHKERRQ(ierr);
+                    
+                    //PetscPrintf(PETSC_COMM_SELF,"cell %d : nppercell %d \n",eidx,nppercell);
+                    for (p=0; p<nppercell; p++) {
+                        ierr = MPPCSortedCtxGetPointByCell(db,eidx,p,plist,pcell_list,&point);CHKERRQ(ierr);
+
+                        if (point->phase != 1) {
+                            cell_list[eidx] = -1;
+                        }
+                    }
+                    
+                }
+            }
+        }
+        
+        ierr = MPPCDestroySortedCtx(db,dav,&plist,&pcell_list);CHKERRQ(ierr);
+
+        /* insert new markers */
+        ierr = SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(dav,Nxp,0.0,face_idx,ncells_list,cell_list,&start_pidx,&n_pidx,db);CHKERRQ(ierr);
+        
+        //PetscPrintf(PETSC_COMM_SELF,"start of new points %d \n",start_pidx);
+        //PetscPrintf(PETSC_COMM_SELF,"num   of new points %d \n",n_pidx);
+        
+        /* set phase on all newly added face markers */
+        ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+        for (p=start_pidx; p<start_pidx+n_pidx; p++) {
+            ierr = MaterialPointSet_phase_index(mpX,p,5);CHKERRQ(ierr);
+        }
+        ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+        
+        if (contains_north_face) {
+            PetscFree(cell_list);
+        }
+    }
+#endif
+    
 	PetscFunctionReturn(0);
 }
 
