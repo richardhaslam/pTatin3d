@@ -25,7 +25,8 @@ TATIN_MODEL_DIR = \
 	iplus_slab_plume \
 	subduction_initiation2d \
 	convection2d \
-	thermal_shearband
+	thermal_shearband \
+	slab_detachment3d
 
 TATIN_MODEL_SRC = \
 	ptatin_models_reg.c

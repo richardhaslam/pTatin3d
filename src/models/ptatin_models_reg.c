@@ -26,6 +26,7 @@ extern PetscErrorCode pTatinModelRegister_iPLUS(void);
 extern PetscErrorCode pTatinModelRegister_Subduction_Initiation2d(void);
 extern PetscErrorCode pTatinModelRegister_Thermal_Convection2d(void);
 extern PetscErrorCode pTatinModelRegister_ThermalSB(void);
+extern PetscErrorCode pTatinModelRegister_SD3D(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -60,5 +61,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_Subduction_Initiation2d();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Thermal_Convection2d();CHKERRQ(ierr);
     ierr = pTatinModelRegister_ThermalSB();CHKERRQ(ierr);
+    ierr = pTatinModelRegister_SD3D();CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }

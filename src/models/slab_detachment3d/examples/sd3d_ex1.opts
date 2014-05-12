@@ -1,0 +1,135 @@
+
+# MODEL PARAMETERS
+
+-ptatin_model sd3d
+
+
+
+# GEOMETRY PARAMETERS
+
+-mx 12
+-my 12
+-mz 12
+
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+-mp_popctrl_np_upper -1
+
+
+# TIME STEP CONTROL
+-nsteps 0
+
+# ----------
+# dt = 50,000 years, using characteristic time of 6.6e15 sec
+#-dt_max 0.00023890909091
+# ----------
+# dt = 100,000 years, using characteristic time of 6.6e15 sec
+-dt_max 0.00047781818182
+# ----------
+#-dt_min 1.0e-4
+
+
+# OUTPUT CONTROL
+-output_path sd3d_ex1
+-output_frequency 1
+#-model_output_si 0
+
+-monitor_stages
+
+-checkpoint_disable
+-checkpoint_every 1000
+
+
+# MATERIAL PARAMETERS -------------------------
+    # background
+        -thermal_sb_preexpA_0     3.2000e-20
+        -thermal_sb_Ascale_0      3.0285e-01
+        -thermal_sb_entalpy_0     2.7600e+05
+        -thermal_sb_Vmol_0        0.0000e+00
+        -thermal_sb_nexp_0        3.0000e+00
+        -thermal_sb_Tref_0        0.0000e+00
+        -thermal_sb_Eta_scale_0   1.0000e+22
+        -thermal_sb_P_scale_0     5.0000e+08
+        -thermal_sb_density_0     2.7000e+03
+    # inclusion
+        -thermal_sb_preexpA_1     3.1600e-26
+        -thermal_sb_Ascale_1      3.0154e-01
+        -thermal_sb_entalpy_1     1.9000e+05
+        -thermal_sb_Vmol_1        0.0000e+00
+        -thermal_sb_nexp_1        3.3000e+00
+        -thermal_sb_Tref_1        0.0000e+00
+        -thermal_sb_Eta_scale_1   1.0000e+22
+        -thermal_sb_P_scale_1     5.0000e+08
+        -thermal_sb_density_1     2.7000e+03
+
+# SOLVER PARAMETERS <momentum/continutiy> -------------------------
+#-nonlinear_driver_v1
+
+#-snes_type ls
+#-snes_rtol 1.0e-5
+#-snes_atol 1.0e-8
+#-snes_max_it 5
+#-snes_ksp_ew
+#-snes_ksp_ew_rtol0 1.0e-2
+#-snes_max_linear_solve_fail 100000
+## uncomment to use JFNK
+#-snes_mf_operator
+#-pc_fieldsplit_real_diagonal
+
+-snes_type ls
+-snes_ls basic
+-snes_rtol 1.0e-5
+-snes_atol 1.0e-8
+-snes_max_it 5
+-snes_max_linear_solve_fail 100000
+
+-ksp_type fgmres
+-ksp_rtol 1.0e-3
+-ksp_atol 1.0e-8
+-ksp_max_it 2000
+
+-pc_type fieldsplit
+-pc_fieldsplit_type schur
+-pc_fieldsplit_schur_factorization_type upper
+
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_ksp_max_it 10
+-fieldsplit_u_ksp_rtol 1.0e-2
+
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 2
+-fieldsplit_u_pc_mg_log
+
+-fieldsplit_u_mg_levels_ksp_type fgmres
+#-fieldsplit_u_mg_levels_ksp_type chebychev
+#-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_max_it 2
+#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_pc_type jacobi
+
+-fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_type bjacobi
+-fieldsplit_u_mg_coarse_ksp_max_it 4
+
+-stk_velocity_da_mat_type aij
+
+-dau_nlevels 2
+-A11_operator_type 0,1
+
+# solver monitors
+-snes_monitor
+-snes_converged_reason
+-ksp_converged_reason
+-fieldsplit_u_ksp_monitor
+
+
+# PETSC MONITORING LOGGING PARAMETERS
+-options_left 1
+-log_summary
+
+
