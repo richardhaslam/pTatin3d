@@ -947,10 +947,9 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 {
 	DM              cda;
 	Vec             gcoords;
-	PetscReal       *LA_gcoords;
+	PetscScalar    *LA_gcoords;
 	PetscInt        nel,nen,e,i,p;
 	const PetscInt  *elnidx;
-	PetscInt        *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscInt        nqp;
 	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
@@ -977,7 +976,6 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
     ierr = DMGlobalToLocalEnd(  dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
     ierr = VecGetArray(v_local,&LA_v);CHKERRQ(ierr);
     
-	ierr = DMDAGetGlobalIndices(dav,0,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
     
 	_value_vol  = 0.0;
@@ -1024,10 +1022,166 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 	PetscFunctionReturn(0);
 }
 
+/*
+ Viscous dissipiation is defined as
+ 
+ Phi = 0.5 ( \int (\tau - pI) : \epsilon' dV )
+*/
 #undef __FUNCT__
 #define __FUNCT__ "StokesComputeViscousDissipation"
-PetscErrorCode StokesComputeViscousDissipation(DM dav,Vec v,PetscReal *value_vrms,PetscReal *value_vol)
+PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,PetscInt stress_type,PetscReal *value)
 {
+	DM              cda;
+	Vec             gcoords,sv_local,sp_local;
+	PetscScalar     *LA_gcoords,*LA_sv,*LA_sp;
+	PetscInt        nel,nen_u,nen_p,e,p,k;
+	const PetscInt  *elnidx_u;
+	const PetscInt  *elnidx_p;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D],el_v[3*Q2_NODES_PER_EL_3D],el_p[P_BASIS_FUNCTIONS];
+	PetscReal       ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
+	PetscInt        nqp;
+	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
+	PetscReal       value_local,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	QPntVolCoefStokes *quadraturepoints,*cell_quadraturepoints;
+	PetscErrorCode    ierr;
+	
+    
+	PetscFunctionBegin;
+
+	/* setup quadrature */
+	nqp = volQ->npoints;
+	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
+	
+	/* setup local coords */
+	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+    
+	/* setup local velocity */
+    ierr = DMGetLocalVector(dav,&sv_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(  dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
+    ierr = VecGetArray(sv_local,&LA_sv);CHKERRQ(ierr);
+
+	/* setup local pressure */
+    ierr = DMGetLocalVector(dap,&sp_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(  dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
+    ierr = VecGetArray(sp_local,&LA_sp);CHKERRQ(ierr);
+    
+	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
+
+	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&quadraturepoints);CHKERRQ(ierr);
+    
+    value_local = 0.0;
+	for (e=0; e<nel; e++) {
+		PetscReal value_element;
+		
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
+		
+        ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx_u[nen_u*e],LA_sv);CHKERRQ(ierr);
+		for (k=0; k<Q2_NODES_PER_EL_3D; k++ ) {
+			ux[k] = el_v[3*k  ];
+			uy[k] = el_v[3*k+1];
+			uz[k] = el_v[3*k+2];
+		}
+        
+		ierr = DMDAGetScalarElementField(el_p,nen_p,(PetscInt*)&elnidx_p[nen_p*e],LA_sp);CHKERRQ(ierr);
+        
+        ierr = VolumeQuadratureGetCellData_Stokes(volQ,quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
+
+		for (p=0; p<nqp; p++) {
+			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
+			ConstructNi_pressure(xip,el_coords,NIp[p]);
+		}
+        
+        P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI,detJ,dNudx,dNudy,dNudz);
+
+		value_element = 0.0;
+		for (p=0; p<nqp; p++) {
+			PetscReal divu_qp,eta_qp,pressure_qp,E_qp[3][3],sigma_qp[3][3],phi_qp;
+            PetscInt ii,jj;
+            
+			/* pressure */
+			pressure_qp = 0.0;
+			for (k=0; k<P_BASIS_FUNCTIONS; k++) {
+				pressure_qp += NIp[p][k] * el_p[k];
+			}
+			
+			/* strain rate, e_ij = 0.5(u_{i,j} + u_{j,i}) */
+			E_qp[0][0] = E_qp[1][1] = E_qp[2][2] = 0.0;
+			E_qp[0][1] = E_qp[0][2] = E_qp[1][2] = 0.0;
+			for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+				E_qp[0][0] += (dNudx[p][k] * ux[k]);
+				E_qp[1][1] += (dNudy[p][k] * uy[k]);
+				E_qp[2][2] += (dNudz[p][k] * uz[k]);
+				
+				E_qp[0][1] += 0.5 * (dNudy[p][k] * ux[k] + dNudx[p][k] * uy[k]);
+				E_qp[0][2] += 0.5 * (dNudz[p][k] * ux[k] + dNudx[p][k] * uz[k]);
+				E_qp[1][2] += 0.5 * (dNudz[p][k] * uy[k] + dNudy[p][k] * uz[k]);
+			}
+            E_qp[1][0] = E_qp[0][1];
+            E_qp[2][0] = E_qp[0][2];
+            E_qp[2][1] = E_qp[1][2];
+            
+			divu_qp += (E_qp[0][0] + E_qp[1][1] + E_qp[2][2]);
+			
+			/* constitutive */
+			eta_qp = cell_quadraturepoints[p].eta;
+            
+            if (stress_type == 0) {
+                /* total stress: 2 eta e_{ij} - p \delta_{ij} */
+                for (ii=0; ii<3; ii++) {
+                    for (jj=0; jj<3; jj++) {
+                        sigma_qp[ii][jj] = 2.0 * eta_qp * E_qp[ii][jj];
+                    }
+                }
+                for (ii=0; ii<3; ii++) {
+                    sigma_qp[ii][ii] = sigma_qp[ii][ii] - pressure_qp;
+                }
+            } else if (stress_type == 1) {
+                /* deviatoric stress: 2 eta e_{ij} */
+                for (ii=0; ii<3; ii++) {
+                    for (jj=0; jj<3; jj++) {
+                        sigma_qp[ii][jj] = 2.0 * eta_qp * E_qp[ii][jj];
+                    }
+                }
+            } else {
+                /* pressure: p \delta_{ij} */
+                for (ii=0; ii<3; ii++) {
+                    for (jj=0; jj<3; jj++) {
+                        sigma_qp[ii][jj] = 0.0;
+                    }
+                }
+                for (ii=0; ii<3; ii++) {
+                    sigma_qp[ii][ii] = sigma_qp[ii][ii] - pressure_qp;
+                }
+            }
+
+            
+            /* contraction, sigma_{ij}.e_{ij} */
+            phi_qp = 0.0;
+			for (ii=0; ii<3; ii++) {
+                for (jj=0; jj<3; jj++) {
+                    phi_qp = phi_qp + sigma_qp[ii][jj] * E_qp[ii][jj];
+                }
+            }
+            value_element = value_element + WEIGHT[p] * (phi_qp) * detJ[p];
+		}
+        
+        value_local = value_local + value_element;
+	}
+    value_local = 0.5 * value_local;
+    
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(sv_local,&LA_sv);CHKERRQ(ierr);
+    ierr = VecRestoreArray(sp_local,&LA_sp);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dav,&sv_local);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(dap,&sp_local);CHKERRQ(ierr);
+	
+    ierr = MPI_Allreduce(&value_local, value, 1,MPIU_REAL,MPI_SUM,((PetscObject)dav)->comm);CHKERRQ(ierr);
+    
     
 	PetscFunctionReturn(0);
 }
