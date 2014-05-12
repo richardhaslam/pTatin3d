@@ -579,6 +579,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	
 	PetscFunctionBegin;
 	
+    if (!cell_list) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A cell list must be provided. Use SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d() if you want to assign points to a face of the domain defined by the DMDA");
+    }
+    
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	ncells = nel;
 	ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
