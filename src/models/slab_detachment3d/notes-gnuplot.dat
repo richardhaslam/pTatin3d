@@ -1,0 +1,35 @@
+Just some simple diagonstics to check on the output
+
+# plot minumum slab depth
+plot "sd3d_bmark.dat" u 1:2 w l title "Ds"
+
+# plot min slab width/depth along entire slab face
+plot "sd3d_bmark.dat" u 1:3 w l title "W* (edge)"
+plot "sd3d_bmark.dat" u 1:4 w l title "Dn* (edge)"
+
+# plot min slab width(x)/depth(y) along the back plane
+plot "sd3d_bmark.dat" u 1:5 w l title "Wx* (back face)"
+plot "sd3d_bmark.dat" u 1:6 w l title "Dn* (back face)"
+
+# plot min slab width(z)/depth(y) long front face
+plot "sd3d_bmark.dat" u 1:7 w l title "Wz* (front face)"
+plot "sd3d_bmark.dat" u 1:8 w l title "Dn* (front face)"
+
+# plot min/max topography
+plot "sd3d_bmark.dat" u 1:9 w l title "Z min"
+plot "sd3d_bmark.dat" u 1:10 w l title "Z max"
+
+# plot vrms
+plot "sd3d_bmark.dat" u 1:11 w l title "Vrms"
+
+# plot dissipation
+plot "sd3d_bmark.dat" u 1:12 w l title "Phi
+plot "sd3d_bmark.dat" u 1:(log10($12)) w l title "log10(Phi)"
+
+# plot volume
+plot "sd3d_bmark.dat" u 1:13 w l title "(V-V0)/V0"
+
+
+
+
+
