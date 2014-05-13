@@ -787,7 +787,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 	}
 
 #if 0
-    /* test surface insertition based on tagged elements */
+    /* Test: Face marker insertion based on tagged elements which live on the north face of the DMDA */
     {
         PetscInt Nxp[] = { 20, 20 };
         PetscInt start_pidx,n_pidx,face_idx,p;
@@ -804,8 +804,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
         dav = c->stokes_ctx->dav;
         db = c->materialpoint_db;
         
-        /* generate cell surface list */
-        
+        /* Identify if the sub-domain of this DMDA is connected to the north face of the mesh */
         ierr = DMDAGetCorners(dav,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
         ierr = DMDAGetInfo(dav,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
         contains_north_face = PETSC_FALSE; if (sj+lny == N) { contains_north_face = PETSC_TRUE; }
@@ -817,6 +816,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
         ncells_list = 0;
         cell_list = PETSC_NULL;
         
+        /* generate cell list, identifying only those living on the surface */
         if (contains_north_face) {
             PetscInt ecnt;
             
