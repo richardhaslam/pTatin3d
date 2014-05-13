@@ -29,7 +29,7 @@
 
 typedef enum { CASE_1A=0, CASE_1B, CASE_2A, CASE_2B, CASE_2C } SD3DModelType;
 
-typedef enum { MANTLE_IDX=0, SLAB_IDX, SLAB_BASE_IDX, SLAB_EDGE_IDX, PLATE_IDX } SD3MaterialDomain;
+typedef enum { MANTLE_IDX=0, SLAB_IDX, SLAB_BASE_IDX, SLAB_EDGE_IDX, SLAB_EDGE_CENTER_IDX, SLAB_FRONT_FACE_IDX, SLAB_BACK_FACE_IDX, PLATE_IDX } SD3MaterialDomain;
 
 typedef struct {
     PetscReal x_bar,v_bar,t_bar,eta_bar,p_bar;
@@ -148,7 +148,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
     
     /* slab */
-    for (midx=1; midx<5; midx++) {
+    for (midx=1; midx<(PetscInt)PLATE_IDX; midx++) {
         regionidx = midx;
         
         MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
@@ -200,8 +200,30 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         PetscViewerASCIIPrintf(modeldata->logviewer,"#    tc = %1.4e (s)\n",modeldata->tc);
         PetscViewerASCIIPrintf(modeldata->logviewer,"#    vc = %1.4e (m/s)\n",modeldata->vc);
         PetscViewerASCIIPrintf(modeldata->logviewer,"# ----------------------------------------------------------------------------------------------------------------- \n");
-        PetscViewerASCIIPrintf(modeldata->logviewer,"# step | time (ptat3d)    | time (sec)       | Ys (m)            | Yn (m)            | Xm (m)            | Ymin (m)          | Ymax (m)          | Vrms (m/s)        | Phi (Pa/s)        | volume (m^3)\n");
-    
+//        PetscViewerASCIIPrintf(modeldata->logviewer,"# step | time (ptat3d)    | time (sec)       | Ys (m)            | Yn (m)            | Xm (m)            | Ymin (m)          | Ymax (m)          | Vrms (m/s)        | Phi (Pa/s)        | volume (m^3)\n");
+  
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","step");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","time (ptat3d)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","time (sec)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Ys (m)");
+
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Xn_edge (m)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Yn_edge (m)");
+        
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Xn_back (m)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Yn_back (m)");
+
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Zn_front (m)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Yn_front (m)");
+        
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Ymin (m)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Ymax (m)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Vrms (m/s)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Phi (W)");
+        PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","volume (m^3)");
+        
+        PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
+        
     }
 
     
@@ -450,9 +472,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_BASE_IDX,vert_coord);CHKERRQ(ierr);
     }
 
-#if 0
+
     { /* slab front face */
-        PetscInt Nxp2[] = { 5, 25 };
+        PetscInt Nxp2[] = { 11, 25 };
         PetscReal vert_coord[4*3];
         
         Nxp2[1] = (PetscInt)(slab_length/10.0);
@@ -464,9 +486,26 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         
         vert_coord[3*0+2] = vert_coord[3*1+2] = vert_coord[3*2+2] = vert_coord[3*3+2] = 250.0e3/data->x_bar;
         
-        ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,16,vert_coord);CHKERRQ(ierr);
+        ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_FRONT_FACE_IDX,vert_coord);CHKERRQ(ierr);
     }
-#endif
+
+    { /* slab back face */
+        PetscInt Nxp2[] = { 2, 25 };
+        PetscReal vert_coord[4*3];
+        
+        Nxp2[1] = (PetscInt)(slab_length/10.0);
+        
+        vert_coord[3*0+0] = (500.0-40.0)*1.0e3/data->x_bar;  vert_coord[3*0+1] = (660.0-80.0-slab_length)*1.0e3/data->x_bar;
+        vert_coord[3*1+0] = (500.0-39.999)*1.0e3/data->x_bar; vert_coord[3*1+1] = (660.0-80.0-slab_length)*1.0e3/data->x_bar;
+        vert_coord[3*2+0] = (500.0-40.0)*1.0e3/data->x_bar;  vert_coord[3*2+1] = (660.0-80.0)*1.0e3/data->x_bar;
+        vert_coord[3*3+0] = (500.0-39.999)*1.0e3/data->x_bar; vert_coord[3*3+1] = (660.0-80.0)*1.0e3/data->x_bar;
+        
+        vert_coord[3*0+2] = vert_coord[3*1+2] = vert_coord[3*2+2] = vert_coord[3*3+2] = 0.0e3/data->x_bar;
+        
+        ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_BACK_FACE_IDX,vert_coord);CHKERRQ(ierr);
+    }
+
+    
     
     { /* slab face */
         PetscInt Nxp2[] = { 2*25, 2*25 };
@@ -482,6 +521,22 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         vert_coord[3*0+0] = vert_coord[3*1+0] = vert_coord[3*2+0] = vert_coord[3*3+0] = (500.0-40.0)*1.0e3/data->x_bar;
         
         ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_EDGE_IDX,vert_coord);CHKERRQ(ierr);
+    }
+    
+    { /* slab center plane */
+        PetscInt Nxp2[] = { 2*25, 2*25 };
+        PetscReal vert_coord[4*3];
+        
+        Nxp2[0] = (PetscInt)(slab_length/10.0);
+        
+        vert_coord[3*0+1] = (660.0-80.0-slab_length)*1.0e3/data->x_bar;     vert_coord[3*0+2] = 0.0;
+        vert_coord[3*1+1] = (660.0-80.0)*1.0e3/data->x_bar;                 vert_coord[3*1+2] = 0.0;
+        vert_coord[3*2+1] = (660.0-80.0-slab_length)*1.0e3/data->x_bar;     vert_coord[3*2+2] = 250.0e3/data->x_bar;
+        vert_coord[3*3+1] = (660.0-80.0)*1.0e3/data->x_bar;                 vert_coord[3*3+2] = 250.0e3/data->x_bar;
+        
+        vert_coord[3*0+0] = vert_coord[3*1+0] = vert_coord[3*2+0] = vert_coord[3*3+0] = 500.0*1.0e3/data->x_bar;
+        
+        ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_EDGE_CENTER_IDX,vert_coord);CHKERRQ(ierr);
     }
     
     
@@ -593,10 +648,10 @@ PetscErrorCode SD3DOutput_ComputeDs(DataBucket db,PetscReal *Ds)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeWDn"
-PetscErrorCode SD3DOutput_ComputeWDn(DataBucket db,PetscReal *W,PetscReal *Dn)
+#define __FUNCT__ "SD3DOutput_ComputeWDn_minX"
+PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *Dn)
 {
-    PetscBool      coord_mask[] = { PETSC_TRUE,PETSC_FALSE,PETSC_FALSE };
+    PetscBool      coord_mask[] = { PETSC_TRUE, PETSC_FALSE, PETSC_FALSE };
     PetscReal      w,coord[3];
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
@@ -630,6 +685,96 @@ PetscErrorCode SD3DOutput_ComputeWDn(DataBucket db,PetscReal *W,PetscReal *Dn)
 
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
+    
+    *W = w;
+    *Dn = shared_coord[1];
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SD3DOutput_ComputeWDn_backface_minX"
+PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,PetscReal *Dn)
+{
+    PetscBool      coord_mask[] = { PETSC_TRUE, PETSC_FALSE, PETSC_FALSE };
+    PetscReal      w,coord[3];
+    PetscReal      gmin[3],gmax[3];
+    int            pidx_w;
+    PetscMPIInt    rank,rank_w;
+    double         shared_coord[3];
+	MPAccess       mpX;
+    PetscErrorCode ierr;
+    
+    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,PETSC_NULL,PETSC_NULL,SLAB_BACK_FACE_IDX,gmin,gmax);CHKERRQ(ierr);
+    w = gmax[0];
+    PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) range: gmax(x) %1.4e\n",w);
+    
+    coord[0] = w;
+    coord[1] = 0.0;
+    coord[2] = 0.0;
+    ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_BACK_FACE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
+    
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+    shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
+    if (rank == rank_w) {
+        double  *pos_p;
+        
+		ierr = MaterialPointGet_global_coord(mpX,pidx_w,&pos_p);CHKERRQ(ierr);
+        shared_coord[0] = pos_p[0];
+        shared_coord[1] = pos_p[1];
+        shared_coord[2] = pos_p[2];
+    }
+	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+    
+    ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
+    
+    *W = w;
+    *Dn = shared_coord[1];
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SD3DOutput_ComputeWDn_frontface_minZ"
+PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,PetscReal *Dn)
+{
+    PetscBool      coord_mask[] = { PETSC_FALSE, PETSC_FALSE, PETSC_TRUE };
+    PetscReal      w,coord[3];
+    PetscReal      gmin[3],gmax[3];
+    int            pidx_w;
+    PetscMPIInt    rank,rank_w;
+    double         shared_coord[3];
+	MPAccess       mpX;
+    PetscErrorCode ierr;
+    
+    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,PETSC_NULL,PETSC_NULL,SLAB_FRONT_FACE_IDX,gmin,gmax);CHKERRQ(ierr);
+    w = gmin[2];
+    PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) range: gmin(z) %1.4e\n",w);
+    
+    coord[0] = 0.0;
+    coord[1] = 0.0;
+    coord[2] = w;
+    ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_FRONT_FACE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
+    
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+    shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
+    if (rank == rank_w) {
+        double  *pos_p;
+        
+		ierr = MaterialPointGet_global_coord(mpX,pidx_w,&pos_p);CHKERRQ(ierr);
+        shared_coord[0] = pos_p[0];
+        shared_coord[1] = pos_p[1];
+        shared_coord[2] = pos_p[2];
+    }
+	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+    
+    ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
     
     *W = w;
     *Dn = shared_coord[1];
@@ -723,7 +868,7 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
 	DM               stokes_pack,dav,dap;
     Vec              coords,velocity,pressure;
     DataBucket       materialpoint_db;
-    PetscReal        Ds,Dn,W,range[2],Vrms,Phi,e_bar,volume,x_bar3;
+    PetscReal        Ds,Dn,W,Dnx,Wx,Dnz,Wz,range[2],Vrms,Phi,e_bar,volume,x_bar3;
     
 	PetscErrorCode   ierr;
 	
@@ -800,14 +945,19 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
 
     Ds = Dn = W = 0.0;
+    Dnx = Wx = Dnz = Wz = 0.0;
     range[0] = range[1] = 0.0;
     Vrms = Phi = 0.0;
     
     ierr = SD3DOutput_ComputeDs(materialpoint_db,&Ds);CHKERRQ(ierr);
 
-    ierr = SD3DOutput_ComputeWDn(materialpoint_db,&W,&Dn);CHKERRQ(ierr);
+    ierr = SD3DOutput_ComputeWDn_minX(materialpoint_db,&W,&Dn);CHKERRQ(ierr);
     //Dn = 660.0e3/modeldata->x_bar - Dn;
     //W = 500.0e3/modeldata->x_bar - W;
+
+    ierr = SD3DOutput_ComputeWDn_backface_minX(materialpoint_db,&Wx,&Dnx);CHKERRQ(ierr);
+    ierr = SD3DOutput_ComputeWDn_frontface_minZ(materialpoint_db,&Wz,&Dnz);CHKERRQ(ierr);
+    
     
     ierr = SD3DOutput_ComputeZrange(dav,range);CHKERRQ(ierr);
     
@@ -825,11 +975,59 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
      - dissipation isn't normalized by the volume, THUS, to define dissipation in the full domain we need to multiply the result here (half domain) by 2
      
     */
+    /*
     PetscViewerASCIIPrintf(modeldata->logviewer,"%.6D %1.12e %1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e %+1.12e\n",
                            ptatinctx->step, ptatinctx->time, ptatinctx->time*modeldata->t_bar,
                            Ds*modeldata->x_bar,       Dn*modeldata->x_bar,               W*modeldata->x_bar,
                            range[0]*modeldata->x_bar, range[1]*modeldata->x_bar,
                            Vrms*modeldata->v_bar,     2.0 * Phi*modeldata->p_bar*e_bar*x_bar3, volume*x_bar3);
+    */
+
+    /*
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","step");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","time (ptat3d)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","time (sec)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Ys (m)");
+     
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Xn_edge (m)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Yn_edge (m)");
+     
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Xn_back (m)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Yn_back (m)");
+     
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Zn_front (m)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Yn_front (m)");
+     
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Ymin (m)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Ymax (m)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Vrms (m/s)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","Phi (W)");
+     PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","volume (m^3)");
+    */
+    
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%19.6D ",ptatinctx->step);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%8.12e ",ptatinctx->time);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%8.12e ",ptatinctx->time*modeldata->t_bar);
+
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Ds*modeldata->x_bar);
+
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",W*modeldata->x_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Dn*modeldata->x_bar);
+
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Wx*modeldata->x_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Dnx*modeldata->x_bar);
+
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Wz*modeldata->x_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Dnz*modeldata->x_bar);
+
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",range[0]*modeldata->x_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",range[1]*modeldata->x_bar);
+
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",Vrms*modeldata->v_bar);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",2.0 * Phi*modeldata->p_bar*e_bar*x_bar3);
+    PetscViewerASCIIPrintf(modeldata->logviewer,"%+1.11e ",volume*x_bar3);
+    
+    PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
     
 	PetscFunctionReturn(0);
 }
