@@ -53,4 +53,6 @@ PetscErrorCode SurfaceQuadratureGetElementFamily(SurfaceQuadrature q,ConformingE
 PetscErrorCode SurfaceQuadratureGetQuadratureInfo(SurfaceQuadrature q,PetscInt *nqp,QPoint2d **qp2,QPoint3d **qp3);
 PetscErrorCode SurfaceQuadratureGetFaceInfo(SurfaceQuadrature q,HexElementFace *faceid,PetscInt *nfaces,PetscInt **ellist);
 
+PetscErrorCode SurfaceQuadratureInterpolate3D(SurfaceQuadrature q,QPoint3d *qp3d,PetscInt ndof,PetscReal field[],PetscReal value[]);
+
 #endif
