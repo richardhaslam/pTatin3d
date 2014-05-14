@@ -295,15 +295,16 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
                 PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
                 
                 ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+                ierr = PhysCompStokesGetDMs(stokes,&dav,PETSC_NULL);CHKERRQ(ierr);
                 
                 ierr = PhysCompStokesGetSurfaceQuadrature(stokes,HEX_FACE_Pxi,&surfQ_east);CHKERRQ(ierr);
-                ierr = SurfaceQuadratureGetQuadratureInfo(surfQ_east,&nqp,NULL,&qp3d);CHKERRQ(ierr);
-                ierr = SurfaceQuadratureGetFaceInfo(surfQ_east,NULL,&nfaces,&element_list);CHKERRQ(ierr);
+                ierr = SurfaceQuadratureGetQuadratureInfo(surfQ_east,&nqp,PETSC_NULL,&qp3d);CHKERRQ(ierr);
+                ierr = SurfaceQuadratureGetFaceInfo(surfQ_east,PETSC_NULL,&nfaces,&element_list);CHKERRQ(ierr);
                 
-                ierr = DMDAGetElements_pTatinQ2P1(user->stokes_ctx->dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+                ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
                 /* setup for coords */
-                ierr = DMDAGetCoordinateDA(user->stokes_ctx->dav,&cda);CHKERRQ(ierr);
-                ierr = DMDAGetGhostedCoordinates(user->stokes_ctx->dav,&gcoords );CHKERRQ(ierr);
+                ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
+                ierr = DMDAGetGhostedCoordinates(dav,&gcoords );CHKERRQ(ierr);
                 ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
                 
                 ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ_east,&surfQ_coeff);CHKERRQ(ierr);
