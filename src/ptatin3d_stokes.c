@@ -1308,6 +1308,15 @@ PetscErrorCode PhysCompStokesGetDMs(PhysCompStokes stokes,DM *dmv,DM *dmp)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetBCList"
+PetscErrorCode PhysCompStokesGetBCList(PhysCompStokes stokes,BCList *ulist,BCList *plist)
+{
+    if (ulist) { *ulist = stokes->u_bclist; }
+    if (plist) { *plist = stokes->p_bclist; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PhysCompStokesGetVolumeQuadrature"
 PetscErrorCode PhysCompStokesGetVolumeQuadrature(PhysCompStokes stokes,Quadrature *q)
 {

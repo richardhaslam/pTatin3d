@@ -90,6 +90,7 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 
 PetscErrorCode PhysCompStokesGetDMComposite(PhysCompStokes stokes,DM *dmc);
 PetscErrorCode PhysCompStokesGetDMs(PhysCompStokes stokes,DM *dmv,DM *dmp);
+PetscErrorCode PhysCompStokesGetBCList(PhysCompStokes stokes,BCList *ulist,BCList *plist);
 PetscErrorCode PhysCompStokesGetVolumeQuadrature(PhysCompStokes stokes,Quadrature *q);
 PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stokes,QPntVolCoefStokes *coeffs[]);
 PetscErrorCode PhysCompStokesGetSurfaceQuadrature(PhysCompStokes stokes,HexElementFace fid,SurfaceQuadrature *sq);
