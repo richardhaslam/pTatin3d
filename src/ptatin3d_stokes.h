@@ -36,9 +36,10 @@
 
 //#include "petsc.h"
 //#include "petscdm.h"
-//#include "dmda_bcs.h"
 #include "QPntVolCoefStokes_def.h"
 #include "QPntSurfCoefStokes_def.h"
+#include "dmda_bcs.h"
+
 
 PetscErrorCode StokesVelocity_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[]);
 PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[]);
