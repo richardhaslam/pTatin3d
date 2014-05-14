@@ -1289,3 +1289,62 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_SparseDirect(SNES snes)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetDMComposite"
+PetscErrorCode PhysCompStokesGetDMComposite(PhysCompStokes stokes,DM *dmc)
+{
+    if (dmc) { *dmc = stokes->stokes_pack; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetDMs"
+PetscErrorCode PhysCompStokesGetDMs(PhysCompStokes stokes,DM *dmv,DM *dmp)
+{
+    if (dmv) { *dmv = stokes->dav; }
+    if (dmp) { *dmp = stokes->dap; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetVolumeQuadrature"
+PetscErrorCode PhysCompStokesGetVolumeQuadrature(PhysCompStokes stokes,Quadrature *q)
+{
+    if (q) { *q = stokes->volQ; }
+	PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetVolumeQuadratureAllCellData"
+PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stokes,QPntVolCoefStokes *coeffs[])
+{
+    PetscErrorCode ierr;
+    if (coeffs) {
+        ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,coeffs);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetSurfaceQuadrature"
+PetscErrorCode PhysCompStokesGetSurfaceQuadrature(PhysCompStokes stokes,HexElementFace fid,SurfaceQuadrature *sq)
+{
+	PetscErrorCode ierr;
+    
+    if (sq) { *sq = stokes->surfQ[fid]; };
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompStokesGetSurfaceQuadratureAllCellData"
+PetscErrorCode PhysCompStokesGetSurfaceQuadratureAllCellData(PhysCompStokes stokes,HexElementFace fid,QPntSurfCoefStokes *coeffs[])
+{
+	PetscErrorCode ierr;
+    if (coeffs) {
+        ierr = SurfaceQuadratureGetAllCellData_Stokes(stokes->surfQ[fid],coeffs);CHKERRQ(ierr);
+    }
+	PetscFunctionReturn(0);
+}
+
+
