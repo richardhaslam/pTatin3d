@@ -50,6 +50,10 @@
 #include "material_point_std_utils.h"
 #include "material_point_popcontrol.h"
 
+#include "private/quadrature_impl.h"
+#include "quadrature.h"
+#include "QPntSurfCoefStokes_def.h"
+
 #include "viscous_sinker_ctx.h"
 
 
@@ -267,9 +271,105 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 			
 			/* extension in x / compression in y to conserve volume + free slip base, free surface */
 			// passed
-			ierr = DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(bclist,dav,3.5);CHKERRQ(ierr);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			//ierr = DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(bclist,dav,3.5);CHKERRQ(ierr);
+			//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			
+
+            /* free slip, free surface, normal stress on IMAX */
+			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			//
+            {
+                SurfaceQuadrature *surfQ;
+                SurfaceQuadrature surfQ_east;
+                QPntSurfCoefStokes *surfQ_coeff,*surfQ_cell_coeff;
+                PetscInt c,nfaces,q,nqp;
+                QPoint3d *qp3d_coords;
+
+                DM cda;
+                Vec gcoords;
+                PetscReal *LA_gcoords;
+                PetscInt nel,nen_u,e,k;
+                const PetscInt *elnidx_u;
+                PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
+                double Ni[27];
+                
+                surfQ = user->stokes_ctx->surfQ;
+                surfQ_east = surfQ[HEX_FACE_Pxi];
+                nqp = surfQ_east->ngp;
+                qp3d_coords = surfQ_east->gp3;
+                
+                
+                ierr = DMDAGetElements_pTatinQ2P1(user->stokes_ctx->dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+                /* setup for coords */
+                ierr = DMDAGetCoordinateDA(user->stokes_ctx->dav,&cda);CHKERRQ(ierr);
+                ierr = DMDAGetGhostedCoordinates(user->stokes_ctx->dav,&gcoords );CHKERRQ(ierr);
+                ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+                
+                ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ_east,&surfQ_coeff);CHKERRQ(ierr);
+                nfaces = surfQ_east->nfaces;
+                for (c=0; c<nfaces; c++) {
+                    PetscInt eidx;
+                    
+                    eidx = surfQ_east->element_list[c];
+                    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx],LA_gcoords);CHKERRQ(ierr);
+
+                    ierr = SurfaceQuadratureGetCellData_Stokes(surfQ_east,surfQ_coeff,c,&surfQ_cell_coeff);CHKERRQ(ierr);
+                    for (q=0; q<nqp; q++) {
+                        PetscReal E[3][3],exx,exy,eyy,eta;
+                        PetscReal hydro_pressure_qp,y_qp;
+                        PetscReal *normal;
+                        
+                        printf("normal %1.4e %1.4e %1.4e \n",surfQ_cell_coeff[q].normal[0],surfQ_cell_coeff[q].normal[1],surfQ_cell_coeff[q].normal[2]);
+
+                        surfQ_east->e->basis_NI_3D(&qp3d_coords[q],Ni);
+
+                        y_qp = 0.0;
+                        for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+                            y_qp = y_qp + Ni[k] * elcoords[3*k + 1];
+                        }
+                        
+                        hydro_pressure_qp = (1.0 - y_qp) * 1.000 * 1.0;
+                        
+                        /*
+                        surfQ_cell_coeff[q].traction[0] = -1.0;
+                        surfQ_cell_coeff[q].traction[1] = 0.0;
+                        surfQ_cell_coeff[q].traction[2] = 0.0;
+                        */
+                        /*
+                        surfQ_cell_coeff[q].traction[0] = -(1.0 - y_qp) * 1.000 * 1.0;
+                        surfQ_cell_coeff[q].traction[1] = 0.0;
+                        surfQ_cell_coeff[q].traction[2] = 0.0;
+                        */
+                        
+                        normal = surfQ_cell_coeff[q].normal;
+                        
+                        exx = 0.0;
+                        exy = -1.0;
+                        eyy = 0.0;
+                        E[0][0] = exx; E[0][1] = exy; E[0][2] = 0.0;
+                        E[1][0] = exy; E[1][1] = eyy; E[1][2] = 0.0;
+                        E[2][0] = 0.0; E[2][1] = 0.0; E[2][2] = 0.0;
+                        
+                        eta = 1.0;
+                        surfQ_cell_coeff[q].traction[0] = (2.0 * eta * E[0][0] - hydro_pressure_qp) * (normal[0]);
+                        surfQ_cell_coeff[q].traction[1] = (2.0 * eta * E[1][0]                    ) * (normal[0]);
+                        surfQ_cell_coeff[q].traction[2] = (2.0 * eta * E[2][0]                    ) * (normal[0]);
+                        
+                        
+                    }
+                }
+                
+                ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+            }
+            //
+			//ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+
+			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+            
+			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+            
+            
 		}
 			
 			break;
@@ -284,7 +384,11 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 		ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
 		user->stokes_ctx->u_bclist = flat;
 	}
-*/	
+*/
+    
+    
+    
+    
 	PetscFunctionReturn(0);
 }
 
@@ -418,9 +522,18 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
 				
 				/* extension in x / compression in y to conserve volume + free slip base, free surface */
 				// passed
-				ierr = DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(bclist[n],dav[n],3.5);CHKERRQ(ierr);
-				ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+				//ierr = DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(bclist[n],dav[n],3.5);CHKERRQ(ierr);
+				//ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 				
+                
+                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+                //ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+                
+                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+                
+                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+                ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+                
 				break;
 
 		}
