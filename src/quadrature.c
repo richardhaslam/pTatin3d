@@ -333,3 +333,31 @@ PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureGetElementFamily"
+PetscErrorCode SurfaceQuadratureGetElementFamily(SurfaceQuadrature q,ConformingElementFamily *e)
+{
+	if (e) { *e = q->e; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureGetQuadratureInfo"
+PetscErrorCode SurfaceQuadratureGetQuadratureInfo(SurfaceQuadrature q,PetscInt *nqp,QPoint2d **qp2,QPoint3d **qp3)
+{
+	if (nqp) { *nqp = q->ngp; }
+	if (qp2) { *qp2 = q->gp2; }
+	if (qp3) { *qp3 = q->gp3; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SurfaceQuadratureGetFaceInfo"
+PetscErrorCode SurfaceQuadratureGetFaceInfo(SurfaceQuadrature q,HexElementFace *faceid,PetscInt *nfaces,PetscInt **ellist)
+{
+	if (faceid) { *faceid = q->face_id; }
+	if (nfaces) { *nfaces = q->nfaces; }
+	if (ellist) { *ellist = q->element_list; }
+	PetscFunctionReturn(0);
+}
