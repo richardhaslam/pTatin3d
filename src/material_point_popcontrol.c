@@ -1894,14 +1894,16 @@ PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscI
 	
 	PetscFunctionBegin;
 	
-    if (_plist)      { plist      = *_plist; }
-    if (_pcell_list) { pcell_list = *_pcell_list; }
-    
-	ierr = PetscFree(plist);CHKERRQ(ierr);
-	ierr = PetscFree(pcell_list);CHKERRQ(ierr);
-
-    *_plist      = PETSC_NULL;
-    *_pcell_list = PETSC_NULL;
+    if (_plist)      {
+        plist      = *_plist;
+        ierr = PetscFree(plist);CHKERRQ(ierr);
+        *_plist      = PETSC_NULL;
+    }
+    if (_pcell_list) {
+        pcell_list = *_pcell_list;
+        ierr = PetscFree(pcell_list);CHKERRQ(ierr);
+        *_pcell_list = PETSC_NULL;
+    }
     
 	PetscFunctionReturn(0);
 }
