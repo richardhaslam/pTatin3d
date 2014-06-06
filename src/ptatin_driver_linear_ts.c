@@ -54,6 +54,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_redundant.h"
 #include "dmda_project_coords.h"
 #include "monitors.h"
+#include "mesh_update.h"
 #include "mp_advection.h"
 #include "material_point_popcontrol.h"
 
@@ -833,12 +834,17 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscInt       step;
   pTatinModel    model;
 	PetscLogDouble time[2];
+	PetscReal        surface_displacement_max = 1.0e32;
+    
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
+
+	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
+    
 	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> new simulation");CHKERRQ(ierr);
 	
 	/* Register all models */
@@ -1032,10 +1038,14 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscReal timestep;
 		
 		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);		
+
 		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
-		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		
 		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+
+		ierr = UpdateMeshGeometry_ComputeSurfaceCourantTimestep(dav_hierarchy[nlevels-1],velocity,surface_displacement_max,&timestep);CHKERRQ(ierr);
+		ierr = pTatin_SetTimestep(user,"StkSurfaceCourant",timestep);CHKERRQ(ierr);
+        
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  timestep[] dt_courant = %1.4e \n", user->dt );
 	}
 	/* checkpoint step 0 */
@@ -1190,10 +1200,15 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		/* compute timestep */
 		user->dt = 1.0e32;
 		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+
 		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
-		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
-		PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", step,user->dt );
+
+		ierr = UpdateMeshGeometry_ComputeSurfaceCourantTimestep(dav_hierarchy[nlevels-1],velocity,surface_displacement_max,&timestep);CHKERRQ(ierr);
+		ierr = pTatin_SetTimestep(user,"StkSurfaceCourant",timestep);CHKERRQ(ierr);
+		
+		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+        PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", step,user->dt );
 		
 		/* CHECKPOINT */
 		ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
