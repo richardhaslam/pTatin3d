@@ -850,4 +850,51 @@ The underlying coordinate system used in {\ptat} is Cartesian. In Fig.~\ref{fig:
 \subsection{Defining geometric regions on material points}
 
 
+\section{Non-dimensional scaling}
+The preferred choice of scaling is the following; the users chooses a characteristic velocity, length and viscosity $v^*$, $x^*$, $\eta^*$.
+These choices define the following non-dimensional variables, $v' = v/v^*$, $x' = x/x^*$, $\eta' = \eta/\eta^*$. Given the Stokes problem
+$$
+	\nabla \cdot \eta \left( \nabla v + (\nabla v)^T \right) - \nabla p = \rho g,
+	\qquad
+	\nabla \cdot u = 0,
+$$
+the non-dimensional form thus becomes
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \frac{x^*}{\eta^* v^*} \nabla' p = \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g,
+	\qquad
+	\nabla' \cdot u' = 0,
+$$
+where $\nabla' = \frac{1}{x^*} \nabla$.
+From this the non-dimensional pressure is chosen as 
+$$
+	p = p^* p', \qquad p^* = \frac{\eta^* v^*}{x^*} .
+$$
+Thus the final non-dimensional form of the Stokes problem is given by:
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
+	= \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g
+	\qquad
+	\nabla' \cdot u' = 0.
+$$
+
+The right hand side should be interpreted as a non-dimensional force per volume. If desired, we can express the right hand side in terms of a non-dimensional density $\rho = \rho^* \rho'$ and gravity $g = g^* g'$.
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
+	= 	\left( \frac{\phantom(x^*\phantom)^2}{\eta^* v^*}  \right) 
+		\left( \rho^* \rho' \right)  \left( g^* g' \right),
+	\qquad
+	\nabla' \cdot u' = 0.
+$$
+
+%% a = x.t^-2 = x (x/v)^-2 = x .v.v/(x.x)
+\subsection{Additional notes}
+\begin{enumerate}
+% -------
+	\item The ideal choice of $x^*, v^*, \eta^*$ scaling should result in values of velocity and pressure which follow $\bar{v} = \max_k(\vert v'_k \vert) \sim 1$ and $\bar{p} = \max_k(\vert p'_k \vert) \sim 1$. If your scaling doesn't produce this type of behaviour, then one should be careful in choosing the stopping condition applied to both the non-linear and linear solvers. For example, if $\bar{v} \sim 10^6$, it does't make much sense to solve the non-linear equations to a tolerance of $F_u, F_p \sim 10^{-9}$.
+% -------
+	\item Convergence of both linear and non-linear solver will appear slow if the scaling if the characteristic size of the velocity and pressure coming out of your model are orders of magnitude different. For instance, if your choice of scaling produces $F_u \sim 10^6$ and $F_p \sim 10^{-1}$ and you stop on $\delta_\text{abs} = 10^{-6}$, then a large number of iterations will be required to reduce the 2-norm of $(F_u, F_p)$ to be less than $10^{-6}$.
+% -------
+	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to {\it decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to {\it increase} by a factor of $X^2$ and $p'$ to {\it increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will {\it decrease} by a factor of $X$.
+\end{enumerate}
+
 \end{document}
