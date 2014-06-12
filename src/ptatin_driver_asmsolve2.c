@@ -790,9 +790,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+    ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	
@@ -918,8 +916,7 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		
 		/* configure for fieldsplit */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
-		ierr = SNESMonitorSet(snes_newton,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr);
+        ierr = pTatin_Stokes_ActivateMonitors(user,snes_newton);CHKERRQ(ierr);
 		
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);

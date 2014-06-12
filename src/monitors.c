@@ -101,16 +101,16 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
 	if (its==0) {
-		sprintf(pvdfilename,"%s/residualseries_vp_residuals_step%d.pvd",ctx->outputpath,ctx->step);
+		sprintf(pvdfilename,"%s/stokes_ksp_r_step%d.pvd",ctx->outputpath,ctx->step);
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
-	sprintf(vtkfilename, "iteration%d_vp_residuals_step%d.pvts",its,ctx->step);
+	sprintf(vtkfilename, "stokes_ksp_r_it%d_step%d.pvts",its,ctx->step);
 	ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
-	sprintf(vtkfilename, "iteration%d_vp_residuals_step%d",its,ctx->step);
+	sprintf(vtkfilename, "stokes_ksp_r_it%d_step%d",its,ctx->step);
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
@@ -125,58 +125,147 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
-#define __FUNCT__ "pTatin_SNESMonitor_ParaviewStokesResiduals3d"
-PetscErrorCode pTatin_SNESMonitor_ParaviewStokesResiduals3d(SNES snes,PetscInt n,PetscReal rnorm,void *data)
+#define __FUNCT__ "_pTatin_SNESMonitorStokes_Paraview"
+PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,const char field[])
 {
 	PetscErrorCode ierr;
-	pTatinCtx ctx;
-	DM stokes_pack;
-	Vec X,UP;
-	const char *prefix;
-	static char pvdfilename[1000];
-	char vtkfilename[1000];
-	PetscInt its;
+	DM             stokes_pack;
+	const char     *prefix;
+	static char    pvdfilename[1000];
+	char           vtkfilename[1000];
+	PetscInt       its;
 	
 	PetscFunctionBegin;
-	ctx = (pTatinCtx)data;
-
+    
 	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
-	ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
 	ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 	
-	if (its==0) {
+	if (its == 0) {
 		if (!prefix) {
-			sprintf(pvdfilename,"%s/residualseries_vp_snes_residuals_step%d.pvd",ctx->outputpath,ctx->step);
+			sprintf(pvdfilename,"%s/stokes_snes_%s_step%d.pvd",ctx->outputpath,field,ctx->step);
 		}else {
-			sprintf(pvdfilename,"%s/residualseries_vp_snes_%sresiduals_step%d.pvd",ctx->outputpath,prefix,ctx->step);
+			sprintf(pvdfilename,"%s/stokes_snes_%s%s_step%d.pvd",ctx->outputpath,prefix,field,ctx->step);
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
 	if (!prefix) {
-		sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d.pvts",its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s_it%d_step%d.pvts",field,its,ctx->step);
 	} else {
-		sprintf(vtkfilename, "snes_%siteration%d_vp_residuals_step%d.pvts",prefix,its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s%s_it%d_step%d.pvts",prefix,field,its,ctx->step);
 	}
-	ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename, "");CHKERRQ(ierr);
+    printf("appending %s \n",vtkfilename);
+	ierr = ParaviewPVDAppend(pvdfilename,(double)its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
 	if (!prefix) {
-		sprintf(vtkfilename, "snes_iteration%d_vp_residuals_step%d",its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s_it%d_step%d",field,its,ctx->step);
 	} else {
-		sprintf(vtkfilename, "snes_%siteration%d_vp_residuals_step%d",prefix,its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s%s_it%d_step%d",prefix,field,its,ctx->step);
 	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
-	UP = X;
-	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
-
+	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,X,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
+    
 	if (!prefix) {
-		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES Residual: ptatin non-linear solution viewer wrote file \n",its);
+		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES [field %s]: ptatin non-linear solution viewer wrote file \n",its,field);
 	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES(%s) Residual: ptatin non-linear solution viewer wrote file \n",its,prefix);
-	}	
+		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES(%s) [field %s]: ptatin non-linear solution viewer wrote file \n",its,field,prefix);
+	}
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_SNESMonitorStokes_Solution_Paraview"
+PetscErrorCode pTatin_SNESMonitorStokes_Solution_Paraview(SNES snes,PetscInt n,PetscReal rnorm,void *data)
+{
+	PetscErrorCode ierr;
+	pTatinCtx      ctx;
+	Vec            X;
+	
+	PetscFunctionBegin;
+	ctx = (pTatinCtx)data;
+
+	ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
+
+    ierr = _pTatin_SNESMonitorStokes_Paraview(snes,ctx,X,"X");CHKERRQ(ierr);
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_SNESMonitorStokes_SolutionUpdate_Paraview"
+PetscErrorCode pTatin_SNESMonitorStokes_SolutionUpdate_Paraview(SNES snes,PetscInt n,PetscReal rnorm,void *data)
+{
+	PetscErrorCode ierr;
+	pTatinCtx      ctx;
+	Vec            X;
+	
+	PetscFunctionBegin;
+	ctx = (pTatinCtx)data;
+    
+	ierr = SNESGetSolutionUpdate(snes,&X);CHKERRQ(ierr);
+    
+    ierr = _pTatin_SNESMonitorStokes_Paraview(snes,ctx,X,"dX");CHKERRQ(ierr);
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_SNESMonitorStokes_Residual_Paraview"
+PetscErrorCode pTatin_SNESMonitorStokes_Residual_Paraview(SNES snes,PetscInt n,PetscReal rnorm,void *data)
+{
+	PetscErrorCode ierr;
+	pTatinCtx      ctx;
+	Vec            X;
+	
+	PetscFunctionBegin;
+	ctx = (pTatinCtx)data;
+    
+	ierr = SNESGetFunction(snes,&X,0,0);CHKERRQ(ierr);
+    {
+        PetscReal nrm;
+        VecNorm(X,NORM_2,&nrm); printf("nrm(F) = %1.4e \n",nrm);
+    }
+    ierr = _pTatin_SNESMonitorStokes_Paraview(snes,ctx,X,"F");CHKERRQ(ierr);
+    
+	PetscFunctionReturn(0);
+}
+
+/* monitors */
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_Stokes_ActivateMonitors"
+PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
+{
+    PetscErrorCode ierr;
+    PetscBool moniter_set;
+    KSP ksp;
+    
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    
+    moniter_set = PETSC_TRUE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    
+    moniter_set = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    
+    moniter_set = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_F_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Residual_Paraview,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+
+    moniter_set = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_dX_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_SolutionUpdate_Paraview,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+
+    moniter_set = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_X_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Solution_Paraview,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+
+    PetscFunctionReturn(0);
+}
+
