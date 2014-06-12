@@ -156,7 +156,6 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
 	} else {
 		sprintf(vtkfilename, "stokes_snes_%s%s_it%d_step%d.pvts",prefix,field,its,ctx->step);
 	}
-    printf("appending %s \n",vtkfilename);
 	ierr = ParaviewPVDAppend(pvdfilename,(double)its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
@@ -226,10 +225,6 @@ PetscErrorCode pTatin_SNESMonitorStokes_Residual_Paraview(SNES snes,PetscInt n,P
 	ctx = (pTatinCtx)data;
     
 	ierr = SNESGetFunction(snes,&X,0,0);CHKERRQ(ierr);
-    {
-        PetscReal nrm;
-        VecNorm(X,NORM_2,&nrm); printf("nrm(F) = %1.4e \n",nrm);
-    }
     ierr = _pTatin_SNESMonitorStokes_Paraview(snes,ctx,X,"F");CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
