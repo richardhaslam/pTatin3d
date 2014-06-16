@@ -49,6 +49,7 @@
 #include "output_paraview.h"
 #include "material_point_utils.h"
 #include "material_point_point_location.h"
+#include "quadrature.h"
 
 
 #undef __FUNCT__
@@ -222,6 +223,95 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	np_local = np_per_cell * ncells;
 	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,np_local);CHKERRQ(ierr);
 	
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SwarmMPntStd_CoordAssignment_GaussLayout3d"
+PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
+{
+	DataField    PField;
+	PetscInt     e,mE,nE,pE;
+    Vec          gcoords;
+    PetscScalar  *LA_coords;
+    PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
+	int          ncells,np_per_cell;
+	PetscInt     nel,nen;
+	const PetscInt     *elnidx;
+	PetscInt     p,q,k;
+	PetscReal    dxi,deta,dzeta;
+	long int     np_local, np_global;
+	int          rank;
+    PetscInt nqp;
+    PetscReal *q_coor,*q_weight;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+	
+    QuadratureCreateGauss_3pnt_3D(&nqp,&q_coor,&q_weight);
+    
+	// re-size //
+	ncells = nel;
+	np_per_cell = nqp;
+	DataBucketSetSizes(db,np_per_cell*ncells,-1);
+	
+    /* setup for coords */
+    ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+    ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
+	
+	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+	DataFieldGetAccess(PField);
+	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+	
+	p = 0;
+	for (e = 0; e < ncells; e++) {
+		/* get coords for the element */
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
+		
+		for (q=0; q<nqp; q++) {
+            MPntStd *marker;
+            double xip[NSD],xp[NSD],Ni[Q2_NODES_PER_EL_3D];
+            
+            xip[0] = q_coor[3*q+0];
+            xip[1] = q_coor[3*q+1];
+            xip[2] = q_coor[3*q+2];
+            
+            pTatin_ConstructNi_Q2_3D(xip,Ni);
+            
+            for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+                xp[0] += Ni[k] * el_coords[NSD*k+0];
+                xp[1] += Ni[k] * el_coords[NSD*k+1];
+                xp[2] += Ni[k] * el_coords[NSD*k+2];
+            }
+            
+            DataFieldAccessPoint(PField,p,(void**)&marker);
+            
+            marker->coor[0] = xp[0];
+            marker->coor[1] = xp[1];
+            marker->coor[2] = xp[2];
+            
+            marker->xi[0] = xip[0];
+            marker->xi[1] = xip[1];
+            marker->xi[2] = xip[2];
+            
+            marker->wil    = e;
+            marker->pid    = 0;
+            
+            p++;
+        }
+	}
+	DataFieldRestoreAccess(PField);
+    ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
+	
+	np_local = np_per_cell * ncells;
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,np_local);CHKERRQ(ierr);
+	
+    PetscFree(q_coor);
+    PetscFree(q_weight);
 	
 	PetscFunctionReturn(0);
 }
