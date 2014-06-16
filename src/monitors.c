@@ -101,16 +101,16 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
 	if (its==0) {
-		sprintf(pvdfilename,"%s/stokes_ksp_r_step%d.pvd",ctx->outputpath,ctx->step);
+		sprintf(pvdfilename,"%s/stokes_ksp_r_step%.6d.pvd",ctx->outputpath,ctx->step);
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
-	sprintf(vtkfilename, "stokes_ksp_r_it%d_step%d.pvts",its,ctx->step);
+	sprintf(vtkfilename, "stokes_ksp_r_it%.4d_step%.6d.pvts",its,ctx->step);
 	ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
-	sprintf(vtkfilename, "stokes_ksp_r_it%d_step%d",its,ctx->step);
+	sprintf(vtkfilename, "stokes_ksp_r_it%.4d_step%.6d",its,ctx->step);
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
@@ -144,26 +144,26 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
 	
 	if (its == 0) {
 		if (!prefix) {
-			sprintf(pvdfilename,"%s/stokes_snes_%s_step%d.pvd",ctx->outputpath,field,ctx->step);
+			sprintf(pvdfilename,"%s/stokes_snes_%s_step%.6d.pvd",ctx->outputpath,field,ctx->step);
 		}else {
-			sprintf(pvdfilename,"%s/stokes_snes_%s%s_step%d.pvd",ctx->outputpath,prefix,field,ctx->step);
+			sprintf(pvdfilename,"%s/stokes_snes_%s%s_step%.6d.pvd",ctx->outputpath,prefix,field,ctx->step);
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
 	if (!prefix) {
-		sprintf(vtkfilename, "stokes_snes_%s_it%d_step%d.pvts",field,its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s_it%.4d_step%.6d.pvts",field,its,ctx->step);
 	} else {
-		sprintf(vtkfilename, "stokes_snes_%s%s_it%d_step%d.pvts",prefix,field,its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s%s_it%.4d_step%.6d.pvts",prefix,field,its,ctx->step);
 	}
 	ierr = ParaviewPVDAppend(pvdfilename,(double)its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
 	if (!prefix) {
-		sprintf(vtkfilename, "stokes_snes_%s_it%d_step%d",field,its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s_it%.4d_step%.6d",field,its,ctx->step);
 	} else {
-		sprintf(vtkfilename, "stokes_snes_%s%s_it%d_step%d",prefix,field,its,ctx->step);
+		sprintf(vtkfilename, "stokes_snes_%s%s_it%.4d_step%.6d",prefix,field,its,ctx->step);
 	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
@@ -189,7 +189,6 @@ PetscErrorCode pTatin_SNESMonitorStokes_Solution_Paraview(SNES snes,PetscInt n,P
 	ctx = (pTatinCtx)data;
 
 	ierr = SNESGetSolution(snes,&X);CHKERRQ(ierr);
-
     ierr = _pTatin_SNESMonitorStokes_Paraview(snes,ctx,X,"X");CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
@@ -207,7 +206,6 @@ PetscErrorCode pTatin_SNESMonitorStokes_SolutionUpdate_Paraview(SNES snes,PetscI
 	ctx = (pTatinCtx)data;
     
 	ierr = SNESGetSolutionUpdate(snes,&X);CHKERRQ(ierr);
-    
     ierr = _pTatin_SNESMonitorStokes_Paraview(snes,ctx,X,"dX");CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
@@ -263,4 +261,3 @@ PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
 
     PetscFunctionReturn(0);
 }
-

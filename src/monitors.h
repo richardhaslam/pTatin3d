@@ -36,7 +36,6 @@
 
 PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data);
 PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data);
-PetscErrorCode pTatin_SNESMonitor_ParaviewStokesResiduals3d(SNES snes,PetscInt n,PetscReal rnorm,void *data);
 PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes);
 
 #endif
