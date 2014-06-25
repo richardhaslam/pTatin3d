@@ -64,17 +64,20 @@ PetscErrorCode iPLUS_CreateSlabGeometry_Schellart_G3_2008(iPLUSCtx *data)
 	GeometryObject plate,tip;
 	PetscReal      x0[3],Lx[3],tip_thickness,tip_length,tip_angle;
 	PetscErrorCode ierr;
+        /* set default tip length */
+        tip_length = 0.025;
+        /* check for input parameter -iplus_schellart_g3_2008_tip_length from file or command line */
+        PetscOptionsGetReal(PETSC_NULL,"-iplus_schellart_g3_2008_tip_length",&tip_length,PETSC_NULL);
 	
 	/* Note - 2.5 cm of the slab is bent downwards into the mantle */
 	ierr = GeometryObjectCreate("plate",&plate);CHKERRQ(ierr);
-	x0[0] = 0.31+0.025;   x0[1] = 0.367;   x0[2] = 0.225;
-	Lx[0] = 0.55-0.025;   Lx[1] = 0.013;   Lx[2] = 0.15;
+	x0[0] = 0.31+tip_length;   x0[1] = 0.367;   x0[2] = 0.225;
+	Lx[0] = 0.55-tip_length;   Lx[1] = 0.013;   Lx[2] = 0.15;
 	ierr = GeometryObjectSetType_BoxCornerReference(plate,x0,Lx);CHKERRQ(ierr);
 	
 	ierr = GeometryObjectCreate("slab_tip",&tip);CHKERRQ(ierr);
 	tip_thickness  = 0.013;
-	tip_length = 0.025;
-	x0[0] = 0.31+0.025;        x0[1] = 0.38 - 0.5*tip_thickness;  x0[2] = 0.30;
+	x0[0] = 0.31+tip_length;        x0[1] = 0.38 - 0.5*tip_thickness;  x0[2] = 0.30;
 	Lx[0] = 2.0*tip_length;    Lx[1] = tip_thickness;             Lx[2] = 0.15;
 	ierr = GeometryObjectSetType_Box(tip,x0,Lx);CHKERRQ(ierr);
 	/* Wouter indicates the slab tip has an angle between 15 - 30 degress [paragraph 16] */
@@ -113,6 +116,7 @@ PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
 	
 	l = 4.0 * h; /* input from paper, use default of l/h = 4 */
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_liribe_jgr_2012_l",&l,PETSC_NULL);
+        
 
 	theta_0 = 60.0; /* input from paper */
 	PetscOptionsGetReal(PETSC_NULL,"-iplus_liribe_jgr_2012_theta0",&theta_0,PETSC_NULL);
@@ -276,3 +280,4 @@ PetscErrorCode iPLUS_CreateSlabGeometry(iPLUSCtx *data)
 	
 	PetscFunctionReturn(0);
 }
+
