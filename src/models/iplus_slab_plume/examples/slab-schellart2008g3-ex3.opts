@@ -39,6 +39,7 @@
 -iplus_modeltype 0
 -iplus_slab_type_schellart_g3_2008
 -iplus_schellart_g3_2008_tip_angle 60.0
+-iplus_schellart_g3_2008_tip_length 0.025
 
 -iplus_mesh_refinement_type 3
 
@@ -104,3 +105,4 @@
 -use_quasi_newton_coordinate_update
 -options_left 1
 #End of PETSc Option Table entries
+
