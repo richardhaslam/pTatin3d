@@ -597,19 +597,19 @@ START_INCLUSION:
 		zp = zp * (Lz);
 		attempt++;
 //
-		dx = 1.1*rmax;
+		dx = 1.5*rmax;
 		range[0] = xp - dx;
 		if (range[0] < 0.0) { continue; }
 		range[0] = xp + dx;
 		if (range[0] > Lx) { continue; }
 		
-		dy = 1.1*rmax;
+		dy = 1.5*rmax;
 		range[1] = yp - dy;
 		if (range[1] < 0.0) { continue; }
 		range[1] = yp + dy;
 		if (range[1] > Ly) { continue; }
 
-		dz = 1.1*rmax;
+		dz = 1.5*rmax;
 		range[2] = zp - dz;
 		if (range[2] < 0.0) { continue; }
 		range[2] = zp + dz;
@@ -624,7 +624,7 @@ START_INCLUSION:
 			PetscScalar sep;
 			
 			sep = PetscSqrtReal(  
-									 (pos[3*p+0]-cp[0])*(pos[3*p+0]-cp[0]) 
+                                   (pos[3*p+0]-cp[0])*(pos[3*p+0]-cp[0])
 								 + (pos[3*p+1]-cp[1])*(pos[3*p+1]-cp[1])
 								 + (pos[3*p+2]-cp[2])*(pos[3*p+2]-cp[2]) );
 
@@ -687,11 +687,14 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 						 + 0.25*data->length[1]*data->length[1]
 						 + 0.25*data->length[2]*data->length[2];
 	max_radius = PetscSqrtReal(max_radius);
-	
+
+	max_radius = PetscMax(0.5*data->length[0],0.5*data->length[1]);
+    max_radius = PetscMax(max_radius,0.5*data->length[2]);
+    
 	ierr = compute_inclusion_origins(ninclusions,max_radius,data->Lx,data->Ly,data->Lz,&inclusion_pos);CHKERRQ(ierr);
 	if (inclusion_view) {
 		for (cc=0; cc<ninclusions; cc++) {
-			PetscReal *cp = &inclusion_pos[2*cc];
+			PetscReal *cp = &inclusion_pos[3*cc];
 			PetscPrintf(PETSC_COMM_WORLD," inclusion[%d]: Ox = %1.4e %1.4e %1.4e \n",cc,cp[0],cp[1],cp[2]);
 		}
 	}
@@ -717,7 +720,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 
 		if (data->is_sphere) {
 			for (cc=0; cc<ninclusions; cc++) {
-				PetscReal *cp = &inclusion_pos[2*cc];
+				PetscReal *cp = &inclusion_pos[3*cc];
 				PetscReal sep,rx,ry,rz;
 
 				rx = (position[0]-cp[0])/(0.5*data->length[0]);
@@ -734,7 +737,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 		} else { /* box */
 
 			for (cc=0; cc<ninclusions; cc++) {
-				PetscReal *cp = &inclusion_pos[2*cc];
+				PetscReal *cp = &inclusion_pos[3*cc];
 			
 				if ( (position[0]>cp[0] - 0.5*data->length[0]) && (position[0]<cp[0] + 0.5*data->length[0]) ) {
 					if ( (position[1]>cp[1] - 0.5*data->length[1]) && (position[1]<cp[1] + 0.5*data->length[1]) ) {
