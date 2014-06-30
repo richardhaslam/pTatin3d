@@ -40,6 +40,7 @@
 
 PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels);
 PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac);
+PetscErrorCode DMDASetCoarseningFactor(DM da,PetscInt cx,PetscInt cy,PetscInt cz);
 
 #endif
 

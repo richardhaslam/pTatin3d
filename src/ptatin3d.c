@@ -1378,9 +1378,11 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
   ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
 	
 	
-	ierr = DMDASetRefinementFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
+  ierr = DMDASetCoarseningFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
+  ierr = DMDASetRefinementFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
   ierr = DMCoarsen(da,PetscObjectComm((PetscObject)da),&dac[0]);CHKERRQ(ierr);
   for (i=1; i<nlevels; i++) {
+    ierr = DMDASetCoarseningFactor(dac[i-1],refx[nlevels-1-i],refy[nlevels-1-i],refz[nlevels-1-i]);CHKERRQ(ierr);
     ierr = DMDASetRefinementFactor(dac[i-1],refx[nlevels-1-i],refy[nlevels-1-i],refz[nlevels-1-i]);CHKERRQ(ierr);
     ierr = DMCoarsen(dac[i-1],PetscObjectComm((PetscObject)da),&dac[i]);CHKERRQ(ierr);
   }
