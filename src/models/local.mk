@@ -28,4 +28,5 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			wrench_fold/model_ops_wrench_fold.c \
 			convection2d/model_convection2d_ops.c \
 			subduction_initiation2d/model_subduction_initiation2d_ops.c \
+			plasticdemo/demo.c \
 	)

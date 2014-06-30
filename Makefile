@@ -17,7 +17,7 @@ LIBDIR ?= $(PETSC_ARCH)/lib
 BINDIR ?= $(PETSC_ARCH)/bin
 
 CONFIG_FORTRAN = y
-CONFIG_AVX ?= y
+CONFIG_AVX ?= n
 
 # directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
