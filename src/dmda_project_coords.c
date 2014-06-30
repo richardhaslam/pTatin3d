@@ -111,8 +111,8 @@ PetscErrorCode  DMDASetCoarseningFactor(DM da,PetscInt cx,PetscInt cy,PetscInt c
 {
     DM_DA *dd = (DM_DA*)da->data;
 	if (cx > 0) dd->coarsen_x = cx;
-    if (cy > 0) dd->coarsen_x = cy;
-    if (cz > 0) dd->coarsen_x = cz;
+    if (cy > 0) dd->coarsen_y = cy;
+    if (cz > 0) dd->coarsen_z = cz;
     
 	PetscFunctionReturn(0);
 }
