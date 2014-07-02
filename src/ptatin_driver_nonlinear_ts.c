@@ -78,7 +78,27 @@ typedef struct {
 } AuuMultiLevelCtx;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetKSP_"
+PetscErrorCode SNESGetKSP_(SNES snes,SNES *this_snes,KSP *this_ksp)
+{
+    PetscBool is_ngmres = PETSC_FALSE;
+    PetscErrorCode ierr;
+    
+    *this_snes = PETSC_NULL;
+    *this_ksp  = PETSC_NULL;
+    ierr = PetscObjectTypeCompare((PetscObject)snes,SNESNGMRES,&is_ngmres);CHKERRQ(ierr);
+    
+    if (is_ngmres) {
+        ierr = SNESGetNPC(snes,this_snes);CHKERRQ(ierr);
+    } else {
+        *this_snes = snes;
+    }
+    ierr = SNESGetKSP(*this_snes,this_ksp);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESComposeWithMGCtx"
 PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
 {
@@ -837,14 +857,15 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	/* Buu preconditioner for all other levels in the hierarchy */
 	{
 		PetscBool use_low_order_geometry;
-		KSP       ksp,*sub_ksp,ksp_smoother;
+		SNES      this_snes;
+        KSP       ksp,*sub_ksp,ksp_smoother;
 		PC        pc,pc_i;
 		PetscInt  nsplits;
 		
 		use_low_order_geometry = PETSC_FALSE;
 		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 
-		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+        ierr = SNESGetKSP_(snes,&this_snes,&ksp);CHKERRQ(ierr);
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
@@ -933,8 +954,9 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		
 		/* push operators */
 		for (k=mlctx->nlevels-1; k>=0; k--) {
+            SNES this_snes;
 			
-			ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+            ierr = SNESGetKSP_(snes,&this_snes,&ksp);CHKERRQ(ierr);
 			ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 			ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 			ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
@@ -1990,17 +2012,11 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 
         {
             SNES this_snes;
-            PetscBool is_ngmres = PETSC_FALSE;
+
+            ierr = SNESGetKSP_(snes,&this_snes,&ksp);CHKERRQ(ierr);
             
-            this_snes = PETSC_NULL;
-            ksp       = PETSC_NULL;
-            ierr = PetscObjectTypeCompare((PetscObject)snes,SNESNGMRES,&is_ngmres);CHKERRQ(ierr);
-            
-            if (is_ngmres) {
-                ierr = SNESGetNPC(snes,&this_snes);CHKERRQ(ierr);
+            if (snes != this_snes) {
                 ierr = SNESComposeWithMGCtx(this_snes,&mlctx);CHKERRQ(ierr);
-            } else {
-                this_snes = snes;
             }
             
             /* configure KSP */
@@ -2016,7 +2032,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
             ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
             
             /* configure uu split for galerkin multi-grid */
-            //ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+            ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
         }
 		
         ierr = pTatinLogBasic(user);CHKERRQ(ierr);
