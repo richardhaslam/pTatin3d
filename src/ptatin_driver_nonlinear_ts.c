@@ -312,7 +312,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 		
 		/* Schur complement */
-		ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		//ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
 		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
@@ -362,10 +362,12 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			{
 				Mat Auu;
 				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
+				Vec X;
+				MatNullSpace nullsp;
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				//ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
 				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
@@ -382,6 +384,10 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				operatorA11[k] = Auu;
 				operatorB11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+				ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+				ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+				ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+				ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
 				
 			}
 				break;
@@ -439,6 +445,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			case OP_TYPE_GALERKIN:
 			{
 				Mat Auu;
+				Vec X;
+				MatNullSpace nullsp;
 				
 				if (k==nlevels-1) {
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
@@ -452,6 +460,11 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				operatorA11[k] = Auu;
 				operatorB11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
+				ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+				ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+				ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
+				ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+				ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
 			}
 				break;
 				
@@ -1966,28 +1979,47 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
 		}
 		
+        
 		// activate mffd via -snes_mf_operator
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-		/* force MG context into SNES */
+
+		
+        /* force MG context into SNES */
 		ierr = SNESComposeWithMGCtx(snes,&mlctx);CHKERRQ(ierr);
-		/* configure KSP */
-		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-		ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+
+        {
+            SNES this_snes;
+            PetscBool is_ngmres = PETSC_FALSE;
+            
+            this_snes = PETSC_NULL;
+            ksp       = PETSC_NULL;
+            ierr = PetscObjectTypeCompare((PetscObject)snes,SNESNGMRES,&is_ngmres);CHKERRQ(ierr);
+            
+            if (is_ngmres) {
+                ierr = SNESGetNPC(snes,&this_snes);CHKERRQ(ierr);
+                ierr = SNESComposeWithMGCtx(this_snes,&mlctx);CHKERRQ(ierr);
+            } else {
+                this_snes = snes;
+            }
+            
+            /* configure KSP */
+            ierr = SNESGetKSP(this_snes,&ksp);CHKERRQ(ierr);
+            ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+            
+            ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+            
+            /* configure for fieldsplit */
+            ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+            ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
+            ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
+            ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
+            
+            /* configure uu split for galerkin multi-grid */
+            //ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+        }
 		
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-		//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-		
-		/* configure for fieldsplit */
-		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-		ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
-		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
-		ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
-		
-		/* configure uu split for galerkin multi-grid */
-		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
-		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
+        ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 		/* --------------------------------------------------------- */
 				
