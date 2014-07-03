@@ -2011,30 +2011,52 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = SNESComposeWithMGCtx(snes,&mlctx);CHKERRQ(ierr);
 
         {
-            SNES this_snes;
+            SNES snes_pc;
+            PetscBool is_ngmres = PETSC_FALSE;
+            
+            ierr = PetscObjectTypeCompare((PetscObject)snes,SNESNGMRES,&is_ngmres);CHKERRQ(ierr);
+            if (is_ngmres) {
+                ierr = SNESCreate(PETSC_COMM_WORLD,&snes_pc);CHKERRQ(ierr);
+                ierr = SNESSetOptionsPrefix(snes_pc,"npc_");CHKERRQ(ierr);
+                ierr = SNESComposeWithMGCtx(snes_pc,&mlctx);CHKERRQ(ierr);
+                
+                if (!activate_quasi_newton_coord_update) {
+                    ierr = SNESSetFunction(snes_pc,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+                } else {
+                    ierr = SNESSetFunction(snes_pc,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
+                }
+                // activate mffd via -snes_mf_operator
+                ierr = SNESSetJacobian(snes_pc,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+                ierr = SNESSetFromOptions(snes_pc);CHKERRQ(ierr);
+                
+                ierr = SNESSetNPC(snes,snes_pc);CHKERRQ(ierr);
+                
+                ierr = SNESGetKSP(snes_pc,&ksp);CHKERRQ(ierr);
 
-            ierr = SNESGetKSP_(snes,&this_snes,&ksp);CHKERRQ(ierr);
-            
-            if (snes != this_snes) {
-                ierr = SNESComposeWithMGCtx(this_snes,&mlctx);CHKERRQ(ierr);
+                ierr = SNESDestroy(&snes_pc);CHKERRQ(ierr);
+            } else {
+                ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
             }
-            
-            /* configure KSP */
-            ierr = SNESGetKSP(this_snes,&ksp);CHKERRQ(ierr);
-            ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-            
-            ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-            
-            /* configure for fieldsplit */
-            ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-            ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
-            ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
-            ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
-            
-            /* configure uu split for galerkin multi-grid */
-            ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
         }
-		
+
+        /*
+         Set non-zero initial guess as we only perform 1 non-linear iteration and the
+         user may have provided a initial guess for velocity, pressure in their model
+        */
+        ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+        
+        ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+        
+        /* configure for fieldsplit */
+        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+        ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
+        ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
+        ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
+        
+        /* configure uu split for galerkin multi-grid */
+        ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+        
+        
         ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 		/* --------------------------------------------------------- */
@@ -2097,9 +2119,40 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 		/* force MG context into SNES */
 		ierr = SNESComposeWithMGCtx(snes,&mlctx);CHKERRQ(ierr);
+
 		/* configure KSP */
-		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-		/* monitors */
+		//ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+        {
+            SNES snes_pc;
+            PetscBool is_ngmres = PETSC_FALSE;
+            
+            ierr = PetscObjectTypeCompare((PetscObject)snes,SNESNGMRES,&is_ngmres);CHKERRQ(ierr);
+            if (is_ngmres) {
+                ierr = SNESCreate(PETSC_COMM_WORLD,&snes_pc);CHKERRQ(ierr);
+                ierr = SNESSetOptionsPrefix(snes_pc,"npc_");CHKERRQ(ierr);
+                ierr = SNESComposeWithMGCtx(snes_pc,&mlctx);CHKERRQ(ierr);
+                
+                if (!activate_quasi_newton_coord_update) {
+                    ierr = SNESSetFunction(snes_pc,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+                } else {
+                    ierr = SNESSetFunction(snes_pc,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
+                }
+                // activate mffd via -snes_mf_operator
+                ierr = SNESSetJacobian(snes_pc,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
+                ierr = SNESSetFromOptions(snes_pc);CHKERRQ(ierr);
+                ierr = SNESSetNPC(snes,snes_pc);CHKERRQ(ierr);
+                
+                ierr = SNESGetKSP(snes_pc,&ksp);CHKERRQ(ierr);
+                
+                ierr = SNESDestroy(&snes_pc);CHKERRQ(ierr);
+            } else {
+                ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+            }
+        }
+		
+        
+        
+        /* monitors */
 		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 		//	ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
