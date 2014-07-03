@@ -192,7 +192,7 @@ PetscErrorCode MFStokesWrapper_A11_AVX(Quadrature volQ,DM dau,PetscScalar ufield
 	Vec gcoords;
 	const PetscReal *LA_gcoords;
 	PetscInt nel,nen_u,e,i,j,k;
-	const PetscInt *elnidx_u,*gidx;
+	const PetscInt *elnidx_u;
 	QPntVolCoefStokes *all_gausspoints;
 	const QPntVolCoefStokes *cell_gausspoints[NEV];
 	PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
@@ -216,8 +216,6 @@ PetscErrorCode MFStokesWrapper_A11_AVX(Quadrature volQ,DM dau,PetscScalar ufield
 	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
 
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 

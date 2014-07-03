@@ -493,6 +493,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 	PetscInt       nel,nen,e,n,ii;
 	const PetscInt *elnidx;
 	BCList         bclist;
+    ISLocalToGlobalMapping ltog;
 	PetscInt       NUM_GINDICES,T_el_lidx[Q1_NODES_PER_EL_3D],ge_eqnums[Q1_NODES_PER_EL_3D];
 	const PetscInt *GINDICES;
 	Vec            V;
@@ -550,7 +551,9 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
   ierr = VecGetArray(local_V,&LA_V);CHKERRQ(ierr);
 	
 	/* stuff for eqnums */
-	ierr = DMDAGetGlobalIndices(da,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElementsQ1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
@@ -624,6 +627,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 	/* boundary conditions */
 	ierr = BCListRemoveDirichletMask(NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
 	ierr = BCListInsertScaling(B,NUM_GINDICES,GINDICES,bclist);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	
 	/* assemble */
 	ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -790,8 +794,7 @@ PetscErrorCode FormFunctionLocal_T(
 	PetscInt       nel,nen,e,n;
 	const PetscInt *elnidx;
 	BCList         bclist;
-	PetscInt       NUM_GINDICES,ge_eqnums[NODES_PER_EL_Q1_3D];
-	const PetscInt *GINDICES;
+	PetscInt       ge_eqnums[NODES_PER_EL_Q1_3D];
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
 	Quadrature        volQ;
@@ -831,8 +834,6 @@ PetscErrorCode FormFunctionLocal_T(
   ierr = VecGetArray(gcoords_old,&LA_gcoords_old);CHKERRQ(ierr);
 	
 	/* stuff for eqnums */
-	ierr = DMDAGetGlobalIndices(da,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
-	
 	ierr = DMDAGetElementsQ1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
 	for (e=0;e<nel;e++) {

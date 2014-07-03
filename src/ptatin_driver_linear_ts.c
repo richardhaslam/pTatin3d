@@ -91,6 +91,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
 	PetscReal      fac,D[NSTRESS][NSTRESS],diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
 	PetscInt       NUM_GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
+    ISLocalToGlobalMapping ltog;
 	const PetscInt *GINDICES;
 	const PetscInt *GINDICES_cell;
 	const PetscInt *GINDICES_coarse;
@@ -150,12 +151,17 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	/* indices */
-	ierr = DMDAGetGlobalIndices(dav_fine,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dav_fine, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,u_bclist_fine);CHKERRQ(ierr);
-    
-	ierr = DMDAGetGlobalIndices(daf,&NUM_GINDICES_cell,&GINDICES_cell);CHKERRQ(ierr);
-    
-	ierr = DMDAGetGlobalIndices(dav_coarse,&NUM_GINDICES_coarse,&GINDICES_coarse);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(daf, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_cell);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
+
+    ierr = DMGetLocalToGlobalMapping(dav_coarse, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_coarse);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
 	
 	/* loop and assemble */
 	ierr = DMDAGetElements_pTatinQ2P1(dav_fine,&nel,&nen_v,&elnidx_v);CHKERRQ(ierr);
@@ -364,6 +370,9 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	PetscPrintf(PETSC_COMM_WORLD,"  Time[Total]               %1.4e (sec)\n",t[1]-t[0]);
 	
 	ierr = BCListRemoveDirichletMask(NUM_GINDICES,GINDICES,u_bclist_fine);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	ierr = MatDestroy(&Acell);CHKERRQ(ierr);

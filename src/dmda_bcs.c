@@ -170,14 +170,16 @@ PetscErrorCode BCListUpdateCache(BCList list)
 #define __FUNCT__ "BCListInitGlobal"
 PetscErrorCode BCListInitGlobal(BCList list)
 {
+    ISLocalToGlobalMapping ltog;
 	PetscInt i,max,lsize;
 	const PetscInt *indices;
 	Vec dindices,dindices_g;
 	PetscScalar *_dindices;
 	PetscErrorCode ierr;
 	
-	
-	ierr = DMDAGetGlobalIndices(list->dm,&max,&indices);CHKERRQ(ierr);
+	ierr = DMGetLocalToGlobalMapping(list->dm, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &max);CHKERRQ(ierr);
+	ierr = ISLocalToGlobalMappingGetIndices(ltog, &indices);CHKERRQ(ierr);
 	ierr = DMGetGlobalVector(list->dm,&dindices_g);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(list->dm,&dindices);CHKERRQ(ierr);
 	ierr = VecGetLocalSize(dindices,&lsize);CHKERRQ(ierr);
@@ -188,6 +190,7 @@ PetscErrorCode BCListInitGlobal(BCList list)
 		_dindices[i] = (PetscScalar)indices[i] + 1.0e-3;
 	}
 	ierr = VecRestoreArray(dindices,&_dindices);CHKERRQ(ierr);
+	ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &indices);CHKERRQ(ierr);
 	
 	/* scatter (ignore ghosts) */
 	ierr = DMLocalToGlobalBegin(list->dm,dindices,INSERT_VALUES,dindices_g);CHKERRQ(ierr);
@@ -286,8 +289,6 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 	PetscInt bs,N,m,n,p,Ng,mg,ng,pg;
 	PetscInt gidx,gdofidx,blockloc,loc,dof_idx,dim,ndof;
 	PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz,i,j,k;
-	PetscInt max_index;
-	const PetscInt *globalindices;
 	PetscErrorCode ierr;
 	
 	ierr = DMDAGetInfo(da,0, 0,0,0, 0,0,0, &bs,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -310,7 +311,6 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 	ierr = DMDAGetGhostCorners(da,&gsi,&gsj,&gsk,&gnx,&gny,&gnz);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetGlobalIndices(da,&max_index,&globalindices);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
 	
 	ierr = BCListInitGlobal(ll);CHKERRQ(ierr);
