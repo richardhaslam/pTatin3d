@@ -95,10 +95,9 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 	for( j=sj; j<sj+ny; j++ ) {
 		for( k=sk; k<sk+nz; k++ ) {
 			for( i=si; i<si+nx; i++ ) {
-				PetscReal xn,yn,zn;
+				PetscReal xn,zn;
 				
 				xn = _coord[k][j][i].x - xshift;
-				yn = _coord[k][j][i].y;
 				zn = _coord[k][j][i].z - zshift;
 				
 				/* scale amplitude with depth */
@@ -173,11 +172,10 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 		k = MZ - 1;
 		for( j=sj; j<sj+ny; j++ ) {
 			for( i=si; i<si+nx; i++ ) {
-				PetscReal xn,yn,zn;
+				PetscReal xn,yn;
 				
 				xn = _coord[k][j][i].x;
 				yn = _coord[k][j][i].y;
-				zn = _coord[k][j][i].z;
 				
 				_coord[k][j][i].z = MeshMax[2] + offset + amp * sin( theta * M_PI * xn ) * cos( phi * M_PI * (xn+yn) );
 			}
@@ -201,7 +199,7 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***_coord;
-	PetscReal Lx,Ly,theta,y_displacement;
+	PetscReal Ly,theta,y_displacement;
 	PetscReal MeshMin[3],MeshMax[3];
 	
 	PetscFunctionBegin;
@@ -211,7 +209,7 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	
 	//ierr = DMDASetUniformCoordinates(da,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
 	ierr = DMDAGetBoundingBox(da,MeshMin,MeshMax);CHKERRQ(ierr);
-	Lx = (MeshMax[0] - MeshMin[0]);
+	//Lx = (MeshMax[0] - MeshMin[0]);
 	Ly = (MeshMax[1] - MeshMin[1]);
 	theta = atan( y_displacement / Ly );
 	
@@ -224,11 +222,10 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	for( j=sj; j<sj+ny; j++ ) {
 		for( k=sk; k<sk+nz; k++ ) {
 			for( i=si; i<si+nx; i++ ) {
-				PetscReal xn,yn,zn;
+				PetscReal xn,yn;
 				
 				xn = _coord[k][j][i].x;
 				yn = _coord[k][j][i].y;
-				zn = _coord[k][j][i].z;
 								
 				_coord[k][j][i].x = xn + tan(theta) * yn;
 			}
@@ -321,7 +318,6 @@ PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,Pe
 	DM cda;
 	Vec coord;
 	DMDACoor3d ***_coord;
-	PetscReal delta;
 	PetscReal MeshMin[3],MeshMax[3],Lx[3],xp,x,f,f0,f1;
 	
 	
@@ -417,7 +413,6 @@ PetscErrorCode DMDASetCoordinatesCentralSqueeze1D(DM da,PetscInt dir,PetscReal f
 	Vec coord;
 	DMDACoor3d ***_coord;
 	PetscReal x0prime,x1prime,x2prime,x3prime;
-	PetscReal xp,x,f,f0,f1;
 	
 	
 	PetscFunctionBegin;

@@ -287,7 +287,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v1(PetscScalar pos[],PetscInt g
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
 	PetscScalar z,P;
 	PetscBool impose;
-	PetscErrorCode ierr;
 	
 	z = c->ref_height - pos[1];
 	P = c->rho * c->grav * z;
@@ -305,7 +304,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v2(PetscScalar pos[],PetscInt g
 	PetscScalar z,P;
 	PetscReal dz;
 	PetscBool impose;
-	PetscErrorCode ierr;
 	
 	dz = c->ref_height / ((PetscReal)( c->ref_N+1 ) );
 	z = (PetscScalar)(c->ref_N - global_index[1]);
@@ -326,7 +324,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],Petsc
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
 	PetscScalar dPdy;
 	PetscBool impose;
-	PetscErrorCode ierr;
 	
 	dPdy = -c->rho * c->grav;
 	
@@ -367,13 +364,12 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt glob
 PetscBool DMDAVecTraverse3d_GaussianXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
-	PetscScalar x,y,z;
+	PetscScalar x,y;
 	
 	impose = PETSC_TRUE;
 	x = pos[0];
 	y = pos[1];
-	z = pos[2];
-	*val = exp( -100.0*( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) )); 
+	*val = exp( -100.0*( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ));
 
 	return impose;
 }
@@ -399,12 +395,10 @@ PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void 
 PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
-	PetscScalar x,y,z;
+	PetscScalar x;
 	
 	impose = PETSC_TRUE;
 	x = pos[0];
-	y = pos[1];
-	z = pos[2];
 	if (x < 0.5) {
 		*val = 2.0;
 	} else {
@@ -461,12 +455,11 @@ PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val
 PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
-	PetscScalar x,y,z;
+	PetscScalar x,y;
 	
 	impose = PETSC_TRUE;
 	x = pos[0];
 	y = pos[1];
-	z = pos[2];
 	if ( (x < 0.5) && (y < 0.5) ) {
 		*val = 2.0;
 	} else {
