@@ -1037,7 +1037,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	/* configure uu split for galerkin multi-grid */
 	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
     
-    ierr = SNESStokes_KSPSetConvergenceTest_ScaledResiduals(snes,user);CHKERRQ(ierr);
+    //ierr = SNESStokes_KSPSetConvergenceTest_ScaledResiduals(snes,user);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
