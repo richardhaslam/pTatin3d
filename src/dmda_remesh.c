@@ -238,14 +238,13 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	PetscInt si,sj,sk,nx,ny,nz,i,j,k;
 	PetscInt s_si,s_sj,s_sk,s_nx,s_ny,s_nz;
 	DM surface1_da,surface2_da;
-	DM surface1_cda,surface2_cda;
 	Vec surface1_coords,surface2_coords;
 	PetscScalar *surface1_nodes,*surface2_nodes;
 	DM cda;
 	Vec coords;
 	DMDACoor3d ***nodes;
 	DMDACoor3d DX;
-	PetscInt start,end, DL, RANGE;
+	PetscInt RANGE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -403,14 +402,13 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( DM da, Petsc
 	PetscInt si,sj,sk,nx,ny,nz,i,j,k;
 	PetscInt s_si,s_sj,s_sk,s_nx,s_ny,s_nz;
 	DM surface1_da,surface2_da;
-	DM surface1_cda,surface2_cda;
 	Vec surface1_coords,surface2_coords;
 	PetscScalar *surface1_nodes,*surface2_nodes;
 	DM cda;
 	Vec coords;
 	DMDACoor3d ***nodes;
 	DMDACoor3d DX;
-	PetscInt start,end, DL, RANGE;
+	PetscInt RANGE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -519,18 +517,12 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt 
 	PetscFunctionReturn(0);
 }
 
-
-
-
-
-
-
 #undef __FUNCT__
 #define __FUNCT__ "DMDARemeshJMAX_UpdateHeightsFromInterior"
 PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da)
 {
 	PetscErrorCode ierr;
-	PetscInt M,N,P,si,sj,sk,nx,ny,nz,i,j,k;
+	PetscInt M,N,P,si,sj,sk,nx,ny,nz,i,k;
 	DM cda;
 	Vec coords,gcoords;
 	DMDACoor3d ***LA_coords,***LA_gcoords;
@@ -611,7 +603,6 @@ PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal f
 	Vec coord,coord_min,coord_max;
 	DMDACoor3d ***LA_coords,***LA_coords_da_min,***LA_coords_da_max;
 	PetscReal x0prime,x1prime,x2prime,x3prime;
-	PetscReal xp,x,f,f0,f1;
 	PetscReal x0,x1,x2,x3;
 	
 	
