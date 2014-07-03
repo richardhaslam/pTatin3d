@@ -1,8 +1,8 @@
 /*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
- **    Copyright (c) 2012, 
+ **    Copyright (c) 2012,
  **        Dave A. May [dave.may@erdw.ethz.ch]
- **        Geophysical Fluid Dynamics, 
+ **        Geophysical Fluid Dynamics,
  **        Department of Earth Sciences,
  **        ETH Zürich,
  **        Sonneggstrasse 5,
@@ -34,7 +34,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/dmdaimpl.h" 
+#include "petsc-private/dmdaimpl.h"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -63,7 +63,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN, OP_TYPE_MFGALERKIN } OperatorType;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAssembleMFGalerkin"
 PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature volQ_fine,DM dav_coarse,Mat Ac)
 {
@@ -75,7 +75,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	DMBoundaryType wrap[] = { DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE };
 	Mat         Acell,Ac_el,P;
 	Vec              gcoords;
-	PetscReal        *LA_gcoords;	
+	PetscReal        *LA_gcoords;
 	PetscInt         q,nqp,ii,jj,kk;
 	PetscReal         WEIGHT[NQP],XI[NQP][3];
 	QPntVolCoefStokes *quadrature_points,*cell_quadrature_points;
@@ -98,16 +98,16 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	PetscInt       NUM_GINDICES_coarse,ge_eqnums_coarse[3*Q2_NODES_PER_EL_3D];
 	PetscScalar    *Ac_entries;
 	PetscLogDouble t0,t1,t[6];
-  PetscErrorCode ierr;
-
+    PetscErrorCode ierr;
+    
 	
 	ierr = MatZeroEntries(Ac);CHKERRQ(ierr);
-
+    
 	ierr = DMDAGetLocalSizeElementQ2(dav_fine,&lmi,&lmj,&lmk);CHKERRQ(ierr);
 	ierr = DMDAGetLocalSizeElementQ2(dav_coarse,&lmi_coarse,&lmj_coarse,&lmk_coarse);CHKERRQ(ierr);
 	
 	ierr = DMDAGetRefinementFactor(dav_fine,&refi,&refj,&refk);CHKERRQ(ierr);
-
+    
 	nni = 2*refi + 1;
 	nnj = 2*refj + 1;
 	nnk = 2*refk + 1;
@@ -130,7 +130,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	if (sei%refi != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Start element (i) must be divisible by %D",refi); }
 	if (sej%refj != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Start element (j) must be divisible by %D",refj); }
 	if (sek%refk != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Start element (k) must be divisible by %D",refk); }
-
+    
 	if (lmi%refi != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Local element size (i) must be divisible by %D",refi); }
 	if (lmj%refj != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Local element size (j) must be divisible by %D",refj); }
 	if (lmk%refk != 0) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Local element size (k) must be divisible by %D",refk); }
@@ -152,9 +152,9 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	/* indices */
 	ierr = DMDAGetGlobalIndices(dav_fine,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
 	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,u_bclist_fine);CHKERRQ(ierr);
-
+    
 	ierr = DMDAGetGlobalIndices(daf,&NUM_GINDICES_cell,&GINDICES_cell);CHKERRQ(ierr);
-
+    
 	ierr = DMDAGetGlobalIndices(dav_coarse,&NUM_GINDICES_coarse,&GINDICES_coarse);CHKERRQ(ierr);
 	
 	/* loop and assemble */
@@ -183,7 +183,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 						for (iif=refi*ic; iif<refi*ic+refi; iif++) {
 							PetscInt cidx;
 							PetscInt cidx_cell;
-					
+                            
 							cidx      = iif + jjf*lmi + kkf*lmi*lmj;
 							cidx_cell = (iif-refi*ic) + (jjf-refj*jc)*refi + (kkf-refk*kc)*refi*refj;
 							
@@ -203,7 +203,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 								ge_eqnums_cell[3*n+1] = GINDICES_cell[ 3*NID+1 ];
 								ge_eqnums_cell[3*n+2] = GINDICES_cell[ 3*NID+2 ];
 							}
-					
+                            
 							ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx_v[nen_v*cidx],LA_gcoords);CHKERRQ(ierr);
 							
 							ierr = VolumeQuadratureGetCellData_Stokes(volQ_fine,quadrature_points,cidx,&cell_quadrature_points);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 							PetscMemzero( Ae, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS );
 							
 							P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
-
+                            
 							/* evaluate the viscosity */
 							for (q=0; q<nqp; q++) {
 								el_eta[q] = cell_quadrature_points[q].eta;
@@ -282,7 +282,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 				ierr = MatAssemblyBegin(Acell,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 				ierr = MatAssemblyEnd (Acell,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 				
-				/* For each cell problem, define the boundary conditions (kinda ugly hack as this doesnt use bc_list_fine */				
+				/* For each cell problem, define the boundary conditions (kinda ugly hack as this doesnt use bc_list_fine */
 				PetscTime(&t1);
 				t[2] += (t1-t0);
 				
@@ -309,7 +309,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 								ge_eqnums_cell[3*n+1] = GINDICES_cell[ 3*NID+1 ];
 								ge_eqnums_cell[3*n+2] = GINDICES_cell[ 3*NID+2 ];
 							}
-
+                            
 							for (n=0; n<3*NPE; n++) {
 								if (ge_eqnums[n] < 0) {
 									ii = ge_eqnums_cell[n];
@@ -324,12 +324,12 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 				ierr = MatAssemblyEnd (Acell,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 				PetscTime(&t1);
 				t[3] += (t1-t0);
-
+                
 				t0 = t1;
 				ierr = MatPtAPNumeric(Acell,P,Ac_el);CHKERRQ(ierr);
 				PetscTime(&t1);
 				t[4] += (t1-t0);
-
+                
 				/* assemble coarse grid operator */
 				
 				/* get global indices */
@@ -343,20 +343,20 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 					ge_eqnums_coarse[3*n+2] = GINDICES_coarse[ 3*NID+2 ];
 				}
 				ierr = MatSeqAIJGetArray(Ac_el,&Ac_entries);CHKERRQ(ierr);
-
+                
 				ierr = MatSetValues(Ac,Q2_NODES_PER_EL_3D*U_DOFS,ge_eqnums_coarse,Q2_NODES_PER_EL_3D*U_DOFS,ge_eqnums_coarse,Ac_entries,ADD_VALUES);CHKERRQ(ierr);
 				
 				ierr = MatSeqAIJRestoreArray(Ac_el,&Ac_entries);CHKERRQ(ierr);
 				PetscTime(&t1);
 				t[5] += (t1-t0);
-
+                
 			}
 		}
 	}
 	ierr = MatAssemblyBegin(Ac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd (Ac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	PetscTime(&t[1]);
-
+    
 	PetscPrintf(PETSC_COMM_WORLD,"  Time[Assemble cell prb]   %1.4e (sec)\n",t[2]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Time[BC insertion]        %1.4e (sec)\n",t[3]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Time[Form PtAP]           %1.4e (sec)\n",t[4]);
@@ -372,33 +372,33 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	ierr = DMDestroy(&dac);CHKERRQ(ierr);
 	
 	
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-  pTatinCtx         user;
-  DM                stokes_pack,dau,dap;
+    pTatinCtx         user;
+    DM                stokes_pack,dau,dap;
 	IS                *is;
 	PhysCompStokes    stokes;
-  Vec               Uloc,Ploc;
-  PetscScalar       *LA_Uloc,*LA_Ploc;
+    Vec               Uloc,Ploc;
+    PetscScalar       *LA_Uloc,*LA_Ploc;
 	PetscBool         is_mffd = PETSC_FALSE;
 	PetscBool         is_nest = PETSC_FALSE;
 	PetscBool         is_shell = PETSC_FALSE;
-  PetscErrorCode    ierr;
+    PetscErrorCode    ierr;
 	
-  PetscFunctionBegin;
+    PetscFunctionBegin;
 	
 	user = (pTatinCtx)ctx;
-
+    
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
-
-  ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+    
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+    ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 	
 	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
 	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
@@ -411,12 +411,12 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD, &is_mffd);CHKERRQ(ierr);
 	ierr = PetscObjectTypeCompare((PetscObject)A,MATNEST, &is_nest);CHKERRQ(ierr);
 	ierr = PetscObjectTypeCompare((PetscObject)A,MATSHELL,&is_shell);CHKERRQ(ierr);
-
+    
 	if (is_nest) {
 		Mat Auu;
 		
 		ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
-
+        
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
 		if (!is_shell) {
@@ -454,10 +454,10 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		}
 		
 		ierr = MatDestroy(&Buu);CHKERRQ(ierr);
-		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);		
-  }
-  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);
+    }
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* clean up */
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
@@ -467,12 +467,12 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 	
-  ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 	
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dStokesBuildMeshHierarchy"
 PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_hierarchy[])
 {
@@ -505,10 +505,10 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
 	/* inject coordinates */
 	ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
 	
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dStokesReportMeshHierarchy"
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
 {
@@ -521,13 +521,13 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	PetscFunctionBegin;
 	
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-
+    
 	/* Report mesh sizes */
 	for (k=0; k<nlevels; k++) {
 		ierr = DMDAGetSizeElementQ2(dav_hierarchy[k],&lmx,&lmy,&lmz);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"         level [%2D]: global Q2 elements (%D x %D x %D) \n", k,lmx,lmy,lmz );
-	}		
-
+	}
+    
 	
 	for (k=0; k<nlevels; k++) {
 		
@@ -537,7 +537,7 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 			PetscPrintf(PETSC_COMM_SELF,"[r%4D]: level [%2D]: local Q2 elements  (%D x %D x %D) \n", rank, k,lmx,lmy,lmz );
 		}
 	}
-
+    
 	for (k=0; k<nlevels; k++) {
 		ierr = DMDAGetElements_pTatinQ2P1(dav_hierarchy[k],&nels,&nen,&els);CHKERRQ(ierr);
 		
@@ -553,12 +553,12 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dCreateStokesOperators"
 PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_stokes_field[],
-																						 PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
-																						 BCList u_bclist[],Quadrature volQ[],
-																						 Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
+                                             PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
+                                             BCList u_bclist[],Quadrature volQ[],
+                                             Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
 {
 	Mat            A,B;
 	PetscInt       level_type[10];
@@ -621,7 +621,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatDestroy(&Spp);CHKERRQ(ierr);
 	}
 	
-	/* A11 operator */	
+	/* A11 operator */
 	/* defaults */
 	level_type[0] = (PetscInt)OP_TYPE_REDISC_ASM;
 	for (k=1; k<nlevels; k++) {
@@ -679,7 +679,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 				ierr = MatShellGetMatA11MF(Auu,&mf);CHKERRQ(ierr);
 				ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-				mf->daU = NULL;				
+				mf->daU = NULL;
 				operatorA11[k] = Auu;
 				
 				{
@@ -693,7 +693,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 						ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
 						ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
 						ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
-						mf->daU = NULL;				
+						mf->daU = NULL;
 						operatorB11[k] = Buu;
 						
 					} else {
@@ -716,7 +716,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
 				if (k==nlevels-1) {
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
-				}	
+				}
 				if (level_type[k+1] == OP_TYPE_REDISC_MF) {
 					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid. Finest level above must be of type OP_TYPE_REDISC_ASM, OP_TYPE_GALERKIN or OP_TYPE_MFGALERKIN",k+1);
 				}
@@ -742,10 +742,10 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: MFGalerkin :: assembled operator \n", k);
 				if (k==nlevels-1) {
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin coarse grid on the finest level");
-				}	
+				}
 				if (level_type[k+1] != OP_TYPE_REDISC_MF) {
 					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin. Next finest level[%D] must be of type OP_TYPE_REDISC_MF",k+1);
-				}	
+				}
 				
 				
 				ierr = DMSetMatType(dav_hierarchy[k],MATAIJ);CHKERRQ(ierr);
@@ -762,28 +762,28 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			default:
 				break;
 		}
-	}	
-	/*
-	{
-		Mat Ac;
-		
-		ierr = DMSetMatType(dav_hierarchy[nlevels-2],MATAIJ);CHKERRQ(ierr);
-		ierr = DMCreateMatrix(dav_hierarchy[nlevels-2],&Ac);CHKERRQ(ierr);
-		ierr = MatAssembleMFGalerkin(dav_hierarchy[nlevels-1],u_bclist[nlevels-1],volQ[nlevels-1],dav_hierarchy[nlevels-2],Ac);CHKERRQ(ierr);
 	}
-	*/
+	/*
+     {
+     Mat Ac;
+     
+     ierr = DMSetMatType(dav_hierarchy[nlevels-2],MATAIJ);CHKERRQ(ierr);
+     ierr = DMCreateMatrix(dav_hierarchy[nlevels-2],&Ac);CHKERRQ(ierr);
+     ierr = MatAssembleMFGalerkin(dav_hierarchy[nlevels-1],u_bclist[nlevels-1],volQ[nlevels-1],dav_hierarchy[nlevels-2],Ac);CHKERRQ(ierr);
+     }
+     */
 	
 	/* Set fine A11 into nest */
 	ierr = MatNestSetSubMat(B,0,0,operatorA11[nlevels-1]);CHKERRQ(ierr);
-
+    
 	*_A = A;
 	*_B = B;
-
+    
 	been_here = 1;
 	PetscFunctionReturn(0);
 }
-	
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dStokesKSPConfigureFSGMG"
 PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[])
 {
@@ -802,7 +802,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 	ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 	ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
-		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
+    ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 	
 	for( k=1; k<nlevels; k++ ){
 		ierr = PCMGSetInterpolation(pc_i,k,interpolation_v[k]);CHKERRQ(ierr);
@@ -821,7 +821,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 		if (use_low_order_geometry==PETSC_TRUE) {
 			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
-		//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
+            //ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
 		} else {
 			// Use A for smoother, lo
 			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
@@ -830,7 +830,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3d_linear_viscous_forward_model_driver"
 PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv)
 {
@@ -849,7 +849,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
 	PetscInt       step;
-  pTatinModel    model;
+    pTatinModel    model;
 	PetscLogDouble time[2];
 	PetscErrorCode ierr;
 	
@@ -888,21 +888,21 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	}
- ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
+    ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
 	/* mesh geometry */
 	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
-
+    
 	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
 	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
-		
+    
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//for (e=0; e<QUAD_EDGES; e++) {
 	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
 	//}
-
+    
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 	
@@ -911,8 +911,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	
 	/* boundary conditions */
 	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
-
-
+    
+    
 	/* setup mg */
 	nlevels = 1;
 	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
@@ -924,7 +924,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		char name[PETSC_MAX_PATH_LEN];
 		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"vel_dmda_Lv%D",k);
 		ierr = pTatinLogBasicDMDA(user,name,dav_hierarchy[k]);CHKERRQ(ierr);
-
+        
 		//sprintf(name,"vel_dmda_Lv%d.vtk",k);
 		//ierr = DMDAViewPetscVTK(dav_hierarchy[k],NULL,name);CHKERRQ(ierr);
 	}
@@ -934,7 +934,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	for (k=0; k<nlevels-1; k++) {
 		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],NULL);CHKERRQ(ierr);
 	}
-
+    
 	/* Define interpolation operators for scalar space */
 	interpolation_eta[0] = NULL;
 	for (k=1; k<nlevels; k++) {
@@ -959,7 +959,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = DMDABCListCreate(dav_hierarchy[k],&u_bclist[k]);CHKERRQ(ierr);
 	}
 	u_bclist[nlevels-1] = user->stokes_ctx->u_bclist;
-
+    
 	/* update markers = >> gauss points */
 	{
 		int               npoints;
@@ -982,19 +982,19 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	/* define bc's for hiearchy */
 	ierr = pTatinModel_ApplyBoundaryConditionMG(nlevels,u_bclist,dav_hierarchy,user->model,user);CHKERRQ(ierr);
 	
-
+    
 	/* configure stokes opertors */
 	ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
-																			 nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
-																			 &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+                                         nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+                                         &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
 	
 	/* work vector for solution and residual */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-
+    
 	/* initial condition */
 	ierr = pTatinModel_ApplyInitialSolution(user->model,user,X);CHKERRQ(ierr);
-		
+    
 	/* boundary condition */
 	{
 		Vec velocity,pressure;
@@ -1003,34 +1003,36 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	}
-
+    
 	/* write the initial fields */
 	ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
-
+    
 	
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 	ierr = SNESSetJacobian(snes,A,B,FormJacobian_Stokes,user);CHKERRQ(ierr);
 	ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 	
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-
+    
 	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+    //	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
 	ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
-
+    
 	/* configure uu split for galerkin multi-grid */
 	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+    
+    ierr = SNESStokes_KSPSetConvergenceTest_ScaledResiduals(snes,user);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 	ierr = pTatinLogBasic(user);CHKERRQ(ierr);
-
+    
 	PetscTime(&time[0]);
 	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	PetscTime(&time[1]);
@@ -1038,20 +1040,20 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 	ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
 	ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
-
+    
 	ierr = pTatinViewBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
 	ierr = pTatinViewBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
 	
 	/* dump */
 	ierr = pTatinModel_Output(user->model,user,X,"step000000");CHKERRQ(ierr);
-
+    
 	/* compute timestep */
 	user->dt = 1.0e30;
 	{
 		Vec velocity,pressure;
 		PetscReal timestep;
 		
-		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);		
+		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = SwarmUpdatePosition_ComputeCourantStep(dav_hierarchy[nlevels-1],velocity,&timestep);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
@@ -1062,16 +1064,16 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	// ierr = pTatin3dCheckpoint(user,X,"step000000");CHKERRQ(ierr);
 	
 	/*
-	{
-		Vec velocity,pressure;
-		PetscReal un,pn,Xn;
-		VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
-		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
-		VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
-		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	}
-	*/
+     {
+     Vec velocity,pressure;
+     PetscReal un,pn,Xn;
+     VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+     ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+     VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+     VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+     ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+     }
+     */
 	
 	/* tidy up */
 	for (k=0; k<nlevels; k++) {
@@ -1087,7 +1089,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		char stepname[PETSC_MAX_PATH_LEN];
 		Vec velocity,pressure;
 		PetscReal timestep;
-
+        
 		/* update context time information */
 		user->step = step;
 		
@@ -1097,7 +1099,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time+user->dt );
 		/* update context time information */
 		user->time = user->time + user->dt;
-
+        
 		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 		
@@ -1139,7 +1141,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 			
 			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 		}
-
+        
 		/* Update boundary conditions */
 		/* Fine level setup */
 		ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
@@ -1149,11 +1151,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		/* solve */
 		/* a) configure stokes opertors */
 		ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
-																				 nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
-																				 &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+                                             nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+                                             &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
 		/* b) create solver */
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_Stokes,user);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 		
@@ -1168,7 +1170,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
 		
 		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
-
+        
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
 		PetscTime(&time[0]);
@@ -1176,18 +1178,18 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
-
+        
 		/*
-		{
-			Vec velocity,pressure;
-			PetscReal un,pn,Xn;
-			VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
-			ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-			VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
-			VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
-			ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		}
-		*/
+         {
+         Vec velocity,pressure;
+         PetscReal un,pn,Xn;
+         VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+         ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+         VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+         VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+         ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+         }
+         */
 		
 		/* output */
 		if ( (step%user->output_frequency == 0) || (step == 1) ) {
@@ -1205,7 +1207,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		
 		/* CHECKPOINT */
 		ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
-
+        
 		/* tidy up */
 		for (k=0; k<nlevels; k++) {
 			ierr = MatDestroy(&operatorA11[k]);CHKERRQ(ierr);
@@ -1214,8 +1216,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = MatDestroy(&A);CHKERRQ(ierr);
 		ierr = MatDestroy(&B);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-
-	
+        
+        
 		/* update context time information */
 		//user->time = user->time + user->dt;
 		//user->step = step;
@@ -1253,7 +1255,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3d_linear_viscous_forward_model_driver_RESTART"
 PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,char **argv)
 {
@@ -1271,7 +1273,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	Mat            interpolation_v[10],interpolation_eta[10];
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
-  pTatinModel    model;
+    pTatinModel    model;
 	
 	PetscErrorCode ierr;
 	
@@ -1310,7 +1312,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	}
-	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);	
+	ierr = DMCompositeGetGlobalISs(multipys_pack,&is_stokes_field);CHKERRQ(ierr);
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -1319,7 +1321,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	
 	ierr = pTatinLogBasicDMDA(user,"Velocity",dav);CHKERRQ(ierr);
 	ierr = pTatinLogBasicDMDA(user,"Pressure",dap);CHKERRQ(ierr);
-		
+    
 	/* interpolate point coordinates (needed if mesh was modified) */
 	//for (e=0; e<QUAD_EDGES; e++) {
 	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
@@ -1384,8 +1386,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	
 	/* configure stokes opertors */
 	ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
-																			 nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
-																			 &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+                                         nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+                                         &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
 	
 	/* work vector for solution and residual */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
@@ -1402,18 +1404,18 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		ierr = BCListInsert(user->stokes_ctx->u_bclist,velocity);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	}
-
+    
 	/*
-	{
-		Vec velocity,pressure;
-		PetscReal un,pn,Xn;
-		VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
-		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
-		VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
-		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	}
-	*/
+     {
+     Vec velocity,pressure;
+     PetscReal un,pn,Xn;
+     VecNorm(X,NORM_2,&Xn); printf("Xn %1.4e\n",Xn);
+     ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+     VecNorm(velocity,NORM_2,&un); printf("un %1.4e\n",un);
+     VecNorm(pressure,NORM_2,&pn); printf("pn %1.4e\n",pn);
+     ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+     }
+     */
 	
 	/* loaded step N, solving for next step */
 	user->step = user->step + 1;
@@ -1429,7 +1431,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		PetscPrintf(PETSC_COMM_WORLD,"     time  : %1.4e \n", user->time + user->dt);
 		/* update context time information */
 		user->time = user->time + user->dt;
-
+        
 		ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 		
 		/* update markers */
@@ -1448,7 +1450,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		
 		/* 3a - Add material */
 		ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,user);CHKERRQ(ierr);
-
+        
 		/* add / remove points if cells are over populated or depleted of points */
 		ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
 		
@@ -1470,7 +1472,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 			
 			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 		}
-
+        
 		/* Update boundary conditions */
 		/* Fine level setup */
 		ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
@@ -1480,11 +1482,11 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		/* solve */
 		/* a) configure stokes opertors */
 		ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
-																				 nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
-																				 &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
+                                             nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
+                                             &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
 		/* b) create solver */
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);  
+		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_Stokes,user);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 		
@@ -1519,7 +1521,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  timestep[%d] dt_courant = %1.4e \n", user->step,user->dt );
-
+        
 		/* CHECKPOINT */
 		ierr = pTatin3dCheckpointManager(user,X);CHKERRQ(ierr);
 		
@@ -1531,7 +1533,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		ierr = MatDestroy(&A);CHKERRQ(ierr);
 		ierr = MatDestroy(&B);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-
+        
 		
 		/* update context time information */
 		user->step++;
