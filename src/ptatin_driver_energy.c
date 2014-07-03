@@ -65,7 +65,7 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	PhysCompStokes  stokes;
 	PhysCompEnergy  energy;
 	DataBucket      materialpoint_db,materialconstants_db;
-	DM              multipys_pack,dav,dap;
+	DM              multipys_pack,dav;
 	PetscErrorCode  ierr;
 	pTatinCtx       user;
 	Vec             X,F;
@@ -100,7 +100,6 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = stokes->dav;
-	dap           = stokes->dap;
 	
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	
@@ -175,18 +174,11 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
 	
 	if (active_energy) {
-		Vec          Told,velocity,pressure;
-		BCList       bclist;
-		DM           daT,cdaT;
 		PetscReal    dx;
-		KSP          kspT;
 		SNES         snesT;
 		PetscInt     tk;
 		
 		/*  THERMAL ENERGY SOLVE  */
-		Told   = energy->Told;
-		bclist = energy->T_bclist;
-		daT    = energy->daT;
 		
 		/* MAP V into adv_diff_v TODO */
 		/* map velocity vector from Q2 space onto Q1 space */

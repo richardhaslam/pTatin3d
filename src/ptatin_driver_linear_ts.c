@@ -89,7 +89,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	const PetscInt *elnidx_v_coarse;
 	PetscReal      el_coords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
 	PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
-	PetscReal      fac,D[NSTRESS][NSTRESS],diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
+	PetscReal      fac,diagD[NSTRESS],B[6][3*Q2_NODES_PER_EL_3D];
 	PetscInt       NUM_GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
     ISLocalToGlobalMapping ltog;
 	const PetscInt *GINDICES;
@@ -154,7 +154,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
     ierr = DMGetLocalToGlobalMapping(dav_fine, &ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
-	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,u_bclist_fine);CHKERRQ(ierr);
+	ierr = BCListApplyDirichletMask(NUM_GINDICES,(PetscInt*)GINDICES,u_bclist_fine);CHKERRQ(ierr);
     ierr = DMGetLocalToGlobalMapping(daf, &ltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_cell);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
@@ -369,7 +369,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	PetscPrintf(PETSC_COMM_WORLD,"  Time[Assemble coarse prb] %1.4e (sec)\n",t[5]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Time[Total]               %1.4e (sec)\n",t[1]-t[0]);
 	
-	ierr = BCListRemoveDirichletMask(NUM_GINDICES,GINDICES,u_bclist_fine);CHKERRQ(ierr);
+	ierr = BCListRemoveDirichletMask(NUM_GINDICES,(PetscInt*)GINDICES,u_bclist_fine);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_cell);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_coarse);CHKERRQ(ierr);
@@ -571,7 +571,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 {
 	Mat            A,B;
 	PetscInt       level_type[10];
-	DM             dav,dap;
+	DM             dap;
 	PetscInt       k,max;
 	PetscBool      flg;
 	static int     been_here = 0;
@@ -579,7 +579,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	
 	PetscFunctionBegin;
 	
-	dav = stokes_ctx->dav;
 	dap = stokes_ctx->dap;
 	
 	/* A operator */

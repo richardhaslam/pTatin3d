@@ -59,7 +59,7 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 {
 	PetscErrorCode ierr;
 	PetscInt si,sj,sk,nx,ny,nz,M,N,P;
-	PetscInt si2d,sj2d,nx2d,ny2d,i,j,k;
+	PetscInt si2d,sj2d,nx2d,ny2d,i,k;
 	MPI_Comm comm;
 	DM da_red_spm,da_surf;
 	DM da_red_spm_coords,da_surf_coords;
@@ -68,7 +68,6 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 	DMDACoor2d **LA_coords_surf;
 	PetscScalar **LA_height;
 	int rank;
-	char name[129];
 	Vec height;
 	
 	PetscFunctionBegin;
@@ -150,7 +149,7 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 {
 	PetscInt M,N,P,M2d,P2d;
 	PetscInt si,sj,sk,nx,ny,nz;
-	PetscInt Ml,Pl,Ml2d,Pl2d;
+	PetscInt Ml2d,Pl2d;
 	PetscInt *surf_indices;
 	Vec coords_vol;
 	IS is_surf,is_local;
@@ -264,8 +263,8 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 #define __FUNCT__ "pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh"
 PetscErrorCode pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh(DM da_vol,DM da_surf,Vec height)
 {
-	PetscInt si,sj,sk,nx,ny,nz,M,N,P;
-	PetscInt si2d,sj2d,nx2d,ny2d,i,j,k;
+	PetscInt si,sk,nx,nz,M,N,P;
+	PetscInt si2d,sj2d,nx2d,ny2d,i,k;
 	Vec coords_surf, coords_red_vol;
 	DMDACoor3d ***LA_coords_red_vol;
 	DMDACoor2d **LA_coords_surf;
@@ -322,7 +321,7 @@ PetscErrorCode pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh(DM da_vol,DM 
 #define __FUNCT__ "pTatin3d_material_points_check_ic"
 PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 {
-	DM              multipys_pack,dav,dap;
+	DM              multipys_pack,dav;
 	PetscErrorCode  ierr;
 	pTatinCtx       user;
 	Vec             X,F,height;
@@ -351,7 +350,6 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	

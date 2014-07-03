@@ -219,9 +219,7 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
 {
 	PetscErrorCode ierr;
-	PetscInt       k,lmx,lmy,lmz,si,sj,sk;
-	PetscInt       nels,nen;
-	const PetscInt *els;
+	PetscInt       k,lmx,lmy,lmz;
 	PetscMPIInt    rank,size;
 	
 	PetscFunctionBegin;
@@ -298,7 +296,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 																						 Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
 {
 	Mat            A,B;
-	DM             dav,dap;
+	DM             dap;
 	PetscInt       k,max;
 	PetscBool      flg;
 	PetscInt       _level_type[MAX_MG_LEVELS];
@@ -307,7 +305,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	
 	PetscFunctionBegin;
 	
-	dav = stokes_ctx->dav;
 	dap = stokes_ctx->dap;
 	
 	/* A operator */
@@ -530,7 +527,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 																						 Mat *_A,Mat operatorA11[],Mat *_B,Mat operatorB11[])
 {
 	Mat            Amf,A,B;
-	DM             dav,dap;
+	DM             dap;
 	PetscInt       k,max;
 	PetscBool      flg;
 	PetscInt       _level_type[MAX_MG_LEVELS];
@@ -539,7 +536,6 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 	
 	PetscFunctionBegin;
 	
-	dav = stokes_ctx->dav;
 	dap = stokes_ctx->dap;
 	
 	/* Amf operator  - only used for MatStkesMF */
