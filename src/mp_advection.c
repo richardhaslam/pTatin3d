@@ -727,7 +727,6 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	PetscScalar    *LA_gcoords;
 	const PetscInt *elnidx_u;
 	PetscInt       nel,nen_u;
-	const PetscInt *gidx;
 	PetscInt       lmx,lmy,lmz;
 	
 
@@ -742,8 +741,7 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dav,0,&gidx);CHKERRQ(ierr);
+
 	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	
 	ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);

@@ -463,8 +463,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscI
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
 	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
 	PetscInt *el;
-	const PetscInt *gidx;
-	PetscInt ngidx,dof;
+	PetscInt dof;
 	int rank;
 	PetscFunctionBegin;
 	
@@ -477,7 +476,6 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscI
 	_npe = 3 * 3 * 3;
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
 	
@@ -561,8 +559,7 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 	PetscInt ei,ej,ek,i,j,k,ii,jj,kk,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,d,X,Y,Z,width;
 	PetscInt mx_natural,my_natural,mz_natural;
 	PetscInt *el;
-	const PetscInt *gidx;
-	PetscInt ngidx,dof;
+	PetscInt dof;
 	int rank;
 	PetscFunctionBegin;
 	
@@ -579,7 +576,6 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx_natural*my_natural*mz_natural*_npe+1),&idx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
 	

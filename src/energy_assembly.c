@@ -790,8 +790,7 @@ PetscErrorCode FormFunctionLocal_T(
 	PetscInt       nel,nen,e,n;
 	const PetscInt *elnidx;
 	BCList         bclist;
-	PetscInt       NUM_GINDICES,ge_eqnums[NODES_PER_EL_Q1_3D];
-	const PetscInt *GINDICES;
+	PetscInt       ge_eqnums[NODES_PER_EL_Q1_3D];
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
 	Quadrature        volQ;
@@ -831,8 +830,6 @@ PetscErrorCode FormFunctionLocal_T(
   ierr = VecGetArray(gcoords_old,&LA_gcoords_old);CHKERRQ(ierr);
 	
 	/* stuff for eqnums */
-	ierr = DMDAGetGlobalIndices(da,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
-	
 	ierr = DMDAGetElementsQ1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
 	for (e=0;e<nel;e++) {

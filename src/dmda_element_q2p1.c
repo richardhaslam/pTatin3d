@@ -432,8 +432,7 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
 	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
 	PetscInt *el;
-	const PetscInt *gidx;
-	PetscInt ngidx,dof;
+	PetscInt dof;
 	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
@@ -447,7 +446,6 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
   if (!da->e) {
 		ierr = DMDAGetCornersElementQ2(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 		ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
-		ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
 		ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 		ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
 		
