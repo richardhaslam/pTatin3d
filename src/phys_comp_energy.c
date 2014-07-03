@@ -89,7 +89,6 @@ PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
 {
 	PetscErrorCode ierr;
 	PhysCompEnergy ctx;
-	PetscInt e;
 	
 	PetscFunctionBegin;
 	

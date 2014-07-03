@@ -53,6 +53,7 @@
 #include "ptatin_models.h"
 #include "dmda_checkpoint.h"
 #include "ptatin_log.h"
+#include "dmda_project_coords.h"
 
 #include "private/ptatin_impl.h"
 
@@ -543,8 +544,6 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 {
 	PetscErrorCode ierr;
 	char *name;
-	DM stokes_pack;
-	Vec UP;
 	PetscLogDouble t0,t1;
 	static int beenhere=0;
 	static char *pvdfilename;
@@ -593,7 +592,6 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 #define __FUNCT__ "pTatin3dCreateContext"
 PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {
-	PetscInt       e;
 	pTatinCtx      user;
 	PetscMPIInt    rank;
 	PetscBool      flg;
@@ -673,7 +671,6 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 {
 	pTatinCtx user = *ctx;
-	PetscInt e;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -845,7 +842,6 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 #define __FUNCT__ "pTatinGetTimestep"
 PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt)
 {
-	PetscErrorCode ierr;
 	if (dt) { *dt = ctx->dt; }
 	PetscFunctionReturn(0);
 }
@@ -854,7 +850,6 @@ PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt)
 #define __FUNCT__ "pTatinGetMaterialPoints"
 PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
 {
-	PetscErrorCode ierr;
 	if (db) { *db = ctx->materialpoint_db; }
 	if (de) { *de = ctx->materialpoint_ex; }
 	PetscFunctionReturn(0);
@@ -864,7 +859,6 @@ PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
 #define __FUNCT__ "pTatinGetMaterialConstants"
 PetscErrorCode pTatinGetMaterialConstants(pTatinCtx ctx,DataBucket *db)
 {
-	PetscErrorCode ierr;
 	if (db) { *db = ctx->material_constants; }
 	PetscFunctionReturn(0);
 }
@@ -873,7 +867,6 @@ PetscErrorCode pTatinGetMaterialConstants(pTatinCtx ctx,DataBucket *db)
 #define __FUNCT__ "pTatinGetModel"
 PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m)
 {
-	PetscErrorCode ierr;
 	if (m) { *m = ctx->model; }
 	PetscFunctionReturn(0);
 }
@@ -882,7 +875,6 @@ PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m)
 #define __FUNCT__ "pTatinGetRheology"
 PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r)
 {
-	PetscErrorCode ierr;
 	if (r) { *r = &ctx->rheology_constants; }
 	PetscFunctionReturn(0);
 }
@@ -891,7 +883,6 @@ PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r)
 #define __FUNCT__ "pTatinGetStokesContext"
 PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
 {
-	PetscErrorCode ierr;
 	if (s) { *s = ctx->stokes_ctx; }
 	PetscFunctionReturn(0);
 }
@@ -982,7 +973,6 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad(pTatinCtx user,const char vname[],con
 #define __FUNCT__ "pTatin3dCheckpoint"
 PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscViewer viewer;
 	PetscErrorCode ierr;
 	char start[PETSC_MAX_PATH_LEN];
 	char f1[PETSC_MAX_PATH_LEN];
@@ -1108,8 +1098,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	/* -------------------------------------- */
 	/* check one - this file has a fixed name */
 	if (step%checkpoint_every==0) {
-		char command[PETSC_MAX_PATH_LEN];
-		char file[PETSC_MAX_PATH_LEN];
 
 		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
 		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
@@ -1124,8 +1112,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 	
 	if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
-		char command[PETSC_MAX_PATH_LEN];
-		char file[PETSC_MAX_PATH_LEN];
 		
 		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
 
@@ -1148,8 +1134,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	/* ----------------------------------------------------------------- */
 	/* check two - these files have a file name related to the time step */
 	if (step%checkpoint_every_nsteps == 0) {
-		char command[PETSC_MAX_PATH_LEN];
-		char file[PETSC_MAX_PATH_LEN];
 		
 		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
 		if (!skip_existence_test) {
@@ -1173,7 +1157,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 #define __FUNCT__ "pTatinRestart_Initialize"
 PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 {
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
 	PetscFunctionReturn(0);
@@ -1206,7 +1189,6 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 	char           name[PETSC_MAX_PATH_LEN];
 	DataBucket     db;
 	int            load_quadrature_points;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 
@@ -1285,13 +1267,8 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 {
 	PetscBool flg;
 	pTatinCtx ctx2;
-	PetscViewer viewer;
 	PetscErrorCode ierr;
 	char start[PETSC_MAX_PATH_LEN];
-	char f1[PETSC_MAX_PATH_LEN];
-	char f2[PETSC_MAX_PATH_LEN];
-	char f3[PETSC_MAX_PATH_LEN];
-	pTatinModel model;
 
 	
 	PetscFunctionBegin;
@@ -1425,10 +1402,6 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial)
 {
 	
-  PetscErrorCode  ierr;
-	Vec coordinates,gcoords;
-	DM dac,dav,dap;
-	Vec Xu,Xp;
 	PetscReal dt_current;
 	
 	PetscFunctionBegin;

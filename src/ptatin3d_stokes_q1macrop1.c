@@ -51,7 +51,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
 	PetscInt vbasis_dofs;
 	PetscInt pbasis_dofs;
 	const PetscInt *lxp,*lyp,*lzp;
-	PetscInt MX,MY,MZ,p,Mp,Np,Pp,*lxv,*lyv,*lzv,i;
+	PetscInt MX,MY,MZ,Mp,Np,Pp,*lxv,*lyv,*lzv;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -146,9 +146,8 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1(PhysCompStokes ct
 PetscErrorCode PhysCompLoadMesh_Stokes3d_Q1Macro(PhysCompStokes ctx,const char fname_vel[],const char fname_p[])
 {
 	DM dav,dap,multipys_pack;
-	PetscInt vbasis_dofs;
 	PetscInt pbasis_dofs;
-	PetscInt p,Mp,Np,Pp,*lxv,*lyv,*lzv,i,MX,MY,MZ;
+	PetscInt Mp,Np,Pp,*lxv,*lyv,*lzv,MX,MY,MZ;
 	const PetscInt *lxp,*lyp,*lzp;
 	PetscErrorCode ierr;
 	
@@ -156,7 +155,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d_Q1Macro(PhysCompStokes ctx,const char f
 
 	
 	/* velocity */
-	vbasis_dofs = 3;
+	//vbasis_dofs = 3;
 	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
 	/* the above function call will load the initial geometry */
 	ierr = DMDAESetType_Q1Macro(dav);CHKERRQ(ierr);

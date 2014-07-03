@@ -472,7 +472,7 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 	QPntVolCoefEnergy *all_quadpoints,*cell_quadpoints;
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
-	PetscScalar       qp_kappa[27],qp_Q[27];
+	PetscScalar       qp_kappa[27];//,qp_Q[27];
   PetscScalar       Ni_p[NODES_PER_EL_Q1_3D];
   PetscScalar       GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D];
   PetscScalar       J_p,fac;
@@ -530,7 +530,7 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 		/* copy the diffusivity and force */
 		for (p=0; p<nqp; p++) {
 			qp_kappa[p] = cell_quadpoints[p].diffusivity;
-			qp_Q[p]     = cell_quadpoints[p].heat_source;
+			//qp_Q[p]     = cell_quadpoints[p].heat_source;
 		}
 		
 		/*

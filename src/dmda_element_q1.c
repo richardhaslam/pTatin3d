@@ -128,7 +128,7 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	const PetscInt order = 1;
 	PetscErrorCode ierr;
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
-	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,d,X,Y,Z,width;
+	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,X,Y,Z,width;
 	PetscInt *el;
 	PetscMPIInt rank;
 	PetscFunctionBegin;
@@ -267,7 +267,6 @@ PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
 	PetscInt si1,sj1,sk1,nx1,ny1,nz1,i,j,k;
 	PetscInt si2,sj2,sk2,nx2,ny2,nz2;
 	DM cdaQ2,cdaQ1;
-	PetscBool overlap;
 	
 	PetscFunctionBegin;
 	
@@ -337,7 +336,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
 	DMDAE dae;
-	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k,n;
+	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k;
 	PetscInt *siq2,*sjq2,*skq2,*lmxq2,*lmyq2,*lmzq2,*lxq1,*lyq1,*lzq1;
 	PetscInt *lsip,*lsjp,*lskp;
 	PetscErrorCode ierr;
@@ -483,7 +482,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
 	DMDAE dae;
-	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k,n;
+	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k;
 	PetscInt *siq2,*sjq2,*skq2,*lmxq2,*lmyq2,*lmzq2,*lxq1,*lyq1,*lzq1;
 	const PetscInt *lxq2,*lyq2,*lzq2;
 	PetscInt *lsip,*lsjp,*lskp;
@@ -723,7 +722,7 @@ PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,Pe
 PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elcoords[3*n  ] = LA_gcoords[3*elnid[n]  ];
@@ -738,7 +737,7 @@ PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt 
 PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elfield[n] = LA_gfield[elnid[n]];
@@ -751,7 +750,7 @@ PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt e
 PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elfield[3*n  ] = LA_gfield[3*elnid[n]  ];
@@ -783,7 +782,7 @@ PetscErrorCode DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F
 PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n=0; n<8; n++) {
