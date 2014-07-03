@@ -250,13 +250,16 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 	ierr = VecRestoreArray( dd, &data );CHKERRQ(ierr);
 	ierr = VecDestroy(&dd);CHKERRQ(ierr);
 	
-	ierr = DMDACreate3d( comm, wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, 0,0,0, da );CHKERRQ(ierr);
+    if (dim == 3) {
+        ierr = DMDACreate3d( comm, wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, 0,0,0, da );CHKERRQ(ierr);
+    } else {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only dimension=3 supported");
+    }
 	ierr = DMDASetRefinementFactor( *da, refine_x, refine_y, refine_z );CHKERRQ(ierr);
 	
 	/* write coordinates out to disk */
 	if (has_coords == PETSC_TRUE) {
 		char coord_file[PETSC_MAX_PATH_LEN];
-		DM   cda;
 		Vec  da_coords;
 		
 		ierr = DMDASetUniformCoordinates(*da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -389,7 +392,6 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 {
 	PetscErrorCode ierr;
 	PetscViewer    v;
-	MPI_Comm       comm;
 	
 	
 	PetscFunctionBegin;
