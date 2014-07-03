@@ -54,7 +54,7 @@
 PetscErrorCode StokesVelocity_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		el_localIndices[3*n  ] = 3*elnid[n]  ;
@@ -68,7 +68,7 @@ PetscErrorCode StokesVelocity_GetElementLocalIndices(PetscInt el_localIndices[],
 PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<P_BASIS_FUNCTIONS; n++) {
 		el_localIndices[n] = elnid[n];
@@ -80,7 +80,7 @@ PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],
 PetscErrorCode StokesVelocityScalar_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		el_localIndices[n] = elnid[n] ;
@@ -147,7 +147,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	PetscInt vbasis_dofs;
 	PetscInt pbasis_dofs;
 	const PetscInt *lxp,*lyp,*lzp;
-	PetscInt MX,MY,MZ,p,Mp,Np,Pp,*lxv,*lyv,*lzv,i;
+	PetscInt MX,MY,MZ,Mp,Np,Pp,*lxv,*lyv,*lzv;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -276,7 +276,7 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
 	dav = ctx->dav;
 
 	np_per_dim = 3;
-  ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+    ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	ncells = lmx * lmy * lmz;
 	ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,np_per_dim,ncells,&ctx->volQ);CHKERRQ(ierr);
 	
@@ -288,7 +288,6 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
 PetscErrorCode PhysCompStokesSetGravityUnitVector(PhysCompStokes ctx,PetscReal grav[])
 {
 	PetscReal      norm_g;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	norm_g = PetscSqrtScalar(grav[0]*grav[0] + grav[1]*grav[1] + grav[2]*grav[2]);
@@ -302,8 +301,6 @@ PetscErrorCode PhysCompStokesSetGravityUnitVector(PhysCompStokes ctx,PetscReal g
 #define __FUNCT__ "PhysCompStokesScaleGravityVector"
 PetscErrorCode PhysCompStokesScaleGravityVector(PhysCompStokes ctx,PetscReal fac)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	ctx->gravity_vector[0] = ctx->gravity_vector[0]*fac;
 	ctx->gravity_vector[1] = ctx->gravity_vector[1]*fac;
@@ -315,8 +312,6 @@ PetscErrorCode PhysCompStokesScaleGravityVector(PhysCompStokes ctx,PetscReal fac
 #define __FUNCT__ "PhysCompStokesSetGravityVector"
 PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[])
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	ctx->gravity_vector[0] = grav[0];
 	ctx->gravity_vector[1] = grav[1];
@@ -397,9 +392,8 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity(PetscSc
 PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[])
 {
 	DM dav,dap,multipys_pack;
-	PetscInt vbasis_dofs;
 	PetscInt pbasis_dofs;
-	PetscInt p,Mp,Np,Pp,*lxv,*lyv,*lzv,i,MX,MY,MZ;
+	PetscInt Mp,Np,Pp,*lxv,*lyv,*lzv,MX,MY,MZ;
 	const PetscInt *lxp,*lyp,*lzp;
 	PetscErrorCode ierr;
 	
@@ -445,7 +439,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	
 	
 	/* velocity */
-	vbasis_dofs = 3;
+	//vbasis_dofs = 3;
 	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,fname_vel,&dav);CHKERRQ(ierr);
 	/* the above function call will load the initial geometry */
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
@@ -659,7 +653,7 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 	
   PetscFunctionBegin;
 	
-	if (index > HEX_EDGES) {
+	if ((int)index > HEX_EDGES) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"face index for 3d hex must be in the range [0,5]");
 	}
 	
@@ -743,7 +737,7 @@ PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da
 	DM             cda;
 	Vec            gcoords;
 	PetscScalar    *LA_gcoords;
-	PetscInt       nel,nen,fe,e,i,k,gp;
+	PetscInt       nel,nen,fe,e,k,gp;
 	const PetscInt *elnidx;
 	ConformingElementFamily element;
 	double         elcoords[3*Q2_NODES_PER_EL_3D];
@@ -780,17 +774,17 @@ PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da
 			QPntSurfCoefStokesGetField_surface_tangent2(qpoint,&tangent2);
 			
 			element->compute_surface_normal_3D(	
-																					 element, 
-																					 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
-																					 Q->face_id,	 // edge index 0,1,2,3,4,5,6,7 //
-																					 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
-																					 normal ); // normal[] contains 1 point with dimension 3 (x,y,z) //
-			element->compute_surface_tangents_3D(	
-																				 element, 
-																				 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
-																				 Q->face_id,	 
-																				 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
-																				 tangent1,tangent2 ); // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
+                                                 element,
+                                                 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+                                                 Q->face_id,	 // edge index 0,1,2,3,4,5,6,7 //
+                                                 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
+                                                 normal ); // normal[] contains 1 point with dimension 3 (x,y,z) //
+			element->compute_surface_tangents_3D(
+                                                 element,
+                                                 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
+                                                 Q->face_id,	 
+                                                 &Q->gp2[gp], // should contain 1 point with dimension 2 (xi,eta)   //
+                                                 tangent1,tangent2 ); // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
 			
 			/* interpolate global coords */
 			element->basis_NI_3D(&Q->gp3[gp],Ni);
@@ -822,7 +816,7 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
 	DM             cda;
 	Vec            gcoords;
 	PetscScalar    *LA_gcoords;
-	PetscInt       nel,nen,fe,e,i,k,gp;
+	PetscInt       nel,nen,fe,e,k,gp;
 	const PetscInt *elnidx;
 	ConformingElementFamily element;
 	double         elcoords[3*Q2_NODES_PER_EL_3D];
@@ -1272,7 +1266,6 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 PetscErrorCode SNESStokesPCMGCoarseSetOptions_SparseDirect(SNES snes)
 {
 	const char *prefix;
-	char opt[PETSC_MAX_PATH_LEN];
 	MPI_Comm comm;
 	PetscErrorCode ierr;
 	PetscMPIInt nproc;
@@ -1301,7 +1294,7 @@ PetscErrorCode Stokes_KSPConvergenceTest_ScaledResiduals(KSP ksp,PetscInt it,Pet
 	pTatinCtx       ctx;
     const char      *names[] = { "U", "V", "W", "P" };
     PetscInt        s,component_cnt;
-	PetscReal       norms[4],max[4],normsX[4],maxX[4],minX[4],fabs_minX[4];
+	PetscReal       norms[4],max[4],maxX[4],minX[4],fabs_minX[4];
 	Vec             X,Xu,Xp,F,Fu,Fp,v,w;
 	Mat             A;
 	PetscReal       atol,rtol;

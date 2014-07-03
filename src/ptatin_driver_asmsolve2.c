@@ -522,15 +522,13 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 		int               npoints;
 		DataField         PField_std;
 		DataField         PField_stokes;
-		MPntStd           *mp_std;
-		MPntPStokes       *mp_stokes;
 		
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
 		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-		mp_std    = PField_std->data; /* should write a function to do this */
-		mp_stokes = PField_stokes->data; /* should write a function to do this */
+		//mp_std    = PField_std->data; /* should write a function to do this */
+		//mp_stokes = PField_stokes->data; /* should write a function to do this */
 		
 		//ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,nlevels,interpolatation_eta,dav_hierarchy,volQ);CHKERRQ(ierr);
 	}
@@ -565,7 +563,6 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	{
 		Mat         Aup,Apu,Spp,bA[2][2];
 		MatStokesMF StkCtx;
-		PetscInt    i,j;
 	
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 

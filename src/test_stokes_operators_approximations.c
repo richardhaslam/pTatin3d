@@ -230,7 +230,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
 	PetscErrorCode ierr;
-	DM              multipys_pack,dav,dap;
+	DM              dav;
 	pTatinCtx       user;
 	Quadrature			volQ_2x2x2;
 	
@@ -255,9 +255,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	user->pack = user->stokes_ctx->stokes_pack;
 
 	/* fetch some local variables */
-	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	

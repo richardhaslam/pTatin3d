@@ -373,7 +373,6 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	{
 		Mat         Aup,Apu,Spp,bA[2][2];
 		MatStokesMF StkCtx;
-		PetscInt    i,j;
 	
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 

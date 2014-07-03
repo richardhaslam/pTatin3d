@@ -160,9 +160,9 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 #define __FUNCT__ "pTatin3d_material_points"
 PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 {
-	DM        multipys_pack,dav,dap;
+	DM        multipys_pack,dav;
 	pTatinCtx user;
-	Mat       A,B,A11;
+	Mat       A,B;
 	Vec       X,F;
 	IS        *is;
 	SNES      snes;
@@ -193,7 +193,6 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -287,9 +286,9 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 #define __FUNCT__ "pTatin3d_galerkin_mg_material_points"
 PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 {
-	DM        multipys_pack,dav,dap;
+	DM        multipys_pack,dav;
 	pTatinCtx user;
-	Mat       A,B,A11;
+	Mat       A,B;
 	Vec       X,F;
 	IS        *is;
 	SNES      snes;
@@ -326,7 +325,6 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -441,7 +439,7 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	{
 		PetscInt nsplits;
 		PC       pc_i;
-		KSP      *sub_ksp,ksp_coarse,ksp_i;
+		KSP      *sub_ksp;
 		
 		ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -508,9 +506,9 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 #define __FUNCT__ "pTatin3d_gmg_material_points"
 PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 {
-	DM        multipys_pack,dav,dap;
+	DM        multipys_pack,dav;
 	pTatinCtx user;
-	Mat       A,B,A11,operatorA11[10];
+	Mat       A,B,operatorA11[10];
 	Vec       X,F;
 	IS        *is_stokes_field;
 	SNES      snes;
@@ -553,7 +551,6 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -1095,7 +1092,6 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	{
 		Mat         Aup,Apu,Spp,bA[2][2];
 		MatStokesMF StkCtx;
-		PetscInt    i,j;
 	
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 

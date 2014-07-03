@@ -50,9 +50,9 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #define __FUNCT__ "pTatin3d_material_points_gmg"
 PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 {
-	DM              multipys_pack,dav,dap;
+	DM             multipys_pack,dav;
+	pTatinCtx      user;
 	PetscErrorCode ierr;
-	pTatinCtx user;
 
 	PetscFunctionBegin;
 	
@@ -77,7 +77,6 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -138,7 +137,6 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	{
 		Vec X,F;
 		SNES snes;
-		Mat JMF;
 		
 		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);

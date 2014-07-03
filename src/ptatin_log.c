@@ -118,7 +118,6 @@ PetscErrorCode pTatinLogHeader(pTatinCtx ctx)
 #define __FUNCT__ "pTatinLogBasic"
 PetscErrorCode pTatinLogBasic(pTatinCtx ctx)
 {
-	PetscErrorCode ierr;
 
 	PetscViewerASCIIPrintf(ctx->log,"------------------------------------------------------------------------------------------\n");
 	PetscViewerASCIIPrintf(ctx->log,"  time step %6d \n", ctx->step);
@@ -310,7 +309,6 @@ PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM
 #define __FUNCT__ "pTatinLogBasicDMDA"
 PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 {
-	const char *prefix;
 	PetscReal min[3],max[3];
 	PetscInt M,N,P,m,n,p,k;
 	const PetscInt *lx,*ly,*lz;

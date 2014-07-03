@@ -59,7 +59,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 {
 	PetscErrorCode ierr;
-	DM              multipys_pack,dav,dap;
+	DM              multipys_pack,dav;
 	pTatinCtx       user;
 	Vec X;
 
@@ -86,7 +86,6 @@ PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 

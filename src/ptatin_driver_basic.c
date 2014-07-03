@@ -160,9 +160,9 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 #define __FUNCT__ "pTatin3d_material_points"
 PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 {
-	DM        multipys_pack,dav,dap;
+	DM        multipys_pack,dav;
 	pTatinCtx user;
-	Mat       A,B,A11;
+	Mat       A,B;
 	Vec       X,F;
 	IS        *is;
 	SNES      snes;
@@ -194,7 +194,6 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	ierr = pTatinLogBasicDMDA(user,"velDMDA",dav);CHKERRQ(ierr);
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
@@ -326,7 +325,7 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	pTatinCtx      user;
 	PetscErrorCode ierr;
 	Vec X;
-	DM        multipys_pack,dav,dap;
+	DM        multipys_pack,dav;
 	IS        *is_stokes_field;
 
 	
@@ -349,7 +348,6 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	dav                                          = user->stokes_ctx->dav;
-	dap                                          = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	/* mesh geometry */

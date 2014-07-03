@@ -56,8 +56,6 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 	Vec x;
 	DMDACoor3d plane[4];
 	PetscViewer vv;
-	PetscInt M,N,P;
-	PetscInt nxs,nys,nzs,si,sj,sk;
 	
 	PetscFunctionBegin;
 	
@@ -172,9 +170,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
 	PetscReal x0,x1,y0,y1,z0,z1;
 	DM da;
 	Vec x;
-	DMDACoor3d plane[4];
 	PetscViewer vv;
-	PetscInt M,N,P;
 	
 	PetscFunctionBegin;
 	

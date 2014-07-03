@@ -102,7 +102,6 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 {
 	PetscErrorCode ierr;
-	Vec tmp;
 	PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
     ISLocalToGlobalMapping ltog;
 	PetscInt NUM_GINDICES;
@@ -484,7 +483,7 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 {
 	Mat            A,B;
 	Vec            x,xu,xp,y,y2;
-	DM             dav,dap,pack;
+	DM             pack;
 	PetscScalar    min,max;
 	PetscReal      cmp;
 	PetscErrorCode ierr;
@@ -495,8 +494,6 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	
 	/* create the mf operators */
-	dav = user->dav;
-	dap = user->dap;
 	pack = user->stokes_pack;
 	
 	/* matrix free */
@@ -619,7 +616,6 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
 	Mat            Auu;
 	Vec            x,y;
 	DM             da;
-	PetscScalar    min,max;
 	PetscLogDouble t0,t1;
 	double         tl,timeMIN,timeMAX;
 	PetscInt       ii,iterations;
@@ -679,7 +675,6 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	Mat            B;
 	Vec            x,y;
 	DM             da;
-	PetscScalar    min,max;
 	PetscLogDouble t0,t1;
 	double         tl,timeMIN,timeMAX;
 	PetscInt       ii,iterations;
@@ -741,7 +736,6 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	Mat            A,B;
 	Vec            x,y;
 	DM             da;
-	PetscScalar    min,max;
 	PetscLogDouble t0,t1;
 	double         tl,timeMIN,timeMAX;
 	PetscInt       its;
@@ -875,7 +869,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
 	PetscErrorCode  ierr;
-	DM              multipys_pack,dav,dap;
+	DM              dav;
 	pTatinCtx       user;
 	PetscBool       found;
 
@@ -900,9 +894,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	user->pack = user->stokes_ctx->stokes_pack;
 
 	/* fetch some local variables */
-	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	

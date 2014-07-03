@@ -54,7 +54,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #define __FUNCT__ "pTatin3d_material_points_check_ic"
 PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 {
-	DM              multipys_pack,dav,dap;
+	DM              multipys_pack,dav;
 	PetscErrorCode  ierr;
 	pTatinCtx       user;
 	Vec             X,F,T;
@@ -84,7 +84,6 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);	

@@ -182,8 +182,7 @@ PetscErrorCode test_pTatinVecFieldWrite(void)
 {
 	DM  da;
 	PetscInt nx,ny,nz;
-	Vec x,coords;
-	PetscViewer v;
+	Vec x;
 	PetscReal val;
 	PetscScalar max;
 	PetscReal x0,y0,z0,x1,y1,z1;
@@ -232,7 +231,7 @@ PetscErrorCode test_pTatinVecFieldWrite(void)
 PetscErrorCode test_pTatinVecFieldLoad( void ) 
 {
 	DM  da;
-	Vec x,coords;
+	Vec x;
 	PetscReal val;
 	PetscScalar max;
 	PetscErrorCode ierr;
@@ -287,7 +286,6 @@ PetscErrorCode test_DMDACheckPoint(void)
 PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X,PetscBool zip_file,const char outputpath[],const char prefix[])
 {
 	PetscLogDouble t0,t1,tl,tg;
-	char start[PETSC_MAX_PATH_LEN];
 	char f1[PETSC_MAX_PATH_LEN];
 	char f3[PETSC_MAX_PATH_LEN];
 	Vec Xu,Xp;
@@ -438,7 +436,6 @@ PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysC
 PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const char pname[],PetscBool zip_file,Vec *VP)
 {
 	Vec            X,Xv,Xp;
-	DM             dav,dap;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
