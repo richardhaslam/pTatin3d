@@ -58,12 +58,15 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 	DMDACoor3d ***coors;
 	PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
 	DM cda;
+    ISLocalToGlobalMapping ltog;
 	PetscInt NUM_GINDICES;
 	const PetscInt *GINDICES;
 	
 	
 	
-	ierr = DMDAGetGlobalIndices( da, &NUM_GINDICES, &GINDICES );CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	
 	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinatesLocal(da,&tmp);CHKERRQ(ierr);
@@ -86,6 +89,7 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 				ierr = VecSetValue(x,GIDX,f,INSERT_VALUES);CHKERRQ(ierr);
 			}}}
 	ierr = DMDAVecRestoreArray(cda,tmp,&coors);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	
 	ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
 	ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
@@ -100,6 +104,7 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 	PetscErrorCode ierr;
 	Vec tmp;
 	PetscInt i,j,k,mstart,nstart,pstart,m,n,p;
+    ISLocalToGlobalMapping ltog;
 	PetscInt NUM_GINDICES;
 	const PetscInt *GINDICES;
 	PetscInt M,N,P;
@@ -112,7 +117,9 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 	dz = 2.0/(PetscReal)(P-1);
 	
 	
-	ierr = DMDAGetGlobalIndices(da,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(da, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	
 	ierr = DMDAGetGhostCorners(da,&mstart,&nstart,&pstart,&m,&n,&p);CHKERRQ(ierr);
 	
@@ -131,6 +138,7 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 				
 				ierr = VecSetValue(x,GIDX,f,INSERT_VALUES);CHKERRQ(ierr);
 			}}}
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	
 	ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
 	ierr = VecAssemblyEnd(x);CHKERRQ(ierr);

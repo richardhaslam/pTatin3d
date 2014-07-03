@@ -129,6 +129,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	PetscInt       vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	const PetscInt *elnidx_u;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
+    ISLocalToGlobalMapping ltog;
 	const PetscInt *GINDICES;
 	PetscInt       NUM_GINDICES,ge_eqnums[3*Q2_NODES_PER_EL_3D];
 	PetscReal      Ae[Q2_NODES_PER_EL_3D * Q2_NODES_PER_EL_3D * U_DOFS * U_DOFS];
@@ -153,7 +154,9 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = DMDAGetGlobalIndices(dau,&NUM_GINDICES,&GINDICES);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dau, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	ierr = BCListApplyDirichletMask(NUM_GINDICES,GINDICES,u_bclist);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
@@ -287,6 +290,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 #endif
 	ierr = BCListRemoveDirichletMask(NUM_GINDICES,GINDICES,u_bclist);CHKERRQ(ierr);
 	ierr = BCListInsertScaling(A,NUM_GINDICES,GINDICES,u_bclist);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES);CHKERRQ(ierr);
 	
 
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -317,6 +321,7 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	const PetscInt *elnidx_p;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal      el_gp_eta[MAX_QUAD_PNTS],one_el_gp_eta[MAX_QUAD_PNTS];
+    ISLocalToGlobalMapping ltog;
 	const PetscInt *GINDICES_p;
 	PetscInt       NUM_GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
 	PetscReal      Ae[P_BASIS_FUNCTIONS * P_BASIS_FUNCTIONS];
@@ -340,7 +345,9 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = DMDAGetGlobalIndices(dap,&NUM_GINDICES_p,&GINDICES_p);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dap, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_p);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_p);CHKERRQ(ierr);
 	if (p_bclist) {
 		ierr = BCListApplyDirichletMask(NUM_GINDICES_p,GINDICES_p,p_bclist);CHKERRQ(ierr);
 	}
@@ -440,6 +447,7 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 		ierr = BCListRemoveDirichletMask(NUM_GINDICES_p,GINDICES_p,p_bclist);CHKERRQ(ierr);
 		ierr = BCListInsertScaling(A,NUM_GINDICES_p,GINDICES_p,p_bclist);CHKERRQ(ierr);
 	}
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_p);CHKERRQ(ierr);
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -468,6 +476,7 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
+    ISLocalToGlobalMapping ltog;
 	const PetscInt *GINDICES_p;
 	const PetscInt *GINDICES_u;
 	PetscInt       NUM_GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
@@ -493,8 +502,12 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = DMDAGetGlobalIndices(dau,&NUM_GINDICES_u,&GINDICES_u);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dap,&NUM_GINDICES_p,&GINDICES_p);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dau, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_u);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_u);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dap, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_p);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_p);CHKERRQ(ierr);
 	if (u_bclist) {
 		ierr = BCListApplyDirichletMask(NUM_GINDICES_u,GINDICES_u,u_bclist);CHKERRQ(ierr);
 	}
@@ -578,6 +591,8 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	if (p_bclist) {
 		ierr = BCListRemoveDirichletMask(NUM_GINDICES_p,GINDICES_p,p_bclist);CHKERRQ(ierr);
 	}
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_u);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_p);CHKERRQ(ierr);
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -606,6 +621,7 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
+    ISLocalToGlobalMapping ltog;
 	const PetscInt *GINDICES_p;
 	PetscInt       NUM_GINDICES_p,ge_eqnums_p[P_BASIS_FUNCTIONS];
 	const PetscInt *GINDICES_u;
@@ -631,8 +647,12 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = DMDAGetGlobalIndices(dau,&NUM_GINDICES_u,&GINDICES_u);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dap,&NUM_GINDICES_p,&GINDICES_p);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dau, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_u);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_u);CHKERRQ(ierr);
+    ierr = DMGetLocalToGlobalMapping(dap, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &NUM_GINDICES_p);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetIndices(ltog, &GINDICES_p);CHKERRQ(ierr);
 	if (u_bclist) {
 		ierr = BCListApplyDirichletMask(NUM_GINDICES_u,GINDICES_u,u_bclist);CHKERRQ(ierr);
 	}
@@ -716,6 +736,8 @@ PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	if (p_bclist) {
 		ierr = BCListRemoveDirichletMask(NUM_GINDICES_p,GINDICES_p,p_bclist);CHKERRQ(ierr);
 	}
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_u);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &GINDICES_p);CHKERRQ(ierr);
 	
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
