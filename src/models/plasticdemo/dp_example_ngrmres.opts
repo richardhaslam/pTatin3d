@@ -67,6 +67,11 @@
 -npc_snes_linesearch_type basic
 -snes_npc_side RIGHT
 
+-npc_snes_monitor
+-npc_rtol 1.0e-2
+-npc_atol 1.0e-6
+-npc_snes_max_it 2
+
 -snes_max_it 100
 -snes_max_linear_solve_fail 100000
 
@@ -76,6 +81,11 @@
 
 #-snes_mf_operator
 #-pc_fieldsplit_real_diagonal
+#-pc_use_amat
+
+#-npc_snes_mf_operator
+#-pc_fieldsplit_real_diagonal
+#-npc_pc_use_amat
 
 #-snes_ksp_ew
 #-snes_ksp_ew_rtol0 1.0e-2
@@ -86,6 +96,7 @@
 -monitor_stages
 
 -snes_monitor
+
 #-fieldsplit_u_ksp_monitor
 #-fieldsplit_u_pc_mg_log
 
