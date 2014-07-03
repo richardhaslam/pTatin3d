@@ -48,7 +48,6 @@ PetscErrorCode BCListIsDirichlet(PetscInt value,PetscBool *flg)
 PetscErrorCode BCListInitialize(BCList list)
 {
 	PetscInt       n;
-	PetscErrorCode ierr;
 	
 	for (n=0; n<list->L; n++) {
 		list->dofidx_global[n] = 0;
@@ -287,8 +286,8 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 {
 	BCList ll;
 	PetscInt bs,N,m,n,p,Ng,mg,ng,pg;
-	PetscInt gidx,gdofidx,blockloc,loc,dof_idx,dim,ndof;
-	PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz,i,j,k;
+	PetscInt dim,ndof;
+	PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz;
 	PetscErrorCode ierr;
 	
 	ierr = DMDAGetInfo(da,0, 0,0,0, 0,0,0, &bs,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -509,14 +508,13 @@ PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
 {
 	PetscInt M,k,L;
 	const PetscInt *idx;
-	PetscScalar *LA_x,*LA_y;
+	PetscScalar *LA_y;
 	PetscBool is_seq = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	L    = list->L_local;
 	idx  = list->dofidx_local;
-	LA_x = list->vals_local;
 	ierr = VecGetArray(y,&LA_y);CHKERRQ(ierr);
 	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
 	
@@ -587,7 +585,7 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 {
 	PetscInt m,k,L;
 	const PetscInt *idx;
-	PetscScalar *LA_S,*LA_X,*LA_F,*LA_phi;
+	PetscScalar *LA_S,*LA_X,*LA_F;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -596,7 +594,6 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
-	LA_phi = list->vals_global;
 	LA_S   = list->scale_global;
 	
 	ierr = VecGetArray(X,&LA_X);CHKERRQ(ierr);
@@ -993,7 +990,7 @@ PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
 #define __FUNCT__ "BCListFlatResidualDirichlet"
 PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
 {
-	PetscInt m,k,L;
+	PetscInt k,L;
 	const PetscInt *idx;
 	PetscScalar *LA_S,*LA_X,*LA_F,*LA_phi;
 	PetscErrorCode ierr;
@@ -1028,7 +1025,6 @@ PetscErrorCode BCListApplyDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList 
 {
 	PetscInt k,L;
 	PetscInt *idx;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	L   = list->L_local;
@@ -1047,7 +1043,6 @@ PetscErrorCode BCListRemoveDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList
 {
 	PetscInt k,L;
 	PetscInt *idx;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	L   = list->L_local;
