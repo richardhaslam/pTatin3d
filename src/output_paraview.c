@@ -565,7 +565,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 	Vec gcoords;
 	DMDACoor3d ***LA_gcoords;	
 	PetscInt mx,my,mz,cnt;
-	PetscInt ei,ej,ek,i,j,k,esi,esj,esk;
+	PetscInt i,j,k,esi,esj,esk;
 	FILE*	vtk_fp = NULL;
 	PetscInt gsi,gsj,gsk,gm,gn,gp;
 	int offset,bytes;
@@ -1080,16 +1080,15 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 #undef __FUNCT__
 #define __FUNCT__ "_pTatinOutputLiteMeshVelocitySlicedPVTS"
 PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
-																											 PetscInt processor_span[],
-																											 PetscInt olx[],PetscInt lmx[],
-																											 PetscInt oly[],PetscInt lmy[],
-																											 PetscInt olz[],PetscInt lmz[],
-																											 PetscInt processor_I[],
-																											 PetscInt processor_J[],
-																											 PetscInt processor_K[],
-																											 const char prefix[])
+                                     PetscInt processor_span[],
+                                     PetscInt olx[],PetscInt lmx[],
+                                     PetscInt oly[],PetscInt lmy[],
+                                     PetscInt olz[],PetscInt lmz[],
+                                     PetscInt processor_I[],
+                                     PetscInt processor_J[],
+                                     PetscInt processor_K[],
+                                     const char prefix[])
 {
-	PetscErrorCode ierr;
 	PetscInt       swidth,i,j,k;
 	PetscInt       startI,endI,startJ,endJ,startK,endK;
 	
@@ -1168,7 +1167,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 	FILE           *vtk_fp = NULL;
 	PetscMPIInt    rank;
 	PetscInt pM,pN,pP;
-	PetscInt i,j,k,II,dim;
+	PetscInt i,j,k;
 	PetscInt *olx,*oly,*olz;
 	PetscInt *lmx,*lmy,*lmz;
 	PetscInt processor_span[3];

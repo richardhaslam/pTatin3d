@@ -50,6 +50,9 @@
 #include "dmda_iterator.h"
 #include "dmda_redundant.h"
 #include "material_point_point_location.h"
+#include "dmda_view_petscvtk.h"
+#include "dmda_element_q1.h"
+#include "model_utils.h"
 
 #include "mesh_update.h"
 
@@ -678,8 +681,9 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
     PetscInt nsteps,s,nM;
     PetscReal dt_explicit;
 	Vec Hinit,H,local_H,coords,gcoords,diagM,rhs,local_rhs,local_M;
-    PetscScalar *LA_Hinit,*LA_H,*LA_gcoords,*LA_rhs,*LA_M;
-    PetscInt i,j,k,e,nel,nen,*elnidx,MX,MY,MZ;
+    PetscScalar *LA_H,*LA_gcoords,*LA_rhs,*LA_M;
+    PetscInt i,j,k,e,nel,nen,MX,MY,MZ;
+    const PetscInt *elnidx;
     PetscInt ge_eqnums[NODES_PER_EL_Q1_3D];
     PetscScalar el_coords[NSD*NODES_PER_EL_Q1_3D];
 	PetscScalar el_h[NODES_PER_EL_Q1_3D];

@@ -131,7 +131,6 @@ void StringFindInList( const char name[], const int N, const DataField gfield[],
 void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF )
 {
 	DataField df;
-	int i;
 	
 	df = malloc( sizeof(struct _p_DataField) );
 	memset( df, 0, sizeof(struct _p_DataField) ); 
@@ -151,7 +150,6 @@ void DataFieldCreate( const char registeration_function[], const char name[], co
 void DataFieldDestroy( DataField *DF )
 {
 	DataField df = *DF;
-	int i;
 	
 	free( df->registeration_function );
 	free( df->name );
@@ -284,7 +282,6 @@ void DataFieldGetNumEntries(DataField df, int *sum)
 
 void DataFieldSetSize( DataField df, const int new_L )
 {
-	int i;
 	void *tmp_data;
 	
 	if( new_L <= 0 ) {
@@ -313,9 +310,6 @@ void DataFieldSetSize( DataField df, const int new_L )
 
 void DataFieldZeroBlock( DataField df, const int start, const int end )
 {
-	int i;
-	void *tmp_data;
-	
 	if( start > end ) {
 		printf("ERROR: Cannot zero a block of entries if start(%d) > end(%d) \n",start,end);
 		ERROR();
@@ -337,7 +331,7 @@ void DataFieldZeroBlock( DataField df, const int start, const int end )
  */
 void DataBucketSetSizes( DataBucket db, const int L, const int buffer )
 {
-	int currentlength,newlength,current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
+	int current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
 	
 	
 	if( db->finalised == BFALSE ) {

@@ -396,12 +396,12 @@ Makes the communication map symmetric
 PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,PetscMPIInt proc_neighbours[],PetscMPIInt *n_new,PetscMPIInt **proc_neighbours_new)
 {
 	Mat               A,redA;
-	PetscInt          offset,index,i,j,nc;
+	PetscInt          i,j,nc;
 	PetscInt          n_, *proc_neighbours_;
-  PetscInt          size_, rank_i_,_rank_j_;
-	PetscMPIInt       size,  rank_i,  rank_j;
+    PetscInt          rank_i_;
+	PetscMPIInt       size,  rank_i;
 	PetscInt          max_nnz;
-	PetscScalar       *vals, inserter;
+	PetscScalar       *vals;
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
 	PetscMPIInt       _n_new, *_proc_neighbours_new;
@@ -421,7 +421,6 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	}
 
 	ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-	size_ = size;
 	ierr = MPI_Comm_rank(comm,&rank_i);CHKERRQ(ierr);
 	rank_i_ = rank_i;
 
@@ -633,7 +632,6 @@ PetscErrorCode DataExInitializeSendCount(DataEx de)
 #define __FUNCT__ "DataExAddToSendCount"
 PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const PetscInt count)
 {
-	PetscMPIInt    i,np, valid_neighbour;
 	PetscMPIInt    local_val;
 	PetscErrorCode ierr;
 	
@@ -646,9 +644,7 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
 		SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
 	}
 	
-	np = de->n_neighbour_procs;
-	
-	ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr); 
+	ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr);
 	if (local_val == -1) {
 		SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", proc_id );
 	}
@@ -781,7 +777,6 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
 #define __FUNCT__ "DataExPackData"
 PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
 {
-	PetscMPIInt    i;
 	PetscMPIInt    local;
 	PetscInt       insert_location;
 	void           *dest;
@@ -837,7 +832,6 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 {
 	PetscMPIInt i,np;
 	PetscInt    total;
-	MPI_Status  stat;
 	PetscErrorCode ierr;
 	
 	
@@ -896,10 +890,9 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 #define __FUNCT__ "DataExBegin"
 PetscErrorCode DataExBegin(DataEx de)
 {
-	PetscMPIInt i,j,np;
-	MPI_Status  stat;
+	PetscMPIInt i,np;
 	void       *dest;
-	PetscInt    length,cnt;
+	PetscInt    length;
 	PetscErrorCode ierr;
 	
 	
@@ -941,12 +934,11 @@ PetscErrorCode DataExBegin(DataEx de)
 #define __FUNCT__ "DataExEnd"
 PetscErrorCode DataExEnd(DataEx de)
 {
-	PetscMPIInt  i,j,np;
+	PetscMPIInt  i,np;
 	PetscInt     total;
-	MPI_Status   stat;
 	PetscInt    *message_recv_offsets;
 	void        *dest;
-	PetscInt     length,cnt;
+	PetscInt     length;
 	PetscErrorCode ierr;
 	
 	
