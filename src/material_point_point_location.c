@@ -453,16 +453,14 @@ void InverseMappingDomain_2dQ2(
 	PetscReal h[dim];
 	PetscReal Jacobian[2][2];
 	PetscReal f[2];
-	PetscInt    i,d;
+	PetscInt    d;
 	PetscInt    its;
 	PetscReal residual2,tolerance2,F2;
 	PetscInt    p;
-	PetscInt    mx_origin, my_origin, wil_origin;
 	PetscReal cxip[2],Lxip[2],Gxip[2];
 	PetscReal dxi,deta,xi0,eta0;
-	PetscInt    I,J,wil_IJ,eid,k;
+	PetscInt    I,J,wil_IJ,k;
 	PetscReal vertex[2 * Q2_NODES_PER_EL_2D];
-	PetscInt    n0,n1,n2;
 	Truth  point_found;
 	
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */

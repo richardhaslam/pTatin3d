@@ -59,7 +59,6 @@
 PetscErrorCode MarkerCoordinatesLoadFromFile(const char name[],long int *length,double **coords)
 {
 	FILE *fp = NULL;
-	int vtk_data_type;
 	long int n_markers;
 	double *data;
 	int p;
@@ -71,7 +70,7 @@ PetscErrorCode MarkerCoordinatesLoadFromFile(const char name[],long int *length,
 	}
 	
 	fgets(line,255,fp);
-	vtk_data_type = atoi( line );
+	//vtk_data_type = atoi( line );
 	fgets(line,255,fp);
 	n_markers = atol( line );
 
@@ -99,7 +98,6 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
 	int vtk_data_type;
 	long int n_markers;
 	double *data;
-	int p;
 	char line[256];
 	size_t datasize;
 	
@@ -229,7 +227,6 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 	Truth use_nonzero_guess, monitor, log;
 	PetscInt lmx,lmy,lmz;
 	PetscInt nel,nen_u;
-	MPntStd *local_list;
 	const PetscInt *elnidx_u;
 	DataField PField_std;
 	PetscErrorCode ierr;
@@ -293,7 +290,7 @@ PetscErrorCode MaterialPointDataBasicLoadIntoListFromFile(DataBucket db,DM da,Pe
 	long int N1,N2;
 	double *coords_mp;
 	int *phase_mp;
-	long int p,start;
+	long int start;
 	int n_mp_points;
 	PetscErrorCode ierr;
 	
@@ -529,11 +526,9 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntStd(DataBucket db,const char suffix[
 	PetscErrorCode ierr;
 	int n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
 	int m,d,p;
 	MPntStd *points;
 	
@@ -664,12 +659,10 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokes(DataBucket db,const char suf
 	PetscErrorCode ierr;
 	int n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
-	int m,d,p;
+	int m,p;
 	MPntPStokes *points;
 	
 	DataBucketGetSizes(db,&n_points,0,0);
@@ -731,12 +724,10 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPStokesPl(DataBucket db,const char s
 	PetscErrorCode ierr;
 	int n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
-	int m,d,p;
+	int m,p;
 	MPntPStokesPl *points;
 	
 	DataBucketGetSizes(db,&n_points,0,0);
@@ -798,12 +789,10 @@ PetscErrorCode SwarmDataWriteToPetscVec_MPntPEnergy(DataBucket db,const char suf
 	PetscErrorCode ierr;
 	int n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
-	int m,d,p;
+	int m,p;
 	MPntPEnergy *points;
 	
 	DataBucketGetSizes(db,&n_points,0,0);
@@ -867,11 +856,9 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntStd(DataBucket db,const char suffix
 	PetscErrorCode ierr;
 	PetscInt n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
 	int m,d,p;
 	MPntStd *points;
 	int field_n_members;
@@ -1034,12 +1021,10 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokes(DataBucket db,const char su
 	PetscErrorCode ierr;
 	PetscInt n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
-	PetscInt m,d,p;
+	PetscInt m,p;
 	MPntPStokes *points;
 	int field_n_members;
 	const char *field_classname;
@@ -1118,12 +1103,10 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPStokesPl(DataBucket db,const char 
 	PetscErrorCode ierr;
 	PetscInt n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
-	PetscInt m,d,p;
+	PetscInt m,p;
 	MPntPStokesPl *points;
 	int field_n_members;
 	const char *field_classname;
@@ -1200,12 +1183,10 @@ PetscErrorCode SwarmDataLoadFromPetscVec_MPntPEnergy(DataBucket db,const char su
 	PetscErrorCode ierr;
 	PetscInt n_points;
 	PetscScalar *LA_point_field_data;
-	int f,nfields;
-	DataField *fields,pfield;
+	DataField pfield;
 	char field_member_name[PETSC_MAX_PATH_LEN];
 	char filename[PETSC_MAX_PATH_LEN];
-	BTruth found;
-	PetscInt m,d,p;
+	PetscInt m,p;
 	MPntPEnergy *points;
 	int field_n_members;
 	const char *field_classname;

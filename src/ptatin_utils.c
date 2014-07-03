@@ -46,7 +46,6 @@
 #define __FUNCT__ "pTatinCreateDirectory"
 PetscErrorCode pTatinCreateDirectory(const char dirname[])
 {
-	mode_t mode;
 	PetscMPIInt rank;
 	int num,error_number;
 	PetscErrorCode ierr;
@@ -137,7 +136,6 @@ void pTatinGenerateFormattedTimestamp(char date_time[])
 	struct tm*  timeInfo;
 	int         adjustedYear;
 	int         adjustedMonth;
-	char        user_name[200];
 	
 	currTime = time( NULL );
 	timeInfo = localtime( &currTime );
@@ -215,7 +213,8 @@ void ptatin_RandomNumberSetSeed(unsigned seed)
 }
 void ptatin_RandomNumberSetSeedRank(MPI_Comm comm)
 {
-	int rank,ierr;
+	int rank;
+    int ierr;
 	
 	ierr = MPI_Comm_rank(comm,&rank);
 	srand((unsigned)rank);

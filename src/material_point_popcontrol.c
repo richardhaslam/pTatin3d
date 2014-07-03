@@ -1076,8 +1076,6 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	PetscScalar    perturb;
 	PetscBool      flg;
 	DataBucket     db;
-	int            npoints;
-	long int       np,np_g;
 	PetscBool      reverse_order_removal;
 	
 	PetscFunctionBegin;
@@ -1385,7 +1383,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	DataField      PField;
 	PetscLogDouble t0,t1;
 	long int       cells_needing_reassignment,cells_needing_reassignment_g;
-	long int       points_needing_reassignment,points_needing_reassignment_g;
+	long int       points_needing_reassignment;
 	PetscInt       *cell_count;
 	PetscInt       patch_extend;
 	PetscErrorCode ierr;
@@ -1723,7 +1721,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 	DataField      PField;
 	PetscLogDouble t0,t1;
 	long int       cells_needing_reassignment,cells_needing_reassignment_g;
-	long int       points_needing_reassignment,points_needing_reassignment_g;
+	long int       points_needing_reassignment;
 	PetscInt       *cell_count;
 	PetscInt       patch_extend;
 	PetscErrorCode ierr;

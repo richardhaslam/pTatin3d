@@ -317,7 +317,7 @@ PetscErrorCode _check_for_empty_cells_float(const PetscInt mx,const PetscInt my,
 PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable variable,const PetscInt mx,const PetscInt my,const PetscInt mz,double LA_cell[])
 {
 	int *cell_count;
-	int e,ueid,ueid2,umx,umy,umz,uei,uej,uek;
+	int e,ueid,ueid2,umx,umy,uei,uej,uek;
 	double *xi_p;
 	int ei,ej,ek,eidx;
 	double var;
@@ -329,7 +329,6 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
 	
 	umx = mx/2;
 	umy = my/2;
-	umz = mz/2;
 	
 	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&cell_count);CHKERRQ(ierr);
 	ierr = PetscMemzero(cell_count,sizeof(int)*mx*my*mz);CHKERRQ(ierr);
@@ -406,7 +405,7 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
 PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable variable,const PetscInt mx,const PetscInt my,const PetscInt mz,float LA_cell[])
 {
 	int *cell_count;
-	int e,ueid,ueid2,umx,umy,umz,uei,uej,uek;
+	int e,ueid,ueid2,umx,umy,uei,uej,uek;
 	double *xi_p;
 	int ei,ej,ek,eidx;
 	float var;
@@ -418,7 +417,6 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 	
 	umx = mx/2;
 	umy = my/2;
-	umz = mz/2;
 	
 	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&cell_count);CHKERRQ(ierr);
 	ierr = PetscMemzero(cell_count,sizeof(int)*mx*my*mz);CHKERRQ(ierr);
@@ -498,10 +496,9 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBucket db,const PetscInt mx,const PetscInt my,const PetscInt mz,int LA_cell[])
 {
 	int *closest_point;
-	int e,ueid,ueid2,umx,umy,umz,uei,uej,uek,i,j,k,li,lj,lk,ii,jj,kk;
+	int e,ueid,ueid2,umx,umy,uei,uej,uek,i,j,k,li,lj,lk,ii,jj,kk;
 	double *xi_p,*x_p;
 	int ei,ej,ek,eidx,idx;
-	float var;
 	int p,n_mp;
 	MPAccess X;
 	PetscInt nel,nen;
@@ -514,7 +511,6 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 	
 	umx = mx/2;
 	umy = my/2;
-	umz = mz/2;
 	
 	ierr = PetscMalloc(sizeof(int)*mx*my*mz,&closest_point);CHKERRQ(ierr);
 	for (e=0; e<mx*my*mz; e++) {

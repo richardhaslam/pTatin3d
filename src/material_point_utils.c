@@ -62,7 +62,6 @@
 #define __FUNCT__ "MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields"
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int *byte_offset,const int nfields,const MaterialPointField list[])
 {
-	PetscErrorCode ierr;
 	int n,npoints;
 	
 	PetscFunctionBegin;
@@ -140,7 +139,6 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *
 #define __FUNCT__ "MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields"
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db,const int nfields,const MaterialPointField list[])
 {
-	PetscErrorCode ierr;
 	int n,npoints;
 	
 	PetscFunctionBegin;
@@ -219,7 +217,6 @@ PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(FILE *vt
 #define __FUNCT__ "MaterialPointGeneric_PVTUWriteAllPPointDataFields"
 PetscErrorCode MaterialPointGeneric_PVTUWriteAllPPointDataFields(FILE *vtk_fp,const int nfields,const MaterialPointField list[])
 {
-	PetscErrorCode ierr;
 	int n;
 	
 	PetscFunctionBegin;
@@ -258,7 +255,6 @@ PetscErrorCode MaterialPointGeneric_PVTUWriteAllPPointDataFields(FILE *vtk_fp,co
 #define __FUNCT__ "SwarmViewGeneric_VTUXML_binary_appended"
 PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int nmpfields,const MaterialPointField mplist[],const char name[])
 {
-	PetscMPIInt rank;
 	FILE *vtk_fp;
 	PetscInt k;
 	int npoints;
@@ -414,7 +410,7 @@ PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int n
 #define __FUNCT__ "SwarmViewGeneric_PVTUXML"
 PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointField list[],const char prefix[],const char name[])
 {
-	PetscMPIInt nproc,rank;
+	PetscMPIInt nproc;
 	FILE *vtk_fp;
 	PetscInt i;
 	char *sourcename;
@@ -1473,7 +1469,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 	DataField         PField_material_point_property;
   MPntStd           *mp_std;
 	void              *material_point_property;
-	size_t            mp_field_offset, mp_offset, qp_field_offset, qp_offset;
+	size_t            mp_field_offset, mp_offset;
 	size_t            mp_stokes_property_offsets[MPntPStokes_nmembers];
 	size_t            qp_stokes_property_offsets[QPntVolCoefStokes_nmembers];
 	PetscBool view;
@@ -1517,7 +1513,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 			MPntPStokesTypeName stokes_member = (MPntPStokesTypeName)member;
 			
 			mp_offset = sizeof(MPntPStokes);
-			qp_offset = sizeof(QPntVolCoefStokes);
+			//qp_offset = sizeof(QPntVolCoefStokes);
 			
 			DataBucketGetDataFieldByName(materialpoint_db, MPntPStokes_classname,&PField_material_point_property);
 			material_point_property = PField_material_point_property->data;
@@ -1526,13 +1522,13 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 				case MPPStk_eta_effective:
 					ierr = PetscObjectSetName( (PetscObject)properties_A, "eta");CHKERRQ(ierr);
 					mp_field_offset = mp_stokes_property_offsets[ MPPStk_eta_effective ];
-					qp_field_offset = qp_stokes_property_offsets[ QPVCStk_eta_effective ];
+					//qp_field_offset = qp_stokes_property_offsets[ QPVCStk_eta_effective ];
 				break;
 				/* ----------------------------------- */
 				case MPPStk_density:
 					ierr = PetscObjectSetName( (PetscObject)properties_A, "rho");CHKERRQ(ierr);
 					mp_field_offset = mp_stokes_property_offsets[ MPPStk_density ];
-					qp_field_offset = qp_stokes_property_offsets[ QPVCStk_rho_effective ];
+					//qp_field_offset = qp_stokes_property_offsets[ QPVCStk_rho_effective ];
 				break;
 				/* ----------------------------------- */
 				default:
@@ -1846,7 +1842,7 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 	PetscInt p,i;
 	PetscInt nel,nen,e_p;
 	const PetscInt *elnidx;
-	PetscInt SIDX,I,J,K;
+	PetscInt I,J,K;
 	PetscErrorCode ierr;
 	
 	
@@ -1893,8 +1889,6 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 			K = 1;
 			xi_scaled_p[2] =  2.0 * xi_p[2] - 1.0;
 		}
-		SIDX = I + J * 2 + K * 4;
-		
 		
 		point_data_p = (void*) ( (char*)point_data + p * point_offset );
 		field_p = *( (double*) ( (char*)point_data_p + member_offset) );

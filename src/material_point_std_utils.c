@@ -105,7 +105,7 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,DataBucket db)
 {
 	DataField    PField;
-	PetscInt     e,mE,nE,pE;
+	PetscInt     e;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
@@ -114,8 +114,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	const PetscInt     *elnidx;
 	PetscInt     p,k,pi,pj,pk;
 	PetscReal    dxi,deta,dzeta;
-	long int     np_local, np_global;
-	int          rank;
+	long int     np_local;
 	PetscErrorCode ierr;
 	
 	
@@ -228,7 +227,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCell,DataBucket db)
 {
 	DataField    PField;
-	PetscInt     e,mE,nE,pE;
+	PetscInt     e;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
@@ -236,8 +235,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 	PetscInt     nel,nen;
 	const PetscInt *elnidx;
 	PetscInt     p,k,pi;
-	long int     np_local, np_global;
-	int          rank;
+	long int     np_local;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -559,7 +557,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 #define __FUNCT__ "SwarmView_MPntStd_VTKascii"
 PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 {
-	PetscMPIInt rank;
 	FILE *vtk_fp;
 	int k,npoints;
 	PetscLogDouble t0,t1;
@@ -690,7 +687,6 @@ PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 #define __FUNCT__ "SwarmView_MPntStd_VTKappended_binary"
 PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char name[])
 {
-	PetscMPIInt rank;
 	FILE *vtk_fp;
 	PetscInt k;
 	int npoints;
@@ -847,7 +843,7 @@ PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char nam
 #define __FUNCT__ "__SwarmView_MPntStd_PVTU"
 PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 {
-	PetscMPIInt nproc,rank;
+	PetscMPIInt nproc;
 	FILE *vtk_fp;
 	PetscInt i;
 	char *sourcename;
