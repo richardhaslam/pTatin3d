@@ -151,6 +151,7 @@ PetscErrorCode pTatinLogBasicKSP(pTatinCtx ctx,const char kspname[],KSP ksp)
 #define __FUNCT__ "pTatinLogBasicSNES"
 PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 {
+    Vec       r;
 	PetscReal rnorm;
 	PetscInt its,lits,nkspfails,nFevals,nstepfails;
 	const char *prefix;
@@ -159,7 +160,8 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	PetscErrorCode ierr;
 	
 	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
-	ierr = SNESGetFunctionNorm(snes,&rnorm);CHKERRQ(ierr);
+	ierr = SNESGetFunction(snes,&r,NULL,NULL);CHKERRQ(ierr);
+	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
 	ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 	ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
 	ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
