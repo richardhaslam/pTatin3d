@@ -161,16 +161,12 @@ PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList bclist,DM dav,PetscReal exx
 {
 	PetscScalar value;
 	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal origin[3];
 	PetscReal Lx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
 	Lx = (MeshMax[0] - MeshMin[0]);
 	value = 0.5 * exx_bc * (Lx);

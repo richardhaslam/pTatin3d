@@ -249,7 +249,6 @@ PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 {
 	PetscInt       i;
 	PetscReal      maxi;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
@@ -370,10 +369,10 @@ PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c)
 #define __FUNCT__ "pTatin3d_DefineVelocityMeshGeometryQuasi2D"
 PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 {
-	PhysCompStokes    stokes;
-	DM                stokes_pack,dav,dap;
-	PetscReal Lz,min_dl[3],max_dl[3];
-	PetscBool geom_max,flg;
+	PhysCompStokes stokes;
+	DM             stokes_pack,dav,dap;
+	PetscReal      Lz,min_dl[3],max_dl[3];
+	PetscBool      geom_max;
 	PetscErrorCode ierr;
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);

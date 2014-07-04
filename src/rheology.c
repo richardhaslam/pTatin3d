@@ -201,7 +201,6 @@ PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,
   PetscErrorCode    ierr;
   DM                stokes_pack,dau,dap;
   Vec               Uloc,Ploc;
-	Vec               u,p;
   PetscScalar       *LA_Uloc,*LA_Ploc;
 	PhysCompStokes    stokes;
 	
@@ -299,7 +298,6 @@ PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptati
   PetscErrorCode    ierr;
   DM                stokes_pack,dau,dap;
   Vec               Uloc,Ploc;
-	Vec               u,p;
   PetscScalar       *LA_Uloc,*LA_Ploc;
 	PhysCompStokes    stokes;
 	

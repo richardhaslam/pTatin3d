@@ -59,7 +59,7 @@
 PetscErrorCode pTatin3d_remesh(void)
 {
 	PetscErrorCode  ierr;
-	DM              multipys_pack,dav,dap;
+	DM              multipys_pack,dav;
 	pTatinCtx       user;
 	PetscReal       x0,x1,y0,y1,z0,z1;
 	PetscInt        M,N,P;
@@ -88,7 +88,6 @@ PetscErrorCode pTatin3d_remesh(void)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	

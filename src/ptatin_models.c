@@ -90,7 +90,6 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 #define __FUNCT__ "pTatinModelSetName"
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[])
 {
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	asprintf(&model->model_name,"%s",name);
 	PetscFunctionReturn(0);
@@ -100,7 +99,6 @@ PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[])
 #define __FUNCT__ "pTatinModelSetUserData"
 PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data)
 {
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	model->model_data = data;
 	PetscFunctionReturn(0);
@@ -110,7 +108,6 @@ PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data)
 #define __FUNCT__ "pTatinModelGetUserData"
 PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data)
 {
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	if (data) {
 		*data = model->model_data;
@@ -153,7 +150,6 @@ PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *d
 #define __FUNCT__ "pTatinModelSetFunctionPointer"
 PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperation type,void(*func)(void))
 {
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
 
 	switch (type) {
@@ -202,7 +198,6 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 #define __FUNCT__ "ptatin_match_model_index"
 PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 {
-	PetscErrorCode ierr;
 	PetscBool match;
 	pTatinModel item;	
 	int cnt;

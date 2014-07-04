@@ -292,7 +292,6 @@ void InverseMappingDomain_3dQ2(
 															 const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt mz,const PetscInt element[],
 															 int np, MPntStd marker[] )
 {
-	const PetscInt nodesPerEl = Q2_NODES_PER_EL_3D; 
 	PetscReal h[NSD];
 	PetscReal Jacobian[NSD][NSD];
 	PetscReal f[NSD];
@@ -302,9 +301,8 @@ void InverseMappingDomain_3dQ2(
 	
 	PetscReal cxip[3],Lxip[3],Gxip[3];
 	PetscReal dxi,deta,dzeta,xi0,eta0,zeta0;
-	PetscInt  I,J,K,wil_IJ,wil_2d,eid,i,k;
+	PetscInt  I,J,K,wil_IJ,wil_2d,k;
 	PetscReal vertex[NSD * Q2_NODES_PER_EL_3D];
-	PetscInt  n0,n1,n2,n3;
 	PetscBool point_found;
 	
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */
@@ -585,8 +583,7 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 	PetscScalar     *LA_velocity, *LA_coords;
 	PetscScalar     el_coords[Q2_NODES_PER_EL_3D*NSD];
 	PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
-	PetscInt        e,i;
-	PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],xi_p[NSD];
+	PetscInt        e;
 	PetscInt        nel,nen_u,ii;
 	const PetscInt  *elnidx_u;
 	DM              cda;
@@ -675,7 +672,6 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 PetscErrorCode SwarmUpdateProperties_MPntStd(DataBucket db,pTatinCtx ctx,Vec X)
 {
 	BTruth         found;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
@@ -716,7 +712,7 @@ PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates(DataBucket materialpoint
 PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints,DM dav)
 {
 	PetscErrorCode ierr;
-	int            p,npoints;
+	int            npoints;
 	MPntStd        *mp_std;
 	DataField      PField;
 	PetscReal      tolerance;

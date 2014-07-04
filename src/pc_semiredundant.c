@@ -257,8 +257,6 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
 	MPI_Comm     comm;
 	MPI_Subcomm  sc;
-	PetscMPIInt  size;
-	MatStructure str;
   MatReuse     reuse;
 	PetscErrorCode (*fp_matcreate)(Mat,MPI_Subcomm,MatReuse,Mat*);
 	

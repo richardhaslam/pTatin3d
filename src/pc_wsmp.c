@@ -99,7 +99,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 	PetscErrorCode ierr;
 	const PetscInt *ia;
 	const PetscInt *ja;
-	PetscInt m,nnz_i,cnt,idx,nnz_full,nnz_ut,i,j;
+	PetscInt m,nnz_i,cnt,idx,nnz_ut,i,j;
 	PetscBool done;
 	int *ia_ut,*ja_ut;
 	
@@ -490,10 +490,10 @@ PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
 #define __FUNCT__ "call_wsmp_wsetmpicomm"
 PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 {
+#ifdef HAVE_PWSSMP
 	MPI_Fint fcomm;
 	
 	fcomm = MPI_Comm_c2f(comm);
-#ifdef HAVE_PWSSMP
 	wsetmpicomm_(&fcomm);
 #else
 	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
@@ -717,8 +717,6 @@ static PetscErrorCode PCReset_WSMP(PC pc)
 static PetscErrorCode PCDestroy_WSMP(PC pc)
 {
     PetscErrorCode   ierr;
-    PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
-	
 	
     PetscFunctionBegin;
     ierr = PCReset_WSMP(pc);CHKERRQ(ierr);
@@ -732,8 +730,6 @@ static PetscErrorCode PCDestroy_WSMP(PC pc)
 #define __FUNCT__ "WSMPSetFromOptions_Ordering"
 PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 {
-	PetscErrorCode ierr;
-    
 	/* recommended for finite elements */
 	if (wsmp->sequential) {
 		wsmp->IPARM[16 -1] = 1;
@@ -756,8 +752,6 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 #define __FUNCT__ "WSMPSetFromOptions_SymbolicFactorization"
 PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionReturn(0);
 }
 
@@ -765,9 +759,6 @@ PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp)
 #define __FUNCT__ "WSMPSetFromOptions_NumericFactorization"
 PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC_WSMP *wsmp)
 {
-	PetscErrorCode ierr;
-    
-	
 	PetscFunctionReturn(0);
 }
 

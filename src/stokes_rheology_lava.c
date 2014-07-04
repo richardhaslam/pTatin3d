@@ -168,10 +168,10 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	double         D_mp[NSD][NSD],Tpred_mp[NSD][NSD];
 	double         inv2_D_mp,inv2_Tpred_mp;
 	
-	DataField      PField_MatTypes;
+	//DataField      PField_MatTypes;
 	DataField      PField_ViscConst;
-  /* structs or material constants */
-	MaterialConst_MaterialType      *MatType_data;
+    /* structs or material constants */
+	//MaterialConst_MaterialType      *MatType_data;
 	MaterialConst_ViscosityConst    *ViscConst_data;
 	long int       npoints_yielded,npoints_yielded_g;
 	
@@ -220,8 +220,8 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	/* access material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
 	
-	DataBucketGetDataFieldByName(material_constants,MaterialConst_MaterialType_classname,  &PField_MatTypes);
-	MatType_data           = (MaterialConst_MaterialType*)PField_MatTypes->data;
+	//DataBucketGetDataFieldByName(material_constants,MaterialConst_MaterialType_classname,  &PField_MatTypes);
+	//MatType_data           = (MaterialConst_MaterialType*)PField_MatTypes->data;
 	
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityConst_classname,&PField_ViscConst);
 	ViscConst_data         = (MaterialConst_ViscosityConst*)PField_ViscConst->data;

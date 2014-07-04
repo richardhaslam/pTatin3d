@@ -122,9 +122,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 PetscErrorCode test_dmda_checkpoint_load( void ) 
 {
 	DM  da;
-	Vec x,coords;
-	PetscReal val;
-	PetscScalar max;
+	Vec x;
 	PetscErrorCode ierr;
 	
 	
@@ -179,7 +177,6 @@ PetscErrorCode test_DMDACheckPoint(void)
 int main( int argc,char **argv )
 {
 	PetscErrorCode ierr;
-	PetscInt mx,my,mz;
 	
 	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	

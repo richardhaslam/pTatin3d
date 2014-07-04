@@ -212,7 +212,6 @@ PetscErrorCode MaterialConstantsSetValues_MaterialType(DataBucket db,const int r
 {
 	DataField                    PField;
 	MaterialConst_MaterialType   *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -330,7 +329,6 @@ PetscErrorCode MaterialConstantsSetValues_DensityConst(DataBucket db,const int r
 {
 	DataField                    PField;
 	MaterialConst_DensityConst   *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -353,7 +351,6 @@ PetscErrorCode MaterialConstantsScaleValues_DensityConst(DataBucket db,const int
 	DataField                    PField;
 	MaterialConst_DensityConst   *data;
 	PetscReal                    density;
-	PetscErrorCode               ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_DensityConst_classname,&PField);
@@ -486,7 +483,6 @@ PetscErrorCode MaterialConstantsSetValues_DensityBoussinesq(DataBucket db,const 
 {
 	DataField                       PField;
 	MaterialConst_DensityBoussinesq *data;
-	PetscErrorCode                  ierr;
 	
 	PetscFunctionBegin;
 	
@@ -515,7 +511,6 @@ PetscErrorCode MaterialConstantsScaleValues_DensityBoussinesq(DataBucket db,cons
 	DataField                       PField;
 	MaterialConst_DensityBoussinesq *data;
 	PetscReal                       density,beta;
-	PetscErrorCode                  ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_DensityBoussinesq_classname,&PField);
@@ -634,7 +629,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityConst(DataBucket db,const int
 {
 	DataField                    PField;
 	MaterialConst_ViscosityConst *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -657,7 +651,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityConst(DataBucket db,const i
 	DataField                    PField;
 	MaterialConst_ViscosityConst *data;
 	PetscReal                    viscosity;
-	PetscErrorCode               ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityConst_classname,&PField);
@@ -788,7 +781,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityZ(DataBucket db,const int reg
 {
 	DataField                    PField;
 	MaterialConst_ViscosityZ     *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -820,7 +812,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityZ(DataBucket db,const int r
 	DataField                    PField;
 	MaterialConst_ViscosityZ     *data;
 	PetscReal                    eta0,zeta,zref;
-	PetscErrorCode               ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityZ_classname,&PField);
@@ -1008,7 +999,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityArrh(DataBucket db,const int 
 {
 	DataField                    PField;
 	MaterialConst_ViscosityArrh  *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1053,8 +1043,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityArrh(DataBucket db,const in
 {
 	DataField                    PField;
 	MaterialConst_ViscosityArrh  *data;
-	PetscReal                    eta0,P0;
-	PetscErrorCode               ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityArrh_classname,&PField);
@@ -1176,7 +1164,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityFK(DataBucket db,const int re
 {
 	DataField                    PField;
 	MaterialConst_ViscosityFK    *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1204,8 +1191,7 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityFK(DataBucket db,const int 
 {
 	DataField                    PField;
 	MaterialConst_ViscosityFK    *data;
-	PetscReal                    eta0,zeta,zref;
-	PetscErrorCode               ierr;
+	PetscReal                    eta0;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_ViscosityFK_classname,&PField);
@@ -1334,7 +1320,6 @@ PetscErrorCode MaterialConstantsSetValues_PlasticMises(DataBucket db,const int r
 {
 	DataField                    PField;
 	MaterialConst_PlasticMises   *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1362,7 +1347,6 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticMises(DataBucket db,const int
 	DataField                    PField;
 	MaterialConst_PlasticMises   *data;
 	PetscReal                    yield_stress, yield_stress_inf;
-	PetscErrorCode               ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_PlasticMises_classname,&PField);
@@ -1568,7 +1552,6 @@ PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int regi
 {
 	DataField                    PField;
 	MaterialConst_PlasticDP      *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1619,7 +1602,6 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int re
 	DataField                    PField;
 	MaterialConst_PlasticDP      *data;
 	PetscReal                    cohesion,cohesion_inf,tens_cutoff,hst_cutoff;
-	PetscErrorCode               ierr;
 	PetscFunctionBegin;
 	
 	DataBucketGetDataFieldByName(db,MaterialConst_PlasticDP_classname,&PField);
@@ -1761,7 +1743,6 @@ PetscErrorCode MaterialConstantsSetValues_SoftLin(DataBucket db,const int region
 {
 	DataField                    PField;
 	MaterialConst_SoftLin      *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	
@@ -1894,7 +1875,6 @@ PetscErrorCode MaterialConstantsSetValues_SoftExpo(DataBucket db,const int regio
 {
 	DataField                    PField;
 	MaterialConst_SoftExpo      *data;
-	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
 	

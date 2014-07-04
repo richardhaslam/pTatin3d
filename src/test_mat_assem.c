@@ -47,7 +47,7 @@
 PetscErrorCode test_1(void)
 {
 	PetscErrorCode ierr;
-	PetscInt i,j,M,N,s,e;
+	PetscInt i,M,N,s,e;
 	PetscScalar *LA_diag;
 	Mat A;
 	Vec diag;
@@ -113,7 +113,7 @@ PetscErrorCode test_1(void)
 PetscErrorCode test_2(void)
 {
 	PetscErrorCode ierr;
-	PetscInt i,j,M,N,m,s,e;
+	PetscInt i,M,N,m,s,e;
 	PetscScalar *LA_diag;
 	Mat B;
 	Vec diag;

@@ -1,8 +1,8 @@
 /*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
- **    Copyright (c) 2012, 
+ **    Copyright (c) 2012,
  **        Dave A. May [dave.may@erdw.ethz.ch]
- **        Geophysical Fluid Dynamics, 
+ **        Geophysical Fluid Dynamics,
  **        Department of Earth Sciences,
  **        ETH Zürich,
  **        Sonneggstrasse 5,
@@ -51,7 +51,7 @@ void PhaseMapCreate(PhaseMap *map)
 void PhaseMapDestroy(PhaseMap *map)
 {
 	PhaseMap pm;
-
+    
 	if (map==NULL) { return; }
 	pm = *map;
 	
@@ -68,7 +68,7 @@ void PhaseMapGetIndex(PhaseMap pm,const int i,const int j, int *index)
 	if (j<0) { printf("ERROR(%s): j = %d < 0 \n", __func__, j ); exit(EXIT_FAILURE); }
 	if (i>=pm->mx) { printf("ERROR(%s): i = %d > %d\n", __func__, i, pm->mx ); exit(EXIT_FAILURE); }
 	if (j>=pm->my) { printf("ERROR(%s): j = %d > %d\n", __func__, j, pm->my ); exit(EXIT_FAILURE); }
-
+    
 	
 	*index = i + j * pm->mx;
 }
@@ -77,10 +77,10 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 {
 	FILE *fp = NULL;
 	PhaseMap phasemap;
-  char dummy[1000];
-  
+    char dummy[1000];
+    
 	int i,j,phasemap_max;
-  int index;
+    int index;
 	
 	/* open file to parse */
 	fp = fopen(filename,"r");
@@ -93,31 +93,31 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	PhaseMapCreate(&phasemap);
 	
 	/* read header information, mx,my,x0,y0,x1,y1 */
-//  fscanf(fp,"%s\n",dummy);
+    //  fscanf(fp,"%s\n",dummy);
 	fgets(dummy,sizeof(dummy),fp);
-  fscanf(fp,"%d\n",&phasemap->mx);
-  fscanf(fp,"%d\n",&phasemap->my);
-  fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1);
+    fscanf(fp,"%d\n",&phasemap->mx);
+    fscanf(fp,"%d\n",&phasemap->my);
+    fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1);
 	//
 	phasemap->dx = (phasemap->x1 - phasemap->x0)/(double)(phasemap->mx);
 	phasemap->dy = (phasemap->y1 - phasemap->y0)/(double)(phasemap->my);
-		
+    
 	
 	/* allocate data */
 	phasemap->data = malloc( sizeof(int)* phasemap->mx * phasemap->my );
 	
 	/* parse phase map from file */
 	//
-  index = 0;
-  for (j=0; j<phasemap->my; j++) {
+    index = 0;
+    for (j=0; j<phasemap->my; j++) {
 		for (i=0; i<phasemap->mx; i++) {
-      fscanf(fp,"%d",&phasemap->data[index]);
+            fscanf(fp,"%d",&phasemap->data[index]);
 			//printf("%d \n", phasemap->data[index]);
-      index++; 
+            index++;
+        }
     }
-  }
-	//		
-
+	//
+    
 	/* compute max number of phases */
 	phasemap_max = -1;
 	for (j=0; j<phasemap->my; j++) {
@@ -154,7 +154,7 @@ void PhaseMapLoadFromFile(const char filename[],PhaseMap *map)
 	int matched_extension;
 	
 	is_zipped = 0;
-
+    
 	/* check extensions for common zipped file extensions */
 	len = strlen(filename);
 	matched_extension = strcmp(&filename[len-8],".tar.gz");
@@ -172,9 +172,11 @@ void PhaseMapLoadFromFile(const char filename[],PhaseMap *map)
 		printf("  Detected .Z\n");
 		is_zipped = 1;
 	}
-
+    
 	if (is_zipped == 1) {
-		int ierr = PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
+		int ierr;
+        
+        ierr = PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
 	} else {
 		PhaseMapLoadFromFile_ASCII(filename,map);
 	}
@@ -216,9 +218,9 @@ void PhaseMapCheckValidity(PhaseMap phasemap,int phase,int *is_valid)
 /*
  
  gnuplot> set pm3d map
- gnuplot> splot "filename" 
-
-*/
+ gnuplot> splot "filename"
+ 
+ */
 void PhaseMapViewGnuplot(const char filename[],PhaseMap phasemap)
 {
 	FILE *fp = NULL;
@@ -236,7 +238,7 @@ void PhaseMapViewGnuplot(const char filename[],PhaseMap phasemap)
 	fprintf(fp,"# Phase map : (dx,dy) = (%lf,%lf) \n",phasemap->dx,phasemap->dy);
 	fprintf(fp,"# Phase map : (mx,my) = (%d,%d) \n",phasemap->mx,phasemap->my);
 	fprintf(fp,"# Phase map : nphases = %d \n",phasemap->nphases);
-
+    
 	for (j=0; j<phasemap->my; j++) {
 		for (i=0; i<phasemap->mx; i++) {
 			double x,y;
@@ -258,29 +260,27 @@ void PhaseMapGetMaxPhases(PhaseMap phasemap,int *maxphase)
 	*maxphase = phasemap->nphases;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatinCtxAttachPhaseMap"
 PetscErrorCode pTatinCtxAttachPhaseMap(pTatinCtx ctx,PhaseMap map)
 {
-	PetscContainer container;
 	PetscErrorCode ierr;
 	
-  PetscFunctionBegin;
-
+    PetscFunctionBegin;
+    
 	ierr = pTatinCtxAttachModelData(ctx,"phasemap",(void*)map);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatinCtxGetPhaseMap"
 PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map)
 {
 	void *mymap;
-	PetscContainer container;
 	PetscErrorCode ierr;
 	
-  PetscFunctionBegin;
+    PetscFunctionBegin;
 	ierr = pTatinCtxGetModelData(ctx,"phasemap",&mymap);CHKERRQ(ierr);
 	*map = (PhaseMap)mymap;
 	
@@ -295,20 +295,20 @@ void test_PhaseMap(void)
 	double xp[2];
 	int phase;
 	
-//	PhaseMapLoadFromFile("test.bmp",&phasemap);
+    //	PhaseMapLoadFromFile("test.bmp",&phasemap);
 	PhaseMapLoadFromFile("model_geometry",&phasemap);
 	
 	xp[0] = 0.0;	xp[1] = 1.0;
 	PhaseMapGetPhaseIndex(phasemap,xp,&phase);
-	printf("x = ( %lf , %lf ) ==> phase = %d \n", xp[0],xp[1],phase); 
-
+	printf("x = ( %lf , %lf ) ==> phase = %d \n", xp[0],xp[1],phase);
+    
 	xp[0] = 5.0;	xp[1] = 3.2;
 	PhaseMapGetPhaseIndex(phasemap,xp,&phase);
-	printf("x = ( %lf , %lf ) ==> phase = %d \n", xp[0],xp[1],phase); 
+	printf("x = ( %lf , %lf ) ==> phase = %d \n", xp[0],xp[1],phase);
 	
 	xp[0] = -1.0;	xp[1] = 1.0;
 	PhaseMapGetPhaseIndex(phasemap,xp,&phase);
-	printf("x = ( %lf , %lf ) ==> phase = %d \n", xp[0],xp[1],phase); 
+	printf("x = ( %lf , %lf ) ==> phase = %d \n", xp[0],xp[1],phase);
 	
 	PhaseMapViewGnuplot("test.gp",phasemap);
 	
@@ -319,7 +319,7 @@ void test_PhaseMap(void)
 
 int main(int nargs,char *args[])
 {
-
+    
 	test_PhaseMap();
 	
 	return EXIT_SUCCESS;

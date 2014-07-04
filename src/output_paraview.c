@@ -679,6 +679,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 }
 
 #include "zlib.h"
+
 #undef __FUNCT__
 #define __FUNCT__ "report_gzlib_error"
 PetscErrorCode report_gzlib_error(int ierr_gz,gzFile fp)
@@ -688,11 +689,13 @@ PetscErrorCode report_gzlib_error(int ierr_gz,gzFile fp)
 
 	PetscFunctionBegin;
 	info = gzerror(fp,&errnum);
-	if (ierr_gz == 0) {
+	if (ierr_gz < 0) {
+        PetscPrintf(PETSC_COMM_WORLD,"gzerror: %s \n",info);
 		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"ERROR(gzprintf): Failed to write data");
-	}	
+	}
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "pTatinOutputMeshVelocityPressureVTS_v0_binary_gz"
 PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,const char name[])
@@ -710,17 +713,15 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,co
 	PetscInt mx,my,mz,cnt;
 	PetscInt ei,ej,ek,i,j,k,esi,esj,esk;
 	gzFile vtk_fp = NULL;
-	const char *info;
 	PetscInt gsi,gsj,gsk,gm,gn,gp;
 	PetscInt ndof_pressure;
 	int offset,bytes;
-	int errnum,ierr_gz;
+	int ierr_gz;
 	
 	PetscFunctionBegin;
 	vtk_fp = gzopen ( name, "wb");
-	info = gzerror(vtk_fp,&errnum);
-	if (vtk_fp==NULL) {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+	if (vtk_fp == NULL) {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"gzerror: Cannot open file %s",name );
 	}
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
@@ -873,7 +874,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,co
 	ierr = DMDAVecRestoreArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr_gz = gzclose(vtk_fp);
-	info = gzerror(vtk_fp,&errnum);
+	report_gzlib_error(ierr_gz,vtk_fp);
 
 	PetscFunctionReturn(0);
 }

@@ -84,7 +84,6 @@ PetscErrorCode QuadratureDestroy(Quadrature *quadrature)
 #define __FUNCT__ "QuadratureView"
 PetscErrorCode QuadratureView(Quadrature q)
 {
-	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
@@ -186,7 +185,6 @@ PetscErrorCode SurfaceQuadratureCreate(SurfaceQuadrature *quadrature)
 PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementFace index,PetscInt nfaces)
 {
 	ConformingElementFamily e;
-	double size;
 	int ngp32;
 	PetscErrorCode ierr;
 	
@@ -218,7 +216,6 @@ PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFa
 {
 	PetscInt eli,elj,elk;
 	PetscInt si,sj,sk,ni,nj,nk,M,N,P,lmx,lmy,lmz;
-	PetscInt nfaces[HEX_EDGES];
 	PetscInt cnt,elidx;
 	PetscErrorCode ierr;
 	

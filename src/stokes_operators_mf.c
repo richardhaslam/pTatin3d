@@ -86,13 +86,12 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 	DM cda;
 	Vec gcoords;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,e,k;
+	PetscInt nel,nen_u,e;
 	const PetscInt *elnidx_u;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal el_eta[MAX_QUAD_PNTS];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -155,13 +154,12 @@ PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScala
 	DM cda;
 	Vec gcoords;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,e,k;
+	PetscInt nel,nen_u,e;
 	const PetscInt *elnidx_u;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal el_eta[MAX_QUAD_PNTS];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt  elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -266,7 +264,6 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -389,7 +386,6 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -529,7 +525,6 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -537,7 +532,7 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 	PetscReal GNIC[3][Q2_NODES_PER_EL_3D],xiC[3];
 	PetscReal fac;
 	PetscLogDouble t0,t1;
-	PetscInt ii,jj,kk,idx_nqp_3x3,idx_nqp_2x2;
+	PetscInt ii;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -657,16 +652,14 @@ PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar uf
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
-	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
 	
 	PetscReal GNIC[3][Q2_NODES_PER_EL_3D],xiC[3];
 	PetscReal GNI_1[1][3][Q2_NODES_PER_EL_3D];
 	PetscReal fac;
 	PetscLogDouble t0,t1;
-	PetscInt ii,jj,kk,idx_nqp_3x3,idx_nqp_2x2;
+	PetscInt ii;
 	
 	PetscFunctionBegin;
 	/* quadrature */
@@ -758,7 +751,6 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D + P_BASIS_FUNCTIONS];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -838,7 +830,7 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	DM cda;
 	Vec gcoords;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,nen_p,e,k;
+	PetscInt nel,nen_u,nen_p,e;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
@@ -846,7 +838,6 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -926,7 +917,6 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 	PetscReal Ye[P_BASIS_FUNCTIONS];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -1002,13 +992,12 @@ PetscErrorCode MFStokesWrapper_diagA11_UPX(Quadrature volQ,DM dau,DM dax,PetscSc
 	PetscErrorCode ierr;
 	PetscInt p,ngp;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,e,k;
+	PetscInt nel,nen_u,e;
 	const PetscInt *elnidx_u;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal el_eta[MAX_QUAD_PNTS];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -1074,7 +1063,6 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -1147,7 +1135,6 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D + P_BASIS_FUNCTIONS];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt  elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -1222,7 +1209,7 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 	PetscErrorCode ierr;
 	PetscInt p,ngp;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,nen_p,e,k;
+	PetscInt nel,nen_u,nen_p,e;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
@@ -1230,7 +1217,6 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt  elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -1305,7 +1291,6 @@ PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	PetscReal Ye[P_BASIS_FUNCTIONS];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt  elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];

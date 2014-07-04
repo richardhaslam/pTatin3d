@@ -59,7 +59,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
 	
   PetscFunctionBegin;
 
@@ -71,13 +70,11 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 #define __FUNCT__ "test_pTatin3d_gmg_galerkin"
 PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 {
-	DM             multipys_pack,dav,dap;
+	DM             multipys_pack,dav;
 	DM             *dav_hierarchy;
 	Mat            *interpolatation;
 	pTatinCtx      user;
 	PetscInt       nlevels,k;
-	Quadrature     volQ[10];
-	BCList         u_bclist[10];
 	PetscMPIInt    rank;
 	Vec            X,F;
 	Mat            A,B;
@@ -110,7 +107,6 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -249,7 +245,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	{
 		PetscInt nsplits;
 		PC       pc_i;
-		KSP      *sub_ksp,ksp_coarse,ksp_i;
+		KSP      *sub_ksp;
 		
 		ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -304,7 +300,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 #define __FUNCT__ "test_pTatin3d_gmg_mf"
 PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 {
-	DM             multipys_pack,dav,dap;
+	DM             multipys_pack,dav;
 	DM             *dav_hierarchy;
 	Mat            *interpolatation;
 	pTatinCtx      user;
@@ -343,7 +339,6 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -509,7 +504,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	{
 		PetscInt nsplits;
 		PC       pc_i;
-		KSP      *sub_ksp,ksp_coarse,ksp_i,ksp_smoother;
+		KSP      *sub_ksp,ksp_smoother;
 		
 		ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
@@ -588,9 +583,8 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 #define __FUNCT__ "test_putatin"
 PetscErrorCode test_putatin(int argc,char **argv)
 {
-	DM             multipys_pack,dav,dap;
+	DM             dav;
 	pTatinCtx      user;
-	PetscMPIInt    rank;
 	Mat            A,B;
 	PetscErrorCode ierr;
 	
@@ -615,9 +609,7 @@ PetscErrorCode test_putatin(int argc,char **argv)
 	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
 	
 	/* fetch some local variables */
-	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	

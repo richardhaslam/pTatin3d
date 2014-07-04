@@ -62,7 +62,6 @@ static inline void ComputeLinearSoft(float eplast,PetscReal emin,PetscReal emax,
 		if (eplast > emax) {
 			*Xeff = Xinf;
 		} else {
-			float X  = (eplast-emin)/(emax-emin);
 			*Xeff  = X0 - (eplast-emin)/(emax-emin)*(X0-Xinf);
 		}
 	}
