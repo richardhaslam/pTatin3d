@@ -396,7 +396,6 @@ PetscBool BCListEvaluator_StrainRate(PetscScalar position[],PetscScalar *value,v
 	PetscReal       V[3];
 	PetscBool       impose_dirichlet = PETSC_TRUE;
 	StrainRateBCCtx *strainrrate_ctx;
-	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
