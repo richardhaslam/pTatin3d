@@ -12,7 +12,7 @@
 
 \usepackage{fancyhdr}
 \usepackage{hypernat}
-\usepackage{hyperref}
+\usepackage[colorlinks,linkcolor=black,urlcolor=magenta]{hyperref} 
 \usepackage[small,nooneline,bf,hang]{caption} 
 \parindent0cm                                  
 \pagestyle{fancy}
@@ -95,10 +95,11 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 \newpage
 \section{Software Requirements}
 \begin{itemize}
-	\item PETSc 3.2 (http://www.mcs.anl.gov/petsc)
+	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.2}
 	\item libz (non essential)
 	\item subversion (non essential)
-	\item ParaView (essential for visualizing simulation output)
+	\item \href{www.paraview.org}{ParaView} (essential for visualizing simulation output)
+	\item Python $>$2.5 (to run the test suite)
 \end{itemize}
 
 \section{Obtaining the Code}
@@ -125,7 +126,7 @@ Once the \unix{makefile.arch} is adjusted for your operating system, type \shell
 	\item Compiling with a particular compilation flags (C and Fortran)
 	\shellcmd{make all TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
 \end{itemize}
-The following targets for make exist (all, libs,models, drivers, tests)
+The following targets for make exist : \unix{all}, \unix{libs}, \unix{models}, \unix{drivers}, \unix{tests}.
 
 
 % ----------------------------------------------------------------------------------------------------
@@ -134,18 +135,18 @@ The following targets for make exist (all, libs,models, drivers, tests)
 
 \subsection{Code structure}
 The idea we have for building models is that models should be separated as much as possible
-from the core functionality of {\ptat}. That is, we want to seperate boundary conditions,
+from the core functionality of {\ptat}. That is, we want to separate boundary conditions,
 mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (Stokes).
 \\[8pt]
 %%
-For this reason, we have a adopted a code structure in which models are compiled and combined into
+For this reason, we have adopted a code structure in which models are compiled and combined into
 a separate, stand alone library. When using a {\ptat{ driver (i.e which is needed to solve something),
 we link the model library against the solver library.
 \\[8pt]
 %%
 Models live under the directory
 	\shellcmd{ptatin3d/src/models/}
-the models are compiled into the following static library
+and the models are compiled into the following static library:
 	\shellcmd{ptatin3d/src/models/libptatin3dmodels.a}
 An example model called ``template'' is provided in \unix{src/models}.
 \\[8pt]
@@ -217,7 +218,7 @@ and are declared in
 To assign the operations which your model will perform, a helper function (\unix{pTatinModelSetFunctionPointer()}) is provided.
 Example usage:
 \shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_BC,my\_apply\_bc\_function);}
-\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_INIT\_MAT\_GEOM,my\_apply\_init\_material\_geom\_function);}
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_INIT\_MAT\_GEOM,my\_apply\_init\_material\_geom\_function);} %line overrun
 
 	\item Register the model via the call
 \unix{pTatinModelRegister()}
@@ -406,7 +407,7 @@ where the arguments are
 \newpage
 \section{Drivers}
 {\ptat} in itself is a library which aims to enable users to build specific executables to solve a particular class of problems in lithospheric dynamics.
-Executables which utilizes \unix{libptatin3d} are referred to as drivers.
+Executables which utilize \unix{libptatin3d} are referred to as drivers.
 For standard problems, e.g. time dependent linear (or non-linear) Stokes problems with optionally thermal coupling, we provide several default drivers.
 The most important (i.e. useful) of these are summarized below.
 
@@ -663,7 +664,7 @@ The nested form of the method used is depicted in Fig.~\ref{fig:solver_hierarchy
 We will refer to the outer most solver (i.e. that for Eq.~\eqref{eq:discretelinearstokes_pc}) as the ``Stokes solve''. Any solver associated with the $A$ matrix will be verified to as a ``Viscous block'' solve. Any solver related to $S$ will be referred to as a ``Pressure Schur complement'' solve.
 \begin{figure} [hbtp]
 \center
-\includegraphics[height=0.6\textheight]{figs/pt3d_solve_hierarchy.pdf}
+\includegraphics[height=0.6\textheight]{figs/pt3d_solve_hierarchy.pdf} %note : typo 'comaring'
 \caption[\itshape ]
 {\itshape Solver hierarchy}
 \label{fig:solver_hierarchy}
@@ -671,7 +672,7 @@ We will refer to the outer most solver (i.e. that for Eq.~\eqref{eq:discreteline
 In the following section we detail how to configure the solver applied to Eq.~\eqref{eq:discretelinearstokes_pc} to obtain $(u,p)$, and how to configure the solvers in steps 1 ({\tt -fieldsplit\_u\_ksp}) and 2 ({\tt -fieldsplit\_p\_ksp}) of applying the upper triangular preconditioner.
 
 
-\subsection{Configuring solvers} \ref{sec:configsolvers}
+\subsection{Configuring solvers} \label{sec:configsolvers}
 
 \subsubsection{Non-linear Stokes solver}
 Non-linear methods adopt the following sequence
