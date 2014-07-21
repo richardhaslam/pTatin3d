@@ -58,7 +58,7 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 	if (throw_warning == 1) {
 		PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled with debug options \n");
 		//PetscPrintf(PETSC_COMM_WORLD,"**   TATIN_CFLAGS = %s\n",flags);
-		PetscPrintf(PETSC_COMM_WORLD,"** For signifcant performance improvements, please consult the file makefile.arch  \n");
+		PetscPrintf(PETSC_COMM_WORLD,"** For significant performance improvements, please consult the file makefile.arch  \n");
 		PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
 		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	}
