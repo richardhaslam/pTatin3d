@@ -1,0 +1,38 @@
+#
+#  -- pTatin Optimization flags --
+#
+
+# On Piz Daint, load PrgEnv-cray (it's enabled by default) and run
+# module load zlib
+
+# Set your own PETSC_DIR and PETSC_ARCH 
+ifndef PETSC_DIR
+  $(error PETSC_DIR must be defined as an environment variable)
+endif
+ifndef PETSC_ARCH
+  $(error PETSC_ARCH must be defined as an environment variable)
+endif
+
+# Dangerous? Clear these flags that craycc doesn't understand
+C_DEPFLAGS=
+FC_DEPFLAGS=
+
+export LIBZ_LIB=-lz
+
+# Opt flags here..
+
+# flag to allow GNU AVX/SSE intrinsics
+export TATIN_CFLAGS=-hgnu
+CONFIG_AVX=y
+
+#
+#
+#  -- pTatin external packages --
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+#
+#
+PTATIN_CONTAINS_SPMA = 0
+PTATIN_CONTAINS_FASTSCAPE_V3 = 0
+
