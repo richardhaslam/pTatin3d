@@ -7,9 +7,11 @@
 
 # GEOMETRY PARAMETERS
 
--mx 12
--my 12
--mz 12
+## Dimension
+##   500 km x 660 km x 500 km
+-mx 80
+-my 80
+-mz 80
 
 -lattice_layout_Nx 3
 -lattice_layout_Ny 3
@@ -18,7 +20,7 @@
 
 
 # TIME STEP CONTROL
--nsteps 0
+-nsteps 10
 
 # ----------
 # dt = 50,000 years, using characteristic time of 6.6e15 sec
@@ -26,14 +28,25 @@
 
 # ----------
 # dt = 100,000 years, using characteristic time of 6.6e15 sec
--dt_max 0.00047781818182
+#-dt_max 0.00047781818182
+
+# dt = 500,000 years, using characteristic time of 6.6e15 sec
+-dt_max 0.0023890909091
+
+# ----------
+# dt = 1,000,000 years, using characteristic time of 6.6e15 sec
+#-dt_max 0.0047781818182
+
+# ----------
+# 22.56 Myr using characteristic time of 6.6e15 sec
+-time_max 0.10779578181818
 
 # ----------
 #-dt_min 1.0e-4
 
 
 # OUTPUT CONTROL
--output_path sd3d_ex1
+-output_path sd3d_case1a_v1
 -output_frequency 1
 #-model_output_si 0
 
@@ -50,7 +63,8 @@
 
 
 # SOLVER PARAMETERS <momentum/continutiy> -------------------------
-#-nonlinear_driver_v1
+-use_quasi_newton_coordinate_update
+-nonlinear_driver_v1
 
 #-snes_type ls
 #-snes_rtol 1.0e-5
@@ -71,7 +85,7 @@
 -snes_max_linear_solve_fail 100000
 
 -ksp_type fgmres
--ksp_rtol 1.0e-3
+-ksp_rtol 1.0e-6
 -ksp_atol 1.0e-8
 -ksp_max_it 2000
 
@@ -80,14 +94,14 @@
 -pc_fieldsplit_schur_factorization_type upper
 
 -fieldsplit_p_ksp_type preonly
--fieldsplit_p_pc_type jacobi
+-fieldsplit_p_pc_type lu
 
 -fieldsplit_u_ksp_type fgmres
 -fieldsplit_u_ksp_max_it 10
 -fieldsplit_u_ksp_rtol 1.0e-2
 
 -fieldsplit_u_pc_type mg
--fieldsplit_u_pc_mg_levels 2
+-fieldsplit_u_pc_mg_levels 4
 -fieldsplit_u_pc_mg_log
 
 -fieldsplit_u_mg_levels_ksp_type fgmres
@@ -100,12 +114,13 @@
 
 -fieldsplit_u_mg_coarse_ksp_type fgmres
 -fieldsplit_u_mg_coarse_pc_type bjacobi
+-fieldsplit_u_mg_coarse_sub_pc_type lu
 -fieldsplit_u_mg_coarse_ksp_max_it 4
 
 -stk_velocity_da_mat_type aij
 
--dau_nlevels 2
--A11_operator_type 0,1
+-dau_nlevels 4
+-A11_operator_type 2,0,1,1
 
 # solver monitors
 -snes_monitor
