@@ -409,14 +409,10 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	DM cda;
 	Vec gcoords;
 	PetscScalar *LA_gcoords;
-	PetscInt nel,nen_u,nen_p,e,n,k;
+	PetscInt nel,nen_u,nen_p,e;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];
-	PetscScalar nx[Q2_NODES_PER_EL_3D],ny[Q2_NODES_PER_EL_3D],nz[Q2_NODES_PER_EL_3D];
-	PetscInt p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
-	PetscInt *gidx_p,elgidx_p[P_BASIS_FUNCTIONS];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
@@ -428,19 +424,16 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	P3D_prepare_elementQ2(NQP,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dap,0,&gidx_p);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
 
@@ -451,7 +444,7 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 //		evaluate_geometry_elementQ2(NQP,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 	
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"Element geometry = %1.4e (sec)\n",t1-t0);
 	{
 		double ops = 105.0 * (double)( nel * NQP * NPE );
@@ -480,7 +473,6 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Fe[3*Q2_NODES_PER_EL_3D],Be[3*Q2_NODES_PER_EL_3D];
 	PetscInt vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -492,18 +484,16 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		PetscScalar int_P, int_divu;
 		
@@ -544,7 +534,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 		for (p=0; p<ngp; p++) {
 			PetscScalar  exx,eyy,ezz,exy,exz,eyz;
 			PetscScalar  sxx,syy,szz,sxy,sxz,syz,pressure_gp;
-			PetscScalar fac,d1,d2,J_p;
+			PetscScalar fac,d1,d2;
 			
 			fac = WEIGHT[p] * detJ[p];
 			
@@ -670,7 +660,7 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Ru, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -683,23 +673,20 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Ru[])
 {	
 	PetscErrorCode ierr;
-	PetscInt p,ngp;
+	PetscInt p;
 	DM cda;
 	Vec gcoords;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,nen_p,k,e,edge,fe,nfaces;
+	PetscInt nel,nen_u,nen_p,k,e,edge,fe;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
-	PetscReal elcoords[3*Q2_NODES_PER_EL_3D],el_eta[MAX_QUAD_PNTS];
+	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscReal elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
-	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Fe[3*Q2_NODES_PER_EL_3D],Be[3*Q2_NODES_PER_EL_2D];
 	PetscInt vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
 	PetscLogDouble t0,t1;
 	QPntSurfCoefStokes *quadpoints,*cell_quadpoints;
-	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS],NIu_surf[NQP][Q2_NODES_PER_EL_2D];
-	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+	PetscReal NIu_surf[NQP][Q2_NODES_PER_EL_2D];
 	SurfaceQuadrature surfQ;
 	
 	PetscFunctionBegin;
@@ -707,30 +694,28 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 	/* quadrature */
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	
 	for (edge=0; edge<HEX_EDGES; edge++) {
 		ConformingElementFamily element;
 		int *face_local_indices;
 		PetscInt nfaces,ngp;
 		QPoint2d *gp2;
-		QPoint3d *gp3;
+		//QPoint3d *gp3;
 		
 		surfQ   = user->surfQ[edge];
 		element = surfQ->e;
 		nfaces  = surfQ->nfaces;
 		gp2     = surfQ->gp2;
-		gp3     = surfQ->gp3;
+		//gp3     = surfQ->gp3;
 		ngp     = surfQ->ngp;
 		ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ,&quadpoints);CHKERRQ(ierr);
 
@@ -761,12 +746,12 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 			for (p=0; p<ngp; p++) {
 				PetscScalar fac,surfJ_p;
 
-				element->compute_surface_geometry_3D(	
-																						 element, 
-																						 elcoords,    // should contain 27 points with dimension 3 (x,y,z) // 
-																						 surfQ->face_id,	 // edge index 0,...,7 //
-																						 &gp2[p], // should contain 1 point with dimension 2 (xi,eta)   //
-																						 NULL,NULL, &surfJ_p ); // n0[],t0 contains 1 point with dimension 3 (x,y,z) //
+				element->compute_surface_geometry_3D(
+                                                     element,
+                                                     elcoords,    // should contain 27 points with dimension 3 (x,y,z) //
+                                                     surfQ->face_id,	 // edge index 0,...,7 //
+                                                     &gp2[p], // should contain 1 point with dimension 2 (xi,eta)   //
+                                                     NULL,NULL, &surfJ_p ); // n0[],t0 contains 1 point with dimension 3 (x,y,z) //
 				fac = gp2[p].w * surfJ_p;
 								
 				for (k=0; k<Q2_NODES_PER_EL_2D; k++) { 
@@ -797,7 +782,7 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 			ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 		}
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assembled int_S N traction[i].n[i] dS, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -811,7 +796,6 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 {	
 	PetscErrorCode ierr;
 	PetscInt ngp;
-	PetscScalar *gp_xi,*gp_weight;
 	DM cda;
 	Vec gcoords;
 	PetscScalar *LA_gcoords;
@@ -821,13 +805,9 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 	PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscScalar elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
 	PetscScalar ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
-	PetscScalar xc[Q2_NODES_PER_EL_3D],yc[Q2_NODES_PER_EL_3D],zc[Q2_NODES_PER_EL_3D];
-	PetscScalar nx[Q2_NODES_PER_EL_3D],ny[Q2_NODES_PER_EL_3D],nz[Q2_NODES_PER_EL_3D];
 	PetscScalar Fe[P_BASIS_FUNCTIONS];
 	PetscScalar Be[P_BASIS_FUNCTIONS];
 	PetscInt p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
-	PetscInt *gidx_p,elgidx_p[P_BASIS_FUNCTIONS];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -839,19 +819,16 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dap,0,&gidx_p);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = StokesPressure_GetElementLocalIndices(p_el_lidx,(PetscInt*)&elnidx_p[nen_p*e]);CHKERRQ(ierr);
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
@@ -879,7 +856,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 		
 		for (p=0; p<ngp; p++) {
 			PetscScalar  div_u_gp;
-			PetscScalar  fac,J_p,ojp;
+			PetscScalar  fac;
 
 			fac = WEIGHT[p] * detJ[p];
 			/* div(u) */
@@ -906,7 +883,7 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
 		}
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Rp, p_el_lidx,Fe);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Rp, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -1027,21 +1004,17 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	DM cda;
 	Vec gcoords;
 	PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,nen_p,e,k;
+	PetscInt nel,nen_u,nen_p,e;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
-	PetscReal el_eta[MAX_QUAD_PNTS];
 	PetscReal elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
-	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Ye[3*Q2_NODES_PER_EL_3D + P_BASIS_FUNCTIONS];
 	PetscInt  vel_el_lidx[3*U_BASIS_FUNCTIONS];
 	PetscInt  p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt  *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
 	PetscReal detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
-	PetscReal fac;
 	PetscLogDouble t0,t1;
 
 	PetscFunctionBegin;
@@ -1050,18 +1023,16 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA( dau, &cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates( dau,&gcoords );CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
@@ -1074,12 +1045,6 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 		ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*e],ufield);CHKERRQ(ierr);
 		ierr = DMDAGetScalarElementField(elp,nen_p,(PetscInt*)&elnidx_p[nen_p*e],pfield);CHKERRQ(ierr);
 		
-		for (k=0; k<Q2_NODES_PER_EL_3D; k++ ) {
-			ux[k] = elu[3*k  ];
-			uy[k] = elu[3*k+1];
-			uz[k] = elu[3*k+2];
-		}
-		
 		for (p=0; p<ngp; p++) {
 			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
 			ConstructNi_pressure(xip,elcoords,NIp[p]);
@@ -1091,18 +1056,18 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 		
 		
 		for (p=0; p<ngp; p++) {
-			el_eta[p] = cell_gausspoints[p].eta;
-			fac       = WEIGHT[p] * detJ[p];
+			//el_eta[p] = cell_gausspoints[p].eta;
+			//fac       = WEIGHT[p] * detJ[p];
 			
-			//MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
-			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			//MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			//MatMultMF_Stokes_MixedFEM3d_diagB(fac,el_eta[p],NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 
 		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,&Ye[0]);CHKERRQ(ierr);
 		//ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Yp,  p_el_lidx,  &Ye[81]);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"MatMult, = %1.4e (sec)\n",t1-t0);
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -1208,7 +1173,6 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	PetscReal ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
 	PetscReal Fe[3*Q2_NODES_PER_EL_3D],Be[3*Q2_NODES_PER_EL_3D];
 	PetscInt vel_el_lidx[3*U_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -1219,14 +1183,12 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	ngp = user->volQ->npoints;
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
-	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		PetscScalar int_P, int_divu;
 		
@@ -1267,7 +1229,7 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 		for (p=0; p<ngp; p++) {
 			PetscScalar  exx,eyy,ezz,exy,exz,eyz;
 			PetscScalar  sxx,syy,szz,sxy,sxz,syz,pressure_gp;
-			PetscScalar fac,d1,d2,J_p;
+			PetscScalar fac,d1,d2;
 			
 			fac = WEIGHT[p] * detJ[p];
 			
@@ -1329,7 +1291,7 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
 	}
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Ru, = %1.4e (sec)\n",t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -1342,20 +1304,15 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 {	
 	PetscErrorCode ierr;
 	PetscInt ngp;
-	PetscScalar *gp_xi,*gp_weight;
 	PetscInt nel,nen_u,nen_p,e,p,k;
 	const PetscInt *elnidx_u;
 	const PetscInt *elnidx_p;
 	PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];
 	PetscScalar elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
 	PetscScalar ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
-	PetscScalar xc[Q2_NODES_PER_EL_3D],yc[Q2_NODES_PER_EL_3D],zc[Q2_NODES_PER_EL_3D];
-	PetscScalar nx[Q2_NODES_PER_EL_3D],ny[Q2_NODES_PER_EL_3D],nz[Q2_NODES_PER_EL_3D];
 	PetscScalar Fe[P_BASIS_FUNCTIONS];
 	PetscScalar Be[P_BASIS_FUNCTIONS];
 	PetscInt p_el_lidx[P_BASIS_FUNCTIONS];
-	PetscInt *gidx,elgidx[3*Q2_NODES_PER_EL_3D];
-	PetscInt *gidx_p,elgidx_p[P_BASIS_FUNCTIONS];
 	PetscLogDouble t0,t1;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
 	PetscReal WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
@@ -1366,15 +1323,12 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 	ngp = user->volQ->npoints;
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);	
 	
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dap,0,&gidx_p);CHKERRQ(ierr);
-	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
 	ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	for (e=0;e<nel;e++) {
 		ierr = StokesPressure_GetElementLocalIndices(p_el_lidx,(PetscInt*)&elnidx_p[nen_p*e]);CHKERRQ(ierr);
 		ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
@@ -1402,7 +1356,7 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 		
 		for (p=0; p<ngp; p++) {
 			PetscScalar  div_u_gp;
-			PetscScalar  fac,J_p,ojp;
+			PetscScalar  fac;
 			
 			fac = WEIGHT[p] * detJ[p];
 			/* div(u) */
@@ -1429,7 +1383,7 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 		}
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(Rp, p_el_lidx,Fe);CHKERRQ(ierr);
 	}
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"Assemble Rp, = %1.4e (sec)\n",t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -1455,7 +1409,6 @@ PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx)
   PetscErrorCode    ierr;
   pTatinCtx         ptatin;
   DM                stokes_pack,dau,dap,dax;
-  DMDALocalInfo     infou,infop;
   Vec               Uloc,Ploc,Xloc,FUloc,FPloc;
 	Vec               u,p,x,Fu,Fp;
   PetscScalar       *LA_Uloc,*LA_Ploc,*LA_Xloc;
@@ -1472,10 +1425,10 @@ PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx)
 
 	/* fetch DM's */
   ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
 	/* fetch coordinates */
-	ierr = DMDAGetCoordinates(dau,&x);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dau,&x);CHKERRQ(ierr);
 	
 	/* fetch local vectors */
   ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);

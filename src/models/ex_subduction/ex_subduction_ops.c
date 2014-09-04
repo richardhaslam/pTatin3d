@@ -156,7 +156,7 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	data->domain[1] = 700.0e3 / char_length;
 	data->domain[2] = 3000.0e3  / char_length;
 	
-	PetscOptionsGetBool(PETSC_NULL,"-exsubduction_mode2d",&mode_2d,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-exsubduction_mode2d",&mode_2d,NULL);
 	if (mode_2d) {
 		c->mz           = 1;
 		data->domain[2] = 50.0e3 / char_length;
@@ -164,7 +164,7 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	}
 
 	data->dip = 90.0;
-	PetscOptionsGetReal(PETSC_NULL,"-exsubduction_dip",&data->dip,PETSC_NULL);
+	PetscOptionsGetReal(NULL,"-exsubduction_dip",&data->dip,NULL);
 	
 	
 	data->eta[ RegionId_Mantle ]      = 1.0e21/char_eta;     data->rho[ RegionId_Mantle ]      = 3200.0*char_rhsscale;
@@ -203,13 +203,13 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	data->go[RegionId_Slab] = G;
 	data->ngo = 3;
 	
-	PetscOptionsGetBool(PETSC_NULL,"-exsubduction_finite_plate",&finite_plate,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-exsubduction_finite_plate",&finite_plate,NULL);
 	if (finite_plate) {
 		GeometryObject mask;
 		PetscReal      factor;
 		
 		factor = 0.25;
-		PetscOptionsGetReal(PETSC_NULL,"-exsubduction_finite_plate_width_factor",&factor,PETSC_NULL);
+		PetscOptionsGetReal(NULL,"-exsubduction_finite_plate_width_factor",&factor,NULL);
 		
 		
 		ierr = GeometryObjectCreate("mask",&mask);CHKERRQ(ierr);
@@ -344,7 +344,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	
-	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_point_db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(material_point_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mp_points; p++) {
@@ -431,7 +431,7 @@ PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],vo
 		//const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
 		char mp_file_prefix[256];
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(mp_file_prefix,"%s_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}

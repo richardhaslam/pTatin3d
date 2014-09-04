@@ -56,8 +56,8 @@ PetscErrorCode DMDAVecTraverse3d(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)(
 	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (!coords) { 
 		PetscPrintf(PETSC_COMM_WORLD,"WARNING: coordinates not set\n"); 
 	} else {
@@ -114,8 +114,8 @@ PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)
 	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (!coords) { 
 		PetscPrintf(PETSC_COMM_WORLD,"WARNING: coordinates not set\n"); 
 	} else {
@@ -287,7 +287,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v1(PetscScalar pos[],PetscInt g
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
 	PetscScalar z,P;
 	PetscBool impose;
-	PetscErrorCode ierr;
 	
 	z = c->ref_height - pos[1];
 	P = c->rho * c->grav * z;
@@ -305,7 +304,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v2(PetscScalar pos[],PetscInt g
 	PetscScalar z,P;
 	PetscReal dz;
 	PetscBool impose;
-	PetscErrorCode ierr;
 	
 	dz = c->ref_height / ((PetscReal)( c->ref_N+1 ) );
 	z = (PetscScalar)(c->ref_N - global_index[1]);
@@ -326,7 +324,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],Petsc
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
 	PetscScalar dPdy;
 	PetscBool impose;
-	PetscErrorCode ierr;
 	
 	dPdy = -c->rho * c->grav;
 	
@@ -347,8 +344,8 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt glob
 	Vec surface_coords;
 	PetscErrorCode ierr;
 	
-	ierr = DMDAGetCoordinateDA(c->surface_da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(c->surface_da,&surface_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(c->surface_da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(c->surface_da,&surface_coords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArrayDOF(cda,surface_coords,&LA_surface_coords);CHKERRQ(ierr);
 	
 	z = LA_surface_coords[local_index[2]][0][local_index[0]][1] - pos[1];
@@ -367,13 +364,12 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt glob
 PetscBool DMDAVecTraverse3d_GaussianXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
-	PetscScalar x,y,z;
+	PetscScalar x,y;
 	
 	impose = PETSC_TRUE;
 	x = pos[0];
 	y = pos[1];
-	z = pos[2];
-	*val = exp( -100.0*( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) )); 
+	*val = exp( -100.0*( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ));
 
 	return impose;
 }
@@ -399,12 +395,10 @@ PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void 
 PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
-	PetscScalar x,y,z;
+	PetscScalar x;
 	
 	impose = PETSC_TRUE;
 	x = pos[0];
-	y = pos[1];
-	z = pos[2];
 	if (x < 0.5) {
 		*val = 2.0;
 	} else {
@@ -461,12 +455,11 @@ PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val
 PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
-	PetscScalar x,y,z;
+	PetscScalar x,y;
 	
 	impose = PETSC_TRUE;
 	x = pos[0];
 	y = pos[1];
-	z = pos[2];
 	if ( (x < 0.5) && (y < 0.5) ) {
 		*val = 2.0;
 	} else {
@@ -621,8 +614,8 @@ PetscErrorCode DMDACoordTraverseIJK(DM da,PetscInt plane,PetscInt index,PetscInt
 	if (coord_dof >= 3) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"0 <= coord_dof <= 2"); }
 
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (!coords) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"coordinates not set"); }
 	
 	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);

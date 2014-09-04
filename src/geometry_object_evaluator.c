@@ -75,7 +75,7 @@ PetscErrorCode GeometryObjectEvalDestroy(GeometryObjectEval *G)
 	}
 	
 	ierr = PetscFree(goe);CHKERRQ(ierr);	
-	*G = PETSC_NULL;
+	*G = NULL;
 	
 	PetscFunctionReturn(0);
 }

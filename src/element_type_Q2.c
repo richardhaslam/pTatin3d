@@ -510,7 +510,6 @@ void CLASS_get_face_quadrature_points_Q2_3D( ConformingElementFamily e, HexEleme
 		-1.0, 0.0, 1.0,		0.0, 0.0, 1.0,		1.0, 0.0, 1.0,			
 		-1.0, 1.0, 1.0,		0.0, 1.0, 1.0,		1.0, 1.0, 1.0 };
 	double face_local_coord[9*3];
-	int **fid_node_list = e->face_node_list;
 	double Ni_st[9];
 	int I,J;
 	
@@ -1252,7 +1251,7 @@ void testEQ2_SurfQuad3d_1( void )
 void testEQ2_SurfQuad2d_1( void )
 {
 	ConformingElementFamily e;
-	int i,j,k;
+	int i,j;
 	int cnt;
 	double coords[9*2];
 	double x,y;
@@ -1423,7 +1422,7 @@ void testEQ2_QuadratureStokesSurf(void)
 void testEQ2_SurfQuad2d_int_rotated_2( void )
 {
 	ConformingElementFamily e;
-	int i,j,k;
+	int i,j;
 	int cnt;
 	double coords[9*2];
 	double x,y;
@@ -1556,7 +1555,6 @@ void evaluate_divF_poly( double xp[], double *div )
 {
 	double dFx,dFy,dFz;
 	double x=xp[0];
-	double y=xp[1];
 	double z=xp[2];
 	
 	dFx = 6.0*x + 2.0;

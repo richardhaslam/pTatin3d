@@ -46,26 +46,26 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	rheology->eta_lower_cutoff_global = 1.0e-20;
     
     
-	PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_plastic_n_interfaces",&data->n_interfaces,&flg);
+	PetscOptionsGetInt(NULL,"-model_fault_fold_plastic_n_interfaces",&data->n_interfaces,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_fault_fold_plastic_n_interfaces)");
 	}
 
-	pTatinModelGetOptionReal("-model_fault_fold_plastic_Lx", &data->Lx, "User must provide the length along the x direction", PETSC_NULL,PETSC_TRUE);
-	/*PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_Lx",&data->Lx,&flg);
+	pTatinModelGetOptionReal("-model_fault_fold_plastic_Lx", &data->Lx, "User must provide the length along the x direction", NULL,PETSC_TRUE);
+	/*PetscOptionsGetReal(NULL,"-model_fault_fold_plastic_Lx",&data->Lx,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_fault_fold_plastic_Lx)");
 	}*/
 
-	pTatinModelGetOptionReal("-model_fault_fold_plastic_Ly", &data->Ly, "User must provide the length along the y direction", PETSC_NULL,PETSC_TRUE);
+	pTatinModelGetOptionReal("-model_fault_fold_plastic_Ly", &data->Ly, "User must provide the length along the y direction", NULL,PETSC_TRUE);
 
-    /*    PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_sigma",&data->sigma,&flg);
+    /*    PetscOptionsGetReal(NULL,"-model_fault_fold_plastic_sigma",&data->sigma,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the spreading of the weak zone (-model_fault_fold_plastic_sigma)");
 	}*/
 
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_interface_heights",data->interface_heights,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries (-model_fault_fold_plastic_interface_heights)");
 	}
@@ -75,7 +75,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	/*Set the resolutions: */
         /*In z*/
 	n_int = data->max_layers;
-	PetscOptionsGetIntArray(PETSC_NULL,"-model_fault_fold_plastic_layer_res_k",data->layer_res_k,&n_int,&flg);
+	PetscOptionsGetIntArray(NULL,"-model_fault_fold_plastic_layer_res_k",data->layer_res_k,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_fault_fold_plastic_layer_res_k)");
 	}
@@ -85,7 +85,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
         /*In y (with the fault res.)*/
     data->domain_res_j;
     n_int = 3;
-	PetscOptionsGetIntArray(PETSC_NULL,"-model_fault_fold_plastic_domain_res_j",data->domain_res_j,&n_int,&flg);
+	PetscOptionsGetIntArray(NULL,"-model_fault_fold_plastic_domain_res_j",data->domain_res_j,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide domain resolution list in the j direction: sinistral/fault/dextral resolution (-model_fault_fold_plastic_domain_res_j)");
 	}
@@ -95,7 +95,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
     
 	/* ---------------------------Layer parameters---------------------------------*/
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_eta",data->eta,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_layer_eta",data->eta,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list (-model_fault_fold_plastic_layer_eta)");
 	}
@@ -104,7 +104,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_C0",data->C0,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_layer_C0",data->C0,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer cohesion list (-model_fault_fold_plastic_layer_C0)");
 	}
@@ -113,7 +113,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
 
     n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_mu",data->mu,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_layer_mu",data->mu,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer friction list (-model_fault_fold_plastic_layer_mu)");
 	}
@@ -125,7 +125,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
     
     n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_C0_inf",data->C0_inf,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_layer_C0_inf",data->C0_inf,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer cohesion inf value list (-model_fault_fold_plastic_layer_C0_inf)");
 	}
@@ -134,7 +134,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	} 
     
     n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_mu_inf",data->mu_inf,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_layer_mu_inf",data->mu_inf,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer friction inf value list (-model_fault_fold_plastic_layer_mu_inf)");
 	}
@@ -146,7 +146,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
     
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_layer_rho",data->rho,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_layer_rho",data->rho,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list (-model_fault_fold_plastic_layer_rho)");
 	}
@@ -155,7 +155,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
 	/*--------------------Central fault parameters-------------------------*/
     n_int = data->max_fault_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_eta",data->fault_eta,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fault_eta",data->fault_eta,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault viscosity list (-model_fault_fold_plastic_fault_eta)");
 	}
@@ -164,7 +164,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_fault_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_C0",data->fault_C0,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fault_C0",data->fault_C0,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault cohesion list (-model_fault_fold_plastic_fault_C0)");
 	}
@@ -173,7 +173,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
     
     n_int = data->max_fault_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_mu",data->fault_mu,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fault_mu",data->fault_mu,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault friction list (-model_fault_fold_plastic_fault_mu)");
 	}
@@ -185,7 +185,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
     
     n_int = data->max_fault_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_C0_inf",data->fault_C0_inf,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fault_C0_inf",data->fault_C0_inf,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault cohesion inf value list (-model_fault_fold_plastic_fault_C0_inf)");
 	}
@@ -194,7 +194,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	} 
     
     n_int = data->max_fault_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_mu_inf",data->fault_mu_inf,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fault_mu_inf",data->fault_mu_inf,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault friction inf value list (-model_fault_fold_plastic_fault_mu_inf)");
 	}
@@ -206,7 +206,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	}
     
 	n_int = data->max_fault_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fault_rho",data->fault_rho,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fault_rho",data->fault_rho,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide fault density list (-model_fault_fold_plastic_fault_rho)");
 	}
@@ -237,7 +237,7 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
     
     /*-------------------Perturbation parameters--------------------*/
     n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_fault_fold_plastic_fold_centers",data->fold_centers,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_fault_fold_plastic_fold_centers",data->fold_centers,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the initial fold separation a,b,c,d (-model_fault_fold_plastic_fold_centers). The perturbation is at  the position (a/b).Ly at the front and (c/d).Ly in the back. ");
 	}
@@ -262,9 +262,9 @@ PetscErrorCode ModelInitialize_FaultFoldPlastic(pTatinCtx c,void *ctx)
 	data->vx_compression = 1.0;
 	
 	/* parse from command line or input file */
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_fault_fold_plastic_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_fault_fold_plastic_vx_compression",&data->vx_compression,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-model_fault_fold_plastic_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_fault_fold_plastic_exx",&data->exx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_fault_fold_plastic_vx_compression",&data->vx_compression,&flg);CHKERRQ(ierr);
     
     /*----------------------------Rescaling-----------------------------------------*/
     length_scale    = data->Lx;
@@ -454,8 +454,8 @@ PetscErrorCode FaultFoldPlasticSetMeshGeometry(DM dav, void *ctx)
     
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	n_interfaces = data->n_interfaces;
     layer_res_k = data->layer_res_k;
@@ -519,8 +519,8 @@ PetscErrorCode FaultFoldPlasticSetPerturbedInterfaces(DM dav,void *ctx)// PetscS
 
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 
 	dy = data->Ly/(PetscScalar)(N/2-1);
@@ -591,7 +591,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_FaultFoldPlastic(pTatinCtx 
 	
     /**/
     
-    ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+    ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
 	
 	ierr = MaterialPointGetAccess(material_points,&mpX);CHKERRQ(ierr);
@@ -690,7 +690,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_FaultFoldPlastic(pTatinCtx c,void *
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, 0.0,Ly, data->interface_heights[0], Lz);CHKERRQ(ierr);
 	factor = 0.1;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_FaultFoldPlastic_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_FaultFoldPlastic_amp_factor",&factor,NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside FaultFoldPlasticSetPerturbedInterfaces() */
     data->amp = amp;
 	if ( (amp < 0.0) || (amp >1.0) ) {
@@ -862,7 +862,7 @@ PetscErrorCode ModelOutput_FaultFoldPlastic(pTatinCtx c,Vec X,const char prefix[
 		const int                   nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		//sprintf(name,"%s_mpoints_cell",prefix);
 		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);

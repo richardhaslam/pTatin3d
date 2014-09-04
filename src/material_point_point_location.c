@@ -384,10 +384,10 @@ void InverseMappingDomain_3dQ2(
 #endif
 
 /* 2d implementation */
-void _compute_deltaX_2d( double J[2][2], double f[], double h[] )
+void _compute_deltaX_2d(PetscReal J[2][2],PetscReal f[],PetscReal h[])
 {
-	int    i;
-	double invJ[2][2];
+	PetscInt  i;
+	PetscReal invJ[2][2];
 	
 	ElementHelper_matrix_inverse_2x2(J,invJ);
 	
@@ -398,19 +398,19 @@ void _compute_deltaX_2d( double J[2][2], double f[], double h[] )
 	}
 }
 
-void _compute_J_2dQ2(double xi[],double vertex[],double J[2][2])
+void _compute_J_2dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[2][2])
 {
-	int    i;
-	double GNi[2][Q2_NODES_PER_EL_2D];
+	PetscInt  i;
+	PetscReal GNi[2][Q2_NODES_PER_EL_2D];
 	
 	J[0][0] = J[0][1] = 0.0;
 	J[1][0] = J[1][1] = 0.0;
 	
 	P3D_ConstructGNi_Q2_2D(xi,GNi);
 	for (i=0; i<Q2_NODES_PER_EL_2D; i++) {
-		int    i2 = i*2;
-		double x = vertex[i2];
-		double y = vertex[i2+1];
+		PetscInt    i2 = i*2;
+		PetscReal x = vertex[i2];
+		PetscReal y = vertex[i2+1];
 		
 		J[0][0] += x * GNi[0][i];
 		J[0][1] += x * GNi[1][i];
@@ -420,10 +420,10 @@ void _compute_J_2dQ2(double xi[],double vertex[],double J[2][2])
 	}
 }
 
-void _compute_F_2dQ2(double xi[],double vertex[],double pos[],double f[])
+void _compute_F_2dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal f[])
 {
-	int    i;
-	double Ni[Q2_NODES_PER_EL_2D];
+	PetscInt  i;
+	PetscReal Ni[Q2_NODES_PER_EL_2D];
 	
 	/* Update F for the next iteration */
 	f[0] = f[1] = 0.0;
@@ -431,8 +431,8 @@ void _compute_F_2dQ2(double xi[],double vertex[],double pos[],double f[])
 	P3D_ConstructNi_Q2_2D(xi,Ni);
 	
 	for (i=0; i<Q2_NODES_PER_EL_2D; i++) {
-		int i2   = i*2;
-		int i2p1 = i2+1;
+		PetscInt i2   = i*2;
+		PetscInt i2p1 = i2+1;
 		
 		f[0] += vertex[i2]   * Ni[i];
 		f[1] += vertex[i2p1] * Ni[i];
@@ -442,40 +442,38 @@ void _compute_F_2dQ2(double xi[],double vertex[],double pos[],double f[])
 }
 
 void InverseMappingDomain_2dQ2( 
-															 double tolerance, int max_its,
+															 PetscReal tolerance, PetscInt max_its,
 															 Truth use_nonzero_guess, 
 															 Truth monitor,
-															 const double coords[], const int mx, const int my, const int element[],
-															 int np, MPntStd marker[] )
+															 const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt element[],
+															 PetscInt np, MPntStd marker[] )
 {
-	const int dim = 2;
-	const int nodesPerEl = Q2_NODES_PER_EL_2D; 
-	double h[dim];
-	double Jacobian[2][2];
-	double f[2];
-	int    i,d;
-	int    its;
-	double residual2,tolerance2,F2;
-	int    p;
-	int    mx_origin, my_origin, wil_origin;
-	double cxip[2],Lxip[2],Gxip[2];
-	double dxi,deta,xi0,eta0;
-	int    I,J,wil_IJ,eid,k;
-	double vertex[2 * Q2_NODES_PER_EL_2D];
-	int    n0,n1,n2;
+	const PetscInt dim = 2;
+	const PetscInt nodesPerEl = Q2_NODES_PER_EL_2D; 
+	PetscReal h[dim];
+	PetscReal Jacobian[2][2];
+	PetscReal f[2];
+	PetscInt    d;
+	PetscInt    its;
+	PetscReal residual2,tolerance2,F2;
+	PetscInt    p;
+	PetscReal cxip[2],Lxip[2],Gxip[2];
+	PetscReal dxi,deta,xi0,eta0;
+	PetscInt    I,J,wil_IJ,k;
+	PetscReal vertex[2 * Q2_NODES_PER_EL_2D];
 	Truth  point_found;
 	
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */
 
 #ifdef PNTLOC_LOG
-	printf("Domain: ncells = %d x %d = %d \n", mx,my,mx*my );
+	PetscPrintf(PETSC_COMM_SELF,"Domain: ncells = %D x %D = %D \n", mx,my,mx*my );
 #endif
 	
 	/* map domain to [-1,1]x[-1,1] domain */
-	dxi   = 2.0/((double)mx);
-	deta  = 2.0/((double)my);
+	dxi   = 2.0/((PetscReal)mx);
+	deta  = 2.0/((PetscReal)my);
 #ifdef PNTLOC_LOG
-	printf("Domain: (dxi,eta) = (%1.8e,%1.8e)\n",dxi,deta );
+	PetscPrintf(PETSC_COMM_SELF,"Domain: (dxi,eta) = (%1.8e,%1.8e)\n",dxi,deta );
 #endif
 	
 	for (p=0; p<np; p++) {
@@ -512,13 +510,13 @@ void InverseMappingDomain_2dQ2(
 			Gxip[0] = dxi   * (cxip[0]+1.0)/2.0 + xi0;
 			Gxip[1] = deta  * (cxip[1]+1.0)/2.0 + eta0;
 #ifdef PNTLOC_LOG
-			printf("init I,J = %d %d \n", I,J );
-			printf("[Lxi-init] = %1.8e %1.8e \n", cxip[0], cxip[1] );
-			printf("[Gxi-init] = %1.8e %1.8e \n", Gxip[0], Gxip[1] );
+			PetscPrintf(PETSC_COMM_SELF,"init I,J = %D %D \n", I,J );
+			PetscPrintf(PETSC_COMM_SELF,"[Lxi-init] = %1.8e %1.8e \n", cxip[0], cxip[1] );
+			PetscPrintf(PETSC_COMM_SELF,"[Gxi-init] = %1.8e %1.8e \n", Gxip[0], Gxip[1] );
 #endif
 		}
 		if (monitor) {
-			printf("point[%d]: pos = ( %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e ) \n", 
+			PetscPrintf(PETSC_COMM_SELF,"point[%d]: pos = ( %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e ) \n", 
 						 p, marker_p->coor[0],marker_p->coor[1],
 						 marker_p->xi[0], marker_p->xi[1] );
 		}
@@ -528,7 +526,7 @@ void InverseMappingDomain_2dQ2(
 		its = 0;
 		do {
 #ifdef PNTLOC_LOG
-			printf("iteration: %d\n",its);
+			PetscPrintf(PETSC_COMM_SELF,"iteration: %D\n",its);
 #endif
 			/* convert Gxi to IJ */
 			I = (Gxip[0]+1.0)/dxi;
@@ -539,19 +537,19 @@ void InverseMappingDomain_2dQ2(
 			
 			if ((I<0) || (J<0)) {
 #ifdef PNTLOC_LOG
-				printf("  I(%d),J(%d) negative Gxip %1.8e,%1.8e \n",I,J,Gxip[0],Gxip[1]);
+				PetscPrintf(PETSC_COMM_SELF,"  I(%D),J(%D) negative Gxip %1.8e,%1.8e \n",I,J,Gxip[0],Gxip[1]);
 #endif
 				break;
 			}
 			if (I >= mx) { 
 #ifdef PNTLOC_LOG
-				printf("  I too large \n");
+				PetscPrintf(PETSC_COMM_SELF,"  I too large \n");
 #endif
 				break;
 			}
 			if (J >= my) {
 #ifdef PNTLOC_LOG
-				printf("  J too large \n");
+				PetscPrintf(PETSC_COMM_SELF,"  J too large \n");
 #endif
 				break;
 			}
@@ -559,27 +557,27 @@ void InverseMappingDomain_2dQ2(
 			/* Get coords of cell IJ */
 			wil_IJ = I + J * mx;
 #ifdef PNTLOC_LOG
-			printf("  I,J=%d/%d : wil_IJ %d : nid = ", I,J,wil_IJ);
+			PetscPrintf(PETSC_COMM_SELF,"  I,J=%D/%D : wil_IJ %D : nid = ", I,J,wil_IJ);
 #endif
 			for (k=0; k<nodesPerEl; k++) {
-				int nid = element[wil_IJ*nodesPerEl+k];
+				PetscInt nid = element[wil_IJ*nodesPerEl+k];
 				
 				vertex[dim*k+0] = coords[dim*nid+0];
 				vertex[dim*k+1] = coords[dim*nid+1];
 #ifdef PNTLOC_LOG
-				printf("%d ", nid);
+				PetscPrintf(PETSC_COMM_SELF,"%D ", nid);
 #endif
 			}
 #ifdef PNTLOC_LOG
-			printf("\n");
+			PetscPrintf(PETSC_COMM_SELF,"\n");
 #endif
 			
 #ifdef PNTLOC_LOG
-			printf("  [vertex] ");
+			PetscPrintf(PETSC_COMM_SELF,"  [vertex] ");
 			for (k=0; k<nodesPerEl; k++) {
-				printf("(%1.8e , %1.8e) ",vertex[dim*k+0],vertex[dim*k+1] );
+				PetscPrintf(PETSC_COMM_SELF,"(%1.8e , %1.8e) ",vertex[dim*k+0],vertex[dim*k+1] );
 			}
-			printf("\n");
+			PetscPrintf(PETSC_COMM_SELF,"\n");
 #endif
 			
 			/* convert global (domain) xi TO local (element) xi  */
@@ -594,19 +592,19 @@ void InverseMappingDomain_2dQ2(
 			Lxip[1] = 2.0*(Gxip[1]-eta0 )/deta  - 1.0;
 			
 #ifdef PNTLOC_LOG
-			printf("  Lxi,Lxeta = %1.8e, %1.8e (%d,%d) \n", Lxip[0],Lxip[1],I,J );
+			PetscPrintf(PETSC_COMM_SELF,"  Lxi,Lxeta = %1.8e, %1.8e (%D,%D) \n", Lxip[0],Lxip[1],I,J );
 #endif
 			
 			_compute_F_2dQ2( Lxip, vertex, marker_p->coor, f );
 			if (monitor) {
-				printf("%4d InverseMapping : F = ( %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e ) \n", 
+				PetscPrintf(PETSC_COMM_SELF,"%4D InverseMapping : F = ( %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e ) \n", 
 							 its, f[0],f[1], Lxip[0],Lxip[1] );
 			}
 			
 			/* Check for convergence */
 			F2 = (f[0]*f[0]+f[1]*f[1]);
 			if (F2 < tolerance2) {
-				if (monitor) printf("%4d InverseMapping : converged : Norm of F %1.8e \n", its, sqrt(F2) );
+				if (monitor) PetscPrintf(PETSC_COMM_SELF,"%4D InverseMapping : converged : Norm of F %1.8e \n", its, sqrt(F2) );
 				point_found = _TRUE;
 				break;
 			}
@@ -616,19 +614,19 @@ void InverseMappingDomain_2dQ2(
 			/* compute update */
 			_compute_deltaX_2d( Jacobian, f, h );
 #ifdef PNTLOC_LOG
-			printf("  [delta] = %1.8e %1.8e \n", h[0],h[1] );
+			PetscPrintf(PETSC_COMM_SELF,"  [delta] = %1.8e %1.8e \n", h[0],h[1] );
 #endif
 			
 			/* update Lxip */
 			Lxip[0] += 10.0e-1 *h[0];
 			Lxip[1] += 10.0e-1 *h[1];
 #ifdef PNTLOC_LOG
-			printf("  [corrected] Lxi,Lxeta = %1.8e, %1.8e \n", Lxip[0],Lxip[1] );
+			PetscPrintf(PETSC_COMM_SELF,"  [corrected] Lxi,Lxeta = %1.8e, %1.8e \n", Lxip[0],Lxip[1] );
 #endif
 			
 			residual2 = ( h[0]*h[0] + h[1]*h[1] );
 			if (residual2 < tolerance2) {
-				if (monitor) printf("%4d InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
+				if (monitor) PetscPrintf(PETSC_COMM_SELF,"%4D InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
 				point_found = _TRUE;
 				break;
 			}
@@ -643,21 +641,21 @@ void InverseMappingDomain_2dQ2(
 			Gxip[0] = dxi   * (Lxip[0]+1.0)/2.0 + xi0;
 			Gxip[1] = deta  * (Lxip[1]+1.0)/2.0 + eta0;
 #ifdef PNTLOC_LOG
-			printf("  [Gxi] = %1.8e %1.8e \n", Gxip[0], Gxip[1] );
+			PetscPrintf(PETSC_COMM_SELF,"  [Gxi] = %1.8e %1.8e \n", Gxip[0], Gxip[1] );
 #endif
 			
 			for (d=0; d<dim; d++) {
 				if (Gxip[d] < -1.0) { 
 					Gxip[d] = -1.0;
 #ifdef PNTLOC_LOG
-					printf("  correction outside box: correcting \n");
+					PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
 #endif
 				}
 				
 				if (Gxip[d] > 1.0) {
 					Gxip[d] = 1.0;
 #ifdef PNTLOC_LOG
-					printf("  correction outside box: correcting \n");
+					PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
 #endif
 				}
 			}
@@ -667,9 +665,9 @@ void InverseMappingDomain_2dQ2(
 		
 		if (monitor && point_found == _FALSE){
 			if (its >= max_its) {
-				printf("%4d %s : Reached maximum iterations (%d) without converging. \n", its, __FUNCTION__, max_its );
+				PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, __FUNCTION__, max_its );
 			} else {
-				printf("%4d %s : Newton broke down, diverged or stagnated after (%d) iterations without converging. \n", its, __FUNCTION__, its );
+				PetscPrintf(PETSC_COMM_SELF,"%4D %s : Newton broke down, diverged or stagnated after (%D) iterations without converging. \n", its, __FUNCTION__, its );
 			}
 		}
 		
@@ -691,13 +689,13 @@ void InverseMappingDomain_2dQ2(
 			
 			if (I >= mx) {
 #ifdef PNTLOC_LOG
-				printf("  I too large \n");
+				PetscPrintf(PETSC_COMM_SELF,"  I too large \n");
 #endif
 				break;
 			}
 			if (J >= my) {
 #ifdef PNTLOC_LOG
-				printf("  J too large \n");
+				PetscPrintf(PETSC_COMM_SELF,"  J too large \n");
 #endif
 				break;
 			}

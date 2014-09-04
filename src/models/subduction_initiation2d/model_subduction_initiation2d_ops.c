@@ -90,33 +90,33 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global = 1.e+26;
 	rheology->eta_lower_cutoff_global = 1.e+20;
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ly",&data->Ly,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Oy",&data->Oy,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Lz",&data->Lz,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Oz",&data->Oz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Lx",&data->Lx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Ox",&data->Ox,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Ly",&data->Ly,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Oy",&data->Oy,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Lz",&data->Lz,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Oz",&data->Oz,NULL);CHKERRQ(ierr);
 	
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_velocity",&data->velocity,PETSC_NULL);CHKERRQ(ierr); 	
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_velocity",&data->velocity,NULL);CHKERRQ(ierr); 	
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_density_bar",&data->density_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_viscosity_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_velocity_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_density_bar",&data->density_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_viscosity_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_velocity_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Ttop",&data->Ttop,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Tbot",&data->Tbot,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_Thermal_age",&data->Thermal_age,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Ttop",&data->Ttop,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Tbot",&data->Tbot,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_Thermal_age",&data->Thermal_age,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta0",&data->eta[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_rho0",&data->rho[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_diffusivity0",&data->diffusivity[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_alpha0",&data->alpha[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_H0",&data->H[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_eta0",&data->eta[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_rho0",&data->rho[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_diffusivity0",&data->diffusivity[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_alpha0",&data->alpha[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_H0",&data->H[0],NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
 	
 	data->velocity = data->velocity*cm_yr2m_s;
 
@@ -437,7 +437,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
@@ -728,8 +728,8 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (!coords) { 
 		PetscPrintf(PETSC_COMM_WORLD,"WARNING: coordinates not set\n"); 
 	} else {
@@ -827,7 +827,7 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
 		
 		vals[0]=data->Ttop; //top temperature K
@@ -930,7 +930,7 @@ PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char 
 
 	/*  Write out material points: standard, stokes, plastic variables, energy */
 	if (output_markers){
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		const int nf = 4;
 		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
 		char mp_file_prefix[256];
@@ -956,7 +956,7 @@ PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char 
 		Vec            temperature;
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 		

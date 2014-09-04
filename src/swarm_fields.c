@@ -131,7 +131,6 @@ void StringFindInList( const char name[], const int N, const DataField gfield[],
 void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF )
 {
 	DataField df;
-	int i;
 	
 	df = malloc( sizeof(struct _p_DataField) );
 	memset( df, 0, sizeof(struct _p_DataField) ); 
@@ -151,7 +150,6 @@ void DataFieldCreate( const char registeration_function[], const char name[], co
 void DataFieldDestroy( DataField *DF )
 {
 	DataField df = *DF;
-	int i;
 	
 	free( df->registeration_function );
 	free( df->name );
@@ -284,7 +282,6 @@ void DataFieldGetNumEntries(DataField df, int *sum)
 
 void DataFieldSetSize( DataField df, const int new_L )
 {
-	int i;
 	void *tmp_data;
 	
 	if( new_L <= 0 ) {
@@ -313,9 +310,6 @@ void DataFieldSetSize( DataField df, const int new_L )
 
 void DataFieldZeroBlock( DataField df, const int start, const int end )
 {
-	int i;
-	void *tmp_data;
-	
 	if( start > end ) {
 		printf("ERROR: Cannot zero a block of entries if start(%d) > end(%d) \n",start,end);
 		ERROR();
@@ -337,7 +331,7 @@ void DataFieldZeroBlock( DataField df, const int start, const int end )
  */
 void DataBucketSetSizes( DataBucket db, const int L, const int buffer )
 {
-	int currentlength,newlength,current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
+	int current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
 	
 	
 	if( db->finalised == BFALSE ) {
@@ -404,16 +398,30 @@ void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer )
 
 void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated )
 {
-	if(L){ *L = db->L; }
-	if(buffer){ *buffer = db->buffer; }
-	if(allocated){ *allocated = db->allocated; }
+	if (L) { *L = db->L; }
+	if (buffer) { *buffer = db->buffer; }
+	if (allocated) { *allocated = db->allocated; }
 }
+
+void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated )
+{
+	long int _L,_buffer,_allocated;
+	int ierr;
+	
+	_L = (long int)db->L;
+	_buffer = (long int)db->buffer;
+	_allocated = (long int)db->allocated;
+	
+	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm); }
+	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm); }
+	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm); }
+}
+
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] )
 {
 	if(L){      *L      = db->nfields; }
 	if(fields){ *fields = db->field; }
 }
-
 
 void DataFieldGetAccess( const DataField gfield )
 {
@@ -961,15 +969,14 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 		case DATABUCKET_VIEW_STDOUT:
 		{
 			int f;
-			int L,buffer,allocated;
+			long int L,buffer,allocated;
 			double memory_usage_total,memory_usage_total_local = 0.0;
 			int rank;
+			int ierr;
 			
-			MPI_Comm_rank(comm,&rank);
+			ierr = MPI_Comm_rank(comm,&rank);
 			
-			MPI_Allreduce(&db->L,&L,1,MPI_INT,MPI_SUM,comm);
-			MPI_Allreduce(&db->buffer,&buffer,1,MPI_INT,MPI_MAX,comm);
-			MPI_Allreduce(&db->allocated,&allocated,1,MPI_INT,MPI_SUM,comm);
+			DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
 			
 			for( f=0; f<db->nfields; f++ ) {
 				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
@@ -980,9 +987,9 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 
 			if (rank==0) {
 				printf("DataBucketView(MPI): (\"%s\")\n",filename);
-				printf("  L                  = %d \n", L );
-				printf("  buffer (max)       = %d \n", buffer );
-				printf("  allocated          = %d \n", allocated );
+				printf("  L                  = %ld \n", L );
+				printf("  buffer (max)       = %ld \n", buffer );
+				printf("  allocated          = %ld \n", allocated );
 				
 				printf("  nfields registered = %d \n", db->nfields );
 				for( f=0; f<db->nfields; f++ ) {

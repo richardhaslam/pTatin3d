@@ -200,7 +200,7 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 	
   /* model geometry */
   PetscPrintf(PETSC_COMM_WORLD,"reading model initial geometry from options\n");
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-initial_region_geom_type",(PetscInt*)&data->initial_geom,&found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-initial_region_geom_type",(PetscInt*)&data->initial_geom,&found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Type of region index initialisation","-initial_region_geom_type","1=pmap, 2=CAD");CHKERRQ(ierr);
 	}
@@ -208,33 +208,33 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
   /* box geometry */
   PetscPrintf(PETSC_COMM_WORLD, "reading box geometry from options\n");
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Lx", &data->Lx, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Lx", &data->Lx, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE) {
 		ierr = ReportOptionMissing(0,"Model length in x","-Lx",0);CHKERRQ(ierr);
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Ly", &data->Ly, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Ly", &data->Ly, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE) {
 		ierr = ReportOptionMissing(0,"Model length in y","-Ly",0);CHKERRQ(ierr);
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Lz", &data->Lz, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Lz", &data->Lz, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE) {
 		ierr = ReportOptionMissing(0,"Model length in z","-Lz",0);CHKERRQ(ierr);
 	}
 	
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Ox", &data->Ox, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Ox", &data->Ox, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Model origin in x","-Ox",0);CHKERRQ(ierr);
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Oy", &data->Oy, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Oy", &data->Oy, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Model origin in y","-Oy",0);CHKERRQ(ierr);
 	}
 	
-  ierr = PetscOptionsGetReal(PETSC_NULL, "-Oz", &data->Oz, &found);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL, "-Oz", &data->Oz, &found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Model origin in z","-Oz",0);CHKERRQ(ierr);
 	}
@@ -242,7 +242,7 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 	
   /* bc type */
 	opts_bcs = GENEBC_FreeSlip;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-bc_type",&opts_bcs,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-bc_type",&opts_bcs,&found);CHKERRQ(ierr);
   if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Boundary condition type","-bc_type",0);CHKERRQ(ierr);
 	}
@@ -363,14 +363,14 @@ PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,Mo
 			ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
 
 			
-			ierr = PetscOptionsGetReal(PETSC_NULL,"-extension_x",&ext_value,&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal(NULL,"-extension_x",&ext_value,&flg);CHKERRQ(ierr);
 			if (flg) {
 				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
 				ext_value = -1.0 * ext_value;
 				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
 			}
 			
-			ierr = PetscOptionsGetReal(PETSC_NULL,"-extension_z",&ext_value,&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal(NULL,"-extension_z",&ext_value,&flg);CHKERRQ(ierr);
 			if (flg) {
 				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
 				ext_value = -1.0 * ext_value;
@@ -402,7 +402,7 @@ PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,Mo
 			PetscReal exz_value,zero;
 			
 			exz_value = 0.25;
-			ierr = PetscOptionsGetReal(PETSC_NULL,"-shear_exz",&exz_value,&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal(NULL,"-shear_exz",&exz_value,&flg);CHKERRQ(ierr);
 /*
 			// all sides //
 			ierr = DirichletBC_ApplyStrainRateExz_b(u_bclist,dav,exz_value);CHKERRQ(ierr);
@@ -585,10 +585,10 @@ PetscErrorCode MaterialPointSetRegion_MyFunction(pTatinCtx c,void *ctx)
 	gamma = 1.0/6.0;
 	delta = 0.0;
 
-	PetscOptionsGetReal(PETSC_NULL,"-int_alpha",&alpha,0);
-	PetscOptionsGetReal(PETSC_NULL,"-int_beta",&beta,0);
-	PetscOptionsGetReal(PETSC_NULL,"-int_gamma",&gamma,0);
-	PetscOptionsGetReal(PETSC_NULL,"-int_delta",&delta,0);
+	PetscOptionsGetReal(NULL,"-int_alpha",&alpha,0);
+	PetscOptionsGetReal(NULL,"-int_beta",&beta,0);
+	PetscOptionsGetReal(NULL,"-int_gamma",&gamma,0);
+	PetscOptionsGetReal(NULL,"-int_delta",&delta,0);
 	
   for (p=0; p<n_mp_points; p++) {
 		MPntStd *material_point;

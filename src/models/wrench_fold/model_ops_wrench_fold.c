@@ -36,18 +36,18 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	data->max_layers = 100;
 	
 	data->n_interfaces = 2;
-	PetscOptionsGetInt(PETSC_NULL,"-model_wrench_fold_n_interfaces",&data->n_interfaces,&flg);
+	PetscOptionsGetInt(NULL,"-model_wrench_fold_n_interfaces",&data->n_interfaces,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_wrench_fold_n_interfaces)");
 	}
 	
-	pTatinModelGetOptionReal("-model_wrench_fold_Lx", &data->Lx, "User must provide the length along the x direction", PETSC_NULL,PETSC_TRUE);
-	/*PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Lx",&data->Lx,&flg);
+	pTatinModelGetOptionReal("-model_wrench_fold_Lx", &data->Lx, "User must provide the length along the x direction", NULL,PETSC_TRUE);
+	/*PetscOptionsGetReal(NULL,"-model_wrench_fold_Lx",&data->Lx,&flg);
 	 if (!flg) {
 	 SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_wrench_fold_Lx)");
 	 }*/
 	
-	PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_Ly",&data->Ly,&flg);
+	PetscOptionsGetReal(NULL,"-model_wrench_fold_Ly",&data->Ly,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the y direction (-model_wrench_fold_Ly)");
 	}
@@ -57,7 +57,7 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	data->Ly = data->Ly / L_star;
 	
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_wrench_fold_interface_heights",data->interface_heights,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_wrench_fold_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide interface heights relative from the base of the model including the top and bottom boundaries (-model_wrench_fold_interface_heights)");
 	}
@@ -70,7 +70,7 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
-	PetscOptionsGetIntArray(PETSC_NULL,"-model_wrench_fold_layer_res_k",data->layer_res_k,&n_int,&flg);
+	PetscOptionsGetIntArray(NULL,"-model_wrench_fold_layer_res_k",data->layer_res_k,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_wrench_fold_layer_res_k)");
 	}
@@ -79,7 +79,7 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_wrench_fold_layer_eta",data->eta,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_wrench_fold_layer_eta",data->eta,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list (-model_wrench_fold_layer_eta)");
 	}
@@ -88,7 +88,7 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(PETSC_NULL,"-model_wrench_fold_layer_rho",data->rho,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,"-model_wrench_fold_layer_rho",data->rho,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list (-model_wrench_fold_layer_rho)");
 	}
@@ -110,8 +110,8 @@ PetscErrorCode ModelInitialize_WrenchFold(pTatinCtx c,void *ctx)
 	data->exy             = -1.0e-3;
 	
 	/* parse from command line or input file */
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_wrench_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_wrench_fold_exy",&data->exy,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-model_wrench_fold_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_wrench_fold_exy",&data->exy,&flg);CHKERRQ(ierr);
 	
 	/* define the coefficient for the BC.*/
 	if(data->bc_type == 0){
@@ -297,13 +297,13 @@ PetscErrorCode WrenchFoldSetPerturbedInterfaces(DM dav, PetscScalar interface_he
 	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dav,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
 	
 	kinter = 0;
-	ierr = MPI_Comm_size(((PetscObject)dav)->comm,&proc);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)dav),&proc);CHKERRQ(ierr);
 	srand(proc+2);
 	for(interf = 1; interf < n_interfaces-1; interf++){
 		kinter += 2*layer_res_k[interf-1];
@@ -567,7 +567,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx,0.0 ,Ly, data->interface_heights[0],Lz);CHKERRQ(ierr);
 	factor = 0.1;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_WrenchFold_amp_factor",&factor,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_WrenchFold_amp_factor",&factor,NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside WrenchFoldSetPerturbedInterfaces() */
 	if ( (amp < 0.0) || (amp >1.0) ) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_WrenchFold_amp_factor must be 0 < amp < 1");
@@ -579,9 +579,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_WrenchFold(pTatinCtx c,void *ctx)
 	ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
 
 	/*
-	ierr = DMDAGetCoordinates(c->stokes_ctx->dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(c->stokes_ctx->dav,&coord);CHKERRQ(ierr);
 	ierr = VecScale(coord,1.0e-2);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(c->stokes_ctx->dav,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(c->stokes_ctx->dav,&coord);CHKERRQ(ierr);
 	ierr = VecScale(coord,1.0e-2);CHKERRQ(ierr);
 */
 	
@@ -708,7 +708,7 @@ PetscErrorCode ModelOutput_WrenchFold(pTatinCtx c,Vec X,const char prefix[],void
 		const int                   nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		//sprintf(name,"%s_mpoints_cell",prefix);
 		//ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);

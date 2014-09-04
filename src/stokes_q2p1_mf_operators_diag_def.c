@@ -34,10 +34,6 @@
 
 void MatMultMF_Stokes_MixedFEM3d_diagB(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
-  const int nsd = 3;
-  const int ntens = 6;
-
-
   Y[0] += FAC*(eta_gp*pow(dNudy[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudx[0],2));
   Y[1] += FAC*(eta_gp*pow(dNudx[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudy[0],2));
   Y[2] += FAC*(eta_gp*pow(dNudx[0],2) + eta_gp*pow(dNudy[0],2) + 2.0*eta_gp*pow(dNudz[0],2));
@@ -119,19 +115,15 @@ void MatMultMF_Stokes_MixedFEM3d_diagB(const double FAC,const double eta_gp,cons
   Y[78] += FAC*(eta_gp*pow(dNudy[26],2) + eta_gp*pow(dNudz[26],2) + 2.0*eta_gp*pow(dNudx[26],2));
   Y[79] += FAC*(eta_gp*pow(dNudx[26],2) + eta_gp*pow(dNudz[26],2) + 2.0*eta_gp*pow(dNudy[26],2));
   Y[80] += FAC*(eta_gp*pow(dNudx[26],2) + eta_gp*pow(dNudy[26],2) + 2.0*eta_gp*pow(dNudz[26],2));
-  Y[81] += 0;
-  Y[82] += 0;
-  Y[83] += 0;
-  Y[84] += 0;
+  Y[81] += 0.0;
+  Y[82] += 0.0;
+  Y[83] += 0.0;
+  Y[84] += 0.0;
   
 // total operations = 1138
 }
 void MatMultMF_Stokes_MixedFEM3d_diagB11(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
-  const int nsd = 3;
-  const int ntens = 6;
-
-
   Y[0] += FAC*(eta_gp*pow(dNudy[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudx[0],2));
   Y[1] += FAC*(eta_gp*pow(dNudx[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudy[0],2));
   Y[2] += FAC*(eta_gp*pow(dNudx[0],2) + eta_gp*pow(dNudy[0],2) + 2.0*eta_gp*pow(dNudz[0],2));
@@ -218,10 +210,6 @@ void MatMultMF_Stokes_MixedFEM3d_diagB11(const double FAC,const double eta_gp,co
 }
 void MatMultMF_Stokes_MixedFEM3d_diagBuu(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
-  const int nsd = 3;
-  const int ntens = 6;
-
-
   Y[0] += FAC*(eta_gp*pow(dNudy[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudx[0],2));
   Y[1] += FAC*(eta_gp*pow(dNudy[1],2) + eta_gp*pow(dNudz[1],2) + 2.0*eta_gp*pow(dNudx[1],2));
   Y[2] += FAC*(eta_gp*pow(dNudy[2],2) + eta_gp*pow(dNudz[2],2) + 2.0*eta_gp*pow(dNudx[2],2));
@@ -254,10 +242,6 @@ void MatMultMF_Stokes_MixedFEM3d_diagBuu(const double FAC,const double eta_gp,co
 }
 void MatMultMF_Stokes_MixedFEM3d_diagBvv(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
-  const int nsd = 3;
-  const int ntens = 6;
-
-
   Y[0] += FAC*(eta_gp*pow(dNudx[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudy[0],2));
   Y[1] += FAC*(eta_gp*pow(dNudx[1],2) + eta_gp*pow(dNudz[1],2) + 2.0*eta_gp*pow(dNudy[1],2));
   Y[2] += FAC*(eta_gp*pow(dNudx[2],2) + eta_gp*pow(dNudz[2],2) + 2.0*eta_gp*pow(dNudy[2],2));
@@ -290,10 +274,6 @@ void MatMultMF_Stokes_MixedFEM3d_diagBvv(const double FAC,const double eta_gp,co
 }
 void MatMultMF_Stokes_MixedFEM3d_diagBww(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
-  const int nsd = 3;
-  const int ntens = 6;
-
-
   Y[0] += FAC*(eta_gp*pow(dNudx[0],2) + eta_gp*pow(dNudy[0],2) + 2.0*eta_gp*pow(dNudz[0],2));
   Y[1] += FAC*(eta_gp*pow(dNudx[1],2) + eta_gp*pow(dNudy[1],2) + 2.0*eta_gp*pow(dNudz[1],2));
   Y[2] += FAC*(eta_gp*pow(dNudx[2],2) + eta_gp*pow(dNudy[2],2) + 2.0*eta_gp*pow(dNudz[2],2));
@@ -326,14 +306,10 @@ void MatMultMF_Stokes_MixedFEM3d_diagBww(const double FAC,const double eta_gp,co
 }
 void MatMultMF_Stokes_MixedFEM3d_diagA22(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
-  const int nsd = 3;
-  const int ntens = 6;
-
-
-  Y[0] += 0;
-  Y[1] += 0;
-  Y[2] += 0;
-  Y[3] += 0;
+  Y[0] += 0.0;
+  Y[1] += 0.0;
+  Y[2] += 0.0;
+  Y[3] += 0.0;
   
 // total operations = 4
 }

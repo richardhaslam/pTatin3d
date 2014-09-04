@@ -33,7 +33,7 @@
 
 
 
-#include "private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 #include "petscdm.h"
 
 #include "ptatin3d.h"
@@ -58,7 +58,7 @@ PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,Pets
 	
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
-	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
 	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
@@ -87,30 +87,30 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	DM stokes_pack;
 	Vec X,v,w,UP;
 	Mat A;
-	static char pvdfilename[1000];
-	char vtkfilename[1000];
+	static char pvdfilename[PETSC_MAX_PATH_LEN];
+	char vtkfilename[PETSC_MAX_PATH_LEN];
 	PetscInt its;
 	
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
-	ierr = KSPGetOperators(ksp,&A,0,0);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
 	ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
 	
 	ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
 
 	ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
-	if (its==0) {
-		sprintf(pvdfilename,"%s/stokes_ksp_r_step%.6d.pvd",ctx->outputpath,ctx->step);
+	if (its == 0) {
+		PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/stokes_ksp_r_step%.6d.pvd",ctx->outputpath,ctx->step);
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
-	sprintf(vtkfilename, "stokes_ksp_r_it%.4d_step%.6d.pvts",its,ctx->step);
+	PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1,"stokes_ksp_r_it%.4d_step%.6d.pvts",its,ctx->step);
 	ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
-	sprintf(vtkfilename, "stokes_ksp_r_it%.4d_step%.6d",its,ctx->step);
+	PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1,"stokes_ksp_r_it%.4d_step%.6d",its,ctx->step);
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
@@ -131,11 +131,11 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,const char field[])
 {
 	PetscErrorCode ierr;
-	DM             stokes_pack;
-	const char     *prefix;
-	static char    pvdfilename[1000];
-	char           vtkfilename[1000];
-	PetscInt       its;
+	DM stokes_pack;
+	const char *prefix;
+	static char pvdfilename[PETSC_MAX_PATH_LEN];
+	char vtkfilename[PETSC_MAX_PATH_LEN];
+	PetscInt its;
 	
 	PetscFunctionBegin;
     
@@ -144,26 +144,26 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
 	
 	if (its == 0) {
 		if (!prefix) {
-			sprintf(pvdfilename,"%s/stokes_snes_%s_step%.6d.pvd",ctx->outputpath,field,ctx->step);
+			PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/stokes_snes_%s_step%.6d.pvd",ctx->outputpath,field,ctx->step);
 		}else {
-			sprintf(pvdfilename,"%s/stokes_snes_%s%s_step%.6d.pvd",ctx->outputpath,prefix,field,ctx->step);
+			PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/stokes_snes_%s%s_step%.6d.pvd",ctx->outputpath,prefix,field,ctx->step);
 		}
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 	}
 	if (!prefix) {
-		sprintf(vtkfilename, "stokes_snes_%s_it%.4d_step%.6d.pvts",field,its,ctx->step);
+		PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1,"stokes_snes_%s_it%.4d_step%.6d.pvts",field,its,ctx->step);
 	} else {
-		sprintf(vtkfilename, "stokes_snes_%s%s_it%.4d_step%.6d.pvts",prefix,field,its,ctx->step);
+		PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1,"stokes_snes_%s%s_it%.4d_step%.6d.pvts",prefix,field,its,ctx->step);
 	}
 	ierr = ParaviewPVDAppend(pvdfilename,(double)its, vtkfilename, "");CHKERRQ(ierr);
 	
 	
 	// PVTS + VTS
 	if (!prefix) {
-		sprintf(vtkfilename, "stokes_snes_%s_it%.4d_step%.6d",field,its,ctx->step);
+		PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1,"stokes_snes_%s_it%.4d_step%.6d",field,its,ctx->step);
 	} else {
-		sprintf(vtkfilename, "stokes_snes_%s%s_it%.4d_step%.6d",prefix,field,its,ctx->step);
+		PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1,"stokes_snes_%s%s_it%.4d_step%.6d",prefix,field,its,ctx->step);
 	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;

@@ -65,17 +65,17 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 
 	/* create the da */
 	nx = ny = nz = 10;
-	PetscOptionsGetInt( PETSC_NULL, "-mx", &nx, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-my", &ny, 0 );
-	PetscOptionsGetInt( PETSC_NULL, "-mz", &nz, 0 );
+	PetscOptionsGetInt( NULL, "-mx", &nx, 0 );
+	PetscOptionsGetInt( NULL, "-my", &ny, 0 );
+	PetscOptionsGetInt( NULL, "-mz", &nz, 0 );
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
 	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	
 	ierr = VecStrideScale(coords,0,10.0);CHKERRQ(ierr);
 	ierr = VecStrideScale(coords,1,20.0);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	
 	/* create a field */
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = VecSetRandom( x, PETSC_NULL );CHKERRQ(ierr);
+	ierr = VecSetRandom( x, NULL );CHKERRQ(ierr);
 	ierr = VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );CHKERRQ(ierr);
 	ierr = VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );CHKERRQ(ierr);
 	ierr = VecMin( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );CHKERRQ(ierr);
@@ -97,14 +97,14 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	ierr = DMDAViewPetscVTK(da, x, "dmda_checkpoint_1.vtk");CHKERRQ(ierr);
 	
 	/* dump field to disk */
-	ierr = PetscViewerBinaryOpen( ((PetscObject)da)->comm, "dmda_checkpoint_stressfield.dat", FILE_MODE_WRITE, &v );CHKERRQ(ierr);
+	ierr = PetscViewerBinaryOpen( PetscObjectComm((PetscObject)da), "dmda_checkpoint_stressfield.dat", FILE_MODE_WRITE, &v );CHKERRQ(ierr);
 	ierr = VecView( x, v );CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
 
 	/* dump coords to disk */
 	/*
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
-	ierr = PetscViewerBinaryOpen( ((PetscObject)da)->comm, "coord-data.dat", FILE_MODE_WRITE, &v );CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = PetscViewerBinaryOpen( PetscObjectComm((PetscObject)da), "coord-data.dat", FILE_MODE_WRITE, &v );CHKERRQ(ierr);
 	ierr = VecView( coords, v );CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(v);CHKERRQ(ierr);
 	*/
@@ -122,9 +122,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 PetscErrorCode test_dmda_checkpoint_load( void ) 
 {
 	DM  da;
-	Vec x,coords;
-	PetscReal val;
-	PetscScalar max;
+	Vec x;
 	PetscErrorCode ierr;
 	
 	
@@ -161,13 +159,13 @@ PetscErrorCode test_DMDACheckPoint(void)
 	
 	PetscFunctionBegin;
 	checkpoint = PETSC_FALSE;
-	PetscOptionsGetBool( PETSC_NULL, "-checkpoint", &checkpoint, &flg );
+	PetscOptionsGetBool( NULL, "-checkpoint", &checkpoint, &flg );
 	if( checkpoint == PETSC_TRUE ) {
 		ierr = test_dmda_checkpoint_pack();CHKERRQ(ierr);
 	}
 	
 	restart = PETSC_FALSE;
-	PetscOptionsGetBool( PETSC_NULL, "-restart", &restart, &flg );
+	PetscOptionsGetBool( NULL, "-restart", &restart, &flg );
 	if( restart == PETSC_TRUE ) {
 		ierr = test_dmda_checkpoint_load();CHKERRQ(ierr);
 	}
@@ -179,9 +177,8 @@ PetscErrorCode test_DMDACheckPoint(void)
 int main( int argc,char **argv )
 {
 	PetscErrorCode ierr;
-	PetscInt mx,my,mz;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	ierr = test_DMDACheckPoint();CHKERRQ(ierr);
 

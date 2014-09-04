@@ -3,7 +3,7 @@
 #include <petscvec.h>
 #include <petscmat.h>
 #include <petscpc.h>
-#include <private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>
 
 
@@ -52,16 +52,16 @@ PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 	PetscReal min,max;
 	
 	ierr = MatGetVecs(A,&y2,&y1);CHKERRQ(ierr);
-	ierr = MatGetVecs(A,&x,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
 	
-	ierr = VecSetRandom(x,PETSC_NULL);CHKERRQ(ierr);
+	ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
 	ierr = MatMult(A,x,y1);CHKERRQ(ierr);
 	ierr = MatMultTranspose(A,x,y2);CHKERRQ(ierr);
 	
 	ierr = VecAXPY(y1,-1.0,y2);CHKERRQ(ierr);
 	ierr = VecAbs(y1);CHKERRQ(ierr);
-	ierr = VecMin(y1,PETSC_NULL,&min);CHKERRQ(ierr);
-	ierr = VecMax(y1,PETSC_NULL,&max);CHKERRQ(ierr);
+	ierr = VecMin(y1,NULL,&min);CHKERRQ(ierr);
+	ierr = VecMax(y1,NULL,&max);CHKERRQ(ierr);
 	
 	if (max < tol) {
 		*flg = PETSC_TRUE;
@@ -97,9 +97,9 @@ PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
 	PetscErrorCode ierr;
-	PetscInt *ia;
-	PetscInt *ja;
-	PetscInt m,nnz_i,cnt,idx,nnz_full,nnz_ut,i,j;
+	const PetscInt *ia;
+	const PetscInt *ja;
+	PetscInt m,nnz_i,cnt,idx,nnz_ut,i,j;
 	PetscBool done;
 	int *ia_ut,*ja_ut;
 	
@@ -179,8 +179,8 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
 	PetscErrorCode ierr;
-	PetscInt *ia;
-	PetscInt *ja;
+	const PetscInt *ia;
+	const PetscInt *ja;
 	PetscInt m,n,M,N,nnz_i,cnt,idx,nnz_ut,i,j,start,end;
 	PetscBool done;
 	int *ia_ut,*ja_ut;
@@ -262,10 +262,13 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 		FILE *fp;
 		char name[1000];
 		PetscInt nnz_i_ut = 0;
+		MPI_Comm comm;
+		
 		
 		// ia
-		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-		sprintf(name,"ia_rank%d.dat",rank);
+		PetscObjectGetComm((PetscObject)A,&comm);
+		ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+		PetscSNPrintf(name,1000-1,"ia_rank%D.dat",rank);
 		fp = fopen(name,"w");
         
 		cnt = 0;
@@ -279,17 +282,17 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 					nnz_i_ut++;
 				}
 			}
-			fprintf(fp,"[%d] %d \n",i,(int)idx);
+			PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D \n",i,idx);
 			
 			idx = idx + nnz_i_ut;
 			cnt = cnt + nnz_i;
 		}
-		fprintf(fp,"[%d] %d \n",m,(int)idx);
+		PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D \n",m,idx);
 		
 		fclose(fp);
         
 		// ja
-		sprintf(name,"ja_rank%d.dat",rank);
+		PetscSNPrintf(name,1000-1,"ja_rank%D.dat",rank);
 		fp = fopen(name,"w");
         
 		idx = 0;
@@ -299,7 +302,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 			nnz_i = ia[i+1]-ia[i];
 			for (j=cnt; j<cnt+nnz_i; j++) {
 				if (ja[j] >= i+start) {
-					fprintf(fp,"[%d] %d %d \n",idx,i,(int)ja[j]);
+					PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D %D \n",idx,i,ja[j]);
 					idx++;
 				}
 			}
@@ -365,18 +368,20 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 		PetscMPIInt rank;
 		FILE *fp;
 		char name[1000];
+		MPI_Comm comm;
 		
 		//ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
 		//ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 		
-		MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-		sprintf(name,"Aut_rank%d.dat",rank);
+		PetscObjectGetComm((PetscObject)A,&comm);
+		ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+		PetscSNPrintf(name,1000-1,"Aut_rank%D.dat",rank);
 		fp = fopen(name,"w");
 		for (i=start; i<start+m; i++) {
 			ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
 			for (j=0; j<ncols; j++) {
 				if (cols[j] >= i) {
-					fprintf(fp,"[%d,%d] %1.4e: ",i,cols[j],vals[j]);
+					PetscFPrintf(PETSC_COMM_SELF,fp,"[%D,%D] %1.4e: ",i,cols[j],vals[j]);
 				}
 			} fprintf(fp,"\n");
 			ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
@@ -485,10 +490,10 @@ PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
 #define __FUNCT__ "call_wsmp_wsetmpicomm"
 PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 {
+#ifdef HAVE_PWSSMP
 	MPI_Fint fcomm;
 	
 	fcomm = MPI_Comm_c2f(comm);
-#ifdef HAVE_PWSSMP
 	wsetmpicomm_(&fcomm);
 #else
 	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"[wsmp] Missing external package needed for type -pc_type \"wsmp\" (PWSSMP)");
@@ -509,7 +514,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	
     PetscFunctionBegin;
 	
-	ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PCGetOperators(pc,&A,&B);
 	
 	if (!pc->setfromoptionscalled) {
 		/* -- [wsmp] : initialize with default parameters -- */
@@ -569,10 +574,10 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		/* -- [wsmp] : symbolic factorization -- */
 		wsmp->IPARM[2 -1] = 2;
 		wsmp->IPARM[3 -1] = 2;
-		PetscGetTime(&t0);
+		PetscTime(&t0);
 		ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
 		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-		PetscGetTime(&t1);
+		PetscTime(&t1);
 		
 		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
 		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
@@ -604,10 +609,10 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			/* -- [wsmp] : symbolic factorization -- */
 			wsmp->IPARM[2 -1] = 2;
 			wsmp->IPARM[3 -1] = 2;
-            PetscGetTime(&t0);
+            PetscTime(&t0);
 			ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
 			ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-            PetscGetTime(&t1);
+            PetscTime(&t1);
             
 			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
 			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
@@ -712,8 +717,6 @@ static PetscErrorCode PCReset_WSMP(PC pc)
 static PetscErrorCode PCDestroy_WSMP(PC pc)
 {
     PetscErrorCode   ierr;
-    PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
-	
 	
     PetscFunctionBegin;
     ierr = PCReset_WSMP(pc);CHKERRQ(ierr);
@@ -727,8 +730,6 @@ static PetscErrorCode PCDestroy_WSMP(PC pc)
 #define __FUNCT__ "WSMPSetFromOptions_Ordering"
 PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 {
-	PetscErrorCode ierr;
-    
 	/* recommended for finite elements */
 	if (wsmp->sequential) {
 		wsmp->IPARM[16 -1] = 1;
@@ -751,8 +752,6 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 #define __FUNCT__ "WSMPSetFromOptions_SymbolicFactorization"
 PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionReturn(0);
 }
 
@@ -760,9 +759,6 @@ PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp)
 #define __FUNCT__ "WSMPSetFromOptions_NumericFactorization"
 PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC_WSMP *wsmp)
 {
-	PetscErrorCode ierr;
-    
-	
 	PetscFunctionReturn(0);
 }
 
@@ -814,8 +810,8 @@ static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
 	
 	
     PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+    ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
     if (iascii) {
 		
 		ierr = PetscViewerASCIIPrintf(viewer,"  WSMP preconditioner\n");CHKERRQ(ierr);
@@ -859,7 +855,7 @@ static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
     } else if (isstring) {
 		ierr = PetscViewerStringSPrintf(viewer," WSMP preconditioner");CHKERRQ(ierr);
     } else {
-        SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC WSMP",((PetscObject)viewer)->type_name);
+        SETERRQ1(PetscObjectComm((PetscObject)pc),PETSC_ERR_SUP,"Viewer type %s not supported for PC WSMP",((PetscObject)viewer)->type_name);
     }
 	
     PetscFunctionReturn(0);
@@ -876,11 +872,11 @@ PetscErrorCode PCCreate_WSMP(PC pc)
     
 	
     PetscFunctionBegin;
-    ierr = PetscNewLog(pc,PC_WSMP,&wsmp);CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,&wsmp);CHKERRQ(ierr);
     pc->data            = (void*)wsmp;
 	
 	/* determine if sequential call or parallel call required */
-	ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
 	if (size == 1) {
 		wsmp->sequential = PETSC_TRUE;
 	} else {

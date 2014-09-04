@@ -49,7 +49,7 @@ PetscErrorCode DMDADuplicateLayout(DM da1,PetscInt dof2,PetscInt sw2,DMDAStencil
 	PetscInt dim1;
 	PetscInt dof1,sw1;
 	DMDAStencilType st1;
-	DMDABoundaryType wrap1[3];
+	DMBoundaryType wrap1[3];
 	const PetscInt *lx,*ly,*lz;
 	Vec coords;
 	PetscErrorCode ierr;
@@ -64,24 +64,24 @@ PetscErrorCode DMDADuplicateLayout(DM da1,PetscInt dof2,PetscInt sw2,DMDAStencil
 	if (st2==PETSC_DECIDE)  {  st2 = st1;  }
 
 	if (dim1==1) {
-		ierr = DMDAGetOwnershipRanges(da1,&lx,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-		ierr = DMDACreate1d(((PetscObject)da1)->comm, wrap1[0],M1, dof2,sw2, lx, da2);CHKERRQ(ierr);
+		ierr = DMDAGetOwnershipRanges(da1,&lx,NULL,NULL);CHKERRQ(ierr);
+		ierr = DMDACreate1d(PetscObjectComm((PetscObject)da1), wrap1[0],M1, dof2,sw2, lx, da2);CHKERRQ(ierr);
 	} else if (dim1==2) {
-		ierr = DMDAGetOwnershipRanges(da1,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
-		ierr = DMDACreate2d(((PetscObject)da1)->comm, wrap1[0],wrap1[1],st2, M1,N1,cx1,cy1, dof2,sw2, lx,ly, da2);CHKERRQ(ierr);
+		ierr = DMDAGetOwnershipRanges(da1,&lx,&ly,NULL);CHKERRQ(ierr);
+		ierr = DMDACreate2d(PetscObjectComm((PetscObject)da1), wrap1[0],wrap1[1],st2, M1,N1,cx1,cy1, dof2,sw2, lx,ly, da2);CHKERRQ(ierr);
 	} else if (dim1==3) {
 		ierr = DMDAGetOwnershipRanges(da1,&lx,&ly,&lz);CHKERRQ(ierr);
-		ierr = DMDACreate3d(((PetscObject)da1)->comm, wrap1[0],wrap1[1],wrap1[2],st2, M1,N1,P1,cx1,cy1,cz1, dof2,sw2, lx,ly,lz, da2);CHKERRQ(ierr);
+		ierr = DMDACreate3d(PetscObjectComm((PetscObject)da1), wrap1[0],wrap1[1],wrap1[2],st2, M1,N1,P1,cx1,cy1,cz1, dof2,sw2, lx,ly,lz, da2);CHKERRQ(ierr);
 	} else {
-		SETERRQ(((PetscObject)da1)->comm,PETSC_ERR_USER,"Unknown dimension for DMDA");
+		SETERRQ(PetscObjectComm((PetscObject)da1),PETSC_ERR_USER,"Unknown dimension for DMDA");
 	}
 
-	ierr = DMDAGetCoordinates(da1,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da1,&coords);CHKERRQ(ierr);
 	if (coords) {
 		if (dim1==1) {
-			ierr = DMDASetUniformCoordinates(*da2,-1.0,1.0, PETSC_NULL,PETSC_NULL, PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+			ierr = DMDASetUniformCoordinates(*da2,-1.0,1.0, 0.,0., 0.,0.);CHKERRQ(ierr);
 		} else if (dim1==2) {
-			ierr = DMDASetUniformCoordinates(*da2,-1.0,1.0, -1.0,1.0, PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+			ierr = DMDASetUniformCoordinates(*da2,-1.0,1.0, -1.0,1.0, 0.,0.);CHKERRQ(ierr);
 		} else {
 			ierr = DMDASetUniformCoordinates(*da2,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);
 		}

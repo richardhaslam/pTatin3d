@@ -62,7 +62,6 @@ static inline void ComputeLinearSoft(float eplast,PetscReal emin,PetscReal emax,
 		if (eplast > emax) {
 			*Xeff = Xinf;
 		} else {
-			float X  = (eplast-emin)/(emax-emin);
 			*Xeff  = X0 - (eplast-emin)/(emax-emin)*(X0-Xinf);
 		}
 	}
@@ -183,7 +182,6 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	PetscReal      elu[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
 	PetscReal      elT[Q1_NODES_PER_EL_3D];
 	PetscReal      ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
-	PetscInt       *gidx;
 	
 	PetscReal NI_T[Q1_NODES_PER_EL_3D];
 	PetscReal NI[Q2_NODES_PER_EL_3D],GNI[3][Q2_NODES_PER_EL_3D],NIp[P_BASIS_FUNCTIONS];
@@ -212,15 +210,15 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	MaterialConst_SoftExpo          *SoftExpo_data;
 	
 	int            viscous_type,plastic_type,softening_type,density_type;
-	int            npoints_yielded,npoints_yielded_g;
+	long int       npoints_yielded,npoints_yielded_g;
 	
 	
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	
 	/* access material point information */
-	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	
@@ -237,13 +235,11 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	/* get u,p element information */
-	ierr = DMDAGetGlobalIndices(dau,0,&gidx);CHKERRQ(ierr);
-	
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 	
@@ -253,7 +249,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 		//DataFieldGetAccess(PField_energy);
 		
 		/* access the coordinates for the temperature mesh */ /* THIS IS NOT ACTUALLY NEEDED */
-		ierr = DMDAGetGhostedCoordinates(daT,&gcoords_T);CHKERRQ(ierr);
+		ierr = DMGetCoordinatesLocal(daT,&gcoords_T);CHKERRQ(ierr);
 		ierr = VecGetArray(gcoords_T,&LA_gcoords_T);CHKERRQ(ierr);
 		
 		ierr = DMDAGetElementsQ1(daT,&nel_T,&nen_T,&elnidx_T);CHKERRQ(ierr);
@@ -717,12 +713,12 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&npoints_yielded,&npoints_yielded_g,1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	
-	//PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n", min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
-	
+	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %ld; cpu time %1.2e (sec)\n",
+                min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
 	
 	PetscFunctionReturn(0);
 }
@@ -743,7 +739,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 	ierr = pTatinContextValid_Energy(user,&found);CHKERRQ(ierr);
 	if (found) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(user,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(user,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
         
 		ierr = DMGetLocalVector(daT,&temperature_l);CHKERRQ(ierr);
@@ -758,7 +754,7 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 		ierr = DMRestoreLocalVector(daT,&temperature_l);CHKERRQ(ierr);
 		
 	} else {
-		ierr = private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,ufield,dap,pfield,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+		ierr = private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,ufield,dap,pfield,NULL,NULL);CHKERRQ(ierr);
 	}
 	
 	
@@ -779,15 +775,14 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	PetscLogDouble    t0,t1;
 	RheologyConstants *rheology;
 	double            eta_mp;
-	int               npoints_cutoff[2],npoints_cutoff_g[2];
-	
+	long int          npoints_cutoff[2],npoints_cutoff_g[2];
 	
 	PetscFunctionBegin;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	
 	/* access material point information */
-	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
 	
@@ -841,13 +836,13 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(npoints_cutoff,npoints_cutoff_g,2, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(npoints_cutoff,npoints_cutoff_g,2, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	
-    if ((npoints_cutoff_g[0] > 0) || (npoints_cutoff_g[1] > 0)) {
-        PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff (%d,%d); cpu time %1.2e (sec)\n", min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g[0],npoints_cutoff_g[1], t1-t0 );
-    }
+  if ((npoints_cutoff_g[0] > 0) || (npoints_cutoff_g[1] > 0)) {
+    PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff (%ld,%ld); cpu time %1.2e (sec)\n", min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g[0],npoints_cutoff_g[1], t1-t0 );
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -884,7 +879,7 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 	ierr = pTatinGetTimestep(user,&dt);CHKERRQ(ierr);
 	
 	/* access material point information */
-	ierr = pTatinGetMaterialPoints(user,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
@@ -894,8 +889,8 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx u
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dau,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dau,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	/* setup for elements */

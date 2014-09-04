@@ -67,7 +67,8 @@
 #define __FUNCT__ "MPntGetField_global_element_IJKindex"
 PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K)
 {
-	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk, localeid;	
+	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk;
+	int         localeid;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -189,7 +190,7 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
-	ierr = PetscOptionsGetReal(PETSC_NULL,option,val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,option,val,&flg);CHKERRQ(ierr);
 	if (essential) {
 		if (!flg) {
 			if (!default_opt) {
@@ -248,7 +249,6 @@ PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 {
 	PetscInt       i;
 	PetscReal      maxi;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
@@ -320,7 +320,6 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e,p;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscInt        ngp;
 	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
@@ -334,10 +333,9 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
 	_value = 0.0;
@@ -354,7 +352,7 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 		_value += el_vol;
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPI_SUM,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -371,10 +369,10 @@ PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c)
 #define __FUNCT__ "pTatin3d_DefineVelocityMeshGeometryQuasi2D"
 PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 {
-	PhysCompStokes    stokes;
-	DM                stokes_pack,dav,dap;
-	PetscReal Lz,min_dl[3],max_dl[3];
-	PetscBool geom_max,flg;
+	PhysCompStokes stokes;
+	DM             stokes_pack,dav,dap;
+	PetscReal      Lz,min_dl[3],max_dl[3];
+	PetscBool      geom_max;
 	PetscErrorCode ierr;
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -389,7 +387,7 @@ PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 	Lz = PetscMin(Lz,min_dl[0]);
 	Lz = PetscMin(Lz,min_dl[1]);
 
-	PetscOptionsGetBool(PETSC_NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,NULL);
 	if (geom_max) {
 		Lz = 1.0e-32;
 		Lz = PetscMax(Lz,max_dl[0]);
@@ -416,7 +414,6 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscReal       dx,dy,dz,dl_min[3],dl_max[3];
 	PetscErrorCode  ierr;
@@ -424,11 +421,9 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscFunctionBegin;
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dm,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dm,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	
-	ierr = DMDAGetGlobalIndices(dm,0,&gidx);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 	
@@ -453,8 +448,8 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPI_MIN,((PetscObject)dm)->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPI_MAX,((PetscObject)dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -506,25 +501,25 @@ PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 	
 	if (rank == 0) {
 		
-		fp = fopen(filename,"w");
+		PetscFOpen(PETSC_COMM_SELF,filename,"w",&fp);
 		if (fp == NULL) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open file %s on rank 0",filename); }
 
-		fprintf(fp,"# DMDAFieldViewAscii\n");
+		PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDAFieldViewAscii\n");
 		if (oname) {
-			fprintf(fp,"# DMDA Vec %s\n",oname);
+			PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec %s\n",oname);
 		} else {
-			fprintf(fp,"# DMDA Vec\n");
+			PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec\n");
 		}
-		fprintf(fp,"# M N P %d %d %d\n",M,N,P);
-		fprintf(fp,"# dofs %d\n",dofs);
+		PetscFPrintf(PETSC_COMM_SELF,fp,"# M N P %D %D %D\n",M,N,P);
+		PetscFPrintf(PETSC_COMM_SELF,fp,"# dofs %D\n",dofs);
 		ierr = VecGetSize(natural_field_red,&n);CHKERRQ(ierr);
 		ierr = VecGetArray(natural_field_red,&LA_field);CHKERRQ(ierr);
 		for (i=0; i<n; i++) {
-			fprintf(fp,"%1.6e\n",LA_field[i]);
+			PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e\n",LA_field[i]);
 		}
 		ierr = VecRestoreArray(natural_field_red,&LA_field);CHKERRQ(ierr);
 		
-		fclose(fp);
+		PetscFClose(PETSC_COMM_SELF,fp);
 	}
 	ierr = VecDestroy(&natural_field_red);CHKERRQ(ierr);
 		
@@ -540,7 +535,6 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 	PetscReal       *LA_gcoords;
 	PetscInt        nel,nen,e,q;
 	const PetscInt  *el_nidx;
-	PetscInt        *gidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
 	PetscInt        nqp;
 	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
@@ -561,10 +555,9 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dav,0,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
 	/* quadrature for all cells */
@@ -626,7 +619,7 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights(PhysCompStokes stokes)
 PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	PetscReal        min[3],max[3];
 	double           *pos_p;
 	PetscErrorCode   ierr;
@@ -667,7 +660,7 @@ PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal g
 PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	PetscReal        min[3],max[3];
 	double           *pos_p;
 	PetscErrorCode   ierr;
@@ -731,7 +724,7 @@ PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,Pets
 PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscInt region_idx,PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	PetscReal        min[3],max[3];
 	double           *pos_p;
 	int              region_p;

@@ -44,7 +44,7 @@
 PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ)
 {
 	const PetscInt order = 2;
-	PetscInt M,N,P,mx,my,mz,width;
+	PetscInt M,N,P,width;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -79,7 +79,6 @@ PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ
 #define __FUNCT__ "DMDAGetLocalSizeElementQ2"
 PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
-	const PetscInt order = 2;
 	PetscInt i,j,k,start;
 	PetscInt cntx,cnty,cntz;
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
@@ -264,13 +263,11 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 #define __FUNCT__ "DMDAGetCornersElementQ2"
 PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
-	const PetscInt order = 2;
 	PetscInt i,j,k;
-	PetscInt cntx,cnty,cntz;
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
 	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
-	int rank;
+	PetscMPIInt rank;
 	
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
@@ -283,7 +280,6 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	/*PetscPrintf(PETSC_COMM_SELF,"[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
 	
-	cntx = cnty = cntz = 0;
 	// x
 	for (i=si; i<si+m; i++) {
 		if (i%2==0 && i==si && i!=0) { continue; } /* reject first ghost if its's even */
@@ -325,7 +321,7 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	PetscMPIInt nproc,rank;
 	MPI_Comm comm;
 	PetscInt M,N,P,pM,pN,pP;
-	PetscInt i,j,k,II,dim,esi,esj,esk,mx,my,mz;
+	PetscInt i,j,k,dim,esi,esj,esk,mx,my,mz;
 	PetscInt *olx,*oly,*olz;
 	PetscInt *lmx,*lmy,*lmz,*tmp;
 	PetscErrorCode ierr;
@@ -333,8 +329,8 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	PetscFunctionBegin;
 	/* create file name */
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	ierr = MPI_Comm_size( comm, &nproc );
-	ierr = MPI_Comm_rank( comm, &rank );
+	ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo( da, &dim, &M,&N,&P, &pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
 	ierr = DMDAGetCornersElementQ2(da,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
@@ -429,11 +425,11 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
   DM_DA          *da = (DM_DA*)dm->data;
 	const PetscInt order = 2;
 	PetscErrorCode ierr;
-	PetscInt *idx,mx,my,mz,_npe, M,N,P;
-	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
+	PetscInt *idx,mx,my,mz,_npe,M,N,P;
+	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,X,Y,Z,width;
 	PetscInt *el;
-	PetscInt *gidx,ngidx,dof;
-	int rank;
+	PetscInt dof;
+	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -446,7 +442,6 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
   if (!da->e) {
 		ierr = DMDAGetCornersElementQ2(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 		ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
-		ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
 		ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 		ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
 		
@@ -536,7 +531,7 @@ PetscErrorCode DMDAGetElements_DA_Q2(DM dm,PetscInt *nel,PetscInt *nen,const Pet
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (da->dim==-1) {
-    *nel = 0; *nen = 0; *e = PETSC_NULL;
+    *nel = 0; *nen = 0; *e = NULL;
   } else if (da->dim==1) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMDA doesn't support Q2 in 1D");
   } else if (da->dim==2) {
@@ -556,9 +551,9 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
   DM_DA          *da = (DM_DA*)dm->data;
 	PetscErrorCode ierr;
 	PetscInt *idx,mx,my,mz,_npe;
-	PetscInt ei,ej,ek,i,j,k,elcnt,cnt,esi,esj,esk,gsi,gsj,gsk,nid[100],d,X,width;
+	PetscInt d,ei,ej,ek,elcnt,esi,esj,nid[100],width;
 	PetscInt *el,M,N,P,dof;
-	int rank;
+	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -576,7 +571,6 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
 		ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe*dof+1),&idx);CHKERRQ(ierr); /* we add one extra space to allow for cases when a proc has zero elements, and we don't want to malloc 0 bytes */
 		
 		elcnt = 0;
-		cnt = 0;
 		for (ek=0; ek<mz; ek++) {
 			for (ej=0; ej<my; ej++) {
 				for (ei=0; ei<mx; ei++) {
@@ -617,7 +611,7 @@ PetscErrorCode DMDAGetElements_DA_P1(DM dm,PetscInt *nel,PetscInt *nen,const Pet
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (da->dim==-1) {
-    *nel = 0; *nen = 0; *e = PETSC_NULL;
+    *nel = 0; *nen = 0; *e = NULL;
   } else if (da->dim==1) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DMDA doesn't support P1 in 1D");
   } else if (da->dim==2) {
@@ -636,24 +630,18 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
 {
   PetscErrorCode ierr;
   PetscInt dof,sw;
-  static PetscInt beenHereQ2 = 0;
-  static PetscInt beenHereP0 = 0;
   
 	ierr = DMDAGetInfo(dm, 0, 0,0,0, 0,0,0, &dof,&sw, 0,0,0, 0);CHKERRQ(ierr);
   
   if (sw == 2) {
-    //if (!beenHereQ2) { PetscPrintf(PETSC_COMM_WORLD,"ASSUMING stencil width=2 implies Q2 basis...\n"); }
     ierr = DMDAGetElements_DA_Q2(dm,nel,nen,e);CHKERRQ(ierr);
-    beenHereQ2 = 1;
   } else if (sw == 0) {
-    //if (!beenHereP0) { PetscPrintf(PETSC_COMM_WORLD,"ASSUMING stencil width=0 implies P0 basis...\n"); }
     ierr = DMDAGetElements_DA_P1(dm,nel,nen,e);CHKERRQ(ierr);
-    beenHereP0 = 1;
   } else {
     ierr = DMDAGetElements(dm,nel,nen,e);CHKERRQ(ierr);
   }
   
-	PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -670,7 +658,7 @@ PetscErrorCode  DMDASetElementType_Q2(DM da)
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
   //da->ops->getelements = DMGetElements_DA_Q2;
 	
@@ -691,7 +679,7 @@ PetscErrorCode  DMDASetElementType_P1(DM da)
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
 	//da->ops->getelements = DMGetElements_DA_P1;
 	
@@ -705,7 +693,7 @@ PetscErrorCode  DMDASetElementType_P1(DM da)
 PetscErrorCode DMDAGetElementCoordinatesQ2_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		elcoords[3*n  ] = LA_gcoords[3*elnid[n]  ];
@@ -720,7 +708,7 @@ PetscErrorCode DMDAGetElementCoordinatesQ2_3D(PetscScalar elcoords[],PetscInt el
 PetscErrorCode DMDAGetScalarElementFieldQ2_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		elfield[n] = LA_gfield[elnid[n]];
@@ -732,7 +720,7 @@ PetscErrorCode DMDAGetScalarElementFieldQ2_3D(PetscScalar elfield[],PetscInt eln
 PetscErrorCode DMDAGetVectorElementFieldQ2_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		elfield[3*n  ] = LA_gfield[3*elnid[n]  ];
@@ -747,7 +735,7 @@ PetscErrorCode DMDAGetVectorElementFieldQ2_3D(PetscScalar elfield[],PetscInt eln
 PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<npe; n++) {
 		elfield[n] = LA_gfield[elnid[n]];
@@ -794,7 +782,6 @@ PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,Pet
 PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n=0; n<U_BASIS_FUNCTIONS; n++) {

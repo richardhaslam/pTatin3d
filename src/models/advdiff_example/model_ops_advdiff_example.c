@@ -62,9 +62,9 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	PetscOptionsGetInt(PETSC_NULL,"-advdiff_setup",&model_setup,0);
-	PetscOptionsGetReal(PETSC_NULL,"-advdiff_vel_scale",&vel_scale,0);
-	PetscOptionsGetReal(PETSC_NULL,"-advdiff_diff_scale",&diffusion_scale,0);
+	PetscOptionsGetInt(NULL,"-advdiff_setup",&model_setup,0);
+	PetscOptionsGetReal(NULL,"-advdiff_vel_scale",&vel_scale,0);
+	PetscOptionsGetReal(NULL,"-advdiff_diff_scale",&diffusion_scale,0);
 
 	switch (model_setup) {
 		case 0:
@@ -228,7 +228,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
 
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mp_points,0,0);
 	
 	/* define viscous params */
@@ -404,22 +404,22 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	/* b) get the DM */
 	daT = energy->daT;
 	/* c) fetch the temp vector */
-	ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 
 	if (model_setup == 0) {
-		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,NULL);CHKERRQ(ierr);
 		ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
 	}	
 	if (model_setup == 1) {
-		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,PETSC_NULL);CHKERRQ(ierr);
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXY,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_GaussianXYZ,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXY,NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepXYZ,NULL);CHKERRQ(ierr);
 		ierr = VecShift(temperature,2.0);CHKERRQ(ierr);
 	}	
 	if (model_setup == 2) {
@@ -428,7 +428,7 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	if (model_setup == 3) {
 		int direction;
 		
-		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,PETSC_NULL);CHKERRQ(ierr);
+		//ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepX,NULL);CHKERRQ(ierr);
 		/*
 		direction = 0;
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse3d_StepWithDirection,(void*)&direction);CHKERRQ(ierr);
@@ -480,7 +480,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	/* energy variables */
 	ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 	
-	ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 
 	/* standard viewer */
 	ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
@@ -498,7 +498,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 #endif
 	
 	/* stokes + energy material points */
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-advdiff_output_markers_once",&output_markers_once,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-advdiff_output_markers_once",&output_markers_once,NULL);CHKERRQ(ierr);
 	write_markers = PETSC_TRUE;
 	if ((output_markers_once) && (been_here != 0)) {
 		write_markers = PETSC_FALSE;
@@ -507,7 +507,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 		const int                  nf = 2;
 		const MaterialPointField   mp_prop_list[] = { MPField_Std, MPField_Energy }; 
 
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(name,"%s_advdiff_mpoints",prefix);
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 	}
@@ -516,7 +516,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 		const int                   nf = -1;
 		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density }; 
 		
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		sprintf(name,"%s_mpoints_cell",prefix);
 		ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 	}

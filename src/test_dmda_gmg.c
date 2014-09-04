@@ -39,7 +39,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "petscmat.h"
 #include "petscksp.h"
 #include "petscdm.h"
-#include "private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -57,9 +57,8 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #undef __FUNCT__  
 #define __FUNCT__ "FormJacobian_Stokes"
-PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *mstr,void *ctx)
+PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-  PetscErrorCode    ierr;
 	
   PetscFunctionBegin;
 
@@ -71,13 +70,11 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *m
 #define __FUNCT__ "test_pTatin3d_gmg_galerkin"
 PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 {
-	DM             multipys_pack,dav,dap;
+	DM             multipys_pack,dav;
 	DM             *dav_hierarchy;
 	Mat            *interpolatation;
 	pTatinCtx      user;
 	PetscInt       nlevels,k;
-	Quadrature     volQ[10];
-	BCList         u_bclist[10];
 	PetscMPIInt    rank;
 	Vec            X,F;
 	Mat            A,B;
@@ -110,7 +107,6 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -136,7 +132,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -192,9 +188,9 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	
 	/* define interpolation operators */
 	ierr = PetscMalloc(sizeof(Mat)*nlevels,&interpolatation);CHKERRQ(ierr);
-	interpolatation[0] = PETSC_NULL;
+	interpolatation[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 #if 0
@@ -249,14 +245,14 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	{
 		PetscInt nsplits;
 		PC       pc_i;
-		KSP      *sub_ksp,ksp_coarse,ksp_i;
+		KSP      *sub_ksp;
 		
 		ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_TRUE);CHKERRQ(ierr); /* OUCH - GALERKIN */
 		
@@ -266,7 +262,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 		
 	}
 	
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	
 	
 	
@@ -304,7 +300,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 #define __FUNCT__ "test_pTatin3d_gmg_mf"
 PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 {
-	DM             multipys_pack,dav,dap;
+	DM             multipys_pack,dav;
 	DM             *dav_hierarchy;
 	Mat            *interpolatation;
 	pTatinCtx      user;
@@ -343,7 +339,6 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -369,7 +364,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(PETSC_NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -425,9 +420,9 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	
 	/* define interpolation operators */
 	ierr = PetscMalloc(sizeof(Mat)*nlevels,&interpolatation);CHKERRQ(ierr);
-	interpolatation[0] = PETSC_NULL;
+	interpolatation[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolatation[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	/* define boundary conditions */
@@ -464,7 +459,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(ctx,&A11MF[k]);CHKERRQ(ierr);
 		ierr = MatA11MFDestroy(&ctx);CHKERRQ(ierr);
 	}
-	A11MF[nlevels-1] = PETSC_NULL;
+	A11MF[nlevels-1] = NULL;
 	
 	ierr = DMCompositeGetGlobalISs(multipys_pack,&isg);CHKERRQ(ierr);
 	/* Fetch from the nest */
@@ -484,7 +479,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-	ierr = VecSetRandom(F,PETSC_NULL);CHKERRQ(ierr);
+	ierr = VecSetRandom(F,NULL);CHKERRQ(ierr);
 	
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	ierr = SNESSetDM(snes,multipys_pack);CHKERRQ(ierr);
@@ -509,16 +504,17 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	{
 		PetscInt nsplits;
 		PC       pc_i;
-		KSP      *sub_ksp,ksp_coarse,ksp_i,ksp_smoother;
+		KSP      *sub_ksp,ksp_smoother;
 		
 		ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 		ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 		
 		ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
-		ierr = PCMGSetLevels(pc_i,nlevels,PETSC_NULL);CHKERRQ(ierr);
+		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
 		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation[k]);CHKERRQ(ierr);
@@ -529,15 +525,15 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		}
 		
 		ierr = PCMGGetCoarseSolve(pc_i,&ksp_smoother);CHKERRQ(ierr);
-		ierr = KSPSetOperators(ksp_smoother,A11MF[0],A11MF[0],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+		ierr = KSPSetOperators(ksp_smoother,A11MF[0],A11MF[0]);CHKERRQ(ierr);
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
-			ierr = KSPSetOperators(ksp_smoother,A11MF[k],A11MF[k],SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+			ierr = KSPSetOperators(ksp_smoother,A11MF[k],A11MF[k]);CHKERRQ(ierr);
 		}
 		
 	}
 	
-	ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 	
 	
 	
@@ -587,9 +583,8 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 #define __FUNCT__ "test_putatin"
 PetscErrorCode test_putatin(int argc,char **argv)
 {
-	DM             multipys_pack,dav,dap;
+	DM             dav;
 	pTatinCtx      user;
-	PetscMPIInt    rank;
 	Mat            A,B;
 	PetscErrorCode ierr;
 	
@@ -614,9 +609,7 @@ PetscErrorCode test_putatin(int argc,char **argv)
 	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
 	
 	/* fetch some local variables */
-	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	

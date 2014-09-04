@@ -119,6 +119,11 @@ DataExEnd()
 
 const char *status_names[] = { "initialized", "finalized", "unknown" };
 
+PetscLogEvent PTATIN_DataExchangerTopologySetup;
+PetscLogEvent PTATIN_DataExchangerBegin;
+PetscLogEvent PTATIN_DataExchangerEnd;
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "DataExCreate"
 DataEx DataExCreate(MPI_Comm comm,const PetscInt count)
@@ -391,12 +396,12 @@ Makes the communication map symmetric
 PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,PetscMPIInt proc_neighbours[],PetscMPIInt *n_new,PetscMPIInt **proc_neighbours_new)
 {
 	Mat               A,redA;
-	PetscInt          offset,index,i,j,nc;
+	PetscInt          i,j,nc;
 	PetscInt          n_, *proc_neighbours_;
-  PetscInt          size_, rank_i_,_rank_j_;
-	PetscMPIInt       size,  rank_i,  rank_j;
+    PetscInt          rank_i_;
+	PetscMPIInt       size,  rank_i;
 	PetscInt          max_nnz;
-	PetscScalar       *vals, inserter;
+	PetscScalar       *vals;
 	const PetscInt    *cols;
 	const PetscScalar *red_vals;
 	PetscMPIInt       _n_new, *_proc_neighbours_new;
@@ -407,7 +412,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"************************** Starting _DataExCompleteCommunicationMap ************************** \n");
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 
 	n_ = n;
 	ierr = PetscMalloc( sizeof(PetscInt) * n_, &proc_neighbours_ );CHKERRQ(ierr);
@@ -416,7 +421,6 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	}
 
 	ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-	size_ = size;
 	ierr = MPI_Comm_rank(comm,&rank_i);CHKERRQ(ierr);
 	rank_i_ = rank_i;
 
@@ -425,11 +429,11 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
 	
 	ierr = MPI_Allreduce(&n_,&max_nnz,1,MPIU_INT,MPI_MAX,comm);CHKERRQ(ierr);
-	ierr = MatSeqAIJSetPreallocation(A,n_,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatSeqAIJSetPreallocation(A,n_,NULL);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"max_nnz = %D \n", max_nnz );
 	//printf("[%d]: nnz = %d \n", rank_i,n_ );
 	{
-		ierr = MatMPIAIJSetPreallocation(A,1,PETSC_NULL,n_,PETSC_NULL);CHKERRQ(ierr);
+		ierr = MatMPIAIJSetPreallocation(A,1,NULL,n_,NULL);CHKERRQ(ierr);
 	}
 		
 		
@@ -470,7 +474,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	 code to run on one cpu (even if this seems slightly odd).
 	 */
 	is_seqaij = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)A,MATSEQAIJ,&is_seqaij);CHKERRQ(ierr);
 //	if (is_seqaij==PETSC_FALSE) {
 //		ierr = MatGetRedundantMatrix( A, size_, PETSC_COMM_SELF, size_, MAT_INITIAL_MATRIX, &redA );CHKERRQ(ierr);
 //	} else {
@@ -500,7 +504,7 @@ PetscErrorCode _DataExCompleteCommunicationMap(MPI_Comm comm,PetscMPIInt n,Petsc
 	ierr = PetscFree(proc_neighbours_);CHKERRQ(ierr);	
 
 	ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"************************** Ending _DataExCompleteCommunicationMap [setup time: %1.4e (sec)] ************************** \n",t1-t0);
 	
 	PetscFunctionReturn(0);
@@ -521,6 +525,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
 	if (d->topology_status != DEOBJECT_INITIALIZED) {
 		SETERRQ( d->comm, PETSC_ERR_ARG_WRONGSTATE, "Topology must be intialised. Call DataExTopologyInitialize() first" );
 	}
+	ierr = PetscLogEventBegin(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
 	
 	/* given infomation about all my neighbours, make map symmetric */
 	ierr = _DataExCompleteCommunicationMap( d->comm,d->n_neighbour_procs,d->neighbour_procs, &symm_nn, &symm_procs );CHKERRQ(ierr);
@@ -573,6 +578,7 @@ PetscErrorCode DataExTopologyFinalize(DataEx d)
 	}
 	
 	d->topology_status = DEOBJECT_FINALIZED;
+	ierr = PetscLogEventEnd(PTATIN_DataExchangerTopologySetup,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -626,7 +632,6 @@ PetscErrorCode DataExInitializeSendCount(DataEx de)
 #define __FUNCT__ "DataExAddToSendCount"
 PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const PetscInt count)
 {
-	PetscMPIInt    i,np, valid_neighbour;
 	PetscMPIInt    local_val;
 	PetscErrorCode ierr;
 	
@@ -639,9 +644,7 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
 		SETERRQ( de->comm, PETSC_ERR_ORDER, "Message lengths must be defined. Call DataExInitializeSendCount() first" );
 	}
 	
-	np = de->n_neighbour_procs;
-	
-	ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr); 
+	ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr);
 	if (local_val == -1) {
 		SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", proc_id );
 	}
@@ -774,7 +777,6 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
 #define __FUNCT__ "DataExPackData"
 PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *data)
 {
-	PetscMPIInt    i;
 	PetscMPIInt    local;
 	PetscInt       insert_location;
 	void           *dest;
@@ -830,7 +832,6 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 {
 	PetscMPIInt i,np;
 	PetscInt    total;
-	MPI_Status  stat;
 	PetscErrorCode ierr;
 	
 	
@@ -889,10 +890,9 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 #define __FUNCT__ "DataExBegin"
 PetscErrorCode DataExBegin(DataEx de)
 {
-	PetscMPIInt i,j,np;
-	MPI_Status  stat;
+	PetscMPIInt i,np;
 	void       *dest;
-	PetscInt    length,cnt;
+	PetscInt    length;
 	PetscErrorCode ierr;
 	
 	
@@ -915,6 +915,7 @@ PetscErrorCode DataExBegin(DataEx de)
 		SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
 	}
 	
+	ierr = PetscLogEventBegin(PTATIN_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
 	np = de->n_neighbour_procs;
 	
 	/* == NON BLOCKING == */
@@ -924,6 +925,7 @@ PetscErrorCode DataExBegin(DataEx de)
 		ierr = MPI_Isend( dest, length, MPI_CHAR, de->neighbour_procs[i], de->send_tags[i], de->comm, &de->_requests[i] );CHKERRQ(ierr);
 	}
 	
+	ierr = PetscLogEventEnd(PTATIN_DataExchangerBegin,0,0,0,0);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
@@ -932,12 +934,11 @@ PetscErrorCode DataExBegin(DataEx de)
 #define __FUNCT__ "DataExEnd"
 PetscErrorCode DataExEnd(DataEx de)
 {
-	PetscMPIInt  i,j,np;
+	PetscMPIInt  i,np;
 	PetscInt     total;
-	MPI_Status   stat;
 	PetscInt    *message_recv_offsets;
 	void        *dest;
-	PetscInt     length,cnt;
+	PetscInt     length;
 	PetscErrorCode ierr;
 	
 	
@@ -949,6 +950,7 @@ PetscErrorCode DataExEnd(DataEx de)
 		SETERRQ( de->comm, PETSC_ERR_ORDER, "recv_message has not been initialized. Must call DataExPackFinalize() first" );
 	}
 	
+	ierr = PetscLogEventBegin(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
 	np = de->n_neighbour_procs;
 	
 	message_recv_offsets = (PetscInt*)malloc( sizeof(PetscInt) * np );
@@ -970,6 +972,7 @@ PetscErrorCode DataExEnd(DataEx de)
 	free(message_recv_offsets);
 	
 	de->communication_status = DEOBJECT_FINALIZED;
+	ierr = PetscLogEventEnd(PTATIN_DataExchangerEnd,0,0,0,0);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 

@@ -273,18 +273,18 @@ void P3D_evaluate_geometry_elementQ1_appliedQ2(PetscInt nqp,
  
 */
 void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
-																							 PetscReal detJ[],
-																							 PetscReal GNIQ1[][3][8],
-																							 PetscReal el_coords[27*3],
-																							 PetscReal GNIQ2[][3][27],
-																							 PetscReal dNudxQ2[][27],
-																							 PetscReal dNudyQ2[][27],
-																							 PetscReal dNudzQ2[][27] )
+                                     PetscReal detJ[],
+                                     PetscReal GNIQ1[][3][8],
+                                     PetscReal el_coords[27*3],
+                                     PetscReal GNIQ2[][3][27],
+                                     PetscReal dNudxQ2[][27],
+                                     PetscReal dNudyQ2[][27],
+                                     PetscReal dNudzQ2[][27] )
 {
 	PetscInt k,p;
 	PetscReal t4, t6, t8, t10, t12, t14, t17;
 	PetscReal J[3][3],iJ[3][3],detJ_p;
-	PetscReal a000[3],a100[3],a010[3],a001[3];
+	PetscReal a100[3],a010[3],a001[3];
 	PetscReal v1[3],v2[3],v3[3],v4[3],v5[3],v6[3],v7[3],v8[3];
 	
 	
@@ -376,17 +376,17 @@ void P3D_evaluate_geometry_affine_appliedQ2(PetscInt nqp,
 
 
 void P3D_evaluate_geometry_affine2_appliedQ2(PetscInt nqp,
-																						PetscReal detJ[],
-																						PetscReal GNIQ1[][3][8],
-																						PetscReal el_coords[27*3],
-																						PetscReal GNIQ2[][3][27],
-																						PetscReal dNudxQ2[][27],
-																						PetscReal dNudyQ2[][27],
-																						PetscReal dNudzQ2[][27] )
+                                        PetscReal detJ[],
+                                        PetscReal GNIQ1[][3][8],
+                                        PetscReal el_coords[27*3],
+                                        PetscReal GNIQ2[][3][27],
+                                        PetscReal dNudxQ2[][27],
+                                        PetscReal dNudyQ2[][27],
+                                        PetscReal dNudzQ2[][27] )
 {
 	PetscInt k,p;
 	PetscReal J[3],iJ[3],detJ_p;
-	PetscReal a000[3],a100[3],a010[3],a001[3];
+	PetscReal a100[3],a010[3],a001[3];
 	PetscReal v1[3],v2[3],v3[3],v4[3],v5[3],v6[3],v7[3],v8[3];
 	
 	for (k=0; k<3; k++) {
@@ -479,7 +479,7 @@ void P3D_ConstructGNi_Q1_2D(PetscReal _xi[],PetscReal GNix[],PetscReal GNiy[])
 void P3D_evaluate_geometry_elementQ1_2D(PetscReal el_coords[],PetscReal GNIx[],PetscReal GNIy[],
                                      PetscReal *detJ,PetscReal dNudx[],PetscReal dNudy[])
 {
-	PetscInt k,p;
+	PetscInt k;
 	PetscReal dJ,J[2][2],iJ[2][2];
 	
     J[0][0] = J[0][1] = 0.0;

@@ -60,15 +60,15 @@ PetscErrorCode test_q1macrop1_a(void)
 	PetscFunctionBegin;
 
 	mx = my = mz = 4;
-	PetscOptionsGetInt(PETSC_NULL,"-mx",&mx,0);
-	PetscOptionsGetInt(PETSC_NULL,"-my",&my,0);
-	PetscOptionsGetInt(PETSC_NULL,"-mz",&mz,0);
+	PetscOptionsGetInt(NULL,"-mx",&mx,0);
+	PetscOptionsGetInt(NULL,"-my",&my,0);
+	PetscOptionsGetInt(NULL,"-mz",&mz,0);
 	
 	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
 	ierr = PhysCompCreateMesh_Stokes3d_Q1MacroP1(mx,my,mz,stokes);CHKERRQ(ierr);
 	
 	dav = stokes->dav;
-	MPI_Comm_rank(((PetscObject)dav)->comm,&rank);
+	MPI_Comm_rank(PetscObjectComm((PetscObject)dav),&rank);
 
 	ierr = DMDAEQ1Macro_MixedSpace_GetSizeElement(dav,&m,&n,&p);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"MixedSpace size: %d x %d x %d \n", m,n,p);

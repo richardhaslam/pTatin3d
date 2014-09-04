@@ -128,7 +128,7 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	const PetscInt order = 1;
 	PetscErrorCode ierr;
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
-	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,d,X,Y,Z,width;
+	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,X,Y,Z,width;
 	PetscInt *el;
 	PetscMPIInt rank;
 	PetscFunctionBegin;
@@ -249,7 +249,7 @@ PetscErrorCode  DMDASetElementType_Q1(DM da)
   if (dd->elementtype) {
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
 	
   PetscFunctionReturn(0);
@@ -267,17 +267,16 @@ PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
 	PetscInt si1,sj1,sk1,nx1,ny1,nz1,i,j,k;
 	PetscInt si2,sj2,sk2,nx2,ny2,nz2;
 	DM cdaQ2,cdaQ1;
-	PetscBool overlap;
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDAGetGhostedCoordinates(daq2,&coordsQ2);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(daq2,&cdaQ2);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(daq2,&coordsQ2);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daq2,&cdaQ2);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cdaQ2,coordsQ2,&LA_coordsQ2);CHKERRQ(ierr);
 	
 	ierr = DMDASetUniformCoordinates(daq1,-2.0,2.0,-2.0,2.0,-2.0,2.0);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(daq1,&coordsQ1);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(daq1,&cdaQ1);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(daq1,&coordsQ1);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daq1,&cdaQ1);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cdaQ1,coordsQ1,&LA_coordsQ1);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCorners(     daq1,&si1,&sj1,&sk1 , &nx1,&ny1,&nz1);CHKERRQ(ierr);
@@ -299,19 +298,19 @@ PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
 */	
 	for( k=sk1; k<sk1+nz1; k++ ) {
 		if ( (2*k<sk2) || (2*k>sk2+nz2) ) {
-			printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+			PetscPrintf(PETSC_COMM_SELF,"sk1=%D, sk2=%D, : sk1+nz1=%D, sk2+nz=%D \n", sk1,sk2, sk1+nz1,sk2+nz2 );
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
 		}
 		
 		for( j=sj1; j<sj1+ny1; j++ ) {
 			if ( (2*j<sj2) || (2*j>sj2+ny2) ) {
-				printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+				PetscPrintf(PETSC_COMM_SELF,"sj1=%D, sj2=%D, : sj1+ny1=%D, sj2+ny=%D \n", sj1,sj2, sj1+ny1,sj2+ny2 );
 				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
 			}
 			
 			for( i=si1; i<si1+nx1; i++ ) {
 				if ( (2*i<si2) || (2*i>si2+nx2) ) {
-					printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+					PetscPrintf(PETSC_COMM_SELF,"si1=%D, si2=%D, : si1+nx1=%D, si2+nx=%D \n", si1,si2, si1+nx1,si2+nx2 );
 					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
 				}
 				
@@ -337,7 +336,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
 	DMDAE dae;
-	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k,n;
+	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k;
 	PetscInt *siq2,*sjq2,*skq2,*lmxq2,*lmyq2,*lmzq2,*lxq1,*lyq1,*lzq1;
 	PetscInt *lsip,*lsjp,*lskp;
 	PetscErrorCode ierr;
@@ -345,7 +344,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	PetscFunctionBegin;
 	
-	ierr = MPI_Comm_rank(((PetscObject)dmq2)->comm,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dmq2),&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCornersElementQ2(dmq2,&sei,&sej,&sek,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	ierr = DMDAGetSizeElementQ2(dmq2,&MX,&MY,&MZ);CHKERRQ(ierr);
@@ -397,18 +396,18 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	/*
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
-			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startI = %D: lmxq1 = %D \n",i,lsip[i],lxq1[i]);
 		}
 		for (j=0; j<Np; j++) {
-			printf("rank[%d] startJ = %d: lmyq1 = %d \n",j,lsjp[j],lyq1[j]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startJ = %D: lmyq1 = %D \n",j,lsjp[j],lyq1[j]);
 		}
 		for (k=0; k<Pp; k++) {
-			printf("rank[%d] startK = %d: lmzq1 = %d \n",k,lskp[k],lzq1[k]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startK = %D: lmzq1 = %D \n",k,lskp[k],lzq1[k]);
 		}
 	}
 	*/
 	
-	ierr = DMDACreate3d(((PetscObject)dmq2)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, Mp,Np,Pp, ndofs,1, lxq1,lyq1,lzq1, &dm );CHKERRQ(ierr);
+	ierr = DMDACreate3d(PetscObjectComm((PetscObject)dmq2),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, Mp,Np,Pp, ndofs,1, lxq1,lyq1,lzq1, &dm );CHKERRQ(ierr);
 	
 	//ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	//ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -483,7 +482,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
 	DMDAE dae;
-	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k,n;
+	PetscInt stencilq2,sei,sej,sek,lmx,lmy,lmz,MX,MY,MZ,Mp,Np,Pp,i,j,k;
 	PetscInt *siq2,*sjq2,*skq2,*lmxq2,*lmyq2,*lmzq2,*lxq1,*lyq1,*lzq1;
 	const PetscInt *lxq2,*lyq2,*lzq2;
 	PetscInt *lsip,*lsjp,*lskp;
@@ -492,7 +491,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	PetscFunctionBegin;
 	
-	ierr = MPI_Comm_rank(((PetscObject)dmq2)->comm,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dmq2),&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCornersElementQ2(dmq2,&sei,&sej,&sek,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 	ierr = DMDAGetSizeElementQ2(dmq2,&MX,&MY,&MZ);CHKERRQ(ierr);
@@ -510,17 +509,17 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	for (i=0; i<Mp; i++) {
 		lsip[i] = siq2[i];
-		printf("[%d]: si[%d] %d \n", rank,i,lsip[i]);
+		PetscPrintf(PETSC_COMM_SELF,"[%D]: si[%D] %D \n", rank,i,lsip[i]);
 	}
 	
 	for (j=0; j<Np; j++) {
 		lsjp[j] = sjq2[j];
-		printf("[%d]: sj[%d] %d \n", rank,j,lsjp[j]);
+		PetscPrintf(PETSC_COMM_SELF,"[%D]: sj[%D] %D \n", rank,j,lsjp[j]);
 	}
 	
 	for (k=0; k<Pp; k++) {
 		lskp[k] = skq2[k];
-		printf("[%d]: sk[%d] %d \n", rank,k,lskp[k]);
+		PetscPrintf(PETSC_COMM_SELF,"[%D]: sk[%D] %D \n", rank,k,lskp[k]);
 	}
 
 /*
@@ -564,17 +563,17 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	
 	if (rank==0) {
 		for (i=0; i<Mp; i++) {
-			printf("rank[%d] startI = %d: lmxq1 = %d \n",i,lsip[i],lxq1[i]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startI = %D: lmxq1 = %D \n",i,lsip[i],lxq1[i]);
 		}
 		for (j=0; j<Np; j++) {
-			printf("rank[%d] startJ = %d: lmyq1 = %d \n",j,lsjp[j],lyq1[j]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startJ = %D: lmyq1 = %D \n",j,lsjp[j],lyq1[j]);
 		}
 		for (k=0; k<Pp; k++) {
-			printf("rank[%d] startK = %d: lmzq1 = %d \n",k,lskp[k],lzq1[k]);
+			PetscPrintf(PETSC_COMM_SELF,"rank[%D] startK = %D: lmzq1 = %D \n",k,lskp[k],lzq1[k]);
 		}
 	}
 	
-	ierr = DMDACreate3d(((PetscObject)dmq2)->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, ndofs,1, lxq2,lyq2,lzq2, &dm );CHKERRQ(ierr);
+	ierr = DMDACreate3d(PetscObjectComm((PetscObject)dmq2),DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, Mp,Np,Pp, ndofs,1, lxq2,lyq2,lzq2, &dm );CHKERRQ(ierr);
 	
 	//ierr = DMView(dmq2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	//ierr = DMView(dm,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -641,8 +640,8 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 		
 		ierr = DMDASetUniformCoordinates(dm,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 
-		ierr = DMDAGetCoordinates(dmq2,&coordq2);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(dm,&coordq1);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dmq2,&coordq2);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dm,&coordq1);CHKERRQ(ierr);
 		ierr = VecCopy(coordq2,coordq1);CHKERRQ(ierr);
 		ierr = DMDAUpdateGhostedCoordinates(dm);CHKERRQ(ierr);
 	}
@@ -663,7 +662,7 @@ PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,Pe
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndofs,1, 0,0,0, &dm );CHKERRQ(ierr);
+	ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX+1,MY+1,MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndofs,1, 0,0,0, &dm );CHKERRQ(ierr);
 	
 	/* add the space for the data structure */
 	ierr = DMAttachDMDAE(dm);CHKERRQ(ierr);
@@ -691,13 +690,13 @@ PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,Pe
 	dae->overlap = 0;
 	
 	/* for convience we scale these and re-use the data */
-	dae->lmxp = PETSC_NULL;
-	dae->lmyp = PETSC_NULL;
-	dae->lmzp = PETSC_NULL;
+	dae->lmxp = NULL;
+	dae->lmyp = NULL;
+	dae->lmzp = NULL;
 	
-	dae->lsip = PETSC_NULL;
-	dae->lsjp = PETSC_NULL;
-	dae->lskp = PETSC_NULL;
+	dae->lsip = NULL;
+	dae->lsjp = NULL;
+	dae->lskp = NULL;
 	
 	/* force element creation using MY numbering */
 	{
@@ -723,7 +722,7 @@ PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,Pe
 PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elcoords[3*n  ] = LA_gcoords[3*elnid[n]  ];
@@ -738,7 +737,7 @@ PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt 
 PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elfield[n] = LA_gfield[elnid[n]];
@@ -751,7 +750,7 @@ PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt e
 PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elfield[3*n  ] = LA_gfield[3*elnid[n]  ];
@@ -783,7 +782,7 @@ PetscErrorCode DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F
 PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n=0; n<8; n++) {
@@ -823,19 +822,19 @@ PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec 
 	
 	for( k=sk1; k<sk1+nz1; k++ ) {
 		if ( (2*k<sk2) || (2*k>sk2+nz2) ) {
-			printf("sk1=%d, sk2=%d, : sk1+nz1=%d, sk2+nz=%d \n", sk1,sk2, sk1+nz1,sk2+nz2 );
+			PetscPrintf(PETSC_COMM_SELF,"sk1=%D, sk2=%D, : sk1+nz1=%D, sk2+nz=%D \n", sk1,sk2, sk1+nz1,sk2+nz2 );
 			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-k) must overlap DA(Q1) in global space");
 		}
 		
 		for( j=sj1; j<sj1+ny1; j++ ) {
 			if ( (2*j<sj2) || (2*j>sj2+ny2) ) {
-				printf("sj1=%d, sj2=%d, : sj1+ny1=%d, sj2+ny=%d \n", sj1,sj2, sj1+ny1,sj2+ny2 );
+				PetscPrintf(PETSC_COMM_SELF,"sj1=%D, sj2=%D, : sj1+ny1=%D, sj2+ny=%D \n", sj1,sj2, sj1+ny1,sj2+ny2 );
 				SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-j) must overlap DA(Q1) in global space");
 			}
 			
 			for( i=si1; i<si1+nx1; i++ ) {
 				if ( (2*i<si2) || (2*i>si2+nx2) ) {
-					printf("si1=%d, si2=%d, : si1+nx1=%d, si2+nx=%d \n", si1,si2, si1+nx1,si2+nx2 );
+					PetscPrintf(PETSC_COMM_SELF,"si1=%D, si2=%D, : si1+nx1=%D, si2+nx=%D \n", si1,si2, si1+nx1,si2+nx2 );
 					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"DA(Q2) (ghosted-i) must overlap DA(Q1) in global space");
 				}
 				
@@ -929,11 +928,11 @@ PetscErrorCode DMDAProjectCoordinatesQ2toQ1(DM daq2,DM daq1,PetscInt mesh_type)
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDAGetCoordinateDA(daq2,&cdaq2);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(daq1,&cdaq1);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daq2,&cdaq2);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daq1,&cdaq1);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinates(daq2,&coordq2);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(daq1,&coordq1);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(daq2,&coordq2);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(daq1,&coordq1);CHKERRQ(ierr);
 	
 	ierr = DMDAProjectVectorQ2toQ1(cdaq2,coordq2,cdaq1,coordq1,mesh_type);CHKERRQ(ierr);
 	

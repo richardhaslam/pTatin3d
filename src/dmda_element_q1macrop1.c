@@ -77,7 +77,7 @@ PetscErrorCode DMDAEQ1Macro_FetchContext(DM da,DMDAEQ1MacroCtx *ctx)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	container = PETSC_NULL;
+	container = NULL;
 	ierr = PetscObjectQuery((PetscObject)da,DMDAEQ1MacroCtxName,(PetscObject*)&container);CHKERRQ(ierr);
 	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with this DAE",DMDAEQ1MacroCtxName);
 	ierr = PetscContainerGetPointer(container,(void**)ctx);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ PetscErrorCode DMDAEQ1Macro_FetchContext(DM da,DMDAEQ1MacroCtx *ctx)
 PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetSizeElement(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ)
 {
 	const PetscInt order = 2;
-	PetscInt M,N,P,mx,my,mz,width;
+	PetscInt M,N,P,width;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -145,7 +145,6 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetSizeElement(DM da,PetscInt *MX,Pets
 #define __FUNCT__ "_DMDAEQ1Macro_MixedSpace_GetLocalSizeElement"
 PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
-	const PetscInt order = 2;
 	PetscInt i,j,k,start;
 	PetscInt cntx,cnty,cntz;
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
@@ -300,9 +299,7 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(DM da,PetscInt *mx
 #define __FUNCT__ "DMDAEQ1Macro_MixedSpace_GetCornersElement"
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetCornersElement(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
-	const PetscInt order = 2;
 	PetscInt i,j,k;
-	PetscInt cntx,cnty,cntz;
 	PetscInt si,sj,sk,m,n,p,M,N,P,width;
 	PetscInt sig,sjg,skg,mg,ng,pg;
 	PetscErrorCode ierr;
@@ -315,8 +312,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetCornersElement(DM da,PetscInt *sei,Pet
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	/*PetscPrintf(PETSC_COMM_SELF,"[%d]: %d->%d : %d->%d \n", rank,si,si+m,sj,sj+n);*/
-	
-	cntx = cnty = cntz = 0;
+
 	// x
 	for (i=si; i<si+m; i++) {
 		if (i%2==0 && i==si && i!=0) { continue; } /* reject first ghost if its's even */
@@ -357,7 +353,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 	PetscMPIInt nproc,rank;
 	MPI_Comm comm;
 	PetscInt M,N,P,pM,pN,pP;
-	PetscInt i,j,k,II,dim,esi,esj,esk,mx,my,mz;
+	PetscInt i,j,k,dim,esi,esj,esk,mx,my,mz;
 	PetscInt *olx,*oly,*olz;
 	PetscInt *lmx,*lmy,*lmz,*tmp;
 	PetscErrorCode ierr;
@@ -458,12 +454,11 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetOwnershipRangesElement(DM da,PetscInt
 #define __FUNCT__ "_DMDAEQ1Macro_MixedSpace_GetElements3D"
 PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscInt *npe,PetscInt **eidx)
 {
-  DM_DA          *da = (DM_DA*)dm->data;
 	PetscErrorCode ierr;
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
-	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,d,X,Y,Z,width;
+	PetscInt ei,ej,ek,i,j,k,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[27],n,X,Y,Z,width;
 	PetscInt *el;
-	PetscInt *gidx,ngidx,dof;
+	PetscInt dof;
 	int rank;
 	PetscFunctionBegin;
 	
@@ -476,7 +471,6 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscI
 	_npe = 3 * 3 * 3;
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx*my*mz*_npe+1),&idx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
 	
@@ -554,13 +548,12 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetElements3D(DM dm,PetscInt *nel,PetscI
 #define __FUNCT__ "_DMDAEQ1Macro_NaturalSpace_GetElements3D"
 PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,PetscInt *npe,PetscInt **eidx)
 {
-  DM_DA          *da = (DM_DA*)dm->data;
 	PetscErrorCode ierr;
 	PetscInt *idx,mx,my,mz,_npe, M,N,P;
-	PetscInt ei,ej,ek,i,j,k,ii,jj,kk,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,d,X,Y,Z,width;
+	PetscInt ei,ej,ek,i,j,k,ii,jj,kk,elcnt,esi,esj,esk,gsi,gsj,gsk,nid[8],n,X,Y,Z,width;
 	PetscInt mx_natural,my_natural,mz_natural;
 	PetscInt *el;
-	PetscInt *gidx,ngidx,dof;
+	PetscInt dof;
 	int rank;
 	PetscFunctionBegin;
 	
@@ -577,7 +570,6 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx_natural*my_natural*mz_natural*_npe+1),&idx);CHKERRQ(ierr);
-	ierr = DMDAGetGlobalIndices(dm,&ngidx,&gidx);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(dm,&gsi,&gsj,&gsk, &X,&Y,&Z);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, 0,0,0, 0,0,0, &dof,0, 0,0,0, 0);CHKERRQ(ierr);
 	
@@ -595,10 +587,10 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 				for (kk=0; kk<2; kk++) {
 					for (jj=0; jj<2; jj++) {
 						for (ii=0; ii<2; ii++) {
-							PetscInt macro_idx,natural_idx;
+							PetscInt natural_idx;
 							PetscInt ni,nj,nk;
 							
-							macro_idx   = (ei)      + (ej)*mx              + (ek)*mx*my;
+							//macro_idx   = (ei)      + (ej)*mx              + (ek)*mx*my;
 							natural_idx = (2*ei+ii) + (2*ej+jj)*mx_natural + (2*ek+kk)*mx_natural*my_natural;
 							
 							el = &idx[_npe*natural_idx];
@@ -654,10 +646,9 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 #define __FUNCT__ "_DMDAEQ1Macro_NaturalSpaceToMixedSpace3D"
 PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedSpace3D(DM dm,PetscInt **natural_mixed_map)
 {
-	PetscInt *idx,mx,my,mz,_npe, M,N,P;
+	PetscInt *idx,mx,my,mz, M,N,P;
 	PetscInt esi,esj,esk,ei,ej,ek,ii,jj,kk,width;
 	PetscInt mx_natural,my_natural,mz_natural;
-	PetscInt elcnt;
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
@@ -667,14 +658,10 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedSpace3D(DM dm,PetscInt **natural
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");
 	}
 	
-	_npe = 2 * 2 * 2;
-	
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	ierr = _DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dm,&mx_natural,&my_natural,&mz_natural);CHKERRQ(ierr);
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx_natural*my_natural*mz_natural),&idx);CHKERRQ(ierr);
-	
-	elcnt = 0;
 	
 	/* loop over macro elements */
 	for (ek=0; ek<mz; ek++) {
@@ -711,10 +698,9 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedSpace3D(DM dm,PetscInt **natural
 #define __FUNCT__ "_DMDAEQ1Macro_NaturalSpaceToMixedLocalSpace3D"
 PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedLocalSpace3D(DM dm,PetscInt **natural_mixed_map)
 {
-	PetscInt *idx,mx,my,mz,_npe, M,N,P;
+	PetscInt *idx,mx,my,mz, M,N,P;
 	PetscInt esi,esj,esk,ei,ej,ek,ii,jj,kk,width;
 	PetscInt mx_natural,my_natural,mz_natural;
-	PetscInt elcnt;
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
@@ -724,14 +710,10 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedLocalSpace3D(DM dm,PetscInt **na
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");
 	}
 	
-	_npe = 2 * 2 * 2;
-	
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	ierr = _DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dm,&mx_natural,&my_natural,&mz_natural);CHKERRQ(ierr);
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx_natural*my_natural*mz_natural),&idx);CHKERRQ(ierr);
-	
-	elcnt = 0;
 	
 	/* loop over macro elements */
 	for (ek=0; ek<mz; ek++) {
@@ -743,9 +725,9 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedLocalSpace3D(DM dm,PetscInt **na
 					
 					for (ei=0; ei<mx; ei++) {
 						for (ii=0; ii<2; ii++) {
-							PetscInt macro_idx,natural_idx;
+							PetscInt natural_idx;
 							
-							macro_idx   = (ei)      + (ej)*mx              + (ek)*mx*my;
+							//macro_idx   = (ei)      + (ej)*mx              + (ek)*mx*my;
 							natural_idx = (2*ei+ii) + (2*ej+jj)*mx_natural + (2*ek+kk)*mx_natural*my_natural;
 							
 							idx[natural_idx] = ii + jj*2 + kk*2*2;
@@ -778,7 +760,7 @@ PetscErrorCode DMDASetElementType_Q1Macro(DM da)
     ierr = PetscFree(dd->e);CHKERRQ(ierr);
 		//    dd->elementtype = etype;
     dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
+    dd->e           = NULL;
   }
   //da->ops->getelements = DMGetElements_DA_Q1;
 	
@@ -963,7 +945,7 @@ PetscErrorCode  DMDAESetType_Q1Macro(DM da)
 	ierr = _DMDAEQ1Macro_MixedSpace_GetElements3D(da,&nel,&npe,&ctx->element_node_map_mixed_space);CHKERRQ(ierr);
 	
 	/* attach bucket to dm */
-  ierr = PetscContainerCreate(((PetscObject)da)->comm,&container);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PetscObjectComm((PetscObject)da),&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,(void*)ctx);CHKERRQ(ierr);
 	
 	ierr = PetscObjectCompose((PetscObject)da,DMDAEQ1MacroCtxName,(PetscObject)container);CHKERRQ(ierr);
@@ -972,15 +954,13 @@ PetscErrorCode  DMDAESetType_Q1Macro(DM da)
   PetscFunctionReturn(0);
 }
 
-
-
 /* element helpers */
 #undef __FUNCT__
 #define __FUNCT__ "DMDAEQ1Macro_GetElementCoordinates_3D"
 PetscErrorCode DMDAEQ1Macro_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elcoords[3*n  ] = LA_gcoords[3*elnid[n]  ];
@@ -995,7 +975,7 @@ PetscErrorCode DMDAEQ1Macro_GetElementCoordinates_3D(PetscScalar elcoords[],Pets
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		elcoords[3*n  ] = LA_gcoords[3*elnid[n]  ];
@@ -1010,7 +990,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementCoordinates_3D(PetscScalar elco
 PetscErrorCode DMDAEQ1Macro_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elfield[n] = LA_gfield[elnid[n]];
@@ -1023,7 +1003,7 @@ PetscErrorCode DMDAEQ1Macro_GetScalarElementField_3D(PetscScalar elfield[],Petsc
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		elfield[n] = LA_gfield[elnid[n]];
@@ -1036,7 +1016,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_GetScalarElementField_3D(PetscScalar elfi
 PetscErrorCode DMDAEQ1Macro_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<8; n++) {
 		elfield[3*n  ] = LA_gfield[3*elnid[n]  ];
@@ -1051,7 +1031,7 @@ PetscErrorCode DMDAEQ1Macro_GetVectorElementField_3D(PetscScalar elfield[],Petsc
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (n=0; n<27; n++) {
 		elfield[3*n  ] = LA_gfield[3*elnid[n]  ];
@@ -1100,7 +1080,7 @@ PetscErrorCode DMDAEQ1Macro_MixedSpace_SetValuesLocalStencil_AddValues_DOF(Petsc
 PetscErrorCode DMDAEQ1Macro_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n=0; n<8; n++) {
@@ -1115,7 +1095,7 @@ PetscErrorCode DMDAEQ1Macro_GetElementLocalIndicesDOF(PetscInt el_localIndices[]
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
-	PetscErrorCode ierr;
+
 	PetscFunctionBegin;
 	for (d=0; d<ndof; d++) {
 		for (n=0; n<27; n++) {

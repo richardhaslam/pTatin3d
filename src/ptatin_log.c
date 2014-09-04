@@ -54,7 +54,7 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 	pTatinGenerateFormattedTimestamp(date_time);
 	sprintf(name,"%s/ptatin.log-%s",ctx->outputpath,date_time);
 	
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&ctx->log);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created log file: %s \n",name);
@@ -73,7 +73,7 @@ PetscErrorCode pTatinLogCloseFile(pTatinCtx ctx)
 	PetscBool      stdout = PETSC_FALSE;
 	PetscErrorCode ierr;
 
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_log_stdout",&stdout,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerDestroy(&ctx->log);CHKERRQ(ierr);
 	}
@@ -118,7 +118,6 @@ PetscErrorCode pTatinLogHeader(pTatinCtx ctx)
 #define __FUNCT__ "pTatinLogBasic"
 PetscErrorCode pTatinLogBasic(pTatinCtx ctx)
 {
-	PetscErrorCode ierr;
 
 	PetscViewerASCIIPrintf(ctx->log,"------------------------------------------------------------------------------------------\n");
 	PetscViewerASCIIPrintf(ctx->log,"  time step %6d \n", ctx->step);
@@ -151,6 +150,7 @@ PetscErrorCode pTatinLogBasicKSP(pTatinCtx ctx,const char kspname[],KSP ksp)
 #define __FUNCT__ "pTatinLogBasicSNES"
 PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 {
+    Vec       r;
 	PetscReal rnorm;
 	PetscInt its,lits,nkspfails,nFevals,nstepfails;
 	const char *prefix;
@@ -159,12 +159,13 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	PetscErrorCode ierr;
 	
 	ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
-	ierr = SNESGetFunctionNorm(snes,&rnorm);CHKERRQ(ierr);
+	ierr = SNESGetFunction(snes,&r,NULL,NULL);CHKERRQ(ierr);
+	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
 	ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
 	ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
 	ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)snes,SNESKSPONLY,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)snes,SNESKSPONLY,&same);CHKERRQ(ierr);
 
 	if (!same) {
 		PetscViewerASCIIPrintf(ctx->log,"  SNES: (%18.18s)[prefix %8.8s] residual %1.4e;  iterations %1.4d;  total linear its. %1.4d;  reason %s;  \n", snesname,prefix,rnorm,its,lits,SNESConvergedReasons[reason]);
@@ -254,7 +255,7 @@ PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM 
 	PetscErrorCode ierr;
 	
 //	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
-	ierr = SNESGetFunction(snes,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+	ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
 	ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 
 	ierr = DMCompositeGetAccess(pack,F,&Fu,&Fp);CHKERRQ(ierr);
@@ -308,7 +309,6 @@ PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM
 #define __FUNCT__ "pTatinLogBasicDMDA"
 PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 {
-	const char *prefix;
 	PetscReal min[3],max[3];
 	PetscInt M,N,P,m,n,p,k;
 	const PetscInt *lx,*ly,*lz;
@@ -319,10 +319,10 @@ PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 	ierr = DMDAGetInfo(dm,0,&M,&N,&P,&m,&n,&p, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dm,&lx,&ly,&lz);CHKERRQ(ierr);
 	
-	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,PETSC_NULL,M,N,P);
+	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,NULL,M,N,P);
 
-	coords = PETSC_NULL;
-	ierr = DMDAGetCoordinates(dm,&coords);CHKERRQ(ierr);
+	coords = NULL;
+	ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
 	if (coords) {
 		ierr = DMDAGetBoundingBox(dm,min,max);CHKERRQ(ierr);
 		PetscViewerASCIIPrintf(ctx->log,"                                               span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);

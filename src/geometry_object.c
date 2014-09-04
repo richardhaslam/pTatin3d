@@ -85,7 +85,7 @@ PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G)
 	
 	asprintf(&go->name,"%s",name);
 	go->type = GeomType_NULL;
-	go->ctx = PETSC_NULL;
+	go->ctx = NULL;
 	go->n_rotations = 0;
 	go->ref_cnt = 0;
 	
@@ -94,8 +94,8 @@ PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G)
 		go->rotation_axis[k] = ROTATE_AXIS_UNDEFINED;
 	}
 	
-	go->geom_point_inside = PETSC_NULL;
-	go->geom_transform_translate = PETSC_NULL;
+	go->geom_point_inside = NULL;
+	go->geom_transform_translate = NULL;
 	
 	go->centroid[0]=0.0;
 	go->centroid[1]=0.0;
@@ -127,7 +127,7 @@ PetscErrorCode GeometryObjectDestroy(GeometryObject *G)
 	free(go->name);
 	ierr = PetscFree(go);CHKERRQ(ierr);
 	
-	*G = PETSC_NULL;
+	*G = NULL;
 	
 	PetscFunctionReturn(0);
 }

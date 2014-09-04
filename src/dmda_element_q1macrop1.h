@@ -36,7 +36,7 @@
 
 #include "petsc.h"
 #include "petscdm.h"
-#include "private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 PetscErrorCode DMDASetElementType_Q1Macro(DM da);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetSizeElement(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ);

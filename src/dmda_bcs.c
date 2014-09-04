@@ -48,7 +48,6 @@ PetscErrorCode BCListIsDirichlet(PetscInt value,PetscBool *flg)
 PetscErrorCode BCListInitialize(BCList list)
 {
 	PetscInt       n;
-	PetscErrorCode ierr;
 	
 	for (n=0; n<list->L; n++) {
 		list->dofidx_global[n] = 0;
@@ -117,7 +116,7 @@ PetscErrorCode BCListDestroy(BCList *list)
 	
 	ierr = DMDestroy(&ll->dm);CHKERRQ(ierr);
 	ierr = PetscFree(ll);CHKERRQ(ierr);
-	*list = PETSC_NULL;
+	*list = NULL;
 	PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -142,8 +141,8 @@ PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_loca
 	ierr = BCListInitialize(list);CHKERRQ(ierr);
 	
 	mem_usage = mem_usage * 1.0e-6;
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,((PetscObject)list->dm)->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,((PetscObject)list->dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	PetscFunctionReturn(0);
@@ -170,13 +169,16 @@ PetscErrorCode BCListUpdateCache(BCList list)
 #define __FUNCT__ "BCListInitGlobal"
 PetscErrorCode BCListInitGlobal(BCList list)
 {
-	PetscInt i,max,*indices,lsize;
+    ISLocalToGlobalMapping ltog;
+	PetscInt i,max,lsize;
+	const PetscInt *indices;
 	Vec dindices,dindices_g;
 	PetscScalar *_dindices;
 	PetscErrorCode ierr;
 	
-	
-	ierr = DMDAGetGlobalIndices(list->dm,&max,&indices);CHKERRQ(ierr);
+	ierr = DMGetLocalToGlobalMapping(list->dm, &ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingGetSize(ltog, &max);CHKERRQ(ierr);
+	ierr = ISLocalToGlobalMappingGetIndices(ltog, &indices);CHKERRQ(ierr);
 	ierr = DMGetGlobalVector(list->dm,&dindices_g);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(list->dm,&dindices);CHKERRQ(ierr);
 	ierr = VecGetLocalSize(dindices,&lsize);CHKERRQ(ierr);
@@ -187,6 +189,7 @@ PetscErrorCode BCListInitGlobal(BCList list)
 		_dindices[i] = (PetscScalar)indices[i] + 1.0e-3;
 	}
 	ierr = VecRestoreArray(dindices,&_dindices);CHKERRQ(ierr);
+	ierr = ISLocalToGlobalMappingRestoreIndices(ltog, &indices);CHKERRQ(ierr);
 	
 	/* scatter (ignore ghosts) */
 	ierr = DMLocalToGlobalBegin(list->dm,dindices,INSERT_VALUES,dindices_g);CHKERRQ(ierr);
@@ -283,9 +286,8 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 {
 	BCList ll;
 	PetscInt bs,N,m,n,p,Ng,mg,ng,pg;
-	PetscInt gidx,gdofidx,blockloc,loc,dof_idx,dim,ndof;
-	PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz,i,j,k;
-	PetscInt max_index,*globalindices;
+	PetscInt dim,ndof;
+	PetscInt si,sj,sk,nx,ny,nz,gsi,gsj,gsk,gnx,gny,gnz;
 	PetscErrorCode ierr;
 	
 	ierr = DMDAGetInfo(da,0, 0,0,0, 0,0,0, &bs,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -308,7 +310,6 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 	ierr = DMDAGetGhostCorners(da,&gsi,&gsj,&gsk,&gnx,&gny,&gnz);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetGlobalIndices(da,&max_index,&globalindices);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(da,&dim, 0,0,0, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
 	
 	ierr = BCListInitGlobal(ll);CHKERRQ(ierr);
@@ -484,7 +485,7 @@ PetscErrorCode BCListInsertLocal(BCList list,Vec y)
 	
 	/* debug error checking */
 	if (L!=M) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
-	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
 	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<M; k++) {
@@ -507,20 +508,19 @@ PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
 {
 	PetscInt M,k,L;
 	const PetscInt *idx;
-	PetscScalar *LA_x,*LA_y;
+	PetscScalar *LA_y;
 	PetscBool is_seq = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	L    = list->L_local;
 	idx  = list->dofidx_local;
-	LA_x = list->vals_local;
 	ierr = VecGetArray(y,&LA_y);CHKERRQ(ierr);
 	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
 	
 	/* debug error checking */
 	if (L!=M) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
-	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
 	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<M; k++) {
@@ -547,8 +547,8 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
@@ -585,16 +585,15 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 {
 	PetscInt m,k,L;
 	const PetscInt *idx;
-	PetscScalar *LA_S,*LA_X,*LA_F,*LA_phi;
+	PetscScalar *LA_S,*LA_X,*LA_F;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
-	LA_phi = list->vals_global;
 	LA_S   = list->scale_global;
 	
 	ierr = VecGetArray(X,&LA_X);CHKERRQ(ierr);
@@ -652,8 +651,8 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (!coords) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Coordinates must be set"); }
 	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	
@@ -876,7 +875,7 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	}
 	F->L = count;
 	
-	ierr = MPI_Comm_size(((PetscObject)std->dm)->comm,&nproc);CHKERRQ(ierr);
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)std->dm),&nproc);CHKERRQ(ierr);
 	if (nproc==1) {
 		F->vals_local   = F->vals_global;
 		F->dofidx_local = F->dofidx_global;
@@ -908,8 +907,8 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	}
 	
 	mem_usage = mem_usage * 1.0e-6;
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,((PetscObject)std->dm)->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,((PetscObject)std->dm)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	
@@ -970,7 +969,7 @@ PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
 	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
 	
 	/* debug error checking */
-	ierr = PetscTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
 	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<L; k++) {
@@ -991,14 +990,14 @@ PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
 #define __FUNCT__ "BCListFlatResidualDirichlet"
 PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
 {
-	PetscInt m,k,L;
+	PetscInt k,L;
 	const PetscInt *idx;
 	PetscScalar *LA_S,*LA_X,*LA_F,*LA_phi;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be PETSC_NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be PETSC_NULL"); }
+	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
@@ -1026,7 +1025,6 @@ PetscErrorCode BCListApplyDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList 
 {
 	PetscInt k,L;
 	PetscInt *idx;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	L   = list->L_local;
@@ -1045,7 +1043,6 @@ PetscErrorCode BCListRemoveDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList
 {
 	PetscInt k,L;
 	PetscInt *idx;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	L   = list->L_local;

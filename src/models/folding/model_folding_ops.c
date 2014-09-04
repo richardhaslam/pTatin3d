@@ -75,22 +75,22 @@ PetscErrorCode ModelInitialize_Folding(pTatinCtx c,void *ctx)
 
 	/* bc type */
 	data->model_type = FOLD_MODEL_A;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-model_type",(PetscInt*)&data->model_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-model_type",(PetscInt*)&data->model_type,&flg);CHKERRQ(ierr);
 	
 	data->dimensional   = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
 
 	/* box geometry */
 	data->Lx = 45.0;
 	data->Ly = 45.0;
 	data->Lz = 45.0;
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 
 	data->cutoff_time = 1.0;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_cutofftime",&data->cutoff_time,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_cutofftime",&data->cutoff_time,&flg);CHKERRQ(ierr);
 
 
 	
@@ -235,8 +235,8 @@ PetscErrorCode MeshDeformation_setup1(DM da)
 	dy = (Gmax[1]-Gmin[1])/(PetscReal)(MY-1);
 
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	/* apply bump */
@@ -309,8 +309,8 @@ PetscErrorCode MeshDeformation_insert_layer(DM da,const PetscInt j,void (*interf
 	ierr = DMDAGetInfo(da,0,0,&MY,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	
 	ierr = DMDAGetCorners( da, &si,&sj,&sk, &nx,&ny,&nz );CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,coord,&_coord);CHKERRQ(ierr);
 	
 	/* apply bump */
@@ -490,24 +490,24 @@ PetscErrorCode ModelOutput_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 
-	ierr = VecStrideMin(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,0,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|P0|   = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,0,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,0,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|P0|   = %+1.4e \n",fp);
 
-	ierr = VecStrideMin(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,1,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdx| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,1,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,1,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdx| = %+1.4e \n",fp);
 
-	ierr = VecStrideMin(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,2,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdy| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,2,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,2,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdy| = %+1.4e \n",fp);
 
-	ierr = VecStrideMin(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMin(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," min|dPdz| = %+1.4e \n",fp);
-	ierr = VecStrideMax(pressure,3,PETSC_NULL,&fp);CHKERRQ(ierr);
+	ierr = VecStrideMax(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
 	
 	
@@ -516,7 +516,7 @@ PetscErrorCode ModelOutput_CheckScales(pTatinCtx c,Vec X)
 	
 	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
 
 	ierr = DMCompositeGetAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = BCListInsertZero(stokes->u_bclist,velocity);CHKERRQ(ierr);
@@ -537,7 +537,7 @@ PetscErrorCode ModelOutput_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
 	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
@@ -554,7 +554,7 @@ PetscErrorCode ModelOutput_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	
-	ierr = FormFunction_Stokes(PETSC_NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
+	ierr = FormFunction_Stokes(NULL,Xcopy,F,(void*)c);CHKERRQ(ierr);
 	ierr = VecAXPY(F,1.0,RHS);CHKERRQ(ierr); /* F = F - RHS */
 	
 	ierr = DMCompositeGetAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);

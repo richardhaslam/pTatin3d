@@ -116,7 +116,7 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	
 	PetscFunctionBegin;
 
-	ierr = KSPGetOperators(ksp,&Aop,&Bop,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&Aop,&Bop);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = KSPGetPCSide(ksp,&side);CHKERRQ(ierr);
 	
@@ -129,10 +129,10 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	
 	switch (ctx->side) {
 		case PC_LEFT:
-			ierr = MatGetVecs(ctx->A,PETSC_NULL,&ctx->t);CHKERRQ(ierr);
+			ierr = MatGetVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
 			break;
 		case PC_RIGHT:
-			ierr = MatGetVecs(ctx->A,PETSC_NULL,&ctx->t);CHKERRQ(ierr);
+			ierr = MatGetVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
 			break;
 		case PC_SYMMETRIC:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
@@ -152,10 +152,10 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	
 	switch (ctx->side) {
 		case PC_LEFT: /* PC.A MB x NB.MA x NA */
-			ierr = MatCreateShell(((PetscObject)ksp)->comm,mB,nA,MB,NA,(void*)ctx,&B);CHKERRQ(ierr);
+			ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),mB,nA,MB,NA,(void*)ctx,&B);CHKERRQ(ierr);
 			break;
 		case PC_RIGHT: /* A.PC */
-			ierr = MatCreateShell(((PetscObject)ksp)->comm,mA,nB,MA,NB,(void*)ctx,&B);CHKERRQ(ierr);
+			ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),mA,nB,MA,NB,(void*)ctx,&B);CHKERRQ(ierr);
 			break;
 		case PC_SYMMETRIC:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
@@ -201,14 +201,14 @@ PetscErrorCode MatCreateEigenOperatorFromKSP(KSP ksp,Mat *A)
 	
 	PetscFunctionBegin;
 	
-	ierr = KSPGetOperators(ksp,&Aop,&Bop,PETSC_NULL);CHKERRQ(ierr);
+	ierr = KSPGetOperators(ksp,&Aop,&Bop);CHKERRQ(ierr);
 	
 	ierr = MatGetSize(Aop,&MA,&NA);CHKERRQ(ierr);
 	ierr = MatGetLocalSize(Aop,&mA,&nA);CHKERRQ(ierr);
 	ierr = MatGetSize(Bop,&MB,&NB);CHKERRQ(ierr);
 	ierr = MatGetLocalSize(Bop,&mB,&nB);CHKERRQ(ierr);
 	
-	ierr = MatCreateShell(((PetscObject)ksp)->comm,mB,nA,MB,NA,(void*)ksp,&B);CHKERRQ(ierr);
+	ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),mB,nA,MB,NA,(void*)ksp,&B);CHKERRQ(ierr);
 
 	ierr = MatShellSetOperation(B,MATOP_MULT,         (void(*)(void))MatMult_MatEigenOperatorKSP);CHKERRQ(ierr);
 	

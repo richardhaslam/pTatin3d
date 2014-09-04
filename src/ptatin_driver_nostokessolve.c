@@ -50,9 +50,9 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #define __FUNCT__ "pTatin3d_material_points_gmg"
 PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 {
-	DM              multipys_pack,dav,dap;
+	DM             multipys_pack,dav;
+	pTatinCtx      user;
 	PetscErrorCode ierr;
-	pTatinCtx user;
 
 	PetscFunctionBegin;
 	
@@ -77,7 +77,6 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 	
@@ -138,7 +137,6 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	{
 		Vec X,F;
 		SNES snes;
-		Mat JMF;
 		
 		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
@@ -180,7 +178,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 //		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 		
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 		ierr = VecDestroy(&X);CHKERRQ(ierr);
@@ -210,7 +208,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = VecGetLocalSize(u,&mu);CHKERRQ(ierr);
 		ierr = VecGetSize(p,&Mp);CHKERRQ(ierr);
 		ierr = VecGetLocalSize(p,&mp);CHKERRQ(ierr);
-		ierr = VecGetOwnershipRange(u,&start,PETSC_NULL);CHKERRQ(ierr);
+		ierr = VecGetOwnershipRange(u,&start,NULL);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
 		
 		n = (mu/3);
@@ -301,7 +299,7 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 	
 	
 	/* test viewer */
-	DataBucketView(((PetscObject)multipys_pack)->comm, user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
 	
 	
 	{

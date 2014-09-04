@@ -96,13 +96,13 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	
 	/* experiment info */
 	data->experiment = 1;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-gm08_experiment",&data->experiment,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-gm08_experiment",&data->experiment,&flg);CHKERRQ(ierr);
 	data->three_dimensional = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-gm08_three_dimensional",&data->three_dimensional,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-gm08_three_dimensional",&data->three_dimensional,&flg);CHKERRQ(ierr);
 	data->use_free_surface = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-gm08_use_free_surface",&data->use_free_surface,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-gm08_use_free_surface",&data->use_free_surface,&flg);CHKERRQ(ierr);
 	data->frictional_boundary_layer_delta = 0.2 * cm2m;
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-gm08_skin_thickness",&data->frictional_boundary_layer_delta,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-gm08_skin_thickness",&data->frictional_boundary_layer_delta,&flg);CHKERRQ(ierr);
 	
 	/* materials */
 	fac = 1.0;
@@ -495,7 +495,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 
 	ierr = GeomMod2008ApplyFrictionalBoundarySkin(data,stokes->dav,material_points);CHKERRQ(ierr);
@@ -539,7 +539,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
 
 	ierr = MaterialPointGetAccess(material_points,&mpX);CHKERRQ(ierr);
@@ -700,7 +700,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,voi
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
 	
 	ierr = MaterialPointGetAccess(material_points,&mpX);CHKERRQ(ierr);
@@ -809,7 +809,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ct
 			
 	}
 
-	ierr = pTatinGetMaterialPoints(c,&material_points,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = GeomMod2008ApplyFrictionalBoundarySkin(data,stokes->dav,material_points);CHKERRQ(ierr);
 	
@@ -923,7 +923,7 @@ PetscErrorCode ModelOutput_GeoMod2008(pTatinCtx c,Vec X,const char prefix[],void
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
 	/* markers */
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	{
 		const int nf = 2;
 		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };

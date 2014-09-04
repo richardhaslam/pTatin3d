@@ -97,27 +97,27 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global = 1.0e+26;
 	rheology->eta_lower_cutoff_global = 1.0e+20;
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Ly",&data->Ly,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Oy",&data->Oy,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Lz",&data->Lz,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Oz",&data->Oz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Lx",&data->Lx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Ox",&data->Ox,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Ly",&data->Ly,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Oy",&data->Oy,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Lz",&data->Lz,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Oz",&data->Oz,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_velocity",&data->velocity,PETSC_NULL);CHKERRQ(ierr); 	
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_velocity",&data->velocity,NULL);CHKERRQ(ierr); 	
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_viscosity_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_velocity_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_viscosity_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_velocity_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Ttop",&data->Ttop,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_Tbot",&data->Tbot,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Ttop",&data->Ttop,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_Tbot",&data->Tbot,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_eta0",&data->eta[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_rho0",&data->rho[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_diffusivity0",&data->diffusivity[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_alpha0",&data->alpha[0],PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_conv2d_H0",&data->H[0],PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_eta0",&data->eta[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_rho0",&data->rho[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_diffusivity0",&data->diffusivity[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_alpha0",&data->alpha[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_conv2d_H0",&data->H[0],NULL);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[thermal_convection2d]: Ra = %1.4e \n",data->alpha[0]*10*DeltaT*data->Lx*data->Lx*data->Lx/(data->diffusivity[0]*data->eta[0]));
 	
@@ -324,7 +324,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataFieldGetAccess(PField_std);
@@ -454,7 +454,7 @@ PetscErrorCode ModelApplyInitialSolution_Thermal_Convection2d(pTatinCtx c,Vec X,
 	
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
 		
 		vals[0] = data->Ttop; //top temperature K
@@ -556,7 +556,7 @@ PetscErrorCode ModelOutput_Thermal_Convection2d(pTatinCtx c,Vec X,const char pre
 
 #if 0	
 	{
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
 		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
@@ -586,7 +586,7 @@ PetscErrorCode ModelOutput_Thermal_Convection2d(pTatinCtx c,Vec X,const char pre
 		Vec            temperature;
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 	}

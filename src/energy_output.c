@@ -93,8 +93,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(Quadrature Q,DM daT,Vec X,const c
 	ierr = DMDAGetGhostCorners(daT,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAEGetCornersElement(daT,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(daT,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(daT,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daT,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(daT,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(daT,&local_fields);CHKERRQ(ierr);
@@ -113,8 +113,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(Quadrature Q,DM daT,Vec X,const c
 	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 	
-	fprintf(vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
-	fprintf(vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "    <Piece Extent=\"%D %D %D %D %D %D\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
 	
 	/* VTS COORD DATA */	
 	fprintf(vtk_fp, "    <Points>\n");
@@ -264,8 +264,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(Quadrature Q,DM daT,Vec X,const 
 	ierr = DMDAGetGhostCorners(daT,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
 	ierr = DMDAEGetCornersElement(daT,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(daT,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(daT,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(daT,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(daT,&gcoords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda,gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(daT,&local_fields);CHKERRQ(ierr);
@@ -284,8 +284,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(Quadrature Q,DM daT,Vec X,const 
 	fprintf(vtk_fp, "<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 	
-	fprintf(vtk_fp, "  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
-	fprintf(vtk_fp, "    <Piece Extent=\"%d %d %d %d %d %d\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "  <StructuredGrid WholeExtent=\"%D %D %D %D %D %D\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
+	PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "    <Piece Extent=\"%D %D %D %D %D %D\">\n", esi,esi+mx, esj,esj+my, esk,esk+mz);
 
 	offset = 0;
 	
@@ -463,11 +463,15 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 				for( i=0;i<pM;i++ ) {
 					char *name;
 					PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
-					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid );
+					int procid32;
+					
+					PetscMPIIntCast(procid,&procid32);
+					
+					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
 					for( II=0; II<indent_level; II++ ) {
 						if(vtk_fp) fprintf(vtk_fp,"  ");
 					}
-					if(vtk_fp) fprintf(vtk_fp, "<Piece Extent=\"%d %d %d %d %d %d\"      Source=\"%s\"/>\n",
+					if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "<Piece Extent=\"%D %D %D %D %D %D\"      Source=\"%s\"/>\n",
 														 olx[i],olx[i]+lmx[i],
 														 oly[j],oly[j]+lmy[j],
 														 olz[k],olz[k]+lmz[k],
@@ -485,7 +489,7 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 				for( II=0; II<indent_level; II++ ) {
 					if(vtk_fp) fprintf(vtk_fp,"  ");
 				}
-				if(vtk_fp) fprintf(vtk_fp, "<Piece Extent=\"%d %d %d %d 0 0\"      Source=\"%s\"/>\n",
+				if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "<Piece Extent=\"%D %D %D %D 0 0\"      Source=\"%s\"/>\n",
 													 olx[i],olx[i]+lmx[i],
 													 oly[j],oly[j]+lmy[j],
 													 name);
@@ -533,7 +537,7 @@ PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char 
 #endif
 	
 	DMDAGetInfo( daT, 0, &M,&N,&P, 0,0,0, 0,&swidth, 0,0,0, 0 );
-	if(vtk_fp) fprintf(vtk_fp, "  <PStructuredGrid GhostLevel=\"%d\" WholeExtent=\"%d %d %d %d %d %d\">\n", swidth, 0,M-1, 0,N-1, 0,P-1 ); /* note overlap = 1 for Q1 */
+	if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "  <PStructuredGrid GhostLevel=\"%D\" WholeExtent=\"%D %D %D %D %D %D\">\n", swidth, 0,M-1, 0,N-1, 0,P-1 ); /* note overlap = 1 for Q1 */
 	
 	/* VTS COORD DATA */	
 	if(vtk_fp) fprintf(vtk_fp, "    <PPoints>\n");
@@ -617,7 +621,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	daT  = energy->daT;
 	volQ = energy->volQ;
 	
-	PetscGetTime(&t0);
+	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
 		asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
@@ -648,7 +652,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	
 	ierr = pTatinOutputParaViewMeshEnergy(volQ,daT,X,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
-	PetscGetTime(&t1);
+	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);

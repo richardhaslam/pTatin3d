@@ -1,5 +1,3 @@
-
-
 #define _GNU_SOURCE
 #include "petsc.h"
 
@@ -48,11 +46,11 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
 	ModelCtx           *modeldata = (ModelCtx*)modelctx;
 	RheologyConstants  *rheology;
 	DataBucket         materialconstants;
-    PetscInt           regionidx,midx;
-    PetscReal          n_exp,F,preexp_A;
-    PetscInt           mtype;
-    PetscBool          flg;
-    PetscReal          mmyr2ms;
+  PetscInt           regionidx,midx;
+  PetscReal          n_exp,F,preexp_A;
+  PetscInt           mtype;
+  PetscBool          flg;
+  PetscReal          mmyr2ms;
 	PetscErrorCode     ierr;
     
     
@@ -72,7 +70,6 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     
     modeldata->rhs_scale = modeldata->eta_bar * modeldata->v_bar / (modeldata->x_bar * modeldata->x_bar); /* [ eta.u/(L.L) ]^-1 */
     modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
-
     modeldata->output_si = PETSC_FALSE;
     PetscOptionsGetBool(PETSC_NULL,"-model_output_si",&modeldata->output_si,0);
     
@@ -80,7 +77,6 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     modeldata->domain[0] = 120.0e3;
     modeldata->domain[1] = 10.0e3;
     modeldata->domain[2] = 120.0e3;
-
     {
         PetscInt nd = 3;
         
@@ -104,7 +100,6 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     
     modeldata->exx_bc = 0.0;
     modeldata->ezz_bc = 0.0;
-
     modeldata->vx_bc /= modeldata->v_bar; printf("vx_bc = %1.4e \n",modeldata->vx_bc);
     modeldata->vz_bc /= modeldata->v_bar;
     
@@ -126,19 +121,17 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
 
     /* background */
     regionidx = M_IDX;
-	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+    MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 
     ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,1.0e21);CHKERRQ(ierr);
 
     MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,2.700000e+03/(-10.0));
 
-    
     /* layer */
     for (midx=1; midx<=(PetscInt)C_IDX; midx++) {
         regionidx = midx;
         
         MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_MISES,SOFTENING_NONE,DENSITY_CONSTANT);
-
         ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,1.0e24);CHKERRQ(ierr);
         
         ierr = MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.000000e+08,1.000000e+8);CHKERRQ(ierr);
@@ -157,16 +150,14 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
 	for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
 		ierr = MaterialConstantsPrintAll(materialconstants,regionidx);CHKERRQ(ierr);
 	}
-
     
     /* --------------------------------- logfile --------------------------------- */
     {
         char logfile[PETSC_MAX_PATH_LEN];
-        double ms2cm;
         
         sprintf(logfile,"%s/model.logfile",ptatinctx->outputpath);
         ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&modeldata->logviewer);CHKERRQ(ierr);
-
+        
         PetscViewerASCIIPrintf(modeldata->logviewer,"# Model logfile\n");
         PetscViewerASCIIPrintf(modeldata->logviewer,"#  pTatin3d scaling used:\n");
         PetscViewerASCIIPrintf(modeldata->logviewer,"#    x*     = %1.4e (m) \n",modeldata->x_bar);
@@ -177,7 +168,6 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
         PetscViewerASCIIPrintf(modeldata->logviewer,"#    rho.g* = %1.4e (N/m/m) \n",modeldata->rhs_scale);
         PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
     }
-
 	for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
         ierr = MaterialConstantsScaleAll(materialconstants,regionidx,modeldata->x_bar,modeldata->v_bar,modeldata->t_bar,modeldata->eta_bar,1.0/modeldata->rhs_scale,modeldata->p_bar);CHKERRQ(ierr);
 		ierr = MaterialConstantsPrintAll(materialconstants,regionidx);CHKERRQ(ierr);
@@ -207,11 +197,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 
 	ierr = DMDASetUniformCoordinates(dav,0.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
 
-    flg = PETSC_FALSE;
-    PetscOptionsGetBool(PETSC_NULL,"-model_domain_3d",&flg,0);
-    if (!flg) {
-        ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
-    }
+  flg = PETSC_FALSE;
+  PetscOptionsGetBool(PETSC_NULL,"-model_domain_3d",&flg,0);
+  if (!flg) {
+    ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -235,7 +225,6 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
         double xp,yp,H,dnx,dny;
         
 		ierr = MaterialPointGet_global_coord(mpX,p,&position_p);CHKERRQ(ierr);
-
         /* convert into km */
         xp = position_p[0] * mctx->domain[0]*0.5 * mctx->x_bar;
         yp = (position_p[1] + mctx->domain[1]*0.5) * mctx->x_bar;
@@ -250,7 +239,6 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
         
         dny = (0.25/3.0) * 30.0e3;
         dnx = 2.0 * dny;
-
         if (fabs(xp) < 1.0*dnx) {
             if ((H-yp) > (22.5*1.0e3-dny)) {
                 in_mantle = PETSC_TRUE;
@@ -270,7 +258,6 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
             for (p=0; p<n_mpoints/27; p++) {
                 int pc = p*27 + 13;
                 int pk,region;
-
                 
                 ierr = MaterialPointGet_phase_index(mpX,pc,&region);CHKERRQ(ierr);
                 for (pk=p*27; pk<p*27+27; pk++) {
@@ -281,7 +268,6 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
     }
     
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
-
     
 	PetscFunctionReturn(0);
 }
@@ -391,12 +377,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
     for (p=0; p<n_mpoints; p++) {
 		ierr = MaterialPointSet_phase_index(mpX,p, M_IDX);CHKERRQ(ierr);
     }
-
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
     
     {
-     
         //ierr = PD_MaterialGeometry_ex1(c,data);CHKERRQ(ierr);
         ierr = PD_MaterialGeometry_ex2(c,data);CHKERRQ(ierr);
     }
@@ -412,7 +396,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
     /* set initial eta,rho */
     for (p=0; p<n_mpoints; p++) {
         int ridx;
-        double eta0,rho0;
         MaterialConst_DensityConst   *mc_density;
         MaterialConst_ViscosityConst *mc_visc;
         
@@ -421,7 +404,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
         
         DataFieldAccessPoint(PField_dens_const,ridx,(void**)&mc_density);
         DataFieldAccessPoint(PField_visc_const,ridx,(void**)&mc_visc);
-
         
         ierr = MaterialPointSet_density(mpX,    p, mc_density->density*(-10.0));CHKERRQ(ierr);
         ierr = MaterialPointSet_viscosity(mpX,  p, mc_visc->eta0);CHKERRQ(ierr);
@@ -442,13 +424,12 @@ PetscErrorCode PD_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ModelCtx *
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-
     ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,EAST_FACE, modeldata->vx_bc);CHKERRQ(ierr);
     //ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE,-modeldata->vx_bc);CHKERRQ(ierr);
     ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,WEST_FACE,0.0);CHKERRQ(ierr);
- 
-   // ierr = DirichletBC_SetConstant(bclist,dav,WEST_FACE,0,0.0);CHKERRQ(ierr);
-
+    
+    // ierr = DirichletBC_SetConstant(bclist,dav,WEST_FACE,0,0.0);CHKERRQ(ierr);
+    
     ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,SOUTH_FACE,0.0);CHKERRQ(ierr);
     
     ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,FRONT_FACE, modeldata->vz_bc);CHKERRQ(ierr);
@@ -516,13 +497,13 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
     ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-
+    
     if (modeldata->output_si) {
         
         /* get the coordinates of the velocity mesh and scale into SI units <note, local and ghosted coordinates should be scaled> */
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
-        ierr = DMDAGetGhostedCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
         
         /* unscale vel, p */
@@ -539,9 +520,9 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
     
     if (modeldata->output_si) {
         /* undo the coordinate scaling of velocity mesh <note, local and ghosted coordinates should be scaled> */
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
-        ierr = DMDAGetGhostedCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
         
         /* unscale vel, p */
@@ -550,7 +531,6 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
         ierr = VecScale(velocity,1.0/modeldata->v_bar);CHKERRQ(ierr);
         ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
     }
- 
 	/* ---- Material Point Output ---- */
 	/* [1] Basic viewer: Only reports coords, regionid and other internal data */
 	/*
@@ -589,7 +569,7 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
 PetscErrorCode pTatinModelRegister_PD(void)
 {
 	ModelCtx        *data;
-	pTatinModel     m,model;
+	pTatinModel     m;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;

@@ -38,6 +38,7 @@ git ls-files '*.[ch]' | xargs perl -pi -e '
   s@MatGetArray@MatSeqAIJGetArray@;
   s@MatRestoreArray@MatSeqAIJRestoreArray@;
   s@^.*DMView_DA_Private.*\n@@;
+  s@((?:KSP|PC)[SG]etOperators)\(([^,;]+),([^,;]+),([^,;]+),([^,;]+)\)@$1($2,$3,$4)@;
 '
 
 git apply - <<"EOF"

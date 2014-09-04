@@ -109,7 +109,7 @@ PetscErrorCode DMDAGatherIKRedundantSurfaceDMDA(DM dm_mech,DM *dm_msurf0)
 	}
 	ierr = DMDACreate3dRedundant(dm_mech,startI,endI,endJ-1,endJ,startK,endK,1,&dm_surf);CHKERRQ(ierr);
 	
-	*dm_msurf0 = PETSC_NULL;
+	*dm_msurf0 = NULL;
 	if (rank == 0) {
 		*dm_msurf0 = dm_surf;
 	}
@@ -126,7 +126,7 @@ PetscErrorCode DMDAGatherIKRedundantSurfaceDMDA(DM dm_mech,DM *dm_msurf0)
 PetscErrorCode InterpolateMSurf0ToSPMSurfIKGrid(DM dm_msurf0,PetscInt spm_mi,PetscInt spm_mj,PetscReal *spm_coords,PetscReal *spm_H)
 {
 	PetscErrorCode ierr;
-	PetscInt       ei,ek,si,sj,sk,ni,nj,nk,M,N,P,startI,endI,startK,endK,endJ,msurf_mi,msurf_mk;
+	PetscInt       ei,ek,ni,nj,nk,msurf_mi,msurf_mk;
 	PetscInt       i,k,n,spm_nodes;
 	PetscReal      H_p,el_H[Q2_NODES_PER_EL_2D],Ni[Q2_NODES_PER_EL_2D];
 	Vec            coords;
@@ -174,7 +174,7 @@ PetscErrorCode InterpolateMSurf0ToSPMSurfIKGrid(DM dm_msurf0,PetscInt spm_mi,Pet
 		}
 	}
 	
-	ierr = DMDAGetCoordinates(dm_msurf0,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_msurf0,&coords);CHKERRQ(ierr);
 	ierr = VecGetArray(coords,&msurf_coords);CHKERRQ(ierr);
 	
 	for (k=0; k<ni*nk; k++) {
@@ -249,7 +249,7 @@ PetscErrorCode InterpolateSPMSurfIKGridToMSurf0(PetscInt spm_mi,PetscInt spm_mj,
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(dm_msurf0,0,&ni,&nj,&nk,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	msurf_nodes = ni*nj*nk;
-	ierr = DMDAGetCoordinates(dm_msurf0,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_msurf0,&coords);CHKERRQ(ierr);
 	ierr = VecGetArray(coords,&msurf_coords);CHKERRQ(ierr);
 
 	spm_ni = spm_mi + 1;
@@ -326,7 +326,7 @@ PetscErrorCode InterpolateSPMSurfIKGridToMSurf0(PetscInt spm_mi,PetscInt spm_mj,
 PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 {
 	PetscErrorCode ierr;
-	PetscInt       pID,pI,pJ,pK,rI,rJ,rK,rIJ,rank,nsurface_ranks;
+	PetscInt       pID,pI,pJ,pK,rI,rJ,rK,rIJ,rank;
 	PetscInt       i,k,ii,kk,si,ei,sk,ek,sj,ej,M,N,P,pi,pk;
 	PetscMPIInt    _rank;
 	PetscBool      surface_rank;
@@ -360,7 +360,7 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 	if (rJ == (pJ-1)) {
 		surface_rank = PETSC_TRUE;
 	}
-	nsurface_ranks = pI * pK;
+	//nsurface_ranks = pI * pK;
 	
 	
 	/* --------------------------------------------- */
@@ -390,8 +390,8 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 		DM cda_spmsurf;
 		
 		
-		ierr = DMDAGetCoordinateDA(dm_msurf0,&cda_spmsurf);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(dm_msurf0,&coords);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(dm_msurf0,&cda_spmsurf);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(dm_msurf0,&coords);CHKERRQ(ierr);
 		ierr = DMDAVecGetArray(cda_spmsurf,coords,&LA_coords);CHKERRQ(ierr);
 		
 		for (pk=0; pk<pK; pk++) {
@@ -429,8 +429,8 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 	}
 
 	/* collect results */
-	ierr = DMDAGetCoordinateDA(dm_mech,&cda_mech);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dm_mech,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_mech,&cda_mech);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_mech,&coords);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda_mech,coords,&LA_coords);CHKERRQ(ierr);
 	if (surface_rank) {
 		if (rJ != (pJ-1)) {
@@ -476,7 +476,7 @@ PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 	
 	ierr = DMDAGatherIKRedundantSurfaceDMDA(dav,&dm_spmsurf0);CHKERRQ(ierr);
 	if (dm_spmsurf0) {
-		ierr = DMDAViewPetscVTK(dm_spmsurf0,PETSC_NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 	}
 	if (dm_spmsurf0) {
 		PetscInt smx,smy,ii,jj;
@@ -528,7 +528,7 @@ PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 		}
 		
 		ierr = InterpolateSPMSurfIKGridToMSurf0(smx,smy,sc,sH,dm_spmsurf0);CHKERRQ(ierr);
-		ierr = DMDAViewPetscVTK(dm_spmsurf0,PETSC_NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
 		
 		PetscFree(sc);
 		PetscFree(sH);
@@ -551,43 +551,15 @@ PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 
 /*
   Create communicator for the surface ranks
-  Extract partitioning frm dm_mechanical, using this to create semi-redundant 2D DMDA defined in x,y
+  Extract partitioning from dm_mechanical, using this to create semi-redundant 2D DMDA defined in x,y
   Fetch part of coordinates need from dm_mechanical
 */
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGatherIKSemiRedundantSurfaceDMDA"
 PetscErrorCode DMDAGatherIKSemiRedundantSurfaceDMDA(DM dm_mech,DM *_dm_msurf)
 {
-	PetscErrorCode ierr;
-	DM             dm_surf;
-	MPI_Comm       comm;
-	PetscMPIInt    _rank;
-	PetscInt       rank;
-	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ;
-	PetscBool      surface_rank;
-	PetscInt       nsurface_ranks;
-	
-	
 	PetscFunctionBegin;
-	/* --------------------------------------------------- */
-	/* determine ranks living on the free surface j=JMAX-1 */
-	PetscObjectGetComm((PetscObject)dm_mech,&comm);
-	ierr = MPI_Comm_rank(comm,&_rank);CHKERRQ(ierr);
-	rank = (PetscInt)_rank;
-	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,&pI,&pJ,&pK,0,0,0,0,0,0);CHKERRQ(ierr);
-	
-	/* convert rank to rI,rJ,rK */
-	rK  = rank / (pI*pJ);
-	rIJ = rank - rK * pI*pJ;  
-	rJ = rIJ / pI;
-	rI = rIJ - rJ*pI;
-	
-	surface_rank = PETSC_FALSE;
-	if (rJ == (pJ-1)) {
-		surface_rank = PETSC_TRUE;
-	}
-	nsurface_ranks = pI * pK;
-	
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SemiRedundantSurfaceDMDA is not supported - only parallel or sequential are permitted");
 	PetscFunctionReturn(0);
 }
 
@@ -595,10 +567,8 @@ PetscErrorCode DMDAGatherIKSemiRedundantSurfaceDMDA(DM dm_mech,DM *_dm_msurf)
 #define __FUNCT__ "DMDAScatterIKSemiRedundantSurfaceDMDA"
 PetscErrorCode DMDAScatterIKSemiRedundantSurfaceDMDA(DM dm_msurf,DM dm_mech)
 {
-	PetscErrorCode ierr;
-	
-	
 	PetscFunctionBegin;
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SemiRedundantSurfaceDMDA is not supported - only parallel or sequential are permitted");
 	PetscFunctionReturn(0);
 }
 
@@ -610,7 +580,7 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 {
 	PetscErrorCode ierr;
 	PetscInt       si,sj,sk,nx,ny,nz,M,N,P;
-	PetscInt       si2d,sj2d,nx2d,ny2d,i,j,k;
+	PetscInt       si2d,sj2d,nx2d,ny2d,i,k;
 	MPI_Comm       comm;
 	DM             dm_red_spm,dm_surf;
 	DM             dm_red_spm_coords,dm_surf_coords;
@@ -627,9 +597,9 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
-	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,PETSC_NULL,&nx2d,&ny2d,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
+	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, 0.,0.);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,NULL,&nx2d,&ny2d,NULL);CHKERRQ(ierr);
 	
 	/* fetch coordinates i need from the mechanical domain */
 	ierr = DMDAGetCorners(dm_mech,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -642,17 +612,17 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 	//ierr = DMDAViewPetscVTK(da_red_spm,0,name);CHKERRQ(ierr);
 	
 	/* copy these values into my parallel surface mesh x,y,z (vol) => x,y (surf) */
-	ierr = DMDAGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dm_red_spm,&coords_red_spm);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_red_spm,&coords_red_spm);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dm_surf,&dm_surf_coords);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dm_red_spm,&dm_red_spm_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_surf,&dm_surf_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_red_spm,&dm_red_spm_coords);CHKERRQ(ierr);
 	
 	
 	ierr = DMDAVecGetArray(dm_surf_coords,coords_surf,&LA_coords_surf);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(dm_red_spm_coords,coords_red_spm,&LA_coords_red_spm);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCorners(dm_surf,&si,&sk,PETSC_NULL,&nx,&nz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dm_surf,&si,&sk,NULL,&nx,&nz,NULL);CHKERRQ(ierr);
 	for (k=sk; k<sk+nz; k++) {
 		for (i=si; i<si+nx; i++) {
 			LA_coords_surf[k][i].x = LA_coords_red_spm[k-sk][0][i-si].x;
@@ -690,9 +660,8 @@ PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech)
 	MPI_Comm       comm;
 	PetscMPIInt    _rank;
 	PetscInt       rank;
-	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ,pi,pk;
+	PetscInt       M,N,P,pI,pJ,pK,rJ,rK,rIJ,pi,pk;
 	PetscBool      surface_rank;
-	PetscInt       nsurface_ranks;
 	const PetscInt *lni,*lnj,*lnk;
 	PetscInt       *lsi,*lsk;
 	PetscInt       si,sj,sk,nx,ny,nz,i,j,k,c,nsurf_nodes,*surf_indices,M2d,P2d;
@@ -717,13 +686,13 @@ PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech)
 	rK  = rank / (pI*pJ);
 	rIJ = rank - rK * pI*pJ;  
 	rJ = rIJ / pI;
-	rI = rIJ - rJ*pI;
+	//rI = rIJ - rJ*pI;
 	
 	surface_rank = PETSC_FALSE;
 	if (rJ == (pJ-1)) {
 		surface_rank = PETSC_TRUE;
 	}
-	nsurface_ranks = pI * pK;
+	//nsurface_ranks = pI * pK;
 
 	/* check surface (I,J) and volume have matching (I,K) counts */
 	{
@@ -795,8 +764,8 @@ PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech)
 	ierr = VecScatterEnd(   sctx, height_natural,height_self,INSERT_VALUES, SCATTER_FORWARD );CHKERRQ(ierr);
 	
 	/* update volume mesh */
-	ierr = DMDAGetCoordinates(dm_mech,&coords_mech);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dm_mech,&cda_mech);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_mech,&coords_mech);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_mech,&cda_mech);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda_mech,coords_mech,&LA_coords_mech);CHKERRQ(ierr);
 	ierr = VecGetArray(height_self,&LA_height_self);CHKERRQ(ierr);
 	
@@ -869,7 +838,7 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 {
 	PetscErrorCode ierr;
 	PetscInt       si,sj,sk,nx,ny,nz,M,N,P;
-	PetscInt       si2d,sj2d,nx2d,ny2d,i,j,k;
+	PetscInt       si2d,sj2d,nx2d,ny2d,i,k;
 	MPI_Comm       comm;
 	DM             dm_red_spm,dm_surf,dm_surf_ref;
 	DM             dm_red_spm_coords,dm_surf_coords;
@@ -887,9 +856,9 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
-	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,PETSC_NULL,&nx2d,&ny2d,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
+	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, 0.,0.);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,NULL,&nx2d,&ny2d,NULL);CHKERRQ(ierr);
 	
 	/* fetch coordinates i need from the mechanical domain */
 	ierr = DMDAGetCorners(dm_mech,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -902,17 +871,17 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	//ierr = DMDAViewPetscVTK(da_red_spm,0,name);CHKERRQ(ierr);
 	
 	/* copy these values into my parallel surface mesh x,y,z (vol) => x,y (surf) */
-	ierr = DMDAGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(dm_red_spm,&coords_red_spm);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(dm_red_spm,&coords_red_spm);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(dm_surf,&dm_surf_coords);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dm_red_spm,&dm_red_spm_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_surf,&dm_surf_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dm_red_spm,&dm_red_spm_coords);CHKERRQ(ierr);
 	
 	
 	ierr = DMDAVecGetArray(dm_surf_coords,coords_surf,&LA_coords_surf);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(dm_red_spm_coords,coords_red_spm,&LA_coords_red_spm);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCorners(dm_surf,&si,&sk,PETSC_NULL,&nx,&nz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dm_surf,&si,&sk,NULL,&nx,&nz,NULL);CHKERRQ(ierr);
 	for (k=sk; k<sk+nz; k++) {
 		for (i=si; i<si+nx; i++) {
 			LA_coords_surf[k][i].x = LA_coords_red_spm[k-sk][0][i-si].x;
@@ -939,14 +908,14 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	
 	/* refine DM */
 	ierr = DMDASetRefinementFactor(dm_surf,ref[0],ref[1],1);CHKERRQ(ierr);
-	dm_surf_ref = PETSC_NULL;
+	dm_surf_ref = NULL;
 	ierr = DMRefine(dm_surf,comm,&dm_surf_ref);CHKERRQ(ierr);
 	if (!dm_surf_ref) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No refinment occurred on surface DM");
 	}
 	
 	/* refine height vector */
-	ierr = DMGetInterpolation(dm_surf,dm_surf_ref,&R,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMCreateInterpolation(dm_surf,dm_surf_ref,&R,NULL);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(dm_surf_ref,&height_ref);CHKERRQ(ierr);
 	ierr = MatInterpolate(R,height,height_ref);CHKERRQ(ierr);
 	
@@ -972,7 +941,7 @@ PetscErrorCode DMDAScatterIKNestedSurfaceDMDA(DM dm_msurf,DM dm_msurf_overlap,Ma
 	ierr = DMGetGlobalVector(dm_msurf_overlap,&height_vol);CHKERRQ(ierr);
 	
 	/* Interpolate height to height_mech */
-	ierr = DMGetInterpolationScale(dm_msurf_overlap,dm_msurf,R,&scale);CHKERRQ(ierr);
+	ierr = DMCreateInterpolationScale(dm_msurf_overlap,dm_msurf,R,&scale);CHKERRQ(ierr);
 	ierr = MatRestrict(R,height,height_vol);CHKERRQ(ierr);
 	ierr = VecPointwiseMult(height_vol,height_vol,scale);CHKERRQ(ierr);
 	ierr = VecDestroy(&scale);CHKERRQ(ierr);

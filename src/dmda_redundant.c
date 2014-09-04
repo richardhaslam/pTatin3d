@@ -34,13 +34,12 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
-#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
+#include "petsc-private/dmdaimpl.h"    /*I   "petscdm.h"   I*/
 #include "sub_comm.h"
 #include "dmda_update_coords.h"
 #include "dmda_redundant.h"
 
 
-extern PetscErrorCode DMView_DA_Private(DM da);
 
 /* This is only needed as the DMDACreate3d() forces a call to DMSetFromOptions().
  This parses the options -da_processors_x,y,z even when the comm size is 1, which screws up my seq surface DM.
@@ -49,7 +48,7 @@ extern PetscErrorCode DMView_DA_Private(DM da);
 #undef __FUNCT__
 #define __FUNCT__ "x_DMDACreate3d"
 PetscErrorCode  x_DMDACreate3d(
-  MPI_Comm comm,DMDABoundaryType wrap[],DMDAStencilType stencil_type,
+  MPI_Comm comm,DMBoundaryType wrap[],DMDAStencilType stencil_type,
   PetscInt M, PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,
   PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
@@ -68,7 +67,6 @@ PetscErrorCode  x_DMDACreate3d(
   /* This violates the behavior for other classes, but right now users expect negative dimensions to be handled this way */
 /*  ierr = DMSetFromOptions(*da);CHKERRQ(ierr); */
   ierr = DMSetUp(*da);CHKERRQ(ierr);
-  ierr = DMView_DA_Private(*da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -86,8 +84,8 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 {
 	PetscInt M,N,P,dof;
 	PetscInt sw;
-	DMDABoundaryType wrap[3];
-	DMDABoundaryType wrapNP[] = {DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE};
+	DMBoundaryType wrap[3];
+	DMBoundaryType wrapNP[] = {DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE};
 	DMDAStencilType st;
 	DM _sda;
 	PetscInt i,j,k,c;
@@ -104,24 +102,24 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap[0],&wrap[1],&wrap[2],&st );CHKERRQ(ierr);
 	/* check ranges */
 	if( si < 0 || (ei-1) > M-1 ) {
-		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in i-direction to gather is too large" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Specified range of nodes in i-direction to gather is too large" );
 	}
 	if( sj < 0 || (ej-1) > N-1 ) {
-		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in j-direction to gather is too large" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Specified range of nodes in j-direction to gather is too large" );
 	}
 	if( sk < 0 || (ek-1) > P-1 ) {
-		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in k-direction to gather is too large" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Specified range of nodes in k-direction to gather is too large" );
 	}
 
 	/* check for cases where user wanted a plane */
 	if (si == ei) {
-		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in i-direction too. If you wanted a plane, indicate si,si+1 as your range" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Specified range of nodes in i-direction too. If you wanted a plane, indicate si,si+1 as your range" );
 	}
 	if (sj == ej) {
-		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in j-direction too. If you wanted a plane, indicate sj,sj+1 as your range" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Specified range of nodes in j-direction too. If you wanted a plane, indicate sj,sj+1 as your range" );
 	}
 	if (sk == ek) {
-		SETERRQ( ((PetscObject)(da))->comm, PETSC_ERR_USER, "Specified range of nodes in k-direction too. If you wanted a plane, indicate sk,sk+1 as your range" );
+		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "Specified range of nodes in k-direction too. If you wanted a plane, indicate sk,sk+1 as your range" );
 	}
 	
 	
@@ -138,8 +136,8 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 	*/
 	
 	/* Get the coordinate vector from the distributed array */
-	ierr = DMDAGetCoordinateDA(da,&cda_fine);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(da,&global_coords_fine);CHKERRQ(ierr); /* a global vector */
+	ierr = DMGetCoordinateDM(da,&cda_fine);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&global_coords_fine);CHKERRQ(ierr); /* a global vector */
 	ierr = DMDACreateNaturalVector( cda_fine, &global_coords_fine_NATURAL );CHKERRQ(ierr);
 
 	ierr = DMDAGlobalToNaturalBegin( cda_fine,global_coords_fine,INSERT_VALUES, global_coords_fine_NATURAL );CHKERRQ(ierr);
@@ -183,17 +181,16 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 	ierr = x_DMDACreate3d( PETSC_COMM_SELF, wrapNP, st, (ei-si),(ej-sj),(ek-sk), PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, n_dofs, sw, 0,0,0, &_sda );CHKERRQ(ierr);
 	/* more hacky shit due to DMSetFromOptions() in constructor */
 	{
-		DM_DA          *dd = (DM_DA*)_sda->data;
 		DM dd_da_coordinates;
 		PetscInt _m,_n,_p,_M,_N,_P;
 		ierr = DMDAGetInfo(_sda,0,&_m,&_n,&_p,&_M,&_N,&_P,0,0,0,0,0,0);CHKERRQ(ierr);
-		ierr = x_DMDACreate3d(((PetscObject)_sda)->comm,wrapNP,st,_m,_n,_p,_M,_N,_P,3,sw,0,0,0,&dd_da_coordinates);CHKERRQ(ierr);
-		dd->da_coordinates = dd_da_coordinates;
+		ierr = x_DMDACreate3d(PetscObjectComm((PetscObject)_sda),wrapNP,st,_m,_n,_p,_M,_N,_P,3,sw,0,0,0,&dd_da_coordinates);CHKERRQ(ierr);
+		ierr = DMSetCoordinateDM(_sda,dd_da_coordinates);CHKERRQ(ierr);
 	
 	}
 	ierr = DMDASetUniformCoordinates( _sda, 0.0,1.0, 0.0,1.0, 0.0,1.0 );CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinates(_sda,&new_local_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(_sda,&new_local_coords);CHKERRQ(ierr);
 	
 	/* generate scatter */
 	ierr = ISCreateGeneral( PETSC_COMM_WORLD, Ml*Nl*Pl*3, fine_indices, PETSC_USE_POINTER, &is_fine );CHKERRQ(ierr);
@@ -227,25 +224,25 @@ PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM
 	MPI_Comm comm,subcomm;
 	MPI_Subcomm _sub;
 	DM _sda,seq_da;
-	int ie,active;
+	int active;
 	PetscInt M,N,P,dof,sw;
-	DMDABoundaryType wrap[3];
+	DMBoundaryType wrap[3];
 	DMDAStencilType st;
 	PetscInt si[3],gnx[3];
 	PetscErrorCode ierr;
 
-	comm = ((PetscObject)da)->comm;
+	comm = PetscObjectComm((PetscObject)da);
 	
-	ie = MPI_Subcomm_create_MethodA(comm,(int)nred,&_sub);
-	ie = MPI_Subcomm_get_comm(_sub,&subcomm);
-	ie = MPI_Subcomm_get_active(_sub,&active);
+	ierr = MPI_Subcomm_create_MethodA(comm,(int)nred,&_sub);CHKERRQ(ierr);
+	ierr = MPI_Subcomm_get_comm(_sub,&subcomm);CHKERRQ(ierr);
+	ierr = MPI_Subcomm_get_active(_sub,&active);CHKERRQ(ierr);
 	
 	/* get properties from original da, create sub da letting petsc determine distribution */
 	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap[0],&wrap[1],&wrap[2],&st );CHKERRQ(ierr);
 	if (active) {
-		ierr = DMDACreate3d(subcomm,wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, PETSC_NULL,PETSC_NULL,PETSC_NULL, &_sda );CHKERRQ(ierr);
+		ierr = DMDACreate3d(subcomm,wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, NULL,NULL,NULL, &_sda );CHKERRQ(ierr);
 	} else {
-		_sda = PETSC_NULL;
+		_sda = NULL;
 	}
 	
 	/* fetch distribution information about sub da */
@@ -255,7 +252,7 @@ PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM
 	if (active) {
 		ierr = DMDAGetCorners(_sda,&si[0],&si[1],&si[2],&gnx[0],&gnx[1],&gnx[2]);CHKERRQ(ierr);
 	} else {
-		ierr = DMDAGetCorners(da,&si[0],&si[1],&si[2],PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+		ierr = DMDAGetCorners(da,&si[0],&si[1],&si[2],NULL,NULL,NULL);CHKERRQ(ierr);
 		gnx[0] = gnx[1] = gnx[2] = 1;
 	}
 
@@ -271,12 +268,12 @@ PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM
 		
 		ierr = DMDASetUniformCoordinates( _sda, 0.0,1.0, 0.0,1.0, 0.0,1.0 );CHKERRQ(ierr);
 
-		ierr = DMDAGetCoordinateDA(seq_da,&seq_cda);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(seq_da,&seq_coor);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(seq_da,&seq_cda);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(seq_da,&seq_coor);CHKERRQ(ierr);
 		ierr = DMDAVecGetArray(seq_cda,seq_coor,&LA_seq_coor);CHKERRQ(ierr);
 
-		ierr = DMDAGetCoordinateDA(_sda,&s_cda);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(_sda,&s_coor);CHKERRQ(ierr);
+		ierr = DMGetCoordinateDM(_sda,&s_cda);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(_sda,&s_coor);CHKERRQ(ierr);
 		ierr = DMDAVecGetArray(s_cda,s_coor,&LA_s_coor);CHKERRQ(ierr);
 		
 		/* check sizes */

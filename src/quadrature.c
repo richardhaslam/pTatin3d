@@ -75,7 +75,7 @@ PetscErrorCode QuadratureDestroy(Quadrature *quadrature)
 	if (Q->properties_db) { DataBucketDestroy(&Q->properties_db); }
 	
 	ierr = PetscFree(Q);CHKERRQ(ierr);
-	*quadrature = PETSC_NULL;
+	*quadrature = NULL;
 	
 	PetscFunctionReturn(0);
 }
@@ -84,7 +84,6 @@ PetscErrorCode QuadratureDestroy(Quadrature *quadrature)
 #define __FUNCT__ "QuadratureView"
 PetscErrorCode QuadratureView(Quadrature q)
 {
-	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
@@ -186,7 +185,7 @@ PetscErrorCode SurfaceQuadratureCreate(SurfaceQuadrature *quadrature)
 PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementFace index,PetscInt nfaces)
 {
 	ConformingElementFamily e;
-	double size;
+	int ngp32;
 	PetscErrorCode ierr;
 	
   PetscFunctionBegin;
@@ -195,7 +194,8 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	ElementTypeCreate_Q2(&e,3);
 	quadrature->e       = e;
 	quadrature->face_id = index;
-	e->generate_surface_quadrature_3D(e,index,&quadrature->ngp,quadrature->gp2,quadrature->gp3);	
+	e->generate_surface_quadrature_3D(e,index,&ngp32,quadrature->gp2,quadrature->gp3);	
+	quadrature->ngp = (PetscInt)ngp32;
 	
 	quadrature->nfaces = nfaces;
 	
@@ -204,7 +204,7 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	if (nfaces != 0) {
 		ierr = PetscMalloc( sizeof(PetscInt)*nfaces, &quadrature->element_list);CHKERRQ(ierr);
 	} else {
-		quadrature->element_list = PETSC_NULL;
+		quadrature->element_list = NULL;
 	}
 	
   PetscFunctionReturn(0);
@@ -216,7 +216,6 @@ PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFa
 {
 	PetscInt eli,elj,elk;
 	PetscInt si,sj,sk,ni,nj,nk,M,N,P,lmx,lmy,lmz;
-	PetscInt nfaces[HEX_EDGES];
 	PetscInt cnt,elidx;
 	PetscErrorCode ierr;
 	
@@ -329,7 +328,7 @@ PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 
 	ierr = PetscFree(Q);CHKERRQ(ierr);
 	
-	*quadrature = PETSC_NULL;
+	*quadrature = NULL;
 	
 	PetscFunctionReturn(0);
 }

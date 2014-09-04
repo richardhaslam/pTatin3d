@@ -34,6 +34,8 @@
 #ifndef __SWARM_FIELDS_H__
 #define __SWARM_FIELDS_H__
 
+#include "mpi.h"
+
 
 #define DEFAULT -32654789
 
@@ -115,6 +117,7 @@ void DataBucketFinalize(DataBucket db);
 void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer );
 void DataBucketSetSizes( DataBucket db, const int L, const int buffer );
 void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated );
+void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated );
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] );
 
 void DataBucketCopyPoint( const DataBucket xb, const int pid_x,

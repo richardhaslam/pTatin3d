@@ -116,7 +116,7 @@ PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 		PetscInt energy_mesh_type;
 		
 		energy_mesh_type = 1; /* default is Q1 overlapping Q2 */
-		ierr = PetscOptionsGetInt(PETSC_NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
+		ierr = PetscOptionsGetInt(NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
 		ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
 	}	
 	
@@ -137,7 +137,7 @@ PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (load && (user->energy_ctx == PETSC_NULL)) {
+	if (load && (user->energy_ctx == NULL)) {
 		ierr = pTatinPhysCompCreate_Energy(user);CHKERRQ(ierr);
 	}	
 	PetscFunctionReturn(0);
@@ -216,7 +216,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	}
 	
 	DataBucketGetDataFieldByName(materialpoint_db, MPntStd_classname,&PField_std);
-	DataBucketGetSizes(materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(materialpoint_db,&npoints,NULL,NULL);
 	mp_std  = PField_std->data;
 	
 	
@@ -315,7 +315,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-view_projected_marker_fields",&view,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[256];
 		PetscViewer viewer;
@@ -353,7 +353,7 @@ PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
 	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
 	daT  = energy->daT;
 	volQ = energy->volQ;
-	ierr = pTatinGetMaterialPoints(ctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(ctx,&materialpoint_db,NULL);CHKERRQ(ierr);
 	
 	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_diffusivity,volQ);CHKERRQ(ierr);
 	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(daT,materialpoint_db,MPField_Energy,MPPEgy_heat_source,volQ);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,Pet
 	PetscFunctionBegin;
 	
 	ierr = VecScale(energy->u_minus_V,dt);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinates(energy->daT,&coordinates);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(energy->daT,&coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(energy->u_minus_V,-1.0,coordinates);CHKERRQ(ierr);
 	ierr = VecAXPY(energy->u_minus_V, 1.0,energy->Xold);CHKERRQ(ierr);
 	ierr = VecScale(energy->u_minus_V,1.0/dt);CHKERRQ(ierr);
@@ -400,7 +400,7 @@ PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,Phy
 	
 	PetscFunctionBegin;
 	
-	ierr = DMDAGetCoordinateDA(energy->daT,&cdaT);CHKERRQ(ierr);   
+	ierr = DMGetCoordinateDM(energy->daT,&cdaT);CHKERRQ(ierr);   
 	
 	/* Project fluid velocity from Q2 space into Q1 space */
 	ierr = DMCompositeGetAccess(s->stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
@@ -424,7 +424,7 @@ PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T)
 	PetscFunctionBegin;
 	
 	/* save current coords before advecting */
-	ierr = DMDAGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
 	//ierr = DMDAUpdateGhostedCoordinates(daq1);CHKERRQ(ierr);
 	
@@ -450,7 +450,7 @@ PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T)
 	ierr = VecCopy(T,e->Told);CHKERRQ(ierr);
 	
 	/* update coordinates */
-	ierr = DMDAGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(e->daT,&coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,e->Xold);CHKERRQ(ierr);
 
 	//ierr = VecZeroEntries(T);CHKERRQ(ierr);
@@ -472,7 +472,7 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 	QPntVolCoefEnergy *all_quadpoints,*cell_quadpoints;
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
-	PetscScalar       qp_kappa[27],qp_Q[27];
+	PetscScalar       qp_kappa[27];//,qp_Q[27];
   PetscScalar       Ni_p[NODES_PER_EL_Q1_3D];
   PetscScalar       GNi_p[NSD][NODES_PER_EL_Q1_3D],GNx_p[NSD][NODES_PER_EL_Q1_3D];
   PetscScalar       J_p,fac;
@@ -493,7 +493,7 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 	ierr = VolumeQuadratureGetAllCellData_Energy(volQ,&all_quadpoints);CHKERRQ(ierr);
 	
 	ierr = DMGetLocalVector(da,&philoc);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
 	
 	ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,philoc);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
   ierr = DMGlobalToLocalBegin(cda,energy->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(  cda,energy->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
 
-  ierr = DMDAGetGhostedCoordinates(da,&coordsloc);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&coordsloc);CHKERRQ(ierr);
 	
 	ierr = VecGetArray(philoc,   &LA_philoc);CHKERRQ(ierr);
   ierr = VecGetArray(Vloc,     &LA_Vloc);CHKERRQ(ierr);
@@ -530,7 +530,7 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 		/* copy the diffusivity and force */
 		for (p=0; p<nqp; p++) {
 			qp_kappa[p] = cell_quadpoints[p].diffusivity;
-			qp_Q[p]     = cell_quadpoints[p].heat_source;
+			//qp_Q[p]     = cell_quadpoints[p].heat_source;
 		}
 		
 		/*
@@ -572,10 +572,10 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
 			min_dt_diff = dt_diff; 
 		}
 	}
-  ierr = MPI_Allreduce(&min_dt_adv, &g_dt_adv, 1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&min_dt_diff,&g_dt_diff,1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&min_dt_adv, &g_dt_adv, 1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&min_dt_diff,&g_dt_diff,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"Diffusion dt = %1.12e \n", g_dt_diff );
 	PetscPrintf(PETSC_COMM_WORLD,"Advective dt = %1.12e \n", g_dt_adv );
 	PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );

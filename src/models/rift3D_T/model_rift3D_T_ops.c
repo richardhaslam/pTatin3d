@@ -106,7 +106,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	data->viscosity_bar = 1e25;
 	data->velocity_bar  = 1.0e-10;
 	data->dimensional   = PETSC_TRUE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_Atlantic",&isAtlantic,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_Atlantic",&isAtlantic,NULL);CHKERRQ(ierr);
 	if (isAtlantic){
     /* box geometry, m */
 	data->Lx =  32.0e5;
@@ -208,44 +208,44 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     
 	/* Read the options */
 	/*cutoff */
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_runwithmises",&data->runmises,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
 	/*scaling */ 
 	nondim = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_nondimensional",&nondim,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_nondimensional",&nondim,NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
 	} else {
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_vis_bar",&data->viscosity_bar,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_vel_bar",&data->velocity_bar,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_length_bar",&data->length_bar,PETSC_NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_length_bar",&data->length_bar,NULL);CHKERRQ(ierr); 
 	}
 	/* box geometry, m */	
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Lx",&data->Lx,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Ly",&data->Ly,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Lz",&data->Lz,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Ox",&data->Ox,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Oy",&data->Oy,PETSC_NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Oz",&data->Oz,PETSC_NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Lx",&data->Lx,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Ly",&data->Ly,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Lz",&data->Lz,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Ox",&data->Ox,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Oy",&data->Oy,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Oz",&data->Oz,NULL);CHKERRQ(ierr); 
 	
 	/* velocity cm/y */    
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_vx",&vx,PETSC_NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_vz",&vz,PETSC_NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_vx",&vx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_vz",&vz,NULL);CHKERRQ(ierr); 
 	
 	/* rho0 for initial pressure */
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_rho0",&data->rho0,PETSC_NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_rho0",&data->rho0,NULL);CHKERRQ(ierr); 
 	
     /* temperature initial condition */ 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Tbot",&data->Tbottom,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_Ttop",&data->Ttop,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_age0",&data->thermal_age0,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_ageAnom",&data->thermal_age_anom,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_wx",&data->wx_anom,PETSC_NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_wz",&data->wz_anom,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_cx",&data->cx_anom,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-model_rift3D_T_cz",&data->cz_anom,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Tbot",&data->Tbottom,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_Ttop",&data->Ttop,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_age0",&data->thermal_age0,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_ageAnom",&data->thermal_age_anom,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_wx",&data->wx_anom,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_wz",&data->wz_anom,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_cx",&data->cx_anom,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_cz",&data->cz_anom,NULL);CHKERRQ(ierr);
  
     
 	/* Material constant */
@@ -331,7 +331,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
 
 	data->use_semi_eulerian_mesh = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_use_semi_eulerian",&data->use_semi_eulerian_mesh,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_use_semi_eulerian",&data->use_semi_eulerian_mesh,NULL);CHKERRQ(ierr);
 	if (data->use_semi_eulerian_mesh) {
 		pTatinModel model;
 		
@@ -342,7 +342,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	}	
 
 	data->output_markers = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_output_markers",&data->output_markers,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -540,7 +540,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
 	
-	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
 
 #if 0
 	{
@@ -651,7 +651,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTa
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	
 	
-	ierr = pTatinGetMaterialPoints(c,&material_point_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
 	
 	/* create face storage for markers */
 	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
@@ -741,7 +741,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 PetscBool isAtlantic = PETSC_FALSE;
 PetscErrorCode ierr; 
 
-ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_Atlantic",&isAtlantic,PETSC_NULL);CHKERRQ(ierr);
+ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_Atlantic",&isAtlantic,NULL);CHKERRQ(ierr);
 	if (isAtlantic){
       	ModelApplyInitialMaterialGeometry_Atlantic(c,ctx);
     	}
@@ -832,7 +832,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	
 	if (data->output_markers)
 	{
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 		//  Write out just the stokes variable?
 		//  const int nf = 1;
 		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
@@ -862,7 +862,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 		Vec            temperature;
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 	}
@@ -1023,7 +1023,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 		PetscReal      coeffs[8];
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
     
 
@@ -1047,7 +1047,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 		PetscReal      coeffs[8];
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
     
 		ierr = ModelRift3D_T_GetDescription_InitialThermalField(data,coeffs,&iterator_initial_thermal_field);CHKERRQ(ierr);
@@ -1146,7 +1146,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 	ptatin_RandomNumberSetSeedRank(PETSC_COMM_WORLD);
 
 	norandomiseplastic = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-model_rift3D_T_norandom",&norandomiseplastic,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_norandom",&norandomiseplastic,NULL);CHKERRQ(ierr);
 
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
@@ -1246,7 +1246,7 @@ PetscReal              angle = 0.0;
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-centralsuturezone_angle",&angle,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-centralsuturezone_angle",&angle,NULL);CHKERRQ(ierr);
 	igo = 0; 
 	
 	/*define geometry of heterogenities*/ 
@@ -1336,7 +1336,7 @@ PetscErrorCode ModelApplyInitialMaterialIndex_Atlantic(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	phase_index = 0; 
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-centralsuturezone_index",&phase_index,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-centralsuturezone_index",&phase_index,NULL);CHKERRQ(ierr);
     default_phase = 3; 
 	
 	
@@ -1479,7 +1479,7 @@ PetscErrorCode ModelApplyInitialMaterialThermalProperties_Atlantic(pTatinCtx c,v
 	PetscErrorCode         ierr;
 	
 
-	ierr = pTatinGetMaterialPoints(c,&db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
 

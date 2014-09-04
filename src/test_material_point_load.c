@@ -59,7 +59,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 {
 	PetscErrorCode ierr;
-	DM              multipys_pack,dav,dap;
+	DM              multipys_pack,dav;
 	pTatinCtx       user;
 	Vec X;
 
@@ -86,7 +86,6 @@ PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 	/* fetch some local variables */
 	multipys_pack = user->pack;
 	dav           = user->stokes_ctx->dav;
-	dap           = user->stokes_ctx->dap;
 	
 	ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
@@ -126,7 +125,7 @@ PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 		
-		DataBucketGetSizes(user->materialpoint_db,&npoints,PETSC_NULL,PETSC_NULL);
+		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 		mp_std    = PField_std->data; /* should write a function to do this */
 		mp_stokes = PField_stokes->data; /* should write a function to do this */
 		

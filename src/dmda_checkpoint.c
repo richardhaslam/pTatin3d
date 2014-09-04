@@ -51,7 +51,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	PetscMPIInt    rank;
 	PetscInt       i,L, dim, M,N,P, dof, sw;
 	PetscInt       refine_x, refine_y, refine_z;
-	DMDABoundaryType wrap[3];
+	DMBoundaryType wrap[3];
 	DMDAStencilType  st;
 	PetscScalar      val;
 	Vec              dd,coords;
@@ -59,9 +59,9 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	
 	
 	PetscFunctionBegin;
-	if (da == PETSC_NULL) SETERRQ( PETSC_COMM_WORLD,PETSC_ERR_USER, "da is NULL" );
+	if (da == NULL) SETERRQ( PETSC_COMM_WORLD,PETSC_ERR_USER, "da is NULL" );
 
-	ierr = DMDAGetCoordinates(da,&coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 	if (coords)  { has_coords = PETSC_TRUE;  }
 	if (!coords) { has_coords = PETSC_FALSE; }
 	
@@ -71,7 +71,7 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 
 		sprintf(coord_file,"%s.coords",name);
 		
-		ierr = PetscViewerCreate(((PetscObject)da)->comm,&v);CHKERRQ(ierr);
+		ierr = PetscViewerCreate(PetscObjectComm((PetscObject)da),&v);CHKERRQ(ierr);
 		ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 		ierr = PetscViewerFileSetMode(v,FILE_MODE_WRITE);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
@@ -97,34 +97,34 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 	ierr = VecSetSizes( dd, PETSC_DECIDE, L );CHKERRQ(ierr);
 	ierr = VecSetType( dd, VECSEQ );CHKERRQ(ierr);
 	
-	val = (PetscScalar)dim + 0.1;		VecSetValue( dd, DMDA_DIM, val, INSERT_VALUES );
+	val = (PetscScalar)dim + 0.1;		VecSetValue( dd, (PetscInt)DMDA_DIM, val, INSERT_VALUES );
 	
-	val = (PetscScalar)M + 0.1;			VecSetValue( dd, DMDA_M, val, INSERT_VALUES );
-	val = (PetscScalar)N + 0.1;			VecSetValue( dd, DMDA_N, val, INSERT_VALUES );
-	val = (PetscScalar)P + 0.1;			VecSetValue( dd, DMDA_P, val, INSERT_VALUES );
+	val = (PetscScalar)M + 0.1;			VecSetValue( dd, (PetscInt)DMDA_M, val, INSERT_VALUES );
+	val = (PetscScalar)N + 0.1;			VecSetValue( dd, (PetscInt)DMDA_N, val, INSERT_VALUES );
+	val = (PetscScalar)P + 0.1;			VecSetValue( dd, (PetscInt)DMDA_P, val, INSERT_VALUES );
 	
-	val = (PetscScalar)dof + 0.1;		VecSetValue( dd, DMDA_DOF, val, INSERT_VALUES );
-	val = (PetscScalar)sw + 0.1;		VecSetValue( dd, DMDA_SW, val, INSERT_VALUES );
+	val = (PetscScalar)dof + 0.1;		VecSetValue( dd, (PetscInt)DMDA_DOF, val, INSERT_VALUES );
+	val = (PetscScalar)sw + 0.1;		VecSetValue( dd, (PetscInt)DMDA_SW, val, INSERT_VALUES );
 	
 	//
 	for (i=0; i<3; i++) {
 		switch (wrap[i]) {
-			case DMDA_BOUNDARY_NONE:
+			case DM_BOUNDARY_NONE:
 				val = 0.1;
 				break;
-			case DMDA_BOUNDARY_GHOSTED:
+			case DM_BOUNDARY_GHOSTED:
 				val = 1.1;
 				break;
-			case DMDA_BOUNDARY_MIRROR:
+			case DM_BOUNDARY_MIRROR:
 				val = 2.1;
 				break;
-			case DMDA_BOUNDARY_PERIODIC:
+			case DM_BOUNDARY_PERIODIC:
 				val = 3.1;
 				break;
 		}
-		if (i == 0) { ierr = VecSetValue( dd, DMDA_WRAPX, val, INSERT_VALUES );CHKERRQ(ierr); }
-		if (i == 1) { ierr = VecSetValue( dd, DMDA_WRAPY, val, INSERT_VALUES );CHKERRQ(ierr); }
-		if (i == 2) { ierr = VecSetValue( dd, DMDA_WRAPZ, val, INSERT_VALUES );CHKERRQ(ierr); }
+		if (i == 0) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPX, val, INSERT_VALUES );CHKERRQ(ierr); }
+		if (i == 1) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPY, val, INSERT_VALUES );CHKERRQ(ierr); }
+		if (i == 2) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPZ, val, INSERT_VALUES );CHKERRQ(ierr); }
 	}
 	//
 	
@@ -136,17 +136,17 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 			val = 1.1;
 			break;
 	}			
-	ierr = VecSetValue( dd, DMDA_ST, val, INSERT_VALUES );CHKERRQ(ierr);
+	ierr = VecSetValue( dd, (PetscInt)DMDA_ST, val, INSERT_VALUES );CHKERRQ(ierr);
 	
 	/* ref x,y,z */
-	val = (PetscScalar)refine_x + 0.1;			ierr = VecSetValue( dd, DMDA_RX, val, INSERT_VALUES );CHKERRQ(ierr);
-	val = (PetscScalar)refine_y + 0.1;			ierr = VecSetValue( dd, DMDA_RY, val, INSERT_VALUES );CHKERRQ(ierr);
-	val = (PetscScalar)refine_z + 0.1;			ierr = VecSetValue( dd, DMDA_RZ, val, INSERT_VALUES );CHKERRQ(ierr);
+	val = (PetscScalar)refine_x + 0.1;			ierr = VecSetValue( dd, (PetscInt)DMDA_RX, val, INSERT_VALUES );CHKERRQ(ierr);
+	val = (PetscScalar)refine_y + 0.1;			ierr = VecSetValue( dd, (PetscInt)DMDA_RY, val, INSERT_VALUES );CHKERRQ(ierr);
+	val = (PetscScalar)refine_z + 0.1;			ierr = VecSetValue( dd, (PetscInt)DMDA_RZ, val, INSERT_VALUES );CHKERRQ(ierr);
 	
 	if (has_coords == PETSC_TRUE) {
-		ierr = VecSetValue( dd, DMDA_COORD, 1, INSERT_VALUES );CHKERRQ(ierr);
+		ierr = VecSetValue( dd, (PetscInt)DMDA_COORD, 1, INSERT_VALUES );CHKERRQ(ierr);
 	} else {
-		ierr = VecSetValue( dd, DMDA_COORD, 0, INSERT_VALUES );CHKERRQ(ierr);
+		ierr = VecSetValue( dd, (PetscInt)DMDA_COORD, 0, INSERT_VALUES );CHKERRQ(ierr);
 	}
 	
 	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF, name, FILE_MODE_WRITE, &v );CHKERRQ(ierr);
@@ -168,7 +168,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 	PetscScalar    *data;
 	PetscInt       dim, M,N,P, dof, sw;
 	PetscInt       refine_x, refine_y, refine_z;
-	DMDABoundaryType wrap[3];
+	DMBoundaryType wrap[3];
 	DMDAStencilType  st;
 	PetscInt         i,L,convert;
 	PetscBool        has_coords;
@@ -210,16 +210,16 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 
 		switch (convert) {
 			case 0:
-				wrap[i] = DMDA_BOUNDARY_NONE;
+				wrap[i] = DM_BOUNDARY_NONE;
 				break;
 			case 1:
-				wrap[i] = DMDA_BOUNDARY_GHOSTED;
+				wrap[i] = DM_BOUNDARY_GHOSTED;
 				break;
 			case 2:
-				wrap[i] = DMDA_BOUNDARY_MIRROR;
+				wrap[i] = DM_BOUNDARY_MIRROR;
 				break;
 			case 3:
-				wrap[i] = DMDA_BOUNDARY_PERIODIC;
+				wrap[i] = DM_BOUNDARY_PERIODIC;
 				break;
 		}
 	}
@@ -250,21 +250,24 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 	ierr = VecRestoreArray( dd, &data );CHKERRQ(ierr);
 	ierr = VecDestroy(&dd);CHKERRQ(ierr);
 	
-	ierr = DMDACreate3d( comm, wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, 0,0,0, da );CHKERRQ(ierr);
+    if (dim == 3) {
+        ierr = DMDACreate3d( comm, wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, 0,0,0, da );CHKERRQ(ierr);
+    } else {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only dimension=3 supported");
+    }
 	ierr = DMDASetRefinementFactor( *da, refine_x, refine_y, refine_z );CHKERRQ(ierr);
 	
 	/* write coordinates out to disk */
 	if (has_coords == PETSC_TRUE) {
 		char coord_file[PETSC_MAX_PATH_LEN];
-		DM   cda;
 		Vec  da_coords;
 		
 		ierr = DMDASetUniformCoordinates(*da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
-		ierr = DMDAGetCoordinates(*da, &da_coords);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(*da, &da_coords);CHKERRQ(ierr);
 		
 		sprintf(coord_file,"%s.coords",name);
 
-		ierr = PetscViewerCreate(((PetscObject)(*da))->comm,&v);CHKERRQ(ierr);
+		ierr = PetscViewerCreate(PetscObjectComm((PetscObject)*da),&v);CHKERRQ(ierr);
 		ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 		ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
@@ -298,7 +301,7 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 
 	PetscFunctionBegin;
 	PetscObjectGetComm( (PetscObject)da, &comm );
-	if (da == PETSC_NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
+	if (da == NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
 	
 	ierr = DMCreateGlobalVector(da, &xn);CHKERRQ(ierr);
 
@@ -333,16 +336,16 @@ PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 	
 	
 	PetscFunctionBegin;
-	if (da == PETSC_NULL) SETERRQ( ((PetscObject)da)->comm,PETSC_ERR_USER, "da is NULL" );
+	if (da == NULL) SETERRQ( PetscObjectComm((PetscObject)da),PETSC_ERR_USER, "da is NULL" );
 	
 	/* make sure the vector is present */
 	ierr = DMDASetUniformCoordinates(da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMDALoadGlobalVectorFromFile(cda,name,&coords);CHKERRQ(ierr);
 	
 	/* set the global coordinates */
-	ierr = DMDAGetCoordinates(da,&da_coords);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
 	ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
 	
 	/* make sure the local coordinates are upto date */
@@ -369,7 +372,7 @@ PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 		sprintf(fieldname,"%s",name);
 	}
 	
-  ierr = PetscViewerCreate(((PetscObject)x)->comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO	
@@ -389,12 +392,11 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 {
 	PetscErrorCode ierr;
 	PetscViewer    v;
-	MPI_Comm       comm;
 	
 	
 	PetscFunctionBegin;
 	
-	ierr = PetscViewerCreate(((PetscObject)x)->comm,&v);CHKERRQ(ierr);
+	ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&v);CHKERRQ(ierr);
 	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
 	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO

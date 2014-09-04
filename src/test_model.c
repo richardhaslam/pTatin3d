@@ -123,7 +123,7 @@ int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
 	
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 
 	test_model();
 	

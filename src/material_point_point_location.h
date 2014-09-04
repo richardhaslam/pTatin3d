@@ -45,11 +45,11 @@ void InverseMappingDomain_3dQ2(
 															 int np, MPntStd marker[] );
 
 void InverseMappingDomain_2dQ2( 
-															 double tolerance, int max_its,
+															 PetscReal tolerance, PetscInt max_its,
 															 Truth use_nonzero_guess, 
 															 Truth monitor,
-															 const double coords[], const int mx, const int my, const int element[],
-															 int np, MPntStd marker[] );
+															 const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt element[],
+															 PetscInt np, MPntStd marker[] );
 
 #endif
 

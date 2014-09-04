@@ -55,7 +55,7 @@
 #include "petsc.h"
 #include "petscvec.h"
 #include "petscdm.h"
-#include "private/matimpl.h" /*I   "petscmat.h"   I*/
+#include "petsc-private/matimpl.h" /*I   "petscmat.h"   I*/
 
 
 #include "ptatin3d_defs.h"
@@ -71,7 +71,7 @@
 #include "stokes_operators_mf.h"
 #include "stokes_assembly.h"
 
-
+PetscLogEvent MAT_MultMFA11;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatStokesMFCreate"
@@ -91,13 +91,24 @@ PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 #define __FUNCT__ "MatA11MFCreate"
 PetscErrorCode MatA11MFCreate(MatA11MF *B)
 {
+	PetscFunctionList flist = NULL;
 	PetscErrorCode ierr;
 	MatA11MF A11;
+	char optype[64] = "ref";
 	PetscFunctionBegin;
 	
 	ierr = PetscMalloc(sizeof(struct _p_MatA11MF),&A11);CHKERRQ(ierr);
 	ierr = PetscMemzero(A11,sizeof(struct _p_MatA11MF));CHKERRQ(ierr);
-	
+
+	ierr = PetscFunctionListAdd(&flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
+#ifdef __AVX__
+	ierr = PetscFunctionListAdd(&flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
+#endif
+	ierr = PetscOptionsGetString(NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(flist,optype,&A11->Wrapper_A11);CHKERRQ(ierr);
+	if (!A11->Wrapper_A11) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
+	ierr = PetscFunctionListDestroy(&flist);CHKERRQ(ierr);
 	*B = A11;
 	PetscFunctionReturn(0);
 }
@@ -109,7 +120,7 @@ PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
 	PetscErrorCode ierr;
 	Vec X,u,p;
 	PetscInt mu,mp,Mu,Mp;
-	DM dau,dap,pack;
+	DM dau,pack;
 	IS             *is;
 	PetscInt n,start,offset;
 	PetscBool same;
@@ -127,12 +138,12 @@ PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
-  /* Fetch the DA's */
+    /* Fetch the DA's */
 	dau = user->dav;
-	dap = user->dap;
+	//dap = user->dap;
 	
 	/* Sizes */
 	ierr = DMGetGlobalVector(pack,&X);CHKERRQ(ierr);
@@ -141,7 +152,7 @@ PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
 	ierr = VecGetLocalSize(u,&mu);CHKERRQ(ierr);
 	ierr = VecGetSize(p,&Mp);CHKERRQ(ierr);
 	ierr = VecGetLocalSize(p,&mp);CHKERRQ(ierr);
-	ierr = VecGetOwnershipRange(u,&start,PETSC_NULL);CHKERRQ(ierr);
+	ierr = VecGetOwnershipRange(u,&start,NULL);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(pack,X,&u,&p);CHKERRQ(ierr);
 	ierr = DMRestoreGlobalVector(pack,&X);CHKERRQ(ierr);
 	
@@ -178,10 +189,8 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	PetscErrorCode ierr;
 	Vec X;
 	PetscInt mu,Mu;
-	DM dau,dap,pack;
-	IS  *is;
+	DM dau;
 	PetscInt n,start,offset;
-	PetscBool same;
 	
 	PetscFunctionBegin;
 	
@@ -196,7 +205,7 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	ierr = DMGetGlobalVector(dau,&X);CHKERRQ(ierr);
 	ierr = VecGetSize(X,&Mu);CHKERRQ(ierr);
 	ierr = VecGetLocalSize(X,&mu);CHKERRQ(ierr);
-	ierr = VecGetOwnershipRange(X,&start,PETSC_NULL);CHKERRQ(ierr);
+	ierr = VecGetOwnershipRange(X,&start,NULL);CHKERRQ(ierr);
 	ierr = DMRestoreGlobalVector(dau,&X);CHKERRQ(ierr);
 	
 	A11Ctx->mu = mu;
@@ -242,7 +251,7 @@ PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
 		if (A->daU) { ierr = DMDestroy(&A->daU);CHKERRQ(ierr); }
 		ierr = PetscFree(A);CHKERRQ(ierr);
 
-		*B = PETSC_NULL;
+		*B = NULL;
 	}
 	
   PetscFunctionReturn(0);
@@ -270,7 +279,7 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
 		if (A->daU) { ierr = DMDestroy(&A->daU);CHKERRQ(ierr); }
 		ierr = PetscFree(A);CHKERRQ(ierr);
 
-		*B = PETSC_NULL;
+		*B = NULL;
 	}
 	
 	
@@ -319,7 +328,7 @@ PetscErrorCode MatDestroy_MatA11MF_QuasiNewtonX(Mat A)
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA11_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	ierr = VecDestroy(&Xloc);CHKERRQ(ierr);
@@ -516,7 +525,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 {
 	MatStokesMF ctx,copyA;
 	MatA11MF copyA11;
-	PetscBool f1,f2,isFullCol,same;
+	PetscBool f1,f2,same;
 	PetscBool is_Auu_ii_mf = PETSC_FALSE;
 	PetscBool is_Auu_mf = PETSC_FALSE;
 	PetscInt ii,d;
@@ -547,7 +556,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 			PetscPrintf(PETSC_COMM_WORLD,"Fetching UVW block = A(1,1)\n");
 			if (!is_Auu_mf) {
 				if (cll==MAT_INITIAL_MATRIX) {
-					ierr = DMGetMatrix(ctx->daUVW,MATAIJ,B);CHKERRQ(ierr);
+					ierr = DMSetMatType(ctx->daUVW,MATAIJ);CHKERRQ(ierr);
+					ierr = DMCreateMatrix(ctx->daUVW,B);CHKERRQ(ierr);
 				} else {
 					ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 				}
@@ -569,7 +579,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		// [2]
 		is_Auu_ii_mf = PETSC_FALSE;
 		//ierr = PetscOptionsGetBool(prefix,"-A11iimf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
-		//ierr = PetscOptionsGetBool(PETSC_NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+		//ierr = PetscOptionsGetBool(NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 		
 		is_list[0] = ctx->isU;
 		is_list[1] = ctx->isV;
@@ -598,7 +608,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 				
 				if (!is_Auu_ii_mf) {
 					if (cll==MAT_INITIAL_MATRIX) {
-						ierr = DMGetMatrix(ctx->daU,MATAIJ,B);CHKERRQ(ierr);
+						ierr = DMSetMatType(ctx->daU,MATAIJ);CHKERRQ(ierr);
+						ierr = DMCreateMatrix(ctx->daU,B);CHKERRQ(ierr);
 					} else {
 						ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 					}
@@ -626,7 +637,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 			PetscPrintf(PETSC_COMM_WORLD,"  ***** !!!WARNING!!! Stokes operator A has been requested to fetch the NULL block A(2,2), returning the pressure mass matrix *****\n");
 			
 			if (cll==MAT_INITIAL_MATRIX) {
-				ierr = DMGetMatrix(ctx->dap,MATAIJ,B);CHKERRQ(ierr);
+				ierr = DMSetMatType(ctx->dap,MATAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(ctx->dap,B);CHKERRQ(ierr);
 			} else {
 				ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 			}
@@ -676,9 +688,9 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		
 		// [3]
 		/* check if full column space */
-		isFullCol = PETSC_FALSE;
+		//isFullCol = PETSC_FALSE;
 		same = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
 		if (same) {
 			PetscInt n,first,step;
 			ierr = ISStrideGetInfo(isc,&first,&step);CHKERRQ(ierr);
@@ -686,7 +698,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 			if  ((A->cmap->n==n)
 					 && (A->cmap->rstart==first)
 					 && (step==1) ) {
-				isFullCol = PETSC_TRUE;
+				//isFullCol = PETSC_TRUE;
 				PetscPrintf(PETSC_COMM_WORLD,"Detected full column space\n");
 				
 				ii = -1;
@@ -724,11 +736,10 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 #define __FUNCT__ "MatGetSubMatrix_MFStokes_A11"
 PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
 {
-	MatA11MF  ctx,copy;
-	PetscBool f1,f2,isFullCol,same;
+	MatA11MF  ctx;
+	PetscBool f1,f2,same;
 	PetscBool is_Auu_ii_mf = PETSC_FALSE;
-	PetscBool is_Auu_mf = PETSC_FALSE;
-	PetscInt ii,d;
+	PetscInt d;
 	IS is_list[3];
 	const char *label[] = { "UU", "VV", "WW" };
 	char *prefix = NULL;
@@ -748,7 +759,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 		// [2]
 		is_Auu_ii_mf = PETSC_FALSE;
 		//ierr = PetscOptionsGetBool(prefix,"-A11iimf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
-		//ierr = PetscOptionsGetBool(PETSC_NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+		//ierr = PetscOptionsGetBool(NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 		
 		is_list[0] = ctx->isU;
 		is_list[1] = ctx->isV;
@@ -777,7 +788,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 				
 				if (!is_Auu_ii_mf) {
 					if (cll==MAT_INITIAL_MATRIX) {
-						ierr = DMGetMatrix(ctx->daU,MATAIJ,B);CHKERRQ(ierr);
+						ierr = DMSetMatType(ctx->daU,MATAIJ);CHKERRQ(ierr);
+						ierr = DMCreateMatrix(ctx->daU,B);CHKERRQ(ierr);
 					} else {
 						ierr = MatZeroEntries(*B);CHKERRQ(ierr);
 					}
@@ -797,9 +809,9 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 	} else {
 		// [3]
 		/* check if full column space */
-		isFullCol = PETSC_FALSE;
+		//isFullCol = PETSC_FALSE;
 		same = PETSC_FALSE;
-		ierr = PetscTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
+		ierr = PetscObjectTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
 		if (same) {
 			PetscInt n,first,step;
 			ierr = ISStrideGetInfo(isc,&first,&step);CHKERRQ(ierr);
@@ -807,7 +819,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 			if  ((A->cmap->n==n)
 					 && (A->cmap->rstart==first)
 					 && (step==1) ) {
-				isFullCol = PETSC_TRUE;
+				//isFullCol = PETSC_TRUE;
 				PetscPrintf(PETSC_COMM_WORLD,"Detected full column space\n");
 				
 				is_list[0] = ctx->isU;
@@ -947,7 +959,7 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	stokes_pack = ctx->stokes_pack;
 	
   ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
   ierr = DMCompositeGetLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
@@ -1119,7 +1131,8 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	
   PetscFunctionBegin;
   
-//	ierr = PetscOptionsGetBool(PETSC_NULL,"-use_low_order_geometry",&use_low_order_geometry,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscLogEventBegin(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
+//	ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1144,11 +1157,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* momentum */
-//	if (use_low_order_geometry==PETSC_FALSE) {
-		ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-//	} else {
-//		ierr = MFStokesWrapper_A11PC(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
-//	}
+	ierr = (*ctx->Wrapper_A11)(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
@@ -1171,6 +1180,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 //		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
 //		ierr = VecCopy(X,Y);CHKERRQ(ierr);
 //	}
+	ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1189,7 +1199,7 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	
   PetscFunctionBegin;
   
-	//ierr = PetscOptionsGetInt(PETSC_NULL,"-low_order_geometry_type",&low_order_geometry_type,PETSC_NULL);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetInt(NULL,"-low_order_geometry_type",&low_order_geometry_type,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1265,7 +1275,6 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
   DM                dau,dap;
   DMDALocalInfo     infou,infop;
   Vec               XPloc,YUloc;
-	Vec               Xp,Yu;
   PetscScalar       *LA_XPloc;
   PetscScalar       *LA_YUloc;
 	
@@ -1332,7 +1341,6 @@ PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscErrorCode    ierr;
   DM                dau,dap,dax;
   Vec               XPloc,YUloc,Xloc;
-	Vec               Xp,Yu;
   PetscScalar       *LA_XPloc;
   PetscScalar       *LA_YUloc;
   PetscScalar       *LA_Xloc;
@@ -1342,7 +1350,7 @@ PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
 	dap = ctx->dap;
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dap,&XPloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
@@ -1405,7 +1413,6 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
   DM                dau,dap;
   DMDALocalInfo     infou,infop;
   Vec               XUloc,YPloc;
-	Vec               Xu,Yp;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YPloc;
 	
@@ -1472,7 +1479,6 @@ PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscErrorCode    ierr;
   DM                dau,dap,dax;
   Vec               XUloc,YPloc,Xloc;
-	Vec               Xu,Yp;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YPloc;
   PetscScalar       *LA_Xloc;
@@ -1482,7 +1488,7 @@ PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
 	dap = ctx->dap;
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dap,&YPloc);CHKERRQ(ierr);
@@ -1548,12 +1554,12 @@ PetscErrorCode MatMult_MFStokes_A11_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA11_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	
@@ -1609,12 +1615,12 @@ PetscErrorCode MatGetDiagaonl_MFStokes_A11_QuasiNewtonX(Mat A,Vec X)
   
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
-	ierr = DMDAGetCoordinateDA(dau,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
 	
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA11_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	
@@ -1685,7 +1691,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,
 	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatStokesMF_QuasiNewtonX);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(Stk->daUVW,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(Stk->daUVW,&dax);CHKERRQ(ierr);
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
 	
@@ -1737,7 +1743,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
 
-	ierr = DMDAGetCoordinateDA(A11->daUVW,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(A11->daUVW,&dax);CHKERRQ(ierr);
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA11_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
 	
@@ -1808,7 +1814,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12_QuasiNewtonX(MatStokesMF St
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatStokesMF_QuasiNewtonX);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(Stk->daUVW,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(Stk->daUVW,&dax);CHKERRQ(ierr);
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
 	
@@ -1852,7 +1858,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX(MatStokesMF St
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatStokesMF_QuasiNewtonX);CHKERRQ(ierr);
 	
-	ierr = DMDAGetCoordinateDA(Stk->daUVW,&dax);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(Stk->daUVW,&dax);CHKERRQ(ierr);
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
 	
@@ -1870,11 +1876,8 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX(MatStokesMF St
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 {
 	PetscBool      same;
-  DM             dau,dap,pack;
+    DM             pack;
 	Mat            A;
-	MPI_Comm       comm;
-	PetscInt       mu,Mu,mp,Mp;
-	Vec            X,u,p;
 	MatStokesMF    StkCtx;
 	PetscErrorCode ierr;
 	
@@ -1886,11 +1889,11 @@ PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
 	/* Create submatrices */
-	comm = ((PetscObject)pack)->comm;
+	//comm = PetscObjectComm((PetscObject)pack);
 	
 	ierr = StokesQ2P1CreateMatrix_MFOperator_A(StkCtx,&A);CHKERRQ(ierr);
 	ierr = MatSetOptionsPrefix(A,"stokes_Amf_");CHKERRQ(ierr);
@@ -1907,11 +1910,8 @@ PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes user,Mat *B)
 {
 	PetscBool      same;
-  DM             dau,dap,pack;
+    DM             pack;
 	Mat            A;
-	MPI_Comm       comm;
-	PetscInt       mu,Mu,mp,Mp;
-	Vec            X,u,p;
 	MatStokesMF    StkCtx;
 	PetscErrorCode ierr;
 	
@@ -1923,11 +1923,11 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes use
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
 	/* Create submatrices */
-	comm = ((PetscObject)pack)->comm;
+	//comm = ((PetscObject)pack)->comm;
 	
 	ierr = StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(StkCtx,&A);CHKERRQ(ierr);
 	ierr = MatSetOptionsPrefix(A,"stokes_Amf_");CHKERRQ(ierr);
@@ -1944,12 +1944,10 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes use
 PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt tA11,PetscInt tA12,PetscInt tA21,Mat *B)
 {
 	PetscBool      same;
-  DM             dau,dap,pack;
+    DM             dau,dap,pack;
 	Mat            A,Auu,Aup,Apu,bA[2][2];
 	IS             *is;
-	MPI_Comm       comm;
-	PetscInt       mu,Mu,mp,Mp,i,j;
-	Vec            X,u,p;
+	PetscInt       i,j;
 	MatStokesMF    StkCtx;
 	MatA11MF       A11Ctx;
 	PetscErrorCode ierr;
@@ -1965,18 +1963,19 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
   /* Fetch the DA's */
   ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
 	/* Create submatrices */
-	comm = ((PetscObject)pack)->comm;
+	//comm = PetscObjectComm((PetscObject)pack);
 
 	/* A11 */
 	if (tA11==0) {
-		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
+		ierr = DMSetMatType(dau,MATAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dau,&Auu);CHKERRQ(ierr);
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
 		ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
@@ -2008,7 +2007,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	ierr = DMCompositeGetGlobalISs(pack,&is);CHKERRQ(ierr);
 	
 	bA[0][0] = Auu; bA[0][1] = Aup;
-	bA[1][0] = Apu; bA[1][1] = PETSC_NULL;
+	bA[1][0] = Apu; bA[1][1] = NULL;
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,is,2,is,&bA[0][0],&A);CHKERRQ(ierr);
 	ierr = MatSetOptionsPrefix(A,"stokes_A_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
@@ -2038,8 +2037,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
   DM             dau,dap,pack;
 	Mat            A,Auu,Aup,Apu,Spp,bA[2][2];
 	IS             *is;
-	MPI_Comm       comm;
-	PetscInt       mu,Mu,mp,Mp,i,j;
+	PetscInt       i,j;
 	MatStokesMF    StkCtx;
 	MatA11MF       A11Ctx;
 	PetscErrorCode ierr;
@@ -2053,20 +2051,21 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	
 	/* is composite */
 	same = PETSC_FALSE;
-	ierr = PetscTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
   /* Fetch the DA's */
   ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
 	/* Create submatrices */
-	comm = ((PetscObject)pack)->comm;
+	//comm = PetscObjectComm((PetscObject)pack);
 	
 	/* A11 */
 	if (tA11==0) {
-//		ierr = DMGetMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
+//		ierr = DMCreateMatrix(dau,MATAIJ,&Auu);CHKERRQ(ierr);
 //
-		ierr = DMGetMatrix(dau,MATSBAIJ,&Auu);CHKERRQ(ierr);
+		ierr = DMSetMatType(dau,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dau,&Auu);CHKERRQ(ierr);
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 // 
 	} else {
@@ -2076,9 +2075,10 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 	
 	/* Schur complement */
-//	ierr = DMGetMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
+//	ierr = DMCreateMatrix(dap,MATAIJ,&Spp);CHKERRQ(ierr);
 
-	ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+	ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 	ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
 	ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
@@ -2140,7 +2140,7 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	
 	/* n_pressure_basis * neighbour_cells = 4 x 8 */
 	nnz = 32;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 
         /*
         I've tuned this parameter for speed, not memory usage
@@ -2156,12 +2156,12 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	                   onnz = 24 assembly = 5.3824e+00 sec
         */
 	onnz = 16;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"StokesA12Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
 	
-	ierr = MatSeqAIJSetPreallocation(mat,nnz,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatMPIAIJSetPreallocation(mat,nnz,PETSC_NULL,onnz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatSeqAIJSetPreallocation(mat,nnz,NULL);CHKERRQ(ierr);
+	ierr = MatMPIAIJSetPreallocation(mat,nnz,NULL,onnz,NULL);CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);
 }
@@ -2178,7 +2178,7 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 
 	/* Each pressure dof is connected to all vel dofs in a single cell, 27 * 3 */
 	nnz = 27 * 3;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 
         /*
         I've tuned this parameter for speed, not memory usage
@@ -2197,12 +2197,12 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 	                   onnz = 60 assembly = 2.9067e+00 sec
         */
 	onnz = 30;
-	ierr = PetscOptionsGetInt(PETSC_NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"StokesA21Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
 	
-	ierr = MatSeqAIJSetPreallocation(mat,nnz,PETSC_NULL);CHKERRQ(ierr);
-	ierr = MatMPIAIJSetPreallocation(mat,nnz,PETSC_NULL,onnz,PETSC_NULL);CHKERRQ(ierr);
+	ierr = MatSeqAIJSetPreallocation(mat,nnz,NULL);CHKERRQ(ierr);
+	ierr = MatMPIAIJSetPreallocation(mat,nnz,NULL,onnz,NULL);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -2214,7 +2214,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat)
   DM             pack,dav,dap;
 	Mat            Aup;
 	MPI_Comm       comm;
-	PetscInt       mu,Mu,mp,Mp,i,j;
+	PetscInt       mu,Mu,mp,Mp;
 	Vec            X,Xu,Xp;
 	PetscErrorCode ierr;
 	
@@ -2235,7 +2235,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat)
 	ierr = DMRestoreGlobalVector(pack,&X);CHKERRQ(ierr);
 	
 	/* Create matrix - this is not meant to be efficient non-zero allocation */
-	comm = ((PetscObject)pack)->comm;
+	comm = PetscObjectComm((PetscObject)pack);
   ierr = MatCreate(comm,&Aup);CHKERRQ(ierr);
 	ierr = MatSetType(Aup,MATAIJ);CHKERRQ(ierr);
 	ierr = MatSetSizes(Aup,mu,mp,Mu,Mp);CHKERRQ(ierr);
@@ -2259,7 +2259,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
   DM             pack,dav,dap;
 	Mat            Apu;
 	MPI_Comm       comm;
-	PetscInt       mu,Mu,mp,Mp,i,j;
+	PetscInt       mu,Mu,mp,Mp;
 	Vec            X,Xu,Xp;
 	PetscErrorCode ierr;
 	
@@ -2280,7 +2280,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
 	ierr = DMRestoreGlobalVector(pack,&X);CHKERRQ(ierr);
 	
 	/* Create matrix - this is not meant to be efficient non-zero allocation */
-	comm = ((PetscObject)pack)->comm;
+	comm = PetscObjectComm((PetscObject)pack);
   ierr = MatCreate(comm,&Apu);CHKERRQ(ierr);
 	ierr = MatSetType(Apu,MATAIJ);CHKERRQ(ierr);
 	ierr = MatSetSizes(Apu,mp,mu,Mp,Mu);CHKERRQ(ierr);
@@ -2311,17 +2311,18 @@ PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],M
 	pack = user->stokes_pack;
   ierr = DMCompositeGetEntries(pack,&dav,&dap);CHKERRQ(ierr);
 
-	ierr = DMGetMatrix(dav,MATAIJ,&Auu);CHKERRQ(ierr);
-	//ierr = DMGetMatrix(dav,MATSBAIJ,&Auu);CHKERRQ(ierr);
+	ierr = DMSetMatType(dav,MATAIJ);CHKERRQ(ierr);
+	ierr = DMCreateMatrix(dav,&Auu);CHKERRQ(ierr);
+	//ierr = DMCreateMatrix(dav,MATSBAIJ,&Auu);CHKERRQ(ierr);
 
 	if (prefix) {
 		ierr = MatSetOptionsPrefix(Auu,prefix);CHKERRQ(ierr);
 	}
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 
-	ierr = PetscTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
-	ierr = PetscTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
-	ierr = PetscTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)Auu,MATMPISBAIJ,&same3);CHKERRQ(ierr);
 	if (same1||same2||same3) {
 		ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 	}

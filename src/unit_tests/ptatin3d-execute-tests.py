@@ -1,6 +1,7 @@
 
 import sys
 import os
+import errno
 
 
 def strip_keywords(infilename,outfilename):
@@ -22,6 +23,15 @@ def strip_keywords(infilename,outfilename):
 	oldfile.close()
 	newfile.close()
 
+
+# Make a directory if it doesn't exist
+def makedir(dirname):
+	try:
+		os.makedirs(dirname)
+	except OSError as e:
+		if e.errno == errno.EEXIST and os.path.isdir(dirname):
+			pass
+		else: raise
 
 #
 # Test definitions
@@ -123,8 +133,12 @@ def main():
 	print '**'
 
 	# set environment variable for bin directory
-	ptatin_bin_dir = os.getcwd() + '/..'
+	ptatin_bin_dir = os.path.join('..', '..', os.environ['PETSC_ARCH'], 'bin')
 	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
+
+	# create output directories
+	makedir('pt3dout')
+	makedir('output')
 
 	# remove contents of directory where all ptatin output is sent
 	os.system('rm -f pt3dout/*')

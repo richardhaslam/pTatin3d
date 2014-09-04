@@ -1,0 +1,93 @@
+
+# ------------------------------------------------------
+-ptatin_model pd
+
+# 1 - Mises
+# 2 - DP
+-mat_plastic_type_1 1
+
+-mat_eta0_1 1.0e23
+
+# for standard projection
+-mp_layout 0
+-coefficient_projection_type 1
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+
+# for quadrature point based projection
+#-mp_layout 2
+#-coefficient_projection_type 4
+
+#-view_projected_marker_fields
+#-stokes_snes_monitor_F_paraview
+#-stokes_snes_monitor_X_paraview
+# ------------------------------------------------------
+
+-nonlinear_driver_v1
+-nsteps 0
+
+-da_processors_z 1
+#-da_refine_z 1
+-stk_velocity_da_refine_hierarchy_z 1,1,1
+
+-dau_nlevels 3
+-A11_operator_type 0,1,1
+
+-a11_op tensor
+
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type bjacobi
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_mg_coarse_pc_type lu
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_type chebyshev
+-fieldsplit_u_mg_levels_pc_type jacobi
+#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-ksp_type fgmres
+-mx 128
+-my 32
+-mz 1
+-pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-stk_velocity_dm_mat_type aij
+
+
+-newton_its 0
+
+-snes_type newtonls
+-snes_linesearch_order 3
+-snes_max_it 100
+-snes_max_linear_solve_fail 100000
+
+-ksp_rtol 1.0e-4
+-ksp_atol 1.0e-7
+
+#-snes_mf_operator
+#-pc_fieldsplit_real_diagonal
+
+#-snes_ksp_ew
+#-snes_ksp_ew_rtol0 1.0e-2
+
+-snes_rtol 1.0e-5
+-snes_atol 1.0e-8
+
+-monitor_stages
+
+-snes_monitor
+#-fieldsplit_u_ksp_monitor
+#-fieldsplit_u_pc_mg_log
+
+-fieldsplit_u_ksp_converged_reason
+-snes_converged_reason
+
+#-snes_view
+
+-log_summary
