@@ -139,7 +139,8 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	
 	ierr = DMSetMatType(daf,MATSEQAIJ);CHKERRQ(ierr);
 	ierr = DMCreateMatrix(daf,&Acell);CHKERRQ(ierr);
-	ierr = MatPtAPSymbolic(Acell,P,1.0,&Ac_el);CHKERRQ(ierr);
+	//ierr = MatPtAPSymbolic(Acell,P,1.0,&Ac_el);CHKERRQ(ierr);
+	ierr = MatPtAP(Acell,P,MAT_INITIAL_MATRIX,1.0,&Ac_el);CHKERRQ(ierr);
 	
 	/* quadrature */
 	nqp = volQ_fine->npoints;
@@ -333,7 +334,8 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 				t[3] += (t1-t0);
                 
 				t0 = t1;
-				ierr = MatPtAPNumeric(Acell,P,Ac_el);CHKERRQ(ierr);
+				//ierr = MatPtAPNumeric(Acell,P,Ac_el);CHKERRQ(ierr);
+                ierr = MatPtAP(Acell,P,MAT_REUSE_MATRIX,1.0,&Ac_el);CHKERRQ(ierr);
 				PetscTime(&t1);
 				t[4] += (t1-t0);
                 
