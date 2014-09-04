@@ -27,7 +27,8 @@ TATIN_MODEL_DIR = \
 	convection2d \
 	thermal_shearband \
 	slab_detachment3d \
-	pinch_and_swell
+	pinch_and_swell \
+	plasticdemo
 
 TATIN_MODEL_SRC = \
 	ptatin_models_reg.c
