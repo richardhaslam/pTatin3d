@@ -303,8 +303,8 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
                 
                 ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
                 /* setup for coords */
-                ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-                ierr = DMDAGetGhostedCoordinates(dav,&gcoords );CHKERRQ(ierr);
+                ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+                ierr = DMGetCoordinatesLocal(dav,&gcoords );CHKERRQ(ierr);
                 ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
                 
                 ierr = SurfaceQuadratureGetAllCellData_Stokes(surfQ_east,&surfQ_coeff);CHKERRQ(ierr);

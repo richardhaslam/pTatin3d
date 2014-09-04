@@ -813,10 +813,10 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
     PetscReal gmin[3],gmax[3];
     PetscErrorCode ierr;
     
-    ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-    ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+    ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
     
     gmax[0] = gmax[1] = gmax[2] = PETSC_MIN_REAL;
     gmin[0] = gmin[1] = gmin[2] = PETSC_MAX_REAL;
@@ -959,8 +959,8 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
 	
 	/* setup local coords */
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
 	/* setup local velocity */
@@ -1046,8 +1046,8 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
 	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
 	
 	/* setup local coords */
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     
 	/* setup local velocity */

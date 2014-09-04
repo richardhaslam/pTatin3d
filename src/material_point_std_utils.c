@@ -259,7 +259,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 	DataBucketSetSizes(db,np_per_cell*ncells,-1);
 	
     /* setup for coords */
-    ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
@@ -706,7 +706,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 	
     /* setup for coords */
-    ierr = DMDAGetGhostedCoordinates(da,&gcoords);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	
@@ -1259,8 +1259,8 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	monitor           = PETSC_FALSE;
 	log               = PETSC_FALSE;
     
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dav,0,0,&elnidx_u);CHKERRQ(ierr);

@@ -1527,9 +1527,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", user->step );
-    PetscGetTime(&time[0]);
+    PetscTime(&time[0]);
 		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
-    PetscGetTime(&time[1]);
+    PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
     ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
     ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
