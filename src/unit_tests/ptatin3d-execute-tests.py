@@ -43,14 +43,14 @@ def test01():
 	ofile     = './output/'   + test_name + '.output'
 	efile     = './expected/' + test_name + '.expected'
 	optsfile  = './input/'    + test_name + '.opts'
-	print '--------------------------------------------------------'
-	print '-- Performing test:',test_name
+	print('--------------------------------------------------------')
+	print('-- Performing test:',test_name)
 	os.system('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ' > ' + ofile)
 	# Filter 
 	strip_keywords(ofile,ofile+'.strip')
 	strip_keywords(efile,'expected/expected.strip')
 	# DIFFERENCES
-	print '---- Unix diff with expected file:',efile
+	print('---- Unix diff with expected file:',efile)
 	os.system('diff ' + ofile+'.strip expected/expected.strip') 
 
 
@@ -60,14 +60,14 @@ def test02():
 	ofile     = './output/'   + test_name + '.output'
 	efile     = './expected/' + test_name + '.expected'
 	optsfile  = './input/'    + test_name + '.opts'
-	print '--------------------------------------------------------'
-	print '-- Performing test:',test_name
+	print('--------------------------------------------------------')
+	print('-- Performing test:',test_name)
 	os.system('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ' > ' + ofile)
 	# Filter 
 	strip_keywords(ofile,ofile+'.strip')
 	strip_keywords(efile,'expected/expected.strip')
 	# DIFFERENCES
-	print '---- Unix diff with expected file:',efile
+	print('---- Unix diff with expected file:',efile)
 	os.system('diff ' + ofile+'.strip expected/expected.strip') 
 
 
@@ -77,14 +77,14 @@ def test03a():
 	ofile     = './output/'   + test_name + '.output'
 	efile     = './expected/' + test_name + '.expected'
 	optsfile  = './input/'    + test_name + '.opts'
-	print '--------------------------------------------------------'
-	print '-- Performing test:',test_name
+	print('--------------------------------------------------------')
+	print('-- Performing test:',test_name)
 	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ' > ' + ofile)
 	# Filter 
 	strip_keywords(ofile,ofile+'.strip')
 	strip_keywords(efile,'expected/expected.strip')
 	# DIFFERENCES
-	print '---- Unix diff with expected file:',efile
+	print('---- Unix diff with expected file:',efile)
 	os.system('diff ' + ofile+'.strip expected/expected.strip') 
 
 
@@ -94,14 +94,14 @@ def test03b():
 	ofile     = './output/'   + test_name + '.output'
 	efile     = './expected/' + test_name + '.expected'
 	optsfile  = './input/'    + test_name + '.opts'
-	print '--------------------------------------------------------'
-	print '-- Performing test:',test_name
+	print('--------------------------------------------------------')
+	print('-- Performing test:',test_name)
 	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ' > ' + ofile)
 	# Filter 
 	strip_keywords(ofile,ofile+'.strip')
 	strip_keywords(efile,'expected/expected.strip')
 	# DIFFERENCES
-	print '---- Unix diff with expected file:',efile
+	print('---- Unix diff with expected file:',efile)
 	os.system('diff ' + ofile+'.strip expected/expected.strip') 
 
 # 3c/ Linear solve using MF,ASM,Galerkin and user specified level and direction dependent coarsening 
@@ -110,14 +110,14 @@ def test03c():
 	ofile     = './output/'   + test_name + '.output'
 	efile     = './expected/' + test_name + '.expected'
 	optsfile  = './input/'    + test_name + '.opts'
-	print '--------------------------------------------------------'
-	print '-- Performing test:',test_name
+	print('--------------------------------------------------------')
+	print('-- Performing test:',test_name)
 	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ' > ' + ofile)
 	# Filter 
 	strip_keywords(ofile,ofile+'.strip')
 	strip_keywords(efile,'expected/expected.strip')
 	# DIFFERENCES
-	print '---- Unix diff with expected file:',efile
+	print('---- Unix diff with expected file:',efile)
 	os.system('diff ' + ofile+'.strip expected/expected.strip') 
 
 
@@ -128,11 +128,13 @@ def test03c():
 
 # Execute all tests
 def main():
-	print '**'
-	print '** Executing pTatin3d unit tests'
-	print '**'
+	print('**')
+	print('** Executing pTatin3d unit tests')
+	print('**')
 
 	# set environment variable for bin directory
+	if os.environ.get('PETSC_ARCH') == None:
+		raise Exception('Environment variable PETSC_ARCH must be set to run unit tests')
 	ptatin_bin_dir = os.path.join('..', '..', os.environ['PETSC_ARCH'], 'bin')
 	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
 
