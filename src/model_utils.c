@@ -1118,7 +1118,7 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
             E_qp[2][0] = E_qp[0][2];
             E_qp[2][1] = E_qp[1][2];
             
-			divu_qp += (E_qp[0][0] + E_qp[1][1] + E_qp[2][2]);
+			divu_qp = (E_qp[0][0] + E_qp[1][1] + E_qp[2][2]);
 			
 			/* constitutive */
 			eta_qp = cell_quadraturepoints[p].eta;
