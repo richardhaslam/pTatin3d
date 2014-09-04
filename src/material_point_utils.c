@@ -250,7 +250,6 @@ PetscErrorCode MaterialPointGeneric_PVTUWriteAllPPointDataFields(FILE *vtk_fp,co
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "SwarmViewGeneric_VTUXML_binary_appended"
 PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int nmpfields,const MaterialPointField mplist[],const char name[])
@@ -284,7 +283,6 @@ PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int n
 	
 	DataBucketGetSizes(db,&npoints,NULL,NULL);
 	fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
-	
 	
 	fprintf( vtk_fp, "\n");
 	fprintf( vtk_fp, "\t\t\t<Cells>\n");
@@ -385,9 +383,7 @@ PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int n
 	
 	/* auto generated shit for the marker data goes here */
 	{
-		
 		ierr = MaterialPointGeneric_VTKWriteBinaryAppendedDataAllFields(vtk_fp,db,nmpfields,mplist);CHKERRQ(ierr);
-	
 	}
 	
 	fprintf( vtk_fp,"\n\t</AppendedData>\n");
@@ -454,8 +450,7 @@ PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointFie
 	}
   fprintf(vtk_fp, "    </PPointData>\n");
 	///////////////
-	
-	
+		
 	/* write out the parallel information */
 	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 	for (i=0; i<nproc; i++) {
@@ -475,7 +470,6 @@ PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointFie
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "SwarmViewGeneric_ParaView"
@@ -622,7 +616,6 @@ void pTatinConstructNI_Q1_on_Q2_3D(const double _xi[],double Ni[])
 	
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes"
 PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
@@ -649,8 +642,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 	
 	
 	PetscFunctionBegin;
-	
-	
+		
 	ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
@@ -684,8 +676,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		Ni_p[2+18] = NiQ1_p[5];
 		Ni_p[6+18] = NiQ1_p[6];
 		Ni_p[8+18] = NiQ1_p[7];
-		
-		
+				
 		Ni_p[1] = Ni_p[7] = 1.0;
 		Ni_p[3] = Ni_p[4] = Ni_p[5] = 1.0;
 
@@ -696,15 +687,11 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		Ni_p[1+18] = Ni_p[7+18] = 1.0;
 		Ni_p[3+18] = Ni_p[4+18] = Ni_p[5+18] = 1.0;
 		
-		
 		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
 			Ae1[i] = Ni_p[i] * eta_p;
 			Ae2[i] = Ni_p[i] * rho_p;
 			Be[i]  = Ni_p[i];
 		}
-		
-		
-		
 		
 		/* sum into local vectors */
 		e = mp_std[p].wil;
@@ -713,7 +700,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A1, 1, el_lidx,Ae1);CHKERRQ(ierr);
 		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A2, 1, el_lidx,Ae2);CHKERRQ(ierr);
 		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_B,  1, el_lidx,Be);CHKERRQ(ierr);
-		
 	}
 	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
@@ -721,8 +707,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
   ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
-	
-	
+		
 	/* scatter to quadrature points */
 	ierr = DMLocalToGlobalBegin(clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
@@ -757,7 +742,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 		NIu[p][6+18] = NiQ1_p[6];
 		NIu[p][8+18] = NiQ1_p[7];
 	}
-	
 	
 	PetscTime(&t0);
 	ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
@@ -837,7 +821,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 #define __FUNCT__ "SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes"
 PetscErrorCode SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],Quadrature Q)
 {
-	PetscInt q,p,i;
+	PetscInt q,p;
 	PetscInt nel,e;
 	PetscInt nqp;
 	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
@@ -916,8 +900,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const 
 		ierr = VecView(properties_A2, viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	}
-	
-	
+		
 	/* destroy */
 	ierr = DMRestoreGlobalVector(clone,&properties_B);CHKERRQ(ierr);
 	ierr = DMRestoreGlobalVector(clone,&properties_A2);CHKERRQ(ierr);
@@ -927,8 +910,6 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const 
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "_SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints"
@@ -955,8 +936,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_Interp
 	
 	
 	PetscFunctionBegin;
-	
-	
+		
 	ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
 	
@@ -1091,7 +1071,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 	
 	PetscFunctionBegin;
 	
-	
 	ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
@@ -1124,7 +1103,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 		Ni_p[6+18] = NiQ1_p[6];
 		Ni_p[8+18] = NiQ1_p[7];
 		
-		
 		Ni_p[1] = Ni_p[7] = 1.0;
 		Ni_p[3] = Ni_p[4] = Ni_p[5] = 1.0;
 		
@@ -1148,7 +1126,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A1, 1, el_lidx,Ae1);CHKERRQ(ierr);
 		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A2, 1, el_lidx,Ae2);CHKERRQ(ierr);
 		ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_B,  1, el_lidx,Be);CHKERRQ(ierr);
-		
 	}
 	PetscTime(&t1);
 	//PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
@@ -1156,7 +1133,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
   ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
-	
 	
 	/* scatter to quadrature points */
 	ierr = DMLocalToGlobalBegin(clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
@@ -1172,8 +1148,7 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 	ierr = VecPointwiseDivide( properties_A1, properties_A1, properties_B );CHKERRQ(ierr);
 	ierr = VecPointwiseDivide( properties_A2, properties_A2, properties_B );CHKERRQ(ierr);
 	/* ========================================= */
-	
-	
+		
 	PetscTime(&t1);
 	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
 	
@@ -1183,7 +1158,6 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy"
@@ -1322,7 +1296,6 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 		}
 		
 	}
-	
 	
 	/* destroy */
 	ierr = DMRestoreGlobalVector(clone[nlevels-1],&properties_B);CHKERRQ(ierr);
@@ -1535,8 +1508,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	
-	
+		
 	if (field == MPField_StokesPl) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"MPField_StokesPl cannot be mapped quadrature points");
 	}
@@ -1549,8 +1521,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 	DataBucketGetDataFieldByName(materialpoint_db, MPntStd_classname,&PField_std);
 	DataBucketGetSizes(materialpoint_db,&npoints,NULL,NULL);
 	mp_std  = PField_std->data;
-	
-	
+		
 	ierr = MPntPStokesComputeMemberOffsets(mp_stokes_property_offsets);CHKERRQ(ierr);
 	ierr = QPntVolCoefStokesComputeMemberOffsets(qp_stokes_property_offsets);CHKERRQ(ierr);
 	
@@ -1563,8 +1534,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 	
 	ierr = VecZeroEntries(properties_A);CHKERRQ(ierr);
 	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
-	
-	
+		
 	switch (field) {
 
 		case MPField_Stokes:
@@ -1692,8 +1662,7 @@ PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
 	
 	
 	PetscFunctionBegin;
-	
-	
+		
 	ierr = DMGetLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
 	
@@ -1732,8 +1701,7 @@ PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
 		Ni_p[2+18] = NiQ1_p[5];
 		Ni_p[6+18] = NiQ1_p[6];
 		Ni_p[8+18] = NiQ1_p[7];
-		
-		
+				
 		Ni_p[1] = Ni_p[7] = 1.0;
 		Ni_p[3] = Ni_p[4] = Ni_p[5] = 1.0;
 		
@@ -1762,7 +1730,6 @@ PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
   ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
 	
-	
 	/* scatter to quadrature points */
 	ierr = DMLocalToGlobalBegin(clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
@@ -1777,7 +1744,6 @@ PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
 	if (avg_type == CoefAvgHARMONIC) {
 		ierr = VecReciprocal(properties_A);CHKERRQ(ierr);
 	}
-	
 	
 	PetscTime(&t1);
 	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
@@ -1808,7 +1774,6 @@ PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
 	
 	
 	PetscFunctionBegin;
-	
 	
 	ierr = DMGetLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
@@ -1873,7 +1838,6 @@ PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
 		ierr = VecReciprocal(properties_A);CHKERRQ(ierr);
 	}
 	
-	
 	PetscTime(&t1);
 	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
 	
@@ -1882,7 +1846,6 @@ PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "_MaterialPointProjection_MapOntoNestedQ1Mesh"
@@ -1906,8 +1869,7 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 	
 	
 	PetscFunctionBegin;
-	
-	
+		
 	ierr = DMGetLocalVector(clone,&Lproperties_A);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_A);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);		ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
 	
@@ -2000,8 +1962,7 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 	
   ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A,&LA_properties_A);CHKERRQ(ierr);
-	
-	
+		
 	/* scatter to quadrature points */
 	ierr = DMLocalToGlobalBegin(clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A,ADD_VALUES,properties_A);CHKERRQ(ierr);
@@ -2016,7 +1977,6 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 	if (avg_type == CoefAvgHARMONIC) {
 		ierr = VecReciprocal(properties_A);CHKERRQ(ierr);
 	}
-	
 	
 	PetscTime(&t1);
 	//	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
@@ -2411,8 +2371,7 @@ PetscErrorCode _LocalL2ProjectionQ1_MPntPStokes(	DM clone,Vec properties_A1,Vec 
 	
   ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
   ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
-	
-	
+		
 	/* scatter to quadrature points */
 	ierr = DMLocalToGlobalBegin(clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalEnd(  clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
@@ -2456,7 +2415,6 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 	
 	ierr = VecZeroEntries(properties_A);CHKERRQ(ierr);
 	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
-
 	
 	/* compute refinement factor for this level */
 	for (k=0; k<nlevels; k++) {
@@ -2473,8 +2431,7 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 	}
 	
 	ierr = DMDAGetLocalSizeElementQ2(da[nlevels-1],&mx_fine,&my_fine,&mz_fine);CHKERRQ(ierr);
-	
-	
+		
 	ierr = _LocalL2ProjectionQ1_MPntPStokes(	clone,properties_A,properties_B,
 																						mx_fine,my_fine,mz_fine,	
 																						refx,refy,refz,
@@ -2503,7 +2460,6 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 
 	PetscFunctionReturn(0);
 }
-
 
 /* P0 */
 #undef __FUNCT__
@@ -2621,8 +2577,6 @@ PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(const int npoi
 	
 	PetscFunctionReturn(0);
 }
-
-
 
 /* MATERIAL POINT ACCESS HELPERS */
 #undef __FUNCT__
@@ -2752,6 +2706,7 @@ PetscErrorCode _get_field_MPntStd(MPAccess X,const int p,MPntStd **point)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "_get_field_MPntPStokes"
 PetscErrorCode _get_field_MPntPStokes(MPAccess X,const int p,MPntPStokes **point)
@@ -2766,6 +2721,7 @@ PetscErrorCode _get_field_MPntPStokes(MPAccess X,const int p,MPntPStokes **point
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "_get_field_MPntPStokesPl"
 PetscErrorCode _get_field_MPntPStokesPl(MPAccess X,const int p,MPntPStokesPl **point)
@@ -2780,6 +2736,7 @@ PetscErrorCode _get_field_MPntPStokesPl(MPAccess X,const int p,MPntPStokesPl **p
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "_get_field_MPntPEnergy"
 PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point)
@@ -2809,6 +2766,7 @@ PetscErrorCode MaterialPointGet_global_coord(MPAccess X,const int p,double *var[
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_local_coord"
 PetscErrorCode MaterialPointGet_local_coord(MPAccess X,const int p,double *var[])
@@ -2822,6 +2780,7 @@ PetscErrorCode MaterialPointGet_local_coord(MPAccess X,const int p,double *var[]
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_local_element_index"
 PetscErrorCode MaterialPointGet_local_element_index(MPAccess X,const int p,int *var)
@@ -2835,6 +2794,7 @@ PetscErrorCode MaterialPointGet_local_element_index(MPAccess X,const int p,int *
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_phase_index"
 PetscErrorCode MaterialPointGet_phase_index(MPAccess X,const int p,int *var)
@@ -2848,6 +2808,7 @@ PetscErrorCode MaterialPointGet_phase_index(MPAccess X,const int p,int *var)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_phase_index"
 PetscErrorCode MaterialPointSet_phase_index(MPAccess X,const int p,int var)
@@ -2876,6 +2837,7 @@ PetscErrorCode MaterialPointGet_viscosity(MPAccess X,const int p,double *var)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_viscosity"
 PetscErrorCode MaterialPointSet_viscosity(MPAccess X,const int p,double var)
@@ -2889,6 +2851,7 @@ PetscErrorCode MaterialPointSet_viscosity(MPAccess X,const int p,double var)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_density"
 PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
@@ -2902,6 +2865,7 @@ PetscErrorCode MaterialPointGet_density(MPAccess X,const int p,double *var)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_density"
 PetscErrorCode MaterialPointSet_density(MPAccess X,const int p,double var)
@@ -2915,6 +2879,7 @@ PetscErrorCode MaterialPointSet_density(MPAccess X,const int p,double var)
 	
 	PetscFunctionReturn(0);
 }
+
 /* stokespl */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_plastic_strain"
@@ -2929,6 +2894,7 @@ PetscErrorCode MaterialPointGet_plastic_strain(MPAccess X,const int p,float *var
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_plastic_strain"
 PetscErrorCode MaterialPointSet_plastic_strain(MPAccess X,const int p,float var)
@@ -2956,6 +2922,7 @@ PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *va
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_yield_indicator"
 PetscErrorCode MaterialPointSet_yield_indicator(MPAccess X,const int p,short var)
@@ -2984,6 +2951,7 @@ PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_heat_source"
 PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var)
@@ -3011,6 +2979,7 @@ PetscErrorCode MaterialPointSet_diffusivity(MPAccess X,const int p,double var)
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_heat_source"
 PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var)
@@ -3024,6 +2993,7 @@ PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var)
 	
 	PetscFunctionReturn(0);
 }
+
 /* std */
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_global_coord"
@@ -3038,6 +3008,7 @@ PetscErrorCode MaterialPointSet_global_coord(MPAccess X,const int p,double var[]
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_local_coord"
 PetscErrorCode MaterialPointSet_local_coord(MPAccess X,const int p,double var[])
@@ -3051,6 +3022,7 @@ PetscErrorCode MaterialPointSet_local_coord(MPAccess X,const int p,double var[])
 	
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_local_element_index"
 PetscErrorCode MaterialPointSet_local_element_index(MPAccess X,const int p,int var)
@@ -3064,7 +3036,6 @@ PetscErrorCode MaterialPointSet_local_element_index(MPAccess X,const int p,int v
 	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointScale_global_coord"

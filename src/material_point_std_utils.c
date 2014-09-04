@@ -231,7 +231,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 {
 	DataField    PField;
-	PetscInt     e,mE,nE,pE;
+	PetscInt     e;
     Vec          gcoords;
     PetscScalar  *LA_coords;
     PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
@@ -239,11 +239,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 	PetscInt     nel,nen;
 	const PetscInt     *elnidx;
 	PetscInt     p,q,k;
-	PetscReal    dxi,deta,dzeta;
-	long int     np_local, np_global;
-	int          rank;
-    PetscInt nqp;
-    PetscReal *q_coor,*q_weight;
+	long int     np_local;
+    PetscInt     nqp;
+    PetscReal    *q_coor,*q_weight;
 	PetscErrorCode ierr;
 	
 	
@@ -1235,7 +1233,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
     PetscInt       Npxi,Npeta,i,j,n;
     PetscReal      xip[2],dxi,deta,Nip[4];
 	MPAccess       mpX;
-	PetscInt       p,n_mpoints;
 	double         tolerance;
 	int            max_its;
 	PetscBool      use_nonzero_guess, monitor, log;
@@ -1313,12 +1310,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
                 
                 ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
             }
-            
-            
         }
     }
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-    
 	
 	PetscFunctionReturn(0);
 }

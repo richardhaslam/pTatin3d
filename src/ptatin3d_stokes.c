@@ -1334,11 +1334,8 @@ PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stoke
 #define __FUNCT__ "PhysCompStokesGetSurfaceQuadrature"
 PetscErrorCode PhysCompStokesGetSurfaceQuadrature(PhysCompStokes stokes,HexElementFace fid,SurfaceQuadrature *sq)
 {
-	PetscErrorCode ierr;
-    
-  if (sq) { *sq = stokes->surfQ[fid]; };
-
-	PetscFunctionReturn(0);
+    if (sq) { *sq = stokes->surfQ[fid]; };
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
