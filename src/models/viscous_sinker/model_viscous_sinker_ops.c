@@ -740,7 +740,7 @@ START_INCLUSION:
 			PetscScalar sep;
 			
 			sep = PetscSqrtReal(  
-									 (pos[3*p+0]-cp[0])*(pos[3*p+0]-cp[0]) 
+                                   (pos[3*p+0]-cp[0])*(pos[3*p+0]-cp[0])
 								 + (pos[3*p+1]-cp[1])*(pos[3*p+1]-cp[1])
 								 + (pos[3*p+2]-cp[2])*(pos[3*p+2]-cp[2]) );
 
@@ -807,7 +807,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 	ierr = compute_inclusion_origins(ninclusions,max_radius,data->Lx,data->Ly,data->Lz,&inclusion_pos);CHKERRQ(ierr);
 	if (inclusion_view) {
 		for (cc=0; cc<ninclusions; cc++) {
-			PetscReal *cp = &inclusion_pos[2*cc];
+			PetscReal *cp = &inclusion_pos[3*cc];
 			PetscPrintf(PETSC_COMM_WORLD," inclusion[%d]: Ox = %1.4e %1.4e %1.4e \n",cc,cp[0],cp[1],cp[2]);
 		}
 	}
@@ -833,7 +833,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 
 		if (data->is_sphere) {
 			for (cc=0; cc<ninclusions; cc++) {
-				PetscReal *cp = &inclusion_pos[2*cc];
+				PetscReal *cp = &inclusion_pos[3*cc];
 				PetscReal sep,rx,ry,rz;
 
 				rx = (position[0]-cp[0])/(0.5*data->length[0]);
