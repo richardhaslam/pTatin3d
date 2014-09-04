@@ -2792,7 +2792,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 	
-  ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
+  ierr = pTatin_Stokes_ActivateMonitors(user,snes_picard);CHKERRQ(ierr);
 	
 	/* configure for fieldsplit */
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2865,7 +2865,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		/* configure KSP */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
 		
-    ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
+    ierr = pTatin_Stokes_ActivateMonitors(user,snes_newton);CHKERRQ(ierr);
 		
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);

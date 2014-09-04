@@ -55,11 +55,6 @@ PetscLogEvent PTATIN_MaterialPointPopulationControlInsert;
 PetscLogEvent PTATIN_MaterialPointPopulationControlRemove;
 
 
-typedef struct _p_PSortCtx {
-	long int point_index;
-	long int cell_index;
-} PSortCtx;
-
 int sort_ComparePSortCtx(const void *dataA,const void *dataB)
 {
 	PSortCtx *pointA;
