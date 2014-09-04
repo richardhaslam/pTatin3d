@@ -477,7 +477,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				
 			case PLASTIC_MISES: {
 				double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
-				double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield;
+				double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield_inf;
 				
 				switch (MatType_data[ region_idx ].softening_type) {
 					case SOFTENING_NONE: {
@@ -507,7 +507,8 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
                         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
 				}
 				
-				//MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
+				/* mark all markers as not yielding */
+                MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_NONE);
 				
 				/* strain rate */
 				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
@@ -520,11 +521,8 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 					ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
 					
 					eta_mp = 0.5 * tau_yield_mp / inv2_D_mp;
-					//if 	(eta_mp < 1.e-10) {
-					//	PetscPrintf(PETSC_COMM_WORLD," region_idx %d tau_yield_mp = %e inv2_D_mp = %e ux = %e,uy = %e,uz = %e \n",region_idx,tau_yield_mp,inv2_D_mp,ux,uy,uz);
-					//}
 					npoints_yielded++;
-					//  MPntPStokesPlSetField_yield_indicator(mpprop_pls,1);
+					MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_MISES);
 				}
 			}
 				break;
@@ -572,13 +570,13 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				}
 				
 				/* mark all markers as not yielding */
-				MPntPStokesPlSetField_yield_indicator(mpprop_pls,0);
+				MPntPStokesPlSetField_yield_indicator(mpprop_pls,YTYPE_NONE);
 				
 				/* compute yield surface */
 				tau_yield_mp = sin(phi) * pressure_mp + Co * cos(phi);
 				
 				/* identify yield type */
-				yield_type = 1;
+				yield_type = YTYPE_MISES;
 				
 				if ( tau_yield_mp < PlasticDP_data[region_idx].tens_cutoff) {
 					/* failure in tension cutoff */
