@@ -121,7 +121,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	
 	/* insert options */
 	/* visc_type */
-	value = 1.0; /* default - not required is nothing happens if option not found */
+	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[0],region_id);
 	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -131,7 +131,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	}
 	
 	/* plastic_type */
-	value = 1.0; /* default - not required is nothing happens if option not found */
+	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[1],region_id);
 	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -141,7 +141,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	}
 	
 	/* softening_type */
-	value = 1.0; /* default - not required is nothing happens if option not found */
+	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[2],region_id);
 	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -151,7 +151,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	}
 	
 	/* density_type */
-	value = 1.0; /* default - not required is nothing happens if option not found */
+	value = 1; /* default - not required is nothing happens if option not found */
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[3],region_id);
 	ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
 	if (found) {
@@ -1949,14 +1949,14 @@ PetscErrorCode MaterialConstantsSetDefaults(DataBucket db)
 	ierr = MaterialConstantsSetDefault_MaterialType(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_ViscosityConst(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_ViscosityZ(db);CHKERRQ(ierr);
-    	ierr = MaterialConstantsSetDefault_ViscosityFK(db);CHKERRQ(ierr);
-    	ierr = MaterialConstantsSetDefault_ViscosityArrh(db);CHKERRQ(ierr);
+    ierr = MaterialConstantsSetDefault_ViscosityFK(db);CHKERRQ(ierr);
+    ierr = MaterialConstantsSetDefault_ViscosityArrh(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_PlasticMises(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_PlasticDP(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsSetDefault_DensityConst(db);CHKERRQ(ierr);
-    	ierr = MaterialConstantsSetDefault_DensityBoussinesq(db);CHKERRQ(ierr);
-    	ierr = MaterialConstantsSetDefault_SoftLin(db);CHKERRQ(ierr);
-    	ierr = MaterialConstantsSetDefault_SoftExpo(db);CHKERRQ(ierr);
+    ierr = MaterialConstantsSetDefault_DensityBoussinesq(db);CHKERRQ(ierr);
+    ierr = MaterialConstantsSetDefault_SoftLin(db);CHKERRQ(ierr);
+    ierr = MaterialConstantsSetDefault_SoftExpo(db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -1980,7 +1980,6 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 	DataFieldAccessPoint(PField,region_id,(void**)&data);
 	
 	MaterialConst_MaterialTypeGetField_visc_type(data,&value);
-	
 	switch (value) {
 		case VISCOUS_CONSTANT:
 			ierr= MaterialConstantsSetFromOptions_ViscosityConst(db,model_name,region_id,essential);CHKERRQ(ierr);
@@ -2001,6 +2000,7 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
 			break;
 	}
+    
 	MaterialConst_MaterialTypeGetField_plastic_type(data,&value);
 	switch (value) {
 		case PLASTIC_NONE:
@@ -2009,9 +2009,15 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 		case PLASTIC_MISES:
 			ierr= MaterialConstantsSetFromOptions_PlasticMises(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break;    
+		case PLASTIC_MISES_H:
+			ierr= MaterialConstantsSetFromOptions_PlasticMises(db,model_name,region_id,essential);CHKERRQ(ierr);
+			break;
 		case PLASTIC_DP:
 			ierr= MaterialConstantsSetFromOptions_PlasticDP(db,model_name,region_id,essential);CHKERRQ(ierr);
 			break;    
+		case PLASTIC_DP_H:
+			ierr= MaterialConstantsSetFromOptions_PlasticDP(db,model_name,region_id,essential);CHKERRQ(ierr);
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"PLASTIC TYPE UNDEFINED");
 			break;
@@ -2053,8 +2059,6 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 	
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsScaleAll"
 PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,PetscReal L_star, PetscReal U_star,PetscReal t_star,PetscReal eta_star,PetscReal rho_star,PetscReal P_star)
@@ -2092,6 +2096,7 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
 			break;
 	}
+    
 	MaterialConst_MaterialTypeGetField_plastic_type(data,&value);
 	switch (value) {
 		case PLASTIC_NONE:
@@ -2100,9 +2105,15 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 		case PLASTIC_MISES:
 			ierr = MaterialConstantsScaleValues_PlasticMises(db,region_id,P_star);CHKERRQ(ierr);
 			break;    
+		case PLASTIC_MISES_H:
+			ierr = MaterialConstantsScaleValues_PlasticMises(db,region_id,P_star);CHKERRQ(ierr);
+			break;
 		case PLASTIC_DP:
 			ierr = MaterialConstantsScaleValues_PlasticDP(db,region_id,P_star);CHKERRQ(ierr);
 			break;    
+		case PLASTIC_DP_H:
+			ierr = MaterialConstantsScaleValues_PlasticDP(db,region_id,P_star);CHKERRQ(ierr);
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"PLASTIC TYPE UNDEFINED");
 			break;
@@ -2180,6 +2191,7 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"VISCOUS TYPE UNDEFINED");
 			break;
 	}
+    
 	MaterialConst_MaterialTypeGetField_plastic_type(data,&value);
 	switch (value) {
 		case PLASTIC_NONE:
@@ -2188,9 +2200,15 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 		case PLASTIC_MISES:
 			ierr = MaterialConstantsPrintValues_PlasticMises(db,region_id);CHKERRQ(ierr);
 			break;    
+		case PLASTIC_MISES_H:
+			ierr = MaterialConstantsPrintValues_PlasticMises(db,region_id);CHKERRQ(ierr);
+			break;
 		case PLASTIC_DP:
 			ierr = MaterialConstantsPrintValues_PlasticDP(db,region_id);CHKERRQ(ierr);
 			break;    
+		case PLASTIC_DP_H:
+			ierr = MaterialConstantsPrintValues_PlasticDP(db,region_id);CHKERRQ(ierr);
+			break;
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"PLASTIC TYPE UNDEFINED");
 			break;

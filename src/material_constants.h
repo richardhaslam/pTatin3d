@@ -50,15 +50,17 @@
 typedef enum { 
 	VISCOUS_CONSTANT=0,
 	VISCOUS_FRANKK,
-    	VISCOUS_Z,
+    VISCOUS_Z,
 	VISCOUS_ARRHENIUS,
 	VISCOUS_ARRHENIUS_2
 } ViscousType;
 
 typedef enum { 
-	PLASTIC_NONE=0,
-	PLASTIC_MISES,
-	PLASTIC_DP
+	PLASTIC_NONE      =0,
+	PLASTIC_MISES     =1,
+	PLASTIC_DP        =2,
+	PLASTIC_MISES_H   =3,
+	PLASTIC_DP_H      =4,
 } PlasticType;
 
 typedef enum { 

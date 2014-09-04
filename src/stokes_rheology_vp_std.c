@@ -527,7 +527,53 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 			}
 				break;
 				
+			case PLASTIC_MISES_H: {
+				double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
+				double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield;
+				double eta_flow_mp,eta_yield_mp;
+                
+				switch (MatType_data[ region_idx ].softening_type) {
+					case SOFTENING_NONE: {
+						
+					}
+						break;
+                        
+					case SOFTENING_LINEAR: {
+						float     eplastic;
+						PetscReal emin = SoftLin_data[ region_idx ].eps_min;
+						PetscReal emax = SoftLin_data[ region_idx ].eps_max;
+						
+						MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+						ComputeLinearSoft(eplastic,emin,emax,tau_yield_mp,tau_yield_inf,&tau_yield_mp);
+					}
+						break;
+						
+					case SOFTENING_EXPONENTIAL: {
+						float eplastic;
+						PetscReal emin     = SoftExpo_data[ region_idx ].eps_min;
+						PetscReal efold    = SoftExpo_data[ region_idx ].eps_fold;
+						MPntPStokesPlGetField_plastic_strain(mpprop_pls,&eplastic);
+						ComputeExponentialSoft(eplastic,emin,efold,tau_yield_mp,tau_yield_inf,&tau_yield_mp);
+					}
+						break;
+                    default:
+                        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default SofteningType set. Valid choices are SOFTENING_NONE, SOFTENING_LINEAR, SOFTENING_EXPONENTIAL");
+				}
 				
+                eta_flow_mp = eta_mp;
+                
+				/* strain rate */
+				ComputeStrainRate3d(ux,uy,uz,dNudx,dNudy,dNudz,D_mp);
+                ComputeSecondInvariant3d(D_mp,&inv2_D_mp);
+                
+                eta_yield_mp = 0.5 * tau_yield_mp / inv2_D_mp;
+
+                eta_mp = 1.0/ (  1.0/eta_flow_mp + 1.0/eta_yield_mp );
+                
+                npoints_yielded++;
+			}
+				break;
+
 			case PLASTIC_DP: {
 				double    tau_yield_mp;
 				short     yield_type;
@@ -605,6 +651,10 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 			}
 				break;
 
+            case PLASTIC_DP_H: {
+
+            }
+                
             default:
                 SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"No default PlasticType set. Valid choices are PLASTIC_NONE, PLASTIC_MISES, PLASTIC_DP");
 		}
@@ -671,8 +721,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	
 	PetscGetTime(&t1);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n",
-                min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
+	//PetscPrintf(PETSC_COMM_WORLD,"Update non-linearities (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_yielded %d; cpu time %1.2e (sec)\n", min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_yielded_g, t1-t0 );
 	
 	
 	PetscFunctionReturn(0);
@@ -730,7 +779,7 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	PetscLogDouble    t0,t1;
 	RheologyConstants *rheology;
 	double            eta_mp;
-	int               npoints_cutoff,npoints_cutoff_g;
+	int               npoints_cutoff[2],npoints_cutoff_g[2];
 	
 	
 	PetscFunctionBegin;
@@ -750,7 +799,8 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	/* marker loop */
 	min_eta = 1.0e100;
 	max_eta = 1.0e-100;
-	npoints_cutoff = 0;
+	npoints_cutoff[0] = 0;
+	npoints_cutoff[1] = 0;
 	
 	min_cutoff = rheology->eta_lower_cutoff_global;
 	max_cutoff = rheology->eta_upper_cutoff_global;
@@ -775,8 +825,8 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 		
 		MPntPStokesGetField_eta_effective(mpprop_stokes,&eta_mp);
 		
-		if (eta_mp > max_cutoff_l) { eta_mp = max_cutoff_l; npoints_cutoff++; }
-		if (eta_mp < min_cutoff_l) { eta_mp = min_cutoff_l; npoints_cutoff++; }
+		if (eta_mp > max_cutoff_l) { eta_mp = max_cutoff_l; npoints_cutoff[1]++; }
+		if (eta_mp < min_cutoff_l) { eta_mp = min_cutoff_l; npoints_cutoff[0]++; }
 		
 		/* update viscosity on marker */
 		MPntPStokesSetField_eta_effective(mpprop_stokes,eta_mp);
@@ -791,13 +841,13 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 	
 	ierr = MPI_Allreduce(&min_eta,&min_eta_g,1, MPI_DOUBLE, MPI_MIN, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&max_eta,&max_eta_g,1, MPI_DOUBLE, MPI_MAX, PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&npoints_cutoff,&npoints_cutoff_g,1, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(npoints_cutoff,npoints_cutoff_g,2, MPI_INT, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	PetscGetTime(&t1);
 	
-	PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff %d; cpu time %1.2e (sec)\n",
-                min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g, t1-t0 );
-	
+    if ((npoints_cutoff_g[0] > 0) || (npoints_cutoff_g[1] > 0)) {
+        PetscPrintf(PETSC_COMM_WORLD,"Apply viscosity cutoff (VPSTD) [mpoint]: (min,max)_eta %1.2e,%1.2e; log10(max/min) %1.2e; npoints_cutoff (%d,%d); cpu time %1.2e (sec)\n", min_eta_g, max_eta_g, log10(max_eta_g/min_eta_g), npoints_cutoff_g[0],npoints_cutoff_g[1], t1-t0 );
+    }
 	
 	PetscFunctionReturn(0);
 }
