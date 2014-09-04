@@ -85,7 +85,6 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     modeldata->model_type = CASE_1A;
     modeldata->slab_length = 250.0;
     
-    
     PetscOptionsGetInt(PETSC_NULL,"-model_sd3d_mtype",&mtype,0);
     switch (mtype) {
         case 0:
@@ -182,7 +181,6 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     
     {
         char logfile[PETSC_MAX_PATH_LEN];
-        double ms2cm;
         
         sprintf(logfile,"%s/sd3d.logfile",ptatinctx->outputpath);
         ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&modeldata->logviewer);CHKERRQ(ierr);
@@ -223,10 +221,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         PetscViewerASCIIPrintf(modeldata->logviewer,"| %16.20s ","volume (m^3)");
         
         PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
-        
     }
-
-    
     PetscFunctionReturn(0);
 }
 
@@ -261,9 +256,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *mode
 PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBucket materialpoint_db,SD3DCtx *modeldata)
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
 	MaterialConst_DensityConst      *DensityConst_data;
-	DataField                       PField_DensityConst,PField_ViscArrh;
+	DataField                       PField_DensityConst;
     PetscReal  slab_length,Ly_slab,Lz_slab,dys,dzs;
     PetscInt   nyp,nzp,j,k;
 	double         tolerance;
@@ -472,7 +466,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_BASE_IDX,vert_coord);CHKERRQ(ierr);
     }
 
-
     { /* slab front face */
         PetscInt Nxp2[] = { 11, 25 };
         PetscReal vert_coord[4*3];
@@ -505,8 +498,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_BACK_FACE_IDX,vert_coord);CHKERRQ(ierr);
     }
 
-    
-    
     { /* slab face */
         PetscInt Nxp2[] = { 2*25, 2*25 };
         PetscReal vert_coord[4*3];
@@ -538,7 +529,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         
         ierr = SwarmMPntStd_CoordAssignment_InsertWithinPlane(materialpoint_db,dav,Nxp2,SLAB_EDGE_CENTER_IDX,vert_coord);CHKERRQ(ierr);
     }
-    
     
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
@@ -875,7 +865,6 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
     
-    
     /* get the velocity mesh */
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -1037,7 +1026,7 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
 PetscErrorCode pTatinModelRegister_SD3D(void)
 {
 	SD3DCtx         *data;
-	pTatinModel     m,model;
+	pTatinModel     m;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;

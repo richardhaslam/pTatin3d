@@ -225,18 +225,24 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 
 		case VSBC_Test:
 		{
-			BCList bclist = user->stokes_ctx->u_bclist;
-			DM dav = user->stokes_ctx->dav;
+            PhysCompStokes stokes;
+			BCList         bclist;
+			DM             dav;
 			
+            
+            ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+            bclist = stokes->u_bclist;
+            ierr = PhysCompStokesGetDMs(stokes,&dav,PETSC_NULL);CHKERRQ(ierr);
+            
 			/* free slip */
 			/*
 			// passed
-			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,FRONT_FACE);CHKERRQ(ierr);
-			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,BACK_FACE);CHKERRQ(ierr);
-			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,EAST_FACE);CHKERRQ(ierr);
-			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,NORTH_FACE);CHKERRQ(ierr);
-			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,SOUTH_FACE);CHKERRQ(ierr);
-			ierr = DirichletBC_FreeSlip(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,WEST_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(bclist,dav,FRONT_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(bclist,dav,EAST_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(bclist,dav,NORTH_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(bclist,dav,SOUTH_FACE);CHKERRQ(ierr);
+			ierr = DirichletBC_FreeSlip(bclist,dav,WEST_FACE);CHKERRQ(ierr);
 			 */
 			
 			/* strain rate xx, fixed z boundaries, free slip base and free surface */
@@ -277,11 +283,9 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 			
 
             /* free slip, free surface, normal stress on IMAX */
-			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 			//
             {
-                PhysCompStokes stokes;
-                DM dav;
                 SurfaceQuadrature surfQ_east;
                 QPntSurfCoefStokes *surfQ_coeff,*surfQ_cell_coeff;
                 PetscInt c,q,nqp,nfaces,*element_list;
@@ -290,7 +294,7 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
                 DM cda;
                 Vec gcoords;
                 PetscReal *LA_gcoords;
-                PetscInt nel,nen_u,e,k;
+                PetscInt nel,nen_u;
                 const PetscInt *elnidx_u;
                 PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
                 
@@ -365,10 +369,10 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
             //
 			//ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
             
-			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
             
             
 		}
@@ -536,7 +540,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
                 ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
                 
 				break;
-
 		}
 	}	
 	
@@ -547,9 +550,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_ViscousSinker"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_ViscousSinker(pTatinCtx c,void *ctx)
 {
-	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -594,7 +594,6 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(pTatin
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -679,7 +678,6 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(pTatin
 PetscErrorCode compute_inclusion_origins(PetscInt ninclusions,PetscReal rmax,PetscReal Lx,PetscReal Ly,PetscReal Lz,
 																				 PetscReal **_pos)
 {
-	PetscErrorCode ierr;
 	PetscReal      *pos;
 	PetscInt       p,found=0,overlap,attempt,loops=0;
 	
@@ -1011,7 +1009,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_ViscousSinker"
 PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
 	Vec velocity,pressure;
 	DM stokes_pack,dav,dap;
 	PetscErrorCode ierr;
@@ -1042,7 +1039,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void
 #define __FUNCT__ "ModelOutput_ViscousSinker"
 PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1068,12 +1064,10 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 #define __FUNCT__ "ModelInitialCondition_ViscousSinker"
 PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
 	DM stokes_pack,dau,dap;
 	Vec velocity,pressure;
-	PetscReal rho0;
-	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-	DMDAVecTraverse3d_InterpCtx IntpCtx;
+	//DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
+	//DMDAVecTraverse3d_InterpCtx IntpCtx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1135,7 +1129,7 @@ PetscErrorCode ModelDestroy_ViscousSinker(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_ViscousSinker(void)
 {
 	ModelViscousSinkerCtx *data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

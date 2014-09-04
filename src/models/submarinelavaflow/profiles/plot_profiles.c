@@ -9,7 +9,7 @@ int main(int nargs,char *args[])
 	double x,x0,x1,dx;
 	double phi_0,phi_f,Ts,Te,phi_max;
 	double eta0,gamma;
-	double T,phi,sy,eta,eta_effective;
+	double T,phi,sy,eta;
 	
 	x0 = 0.0;
 	x1 = 1.0;

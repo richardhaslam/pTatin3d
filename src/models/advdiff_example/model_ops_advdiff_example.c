@@ -54,10 +54,7 @@ PetscReal diffusion_scale = 1.0;
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_AdvDiffExample"
 PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
-{
-	PetscBool      flg;
-	PetscErrorCode ierr;
-	
+{	
 	PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -160,7 +157,6 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 		ierr = DMDABCListTraverse3d(bclist,daT,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&val);CHKERRQ(ierr);
 	}
 	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -169,14 +165,12 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyBoundaryConditionMG_AdvDiffExample(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	PetscInt       n;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	for (n=0; n<nl; n++) {
 		/* Define boundary conditions for each level in the MG hierarchy */
-		
 	}	
 	
 	PetscFunctionReturn(0);
@@ -186,8 +180,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_AdvDiffExample(PetscInt nl,BCList b
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_AdvDiffExample"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -227,7 +219,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
-
 	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mp_points,0,0);
 	
@@ -263,12 +254,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 		if (position[2] < 0.9) {
 			MPntStdSetField_phase_index(material_point,3);
 		}
-		
 	}
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-	
-	
 	
 	/* define thermal params */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
@@ -310,7 +298,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 				//MPntPEnergySetField_diffusivity(mpprop_energy,position[0]*position[1]+position[2]*position[2]+1.0);
 				MPntPEnergySetField_heat_source(mpprop_energy,0.0);
 			}
-			
 		}
 		DataFieldRestoreAccess(PField_std);
 		DataFieldRestoreAccess(PField_energy);
@@ -385,7 +372,6 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 		
 	}
 	
-	
 	/* note - pressure has no coordinates set, so use ijk traversal */
 	p_init = 0.0;
 	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_Constant,(void*)&p_init);CHKERRQ(ierr);
@@ -450,8 +436,6 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_AdvDiffExample"
 PetscErrorCode ModelApplyUpdateMeshGeometry_AdvDiffExample(pTatinCtx c,Vec X,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -521,7 +505,6 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 		ierr = pTatinOutputParaViewMarkerFields(c->stokes_ctx->stokes_pack,materialpoint_db,nf,mp_prop_list,c->outputpath,name);CHKERRQ(ierr);
 	}
 	
-	
 	been_here = 1;
 	PetscFunctionReturn(0);
 }
@@ -530,8 +513,6 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 #define __FUNCT__ "ModelDestroy_AdvDiffExample"
 PetscErrorCode ModelDestroy_AdvDiffExample(pTatinCtx c,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -542,7 +523,7 @@ PetscErrorCode ModelDestroy_AdvDiffExample(pTatinCtx c,void *ctx)
 #define __FUNCT__ "pTatinModelRegister_AdvDiffExample"
 PetscErrorCode pTatinModelRegister_AdvDiffExample(void)
 {
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

@@ -196,7 +196,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void 
 PetscErrorCode ThermalSB_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ThermalSBData *modelctx)
 {
     ThermalSBData  *modeldata = (ThermalSBData*)modelctx;
-    PetscReal      exx,eyy,ezz;
+    PetscReal      exx;
     PetscReal      Lx,Ly,vxE,vyN,gmin[3],gmax[3];
 	PetscErrorCode ierr;
 	
@@ -276,7 +276,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ThermalSB(PetscInt nl,BCList bclist
 	PetscInt         n;
 	PetscErrorCode   ierr;
 	
-	
 	PetscFunctionBegin;
 	
 	/* Define velocity boundary conditions on each level within the MG hierarchy */
@@ -300,7 +299,6 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    
     
     if (modeldata->output_si) {
         /* get the velocity mesh */
@@ -332,7 +330,6 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
      ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
      */
     
-
     if (modeldata->output_si) {
         /* undo the coordinate scaling of velocity mesh <note, local and ghosted coordinates should be scaled> */
         ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
@@ -373,7 +370,6 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         ierr = pTatin3d_ModelOutput_MarkerCellFields(ptatinctx,nf,mp_prop_list,prefix);CHKERRQ(ierr);
     }	
 	
-    
     /* standard viewer for temperature */
 	ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
 	if (active_energy) {
@@ -385,8 +381,6 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(ptatinctx,temperature,prefix);CHKERRQ(ierr);
 	}
-
-    
 	PetscFunctionReturn(0);
 }
 
@@ -406,7 +400,6 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-    
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
     ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
@@ -502,7 +495,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 		ierr = MaterialPointSet_viscosity(mpX,  p, 1.0);CHKERRQ(ierr);
 		ierr = MaterialPointSet_density(mpX,    p, DensityConst_data[0].density);CHKERRQ(ierr);
 
-	
         ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
         ierr = MaterialPointSet_heat_source(mpX,p,0.0);CHKERRQ(ierr);
     }
@@ -536,7 +528,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
             ierr = MaterialPointSet_heat_source(mpX,p,0.0);CHKERRQ(ierr);
         }
 	}
-	
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -546,7 +537,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_ThermalSB"
 PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ctx)
 {
-	ThermalSBData    *data = (ThermalSBData*)ctx;
 	PetscReal        step,gmin[3],gmax[3];
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
@@ -570,7 +560,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ct
 
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-    
     PetscFunctionReturn(0);
 }
     
@@ -579,7 +568,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ct
 PetscErrorCode pTatinModelRegister_ThermalSB(void)
 {
 	ThermalSBData   *data;
-	pTatinModel     m,model;
+	pTatinModel     m;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;

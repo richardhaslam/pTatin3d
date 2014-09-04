@@ -49,7 +49,6 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
 	DataBucket         materialconstants;
     PetscInt           regionidx,midx;
     PetscReal          n_exp,F,preexp_A;
-    PetscInt           mtype;
     PetscBool          flg;
 	PetscErrorCode     ierr;
     
@@ -145,7 +144,6 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
     /* --------------------------------- logfile --------------------------------- */
     {
         char logfile[PETSC_MAX_PATH_LEN];
-        double ms2cm;
         
         sprintf(logfile,"%s/model.logfile",ptatinctx->outputpath);
         ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&modeldata->logviewer);CHKERRQ(ierr);
@@ -159,10 +157,8 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
         PetscViewerASCIIPrintf(modeldata->logviewer,"#    p*     = %1.4e (Pa) \n",modeldata->p_bar);
         PetscViewerASCIIPrintf(modeldata->logviewer,"#    rho.g* = %1.4e (N/m/m) \n",modeldata->rhs_scale);
         PetscViewerASCIIPrintf(modeldata->logviewer,"\n");
-        
     }
 
-    
     PetscFunctionReturn(0);
 }
 
@@ -207,7 +203,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
 	PetscErrorCode   ierr;
-    PetscReal        slab_length;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -246,7 +241,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
         }
 	}
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
-	
     
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
@@ -348,7 +342,6 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
     
-    
     /* get the velocity mesh */
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -417,7 +410,6 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
     /* SD3D output */
     ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
     
-    
 	PetscFunctionReturn(0);
 }
 
@@ -426,7 +418,7 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
 PetscErrorCode pTatinModelRegister_PAS(void)
 {
 	ModelCtx        *data;
-	pTatinModel     m,model;
+	pTatinModel     m;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;

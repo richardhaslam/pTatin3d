@@ -41,8 +41,10 @@
 #include "MPntPStokes_def.h"
 #include "MPntPStokesPl_def.h"
 #include "ptatin3d_energy.h"
+#include "energy_output.h"
 #include "model_utils.h"
 #include "dmda_iterator.h"
+#include "mesh_update.h"
 
 #include "ptatin_models.h"
 
@@ -51,18 +53,18 @@
 PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx);
 PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, void *ctx );
-PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *ctx ); 
+PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *ctx );
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Riftrh"
 PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscBool flg;
-	RheologyConstants      *rheology;
+	RheologyConstants *rheology;
 	DataBucket materialconstants = c->material_constants;
-	PetscBool nondim, energy_exists, use_energy;
-	PetscScalar vx,vy,vz,Sx,Sy,Sz;
-	PetscScalar vx_down,dh_vx;
+	PetscBool nondim,use_energy;
+	PetscScalar dh_vx;
 	PetscInt regionidx;
 	PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal preexpA,Ascale,entalpy,Vmol,nexp,Tref;
@@ -466,7 +468,6 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelRiftrh_DefineBCList"
 PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRiftrhCtx *data)
@@ -474,9 +475,8 @@ PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mode
 	PetscScalar    vxl,vxr,vybottom,zero,height,length;
 	PetscInt       vbc_type;
 	PetscErrorCode ierr;
-	PetscReal MeshMin[3],MeshMax[3],domain_height;
+	PetscReal MeshMin[3],MeshMax[3];
 	DM stokes_pack,dau,dap;
-	
 	
 	
 	PetscFunctionBegin;
@@ -488,7 +488,6 @@ PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mode
 	zero=0.;
 	//    vbc_type = 1; /* in / out flow condition on the sides */
 	vbc_type = 2; /* outflow condition on the sides, inflow condition on the base */
-	
 	
 	if (vbc_type == 1) {
 		
@@ -534,8 +533,6 @@ PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mode
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	}
 	
-	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -545,9 +542,7 @@ PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, v
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
 	PetscScalar vx,dh_vx;
-	PetscReal time,Dprime,cc;
 	ModelRiftrhCtx *datal = (ModelRiftrhCtx*)data;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
@@ -569,9 +564,7 @@ PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, v
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
 	PetscScalar vx,dh_vx;
-	PetscReal time,Dprime,cc;
 	ModelRiftrhCtx *datal = (ModelRiftrhCtx*)data;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
@@ -586,8 +579,6 @@ PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, v
 	*value = vx;
 	return impose_dirichlet;
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_Riftrh"
@@ -642,13 +633,13 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Riftrh(PetscInt nl,BCList bclist[],
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian"
 // adding particles on the lower boundary to accommodate inflow
 // adding particles on the left and right boundary to accommodate inflow
-
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx)
 {
+#if 0
 	ModelRiftrhCtx     *data = (ModelRiftrhCtx*)ctx;
 	PhysCompStokes     stokes;
 	DM                 stokes_pack,dav,dap;
@@ -662,15 +653,13 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-#if 0	
+
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-	
-	
+		
 	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
-	
-	
+		
 	/* create face storage for markers */
 	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
 	
@@ -720,14 +709,12 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_Riftrh"
 PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscErrorCode ierr;
-	
 	
 	PetscFunctionBegin;
 	
@@ -744,7 +731,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
+	PetscInt               p,n_mp_points;
 	PetscInt               notch_type;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;
@@ -758,7 +745,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
@@ -884,14 +870,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 /* ASSIGN INITIAL VISCOSITY BASED ON INITIAL STRAIN RATE PRESSURE */
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec X,void *ctx)
 {
-	ModelRiftrhCtx               *data = (ModelRiftrhCtx*)ctx;
 	DM                           stokes_pack,dau,dap;
 	PhysCompStokes               stokes;
 	Vec                          Uloc,Ploc;
 	PetscScalar                  *LA_Uloc,*LA_Ploc;
-	DataField                    PField;
-	MaterialConst_MaterialType   *truc;
-	PetscInt                     regionidx;
 	PetscErrorCode               ierr;
 	
 	PetscFunctionBegin;
@@ -919,13 +901,11 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec 
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian"
 /* DEFINE ALE */
 PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
 	PetscReal        step;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
@@ -1022,7 +1002,7 @@ PetscErrorCode ModelDestroy_Riftrh(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_Riftrh(void)
 {
 	ModelRiftrhCtx *data;
-	pTatinModel m,model;
+	pTatinModel    m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

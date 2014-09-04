@@ -685,7 +685,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_GeoMod2008_exp2"
 PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,void *ctx)
 {
-	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
 	DataBucket     material_points;
 	MPAccess       mpX;
 	int            p,n_mp_points;
@@ -731,7 +730,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,voi
 		ierr = MaterialPointSet_phase_index(mpX,p,region_index);CHKERRQ(ierr);
 	}
 	ierr = MaterialPointRestoreAccess(material_points,&mpX);CHKERRQ(ierr);
-	
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -785,7 +783,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,voi
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_GeoMod2008"
 PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ctx)
@@ -806,7 +803,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ct
 		case 2:
 			ierr = ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(c,ctx);CHKERRQ(ierr);
 			break;
-			
 	}
 
 	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
@@ -816,14 +812,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialSolution_GeoMod2008"
 PetscErrorCode ModelApplyInitialSolution_GeoMod2008(pTatinCtx c,Vec X,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -844,8 +836,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_GeoMod2008(pTatinCtx c,Vec X,void *c
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	
+		
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -888,7 +879,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_GeoMod2008(pTatinCtx user,
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	
@@ -912,7 +902,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_GeoMod2008(pTatinCtx user,
 #define __FUNCT__ "ModelOutput_GeoMod2008"
 PetscErrorCode ModelOutput_GeoMod2008(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
 	DataBucket     materialpoint_db;
 	PetscErrorCode ierr;
 	
@@ -958,7 +947,7 @@ PetscErrorCode ModelDestroy_GeoMod2008(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_GeoMod2008(void)
 {
 	ModelCtxGeoMod2008 data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

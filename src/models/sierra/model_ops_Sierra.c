@@ -1,8 +1,8 @@
 /*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
- **    Copyright (c) 2012, 
+ **    Copyright (c) 2012,
  **        Dave A. May [dave.may@erdw.ethz.ch]
- **        Geophysical Fluid Dynamics, 
+ **        Geophysical Fluid Dynamics,
  **        Department of Earth Sciences,
  **        ETH Zürich,
  **        Sonneggstrasse 5,
@@ -49,18 +49,14 @@
 #define __FUNCT__ "ModelInitialize_Sierra"
 PetscErrorCode ModelInitialize_Sierra(pTatinCtx c,void *ctx)
 {
-  RheologyConstants      *rheology;
-	PetscBool flg;
-	PetscErrorCode ierr;
+    RheologyConstants      *rheology;
 	
 	PetscFunctionBegin;
-
-
+    
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-  rheology                = &c->rheology_constants;
+    rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VISCOUS;
-	
 	
 	PetscFunctionReturn(0);
 }
@@ -71,10 +67,10 @@ PetscErrorCode ModelApplyBoundaryCondition_Sierra(pTatinCtx user,void *ctx)
 {
 	PetscScalar zero = 0.0;
 	PetscErrorCode ierr;
-
+    
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+    
 	//	switch (data->boundary_conditon_type) {
 	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -110,7 +106,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Sierra(PetscInt nl,BCList bclist[],
 		
 		ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist[n],dav[n],DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	}	
+	}
 	
 	PetscFunctionReturn(0);
 }
@@ -119,8 +115,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Sierra(PetscInt nl,BCList bclist[],
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Sierra"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Sierra(pTatinCtx c,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -136,9 +130,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Sierra(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+    
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,0.0,10.0, 0.0,5.0, 0.0,10.0);CHKERRQ(ierr);
-
+    
 	PetscFunctionReturn(0);
 }
 
@@ -146,7 +140,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Sierra(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Sierra"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Sierra(pTatinCtx c,void *ctx)
 {
-	int                    e,p,n_mp_points;
+	int                    p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase,f;
@@ -194,13 +188,13 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Sierra(pTatinCtx c,void *ctx)
 	
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_stokes);
-
+    
 	/* load data file */
-//#if 0	
+    //#if 0
 	for (f=0; f<64; f++) {
 		char coordfile[256];
 		char regionfile[256];
-
+        
 		sprintf(coordfile, "./models/Sierra/datafiles/coords_picIntegrationPoints.%d.00000_bin.dat",f);
 		sprintf(regionfile,"./models/Sierra/datafiles/Material_Index_picIntegrationPoints.%d.00000_bin.dat",f);
 		
@@ -212,9 +206,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Sierra(pTatinCtx c,void *ctx)
 		}
 		//
 	}
-//#endif	
-
-//	ierr = MaterialPointDataBasicLoadIntoListFromFile(db,c->stokes_ctx->dav,PETSC_FALSE,"./models/Sierra/datafiles/coords_picIntegrationPoints.63.00000_bin.dat","./models/Sierra/datafiles/Material_Index_picIntegrationPoints.63.00000_bin.dat");CHKERRQ(ierr);
+    //#endif
+    
+    //	ierr = MaterialPointDataBasicLoadIntoListFromFile(db,c->stokes_ctx->dav,PETSC_FALSE,"./models/Sierra/datafiles/coords_picIntegrationPoints.63.00000_bin.dat","./models/Sierra/datafiles/Material_Index_picIntegrationPoints.63.00000_bin.dat");CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -223,8 +217,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Sierra(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Sierra"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Sierra(pTatinCtx c,Vec X,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -240,7 +232,7 @@ PetscErrorCode ModelOutput_Sierra(pTatinCtx c,Vec X,const char prefix[],void *ct
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
+    
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
 	
@@ -251,8 +243,6 @@ PetscErrorCode ModelOutput_Sierra(pTatinCtx c,Vec X,const char prefix[],void *ct
 #define __FUNCT__ "ModelDestroy_Sierra"
 PetscErrorCode ModelDestroy_Sierra(pTatinCtx c,void *ctx)
 {
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -267,17 +257,17 @@ PetscErrorCode ModelDestroy_Sierra(pTatinCtx c,void *ctx)
 #define __FUNCT__ "pTatinModelRegister_Sierra"
 PetscErrorCode pTatinModelRegister_Sierra(void)
 {
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	/* register user model */
 	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
-
+    
 	/* Set name, model select via -ptatin_model NAME */
 	ierr = pTatinModelSetName(m,"sierra");CHKERRQ(ierr);
-
+    
 	/* Set model data */
 	//ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 	

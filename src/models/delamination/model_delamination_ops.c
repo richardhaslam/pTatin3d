@@ -43,12 +43,13 @@
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
 #include "dmda_iterator.h"
+#include "mesh_update.h"
 
 #include "delamination_ctx.h"
 
 PetscReal cm_per_year2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
 
-
+PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx);
 
 
 #undef __FUNCT__
@@ -58,7 +59,6 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
 	RheologyConstants      *rheology;
 	PetscBool flg;
-	PetscReal max_eta;
 	PetscScalar vx,vy,vz,Sx_bar,Sy_bar,Sz_bar;
 	PetscInt n;
 	PetscErrorCode ierr;
@@ -131,7 +131,6 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_delamination_Oy %+1.4e [SI] -model_delamination_Ly : %+1.4e [SI]\n", data->Oy ,data->Ly );
 	PetscPrintf(PETSC_COMM_WORLD,"  input: -model_delamination_Oz %+1.4e [SI] -model_delamination_Lz : %+1.4e [SI]\n", data->Oz ,data->Lz );
 	
-	
 	/* velocity cm/y */
 	vx = 0.0;
 	vz = 0.0;
@@ -147,7 +146,6 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"  -model_delamination_vx [m/s]:  %+1.4e  -model_delamination_vz [m/s]:  %+1.4e : computed vy [m/s]:  %+1.4e \n", vx,vz,vy);
 	PetscPrintf(PETSC_COMM_WORLD,"  -model_delamination_vx [cm/yr]:%+1.4e  -model_delamination_vz [cm/yr]:%+1.4e : computed vy [cm/yr]:%+1.4e \n", vx/cm_per_year2m_per_sec,vz/cm_per_year2m_per_sec,vy/cm_per_year2m_per_sec);
-	
 	
 	/* parse from command line */
 	rheology->nphases_active = 5;
@@ -244,7 +242,6 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelDelamination_DefineBCList"
 PetscErrorCode ModelDelamination_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelDelaminationCtx *data)
@@ -309,14 +306,10 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Delamination(PetscInt nl,BCList bcl
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Delamination"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Delamination(pTatinCtx c,void *ctx)
 {
-	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -344,12 +337,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Delamination(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
-	PetscInt               e,p,n_mp_points;
+	PetscInt               p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
-	PetscErrorCode ierr;
-	PetscScalar         y_midmantle = -300.0e3;  
+	PetscScalar         y_midmantle = -300.0e3;
 	PetscScalar     	y_lab2      = -150.0e3;
 	PetscScalar         y_lab1      = -120.0e3; 
 	PetscScalar     	y_moho      = -40.0e3;
@@ -366,7 +358,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	
 	/* define properties on material points */
 	db = c->materialpoint_db;
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
@@ -376,10 +367,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
 	DataFieldGetAccess(PField_stokes);
 	DataFieldVerifyAccess(PField_stokes,sizeof(MPntPStokes));
-	
-	
+
 	/* m */
-	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
 	for (p=0; p<n_mp_points; p++) {
@@ -475,7 +464,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialCondition_Delamination"
 PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *ctx)
@@ -485,13 +473,11 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	Vec velocity,pressure;
 	PetscReal vxl,vxr,vzb,vzf,vy;
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-	DMDAVecTraverse3d_InterpCtx IntpCtx;
 	PetscReal MeshMin[3],MeshMax[3],domain_height;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
 	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
@@ -518,7 +504,6 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	 */	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	
-	
 	ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
 	domain_height = MeshMax[1] - MeshMin[1];
 	
@@ -528,29 +513,23 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	HPctx.grav       = 10.0;
 	HPctx.rho        = data->rho0;
 	
-	
 	ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
 	ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-	
-	
+		
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Delamination"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Delamination(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
 	PetscReal        step;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
 	Vec              velocity,pressure;
-	PetscInt         M,N,P;
 	
 	PetscErrorCode ierr;
 	
@@ -574,7 +553,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Delamination(pTatinCtx c,Vec X,void 
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Delamination_CheckScales"
 PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
@@ -590,8 +568,7 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
-	
-	
+		
 	ierr = VecDuplicate(X,&Xcopy);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&RHS);CHKERRQ(ierr);
@@ -621,10 +598,7 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecStrideMax(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
 	
-	
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
 	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
 	ierr = FormFunction_Stokes(NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
@@ -641,8 +615,6 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |cont_rhs| = %1.4e \n",fp/sqrt(Np));
 	ierr = DMCompositeRestoreAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
 	
-	
-	
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
@@ -658,8 +630,7 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |div(sigma_ij)| = %1.4e \n",fu/sqrt(Nu));
 	PetscPrintf(PETSC_COMM_WORLD," |div(u_i)|      = %1.4e \n",fp/sqrt(Np));
 	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
+		
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
@@ -675,7 +646,6 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |grad(P)| = %1.4e \n",fu/sqrt(Nu));
 	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
 	
-	
 	ierr = VecDestroy(&Xcopy);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
 	ierr = VecDestroy(&RHS);CHKERRQ(ierr);
@@ -683,12 +653,10 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Delamination"
 PetscErrorCode ModelOutput_Delamination(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -725,7 +693,7 @@ PetscErrorCode ModelDestroy_Delamination(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_Delamination(void)
 {
 	ModelDelaminationCtx *data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -753,9 +721,7 @@ PetscErrorCode pTatinModelRegister_Delamination(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_Delamination);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_Delamination);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_Delamination);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialCondition_Delamination);CHKERRQ(ierr);    
-	
-	
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialCondition_Delamination);CHKERRQ(ierr);
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);

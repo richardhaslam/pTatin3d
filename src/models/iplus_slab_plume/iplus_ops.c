@@ -317,9 +317,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialSolution_iPLUS"
 PetscErrorCode ModelApplyInitialSolution_iPLUS(pTatinCtx c,Vec X,void *ctx)
 {
-	iPLUSCtx         *data = (iPLUSCtx*)ctx;
-	PetscErrorCode   ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -331,7 +328,6 @@ PetscErrorCode ModelApplyInitialSolution_iPLUS(pTatinCtx c,Vec X,void *ctx)
 PetscErrorCode iPLUS_VelocityBC(BCList bclist,DM dav,pTatinCtx c,iPLUSCtx *data)
 {
 	PetscScalar    zero;
-	PetscInt       d;
 	PetscErrorCode ierr;
 	
 	
@@ -526,14 +522,12 @@ PetscErrorCode iPLUSOutput_ComputeDomainVolume(DM dav,PetscReal *volume)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_iPLUS"
 PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	iPLUSCtx         *data = (iPLUSCtx*)ctx;
 	static int       beenhere = 0;
-	FILE             *fp;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
@@ -645,7 +639,7 @@ PetscErrorCode ModelDestroy_iPLUS(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_iPLUS(void)
 {
 	iPLUSCtx       *data;
-	pTatinModel    m,model;
+	pTatinModel    m;
 	PetscErrorCode ierr;
 	
 	

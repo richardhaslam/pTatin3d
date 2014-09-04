@@ -15,7 +15,6 @@
 
 int main(void)
 {
-	double H;
 	double exx,eyy,ezz;
 	double q,q3d,R,kx,kz,k,eta_l,eta_m,nu;
 	double alpha,beta;

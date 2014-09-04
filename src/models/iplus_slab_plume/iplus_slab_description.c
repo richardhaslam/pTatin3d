@@ -101,7 +101,7 @@ PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
 	GeometryObject plate,tail,nose;
 	GeometryObject l_segment,otip,itip,annulus,clip_vert,clip_angle,clipper;
 
-	PetscReal      x0[3],Lx[3],tip_thickness,tip_length,tip_angle;
+	PetscReal      x0[3],Lx[3];
 	PetscReal      l,L,theta_0,h,W,x_0,y_0,z_0;
 	PetscReal      R,r,xT[3];
 	PetscBool      arcuate_slab_ends = PETSC_FALSE;

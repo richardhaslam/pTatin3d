@@ -48,7 +48,6 @@
 
 
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Indentor"
 PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
@@ -56,7 +55,6 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
   RheologyConstants      *rheology;
 	PetscBool flg;
-	PetscReal max_eta;
 	PetscInt n;
 	PetscReal km2m,Ma2sec,cm_per_yer2m_per_sec;
 	PetscErrorCode ierr;
@@ -292,7 +290,6 @@ PetscBool BCListEvaluator_indentor( PetscScalar position[], PetscScalar *value, 
 #define __FUNCT__ "ModelApplyBoundaryCondition_Indentor"
 PetscErrorCode ModelApplyBoundaryCondition_Indentor(pTatinCtx user,void *ctx)
 {
-	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
 	PetscScalar zero = 0.0;
 	PetscErrorCode ierr;
 
@@ -328,7 +325,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Indentor(pTatinCtx user,void *ctx)
 #define __FUNCT__ "ModelApplyBoundaryConditionMG_Indentor"
 PetscErrorCode ModelApplyBoundaryConditionMG_Indentor(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
-	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
 	PetscScalar zero = 0.0;
 	PetscInt n;
 	PetscErrorCode ierr;
@@ -363,14 +359,10 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Indentor(PetscInt nl,BCList bclist[
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Indentor"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Indentor(pTatinCtx c,void *ctx)
 {
-	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -398,11 +390,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Indentor(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 {
 	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
-	int                    e,p,n_mp_points;
+	int                    p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -476,9 +467,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Indentor"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Indentor(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -599,7 +587,6 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 #define __FUNCT__ "ModelOutput_Indentor"
 PetscErrorCode ModelOutput_Indentor(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -617,12 +604,13 @@ PetscErrorCode ModelOutput_Indentor(pTatinCtx c,Vec X,const char prefix[],void *
 #define __FUNCT__ "ModelDestroy_Indentor"
 PetscErrorCode ModelDestroy_Indentor(pTatinCtx c,void *ctx)
 {
-	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
+	ModelIndentorCtx *data;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
+    data = (ModelIndentorCtx*)ctx;
+    
 	/* Free contents of structure */
 	
 	/* Free structure */
@@ -636,7 +624,7 @@ PetscErrorCode ModelDestroy_Indentor(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_Indentor(void)
 {
 	ModelIndentorCtx *data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

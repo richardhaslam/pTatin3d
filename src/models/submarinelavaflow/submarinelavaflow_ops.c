@@ -438,14 +438,13 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 	MPI_Comm       comm;
 	PetscInt       M,N,P,pI,pJ,pK,rI,rJ,rK,rIJ,lmx,lmy,lmz;
 	PetscInt       npx,pi,pk,pni,pnk;
-	PetscReal      dx,dy,dz,inlet_x0,inlet_x1,vy;
+	PetscReal      dx,dz,inlet_x0,inlet_x1;
 	PetscMPIInt    rank;
 	const PetscInt *elnidx_u;
 	PetscInt       nel,nen_u,pcount;
 	DM             cda;
 	Vec            gcoords;
 	PetscReal      *LA_gcoords;
-	static PetscReal displacement = 0.0;
 	DataBucket     db;
 	DataField      PField_std,PField_stokes,PField_energy;
 	PetscReal      gmin[3],gmax[3],lmin[3],lmax[3];
@@ -568,7 +567,6 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 																		1,&marker);
 					
 					if (marker.wil != -1) {
-						MPntStd       *mpprop_std;
 						MPntPStokes   *mpprop_stokes;
 						MPntPEnergy   *mpprop_energy;
 						int           end;
@@ -840,10 +838,7 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC(PetscScalar pos[],PetscScalar *icva
 #define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC2"
 PetscBool EvaluateSubmarineLavaFlow_EnergyIC2(PetscScalar pos[],PetscScalar *icvalue,void *data)
 {
-	PetscInt k;
-	PetscScalar  radius,value;
-	PetscBool assigned;
-	PetscErrorCode ierr;
+	PetscScalar  radius;
 
 	//radius = sqrt(pos[0]*pos[0] + pos[1]*pos[1]);
 	//*icvalue = 1100.0*(0.5*atan(-100.0*(radius-0.5))/atan(100.0*(1.414213562373095-0.5)) + 0.5);
@@ -865,10 +860,7 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC2(PetscScalar pos[],PetscScalar *icv
 #define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC2_Spherical"
 PetscBool EvaluateSubmarineLavaFlow_EnergyIC2_Spherical(PetscScalar pos[],PetscScalar *icvalue,void *data)
 {
-	PetscInt k;
-	PetscScalar  radius,value;
-	PetscBool assigned;
-	PetscErrorCode ierr;
+	PetscScalar  radius;
 	
 	radius = sqrt(pos[0]*pos[0] + (pos[1]-0.3)*(pos[1]-0.3) + (pos[2]-1.0)*(pos[2]-1.0));
 	if (radius < 1.0) {
@@ -896,7 +888,6 @@ PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,voi
 		PhysCompEnergy energy;
 		Vec            temperature;
 		DM             daT;
-		PetscReal      coeffs[8];
 		
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
@@ -917,9 +908,6 @@ PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,voi
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_SubmarineLavaFlow"
 PetscErrorCode ModelApplyUpdateMeshGeometry_SubmarineLavaFlow(pTatinCtx c,Vec X,void *ctx)
 {
-	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -930,7 +918,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_SubmarineLavaFlow(pTatinCtx c,Vec X,
 #define __FUNCT__ "ModelOutput_SubmarineLavaFlow"
 PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
 	PetscBool energy_active,output_markers;
 	PetscErrorCode ierr;
 	
@@ -997,7 +984,7 @@ PetscErrorCode ModelDestroy_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void)
 {
 	SubmarineLavaFlowCtx *data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

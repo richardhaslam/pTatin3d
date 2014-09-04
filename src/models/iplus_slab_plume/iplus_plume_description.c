@@ -113,11 +113,10 @@ PetscErrorCode iPLUS_InsertPlumeMaterial(DM dav,DataBucket materialpoint_db,iPLU
 	DM               cda;
 	Vec              gcoords;
 	PetscReal        *LA_gcoords;
-	PetscReal        elcoords[3*Q2_NODES_PER_EL_3D];
 	MPI_Comm         comm;
 	PetscInt         eidx,pi,pk,np_plume_x,np_plume_z;
 	PetscReal        dxi,dzeta,sep2;
-  PetscScalar      el_coords[Q2_NODES_PER_EL_3D*NSD];
+    PetscScalar      el_coords[Q2_NODES_PER_EL_3D*NSD];
 	PetscBool        inside_plume;
 	PetscMPIInt      rank;
 	PetscErrorCode   ierr;
@@ -195,7 +194,6 @@ PetscErrorCode iPLUS_InsertPlumeMaterial(DM dav,DataBucket materialpoint_db,iPLU
 					
 					new_points++;
 				}
-				
 			}
 		}
 	}
@@ -226,7 +224,6 @@ PetscBool iPLUS_Inflow_BCListEvaluator(PetscScalar position[],PetscScalar *value
 	PetscScalar    vy;
 	PetscBool      inside_plume;
 	PetscReal      sep2;
-	PetscErrorCode ierr;
 	
 	
 	PetscFunctionBegin;

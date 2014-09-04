@@ -139,8 +139,7 @@ const double char_rhsscale=    0.0315359920277;
 PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 {
 	ExSubductionCtx *data = (ExSubductionCtx*)ctx;
-	PetscBool       flg;
-	PetscReal       x0[3],Lx[3],cox[3];
+	PetscReal       x0[3],Lx[3];
 	GeometryObject  G,A,B;
 	DataBucket      materialconstants;
 	PetscErrorCode  ierr;
@@ -162,15 +161,12 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 		data->domain[2] = 50.0e3 / char_length;
 		PetscOptionsInsertString("-da_refine_z 1");
 	}
-
 	data->dip = 90.0;
 	PetscOptionsGetReal(NULL,"-exsubduction_dip",&data->dip,NULL);
-	
-	
+		
 	data->eta[ RegionId_Mantle ]      = 1.0e21/char_eta;     data->rho[ RegionId_Mantle ]      = 3200.0*char_rhsscale;
 	data->eta[ RegionId_Slab ]        = 1.0e23/char_eta;     data->rho[ RegionId_Slab ]        = 3300.0*char_rhsscale;
 	data->eta[ RegionId_LowerMantle ] = 1.0e21/char_eta;     data->rho[ RegionId_LowerMantle ] = 3200.0*char_rhsscale;
-
 
 	/* define geometry here so everyone can use it */
 	ierr = GeometryObjectCreate("mantle",&G);CHKERRQ(ierr);
@@ -211,12 +207,10 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 		factor = 0.25;
 		PetscOptionsGetReal(NULL,"-exsubduction_finite_plate_width_factor",&factor,NULL);
 		
-		
 		ierr = GeometryObjectCreate("mask",&mask);CHKERRQ(ierr);
 		x0[0] = 0.0e3 / char_length;      x0[1] =   0.0e3 / char_length;   x0[2] = 0.0;
 		Lx[0] = 3000.0e3 / char_length;   Lx[1] = 700.0e3 / char_length;   Lx[2] = factor * data->domain[2];
 		ierr = GeometryObjectSetType_BoxCornerReference(mask,x0,Lx);CHKERRQ(ierr);
-		
 		
 		ierr = GeometryObjectCreate("slab",&G);CHKERRQ(ierr);
 		ierr = GeometryObjectSetType_SetOperationDefault(G,GeomSet_Intersection,data->go[RegionId_Slab],mask);CHKERRQ(ierr);
@@ -238,7 +232,6 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionId_Slab,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionId_Slab,data->eta[ RegionId_Slab ]);
 	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -247,7 +240,6 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 PetscErrorCode ExSubduction_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ExSubductionCtx *data)
 {
 	PetscReal val_V;
-	PetscReal basal_val_V[2];
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -291,8 +283,6 @@ PetscErrorCode ModelApplyBoundaryCondition_ExSubduction(pTatinCtx c,void *ctx)
 	ExSubductionCtx *data = (ExSubductionCtx*)ctx;
 	PhysCompStokes            stokes;
 	DM                        stokes_pack,dav,dap;
-	PhysCompEnergy            energy;
-	PetscBool                 energy_active;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -343,13 +333,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	
 	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_point_db,&n_mp_points,0,0);
 	ierr = MaterialPointGetAccess(material_point_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mp_points; p++) {
 		double  *position;
-		int     phase_index;
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		ierr = MaterialPointGet_global_coord(mpX,p,&position);CHKERRQ(ierr);
@@ -373,10 +361,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *
 				ierr = MaterialPointSet_density(mpX,p,  -data->rho[k]*9.8 );CHKERRQ(ierr);
 			}
 		}
-
 	}
 	ierr = MaterialPointRestoreAccess(material_point_db,&mpX);CHKERRQ(ierr);
-	
 	
 	PetscFunctionReturn(0);
 }
@@ -385,7 +371,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_ExSubduction"
 PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void *ctx)
 {
-	ExSubductionCtx  *data = (ExSubductionCtx*)ctx;
 	PetscErrorCode   ierr;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
@@ -411,7 +396,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void 
 #define __FUNCT__ "ModelOutput_ExSubduction"
 PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ExSubductionCtx  *data = (ExSubductionCtx*)ctx;
 	PetscBool        output_markers;
 	PetscErrorCode   ierr;
 	
@@ -466,7 +450,7 @@ PetscErrorCode ModelDestroy_ExSubduction(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_ExSubduction(void)
 {
 	ExSubductionCtx  *data;
-	pTatinModel      m,model;
+	pTatinModel      m;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;

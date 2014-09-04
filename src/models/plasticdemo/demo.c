@@ -46,11 +46,9 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
 	ModelCtx           *modeldata = (ModelCtx*)modelctx;
 	RheologyConstants  *rheology;
 	DataBucket         materialconstants;
-  PetscInt           regionidx,midx;
-  PetscReal          n_exp,F,preexp_A;
-  PetscInt           mtype;
-  PetscBool          flg;
-  PetscReal          mmyr2ms;
+    PetscInt           regionidx,midx;
+    PetscBool          flg;
+    PetscReal          mmyr2ms;
 	PetscErrorCode     ierr;
     
     
@@ -118,15 +116,15 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     /* Material constant */
 	ierr = pTatinGetMaterialConstants(ptatinctx,&materialconstants);CHKERRQ(ierr);
     ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
-
+    
     /* background */
     regionidx = M_IDX;
     MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
-
+    
     ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,1.0e21);CHKERRQ(ierr);
-
+    
     MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,2.700000e+03/(-10.0));
-
+    
     /* layer */
     for (midx=1; midx<=(PetscInt)C_IDX; midx++) {
         regionidx = midx;
@@ -194,14 +192,14 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-
+    
 	ierr = DMDASetUniformCoordinates(dav,0.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
-
-  flg = PETSC_FALSE;
-  PetscOptionsGetBool(PETSC_NULL,"-model_domain_3d",&flg,0);
-  if (!flg) {
-    ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
-  }
+    
+    flg = PETSC_FALSE;
+    PetscOptionsGetBool(PETSC_NULL,"-model_domain_3d",&flg,0);
+    if (!flg) {
+        ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
+    }
 	
 	PetscFunctionReturn(0);
 }

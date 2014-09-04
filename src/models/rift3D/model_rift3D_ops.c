@@ -322,14 +322,10 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D(PetscInt nl,BCList bclist[],
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D(pTatinCtx c,void *ctx)
 {
-	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -357,20 +353,17 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 {
 	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-	int                    e,p,n_mp_points;
+	int                    p,n_mp_points;
 	PetscScalar            y_lab,y_moho,y_midcrust;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_DensConst,PField_pls,PField_ViscZ;
 	int                    phase;
-	PetscErrorCode ierr;
 	DataBucket materialconstants = c->material_constants;
 	MaterialConst_DensityConst *DensConst_data;
 	MaterialConst_ViscosityZ *ViscZ_data;
-	
-		
+			
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
@@ -386,7 +379,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	DataFieldGetAccess(PField_pls);
 	DataFieldVerifyAccess(PField_pls,sizeof(MPntPStokesPl));
 	
-	
 	DataBucketGetDataFieldByName(materialconstants,MaterialConst_DensityConst_classname,  &PField_DensConst);
 	DensConst_data    = (MaterialConst_DensityConst*)PField_DensConst->data;
 	
@@ -400,14 +392,12 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	
 	DataBucketGetSizes(db,&n_mp_points,0,0);
 	
-	
-	
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
 		MPntPStokes   *mpprop_stokes;
 		MPntPStokesPl *mpprop_pls;
 		double        *position,ycoord,xcoord,zcoord;
-		double        rho,eta;
+		double        rho;
 		float         pls;
 		char          yield;
 		
@@ -443,8 +433,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 		} else {
 			phase = 0;
 			rho   = DensConst_data[0].density;
-			
-			
 		}
 		
 		//eta = 1.0; 
@@ -463,10 +451,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	DataFieldRestoreAccess(PField_stokes);
 	DataFieldRestoreAccess(PField_pls);
 
-	
-	
-    
-    
 	PetscFunctionReturn(0);
 }
 
@@ -474,9 +458,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Rift3D"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
@@ -499,8 +480,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
-	
-	
+		
 	ierr = VecDuplicate(X,&Xcopy);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&RHS);CHKERRQ(ierr);
@@ -530,10 +510,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecStrideMax(pressure,3,NULL,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," max|dPdz| = %+1.4e \n",fp);
 	
-	
 	ierr = DMCompositeRestoreAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
 	
 	ierr = VecZeroEntries(Xcopy);CHKERRQ(ierr);
 	ierr = FormFunction_Stokes(NULL,Xcopy,RHS,(void*)c);CHKERRQ(ierr);
@@ -549,8 +526,6 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |rho.g|    = %1.4e \n",fu/sqrt(Nu));
 	PetscPrintf(PETSC_COMM_WORLD," |cont_rhs| = %1.4e \n",fp/sqrt(Np));
 	ierr = DMCompositeRestoreAccess(stokes_pack,RHS,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
 	
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
@@ -568,7 +543,6 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	PetscPrintf(PETSC_COMM_WORLD," |div(u_i)|      = %1.4e \n",fp/sqrt(Np));
 	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
 	
-	
 	ierr = VecCopy(X,Xcopy);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,Xcopy,&velocity,&pressure);CHKERRQ(ierr);
 	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
@@ -583,8 +557,7 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	ierr = VecNorm(pressure,NORM_2,&fp);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD," |grad(P)| = %1.4e \n",fu/sqrt(Nu));
 	ierr = DMCompositeRestoreAccess(stokes_pack,F,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
+		
 	ierr = VecDestroy(&Xcopy);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
 	ierr = VecDestroy(&RHS);CHKERRQ(ierr);
@@ -592,12 +565,10 @@ PetscErrorCode ModelOutput_Rift3D_CheckScales(pTatinCtx c,Vec X)
 	PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Rift3D"
 PetscErrorCode ModelOutput_Rift3D(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelRift3DCtx *data = (ModelRift3DCtx*)ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -646,7 +617,6 @@ PetscErrorCode ModelDestroy_Rift3D(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Rift3D"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D(pTatinCtx user,Vec X,void *ctx)
 {
-
     DM                stokes_pack,dau,dap;
 	PhysCompStokes    stokes;
     Vec               Uloc,Ploc;
@@ -687,10 +657,8 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D(pTatinCtx user,Vec 
         }
     }
     
-    	
 	PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialCondition_Rift3D"
@@ -707,7 +675,6 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
 	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
@@ -731,9 +698,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
 	ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
 	
-	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
-	
 	
 	ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
 	domain_height = MeshMax[1] - MeshMin[1];
@@ -744,13 +709,11 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 	HPctx.grav       = 10.0;
 	HPctx.rho        = data->rho0;
 	
-	
     ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
     ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
     ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-	
 	
 	PetscFunctionReturn(0);
 }
@@ -760,7 +723,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D(pTatinCtx c,Vec X,void *ctx)
 PetscErrorCode pTatinModelRegister_Rift3D(void)
 {
 	ModelRift3DCtx *data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
