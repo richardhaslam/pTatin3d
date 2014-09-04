@@ -314,8 +314,8 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
 	log               = PETSC_FALSE;
     
 	/* setup for coords */
-	ierr = DMDAGetCoordinateDA(dav,&cda);CHKERRQ(ierr);
-	ierr = DMDAGetGhostedCoordinates(dav,&gcoords);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
 	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
@@ -884,9 +884,9 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     if (modeldata->output_si) {
         
         /* get the coordinates of the velocity mesh and scale into SI units <note, local and ghosted coordinates should be scaled> */
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
-        ierr = DMDAGetGhostedCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,modeldata->x_bar);CHKERRQ(ierr);
         
         /* unscale vel, p */
@@ -903,9 +903,9 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     
     if (modeldata->output_si) {
         /* undo the coordinate scaling of velocity mesh <note, local and ghosted coordinates should be scaled> */
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
-        ierr = DMDAGetGhostedCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,1.0/modeldata->x_bar);CHKERRQ(ierr);
         
         /* unscale vel, p */

@@ -309,9 +309,9 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
         
         /* get the coordinates of the velocity mesh and scale into SI units <note, local and ghosted coordinates should be scaled> */
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,modeldata->L_bar);CHKERRQ(ierr);
-        ierr = DMDAGetGhostedCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,modeldata->L_bar);CHKERRQ(ierr);
         
         /* unscale vel, p */
@@ -335,9 +335,9 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 
     if (modeldata->output_si) {
         /* undo the coordinate scaling of velocity mesh <note, local and ghosted coordinates should be scaled> */
-        ierr = DMDAGetCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,1.0/modeldata->L_bar);CHKERRQ(ierr);
-        ierr = DMDAGetGhostedCoordinates(dav,&coords);CHKERRQ(ierr);
+        ierr = DMGetCoordinatesLocal(dav,&coords);CHKERRQ(ierr);
         ierr = VecScale(coords,1.0/modeldata->L_bar);CHKERRQ(ierr);
 
         /* unscale vel, p */
