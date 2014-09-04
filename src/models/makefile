@@ -26,7 +26,8 @@ TATIN_MODEL_DIR = \
 	subduction_initiation2d \
 	convection2d \
 	thermal_shearband \
-	slab_detachment3d
+	slab_detachment3d \
+	pinch_and_swell
 
 TATIN_MODEL_SRC = \
 	ptatin_models_reg.c
