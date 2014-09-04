@@ -93,8 +93,8 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityFK(DataBucket db,const int 
 /* Viscosity Arrh has no scaling function */ 
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsSetValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal preexpA,PetscReal Ascale,PetscReal entalpy,PetscReal Vmol,PetscReal nexp,PetscReal Tref);
+PetscErrorCode MaterialConstantsScaleValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal eta_star,PetscReal sigma_star);
 PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const int region_id);
-
 
 PetscErrorCode MaterialConstantsSetFromOptions_DensityConst(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsSetValues_DensityConst(DataBucket db,const int region_id,PetscReal density);
