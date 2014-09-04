@@ -838,6 +838,47 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes(
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes"
+PetscErrorCode SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],Quadrature Q)
+{
+	PetscInt q,p,i;
+	PetscInt nel,e;
+	PetscInt nqp;
+	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	
+	ierr = VolumeQuadratureGetAllCellData_Stokes(Q,&all_gausspoints);CHKERRQ(ierr);
+    nel = Q->n_elements;
+    nqp = Q->npoints;
+    
+    if (nel*nqp != npoints) {
+        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Num. quadrature points doesn't match num. material points");
+    }
+    
+	/* traverse elements and map */
+    p = 0;
+	for (e=0; e<nel; e++) {
+		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+		
+		for (q=0; q<nqp; q ++) {
+			//cell_gausspoints[q].Fu[0] = 0.0;
+			//cell_gausspoints[q].Fu[1] = 0.0;
+			//cell_gausspoints[q].Fu[2] = 0.0;
+			//cell_gausspoints[q].Fp = 0.0;
+			
+			cell_gausspoints[q].eta = mp_stokes[p].eta;
+			cell_gausspoints[q].rho = mp_stokes[p].rho;
+            p++;
+		}
+	}
+		
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes"
 PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],DM da,Quadrature Q)
 {
@@ -1178,17 +1219,35 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	
 	/* compute */
 	ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGrid(
-																																		clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B, 																																	 
-																																		npoints, mp_std,mp_stokes );CHKERRQ(ierr);	
+                clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                npoints, mp_std,mp_stokes );CHKERRQ(ierr);
 
-	/* 
-	 If null projection is chosen, then we assume we have defined quadrature point values on the fine mesh already (by some other means), 
-	 thus we do not interpolate the smoothed nodal viscosity onto the quadrature points 
-	 */
-	if (coefficient_projection_type != -1) {
-		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-																																			clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],
-																																			Q[nlevels-1] );CHKERRQ(ierr);
+	switch (coefficient_projection_type) {
+        case -1:
+         /*
+         If null projection is chosen, then we assume we have defined quadrature point values on the fine mesh already (by some other means), thus we do not interpolate the smoothed nodal viscosity onto the quadrature points
+         */
+            break;
+            
+        case 0:
+            break;
+            
+        case 1:
+            /* This doesn't need to be performed as any call to pTatin_EvaluateRheologyNonlinearitiesMarkers() will have already performed such an interpolation from markers to quadrature points
+            */
+            ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
+                    clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],Q[nlevels-1] );CHKERRQ(ierr);
+            break;
+            
+        case 2:
+            break;
+            
+        case 3:
+            break;
+            
+        case 4:
+            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,Q[nlevels-1]);CHKERRQ(ierr);
+            break;
 	}
 	
 	/* view */
@@ -1250,8 +1309,8 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 		}
 		
 		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-																												clone[k-1], properties_A1[k-1],properties_A2[k-1],
-																												Q[k-1] );CHKERRQ(ierr);
+                    clone[k-1], properties_A1[k-1],properties_A2[k-1],
+					Q[k-1] );CHKERRQ(ierr);
 
 		if (view) {
 			PetscViewer viewer;
