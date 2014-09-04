@@ -14,14 +14,18 @@
 ** Revision: 5040 
 ** Log: r5040 | dmay | 2013-12-17 21:03:16 +0100 (Tue, 17 Dec 2013) | 1 line 
 **                                                                       
-** TATIN_CFLAGS = -std=gnu99 -O2 -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
 **                                                                       
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2014.07.21_00:03:20 
+[pTatin] Created log file: pt3dout/ptatin.log-2014.09.04_16:47:59 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2014.07.21_00:03:20 
+[pTatin] Created options file: pt3dout/ptatin.options-2014.09.04_16:47:59 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -49,7 +53,6 @@ RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max =
   [pTatinModel]: Registering model [22] with name "subduction_initiation2d"
 [[pTatinModelRegister_Thermal_Convection2d]]
   [pTatinModel]: Registering model [23] with name "convection2d"
-  [pTatinModel]: Registering model [24] with name "pd"
   [pTatinModel]: -ptatin_model "viscous_sinker" was detected
 pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
 pTatin3dRestart: Unable to restart job
@@ -107,9 +110,9 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
   Total mem. usage                                                      = 6.46e-02 (MB) 
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0005 (sec)]]
+[[Swarm initialization: 0.0002 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 4096 points : 0.0009 (sec)]]
+[[Swarm->coordinate assignment: 4096 points : 0.0014 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
 Mat Object: 1 MPI processes
@@ -118,8 +121,8 @@ Mat Object: 1 MPI processes
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 2.4089e-02 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 2.4152e-02 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 7.5266e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 7.8691e-04 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
 [[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
@@ -163,13 +166,13 @@ Level [0]: Coarse grid type :: Galerkin :: assembled operator
   writing pvdfilename pt3dout/timeseries_vp.pvd 
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 2.10e-03 (sec) 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 6.73e-03 (sec) 
   writing pvdfilename pt3dout/timeseries_mpoints_std.pvd 
-pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 7.47e-03 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 5.63e-03 (sec) 
    [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
 *** Rheology update for RHEOLOGY_VISCOUS selected ***
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 5.53e-05 (sec)
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 2.74e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 6.44e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 6.82e-05 (sec)
   0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 3.238783915315e-03, 0.000000000000e+00, 0.000000000000e+00 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000000000000e+00 
@@ -602,21 +605,12 @@ SNES Object: 1 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
           (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
           (1,1) : prefix="fieldsplit_p_", type=seqsbaij, rows=2048, cols=2048 
-pTatinViewBasicStokesSolutionResiduals:
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 3.34e-05 (sec)
-  Field         min          max          norm_2       norm_1 
-        Fu      -3.0540e-09  +3.0680e-09  +3.5073e-08  +1.4099e-06 
-        Fp      -3.5916e-07  +3.6325e-07  +2.8756e-06  +7.3253e-05 
-        FX      -3.5916e-07  +3.6325e-07  +2.8758e-06  +7.4663e-05 
-pTatinViewBasicStokesSolution:
-  Field         min          max          norm_2       norm_1 
-  velocity      -5.8463e-01  +1.9056e+00  +4.4322e+01  +3.2206e+03 
-  pressure      -6.0744e-02  +8.5714e-02  +1.0456e+00  +2.8269e+01 
-         X      -5.8463e-01  +1.9056e+00  +4.4334e+01  +3.2489e+03 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 6.08e-05 (sec)
 [[ModelOutput_ViscousSinker]]
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 1.68e-03 (sec) 
-pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 2.55e-03 (sec) 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 1.80e-03 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 2.36e-03 (sec) 
   TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 7.9143e-02 [accepted] | ==>> dt used = 7.9143e-02 |
+  TimeStep control(StkSurfaceCourant): | current = 7.9143e-02 : trial = 1.0000e+32 | ==>> dt used = 7.9143e-02 |
   timestep[] dt_courant = 7.9143e-02 

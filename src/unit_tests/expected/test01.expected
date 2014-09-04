@@ -14,14 +14,18 @@
 ** Revision: 5040 
 ** Log: r5040 | dmay | 2013-12-17 21:03:16 +0100 (Tue, 17 Dec 2013) | 1 line 
 **                                                                       
-** TATIN_CFLAGS = -std=gnu99 -fgnu89-inline -O2 -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
 **                                                                       
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2013.12.17_22:00:52 
+[pTatin] Created log file: pt3dout/ptatin.log-2014.09.04_16:47:42 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2013.12.17_22:00:52 
+[pTatin] Created options file: pt3dout/ptatin.options-2014.09.04_16:47:42 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -45,6 +49,10 @@ RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max =
   [pTatinModel]: Registering model [19] with name "submarinelavaflow"
   [pTatinModel]: Registering model [20] with name "ex_subduction"
   [pTatinModel]: Registering model [21] with name "iplus"
+[[pTatinModelRegister_Subduction_Initiation2d]]
+  [pTatinModel]: Registering model [22] with name "subduction_initiation2d"
+[[pTatinModelRegister_Thermal_Convection2d]]
+  [pTatinModel]: Registering model [23] with name "convection2d"
   [pTatinModel]: -ptatin_model "viscous_sinker" was detected
 [[ModelInitialize_ViscousSinker]]
 BCList: Mem. usage (min,max) = 7.13e-01,7.13e-01 (MB) 
@@ -100,22 +108,22 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 7.27e-02 (MB) 
   Total mem. usage                                                      = 7.27e-02 (MB) 
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0007 (sec)]]
+[[Swarm initialization: 0.0003 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 6336 points : 0.0045 (sec)]]
+[[Swarm->coordinate assignment: 6336 points : 0.0021 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
   rows=1, cols=1
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 1.6401e-03 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 1.7030e-03 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 6.8140e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 7.1201e-04 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
-[[ModelApplyInitialMaterialGeometry_ViscousSinker]]
+[[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
 [[ModelApplyBoundaryCondition_ViscousSinker]]
 
 
@@ -123,9 +131,9 @@ RUNNING DEFORMED MESH EXAMPLE
 ====================================================================
 
 +  Test [compare_mf_A11]: Mesh 8 x 9 x 11 
-MatMultA11(MF):      time 5.2575e-02 (sec): ratio 1.0000e+02%: min/max 5.2575e-02 5.2575e-02 (sec)
-MatAssemblyA11(ASM): time 3.9984e+00 (sec): ratio 1.0000e+02%: min/max 3.9984e+00 3.9984e+00 (sec)
-MatMultA11(ASM):     time 3.5601e-02 (sec): ratio 1.0000e+02%: min/max 3.5601e-02 3.5601e-02 (sec)
+MatMultA11(MF):      time 2.6271e-02 (sec): ratio 1.0000e+02%: min/max 2.6271e-02 2.6271e-02 (sec)
+MatAssemblyA11(ASM): time 1.9244e+00 (sec): ratio 1.0000e+02%: min/max 1.9244e+00 1.9244e+00 (sec)
+MatMultA11(ASM):     time 1.6311e-02 (sec): ratio 1.0000e+02%: min/max 1.6311e-02 1.6311e-02 (sec)
   y.y    = +5.71903034e+04 [mfo]
   y2.y2  = +5.71903034e+04 [asm]
   min[A11_mfo.x-A11_asm.x]  = -3.97858829e-15 

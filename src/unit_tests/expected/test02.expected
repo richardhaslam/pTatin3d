@@ -14,14 +14,18 @@
 ** Revision: 5040 
 ** Log: r5040 | dmay | 2013-12-17 21:03:16 +0100 (Tue, 17 Dec 2013) | 1 line 
 **                                                                       
-** TATIN_CFLAGS = -std=gnu99 -fgnu89-inline -O2 -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
 **                                                                       
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2013.12.17_22:08:09 
+[pTatin] Created log file: pt3dout/ptatin.log-2014.09.04_16:47:52 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2013.12.17_22:08:09 
+[pTatin] Created options file: pt3dout/ptatin.options-2014.09.04_16:47:52 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -45,6 +49,10 @@ RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max =
   [pTatinModel]: Registering model [19] with name "submarinelavaflow"
   [pTatinModel]: Registering model [20] with name "ex_subduction"
   [pTatinModel]: Registering model [21] with name "iplus"
+[[pTatinModelRegister_Subduction_Initiation2d]]
+  [pTatinModel]: Registering model [22] with name "subduction_initiation2d"
+[[pTatinModelRegister_Thermal_Convection2d]]
+  [pTatinModel]: Registering model [23] with name "convection2d"
   [pTatinModel]: -ptatin_model "viscous_sinker" was detected
 [[ModelInitialize_ViscousSinker]]
 BCList: Mem. usage (min,max) = 4.72e-01,4.72e-01 (MB) 
@@ -100,22 +108,22 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
   Total mem. usage                                                      = 6.46e-02 (MB) 
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0005 (sec)]]
+[[Swarm initialization: 0.0003 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 4096 points : 0.0029 (sec)]]
+[[Swarm->coordinate assignment: 4096 points : 0.0013 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
-Matrix Object: 1 MPI processes
+Mat Object: 1 MPI processes
   type: seqaij
   rows=1, cols=1
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 1.7850e-03 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 1.8570e-03 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 7.4548e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 7.7881e-04 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
-[[ModelApplyInitialMaterialGeometry_ViscousSinker]]
+[[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
 [[ModelApplyBoundaryCondition_ViscousSinker]]
 
 
@@ -123,8 +131,8 @@ RUNNING DEFORMED MESH EXAMPLE
 ====================================================================
 
 +  Test [perform_viscous_solve]: Mesh 8 x 8 x 8 
-MatAssemblyA11(ASM):                time 2.5893e+00 (sec): ratio 1.0000e+02%: min/max 2.5893e+00 2.5893e+00 (sec)
-KSPSetUpA11:                        time 1.6868e+00 (sec): ratio 1.0000e+02%: min/max 1.6868e+00 1.6868e+00 (sec)
+MatAssemblyA11(ASM):                time 1.2554e+00 (sec): ratio 1.0000e+02%: min/max 1.2554e+00 1.2554e+00 (sec)
+KSPSetUpA11:                        time 8.1194e-01 (sec): ratio 1.0000e+02%: min/max 8.1194e-01 8.1194e-01 (sec)
   0 KSP Residual norm 6.108644629256e+04 
   1 KSP Residual norm 2.627688393416e+04 
   2 KSP Residual norm 2.034586017245e+04 
@@ -133,31 +141,31 @@ KSPSetUpA11:                        time 1.6868e+00 (sec): ratio 1.0000e+02%: mi
   5 KSP Residual norm 2.397254366941e+03 
   6 KSP Residual norm 9.173100007020e+02 
   7 KSP Residual norm 2.866291276680e+02 
-  8 KSP Residual norm 9.558370990254e+01 
-  9 KSP Residual norm 4.818903551805e+01 
- 10 KSP Residual norm 2.712254113754e+01 
- 11 KSP Residual norm 1.517046087906e+01 
- 12 KSP Residual norm 5.514749208845e+00 
- 13 KSP Residual norm 1.183948765601e+00 
- 14 KSP Residual norm 3.833484540551e-01 
- 15 KSP Residual norm 1.763619098612e-01 
- 16 KSP Residual norm 8.467724667076e-02 
- 17 KSP Residual norm 3.229701593069e-02 
- 18 KSP Residual norm 1.516436935781e-02 
- 19 KSP Residual norm 8.343857732956e-03 
- 20 KSP Residual norm 4.571698020990e-03 
- 21 KSP Residual norm 1.774456080788e-03 
- 22 KSP Residual norm 6.960580943836e-04 
- 23 KSP Residual norm 2.434027858422e-04 
- 24 KSP Residual norm 8.849715777404e-05 
- 25 KSP Residual norm 2.397192997797e-05 
- 26 KSP Residual norm 5.180934189692e-06 
- 27 KSP Residual norm 1.446371158423e-06 
- 28 KSP Residual norm 3.780802244749e-07 
- 29 KSP Residual norm 1.149828199113e-07 
- 30 KSP Residual norm 2.598644048322e-08 
-KSPSolveA11(its = 30,cycles = 5)   time 7.3873e+00 (sec): ratio 1.0000e+02%: min/max 7.3873e+00 7.3873e+00 (sec)
-KSPSolveA11: average                time 1.4775e+00 (sec): ratio 1.0000e+02%: min/max 1.4775e+00 1.4775e+00 (sec)
+  8 KSP Residual norm 9.558370990257e+01 
+  9 KSP Residual norm 4.818903551812e+01 
+ 10 KSP Residual norm 2.712254113764e+01 
+ 11 KSP Residual norm 1.517046087911e+01 
+ 12 KSP Residual norm 5.514749208866e+00 
+ 13 KSP Residual norm 1.183948765608e+00 
+ 14 KSP Residual norm 3.833484540612e-01 
+ 15 KSP Residual norm 1.763619098654e-01 
+ 16 KSP Residual norm 8.467724664105e-02 
+ 17 KSP Residual norm 3.229701589921e-02 
+ 18 KSP Residual norm 1.516436933358e-02 
+ 19 KSP Residual norm 8.343857691554e-03 
+ 20 KSP Residual norm 4.571697989869e-03 
+ 21 KSP Residual norm 1.774456054119e-03 
+ 22 KSP Residual norm 6.960580920786e-04 
+ 23 KSP Residual norm 2.434027803485e-04 
+ 24 KSP Residual norm 8.849717263708e-05 
+ 25 KSP Residual norm 2.397193041307e-05 
+ 26 KSP Residual norm 5.180935435246e-06 
+ 27 KSP Residual norm 1.446380813424e-06 
+ 28 KSP Residual norm 3.780900594687e-07 
+ 29 KSP Residual norm 1.149888506716e-07 
+ 30 KSP Residual norm 2.598108244986e-08 
+KSPSolveA11(its = 30,cycles = 5)   time 3.5870e+00 (sec): ratio 1.0000e+02%: min/max 3.5870e+00 3.5870e+00 (sec)
+KSPSolveA11: average                time 7.1740e-01 (sec): ratio 1.0000e+02%: min/max 7.1740e-01 7.1740e-01 (sec)
 KSP Object: 1 MPI processes
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -170,23 +178,23 @@ PC Object: 1 MPI processes
   type: ilu
     ILU: out-of-place factorization
     0 levels of fill
-    tolerance for zero pivot 1e-12
-    using diagonal shift to prevent zero pivot
+    tolerance for zero pivot 2.22045e-14
+    using diagonal shift on blocks to prevent zero pivot [INBLOCKS]
     matrix ordering: natural
     factor fill ratio given 1, needed 1
       Factored matrix follows:
-        Matrix Object:         1 MPI processes        
+        Mat Object:         1 MPI processes
           type: seqaij
-          rows=14739, cols=14739
+          rows=14739, cols=14739, bs=3
           package used to perform factorization: petsc
-          total: nonzeros=4437351, allocated nonzeros=4437351
+          total: nonzeros=4.43735e+06, allocated nonzeros=4.43735e+06
           total number of mallocs used during MatSetValues calls =0
             using I-node routines: found 4913 nodes, limit used is 5
   linear system matrix = precond matrix:
-  Matrix Object:   1 MPI processes  
+  Mat Object:   1 MPI processes
     type: seqaij
-    rows=14739, cols=14739
-    total: nonzeros=4437351, allocated nonzeros=4437351
+    rows=14739, cols=14739, bs=3
+    total: nonzeros=4.43735e+06, allocated nonzeros=4.43735e+06
     total number of mallocs used during MatSetValues calls =0
       using I-node routines: found 4913 nodes, limit used is 5
 
