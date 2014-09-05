@@ -95,16 +95,16 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 \newpage
 \section{Software Requirements}
 \begin{itemize}
-	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.2}
+	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.5.1}
 	\item libz (non essential)
-	\item subversion (non essential)
+	\item git (non essential - used to obtain the source)
 	\item \href{www.paraview.org}{ParaView} (essential for visualizing simulation output)
-	\item Python $>$2.5 (to run the test suite)
+	\item Python 2.6-2.7 (to run the test suite)
 \end{itemize}
 
 \section{Obtaining the Code}
-{\ptat} is available via subversion using the command
-\shellcmd{svn co svn+ssh://USERNAME@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d}
+{\ptat} is available via git using the command
+\shellcmd{git clone git@bitbucket.org:jedbrown/ptatin3d.git}
 
 \section{Installation}
 Upon successful installation of PETSc, switch into the source directory of {\ptat}
