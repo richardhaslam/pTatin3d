@@ -63,13 +63,13 @@
 -nsteps 200
 -output_frequency 1
 -output_path visco100-test1
--pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -ptatin_model multilayer_folding
 -snes_type ksponly
 -snes_view
--stk_velocity_da_mat_type aij
+-stk_velocity_dm_mat_type aij
 -stk_velocity_da_refine_hierarchy_x 2,4
 -stk_velocity_da_refine_hierarchy_y 2,2
 -stk_velocity_da_refine_hierarchy_z 2,2

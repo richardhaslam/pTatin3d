@@ -41,7 +41,7 @@
 -stk_velocity_da_refine_hierarchy_y 2,2
 -stk_velocity_da_refine_hierarchy_z 1,1
 
--pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 
@@ -55,17 +55,17 @@
 -fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
 -fieldsplit_u_mg_coarse_pc_type lu
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
--fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
 -fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_ksp_norm_type NONE
--fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_ksp_type chebyshev
 -fieldsplit_u_mg_levels_pc_type jacobi
 
 # use baij with coarse (asm)
-#-stk_velocity_da_mat_type baij
+#-stk_velocity_dm_mat_type baij
 
 # use aij with coarse (direct)
--stk_velocity_da_mat_type aij
+-stk_velocity_dm_mat_type aij
 
 -ksp_monitor 
 -ksp_converged_reason

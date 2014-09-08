@@ -49,7 +49,7 @@
 	-pc_type  fieldsplit
 
 		-pc_fieldsplit_type                     schur
-		-pc_fieldsplit_schur_factorization_type upper
+		-pc_fieldsplit_schur_fact_type upper
 		
 	# ---- configuration for pressure split ----
 	-fieldsplit_p_ksp_type preonly
@@ -72,7 +72,7 @@
 
 	# Multigrid coarse grid operators
 	-A11_operator_type 0,1,1
-	-stk_velocity_da_mat_type aij
+	-stk_velocity_dm_mat_type aij
 
 	# multigrid smoother on each level
 	-fieldsplit_u_mg_levels_ksp_type   fgmres

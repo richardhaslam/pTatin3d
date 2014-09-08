@@ -75,7 +75,7 @@
 -options_left
 -output_path sinker-mfscaling
 
--pc_fieldsplit_schur_factorization_type full
+-pc_fieldsplit_schur_fact_type full
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -ptatin_model viscous_sinker

@@ -25,10 +25,10 @@
 -fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
 -fieldsplit_u_mg_coarse_pc_type lu
 -fieldsplit_u_mg_levels_est_ksp_norm_type NONE
--fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
 -fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_ksp_norm_type NONE
--fieldsplit_u_mg_levels_ksp_type chebychev
+-fieldsplit_u_mg_levels_ksp_type chebyshev
 -fieldsplit_u_mg_levels_pc_type jacobi
 -ksp_type fgmres
 -lattice_layout_Nx 4
@@ -48,7 +48,7 @@
 -nsteps 5000
 -output_frequency 50
 -output_path lava-example2
--pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -picard_its 10
@@ -61,7 +61,7 @@
 -snes_max_linear_solve_fail 10000
 -snes_monitor
 -snes_rtol 1.0e-4
--stk_velocity_da_mat_type aij
+-stk_velocity_dm_mat_type aij
 -stk_velocity_da_refine_hierarchy_z 1,1
 -stokes_gravity 6.929646455628166,-6.929646455628166,0.0
 -submarine_model 1

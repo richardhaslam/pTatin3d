@@ -42,7 +42,7 @@
 -ksp_gcr_restart 300
 -ksp_norm_type unpreconditioned
 -pc_type fieldsplit
--pc_fieldsplit_schur_factorization_type lower
+-pc_fieldsplit_schur_fact_type lower
 -pc_fieldsplit_type schur
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi

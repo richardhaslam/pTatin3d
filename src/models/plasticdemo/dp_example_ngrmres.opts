@@ -54,7 +54,7 @@
 -mx 64
 -my 16
 -mz 1
--npc_pc_fieldsplit_schur_factorization_type upper
+-npc_pc_fieldsplit_schur_fact_type upper
 -npc_pc_fieldsplit_type schur
 -npc_pc_type fieldsplit
 -stk_velocity_dm_mat_type aij

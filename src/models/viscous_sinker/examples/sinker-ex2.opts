@@ -108,7 +108,7 @@
 -ksp_rtol 1.0e-3
 -ksp_atol 1.0e-6
 -log_summary
--pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -snes_type ksponly

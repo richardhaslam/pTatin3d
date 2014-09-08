@@ -83,9 +83,9 @@
 	-pc_type fieldsplit
 	
 	-pc_fieldsplit_type schur
-	-pc_fieldsplit_schur_factorization_type upper
+	-pc_fieldsplit_schur_fact_type upper
 
-	-stk_velocity_da_mat_type aij
+	-stk_velocity_dm_mat_type aij
 
 
 # ------------------------------------------
@@ -115,10 +115,10 @@
 	# dump the geometric multi-grid mesh hierarchy 
 	#-stk_velocity_da_view_hierarchy
 
-	#-fieldsplit_u_mg_levels_ksp_type chebychev
+	#-fieldsplit_u_mg_levels_ksp_type chebyshev
 	#-fieldsplit_u_mg_levels_ksp_max_it 12
 	#-fieldsplit_u_mg_levels_pc_type jacobi
-	#-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1
+	#-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
 	#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
 
 	# This smoother appears to be more robust on high aspect ratio/defomred meshes

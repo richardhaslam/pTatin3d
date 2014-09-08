@@ -68,7 +68,7 @@
 -options_left 1
 -output_frequency 2
 -output_path testslab
--pc_fieldsplit_schur_factorization_type upper
+-pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
 -ptatin_model iplus
@@ -81,7 +81,7 @@
 -snes_monitor
 -snes_rtol 1.0e-5
 -snes_type ksponly
--stk_velocity_da_mat_type aij
+-stk_velocity_dm_mat_type aij
 -stk_velocity_da_refine_hierarchy_x 8,2
 -stk_velocity_da_refine_hierarchy_y 8,2
 -stk_velocity_da_refine_hierarchy_z 8,2
