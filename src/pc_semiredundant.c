@@ -42,6 +42,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 			ierr = MatCreate(subcomm->sub_comm,&red);CHKERRQ(ierr);
 			ierr = MatSetSizes(red,PETSC_DECIDE,PETSC_DECIDE,nr,nc);CHKERRQ(ierr);
 			ierr = MatSetFromOptions(red);CHKERRQ(ierr);
+            ierr = MatSetUp(red);CHKERRQ(ierr);
 		} else {
 			red = *_red;
 		}

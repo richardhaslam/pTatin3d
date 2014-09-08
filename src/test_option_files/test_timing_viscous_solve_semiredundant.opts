@@ -27,5 +27,6 @@
 -semiredundant_ksp_type fgmres
 -semiredundant_pc_asm_overlap 1
 -semiredundant_pc_type asm
--semiredundant_sub_pc_factor_mat_ordering_type amd
+# amd only works if umfpack is installed
+#-semiredundant_sub_pc_factor_mat_ordering_type amd
 #End of PETSc Option Table entries
