@@ -44,6 +44,71 @@ PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC_WSMP *wsmp);
 
 
 #undef __FUNCT__
+#define __FUNCT__ "PCWSMP_CSRView"
+PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
+{
+    PetscErrorCode ierr;
+    PetscMPIInt rank;
+    FILE *fp;
+    char name[PETSC_MAX_PATH_LEN];
+    PetscInt i,m,nnz;
+    MPI_Comm comm;
+    
+    ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+    
+    // ia
+    if (ia) {
+        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ia_rank%D.dat",rank);
+        fp = fopen(name,"w");
+        
+        PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
+        for (i=0; i<m; i++) {
+            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D \n",i,ia[i]);
+        }
+        PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D \n",m,ia[m]);
+        fclose(fp);
+    }
+    
+    // ja
+    if (ja) {
+        if (!ia) {
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot write ja[] as ia[] isn't provided <require nnz");
+        }
+        nnz = (PetscInt)ia[m];
+        
+        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ja_rank%D.dat",rank);
+        fp = fopen(name,"w");
+        
+        PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
+        for (i=0; i<nnz; i++) {
+            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D \n",i,ja[i]);
+        }
+        fclose(fp);
+    }
+    
+    // aij
+    if (aij) {
+        if (!ia) {
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot write aij[] as ia[] isn't provided <require nnz>");
+        }
+        nnz = (PetscInt)ia[m];
+        
+        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"aij_rank%D.dat",rank);
+        fp = fopen(name,"w");
+        
+        PetscFPrintf(PETSC_COMM_SELF,fp,"# idx aij[] \n");
+        for (i=0; i<nnz; i++) {
+            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %+1.8e \n",i,aij[i]);
+        }
+        fclose(fp);
+    }
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "Default_MatIsSymmetric"
 PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 {
@@ -68,6 +133,10 @@ PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 	} else {
 		*flg = PETSC_FALSE;
 	}
+
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y1);CHKERRQ(ierr);
+    ierr = VecDestroy(&y2);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -103,7 +172,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 	PetscBool done;
 	int *ia_ut,*ja_ut;
 	
-	
 	ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
 	if (!done) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatGetRowIJ failed... aborting");
@@ -121,7 +189,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 		}
 		cnt = cnt + nnz_i;
 	}
-	//PetscPrintf(PETSC_COMM_WORLD,"nnz_ut = %d \n",nnz_ut);
 	
 	/* allocate and store */
 	PetscMalloc(sizeof(int)*(m+1),&ia_ut);
@@ -186,8 +253,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 	int *ia_ut,*ja_ut;
 	IS irow,icol;
 	Mat *smat;
-	PetscBool view = PETSC_FALSE;
-	
 	
 	ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
 	ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
@@ -216,7 +281,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 		}
 		cnt = cnt + nnz_i;
 	}
-	//PetscPrintf(PETSC_COMM_SELF,"nnz_ut = %d \n",nnz_ut);
 	
 	/* allocate and store */
 	PetscMalloc(sizeof(int)*(m+1),&ia_ut);
@@ -253,66 +317,8 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 				idx++;
 			}
 		}
-		
 		cnt = cnt + nnz_i;
 	}
-	
-	if (view) {
-		PetscMPIInt rank;
-		FILE *fp;
-		char name[1000];
-		PetscInt nnz_i_ut = 0;
-		MPI_Comm comm;
-		
-		
-		// ia
-		PetscObjectGetComm((PetscObject)A,&comm);
-		ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-		PetscSNPrintf(name,1000-1,"ia_rank%D.dat",rank);
-		fp = fopen(name,"w");
-        
-		cnt = 0;
-		idx = 0;
-		for (i=0; i<m; i++) {
-			nnz_i_ut = 0;
-            
-			nnz_i = ia[i+1]-ia[i];
-			for (j=cnt; j<cnt+nnz_i; j++) {
-				if (ja[j] >= i+start) {
-					nnz_i_ut++;
-				}
-			}
-			PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D \n",i,idx);
-			
-			idx = idx + nnz_i_ut;
-			cnt = cnt + nnz_i;
-		}
-		PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D \n",m,idx);
-		
-		fclose(fp);
-        
-		// ja
-		PetscSNPrintf(name,1000-1,"ja_rank%D.dat",rank);
-		fp = fopen(name,"w");
-        
-		idx = 0;
-		cnt = 0;
-		for (i=0; i<m; i++) {
-			
-			nnz_i = ia[i+1]-ia[i];
-			for (j=cnt; j<cnt+nnz_i; j++) {
-				if (ja[j] >= i+start) {
-					PetscFPrintf(PETSC_COMM_SELF,fp,"[%D] %D %D \n",idx,i,ja[j]);
-					idx++;
-				}
-			}
-			cnt = cnt + nnz_i;
-		}
-		
-		fclose(fp);
-		
-	}
-	
 	ierr = MatRestoreRowIJ(smat[0],0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
 	if (!done) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatRestoreRowIJ failed... aborting");
@@ -339,7 +345,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 	const PetscInt *cols;
 	const PetscScalar *vals;
 	double *vals_ut;
-	PetscBool view = PETSC_FALSE;
 	
 	if (!reuse) {
 		PetscMalloc(sizeof(double)*nnz_ut,&vals_ut);
@@ -360,36 +365,8 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 				idx++;
 			}
 		}
-		
 		ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
 	}
-    
-	if (view) {
-		PetscMPIInt rank;
-		FILE *fp;
-		char name[1000];
-		MPI_Comm comm;
-		
-		//ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
-		//ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		
-		PetscObjectGetComm((PetscObject)A,&comm);
-		ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-		PetscSNPrintf(name,1000-1,"Aut_rank%D.dat",rank);
-		fp = fopen(name,"w");
-		for (i=start; i<start+m; i++) {
-			ierr = MatGetRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
-			for (j=0; j<ncols; j++) {
-				if (cols[j] >= i) {
-					PetscFPrintf(PETSC_COMM_SELF,fp,"[%D,%D] %1.4e: ",i,cols[j],vals[j]);
-				}
-			} fprintf(fp,"\n");
-			ierr = MatRestoreRow(A,i,&ncols,&cols,&vals);CHKERRQ(ierr);
-		}
-		fclose(fp);
-	}
-	
-	
 	if (!reuse) {
 		*_vals_ut = vals_ut;
 	}
@@ -449,6 +426,7 @@ PetscErrorCode call_wsffree(PC_WSMP *wsmp)
 	}
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "call_wsmp_clear"
 PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
@@ -509,11 +487,10 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 {
     PetscErrorCode   ierr;
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
-	Mat A,B;
+	Mat              A,B;
 	PetscLogDouble   t0,t1;
 	
     PetscFunctionBegin;
-	
 	ierr = PCGetOperators(pc,&A,&B);
 	
 	if (!pc->setfromoptionscalled) {
@@ -563,7 +540,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		} else {
 			ierr = PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 		}
-		
 		
 		/* -- [wsmp] : ordering -- */
 		wsmp->IPARM[2 -1] = 1;
@@ -624,7 +600,14 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	}
 	
 	/* Fetch matrix entries */
-	
+    {
+        PetscBool view = PETSC_FALSE;
+        PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
+        if (view) {
+            ierr = PCWSMP_CSRView(B,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
+        }
+    }
+    
     if (!pc->setupcalled) {
 		/* If first time we are in PCSetUp, use new data */
 		ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
@@ -655,7 +638,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "PCApply_WSMP"
 static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
@@ -664,8 +646,7 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
 	PetscScalar      *_val;
 	PetscInt         i,m;
-	
-	
+    
 	ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
 	ierr = VecGetArray(x,&_val);CHKERRQ(ierr);
 	for (i=0; i<m; i++) {
@@ -694,10 +675,8 @@ static PetscErrorCode PCReset_WSMP(PC pc)
 {
     PetscErrorCode   ierr;
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
-	
-	
+		
     PetscFunctionBegin;
-    
 	PetscFree(wsmp->IA);
 	PetscFree(wsmp->JA);
 	PetscFree(wsmp->AVALS);
@@ -716,7 +695,7 @@ static PetscErrorCode PCReset_WSMP(PC pc)
 #define __FUNCT__ "PCDestroy_WSMP"
 static PetscErrorCode PCDestroy_WSMP(PC pc)
 {
-    PetscErrorCode   ierr;
+    PetscErrorCode ierr;
 	
     PetscFunctionBegin;
     ierr = PCReset_WSMP(pc);CHKERRQ(ierr);
@@ -769,7 +748,6 @@ static PetscErrorCode PCSetFromOptions_WSMP(PC pc)
     PetscErrorCode   ierr;
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
 	
-	
     PetscFunctionBegin;
     ierr = PetscOptionsHead("WSMP options");CHKERRQ(ierr);
 	
@@ -794,7 +772,6 @@ static PetscErrorCode PCSetFromOptions_WSMP(PC pc)
 	ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
 	ierr = WSMPSetFromOptions_NumericFactorization(wsmp);CHKERRQ(ierr);
 	
-	
 	ierr = PetscOptionsTail();CHKERRQ(ierr);
 	
     PetscFunctionReturn(0);
@@ -807,7 +784,6 @@ static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
     PetscErrorCode   ierr;
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
     PetscBool        iascii,isstring;
-	
 	
     PetscFunctionBegin;
     ierr = PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
@@ -870,7 +846,6 @@ PetscErrorCode PCCreate_WSMP(PC pc)
     PC_WSMP          *wsmp;
     PetscMPIInt      size;
     
-	
     PetscFunctionBegin;
     ierr = PetscNewLog(pc,&wsmp);CHKERRQ(ierr);
     pc->data            = (void*)wsmp;
