@@ -812,6 +812,16 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
 
+	{
+	PetscReal nrm;
+	Vec res;
+	MatGetVecs(A,&res,NULL);
+	MatMult(A,y,res);
+	VecAXPY(res,-1.0,x);
+	VecNorm(res,NORM_2,&nrm);
+	PetscPrintf(PETSC_COMM_WORLD,"nrm %1.6e \n",nrm);
+	}
+
 	for (ii=1; ii<iterations; ii++) {
 		ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	}
@@ -820,7 +830,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	ierr = KSPGetTolerances(ksp,NULL,NULL,NULL,&its);CHKERRQ(ierr);
+	ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %d,cycles = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: average                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
