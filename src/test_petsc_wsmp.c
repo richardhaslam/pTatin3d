@@ -147,6 +147,9 @@ PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
 	PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
 	ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
 	ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
 	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 	
 	/* ------------------Test from wssmp_ex1.f ------------------------- */
