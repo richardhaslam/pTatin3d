@@ -42,6 +42,69 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp);
 PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp);
 PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC_WSMP *wsmp);
 
+#undef __FUNCT__
+#define __FUNCT__ "PCWSMP_CheckCSR"
+PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
+{
+    PetscErrorCode ierr;
+    MPI_Comm comm;
+    Mat B;
+    PetscInt m,M;
+    PetscInt *nnz_d,*nnz_o;
+    Vec x,y,y1;
+    PetscReal nrm;
+    PetscScalar range[2];
+    
+    ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+    ierr = MatGetSize(A,&M,NULL);CHKERRQ(ierr);
+    ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
+    
+    ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,m,M,M);CHKERRQ(ierr);
+    ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
+    
+    PetscMalloc(sizeof(PetscInt)*m,&nnz_d);PetscMemzero(nnz_d,sizeof(PetscInt)*m);
+    PetscMalloc(sizeof(PetscInt)*m,&nnz_o);PetscMemzero(nnz_o,sizeof(PetscInt)*m);
+    
+    ierr = MatSeqSBAIJSetPreallocationCSR(B,1,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocationCSR(B,1,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
+
+    ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
+    ierr = MatGetVecs(A,NULL,&y1);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
+    
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+    ierr = VecMin(y,NULL,&range[0]);CHKERRQ(ierr);
+    ierr = VecMax(y,NULL,&range[1]);CHKERRQ(ierr);
+    PetscPrintf(comm,"{wsmp} min(A.x): %+1.12e \n",range[0]);
+    PetscPrintf(comm,"{wsmp} max(A.x): %+1.12e \n",range[1]);
+
+    ierr = MatMult(B,x,y1);CHKERRQ(ierr);
+    ierr = VecMin(y1,NULL,&range[0]);CHKERRQ(ierr);
+    ierr = VecMax(y1,NULL,&range[1]);CHKERRQ(ierr);
+    PetscPrintf(comm,"{wsmp} min(B.x): %+1.12e \n",range[0]);
+    PetscPrintf(comm,"{wsmp} max(B.x): %+1.12e \n",range[1]);
+
+    
+    ierr = VecAXPY(y,-1.0,y1);CHKERRQ(ierr);
+    ierr = VecNorm(y,NORM_2,&nrm);CHKERRQ(ierr);
+    ierr = VecMin(y,NULL,&range[0]);CHKERRQ(ierr);
+    ierr = VecMax(y,NULL,&range[1]);CHKERRQ(ierr);
+    PetscPrintf(comm,"{wsmp} nrm: %+1.12e \n",nrm);
+    PetscPrintf(comm,"{wsmp} min: %+1.12e \n",range[0]);
+    PetscPrintf(comm,"{wsmp} max: %+1.12e \n",range[1]);
+    
+    PetscFree(nnz_d);
+    PetscFree(nnz_o);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecDestroy(&y1);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_CSRView"
@@ -623,7 +686,13 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
               ierr = PCWSMP_CSRView(B,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
             }
 	}
-	
+	{
+        PetscBool check = PETSC_FALSE;
+        PetscOptionsGetBool(NULL,"-pc_wsmp_check_csr",&check,NULL);
+        if (check) {
+            ierr = PCWSMP_CheckCSR(B,wsmp);CHKERRQ(ierr);
+        }
+    }
 
 	/* -- [wsmp] : numeric factorization - Cholesky -- */
 	wsmp->IPARM[2 -1] = 3;
