@@ -600,15 +600,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	}
 	
 	/* Fetch matrix entries */
-    {
-        PetscBool view = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
-        if (view) {
-            ierr = PCWSMP_CSRView(B,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
-        }
-    }
-    
-    if (!pc->setupcalled) {
+	if (!pc->setupcalled) {
 		/* If first time we are in PCSetUp, use new data */
 		ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 	} else {
@@ -624,7 +616,15 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_TRUE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 		}
 	}
+	{
+          PetscBool view = PETSC_FALSE;
+          PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
+            if (view) {
+              ierr = PCWSMP_CSRView(B,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
+            }
+	}
 	
+
 	/* -- [wsmp] : numeric factorization - Cholesky -- */
 	wsmp->IPARM[2 -1] = 3;
 	wsmp->IPARM[3 -1] = 3;
