@@ -225,6 +225,150 @@ PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 
 /* helpers to get AIJ info from sequential and parallel matrices */
 #undef __FUNCT__
+#define __FUNCT__ "PCWSMP_ExtractUpperTriangular_MatSeqAIJ"
+PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut,PetscBool reuse,double **_vals)
+{
+	PetscErrorCode ierr;
+	const PetscInt *ia;
+	const PetscInt *ja;
+	PetscInt m,nnz_i,cnt,idx,nnz_ut,i,j;
+	PetscBool done;
+    PetscScalar *array;
+	int *ia_ut,*ja_ut;
+    double *vals;
+    PetscReal drop_tol = 1.0e-12;
+	
+    ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
+	ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
+	if (!done) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatGetRowIJ failed... aborting");
+	}
+	
+	/* two pass - a) compute new nnz */
+	cnt = 0;
+	nnz_ut = 0;
+	for (i=0; i<m; i++) {
+		nnz_i = ia[i+1]-ia[i];
+		for (j=cnt; j<cnt+nnz_i; j++) {
+			if (ja[j] >= i) {
+                PetscReal abs_value;
+                
+                abs_value = PetscAbsReal(array[j]);
+                if (abs_value > drop_tol) {
+                    nnz_ut++;
+                }
+			}
+		}
+		cnt = cnt + nnz_i;
+	}
+	//printf("nnz = %d \n",nnz_ut);
+    
+	/* allocate and store */
+	if (_ia_ut) { PetscMalloc(sizeof(int)*(m+1),&ia_ut); }
+	if (_ja_ut) { PetscMalloc(sizeof(int)*(nnz_ut),&ja_ut); }
+    if (_vals) {
+        vals = *_vals;
+        if (!reuse) {
+            PetscMalloc(sizeof(double)*(nnz_ut),&vals);
+        }
+    }
+	
+    
+	/* ia_ut */
+    if (_ia_ut) {
+        cnt = 0;
+        idx = 0;
+        for (i=0; i<m; i++) {
+            PetscInt nnz_i_ut = 0;
+            
+            nnz_i = ia[i+1]-ia[i];
+            for (j=cnt; j<cnt+nnz_i; j++) {
+                if (ja[j] >= i) {
+                    PetscReal abs_value;
+                    
+                    abs_value = PetscAbsReal(array[j]);
+                    if (abs_value > drop_tol) {
+                        nnz_i_ut++;
+                    }
+                }
+            }
+            ia_ut[i] = (int)idx + 0; /* fortran +1 */
+            if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ia_ut[] failed");}
+            
+            idx = idx + nnz_i_ut;
+            cnt = cnt + nnz_i;
+        }
+        ia_ut[m] = (int)idx + 0; /* fortran +1 */
+    }
+    
+	/* ja_ut */
+    if (_ja_ut) {
+        idx = 0;
+        cnt = 0;
+        for (i=0; i<m; i++) {
+            
+            nnz_i = ia[i+1]-ia[i];
+            for (j=cnt; j<cnt+nnz_i; j++) {
+                if (ja[j] >= i) {
+                    PetscReal abs_value;
+                    
+                    abs_value = PetscAbsReal(array[j]);
+                    if (abs_value > drop_tol) {
+
+                        ja_ut[idx] = (int)ja[j] + 0; /* fortran +1 */
+                        if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ja_ut[] failed");}
+                        idx++;
+                        
+                    }
+                }
+            }
+            
+            cnt = cnt + nnz_i;
+        }
+	}
+        
+    /* aij */
+    if (_vals) {
+        idx = 0;
+        cnt = 0;
+        for (i=0; i<m; i++) {
+            nnz_i = ia[i+1]-ia[i];
+            for (j=cnt; j<cnt+nnz_i; j++) {
+                if (ja[j] >= i) {
+                    PetscReal abs_value;
+                    
+                    abs_value = PetscAbsReal(array[j]);
+                    if (abs_value > drop_tol) {
+                    
+                        vals[idx] = (double)array[j];
+                        if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"aij[] failed");}
+                        idx++;
+                        
+                    }
+                }
+            }
+            cnt = cnt + nnz_i;
+        }
+    }
+	
+    ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
+	if (!done) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MatRestoreRowIJ failed... aborting");
+	}
+    ierr = MatSeqAIJRestoreArray(A,&array);CHKERRQ(ierr);
+	
+	if (_nnz_ut) { *_nnz_ut = (int)nnz_ut; }
+    
+    if (_ia_ut) { *_ia_ut  = ia_ut; }
+
+    if (_ja_ut) { *_ja_ut  = ja_ut; }
+
+    if (_vals) { *_vals   = vals; }
+
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ"
 PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
@@ -285,6 +429,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 		for (j=cnt; j<cnt+nnz_i; j++) {
 			if (ja[j] >= i) {
 				ja_ut[idx] = (int)ja[j] + 0; /* fortran +1 */
+                if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ja_ut[] failed");}
 				idx++;
 			}
 		}
@@ -434,6 +579,73 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut
 		*_vals_ut = vals_ut;
 	}
 	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ"
+PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
+{
+	PetscErrorCode ierr;
+	
+    ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(A,_nnz_ut,_ia_ut,_ja_ut,PETSC_FALSE,NULL);CHKERRQ(ierr);
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ"
+PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
+{
+	PetscErrorCode ierr;
+	PetscInt m,n,M,N,start,end;
+	IS irow,icol;
+	Mat *smat;
+	
+	ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+	ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+	ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
+	
+	ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
+	ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
+	
+	/* Use MatGetSubMatrices() to get a sequential matrix */
+	ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+	
+    ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(smat[0],_nnz_ut,_ia_ut,_ja_ut,PETSC_FALSE,NULL);CHKERRQ(ierr);
+	
+    ierr = MatDestroyMatrices(1,&smat);CHKERRQ(ierr);
+	ierr = ISDestroy(&irow);CHKERRQ(ierr);
+	ierr = ISDestroy(&icol);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularAIJ"
+PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut,double **_vals_ut)
+{
+	PetscErrorCode ierr;
+	PetscInt m,n,M,N,start,end;
+	IS irow,icol;
+	Mat *smat;
+	
+	ierr = MatGetSize(A,&M,&N);CHKERRQ(ierr);
+	ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+	ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
+	
+	ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
+	ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
+	
+	/* Use MatGetSubMatrices() to get a sequential matrix */
+	ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+	
+    ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(smat[0],NULL,NULL,NULL,reuse,_vals_ut);CHKERRQ(ierr);
+	
+    ierr = MatDestroyMatrices(1,&smat);CHKERRQ(ierr);
+	ierr = ISDestroy(&irow);CHKERRQ(ierr);
+	ierr = ISDestroy(&icol);CHKERRQ(ierr);
+    
 	PetscFunctionReturn(0);
 }
 
@@ -599,9 +811,9 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		
 		/* Fetch ia, ja from matrix */
 		if (wsmp->sequential) {
-			ierr = PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+			ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 		} else {
-			ierr = PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+			ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 		}
 		
 		/* -- [wsmp] : ordering -- */
@@ -618,11 +830,11 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 		PetscTime(&t1);
 		
-		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
-		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
+		PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
+		//PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
         
-		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
-		PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
+		PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
+		PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
         
     } else {
 		
@@ -634,9 +846,9 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			PetscFree(wsmp->JA);
 			
 			if (wsmp->sequential) {
-				ierr = PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+				ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 			} else {
-				ierr = PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+				ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 			}
 			
 			/* -- [wsmp] : ordering -- */
@@ -653,11 +865,11 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			ierr = call_wsmp(wsmp);CHKERRQ(ierr);
             PetscTime(&t1);
             
-			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
-			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
+			PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
+			//PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
 			
-			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
-			PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
+			PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
+			PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
 		}
 		
 	}
@@ -665,7 +877,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	/* Fetch matrix entries */
 	if (!pc->setupcalled) {
 		/* If first time we are in PCSetUp, use new data */
-		ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+		ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 	} else {
 		if (pc->flag != SAME_NONZERO_PATTERN) {
 			/* Repeated solve but non-zero structure has changed, use new data */
@@ -673,10 +885,10 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			/* release internal memory for factors */
 			ierr = call_wsffree(wsmp);CHKERRQ(ierr);
 			
-			ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+			ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 		} else {
 			/* Repeated solve but non-zero structure is the same, re-use data */
-			ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_TRUE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+			ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_TRUE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 		}
 	}
 	{
@@ -700,7 +912,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	ierr = WSMPSetFromOptions_NumericFactorization(wsmp);CHKERRQ(ierr);
 	ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 	
-	PetscPrintf(PETSC_COMM_SELF,"[wsmp][num. fact.] Actual memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
+	//PetscPrintf(PETSC_COMM_SELF,"[wsmp][num. fact.] Actual memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
 	
 	//if (params%iproc==0) write(816,'(a,es15.4)') 'Factorization MegaFlops          = ',(system%dparm(23) * 1.d-6) / (tt2-tt1)
 	
