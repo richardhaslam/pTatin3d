@@ -813,13 +813,15 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
 
 	{
-	PetscReal nrm;
-	Vec res;
-	MatGetVecs(A,&res,NULL);
-	MatMult(A,y,res);
-	VecAXPY(res,-1.0,x);
-	VecNorm(res,NORM_2,&nrm);
-	PetscPrintf(PETSC_COMM_WORLD,"nrm %1.6e \n",nrm);
+        PetscReal nrm;
+        Vec res;
+
+        ierr = MatGetVecs(A,&res,NULL);CHKERRQ(ierr);
+        ierr = MatMult(A,y,res);CHKERRQ(ierr);
+        ierr = VecAXPY(res,-1.0,x);CHKERRQ(ierr);
+        ierr = VecNorm(res,NORM_2,&nrm);CHKERRQ(ierr);
+        PetscPrintf(PETSC_COMM_WORLD,"nrm %1.6e \n",nrm);
+        ierr = VecDestroy(&res);CHKERRQ(ierr);
 	}
 
 	for (ii=1; ii<iterations; ii++) {
