@@ -105,6 +105,29 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
 }
 
 
+#undef __FUNCT__
+#define __FUNCT__ "PCWSMP_VecView"
+PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
+{
+    PetscErrorCode ierr;
+    PetscMPIInt rank;
+    FILE *fp;
+    char fname[PETSC_MAX_PATH_LEN];
+    PetscInt i;
+    MPI_Comm comm;
+
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+    PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s_rank%D.dat",name,rank);
+    fp = fopen(fname,"w");
+
+    for (i=0; i<wsmp->Nlocal; i++) {
+        PetscFPrintf(PETSC_COMM_SELF,fp,"%+1.8e \n",wsmp->B[i]);
+    }
+    fclose(fp);
+  
+    PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_CSRView"
@@ -126,11 +149,12 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
         PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ia_rank%D.dat",rank);
         fp = fopen(name,"w");
         
-        PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
+        //PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
+        PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",m+1);
         for (i=0; i<m; i++) {
-            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D \n",i,ia[i]);
+            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D\n",i,ia[i]);
         }
-        PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D \n",m,ia[m]);
+        PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D\n",m,ia[m]);
         fclose(fp);
     }
     
@@ -144,9 +168,10 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
         PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ja_rank%D.dat",rank);
         fp = fopen(name,"w");
         
-        PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
+        //PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
+        PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",nnz);
         for (i=0; i<nnz; i++) {
-            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D \n",i,ja[i]);
+            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D\n",i,ja[i]);
         }
         fclose(fp);
     }
@@ -161,9 +186,10 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
         PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"aij_rank%D.dat",rank);
         fp = fopen(name,"w");
         
-        PetscFPrintf(PETSC_COMM_SELF,fp,"# idx aij[] \n");
+        //PetscFPrintf(PETSC_COMM_SELF,fp,"# idx aij[] \n");
+        PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",nnz);
         for (i=0; i<nnz; i++) {
-            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %+1.8e \n",i,aij[i]);
+            PetscFPrintf(PETSC_COMM_SELF,fp,"%D %+1.8e\n",i,aij[i]);
         }
         fclose(fp);
     }
@@ -944,13 +970,21 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
 	PetscScalar      *_val;
 	PetscInt         i,m;
-    
+    static int beenhere = 0;   
+ 	PetscBool view = PETSC_FALSE;
+
+          PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
+
 	ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
 	ierr = VecGetArray(x,&_val);CHKERRQ(ierr);
 	for (i=0; i<m; i++) {
 		wsmp->B[i] = PetscRealPart(_val[i]);
 	}
 	ierr = VecRestoreArray(x,&_val);CHKERRQ(ierr);
+
+        if (view && (beenhere==0)) {
+                ierr = PCWSMP_VecView("rhs",wsmp);CHKERRQ(ierr);
+        }
 	
 	/* apply L^T L factors  - Back substitution */
 	/* 1/ set args for wsmp call */
@@ -958,12 +992,17 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
 	wsmp->IPARM[3 -1] = 4;
 	ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 	
+        if (view && (beenhere==0)) {
+                ierr = PCWSMP_VecView("sol",wsmp);CHKERRQ(ierr);
+        }
+
 	ierr = VecGetArray(y,&_val);CHKERRQ(ierr);
 	for (i=0; i<m; i++) {
 		_val[i] = (PetscScalar)wsmp->B[i];
 	}
 	ierr = VecRestoreArray(y,&_val);CHKERRQ(ierr);
-	
+
+	beenhere = 1;	
     PetscFunctionReturn(0);
 }
 
