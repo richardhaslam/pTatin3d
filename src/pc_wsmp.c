@@ -237,6 +237,9 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat A,int *_nnz_ut,int **
 	int *ia_ut,*ja_ut;
     double *vals;
     PetscReal drop_tol = 1.0e-12;
+	PetscInt start,end;
+
+	ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
 	
     ierr = MatSeqAIJGetArray(A,&array);CHKERRQ(ierr);
 	ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
@@ -250,7 +253,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat A,int *_nnz_ut,int **
 	for (i=0; i<m; i++) {
 		nnz_i = ia[i+1]-ia[i];
 		for (j=cnt; j<cnt+nnz_i; j++) {
-			if (ja[j] >= i) {
+			if (ja[j] >= (i+start)) {
                 PetscReal abs_value;
                 
                 abs_value = PetscAbsReal(array[j]);
@@ -283,7 +286,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat A,int *_nnz_ut,int **
             
             nnz_i = ia[i+1]-ia[i];
             for (j=cnt; j<cnt+nnz_i; j++) {
-                if (ja[j] >= i) {
+                if (ja[j] >= (i+start)) {
                     PetscReal abs_value;
                     
                     abs_value = PetscAbsReal(array[j]);
@@ -309,7 +312,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat A,int *_nnz_ut,int **
             
             nnz_i = ia[i+1]-ia[i];
             for (j=cnt; j<cnt+nnz_i; j++) {
-                if (ja[j] >= i) {
+                if (ja[j] >= (i+start)) {
                     PetscReal abs_value;
                     
                     abs_value = PetscAbsReal(array[j]);
@@ -334,7 +337,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat A,int *_nnz_ut,int **
         for (i=0; i<m; i++) {
             nnz_i = ia[i+1]-ia[i];
             for (j=cnt; j<cnt+nnz_i; j++) {
-                if (ja[j] >= i) {
+                if (ja[j] >= (i+start)) {
                     PetscReal abs_value;
                     
                     abs_value = PetscAbsReal(array[j]);
@@ -414,11 +417,15 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int 
 			}
 		}
 		ia_ut[i] = (int)idx + 0; /* fortran +1 */
+               if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ia_ut[] failed");}
+
 		
 		idx = idx + nnz_i_ut;
 		cnt = cnt + nnz_i;
 	}
 	ia_ut[m] = (int)idx + 0; /* fortran +1 */
+        if (idx != (nnz_ut)) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ia_ut[m] failed");}
+
 	
 	/* ja_ut */
 	idx = 0;
@@ -507,12 +514,15 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
 			}
 		}
 		ia_ut[i] = (int)idx;
-		
+	        if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ia_ut[] failed");}
+	
 		idx = idx + nnz_i_ut;
 		cnt = cnt + nnz_i;
 	}
 	ia_ut[m] = (int)idx;
+        if (idx != (nnz_ut)) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"ia_ut[m] failed");}
 	
+
 	/* ja_ut */
 	idx = 0;
 	cnt = 0;
@@ -811,9 +821,11 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		
 		/* Fetch ia, ja from matrix */
 		if (wsmp->sequential) {
-			ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+			ierr = PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+                //        ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 		} else {
-			ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+			ierr = PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+                //        ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 		}
 		
 		/* -- [wsmp] : ordering -- */
@@ -846,9 +858,11 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			PetscFree(wsmp->JA);
 			
 			if (wsmp->sequential) {
-				ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+				ierr = PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+                        //        ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 			} else {
-				ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+				ierr = PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
+                        //        ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
 			}
 			
 			/* -- [wsmp] : ordering -- */
@@ -877,7 +891,8 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	/* Fetch matrix entries */
 	if (!pc->setupcalled) {
 		/* If first time we are in PCSetUp, use new data */
-		ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+		ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+        //        ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 	} else {
 		if (pc->flag != SAME_NONZERO_PATTERN) {
 			/* Repeated solve but non-zero structure has changed, use new data */
@@ -885,10 +900,12 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			/* release internal memory for factors */
 			ierr = call_wsffree(wsmp);CHKERRQ(ierr);
 			
-			ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+			ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+	        //        ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 		} else {
 			/* Repeated solve but non-zero structure is the same, re-use data */
-			ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_TRUE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+			ierr = PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_TRUE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
+                //        ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_TRUE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
 		}
 	}
 	{
