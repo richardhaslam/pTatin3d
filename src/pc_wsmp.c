@@ -804,17 +804,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	PetscLogDouble   t0,t1;
 	
     PetscFunctionBegin;
-	ierr = PCGetOperators(pc,&A,&B);
-	
-	if (!pc->setfromoptionscalled) {
-		/* -- [wsmp] : initialize with default parameters -- */
-		wsmp->IPARM[1 -1] = 0;
-		wsmp->IPARM[2 -1] = 0;
-		wsmp->IPARM[3 -1] = 0;
-		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-		wsmp->IPARM[4 -1] = 0; /* CSR/CSC matrix format */
-		wsmp->IPARM[5 -1] = 0; /* C style numbering */
-	}
+	ierr = PCGetOperators(pc,&A,&B);CHKERRQ(ierr);
 	
 	/* construction phase */
     if (!pc->setupcalled) {
@@ -870,7 +860,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 		wsmp->IPARM[2 -1] = 1;
 		wsmp->IPARM[3 -1] = 1;
 		ierr = WSMPSetFromOptions_Ordering(wsmp);CHKERRQ(ierr);
-                wsmp->IPARM[16-1] = -1;
 		ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 		PetscTime(&t1);
                 PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done ordering --- %1.2e sec\n",t1-t0);
@@ -922,20 +911,17 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 			PetscTime(&t0);
 			wsmp->IPARM[2 -1] = 1;
 			wsmp->IPARM[3 -1] = 1;
-			ierr = WSMPSetFromOptions_Ordering(wsmp);CHKERRQ(ierr);
-	                wsmp->IPARM[16-1] = -1;
 			ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 			PetscTime(&t1);
-                         PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done sym ordering --- %1.2e sec\n",t1-t0);
+                        PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done sym ordering --- %1.2e sec\n",t1-t0);
 
 			/* -- [wsmp] : symbolic factorization -- */
 			wsmp->IPARM[2 -1] = 2;
 			wsmp->IPARM[3 -1] = 2;
-	        	    PetscTime(&t0);
-			ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
+	        	PetscTime(&t0);
 			ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-        		    PetscTime(&t1);
-	                 PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done sym fac --- %1.2e sec\n",t1-t0);       
+        		PetscTime(&t1);
+	                PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done sym fac --- %1.2e sec\n",t1-t0);       
 
 			PetscPrintf(PETSC_COMM_WORLD,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
 			//PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
@@ -1001,12 +987,9 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
 	ierr = WSMPSetFromOptions_NumericFactorization(wsmp);CHKERRQ(ierr);
 	ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 	PetscTime(&t1);
-        PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done num fac --- %1.2e sec\n",t1-t0);
-	
+        PetscPrintf(PETSC_COMM_WORLD," --- wsmp: done num fac --- %1.2e sec\n",t1-t0);	
 	//PetscPrintf(PETSC_COMM_SELF,"[wsmp][num. fact.] Actual memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
-	
-	//if (params%iproc==0) write(816,'(a,es15.4)') 'Factorization MegaFlops          = ',(system%dparm(23) * 1.d-6) / (tt2-tt1)
-	
+
     PetscFunctionReturn(0);
 }
 
@@ -1045,12 +1028,13 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
 	/* apply L^T L factors  - Back substitution */
 	wsmp->IPARM[2 -1] = 4;
 	wsmp->IPARM[3 -1] = 4;
+        ierr = WSMPSetFromOptions_BackSubstitution(wsmp);CHKERRQ(ierr);
 	ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 
         /* iterative refinement */
-	ierr = WSMPSetFromOptions_NumericFactorization(wsmp);CHKERRQ(ierr);
         wsmp->IPARM[2 -1] = 5;
         wsmp->IPARM[3 -1] = 5;
+        ierr = WSMPSetFromOptions_IterativeRefinement(wsmp);CHKERRQ(ierr);
         ierr = call_wsmp(wsmp);CHKERRQ(ierr);
 	
         if (view && (beenhere==0)) {
@@ -1100,13 +1084,18 @@ static PetscErrorCode PCDestroy_WSMP(PC pc)
 	
     ierr = PetscFree(pc->data);CHKERRQ(ierr);
     
-	PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_Ordering"
 PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 {
+    PetscBool found;
+    PetscInt index,ival;
+    PetscErrorCode ierr;
+    PetscReal dval;
+
 	/* recommended for finite elements */
 	if (wsmp->sequential) {
 		wsmp->IPARM[16 -1] = 1;
@@ -1122,13 +1111,45 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 		wsmp->IPARM[20 -1] = 2;
 	}
 
-        { PetscInt ival; PetscReal dval; PetscBool found;
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm16",&ival,&found); if (found) { wsmp->IPARM[16-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm17",&ival,&found); if (found) { wsmp->IPARM[17-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm18",&ival,&found); if (found) { wsmp->IPARM[18-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm19",&ival,&found); if (found) { wsmp->IPARM[19-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm20",&ival,&found); if (found) { wsmp->IPARM[20-1] = (int)ival; }
-        }
+
+    ierr = PetscOptionsHead("WSMP options [ordering]");CHKERRQ(ierr);
+
+    index = 10;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm10","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 15;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm15","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 16;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm16","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 17;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm17","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 18;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm18","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 19;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm19","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 20;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm20","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 27;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm27","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 31;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm31","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 10;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm10","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    index = 11;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm11","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+
+    ierr = PetscOptionsTail();CHKERRQ(ierr);
+
 	
 	PetscFunctionReturn(0);
 }
@@ -1137,24 +1158,122 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp)
 #define __FUNCT__ "WSMPSetFromOptions_SymbolicFactorization"
 PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp)
 {
+    PetscErrorCode ierr;
+    PetscInt ival,index;
+    PetscBool found;
 
-	PetscFunctionReturn(0);
+    ierr = PetscOptionsHead("WSMP options [symbolic factorization]");CHKERRQ(ierr);
+
+    index = 35;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm35","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    ierr = PetscOptionsTail();CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "WSMPSetFromOptions_BackSubstitution"
+PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC_WSMP *wsmp)
+{
+    PetscErrorCode ierr;
+    PetscInt ival,index;
+    PetscBool found;
+
+    ierr = PetscOptionsHead("WSMP options [back substitution]");CHKERRQ(ierr);
+
+    index = 30;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm30","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    ierr = PetscOptionsTail();CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "WSMPSetFromOptions_IterativeRefinement"
+PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC_WSMP *wsmp)
+{
+    PetscErrorCode ierr;
+    PetscInt ival,index;
+    PetscBool found;
+    PetscReal dval;
+
+    ierr = PetscOptionsHead("WSMP options [iterative refinement]");CHKERRQ(ierr);
+
+    index = 6;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm6","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 7;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm7","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 36;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm36","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 6;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm6","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    ierr = PetscOptionsTail();CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_NumericFactorization"
 PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC_WSMP *wsmp)
 {
+    PetscErrorCode ierr;
+    PetscInt ival,index;
+    PetscBool found;
+    PetscReal dval;
 
-        { PetscInt ival; PetscReal dval; PetscBool found;
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm6", &ival,&found); if (found) { wsmp->IPARM[6-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm7", &ival,&found); if (found) { wsmp->IPARM[7-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm11",&ival,&found); if (found) { wsmp->IPARM[11-1] = (int)ival; }
-        PetscOptionsGetInt(NULL,"-pc_wsmp_iparm12",&ival,&found); if (found) { wsmp->IPARM[12-1] = (int)ival; }
 
-        PetscOptionsGetReal(NULL,"-pc_wsmp_dparm6",&dval,&found); if (found) { wsmp->DPARM[6-1] = (double)dval; }
-        }
-	PetscFunctionReturn(0);
+    ierr = PetscOptionsHead("WSMP options [numerical factorization]");CHKERRQ(ierr);
+
+    index = 8;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm8","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 11;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm11","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 12;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm12","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 13;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm13","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 14;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm14","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 25;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm25","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 26;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm26","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 34;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm34","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    ierr = PetscOptionsInt("-pc_wsmp_iparm12","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 6;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm6","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    index = 12;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm12","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    index = 15;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm15","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    index = 21;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm21","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    index = 22;  dval = (PetscInt)wsmp->DPARM[index-1];
+    ierr = PetscOptionsReal("-pc_wsmp_dparm22","","PCWSMPSetDParm",dval,&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+
+    ierr = PetscOptionsTail();CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -1163,32 +1282,32 @@ static PetscErrorCode PCSetFromOptions_WSMP(PC pc)
 {
     PetscErrorCode   ierr;
     PC_WSMP          *wsmp = (PC_WSMP*)pc->data;
-	
-    PetscFunctionBegin;
-    ierr = PetscOptionsHead("WSMP options");CHKERRQ(ierr);
-	
-	/* -- [wsmp] : initialize with default parameters -- */
-	wsmp->IPARM[1 -1] = 0;
-	wsmp->IPARM[2 -1] = 0;
-	wsmp->IPARM[3 -1] = 0;
-	ierr = call_wsmp(wsmp);CHKERRQ(ierr);
-	wsmp->IPARM[4 -1] = 0; /* CSR/CSC matrix format */
-	wsmp->IPARM[5 -1] = 0; /* C style numbering */
-	
-	/* put option calls here to overide defaults */
-	// ierr = PetscOptionsInt("-pc_wsmp","Factor to reduce parent communication size by","PCSemiRedundantSetFactor",red->nsubcomm_factor,&red->nsubcomm_factor,0);CHKERRQ(ierr);
-	
-	// iterative refinement steps
-	//wsmp->IPARM[6 -1] = X;
-	
-	// pivot styles IPARM[11 -1] = 0, 1, 2
-	// pivot values DPARM[10 -1], DPARM[64 -1], DPARM[21 -1]
-    
-	ierr = WSMPSetFromOptions_Ordering(wsmp);CHKERRQ(ierr);
-	ierr = WSMPSetFromOptions_SymbolicFactorization(wsmp);CHKERRQ(ierr);
-	ierr = WSMPSetFromOptions_NumericFactorization(wsmp);CHKERRQ(ierr);
+    PetscInt         ival,index;	
+    PetscBool        found;
 
-	ierr = PetscOptionsTail();CHKERRQ(ierr);
+    PetscFunctionBegin;
+    ierr = PetscOptionsHead("WSMP options [init]");CHKERRQ(ierr);
+
+
+    index = 8;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm8","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 9;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm9","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 13;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm13","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 28;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm28","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 29;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm29","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    index = 32;  ival = (PetscInt)wsmp->IPARM[index-1];
+    ierr = PetscOptionsInt("-pc_wsmp_iparm32","","PCWSMPSetIParm",ival,&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+
+    ierr = PetscOptionsTail();CHKERRQ(ierr);
 	
     PetscFunctionReturn(0);
 }
@@ -1281,16 +1400,24 @@ PetscErrorCode PCCreate_WSMP(PC pc)
     
     PetscFunctionBegin;
     ierr = PetscNewLog(pc,&wsmp);CHKERRQ(ierr);
-    pc->data            = (void*)wsmp;
+    pc->data = (void*)wsmp;
 	
-	/* determine if sequential call or parallel call required */
-	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
-	if (size == 1) {
-		wsmp->sequential = PETSC_TRUE;
-	} else {
-		wsmp->sequential = PETSC_FALSE;
-	}
+    /* determine if sequential call or parallel call required */
+    ierr = MPI_Comm_size(PetscObjectComm((PetscObject)pc),&size);CHKERRQ(ierr);
+    if (size == 1) {
+        wsmp->sequential = PETSC_TRUE;
+    } else {
+        wsmp->sequential = PETSC_FALSE;
+    }
 	
+    /* -- [wsmp] : initialize with default parameters -- */
+    wsmp->IPARM[1 -1] = 0;
+    wsmp->IPARM[2 -1] = 0;
+    wsmp->IPARM[3 -1] = 0;
+    ierr = call_wsmp(wsmp);CHKERRQ(ierr);
+    wsmp->IPARM[4 -1] = 0; /* CSR/CSC matrix format */
+    wsmp->IPARM[5 -1] = 0; /* C style numbering */
+
     pc->ops->apply           = PCApply_WSMP;
     pc->ops->applytranspose  = 0;
     pc->ops->setup           = PCSetUp_WSMP;
