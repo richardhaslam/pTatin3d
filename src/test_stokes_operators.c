@@ -795,6 +795,9 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
+    ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+    
 	PetscTime(&t0);
 	ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 	PetscTime(&t1);
