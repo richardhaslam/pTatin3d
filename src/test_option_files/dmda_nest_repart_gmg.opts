@@ -1,0 +1,26 @@
+
+-perform_viscous_solve_A11asm_operator 
+-iterations 1 
+-ptatin_model viscous_sinker 
+-mx 4 -my 4 -mz 4 
+
+-log_summary crap
+-ksp_type fgmres
+-ksp_rtol 1.0e-6
+-ksp_monitor
+
+-pc_type dmdarepart
+
+-pc_dmdarepart_factor 2
+-dmdarepart_pc_type mg
+-dmdarepart_pc_mg_galerkin
+-dmdarepart_pc_mg_levels 3
+
+-dmdarepart_mg_coarse_pc_type dmdarepart
+-dmdarepart_mg_coarse_pc_dmdarepart_factor 4
+-dmdarepart_mg_coarse_dmdarepart_pc_type jacobi
+-dmdarepart_mg_coarse_dmdarepart_pc_type mg
+-dmdarepart_mg_coarse_dmdarepart_pc_mg_galerkin
+-dmdarepart_mg_coarse_dmdarepart_pc_mg_levels 2
+
+

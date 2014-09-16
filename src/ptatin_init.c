@@ -107,6 +107,7 @@ PetscErrorCode pTatinWritePreamble(void)
 extern PetscErrorCode KSPCreate_ChebychevRN(KSP ksp);
 extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
 extern PetscErrorCode PCCreate_WSMP(PC pc);
+extern PetscErrorCode PCCreate_DMDARepart(PC pc);
 extern PetscLogEvent MAT_MultMFA11;
 extern PetscLogEvent MAT_MultMFA; /* stokes operator */
 extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient opertor */
@@ -151,6 +152,7 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = KSPRegister("chebychevrn",KSPCreate_ChebychevRN);CHKERRQ(ierr);
 	ierr = PCRegister("semiredundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
 	ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
+	ierr = PCRegister("dmdarepart",PCCreate_DMDARepart);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
 
 	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);

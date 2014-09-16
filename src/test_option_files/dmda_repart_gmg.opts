@@ -1,0 +1,19 @@
+
+-perform_viscous_solve_A11asm_operator 
+-iterations 1 
+-ptatin_model viscous_sinker 
+-mx 4 -my 4 -mz 4 
+
+-log_summary crap
+-ksp_type fgmres
+-ksp_rtol 1.0e-6
+-ksp_monitor
+
+-pc_type dmdarepart
+
+-pc_dmdarepart_factor 2
+-dmdarepart_pc_type mg
+-dmdarepart_pc_mg_galerkin
+-dmdarepart_pc_mg_levels 4
+
+

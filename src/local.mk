@@ -69,6 +69,7 @@ libptatin3d-y.c += $(call thisdir, \
 			ksp_chebyrn.c \
 			pc_semiredundant.c \
 			pc_wsmp.c \
+            pc_dmdarepart.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
 			spm_utils.c \
