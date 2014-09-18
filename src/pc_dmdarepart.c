@@ -420,7 +420,7 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         MPI_Comm    comm;
         PetscMPISubComm subcomm;
         PetscMPIInt rank,nsubcomm_size;
-        PetscInt sum,k,nx,ny,nz,start_IJK,pI_re,pJ_re,pK_re,ndof,nsw;
+        PetscInt sum,k,nx,ny,nz,ndof,nsw;
         const PetscInt *_range_i_re;
         const PetscInt *_range_j_re;
         const PetscInt *_range_k_re;
@@ -516,23 +516,27 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         }
         
         /* view result */
-        start_IJK = -1;
+        /*
         if (red->subcomm->parent_rank_active_in_subcomm) {
             PetscMPIInt rank_re;
-            
+            PetscInt    start_IJK;
+         
+            start_IJK = -1;
             ierr = MPI_Comm_rank(subcomm->sub_comm,&rank_re);CHKERRQ(ierr);
             ierr = _DMDARepartitionDetermineGlobalS0(rank_re,red->Mp_re,red->Np_re,red->Pp_re,red->range_i_re,red->range_j_re,red->range_k_re,&start_IJK);CHKERRQ(ierr);
             PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d]: start idx = %d \n",rank,rank_re,start_IJK);
         } else {
             PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: dmrepart doesn't live on this rank \n",rank);
         }
-        
+        */
         /* Determine (i,j,k) value of subcomm ranks */
-        pI_re = pJ_re = pK_re = -1;
+        /*
         if (red->subcomm->parent_rank_active_in_subcomm) {
             PetscMPIInt rank_re;
             PetscInt rankIJ_re;
+            PetscInt pI_re,pJ_re,pK_re;
             
+            pI_re = pJ_re = pK_re = -1;
             ierr = MPI_Comm_rank(subcomm->sub_comm,&rank_re);CHKERRQ(ierr);
             pK_re = rank_re/(red->Mp_re*red->Np_re);
             rankIJ_re = rank_re - pK_re * (red->Mp_re*red->Np_re);
@@ -541,7 +545,7 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             
             PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d] (%d %d %d)\n",rank,rank_re,pI_re,pJ_re,pK_re);
         }
-        
+        */
         /* attach dm to ksp on sub communicator */
         if (subcomm->parent_rank_active_in_subcomm) {
             ierr = KSPSetDM(red->ksp,red->dmrepart);CHKERRQ(ierr);
