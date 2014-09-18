@@ -920,12 +920,14 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
             char name[1000];
             Vec coordsH;
             DM cdaH;
+            int s32;
             
             ierr = DMGetCoordinateDM(daH,&cdaH);CHKERRQ(ierr);
             ierr = DMGetCoordinates(daH,&coordsH);CHKERRQ(ierr);
             ierr = VecStrideScatter(H,1,coordsH,INSERT_VALUES);CHKERRQ(ierr);
-            
-            sprintf(name,"surface_diffusion_%.4d.vtk",s);
+
+            PetscMPIIntCast(s,&s32);
+            sprintf(name,"surface_diffusion_%.4d.vtk",s32);
             ierr = DMDAViewPetscVTK(daH,H,name);CHKERRQ(ierr);
         }
         //

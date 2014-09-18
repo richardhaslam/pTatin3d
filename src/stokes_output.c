@@ -280,7 +280,12 @@ PetscErrorCode _SurfaceQuadratureViewParaviewPVTU_Stokes(const char prefix[],con
 	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 	for (i=0; i<nproc; i++) {
 		for (fe=0; fe<HEX_EDGES; fe++) {
-			asprintf( &sourcename, "%s_face%.2d-subdomain%1.5d.vtu", prefix, fe,i );
+            int i32,fe32;
+            
+            PetscMPIIntCast(i,&i32);
+            PetscMPIIntCast(fe,&fe32);
+            
+			asprintf( &sourcename, "%s_face%.2d-subdomain%1.5d.vtu", prefix, fe32,i32 );
 			fprintf( fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 			free(sourcename);
 		}
@@ -309,8 +314,10 @@ PetscErrorCode SurfaceQuadratureViewParaview_Stokes(PhysCompStokes ctx,const cha
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	
 	for (e=0; e<HEX_EDGES; e++) {
+        int e32;
 		
-		asprintf(&appended,"%s_face%.2d",prefix,e);
+        PetscMPIIntCast(e,&e32);
+		asprintf(&appended,"%s_face%.2d",prefix,e32);
 		ierr = pTatinGenerateParallelVTKName(appended,"vtu",&vtkfilename);CHKERRQ(ierr);
 		if (path) {
 			asprintf(&filename,"%s/%s",path,vtkfilename);

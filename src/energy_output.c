@@ -466,7 +466,6 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 					int procid32;
 					
 					PetscMPIIntCast(procid,&procid32);
-					
 					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
 					for( II=0; II<indent_level; II++ ) {
 						if(vtk_fp) fprintf(vtk_fp,"  ");
@@ -485,7 +484,10 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 			for( i=0;i<pM;i++ ) {
 				char *name;
 				PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
-				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid );
+                int procid32;
+                
+                PetscMPIIntCast(procid,&procid32);
+				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
 				for( II=0; II<indent_level; II++ ) {
 					if(vtk_fp) fprintf(vtk_fp,"  ");
 				}

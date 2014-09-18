@@ -1054,7 +1054,7 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 				int procid32;
 				
 				PetscMPIIntCast(procid,&procid32);
-				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid );
+				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
 				for( II=0; II<indent_level; II++ ) {
 					if(vtk_fp) fprintf(vtk_fp,"  ");
 				}
@@ -1139,10 +1139,12 @@ PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
 			for (i=processor_I[0]; i<processor_I[1]; i++) {
 				char     *name;
 				PetscInt procid;
+                int procid32;
 				
 				procid = i + j*processor_span[0] + k*processor_span[0]*processor_span[1]; /* convert proc(i,j,k) to pid */
+				PetscMPIIntCast(procid,&procid32);
 
-				asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid );
+				asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid32 );
 				if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "      <Piece Extent=\"%D %D %D %D %D %D\"      Source=\"%s\"/>\n",
 													 olx[i],olx[i]+lmx[i]*2,
 													 oly[j],oly[j]+lmy[j]*2,

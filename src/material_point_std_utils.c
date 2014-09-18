@@ -1166,7 +1166,10 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 	/* write out the parallel information */
 	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 	for (i=0; i<nproc; i++) {
-		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i );
+        int i32;
+        
+        PetscMPIIntCast(i,&i32);
+		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 );
 		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 		free(sourcename);
 	}
