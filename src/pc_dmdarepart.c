@@ -445,10 +445,14 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         /* setup krylov solver */
 		red->ksp = NULL;
 		if (red->subcomm->parent_rank_active_in_subcomm) {
-			const char     *prefix;
+			const char *prefix;
+            PetscInt   tablevel;
+            
+            ierr = PetscObjectGetTabLevel((PetscObject)pc,&tablevel);CHKERRQ(ierr);
+            tablevel += 4;
             
 			ierr = KSPCreate(red->subcomm->sub_comm,&red->ksp);CHKERRQ(ierr);
-			ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+			ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,tablevel);CHKERRQ(ierr);
 			ierr = PetscLogObjectParent((PetscObject)pc,(PetscObject)red->ksp);CHKERRQ(ierr);
             
 			ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
