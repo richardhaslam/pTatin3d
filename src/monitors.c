@@ -240,24 +240,24 @@ PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     
     moniter_set = PETSC_TRUE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-    if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor",&moniter_set,NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
     
     moniter_set = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_ksp_monitor_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-    if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
     
     moniter_set = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_F_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Residual_Paraview,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_F_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Residual_Paraview,(void*)user,NULL);CHKERRQ(ierr); }
 
     moniter_set = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_dX_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_SolutionUpdate_Paraview,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_dX_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_SolutionUpdate_Paraview,(void*)user,NULL);CHKERRQ(ierr); }
 
     moniter_set = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(PETSC_NULL,"-stokes_snes_monitor_X_paraview",&moniter_set,PETSC_NULL);CHKERRQ(ierr);
-    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Solution_Paraview,(void*)user,PETSC_NULL);CHKERRQ(ierr); }
+    ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_X_paraview",&moniter_set,NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Solution_Paraview,(void*)user,NULL);CHKERRQ(ierr); }
 
     PetscFunctionReturn(0);
 }

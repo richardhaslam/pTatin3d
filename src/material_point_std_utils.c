@@ -676,7 +676,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	// re-size //
 	np_per_cell = Nxp[0] * Nxp[1];
 	
-	DataBucketGetSizes(db,&np_current,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&np_current,NULL,NULL);
     (*start_pidx) = (PetscInt)np_current;
 	
     /* define new size of the bucket */
@@ -827,7 +827,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,np_current,np_new);CHKERRQ(ierr);
 	
     /* length of new points added */
-	DataBucketGetSizes(db,&np_current,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&np_current,NULL,NULL);
     (*n_pidx) = (PetscInt)np_current - (*start_pidx);
     
 	PetscFunctionReturn(0);

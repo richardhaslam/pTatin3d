@@ -1187,7 +1187,7 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 			el_eta[p] = cell_gausspoints[p].eta;
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			MatMultMF_Stokes_MixedFEM3d_B(fac,el_eta[p],ux,uy,uz,elp,NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,&Ye[0]);CHKERRQ(ierr);
@@ -1261,7 +1261,7 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 		for (p=0; p<ngp; p++) {
 			fac       = WEIGHT[p] * detJ[p];
 			
-			MatMultMF_Stokes_MixedFEM3d_A12(fac,0,0,0,0,elp,PETSC_NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
+			MatMultMF_Stokes_MixedFEM3d_A12(fac,0,0,0,0,elp,NULL,dNudx[p],dNudy[p],dNudz[p],NIp[p],Ye);
 		}
 		
 		ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Yu,  vel_el_lidx,Ye);CHKERRQ(ierr);

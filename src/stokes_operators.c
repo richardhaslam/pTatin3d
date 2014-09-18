@@ -351,7 +351,7 @@ PetscErrorCode MatDestroy_MatStokesMF_QuasiNewtonX(Mat A)
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	ierr = VecDestroy(&Xloc);CHKERRQ(ierr);
@@ -964,7 +964,7 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
   ierr = DMCompositeGetLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	
@@ -1355,7 +1355,7 @@ PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
   ierr = DMGetLocalVector(dap,&XPloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	
@@ -1493,7 +1493,7 @@ PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dap,&YPloc);CHKERRQ(ierr);
 	/* fetch shifted coordinate vector from Mat A */
-	Xloc = PETSC_NULL;
+	Xloc = NULL;
 	ierr = PetscObjectQuery((PetscObject)A,"MatA_QuasiNewtonX",(PetscObject*)&Xloc);CHKERRQ(ierr);
 	if (!Xloc) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Require a shifted coordinate vector to have been set via PetscObjectCompose()"); }
 	

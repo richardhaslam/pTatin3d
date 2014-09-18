@@ -2700,7 +2700,7 @@ PetscErrorCode _get_field_MPntStd(MPAccess X,const int p,MPntStd **point)
 	if (X->mp_std_field_idx == -1) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntStd must be registered");
 	}
-	if (X == PETSC_NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
 	PField = X->PField[ X->mp_std_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -2715,7 +2715,7 @@ PetscErrorCode _get_field_MPntPStokes(MPAccess X,const int p,MPntPStokes **point
 	if (X->mp_stokes_field_idx == -1) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPStokes must be registered");
 	}
-	if (X == PETSC_NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
 	PField = X->PField[ X->mp_stokes_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -2730,7 +2730,7 @@ PetscErrorCode _get_field_MPntPStokesPl(MPAccess X,const int p,MPntPStokesPl **p
 	if (X->mp_stokespl_field_idx == -1) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPStokesPl must be registered");
 	}
-	if (X == PETSC_NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
 	PField = X->PField[ X->mp_stokespl_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -2745,7 +2745,7 @@ PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point
 	if (X->mp_energy_field_idx == -1) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Material point field MPntPEnergy must be registered");
 	}
-	if (X == PETSC_NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
+	if (X == NULL) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must call MaterialPointGetAccess() first"); }
 	PField = X->PField[ X->mp_energy_field_idx ];
 	DataFieldAccessPoint(PField,p,(void**)point);
 	
@@ -3044,7 +3044,7 @@ PetscErrorCode MaterialPointScale_global_coord(MPAccess X,double var)
     int np,p;
     PetscErrorCode ierr;
     
-    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    DataBucketGetSizes(X->db,&np,NULL,NULL);
     for (p=0; p<np; p++) {
         double *field;
         
@@ -3066,7 +3066,7 @@ PetscErrorCode MaterialPointScale_viscosity(MPAccess X,double var)
     int np,p;
     PetscErrorCode ierr;
     
-    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    DataBucketGetSizes(X->db,&np,NULL,NULL);
     for (p=0; p<np; p++) {
         double field;
         
@@ -3086,7 +3086,7 @@ PetscErrorCode MaterialPointScale_density(MPAccess X,double var)
     int np,p;
     PetscErrorCode ierr;
     
-    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    DataBucketGetSizes(X->db,&np,NULL,NULL);
     for (p=0; p<np; p++) {
         double field;
         
@@ -3106,7 +3106,7 @@ PetscErrorCode MaterialPointScale_plastic_strain(MPAccess X,double var)
     int np,p;
     PetscErrorCode ierr;
     
-    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    DataBucketGetSizes(X->db,&np,NULL,NULL);
     for (p=0; p<np; p++) {
         float field;
         
@@ -3126,7 +3126,7 @@ PetscErrorCode MaterialPointScale_diffusivity(MPAccess X,double var)
     int np,p;
     PetscErrorCode ierr;
     
-    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    DataBucketGetSizes(X->db,&np,NULL,NULL);
     for (p=0; p<np; p++) {
         double field;
         
@@ -3146,7 +3146,7 @@ PetscErrorCode MaterialPointScale_heat_source(MPAccess X,double var)
     int np,p;
     PetscErrorCode ierr;
     
-    DataBucketGetSizes(X->db,&np,PETSC_NULL,PETSC_NULL);
+    DataBucketGetSizes(X->db,&np,NULL,NULL);
     for (p=0; p<np; p++) {
         double field;
         

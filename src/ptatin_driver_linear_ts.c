@@ -871,7 +871,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt_max_surface_displacement",&surface_displacement_max,PETSC_NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
     
 	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> new simulation");CHKERRQ(ierr);
 	
@@ -1530,7 +1530,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", user->step );
     PetscTime(&time[0]);
-		ierr = SNESSolve(snes,PETSC_NULL,X);CHKERRQ(ierr);
+		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
     PetscTime(&time[1]);
 		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
     ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);

@@ -85,8 +85,8 @@ PetscErrorCode SNESGetKSP_(SNES snes,SNES *this_snes,KSP *this_ksp)
     PetscBool is_ngmres = PETSC_FALSE;
     PetscErrorCode ierr;
     
-    *this_snes = PETSC_NULL;
-    *this_ksp  = PETSC_NULL;
+    *this_snes = NULL;
+    *this_ksp  = NULL;
     ierr = PetscObjectTypeCompare((PetscObject)snes,SNESNGMRES,&is_ngmres);CHKERRQ(ierr);
     
     if (is_ngmres) {

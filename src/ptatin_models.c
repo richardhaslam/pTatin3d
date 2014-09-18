@@ -72,15 +72,15 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	m->disable_update_mesh_geometry      = PETSC_FALSE;
 	m->disable_output                    = PETSC_FALSE;
 
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_intial_solution_disable",&m->disable_initial_solution,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_initial_stokes_variables_disable",&m->disable_initial_stokes_variables,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_apply_bc_disable",&m->disable_apply_bc,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_apply_bc_mg_disable",&m->disable_apply_bc_mg,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_apply_material_bc_disable",&m->disable_apply_material_bc,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_initial_mesh_geometry_disable",&m->disable_initial_mesh_geometry,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_initial_material_geometry_disable",&m->disable_initial_material_geometry,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_update_mesh_geometry_disable",&m->disable_update_mesh_geometry,0);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(PETSC_NULL,"-ptatin_model_output_disable",&m->disable_output,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_intial_solution_disable",&m->disable_initial_solution,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_initial_stokes_variables_disable",&m->disable_initial_stokes_variables,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_apply_bc_disable",&m->disable_apply_bc,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_apply_bc_mg_disable",&m->disable_apply_bc_mg,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_apply_material_bc_disable",&m->disable_apply_material_bc,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_initial_mesh_geometry_disable",&m->disable_initial_mesh_geometry,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_initial_material_geometry_disable",&m->disable_initial_material_geometry,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_update_mesh_geometry_disable",&m->disable_update_mesh_geometry,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_output_disable",&m->disable_output,0);CHKERRQ(ierr);
 	
 	*model = m;
 	PetscFunctionReturn(0);

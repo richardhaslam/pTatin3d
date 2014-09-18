@@ -1850,7 +1850,7 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
 	
 	ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
 	
-	DataBucketGetSizes(db,&npoints,PETSC_NULL,PETSC_NULL);
+	DataBucketGetSizes(db,&npoints,NULL,NULL);
 	ierr = PetscMalloc(sizeof(PSortCtx)*(npoints),&plist);CHKERRQ(ierr);
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
@@ -1903,12 +1903,12 @@ PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscI
     if (_plist)      {
         plist      = *_plist;
         ierr = PetscFree(plist);CHKERRQ(ierr);
-        *_plist      = PETSC_NULL;
+        *_plist      = NULL;
     }
     if (_pcell_list) {
         pcell_list = *_pcell_list;
         ierr = PetscFree(pcell_list);CHKERRQ(ierr);
-        *_pcell_list = PETSC_NULL;
+        *_pcell_list = NULL;
     }
     
 	PetscFunctionReturn(0);
