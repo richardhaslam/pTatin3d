@@ -6,7 +6,7 @@
 typedef struct {
 	PetscInt nsubcomm_factor;
 	PetscMPIInt nsubcomm_size;
-	MPI_Subcomm subcomm;
+	PetscMPISubComm subcomm;
 	Mat A,B,Ared,Bred;
 	Vec xred,yred;
 	KSP ksp;
@@ -20,7 +20,7 @@ typedef struct {
 /* helpers for gather matrix and scattering vectors */
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSemiRedundant"
-PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,Mat *_red)
+PetscErrorCode MatCreateSemiRedundant(Mat A,PetscMPISubComm subcomm,MatReuse reuse,Mat *_red)
 {
 	PetscErrorCode ierr;
 	IS             isrow,iscol;
@@ -119,7 +119,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,MPI_Subcomm subcomm,MatReuse reuse,M
 
 #undef __FUNCT__
 #define __FUNCT__ "MatCreateSemiRedundantFuseBlocks"
-PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReuse reuse,Mat *_red)
+PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,MatReuse reuse,Mat *_red)
 {
 	PetscErrorCode ierr;
 	IS             isrow,iscol;
@@ -135,13 +135,13 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,MPI_Subcomm subcomm,MatReu
 	ierr = MatGetSize(A,&nr,&nc);CHKERRQ(ierr);
 	ierr = MatGetBlockSize(A,&bsize);CHKERRQ(ierr);
 	ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-	ierr = MPI_Subcomm_get_comm(subcomm,&comm_sub);CHKERRQ(ierr);
+	ierr = PetscMPISubCommGetComm(subcomm,&comm_sub);CHKERRQ(ierr);
 	ierr = MatGetOwnershipRanges(A,&ranges);CHKERRQ(ierr);
 
 	ierr = MPI_Comm_size(comm,&nsize);CHKERRQ(ierr);
 	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-	ierr = MPI_Subcomm_get_num_sub_ranks(subcomm,&nsize_sub);CHKERRQ(ierr);
+	ierr = PetscMPISubCommGetNumSubRanks(subcomm,&nsize_sub);CHKERRQ(ierr);
 	if (nsize%nsize_sub != 0) {
 		//printf("nsize %d nsize_sub %d \n",nsize,nsize_sub);
 		SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use -pc_semiredundant_fuse_blocks when comm->size is not exactly divisible by comm_sub->size");
@@ -257,9 +257,9 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
   PetscErrorCode   ierr;
   PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
 	MPI_Comm     comm;
-	MPI_Subcomm  sc;
+	PetscMPISubComm  sc;
   MatReuse     reuse;
-	PetscErrorCode (*fp_matcreate)(Mat,MPI_Subcomm,MatReuse,Mat*);
+	PetscErrorCode (*fp_matcreate)(Mat,PetscMPISubComm,MatReuse,Mat*);
 	
 	
   PetscFunctionBegin;
@@ -268,7 +268,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 	
 		/* set up sub communicator */
 		ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-		ierr = MPI_Subcomm_create_MethodA(comm,red->nsubcomm_factor,&sc);CHKERRQ(ierr);
+		ierr = PetscMPISubCommCreate(comm,red->nsubcomm_factor,&sc);CHKERRQ(ierr);
 		red->subcomm = sc;
 		ierr = MPI_Comm_size(sc->sub_comm,&red->nsubcomm_size);CHKERRQ(ierr);
 		
@@ -463,7 +463,7 @@ static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
 	if (red->ksp) {
 		ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
 	}
-	ierr = MPI_Subcomm_free(&red->subcomm);CHKERRQ(ierr);
+	ierr = PetscMPISubCommDestroy(&red->subcomm);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

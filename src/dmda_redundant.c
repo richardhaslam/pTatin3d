@@ -219,12 +219,12 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDACreate3dSemiRedundant"
-PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM *sda)
+PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,PetscMPISubComm *sub,DM *sda)
 {
 	MPI_Comm comm,subcomm;
-	MPI_Subcomm _sub;
+	PetscMPISubComm _sub;
 	DM _sda,seq_da;
-	int active;
+	PetscBool active;
 	PetscInt M,N,P,dof,sw;
 	DMBoundaryType wrap[3];
 	DMDAStencilType st;
@@ -233,9 +233,9 @@ PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM
 
 	comm = PetscObjectComm((PetscObject)da);
 	
-	ierr = MPI_Subcomm_create_MethodA(comm,(int)nred,&_sub);CHKERRQ(ierr);
-	ierr = MPI_Subcomm_get_comm(_sub,&subcomm);CHKERRQ(ierr);
-	ierr = MPI_Subcomm_get_active(_sub,&active);CHKERRQ(ierr);
+	ierr = PetscMPISubCommCreate(comm,nred,&_sub);CHKERRQ(ierr);
+	ierr = PetscMPISubCommGetComm(_sub,&subcomm);CHKERRQ(ierr);
+	ierr = PetscMPISubCommGetActive(_sub,&active);CHKERRQ(ierr);
 	
 	/* get properties from original da, create sub da letting petsc determine distribution */
 	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, &dof,&sw,&wrap[0],&wrap[1],&wrap[2],&st );CHKERRQ(ierr);
