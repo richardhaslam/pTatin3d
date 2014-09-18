@@ -749,6 +749,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			case OP_TYPE_MFGALERKIN:
 			{
 				Mat Auu;
+				Vec X;
+				MatNullSpace nullsp;
 				
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: MFGalerkin :: assembled operator \n", k);
 				if (k==nlevels-1) {
@@ -767,6 +769,12 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				operatorB11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
 				
+				ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+				ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+				ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
+				ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+				ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+                
 			}
 				break;
 				
@@ -796,7 +804,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatin3dStokesKSPConfigureFSGMG"
-PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[])
+PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[],DM dav_hierarchy[])
 {
 	PetscInt k,nsplits;
 	PC       pc,pc_i;
@@ -808,6 +816,9 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 	
+    ierr = KSPSetDM(sub_ksp[0],dav_hierarchy[nlevels-1]);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(sub_ksp[0],PETSC_FALSE);CHKERRQ(ierr);
+    
 	ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
 	ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 	ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
@@ -823,6 +834,10 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	/* No - it looks like PCSetUp_MG will call set operators on all levels if the SetOperators was called on the finest, which should/is done by the SNES */
 	ierr = PCMGGetCoarseSolve(pc_i,&ksp_coarse);CHKERRQ(ierr);
 	ierr = KSPSetOperators(ksp_coarse,operatorA11[0],operatorA11[0]);CHKERRQ(ierr);
+
+    ierr = KSPSetDM(ksp_coarse,dav_hierarchy[0]);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(ksp_coarse,PETSC_FALSE);CHKERRQ(ierr);
+    
 	for( k=1; k<nlevels; k++ ){
 		PetscBool use_low_order_geometry = PETSC_FALSE;
 		
@@ -837,6 +852,9 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 			// Use A for smoother, lo
 			ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
 		}
+        
+        ierr = KSPSetDM(ksp_smoother,dav_hierarchy[k]);CHKERRQ(ierr);
+        ierr = KSPSetDMActive(ksp_smoother,PETSC_FALSE);CHKERRQ(ierr);
 	}
 	PetscFunctionReturn(0);
 }
@@ -1042,7 +1060,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
     
 	/* configure uu split for galerkin multi-grid */
-	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+	ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
     
     //ierr = SNESStokes_KSPSetConvergenceTest_ScaledResiduals(snes,user);CHKERRQ(ierr);
 	
@@ -1187,7 +1205,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
 		ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
 		
-		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
         
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", step );
@@ -1525,7 +1543,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		ierr = PCFieldSplitSetIS(pc,"u",is_stokes_field[0]);CHKERRQ(ierr);
 		ierr = PCFieldSplitSetIS(pc,"p",is_stokes_field[1]);CHKERRQ(ierr);
 		
-		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v);CHKERRQ(ierr);
+		ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,nlevels,operatorA11,operatorB11,interpolation_v,dav_hierarchy);CHKERRQ(ierr);
 		
 		/* e) solve */
 		PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", user->step );

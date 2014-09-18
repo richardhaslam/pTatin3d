@@ -19,12 +19,31 @@
 ##      and the inner solver
 ##
 #PETSc Option Table entries:
--dmdarepart_ksp_monitor
--dmdarepart_ksp_rtol 1.0e-10
--dmdarepart_ksp_type fgmres
--dmdarepart_pc_mg_galerkin
--dmdarepart_pc_mg_levels 4
--dmdarepart_pc_type mg
+
+-da_processors_y 1
+-da_processors_z 1
+
+-da_refine_y 1
+-da_refine_z 1
+
+-mx 64
+-my 4
+-mz 4
+-pc_type mg
+-pc_mg_galerkin
+-pc_mg_levels 2
+
+-mg_coarse_pc_type dmdarepart
+-mg_coarse_pc_dmdarepart_factor 2
+
+    -mg_coarse_ksp_type preonly
+
+    -mg_coarse_dmdarepart_pc_type mg
+    -mg_coarse_dmdarepart_pc_mg_galerkin
+    -mg_coarse_dmdarepart_pc_mg_levels 3
+
+    -mg_coarse_dmdarepart_ksp_type preonly
+
 -iterations 1
 -ksp_max_it 1
 -ksp_monitor_true_residual
@@ -32,11 +51,6 @@
 -ksp_rtol 1.0e-6
 -ksp_type richardson
 -log_summary crap
--mx 4
--my 4
--mz 4
--pc_dmdarepart_factor 2
--pc_type dmdarepart
 -perform_viscous_solve_A11asm_operator
 -ptatin_model viscous_sinker
 #End of PETSc Option Table entries

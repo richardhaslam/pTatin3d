@@ -2,7 +2,9 @@
 -perform_viscous_solve_A11asm_operator 
 -iterations 1 
 -ptatin_model viscous_sinker 
--mx 4 -my 4 -mz 4 
+-mx 4
+-my 4
+-mz 4 
 
 -log_summary crap
 -ksp_type fgmres

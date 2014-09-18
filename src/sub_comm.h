@@ -32,27 +32,28 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 
-#ifndef __ptat3d_sub_comm_h__
-#define __ptat3d_sub_comm_h__
+#ifndef __petsc_mpi_sub_comm_h__
+#define __petsc_mpi_sub_comm_h__
 
-typedef struct _p_MPI_Subcomm *MPI_Subcomm;
+#include <petsc.h>
 
-struct _p_MPI_Subcomm { 
+typedef struct _p_PetscMPISubComm *PetscMPISubComm;
+
+struct _p_PetscMPISubComm {
 	MPI_Comm parent_comm;
 	MPI_Comm sub_comm;
-	int nranks_from_parent;
-	int *ranks_from_parent;
-	int parent_rank_active_in_subcomm; /* 1:true, 0:false */
+	PetscMPIInt nranks_from_parent;
+	PetscMPIInt *ranks_from_parent;
+	PetscBool parent_rank_active_in_subcomm; /* 1:true, 0:false */
 };
 
-int MPI_Subcomm_free(MPI_Subcomm *scomm);
-int MPI_Subcomm_get_active(MPI_Subcomm sc,int *a);
-int MPI_Subcomm_get_parent_comm(MPI_Subcomm sc,MPI_Comm *a);
-int MPI_Subcomm_get_comm(MPI_Subcomm sc,MPI_Comm *a);
-int MPI_Subcomm_get_num_sub_ranks(MPI_Subcomm sc,int *a);
-int MPI_Subcomm_get_active_ranks(MPI_Subcomm sc,int **a);
 
-int MPI_Subcomm_create_MethodA(MPI_Comm parent_comm,int parent_reduction_factor,MPI_Subcomm *scomm);
-
+PetscErrorCode PetscMPISubCommCreate(MPI_Comm parent_comm,PetscInt parent_reduction_factor,PetscMPISubComm *scomm);
+PetscErrorCode PetscMPISubCommDestroy(PetscMPISubComm *scomm);
+PetscErrorCode PetscMPISubCommGetActive(PetscMPISubComm sc,PetscBool *a);
+PetscErrorCode PetscMPISubCommGetParentComm(PetscMPISubComm sc,MPI_Comm *a);
+PetscErrorCode PetscMPISubCommGetComm(PetscMPISubComm sc,MPI_Comm *a);
+PetscErrorCode PetscMPISubCommGetNumSubRanks(PetscMPISubComm sc,PetscMPIInt *a);
+PetscErrorCode PetscMPISubCommGetActiveRanks(PetscMPISubComm sc,PetscMPIInt **a);
 
 #endif

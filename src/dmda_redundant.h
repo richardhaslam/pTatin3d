@@ -43,7 +43,7 @@ PetscErrorCode  x_DMDACreate3d(MPI_Comm comm,DMBoundaryType wrap[],DMDAStencilTy
 															 PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da);
 
 PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj, PetscInt ej, PetscInt sk, PetscInt ek, PetscInt n_dofs, DM *_seq_DM );
-PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,MPI_Subcomm *sub,DM *sda);
+PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,PetscMPISubComm *sub,DM *sda);
 
 #endif
 

@@ -111,7 +111,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 			ierr = VecDestroy(&field);CHKERRQ(ierr);
 			ierr = DMDestroy(&sdav);CHKERRQ(ierr);
 		}
-		MPI_Subcomm_free(&scomm);
+		PetscMPISubCommDestroy(&scomm);
 	}
 #endif
 	

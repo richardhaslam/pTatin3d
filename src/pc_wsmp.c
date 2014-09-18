@@ -42,6 +42,8 @@ typedef struct {
 PetscErrorCode WSMPSetFromOptions_Ordering(PC_WSMP *wsmp);
 PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC_WSMP *wsmp);
 PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC_WSMP *wsmp);
+PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC_WSMP *wsmp);
+PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC_WSMP *wsmp);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_CheckCSR"
@@ -125,15 +127,17 @@ PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
 {
     PetscErrorCode ierr;
     PetscMPIInt rank;
-    FILE *fp;
+    FILE *fp = NULL;
     char fname[PETSC_MAX_PATH_LEN];
     PetscInt i;
-    MPI_Comm comm;
 
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
     PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s_rank%D.dat",name,rank);
     fp = fopen(fname,"w");
+    if (!fp) {
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",fname);
+    }
 
     PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",wsmp->Nlocal);
     for (i=0; i<wsmp->Nlocal; i++) {
