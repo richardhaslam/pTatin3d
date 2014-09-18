@@ -9,7 +9,7 @@
 ##
 ## =============================================================== 
 #PETSc Option Table entries:
--A11_operator_type 0,1,1,1,1
+-A11_operator_type 0,1,1
 #-da_processors_x 1
 #-da_processors_y 1
 #-da_processors_z 1
