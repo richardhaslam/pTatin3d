@@ -50,8 +50,9 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
     PetscErrorCode ierr;
     MPI_Comm comm;
     Mat B;
-    PetscInt m,M;
-    PetscInt *nnz_d,*nnz_o;
+    PetscInt i,m,M,_Nlocal,_nnz;
+    PetscInt *_ia,*_ja;
+    PetscScalar *_avals;
     Vec x,y,y1;
     PetscReal nrm;
     PetscScalar range[2];
@@ -64,11 +65,22 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
     ierr = MatSetSizes(B,m,m,M,M);CHKERRQ(ierr);
     ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
     
-    PetscMalloc(sizeof(PetscInt)*m,&nnz_d);PetscMemzero(nnz_d,sizeof(PetscInt)*m);
-    PetscMalloc(sizeof(PetscInt)*m,&nnz_o);PetscMemzero(nnz_o,sizeof(PetscInt)*m);
+    _Nlocal = (PetscInt)wsmp->Nlocal;
+    _nnz    = (PetscInt)wsmp->nnz;
+    PetscMalloc(sizeof(PetscInt)*(_Nlocal+1),&_ia);
+    PetscMalloc(sizeof(PetscInt)*_nnz,&_ja);
+    PetscMalloc(sizeof(PetscScalar)*_nnz,&_avals);
     
-    ierr = MatSeqSBAIJSetPreallocationCSR(B,1,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
-    ierr = MatMPISBAIJSetPreallocationCSR(B,1,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
+    for (i=0; i<_Nlocal+1; i++) {
+        _ia[i] = (int)wsmp->IA[i];
+    }
+    for (i=0; i<_nnz; i++) {
+        _ja[i] = (int)wsmp->JA[i];
+        _avals[i] = (PetscScalar)wsmp->AVALS[i];
+    }
+    
+    ierr = MatSeqSBAIJSetPreallocationCSR(B,1,_ia,_ja,_avals);CHKERRQ(ierr);
+    ierr = MatMPISBAIJSetPreallocationCSR(B,1,_ia,_ja,_avals);CHKERRQ(ierr);
 
     ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
     ierr = MatGetVecs(A,NULL,&y1);CHKERRQ(ierr);
@@ -95,8 +107,9 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
     PetscPrintf(comm,"{wsmp} min: %+1.12e \n",range[0]);
     PetscPrintf(comm,"{wsmp} max: %+1.12e \n",range[1]);
     
-    PetscFree(nnz_d);
-    PetscFree(nnz_o);
+    PetscFree(_ia);
+    PetscFree(_ja);
+    PetscFree(_avals);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&y);CHKERRQ(ierr);
     ierr = VecDestroy(&y1);CHKERRQ(ierr);
