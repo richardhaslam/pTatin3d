@@ -4,6 +4,7 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <sub_comm.h>
+#include <dmda_duplicate.h>
 
 /*
  
@@ -115,7 +116,7 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     PetscBool active;
     Vec xsub,xred,x;
     MPI_Comm comm;
-    PetscInt st,ed,n,N,i,m;
+    PetscInt st,ed,n,N,m;
     IS isin;
     VecScatter scatter;
     Mat B;
