@@ -749,6 +749,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 			case OP_TYPE_MFGALERKIN:
 			{
 				Mat Auu;
+				Vec X;
+				MatNullSpace nullsp;
 				
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: MFGalerkin :: assembled operator \n", k);
 				if (k==nlevels-1) {
@@ -767,6 +769,12 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				operatorB11[k] = Auu;
 				ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
 				
+				ierr = DMGetCoordinates(dav_hierarchy[k],&X);CHKERRQ(ierr);
+				ierr = MatNullSpaceCreateRigidBody(X,&nullsp);CHKERRQ(ierr);
+				ierr = MatSetBlockSize(Auu,3);CHKERRQ(ierr);
+				ierr = MatSetNearNullSpace(Auu,nullsp);CHKERRQ(ierr);
+				ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+                
 			}
 				break;
 				
