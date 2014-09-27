@@ -101,20 +101,21 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
 #define __FUNCT__ "pTatin_EvaluateRheologyNonlinearitiesMarkers"
 PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {	
-  RheologyConstants *rheo;
+    RheologyConstants *rheo;
 	int               npoints;
 	DataField         PField_std;
 	DataField         PField_stokes;
-  MPntStd           *mp_std;
+    MPntStd           *mp_std;
 	MPntPStokes       *mp_stokes;
 	PetscErrorCode    ierr;
-  static int        been_here=0;
+    static int        been_here=0;
 	PhysCompStokes    stokes;
+    PetscBool         deactivate_gravity = PETSC_FALSE;
 	
 	PetscFunctionBegin;
-  rheo = &user->rheology_constants;
+    rheo = &user->rheology_constants;
 	switch (rheo->rheology_type) {
-
+            
 		case RHEOLOGY_VISCOUS:
 			if (been_here == 0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS selected ***\n");
@@ -128,37 +129,37 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VP_STD selected ***\n");
 			}
 			ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
-      ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
+            ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
 			break;
-
+            
 		case RHEOLOGY_LAVA:
 			if (been_here == 0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_LAVA selected ***\n");
 			}
 			ierr = EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,u,dap,p);CHKERRQ(ierr);
-      ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
+            ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
 			break;
 			
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update is not defined");
 			break;
 	}
-
-  /* Marker -> quadrature point projection */
+    
+    /* Marker -> quadrature point projection */
 	DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
 	DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 	
 	DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
 	mp_std    = PField_std->data; /* should write a function to do this */
 	mp_stokes = PField_stokes->data; /* should write a function to do this */
-
+    
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	
 	switch (user->coefficient_projection_type) {
-
+            
 		case -1:			/* Perform null projection use the values currently defined on the quadrature points */
 			break;
-
+            
 		case 0:			/* Perform P0 projection over Q2 element directly onto quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 marker->quadrature projection not supported");
 			break;
@@ -170,16 +171,21 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 		case 2: 			/* Perform Q2 projection and interpolate back to quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
 			break;
-
+            
 		case 3: 			/* Perform P1 projection and interpolate back to quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
 			break;
+        case 4:
+            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
+            
 	}
-
-	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
-	
+    
+    PetscOptionsGetBool(NULL,"-deactivate_gravity",&deactivate_gravity,NULL);
+    if (!deactivate_gravity) {
+        ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
+	}
 	been_here = 1;
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
