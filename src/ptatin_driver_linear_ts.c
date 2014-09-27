@@ -1021,7 +1021,19 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatin3dCreateStokesOperators(user->stokes_ctx,is_stokes_field,
                                          nlevels,dav_hierarchy,interpolation_v,u_bclist,volQ,
                                          &A,operatorA11,&B,operatorB11);CHKERRQ(ierr);
-	
+    /*
+    {
+        MatNullSpace nullsp;
+        Vec Xtmp;
+        
+        ierr = DMCreateGlobalVector(multipys_pack,&Xtmp);CHKERRQ(ierr);
+        ierr = MatNullSpaceCreateStokesConstantPressure(multipys_pack,Xtmp,&nullsp);CHKERRQ(ierr);
+        ierr = MatSetNullSpace(A,nullsp);CHKERRQ(ierr);
+
+        ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+        ierr = VecDestroy(&Xtmp);CHKERRQ(ierr);
+    }
+    */ 
 	/* work vector for solution and residual */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
@@ -1076,7 +1088,14 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
     ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
 	ierr = pTatinLogPetscLog(user,"Stokes");CHKERRQ(ierr);
-    
+    /*
+    {
+        MatNullSpace nullsp;
+        
+        ierr = MatGetNullSpace(A,&nullsp);CHKERRQ(ierr);
+        ierr = MatNullSpaceRemove(nullsp,X);CHKERRQ(ierr);
+    }
+    */
 	/* dump */
 	ierr = pTatinModel_Output(user->model,user,X,"step000000");CHKERRQ(ierr);
     
