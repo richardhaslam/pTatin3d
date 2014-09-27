@@ -28,7 +28,8 @@ TATIN_MODEL_DIR = \
 	thermal_shearband \
 	slab_detachment3d \
 	pinch_and_swell \
-	plasticdemo
+	plasticdemo \
+    mms
 
 TATIN_MODEL_SRC = \
 	ptatin_models_reg.c

@@ -28,8 +28,9 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			iplus_slab_plume/iplus_slab_description.c \
 			subduction_initiation2d/model_subduction_initiation2d_ops.c \
 			convection2d/model_convection2d_ops.c \
-            thermal_shearband/thermal_sb_model_definition.c \
-            slab_detachment3d/sd3d_definition.c \
-            pinch_and_swell/pinchandswell_def.c \
+			thermal_shearband/thermal_sb_model_definition.c \
+			slab_detachment3d/sd3d_definition.c \
+			pinch_and_swell/pinchandswell_def.c \
 			plasticdemo/demo.c \
+mms/mms_def.c \
 	)
