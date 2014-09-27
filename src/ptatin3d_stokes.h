@@ -68,6 +68,7 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 PetscErrorCode pTatinStokesKSPMonitorBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *data);
 
 PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt np_per_dim,PetscInt ncells,Quadrature *quadrature);
+PetscErrorCode VolumeQuadratureGetInfo(Quadrature q,PetscInt *nqp,PetscInt *ncells);
 PetscErrorCode VolumeQuadratureGetAllCellData_Stokes(Quadrature Q,QPntVolCoefStokes *coeffs[]);
 PetscErrorCode VolumeQuadratureGetCellData_Stokes(Quadrature Q,QPntVolCoefStokes coeffs[],PetscInt cidx,QPntVolCoefStokes *cell[]);
 
@@ -97,6 +98,8 @@ PetscErrorCode PhysCompStokesGetVolumeQuadrature(PhysCompStokes stokes,Quadratur
 PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stokes,QPntVolCoefStokes *coeffs[]);
 PetscErrorCode PhysCompStokesGetSurfaceQuadrature(PhysCompStokes stokes,HexElementFace fid,SurfaceQuadrature *sq);
 PetscErrorCode PhysCompStokesGetSurfaceQuadratureAllCellData(PhysCompStokes stokes,HexElementFace fid,QPntSurfCoefStokes *coeffs[]);
+
+PetscErrorCode MatNullSpaceCreateStokesConstantPressure(DM stokes,Vec X,MatNullSpace *sp);
 
 #endif
 

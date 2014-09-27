@@ -614,6 +614,15 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VolumeQuadratureGetInfo"
+PetscErrorCode VolumeQuadratureGetInfo(Quadrature q,PetscInt *nqp,PetscInt *ncells)
+{
+	if (nqp)    { *nqp    = q->npoints; }
+	if (ncells) { *ncells = q->n_elements; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VolumeQuadratureGetAllCellData_Stokes"
 PetscErrorCode VolumeQuadratureGetAllCellData_Stokes(Quadrature Q,QPntVolCoefStokes *coeffs[])
 {
@@ -1518,3 +1527,29 @@ PetscErrorCode SNESStokes_KSPSetConvergenceTest_ScaledResiduals(SNES snes,pTatin
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MatNullSpaceCreateStokesConstantPressure"
+PetscErrorCode MatNullSpaceCreateStokesConstantPressure(DM stokes,Vec X,MatNullSpace *sp)
+{
+    PetscErrorCode ierr;
+    Vec            vec[1],Xu,Xp;
+    PetscInt       N;
+    
+    ierr = VecDuplicate(X,&vec[0]);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes,vec[0],&Xu,&Xp);CHKERRQ(ierr);
+    ierr = VecGetSize(Xp,&N);CHKERRQ(ierr);
+   
+    //ierr = VecSet(Xp,1.0/((PetscScalar)N));CHKERRQ(ierr);
+
+    N = N / 4;
+    ierr = VecStrideSet(Xp,0,1.0/((PetscScalar)N));CHKERRQ(ierr);
+    VecView(Xp,PETSC_VIEWER_STDOUT_WORLD);
+	ierr = DMCompositeRestoreAccess(stokes,vec[0],&Xu,&Xp);CHKERRQ(ierr);
+    
+    ierr = MatNullSpaceCreate(PetscObjectComm((PetscObject)X),PETSC_FALSE,1,vec,sp);CHKERRQ(ierr);
+	ierr = VecDestroy(&vec[0]);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+}
+
+
