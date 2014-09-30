@@ -58,6 +58,7 @@ typedef struct {
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx);
 PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
+PetscErrorCode DMDAConvertLocalElementIndex2LocalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
 PetscErrorCode DMDAConvertLocalNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K);
 PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K);
 PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value);
