@@ -67,63 +67,89 @@
 #define __FUNCT__ "MPntGetField_global_element_IJKindex"
 PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K)
 {
-	PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk;
-	int         localeid;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	MPntStdGetField_local_element_index(material_point,&localeid);
-	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-    
-	si = si/2; 
-	sj = sj/2;
-	sk = sk/2;
+    PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk;
+    int         localeid;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    MPntStdGetField_local_element_index(material_point,&localeid);
+    ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+    si = si/2; 
+    sj = sj/2;
+    sk = sk/2;
     //	lmx -= si;
     //	lmy -= sj;
     //	lmz -= sk;
-	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localeid/(lmx*lmy);
-	lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-	li = localeid - lk*(lmx*lmy) - lj*lmx;
-    
-	if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
-	if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
-	if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
-	//printf("li,lj,lk %d %d %d \n", li,lj,lk );
-	
-	*K = lk + sk;
-	*J = lj + sj;
-	*I = li + si;
-	PetscFunctionReturn(0);
+    //global/localrank = mx*my*k + mx*j + i;
+    lk = (PetscInt)localeid/(lmx*lmy);
+    lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+    li = localeid - lk*(lmx*lmy) - lj*lmx;
+
+    if ( (li < 0) || (li>=lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+    if ( (lj < 0) || (lj>=lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+    if ( (lk < 0) || (lk>=lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+    //printf("li,lj,lk %d %d %d \n", li,lj,lk );
+
+    if (K) { *K = lk + sk; }
+    if (J) { *J = lj + sj; }
+    if (I) { *I = li + si; }
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAConvertLocalElementIndex2GlobalIJK"
 PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K)
 {
-	PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;	
-	PetscErrorCode ierr;
-	
-	
-	PetscFunctionBegin;
-	ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-	
-	si = si/2; 
-	sj = sj/2;
-	sk = sk/2;
+    PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
+    PetscErrorCode ierr;
 
-	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localeid/(lmx*lmy);
-	lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
-	li = localeid - lk*(lmx*lmy) - lj*lmx;
-	
-	if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
-	if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
-	if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
-	*K = lk + sk;
-	*J = lj + sj;
-	*I = li + si;
 
+    PetscFunctionBegin;
+    ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+    si = si/2; 
+    sj = sj/2;
+    sk = sk/2;
+
+    //global/localrank = mx*my*k + mx*j + i;
+    lk = (PetscInt)localeid/(lmx*lmy);
+    lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+    li = localeid - lk*(lmx*lmy) - lj*lmx;
+
+    if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+    if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+    if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+    if (K) { *K = lk + sk; }
+    if (J) { *J = lj + sj; }
+    if (I) { *I = li + si; }
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAConvertLocalElementIndex2LocalIJK"
+PetscErrorCode DMDAConvertLocalElementIndex2LocalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K)
+{
+    PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
+    PetscErrorCode ierr;
+
+
+    PetscFunctionBegin;
+    ierr = DMDAGetCornersElementQ2(da,&si,&sj,&sk,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+    //global/localrank = mx*my*k + mx*j + i;
+    lk = (PetscInt)localeid/(lmx*lmy);
+    lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
+    li = localeid - lk*(lmx*lmy) - lj*lmx;
+
+    if ( (li < 0) || (li >= lmx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+    if ( (lj < 0) || (lj >= lmy) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+    if ( (lk < 0) || (lk >= lmz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+    if (K) { *K = lk; }
+    if (J) { *J = lj; }
+    if (I) { *I = li; }
+    
 	PetscFunctionReturn(0);
 }
 
@@ -146,9 +172,9 @@ PetscErrorCode DMDAConvertLocalNodeIndex2GlobalIJK(DM da,PetscInt localnid,Petsc
 	if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
 	if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
 	if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
-	*K = lk + sk;
-	*J = lj + sj;
-	*I = li + si;
+	if (K) { *K = lk + sk; }
+	if (J) { *J = lj + sj; }
+	if (I) { *I = li + si; }
     
 	PetscFunctionReturn(0);
 }
@@ -157,34 +183,34 @@ PetscErrorCode DMDAConvertLocalNodeIndex2GlobalIJK(DM da,PetscInt localnid,Petsc
 #define __FUNCT__ "DMDAConvertLocalGhostNodeIndex2GlobalIJK"
 PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K)
 {
-	PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
-	PetscErrorCode ierr;
-	
-	
-	PetscFunctionBegin;
-	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
-	
-	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localnid/(lnx*lny);
-	lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
-	li = localnid - lk*(lnx*lny) - lj*lnx;
-	
-	if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
-	if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
-	if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
-	*K = lk + sk;
-	*J = lj + sj;
-	*I = li + si;
-    
-	PetscFunctionReturn(0);
+    PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
+    PetscErrorCode ierr;
+
+
+    PetscFunctionBegin;
+    ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+
+    //global/localrank = mx*my*k + mx*j + i;
+    lk = (PetscInt)localnid/(lnx*lny);
+    lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
+    li = localnid - lk*(lnx*lny) - lj*lnx;
+
+    if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"I computed incorrectly"); }
+    if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"J computed incorrectly"); }
+    if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"K computed incorrectly"); }
+    if (K) { *K = lk + sk; }
+    if (J) { *J = lj + sj; }
+    if (I) { *I = li + si; }
+
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelGetOptionReal"
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
-																				const char error[],
-																				const char default_opt[],
-																				PetscBool essential)
+    const char error[],
+    const char default_opt[],
+    PetscBool essential)
 {
 	PetscBool flg;
 	PetscErrorCode ierr;
@@ -208,10 +234,10 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 #define __FUNCT__ "absolute"
 PetscReal absolute(PetscReal a)
 {   
-	if(a < 0) {
-        return -1.0 * a;
+	if (a < 0) {
+        return(-1.0 * a);
 	} else {
-		return a;
+		return(a);
 	}
 }
 
