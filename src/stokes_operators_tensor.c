@@ -22,10 +22,11 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 {
 	PetscReal R[3][3],S[3][3],T[3][3];
 	PetscReal u[3][NQP][NEV],v[3][NQP][NEV];
+  PetscInt i,j,k,l,kj,ji,a,b,c,e;
 
 	PetscFunctionBegin;
-	for (PetscInt j=0; j<3; j++) {
-		for (PetscInt i=0; i<3; i++) {
+	for (j=0; j<3; j++) {
+		for (i=0; i<3; i++) {
 			R[i][j] = i<3 ? (gmode == GRAD ? Rf[i][j] : Rf[j][i]) : 0.;
 			S[i][j] = i<3 ? (gmode == GRAD ? Sf[i][j] : Sf[j][i]) : 0.;
 			T[i][j] = i<3 ? (gmode == GRAD ? Tf[i][j] : Tf[j][i]) : 0.;
@@ -34,11 +35,11 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 
 	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
 	PetscMemzero(u,sizeof u);
-	for (PetscInt l=0; l<3; l++) {
-		for (PetscInt kj=0; kj<9; kj++) {
-			for (PetscInt i=0; i<3; i++) {
-				for (PetscInt c=0; c<3; c++) {
-					for (PetscInt e=0; e<NEV; e++) u[l][kj*3+c][e] += R[c][i] * x[l][kj*3+i][e];
+	for (l=0; l<3; l++) {
+		for (kj=0; kj<9; kj++) {
+			for (i=0; i<3; i++) {
+				for (c=0; c<3; c++) {
+					for (e=0; e<NEV; e++) u[l][kj*3+c][e] += R[c][i] * x[l][kj*3+i][e];
 				}
 			}
 		}
@@ -46,12 +47,12 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 
 	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
 	PetscMemzero(v,sizeof v);
-	for (PetscInt l=0; l<3; l++) {
-		for (PetscInt k=0; k<3; k++) {
-			for (PetscInt j=0; j<3; j++) {
-				for (PetscInt c=0; c<3; c++) {
-					for (PetscInt b=0; b<3; b++) {
-						for (PetscInt e=0; e<NEV; e++) v[l][(k*3+b)*3+c][e] += S[b][j] * u[l][(k*3+j)*3+c][e];
+	for (l=0; l<3; l++) {
+		for (k=0; k<3; k++) {
+			for (j=0; j<3; j++) {
+				for (c=0; c<3; c++) {
+					for (b=0; b<3; b++) {
+						for (e=0; e<NEV; e++) v[l][(k*3+b)*3+c][e] += S[b][j] * u[l][(k*3+j)*3+c][e];
 					}
 				}
 			}
@@ -59,11 +60,11 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 	}
 
 	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
-	for (PetscInt k=0; k<3; k++) {
-		for (PetscInt l=0; l<3; l++) {
-			for (PetscInt a=0; a<3; a++) {
-				for (PetscInt ji=0; ji<9; ji++) {
-					for (PetscInt e=0; e<NEV; e++) y[l][a*9+ji][e] += T[a][k] * v[l][k*9+ji][e];
+	for (k=0; k<3; k++) {
+		for (l=0; l<3; l++) {
+			for (a=0; a<3; a++) {
+				for (ji=0; ji<9; ji++) {
+					for (e=0; e<NEV; e++) y[l][a*9+ji][e] += T[a][k] * v[l][k*9+ji][e];
 				}
 			}
 		}
