@@ -1,22 +1,22 @@
-!
-!  The model defined here is described in the following publication:
-!
-!    "Kinematics and flow patterns in deep mantle and upper mantle subduction models: Influence of the mantle depth and slab to mantle viscosity ratio"
-!    Wouter P. Schellart, 
-!    Geochemistry, Geophysics, Geosystems
-!    Volume 9, Number 3, 19 March 2008
-!    Q03014, doi:10.1029/2007/GC001656
-!
-!  Specifically, these options configure the slab/mantle and box geometry for Experimement DM-8 (See Table 1)
-!
-!
-! NOTES
-! a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
-! b) Fixed time is used
-! c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
-!    condition on the Stokes part of the problem, or on the SNES stopping condition.
-! d) This solver configuration appears to be stable and robust
-!
+#
+#  The model defined here is described in the following publication:
+#
+#    "Kinematics and flow patterns in deep mantle and upper mantle subduction models: Influence of the mantle depth and slab to mantle viscosity ratio"
+#    Wouter P. Schellart, 
+#    Geochemistry, Geophysics, Geosystems
+#    Volume 9, Number 3, 19 March 2008
+#    Q03014, doi:10.1029/2007/GC001656
+#
+#  Specifically, these options configure the slab/mantle and box geometry for Experimement DM-8 (See Table 1)
+#
+#
+# NOTES
+# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
+# b) Fixed time is used
+# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
+#    condition on the Stokes part of the problem, or on the SNES stopping condition.
+# d) This solver configuration appears to be stable and robust
+#
 
 ## =============================================================== 
 ##
@@ -93,7 +93,7 @@
 -snes_max_linear_solve_fail 100000
 -snes_mf_operator
 -snes_monitor
--snes_type ls
+-snes_type newtonls
 -stk_velocity_dm_mat_type aij
 -use_quasi_newton_coordinate_update
 -options_left 1

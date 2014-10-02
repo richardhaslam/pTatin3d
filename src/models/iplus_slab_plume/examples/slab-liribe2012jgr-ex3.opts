@@ -1,13 +1,13 @@
-!
-!  The model geometry defined here is described in the following publication:
-!
-!    "Dynamics of free subduction from 3-D boundary element modeling"
-!    Zhong-Hai Li and Neil M. Ribe, 
-!    JOURNAL OF GEOPHYSICAL RESEARCH
-!    Volume 117, 2012
-!    B06408, doi:10.1029/2012JB009165
-!
-!
+#
+#  The model geometry defined here is described in the following publication:
+#
+#    "Dynamics of free subduction from 3-D boundary element modeling"
+#    Zhong-Hai Li and Neil M. Ribe, 
+#    JOURNAL OF GEOPHYSICAL RESEARCH
+#    Volume 117, 2012
+#    B06408, doi:10.1029/2012JB009165
+#
+#
 
 ## =============================================================== 
 ##
@@ -102,7 +102,7 @@
 -snes_max_it 1000
 -snes_max_linear_solve_fail 100000
 -snes_monitor
--snes_type ls
+-snes_type newtonls
 -stk_velocity_dm_mat_type aij
 -use_quasi_newton_coordinate_update
 -options_left 1

@@ -1,10 +1,10 @@
-!
-! NOTES
-! a) Low resolution test to verify time dependent behaviour 
-! b) Fixed time step of 1 second is used
-! c) Its apparent that the time integration scheme with the free surface
-!    is unstable, hence one should use the non-linear driver
-!
+#
+# NOTES
+# a) Low resolution test to verify time dependent behaviour 
+# b) Fixed time step of 1 second is used
+# c) Its apparent that the time integration scheme with the free surface
+#    is unstable, hence one should use the non-linear driver
+#
 
 ## =============================================================== 
 ##

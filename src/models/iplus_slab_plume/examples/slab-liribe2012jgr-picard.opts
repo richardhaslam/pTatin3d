@@ -1,13 +1,13 @@
-!
-!  The model geometry defined here is described in the following publication:
-!
-!    "Dynamics of free subduction from 3-D boundary element modeling"
-!    Zhong-Hai Li and Neil M. Ribe, 
-!    JOURNAL OF GEOPHYSICAL RESEARCH
-!    Volume 117, 2012
-!    B06408, doi:10.1029/2012JB009165
-!
-!
+#
+#  The model geometry defined here is described in the following publication:
+#
+#    "Dynamics of free subduction from 3-D boundary element modeling"
+#    Zhong-Hai Li and Neil M. Ribe, 
+#    JOURNAL OF GEOPHYSICAL RESEARCH
+#    Volume 117, 2012
+#    B06408, doi:10.1029/2012JB009165
+#
+#
 
 ## =============================================================== 
 ##
@@ -94,7 +94,7 @@
 -ptatin_model iplus
 
 -snes_mf_operator 0
--snes_type ls
+-snes_type newtonls
 -snes_rtol 1.0e-5
 -snes_atol 1.0e-6
 -snes_max_it 1000

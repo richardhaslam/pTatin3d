@@ -1,11 +1,11 @@
-!
-! NOTES
-! a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
-! b) Fixed time is used
-! c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
-!    condition on the Stokes part of the problem, or on the SNES stopping condition.
-! d) This solver configuration appears to be stable and robust
-!
+#
+# NOTES
+# a) Low resolution test to verify time dependent behaviour when non-linear coordinate updates are performed  
+# b) Fixed time is used
+# c) Interestingly, when compared with the non-linear solver, we don't need to specify a stringent stopping 
+#    condition on the Stokes part of the problem, or on the SNES stopping condition.
+# d) This solver configuration appears to be stable and robust
+#
 
 ## =============================================================== 
 ##
@@ -68,7 +68,7 @@
 -snes_max_linear_solve_fail 100000
 -snes_mf_operator
 -snes_monitor
--snes_type ls
+-snes_type newtonls
 -stk_velocity_dm_mat_type aij
 -use_quasi_newton_coordinate_update
 #End of PETSc Option Table entries

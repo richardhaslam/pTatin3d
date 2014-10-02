@@ -1,10 +1,10 @@
-!
-! NOTES
-! a) Preliminary, low resolution test to verify functionality and check multi-grid preconditioner settings
-! b) Two time step model
-! c) I notice that the characteristic velocities generated are small, ~O(1e-5), 
-!    thus to ensure a converged solution one should use aggresive options for -ksp_rtol -ksp_atol
-!
+#
+# NOTES
+# a) Preliminary, low resolution test to verify functionality and check multi-grid preconditioner settings
+# b) Two time step model
+# c) I notice that the characteristic velocities generated are small, ~O(1e-5), 
+#    thus to ensure a converged solution one should use aggresive options for -ksp_rtol -ksp_atol
+#
 
 ## =============================================================== 
 ##
