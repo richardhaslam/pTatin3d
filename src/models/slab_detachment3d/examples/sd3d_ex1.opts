@@ -75,7 +75,7 @@
 # SOLVER PARAMETERS <momentum/continutiy> -------------------------
 #-nonlinear_driver_v1
 
-#-snes_type ls
+#-snes_type newtonls
 #-snes_rtol 1.0e-5
 #-snes_atol 1.0e-8
 #-snes_max_it 5
@@ -86,8 +86,9 @@
 #-snes_mf_operator
 #-pc_fieldsplit_real_diagonal
 
--snes_type ls
--snes_ls basic
+-snes_type newtonls
+-snes_linesearch_type basic
+
 -snes_rtol 1.0e-5
 -snes_atol 1.0e-8
 -snes_max_it 5

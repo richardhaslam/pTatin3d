@@ -14,7 +14,7 @@
 -nonlinear_driver_v1
 -monitor_stages
 
--snes_type ls
+-snes_type newtonls
 -snes_rtol 1.0e-5
 -snes_atol 1.0e-12
 -snes_max_it 10

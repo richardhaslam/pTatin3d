@@ -59,7 +59,7 @@
 
 # SOLVER PARAMETERS <momentum/continutiy> -------------------------
 
-#-snes_type ls
+#-snes_type newtonls
 #-snes_rtol 1.0e-5
 #-snes_atol 1.0e-8
 #-snes_max_it 10
@@ -69,8 +69,8 @@
 ## uncomment to use JFNK
 #-snes_mf_operator
 
--snes_type ls
--snes_ls basic
+-snes_type newtonls
+-snes_linesearch_type basic
 -snes_rtol 1.0e-5
 -snes_atol 1.0e-5
 -snes_max_it 5

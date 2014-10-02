@@ -58,7 +58,7 @@
 -snes_max_linear_solve_fail 100000
 -snes_mf_operator
 -snes_monitor
--snes_type ls
+-snes_type newtonls
 
 #-newton_its 0
 #-picard_its 10
