@@ -6,6 +6,8 @@
 # with the PrgEnv-gnu module
 # and the zlib module
 
+# See http://user.cscs.ch/compiling_optimizing/compiling_your_code/piz_daint/gnu_compiler_collection/index.html
+
 # Set your own PETSC_DIR and PETSC_ARCH 
 # PETSC_ARCH was arch-cray-xc30-gnu at the time of this writing (but you will have picked the name)
 ifndef PETSC_DIR
@@ -16,6 +18,19 @@ ifndef PETSC_ARCH
 endif
 
 export LIBZ_LIB=-lz
+
+# Various levels of optimization (and warning suppression) for C compilers
+export TATIN_CFLAGS_DEBUG	= -O0 -g -Wall -Wno-unused-variable
+export TATIN_CFLAGS_OPT_a	= -O2 
+export TATIN_CFLAGS_OPT_b	= -O3 -ffast-math -funroll-loops -march=native
+
+export TATIN_FFLAGS_DEBUG	= -O0 -g -ffree-line-length-4000
+export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
+export TATIN_FFLAGS_OPT_b = -O2 -ffree-line-length-4000
+
+# Choose options
+export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
+export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
 # flag to allow GNU AVX/SSE intrinsics
 #export TATIN_CFLAGS=-hgnu
