@@ -3,7 +3,7 @@
 #
 
 # Written to work on the Piz Daint Cray XC30 system
-# with the PrgEnv0gnu module
+# with the PrgEnv-gnu module
 # and the zlib module
 
 # Set your own PETSC_DIR and PETSC_ARCH 
