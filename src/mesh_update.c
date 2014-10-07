@@ -806,7 +806,7 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
                 PetscBool surface_face = PETSC_FALSE;
                 
                 for (i=0; i<4; i++) {
-                    ierr = DMDAConvertLocalGhostNodeIndex2GlobalIJK(daH,ge_eqnums2d[i],&gI,&gJ,&gK);CHKERRQ(ierr);
+                    ierr = DMDAConvertLocalGhostNodeIndex2GlobalnInJnK(daH,ge_eqnums2d[i],&gI,&gJ,&gK);CHKERRQ(ierr);
                     if (gJ == NJ-1) {
                         surface_face = PETSC_TRUE;
                         break;

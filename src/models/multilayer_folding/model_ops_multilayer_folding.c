@@ -617,14 +617,14 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 		PetscReal   eta,rho;
 		PetscInt    region_idx,phase;
 		PetscInt    layer, jmaxlayer, jminlayer;
-		PetscInt    I, J, K, Jmid;
+		PetscInt    nI, nJ, nK, nJmid;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
 		MPntStdGetField_global_coord(material_point,&position);
 		
-		MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+		MPntGetField_global_element_nInJnKindex(c->stokes_ctx->dav,material_point, &nI, &nJ, &nK);
 		phase = -1;
 		eta =  0.0;
 		rho = 0.0;
@@ -634,18 +634,18 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 		// gets the global element index (i,j,k)
 		//....
         
-        Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;     
+        nJmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;     
 		
 		//Set the properties
 		while( (phase == -1) && (layer < data->n_interfaces-1) ){
 			jmaxlayer += data->layer_res_j[layer];
 			
-			if( (J<jmaxlayer) && (J>=jminlayer) ){
+			if( (nJ<jmaxlayer) && (nJ>=jminlayer) ){
 				phase = layer + 1;
                 
-                if( ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2))
+                if( ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.25+2) && (nI>c->mx*0.25-2))
                     ||
-                    ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2)) ){
+                    ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.75+2) && (nI>c->mx*0.75-2)) ){
                 eta = data->eta[data->n_interfaces-1]; 
                 rho = data->rho[data->n_interfaces-1];
                 region_idx = data->n_interfaces-1;   
@@ -746,7 +746,7 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
         float     pl_strain;
 		int       region_idx,phase;
 		PetscInt  layer, jmaxlayer, jminlayer;
-		PetscInt  I,J,K;
+		PetscInt  nI,nJ,nK;
         int       wil_p;
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
@@ -754,8 +754,8 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
 		
         ierr = MaterialPointGet_local_element_index(mpX,p,&wil_p);CHKERRQ(ierr);
 
-		//MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
-        ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,wil_p,&I,&J,&K);CHKERRQ(ierr);
+		//MPntGetField_global_element_nInJnKindex(c->stokes_ctx->dav,material_point, &nI, &nJ, &nK);
+        ierr = DMDAConvertLocalElementIndex2GlobalnInJnK(dav,wil_p,&nI,&nJ,&nK);CHKERRQ(ierr);
 		phase      = -1;
 		eta        =  0.0;
 		rho        = 0.0;
@@ -767,7 +767,7 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
 		while ((phase == -1) && (layer < data->n_interfaces-1)) {
 			jmaxlayer += data->layer_res_j[layer];
 			
-			if ((J < jmaxlayer) && (J >= jminlayer)) {
+			if ((nJ < jmaxlayer) && (nJ >= jminlayer)) {
 				phase      = layer + 1;
 				eta        = (double)data->eta[layer];
 				rho        = (double)data->rho[layer];
@@ -855,7 +855,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 		double      *position;
 		PetscInt    phase;
 		PetscInt    layer, jmaxlayer, jminlayer, localeid_p;
-		PetscInt    I, J, K, Jmid;
+		PetscInt    nI, nJ, nK, nJmid;
 		PetscScalar elcoords[Q2_NODES_PER_EL_3D*NSD];
 		PetscScalar Ni_p[Q2_NODES_PER_EL_3D], coord_qp[NSD];
 		
@@ -863,23 +863,23 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		MPntStdGetField_global_coord(material_point,&position);
 		
-		MPntGetField_global_element_IJKindex(c->stokes_ctx->dav,material_point, &I, &J, &K);
+		MPntGetField_global_element_nInJnKindex(c->stokes_ctx->dav,material_point, &nI, &nJ, &nK);
 		//Set the properties
 		phase     = -1;
 		jmaxlayer = jminlayer = 0;
 		layer     = 0;
         
-        Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;
+        nJmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;
         
 		while ( (phase == -1) && (layer < data->n_interfaces-1) ) {
 			jmaxlayer += data->layer_res_j[layer];
 			
-			if ( (J<jmaxlayer) && (J>=jminlayer) ) {
+			if ( (nJ<jmaxlayer) && (nJ>=jminlayer) ) {
 				phase = layer + 1;
                 
-                if( ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2))
+                if( ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.25+2) && (nI>c->mx*0.25-2))
                    ||
-                   ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2)) ){
+                   ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.75+2) && (nI>c->mx*0.75-2)) ){
                     phase = data->n_interfaces;
                 }
 			}
@@ -939,7 +939,7 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 	const PetscInt            *elnidx_v;   
 	PetscInt                  phase;
 	PetscInt                  layer,jmaxlayer,jminlayer;
-	PetscInt                  I,J,K,Jmid;
+	PetscInt                  nI,nJ,nK,nJmid;
 	PetscErrorCode            ierr;
 	
 
@@ -956,10 +956,10 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
 	nqp = stokes->volQ->npoints;
 	
-     Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;  
+     nJmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0;  
     
 	for (e=0; e<nel; e++) {
-		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,e, &I,&J,&K);CHKERRQ(ierr);
+		ierr = DMDAConvertLocalElementIndex2GlobalnInJnK(dav,e, &nI,&nJ,&nK);CHKERRQ(ierr);
 
 		// Determine phase from layer
 		phase = -1;
@@ -968,10 +968,10 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 		while ( (phase == -1) && (layer < data->n_interfaces-1) ) {
 			jmaxlayer += data->layer_res_j[layer];
 			
-			if ( (J < jmaxlayer) && (J >= jminlayer) ) {
-                if( ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2))
+			if ( (nJ < jmaxlayer) && (nJ >= jminlayer) ) {
+                if( ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.25+2) && (nI>c->mx*0.25-2))
                     ||
-                    ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2)) ){
+                    ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.75+2) && (nI>c->mx*0.75-2)) ){
                     phase = data->n_interfaces;    
                 }
                 else{
@@ -1029,22 +1029,22 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 	for (p=0; p<n_mpoints; p++) {
 		PetscInt    phase;
 		PetscInt    layer,ei,localeid_p;
-		PetscInt    I,J,K,Jmid;
+		PetscInt    nI,nJ,nK,nJmid;
 		
 		ierr = MaterialPointGet_local_element_index(mpX,p,&localeid_p);CHKERRQ(ierr);
-		ierr = DMDAConvertLocalElementIndex2GlobalIJK(dav,localeid_p,&I,&J,&K);CHKERRQ(ierr);
+		ierr = DMDAConvertLocalElementIndex2GlobalnInJnK(dav,localeid_p,&nI,&nJ,&nK);CHKERRQ(ierr);
 
 		/* Set the properties based on the J index of the element containing the marker */
 		phase = -1;
 		ei = 0;
-        Jmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0; 
+        nJmid = data->layer_res_j[0] + data->layer_res_j[1]/2.0; 
         
 		for (layer=0; layer<data->n_interfaces-1; layer++) {
 		
-			if ((J >= ei) && (J <ei + data->layer_res_j[layer])) {
-                if( ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.25+2) && (I>c->mx*0.25-2))
+			if ((nJ >= ei) && (nJ <ei + data->layer_res_j[layer])) {
+                if( ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.25+2) && (nI>c->mx*0.25-2))
                     ||
-                    ((data->seed_layer_1 ==1) && (J<Jmid+2) && (J>Jmid-2) && (I<c->mx*0.75+2) && (I>c->mx*0.75-2)) ){
+                    ((data->seed_layer_1 ==1) && (nJ<nJmid+2) && (nJ>nJmid-2) && (nI<c->mx*0.75+2) && (nI>c->mx*0.75-2)) ){
                     phase = data->n_interfaces-1;    
                 }
                 else{

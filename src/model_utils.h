@@ -38,8 +38,7 @@
 
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 
-
-PetscErrorCode MPntGetField_global_element_IJKindex(DM da, MPntStd *material_point, PetscInt *I, PetscInt *J, PetscInt *K);
+PetscErrorCode MPntGetField_global_element_nInJnKindex(DM da, MPntStd *material_point, PetscInt *nI, PetscInt *nJ, PetscInt *nK);
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,const char error[],const char default_opt[],PetscBool essential);
 PetscReal absolute(PetscReal a);
 PetscErrorCode detrend(PetscReal array[],PetscInt n);
@@ -57,10 +56,10 @@ typedef struct {
 } DMDA_thermalfield_init_params;
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx);
-PetscErrorCode DMDAConvertLocalElementIndex2GlobalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
-PetscErrorCode DMDAConvertLocalElementIndex2LocalIJK(DM da,PetscInt localeid,PetscInt *I,PetscInt *J,PetscInt *K);
-PetscErrorCode DMDAConvertLocalNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K);
-PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalIJK(DM da,PetscInt localnid,PetscInt *I,PetscInt *J,PetscInt *K);
+PetscErrorCode DMDAConvertLocalElementIndex2GlobalnInJnK(DM da,PetscInt localeid,PetscInt *nI,PetscInt *nJ,PetscInt *nK);
+PetscErrorCode DMDAConvertLocalElementIndex2LocalnInJnK(DM da,PetscInt localeid,PetscInt *nI,PetscInt *nJ,PetscInt *nK);
+PetscErrorCode DMDAConvertLocalNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK);
+PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK);
 PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value);
 
 PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c);

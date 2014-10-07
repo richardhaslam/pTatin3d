@@ -57,7 +57,6 @@
 #include "element_utils_q2.h"
 #include "element_utils_q1.h"
 
-
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields"
 PetscErrorCode MaterialPointGeneric_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int *byte_offset,const int nfields,const MaterialPointField list[])
@@ -1867,7 +1866,7 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 	PetscInt p,i;
 	PetscInt nel,nen,e_p;
 	const PetscInt *elnidx;
-	PetscInt I,J,K;
+	PetscInt nI,nJ,nK;
 	PetscErrorCode ierr;
 	
 	
@@ -1891,26 +1890,26 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 		e_p  = mp_std[p].wil;
 		
 		if (xi_p[0] < 0.0) {
-			I = 0;
+			nI = 0;
 			xi_scaled_p[0] =  2.0 * xi_p[0] + 1.0;
 		} else {
-			I = 1;
+			nI = 1;
 			xi_scaled_p[0] =  2.0 * xi_p[0] - 1.0;
 		}
 
 		if (xi_p[1] < 0.0) {
-			J = 0;
+			nJ = 0;
 			xi_scaled_p[1] =  2.0 * xi_p[1] + 1.0;
 		} else {
-			J = 1;
+			nJ = 1;
 			xi_scaled_p[1] =  2.0 * xi_p[1] - 1.0;
 		}
 
 		if (xi_p[2] < 0.0) {
-			K = 0;
+			nK = 0;
 			xi_scaled_p[2] =  2.0 * xi_p[2] + 1.0;
 		} else {
-			K = 1;
+			nK = 1;
 			xi_scaled_p[2] =  2.0 * xi_p[2] - 1.0;
 		}
 		
@@ -1935,9 +1934,9 @@ PetscErrorCode _MaterialPointProjection_MapOntoNestedQ1Mesh(
 			for (kk=0; kk<2; kk++) {
 				for (jj=0; jj<2; jj++) {
 					for (ii=0; ii<2; ii++) {
-						PetscInt sidx = (I + ii) + (J + jj)*3 + (K + kk)*9;
+						PetscInt sidx = (nI + ii) + (nJ + jj)*3 + (nK + kk)*9;
 						map[ii+jj*2+kk*4] = sidx;
-						//printf("IJK: %d %d %d : sidx = %d \n", I,J,K,sidx);
+						//printf("nInJnK: %d %d %d : sidx = %d \n", nI,nJ,nK,sidx);
 					}
 				}
 			}

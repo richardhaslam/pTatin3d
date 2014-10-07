@@ -40,7 +40,6 @@
 #include "dmda_element_q2p1.h"
 #include "quadrature.h"
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "QuadratureCreate"
 PetscErrorCode QuadratureCreate(Quadrature *quadrature)
@@ -103,7 +102,7 @@ void QuadratureCreateGauss_2pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal *
 	const double s = 0.577350269189;
 	const double w_1d[] = { 1.0, 1.0 };
 	const double xi_1d[] = { -s, s};
-	int I,J,K;
+	int nI,nJ,nK;
 	PetscReal *q_coor,*q_weight;
 	
 	
@@ -112,16 +111,16 @@ void QuadratureCreateGauss_2pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal *
 	PetscMalloc( sizeof(double)*(*ngp)*3, &q_coor );
 	PetscMalloc( sizeof(double)*(*ngp)  , &q_weight );
 	
-	for( I=0; I<2; I++ ) {
-		for( J=0; J<2; J++ ) {
-			for( K=0; K<2; K++ ) {
-				int idx = I + J*2 + K*2*2;
+	for( nI=0; nI<2; nI++ ) {
+		for( nJ=0; nJ<2; nJ++ ) {
+			for( nK=0; nK<2; nK++ ) {
+				int idx = nI + nJ*2 + nK*2*2;
 				
-				q_weight[idx] = w_1d[I] * w_1d[J] * w_1d[K];
+				q_weight[idx] = w_1d[nI] * w_1d[nJ] * w_1d[nK];
 				
-				q_coor[3*idx+0] = xi_1d[I];
-				q_coor[3*idx+1] = xi_1d[J];
-				q_coor[3*idx+2] = xi_1d[K];
+				q_coor[3*idx+0] = xi_1d[nI];
+				q_coor[3*idx+1] = xi_1d[nJ];
+				q_coor[3*idx+2] = xi_1d[nK];
 			}
 		}
 	}
@@ -136,7 +135,7 @@ void QuadratureCreateGauss_3pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal *
 	const double eight_on_9 = 0.888888888888889;
 	const double w_1d[] = { five_on_9, eight_on_9, five_on_9 };
 	const double xi_1d[] = { -sqrt_15_on_5, 0.0, sqrt_15_on_5 };
-	int I,J,K;
+	int nI,nJ,nK;
 	PetscReal *q_coor,*q_weight;
 	
 	
@@ -145,16 +144,16 @@ void QuadratureCreateGauss_3pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal *
 	PetscMalloc( sizeof(double)*(*ngp)*3, &q_coor );
 	PetscMalloc( sizeof(double)*(*ngp)  , &q_weight );
 	
-	for( I=0; I<3; I++ ) {
-		for( J=0; J<3; J++ ) {
-			for( K=0; K<3; K++ ) {
-				int idx = I + J*3 + K*3*3;
+	for( nI=0; nI<3; nI++ ) {
+		for( nJ=0; nJ<3; nJ++ ) {
+			for( nK=0; nK<3; nK++ ) {
+				int idx = nI + nJ*3 + nK*3*3;
 				
-				q_weight[idx] = w_1d[I] * w_1d[J] * w_1d[K];
+				q_weight[idx] = w_1d[nI] * w_1d[nJ] * w_1d[nK];
 				
-				q_coor[3*idx+0] = xi_1d[I];
-				q_coor[3*idx+1] = xi_1d[J];
-				q_coor[3*idx+2] = xi_1d[K];
+				q_coor[3*idx+0] = xi_1d[nI];
+				q_coor[3*idx+1] = xi_1d[nJ];
+				q_coor[3*idx+2] = xi_1d[nK];
 			}
 		}
 	}
