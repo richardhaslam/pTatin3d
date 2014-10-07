@@ -112,8 +112,8 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
     ierr = MatSeqSBAIJSetPreallocationCSR(B,1,_ia,_ja,_avals);CHKERRQ(ierr);
     ierr = MatMPISBAIJSetPreallocationCSR(B,1,_ia,_ja,_avals);CHKERRQ(ierr);
 
-    ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
-    ierr = MatGetVecs(A,NULL,&y1);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&x,&y);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,NULL,&y1);CHKERRQ(ierr);
     ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
     
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
@@ -252,8 +252,8 @@ PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 	Vec x,y1,y2;
 	PetscReal min,max;
 	
-	ierr = MatGetVecs(A,&y2,&y1);CHKERRQ(ierr);
-	ierr = MatGetVecs(A,&x,NULL);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&y2,&y1);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&x,NULL);CHKERRQ(ierr);
 	
 	ierr = VecSetRandom(x,NULL);CHKERRQ(ierr);
 	ierr = MatMult(A,x,y1);CHKERRQ(ierr);

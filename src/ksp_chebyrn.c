@@ -110,7 +110,7 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 			const PetscInt  *range;
 			
 			ierr = KSPGetOperators(ksp,&mat,NULL);CHKERRQ(ierr);
-			ierr = MatGetVecs(mat,NULL,&vec);CHKERRQ(ierr);
+			ierr = MatCreateVecs(mat,NULL,&vec);CHKERRQ(ierr);
             
 			/* create working vectors xsub */
 			ierr = VecGetSize(vec,&m);CHKERRQ(ierr);

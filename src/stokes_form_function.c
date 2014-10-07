@@ -1985,7 +1985,7 @@ PetscErrorCode patch_MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
         ctx->current_f           = F;
         ctx->current_f_allocated = PETSC_FALSE;
     } else if (!ctx->current_f_allocated) {
-        MatGetVecs(J,NULL,&ctx->current_f); /* VecDuplicate(ctx->current_u, &ctx->current_f); */
+        MatCreateVecs(J,NULL,&ctx->current_f); /* VecDuplicate(ctx->current_u, &ctx->current_f); */
         
         ctx->current_f_allocated = PETSC_TRUE;
     }

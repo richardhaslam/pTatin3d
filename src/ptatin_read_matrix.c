@@ -69,7 +69,7 @@ int main(int argc,char **argv)
 	ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 	
-	ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
 	ierr = VecSetRandom(b,NULL);CHKERRQ(ierr);
 	
 	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);

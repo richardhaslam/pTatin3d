@@ -52,7 +52,7 @@ PetscErrorCode  x_DMDACreate3d(
 	
   PetscFunctionBegin;
   ierr = DMDACreate(comm, da);CHKERRQ(ierr);
-  ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
+  ierr = DMSetDimension(*da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
   ierr = DMDASetBoundaryType(*da, wrap[0],wrap[1],wrap[2]);CHKERRQ(ierr);

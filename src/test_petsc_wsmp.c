@@ -105,7 +105,7 @@ PetscErrorCode wssmp_ex1_serial_petsc_lu(void)
 	
 	ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 	
-	ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
 	ierr = VecSet(b,1.0);CHKERRQ(ierr);
 	/* ------------------------------------------- */
 	
@@ -195,7 +195,7 @@ PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
-	ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
 	ierr = VecSet(b,1.0);CHKERRQ(ierr);
 	/* ------------------------------------------- */
 	
@@ -320,7 +320,7 @@ PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
-	ierr = MatGetVecs(A,&b,&x);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
 	ierr = VecSet(b,1.0);CHKERRQ(ierr);
 	/* ------------------------------------------- */
 	

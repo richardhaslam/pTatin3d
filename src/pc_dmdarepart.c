@@ -145,7 +145,7 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
-    ierr = MatGetVecs(B,&x,NULL);CHKERRQ(ierr);
+    ierr = MatCreateVecs(B,&x,NULL);CHKERRQ(ierr);
     
     xsub = NULL;
     ierr = PetscMPISubCommGetActive(red->subcomm,&active);CHKERRQ(ierr);

@@ -125,10 +125,10 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	
 	switch (ctx->side) {
 		case PC_LEFT:
-			ierr = MatGetVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
+			ierr = MatCreateVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
 			break;
 		case PC_RIGHT:
-			ierr = MatGetVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
+			ierr = MatCreateVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
 			break;
 		case PC_SYMMETRIC:
 			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");

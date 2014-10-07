@@ -280,6 +280,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,Ma
 #define __FUNCT__ "PCSetUp_SemiRedundant"
 static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 {
+<<<<<<< HEAD
     PetscErrorCode   ierr;
     PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
     MPI_Comm     comm;
@@ -342,7 +343,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
             /* create xred with empty local arrays, because xdup's arrays will be placed into it */
             ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,1,m,PETSC_DECIDE,NULL,&red->xred);CHKERRQ(ierr);
             
-            ierr = MatGetVecs(red->Ared,NULL,&red->yred);CHKERRQ(ierr);
+            ierr = MatCreateVecs(red->Ared,NULL,&red->yred);CHKERRQ(ierr);
         }
         
     } else {
@@ -363,7 +364,7 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
         Vec      x;
         
         ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
-        ierr = MatGetVecs(red->A,&x,NULL);CHKERRQ(ierr);
+        ierr = MatCreateVecs(red->A,&x,NULL);CHKERRQ(ierr);
         
         if (red->xred) {
             ierr = VecGetOwnershipRange(red->xred,&st,&ed);CHKERRQ(ierr);

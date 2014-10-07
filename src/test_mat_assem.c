@@ -79,7 +79,7 @@ PetscErrorCode test_1(void)
 	ierr = MatAssemblyEnd  (A,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 
 	/* create an array of values to insert - only insert some of them */
-	ierr = MatGetVecs(A,&diag,NULL);CHKERRQ(ierr);
+	ierr = MatCreateVecs(A,&diag,NULL);CHKERRQ(ierr);
 	ierr = VecSetRandom(diag,NULL);CHKERRQ(ierr);
 	
 	ierr = VecGetArray(diag,&LA_diag);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ PetscErrorCode test_2(void)
 	ierr = MatAssemblyEnd  (B,MAT_FLUSH_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* create an array of values to insert - only insert some of them */
-	ierr = MatGetVecs(B,&diag,NULL);CHKERRQ(ierr);
+	ierr = MatCreateVecs(B,&diag,NULL);CHKERRQ(ierr);
 	ierr = VecSetRandom(diag,NULL);CHKERRQ(ierr);
 	
 	ierr = VecGetArray(diag,&LA_diag);CHKERRQ(ierr);

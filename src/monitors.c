@@ -78,7 +78,7 @@ PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,Pets
     PetscFunctionBegin;
     ctx = (pTatinCtx)data;
     ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
-    ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
 
     ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
