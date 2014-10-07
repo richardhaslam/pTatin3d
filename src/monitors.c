@@ -46,10 +46,8 @@ PetscErrorCode pTatin_SNESMonitor_StdoutStokesResiduals3d(SNES snes,PetscInt n,P
 	
 	PetscFunctionBegin;
 	ctx = (pTatinCtx)data;
-
-    ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
-	
-    ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
 	
 	ierr = VecStrideNormLocal(Fu,0,NORM_2,&norms[0]);CHKERRQ(ierr);
 	ierr = VecStrideNormLocal(Fu,1,NORM_2,&norms[1]);CHKERRQ(ierr);

@@ -280,7 +280,6 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,Ma
 #define __FUNCT__ "PCSetUp_SemiRedundant"
 static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 {
-<<<<<<< HEAD
     PetscErrorCode   ierr;
     PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
     MPI_Comm     comm;
