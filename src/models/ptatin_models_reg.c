@@ -23,6 +23,12 @@ extern PetscErrorCode pTatinModelRegister_ThermalSB(void);
 extern PetscErrorCode pTatinModelRegister_SD3D(void);
 extern PetscErrorCode pTatinModelRegister_PAS(void);
 extern PetscErrorCode pTatinModelRegister_PD(void);
+extern PetscErrorCode pTatinModelRegister_Folding(void);
+extern PetscErrorCode pTatinModelRegister_Folding2d(void);
+extern PetscErrorCode pTatinModelRegister_BasinComp(void);
+extern PetscErrorCode pTatinModelRegister_FaultFold(void);
+extern PetscErrorCode pTatinModelRegister_WrenchFold(void);
+extern PetscErrorCode pTatinModelRegister_FaultFoldPlastic(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -54,6 +60,12 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_SD3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PAS();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PD();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Folding();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Folding2d();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_BasinComp();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_FaultFold();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_WrenchFold();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_FaultFoldPlastic();CHKERRQ(ierr);
  
 	PetscFunctionReturn(0);
 }

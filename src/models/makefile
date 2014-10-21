@@ -22,7 +22,14 @@ TATIN_MODEL_DIR = \
 	thermal_shearband \
 	slab_detachment3d \
 	pinch_and_swell \
-	plasticdemo
+	plasticdemo \
+	folding \
+	folding2d \
+	basin_comp\
+	wrench_fold\
+	fault_fold \
+	fault_fold_plastic
+
 
 TATIN_MODEL_SRC = \
 	ptatin_models_reg.c

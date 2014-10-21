@@ -1,0 +1,96 @@
+#PETSc Option Table entries:
+-A11_operator_type 0,1,1,1,1
+-coefficient_projection_type -1
+-checkpoint_every 5
+-dau_nlevels 3
+-dt_max 0.05
+#-constant_dt 0.05
+#-fieldsplit_p_ksp_type preonly
+#-fieldsplit_p_pc_type jacobi
+#-fieldsplit_u_ksp_max_it 20
+#-fieldsplit_u_ksp_monitor
+#-fieldsplit_u_ksp_rtol 1.0e-2
+#-fieldsplit_u_ksp_type fgmres
+#-fieldsplit_u_mg_coarse_ksp_max_it 1000
+#-fieldsplit_u_mg_coarse_ksp_monitor_true_residual
+#-fieldsplit_u_mg_coarse_ksp_rtol 1.0e-2
+#-fieldsplit_u_mg_coarse_ksp_type fgmres
+#-fieldsplit_u_mg_coarse_pc_type bjacobi
+#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
+#-fieldsplit_u_mg_levels_ksp_max_it 20
+#-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_ksp_type chebyshev
+#-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 10
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package superlu_dist 
+-fieldsplit_u_mg_coarse_pc_type lu
+-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 15
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_ksp_type chebyshev
+-fieldsplit_u_mg_levels_pc_type jacobi
+-ksp_atol 1.0e-7
+-ksp_max_it 50
+-ksp_monitor_true_residual
+-ksp_type fgmres
+-log_summary
+
+#Layering and resolutions and domain size:
+-model_fault_fold_plastic_n_interfaces 4
+-model_fault_fold_plastic_interface_heights 0.0,1.0,1.05,2.1 
+-model_fault_fold_plastic_Lx 5.0 
+-model_fault_fold_plastic_Ly 2.00 
+-model_fault_fold_plastic_layer_res_k 8,2,2 
+-model_fault_fold_plastic_domain_res_j 8,2,8
+-mx 16 
+#-my is the sum of domain_res_j
+#-mz is the sum of layer_res_k
+
+#Rheology of the layers:
+-model_fault_fold_plastic_layer_eta 0.025,1.,0.025 
+-model_fault_fold_plastic_layer_C0 0.025,1.,0.025 
+-model_fault_fold_plastic_layer_mu 0.025,1.,0.025 
+-model_fault_fold_plastic_layer_C0_inf 0.025,1.,0.025 
+-model_fault_fold_plastic_layer_mu_inf 0.025,1.,0.025 
+-model_fault_fold_plastic_layer_rho 0.0,0.0,0.0 
+
+#Rheology of the fault:
+-model_fault_fold_plastic_fault_eta 0.025
+-model_fault_fold_plastic_fault_C0 0.025
+-model_fault_fold_plastic_fault_mu 0.025
+-model_fault_fold_plastic_fault_C0_inf 0.025
+-model_fault_fold_plastic_fault_mu_inf 0.025
+-model_fault_fold_plastic_fault_rho 0.0
+
+#Perturbations settings
+-model_fault_fold_plastic_fold_centers 1.0,4.0,3.0,4.0
+-model_fault_fold_plastic_amp_factor 0.05
+#-model_fault_fold_plastic_sigma 0.2 
+
+#BCs
+-model_fault_fold_plastic_bc_type 0
+#-model_fault_fold_plastic_exx -0.1
+-model_fault_fold_plastic_vx_compression -0.005
+
+-ptatin_model fault_fold_plastic
+-nsteps 10000
+-output_frequency 1
+-output_path testfaultfold_plastic
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-snes_type ksponly
+#-stk_velocity_dm_mat_type baij
+-stk_velocity_dm_mat_type aij
+-stk_velocity_da_refine_hierarchy_x 2,4
+-stk_velocity_da_refine_hierarchy_y 3,3
+-stk_velocity_da_refine_hierarchy_z 1,2
+#End of PETSc Option Table entries
