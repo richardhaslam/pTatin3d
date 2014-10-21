@@ -38,7 +38,7 @@
 
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 
 #include "rheology.h"
 #include "stokes_rheology_viscous.h"

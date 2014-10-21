@@ -43,7 +43,7 @@
 #include "quadrature.h"
 #include "dmda_checkpoint.h"
 #include "element_type_Q2.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 
 #include "QPntVolCoefStokes_def.h"
 #include "QPntSurfCoefStokes_def.h"

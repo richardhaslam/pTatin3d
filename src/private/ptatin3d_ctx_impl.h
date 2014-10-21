@@ -37,7 +37,7 @@
 
 #include <petsc.h>
 #include "../dmda_bcs.h"
-#include "../swarm_fields.h"
+#include "../data_bucket.h"
 #include "../data_exchanger.h"
 #include "../ptatin3d_stokes.h"
 #include "../ptatin_models.h"

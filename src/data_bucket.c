@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      swarm_fields.c
+ **    Filename:      data_bucket.c
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -32,8 +32,8 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 /*
 
-gcc -O3 -g -c swarm_fields.c
- 
+gcc -O3 -g -c data_bucket.c
+
  // GENERIC //
  // insert into an exisitng location
  SwarmFieldInsertPoint( field, index, ctx ) 
@@ -96,7 +96,7 @@ gcc -O3 -g -c swarm_fields.c
 #include "math.h"
 #include "mpi.h"
 
-#include "swarm_fields.h"
+#include "data_bucket.h"
 
 #define PTAT3D_LOG_DATA_BUCKET
 

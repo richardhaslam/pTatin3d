@@ -10,7 +10,7 @@
  **        Switzerland
  **
  **    Project:       pTatin3d
- **    Filename:      swarm_fields.h
+ **    Filename:      data_bucket.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -31,8 +31,8 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
-#ifndef __SWARM_FIELDS_H__
-#define __SWARM_FIELDS_H__
+#ifndef __DATA_BUCKET_H__
+#define __DATA_BUCKET_H__
 
 #include "mpi.h"
 

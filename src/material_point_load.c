@@ -38,7 +38,7 @@
 #include <petsc.h>
 
 #include "dmda_element_q2p1.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "dmda_checkpoint.h"
 
 #include "MPntStd_def.h"

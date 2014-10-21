@@ -49,7 +49,7 @@
 #include "dmda_duplicate.h"
 #include "dmda_element_q2p1.h"
 #include "dmda_element_q1.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "output_paraview.h"
 #include "quadrature.h"
 #include "element_type_Q2.h"

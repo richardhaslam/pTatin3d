@@ -17,7 +17,7 @@ libptatin3d-y.c += $(call thisdir, \
 			dmda_element_q1.c \
 			element_type_Q2.c \
 			dmda_element_q1macrop1.c \
-			swarm_fields.c \
+			data_bucket.c \
 			data_exchanger.c \
 			sub_comm.c \
 			MPntStd_def.c \

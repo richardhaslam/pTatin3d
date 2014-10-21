@@ -122,7 +122,7 @@ const double char_rhsscale=    0.0315359920277;
 #include "energy_output.h"
 
 #include "dmda_bcs.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "dmda_iterator.h"
 #include "geometry_object.h"
 #include "geometry_object_evaluator.h"

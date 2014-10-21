@@ -36,7 +36,7 @@
 #include "ptatin3d.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateRheologyNonlinearitiesMarkers_Viscous"

@@ -66,7 +66,7 @@ typedef struct _p_RheologyConstants RheologyConstants;
 #include "dmda_update_coords.h"
 #include "dmda_view_petscvtk.h"
 
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "data_exchanger.h"
 
 #include "ptatin3d_defs.h"
@@ -76,7 +76,7 @@ typedef struct _p_RheologyConstants RheologyConstants;
 #include "rheology.h"
 */
 
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "data_exchanger.h"
 //#include "rheology.h"
 #include "material_point_load.h"

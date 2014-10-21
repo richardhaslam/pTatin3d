@@ -34,7 +34,7 @@
 
 #define _GNU_SOURCE
 #include "petsc.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "rheology.h"
 #include "material_constants.h"
 

@@ -47,7 +47,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "element_utils_q2.h"
 
 #include "dmda_element_q2p1.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 #include "MPntStd_def.h"
 #include "material_point_point_location.h"
 

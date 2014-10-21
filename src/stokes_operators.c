@@ -61,7 +61,7 @@
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
-#include "swarm_fields.h"
+#include "data_bucket.h"
 
 #include "dmda_duplicate.h"
 #include "dmda_bcs.h"
