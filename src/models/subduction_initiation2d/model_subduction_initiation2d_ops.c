@@ -335,7 +335,6 @@ PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx
 PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscScalar     zero = 0.0,velocity;
 	PetscBool       active_energy;
 	PetscErrorCode  ierr;
 	
@@ -375,7 +374,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
 	PetscInt       n;
-	PetscScalar    zero = 0.0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -393,9 +391,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
-	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -407,7 +402,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTati
 PetscErrorCode ModelApplyInitialMeshGeometry_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
-	PetscReal       Lx,Ly,Lz;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
@@ -427,9 +421,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
 	int                    p,n_mp_points;
 	DataBucket             db;
-	DataField              PField_std,PField_pls,PField_stokes, PField_energy;
+	DataField              PField_std,PField_pls,PField_stokes;
 	int                    phase;
-	PetscBool              active_energy;
 	MPAccess               mpX;
 	PetscErrorCode ierr;
 	
@@ -641,7 +634,7 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar p
 	PetscScalar x,y,z;
 	PetscReal   *coeffs;
 	PetscBool   impose;
-	PetscReal   L_bar,Tbot,age,Ttop,Ly,Oy,length_bar,diffusivity;
+	PetscReal   Tbot,age,Ttop,Ly,length_bar,diffusivity;
 	PetscReal   cm_yr2m_s;
 	
 	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
@@ -713,8 +706,6 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	Vec            coords;
 	DMDACoor3d     ***LA_coords;	
 	PetscScalar    pos[3];
-	PetscScalar    val;
-	PetscBool      impose_value;
 	PetscScalar    ****LA_X;
 	PetscScalar    vx,Vx_max;
 	PetscReal      Dprime;
@@ -778,9 +769,7 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	Vec            velocity,pressure,temperature;
 	PetscReal      MeshMin[3],MeshMax[3],domain_height;
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-	DMDAVecTraverse3d_InterpCtx                  IntpCtx;
 	PetscReal      vals[6];
-	PetscScalar    zero = 0.0;
 	PhysCompEnergy energy;
 	PetscBool      active_energy;
 	PetscErrorCode ierr;
@@ -847,14 +836,10 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 #define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
 	DM                stokes_pack,dau,dap;
 	PhysCompStokes    stokes;
 	Vec               Uloc,Ploc;
 	PetscScalar       *LA_Uloc,*LA_Ploc;
-	DataField         PField;
-	MaterialConst_MaterialType   *truc;
-	PetscInt          regionidx;
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
@@ -884,7 +869,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pT
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Subduction_Initiation2d"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
 	PetscReal      step;
 	PhysCompStokes stokes;
 	Vec            velocity,pressure;
@@ -914,10 +898,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,
 #define __FUNCT__ "ModelOutput_Subduction_Initiation2d"
 PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
 	PetscBool         active_energy;
 	DataBucket        materialpoint_db;
-	Vec               velocity,pressure;
 	PetscBool         output_markers = PETSC_FALSE;
 	PetscErrorCode    ierr;
 	
@@ -991,7 +973,7 @@ PetscErrorCode ModelDestroy_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_Subduction_Initiation2d(void)
 {
 	ModelSubduction_Initiation2dCtx *data;
-	pTatinModel m,model;
+	pTatinModel m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

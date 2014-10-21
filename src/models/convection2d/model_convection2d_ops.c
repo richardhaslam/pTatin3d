@@ -190,7 +190,6 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 #define __FUNCT__ "Thermal_Convection2d_VelocityBC"
 PetscErrorCode Thermal_Convection2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ModelThermal_Convection2dCtx *data)
 {
-	PetscScalar    zero = 0.0;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -226,7 +225,6 @@ PetscErrorCode Thermal_Convection2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,
 PetscErrorCode ModelApplyBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
-	PetscScalar    zero = 0.0,velocity;
 	PetscBool      active_energy;
 	PetscErrorCode ierr;
 	
@@ -281,9 +279,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Thermal_Convection2d(PetscInt nl,BC
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Thermal_Convection2d"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
-	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -314,9 +309,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
 	int                    p,n_mp_points;
 	DataBucket             db;
-	DataField              PField_std,PField_pls,PField_stokes, PField_energy;
+	DataField              PField_std,PField_stokes;
 	int                    phase;
-	PetscBool              active_energy;
 	MPAccess               mpX;
 	PetscErrorCode ierr;
 	
@@ -382,7 +376,7 @@ PetscBool DMDAVecTraverse3d_PerturbationThermal_Convection2d(PetscScalar positio
 	PetscScalar x,y,z;
 	PetscReal  *coeffs;
 	PetscBool  impose;
-	PetscReal  L_bar,Tbot,age,Ttop,Ly,Lx,Oy,Ox,length_bar,diffusivity;
+	PetscReal  Tbot,Ttop,Ly,Lx,Oy,Ox;
 	PetscReal  cm_yr2m_s;
 	
 	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
@@ -417,9 +411,7 @@ PetscErrorCode ModelApplyInitialSolution_Thermal_Convection2d(pTatinCtx c,Vec X,
 	Vec          velocity,pressure,temperature;
 	PetscReal    MeshMin[3],MeshMax[3],domain_height;
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-	DMDAVecTraverse3d_InterpCtx                  IntpCtx;
 	PetscReal      vals[6];
-	PetscScalar    zero = 0.0;
 	PhysCompEnergy energy;
 	PetscBool      active_energy;
 	PetscErrorCode ierr;
@@ -474,14 +466,10 @@ PetscErrorCode ModelApplyInitialSolution_Thermal_Convection2d(pTatinCtx c,Vec X,
 #define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
 	DM                stokes_pack,dau,dap;
 	PhysCompStokes    stokes;
 	Vec               Uloc,Ploc;
 	PetscScalar       *LA_Uloc,*LA_Ploc;
-	DataField         PField;
-	MaterialConst_MaterialType *truc;
-	PetscInt        regionidx;
 	PetscErrorCode  ierr;
 
 	PetscFunctionBegin;
@@ -511,13 +499,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d(pTati
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Thermal_Convection2d"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Thermal_Convection2d(pTatinCtx c,Vec X,void *ctx)
 {
-	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
-	PetscReal      step;
-	PhysCompStokes stokes;
-	Vec            velocity,pressure;
-	DM             stokes_pack,dav,dap;
-	PetscErrorCode ierr;
-	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -541,11 +522,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Thermal_Convection2d(pTatinCtx c,Vec
 #define __FUNCT__ "ModelOutput_Thermal_Convection2d"
 PetscErrorCode ModelOutput_Thermal_Convection2d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
 	PetscBool      active_energy;
-	DataBucket     materialpoint_db;
-	DM             stokes_pack,dau,dap;
-	Vec            velocity,pressure;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -615,7 +592,7 @@ PetscErrorCode ModelDestroy_Thermal_Convection2d(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_Thermal_Convection2d(void)
 {
 	ModelThermal_Convection2dCtx *data;
-	pTatinModel    m,model;
+	pTatinModel    m;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;

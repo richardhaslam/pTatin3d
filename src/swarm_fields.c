@@ -456,7 +456,7 @@ void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, co
 	/* debug mode */
 	
 	/* check point is valid */
-	if( offset < 0 ){ printf("ERROR: offset must be >= 0\n"); ERROR();  }
+	/* if( offset < 0 ){ printf("ERROR: offset must be >= 0\n"); ERROR();  } *//* Note compiler realizes this can never happen with an unsigned int */
 	if( offset >= gfield->atomic_size ){ printf("ERROR: offset must be < %zu\n",gfield->atomic_size); ERROR(); }
 	
 	/* check point is valid */
