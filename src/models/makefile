@@ -9,16 +9,10 @@ TATIN_MODEL_DIR = \
 	gene3d \
 	gene3d_nueve \
 	sierra \
-	folding \
-	folding2d \
 	advdiff_example\
-	basin_comp\
-	wrench_fold\
-	fault_fold \
 	delamination \
 	riftrh \
 	geomod2008 \
-	fault_fold_plastic \
 	multilayer_folding \
 	submarinelavaflow \
 	ex_subduction \

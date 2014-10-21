@@ -8,12 +8,6 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			rift3D/model_rift3D_ops.c \
 			rift3D_T/model_rift3D_T_ops.c \
 			sierra/model_ops_Sierra.c \
-			folding/model_folding_ops.c \
-			folding2d/model_ops_folding2d.c \
-			basin_comp/model_ops_basin_comp.c \
-			fault_fold/model_ops_fault_fold.c \
-			wrench_fold/model_ops_wrench_fold.c \
-			fault_fold_plastic/model_ops_fault_fold_plastic.c \
 			advdiff_example/model_ops_advdiff_example.c \
 			delamination/model_delamination_ops.c \
 			riftrh/model_ops_riftrh.c \
