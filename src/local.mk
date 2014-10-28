@@ -69,7 +69,7 @@ libptatin3d-y.c += $(call thisdir, \
 			ksp_chebyrn.c \
 			pc_semiredundant.c \
 			pc_wsmp.c \
-            pc_dmdarepart.c \
+			pc_dmdarepart.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
 			spm_utils.c \
@@ -98,6 +98,8 @@ ptatin-tests-y.c += $(call thisdir, \
 			test_stokes_operators_approximations.c \
 			test_mp_advection.c \
 			test_material_point_load.c \
+			test_swarms.c \
+			test_swarms_exchanger.c \
 			test_stokes_q1macrop1.c \
 			ptatin_read_matrix.c \
 			test_petsc_wsmp.c \
