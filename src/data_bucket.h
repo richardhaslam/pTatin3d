@@ -34,12 +34,20 @@
 #ifndef __DATA_BUCKET_H__
 #define __DATA_BUCKET_H__
 
-#include "mpi.h"
+#define _GNU_SOURCE
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <mpi.h>
 
 
 #define DEFAULT -32654789
 
 #define DATAFIELD_POINT_ACCESS_GUARD 
+
+/* Logging flag */
+#define PTAT3D_LOG_DATA_BUCKET
 
 
 typedef enum { BFALSE=0, BTRUE } BTruth;
@@ -106,7 +114,11 @@ void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p );
 void DataFieldRestoreAccess( DataField gfield );
 void DataFieldVerifyAccess( const DataField gfield, const size_t size);
-void DataFieldInsertPoint( const DataField field, const int index, const void *ctx ); 
+
+void DataFieldGetEntries(const DataField gfield,void **data);
+void DataFieldRestoreEntries(const DataField gfield,void **data);
+
+void DataFieldInsertPoint( const DataField field, const int index, const void *ctx );
 void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 												const int pid_y, const DataField field_y );
 void DataFieldZeroPoint( const DataField field, const int index ); 

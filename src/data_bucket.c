@@ -89,16 +89,7 @@ gcc -O3 -g -c data_bucket.c
 */
 
 
-#define _GNU_SOURCE
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
-#include "math.h"
-#include "mpi.h"
-
-#include "data_bucket.h"
-
-#define PTAT3D_LOG_DATA_BUCKET
+#include <data_bucket.h>
 
 
 /* string helpers */
@@ -472,7 +463,6 @@ void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, co
 	*ctx_p = __DATATFIELD_point_access_offset(gfield->data,pid,gfield->atomic_size,offset);
 }
 
-
 void DataFieldRestoreAccess( DataField gfield )
 {
 	if(gfield->active==BFALSE) {
@@ -480,6 +470,31 @@ void DataFieldRestoreAccess( DataField gfield )
 		ERROR();
 	}
 	gfield->active = BFALSE;
+}
+
+void DataFieldVerifyAccess( const DataField gfield, const size_t size)
+{
+#ifdef DATAFIELD_POINT_ACCESS_GUARD
+	if(gfield->atomic_size != size ) {
+        printf("ERROR: Field \"%s\" must be mapped to %zu bytes, your intended structure is %zu bytes in length.\n",
+               gfield->name, gfield->atomic_size, size );
+		ERROR();
+	}
+#endif
+}
+
+void DataFieldGetEntries(const DataField gfield,void **data)
+{
+    if (data) {
+        *data = gfield->data;
+    }
+}
+
+void DataFieldRestoreEntries(const DataField gfield,void **data)
+{
+    if (data) {
+        *data = NULL;
+    }
 }
 
 /* y = x */
@@ -528,17 +543,6 @@ void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[],
 		DataBucketCopyPoint(DBIn,list[p], *DB,p);
 	}
 	
-}
-
-void DataFieldVerifyAccess( const DataField gfield, const size_t size)
-{
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
-	if(gfield->atomic_size != size ) {
-			printf("ERROR: Field \"%s\" must be mapped to %zu bytes, your intended structure is %zu bytes in length.\n",
-						 gfield->name, gfield->atomic_size, size );
-		ERROR();
-	}
-#endif
 }
 
 // insert into an exisitng location
