@@ -53,7 +53,7 @@
 #include <data_bucket.h>
 #include <data_exchanger.h>
 
-/* Define structure for storing material point data */
+/* Define structures for storing material point data */
 typedef struct {
 	double    coor[3];
 	long int  pid;
@@ -61,8 +61,14 @@ typedef struct {
     short int region_id;
 } MaterialPoint;
 
-/* Define name used to identify data structure for material point data */
-const char MaterialPointClassName[] = "DBF_MaterialPoint";
+typedef struct {
+	float plastic_strain;
+    char  failure_type;
+} MaterialPointVP;
+
+/* Define names used to identify data structure for material point data */
+const char MaterialPointClassName[]   = "DBF_MaterialPoint";
+const char MaterialPointVPClassName[] = "DBF_MaterialPointVP";
 
 
 
@@ -117,7 +123,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
         mp_k->coor[2] = (double)3*k + 3.3 + (double)(rank*10);
         
         mp_k->pid       = (long int)k + (double)(rank*100);
-        mp_k->viscosity = (double)(k+10) + (double)(rank*10);
+        mp_k->viscosity = (float)(k+10) + (float)(rank*10);
         mp_k->region_id = (short int)(rank+1);
     }
     
@@ -128,15 +134,16 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     DataFieldGetEntries(dbField,(void**)&mp_list);
 	DataBucketGetSizes(db,&L_local,NULL,NULL);
     
-    if (rank) { printf("[Initial data bucket (pre communication)]\n"); } ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr); fflush(stdout);
+    if (rank) { printf("[Initial data bucket (pre communication)]\n"); fflush(stdout);} ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     for (i=0; i<nproc; i++) {
         ierr = MPI_Barrier(comm);CHKERRQ(ierr);
         if (rank == i) {
             for (k=0; k<L_local; k++) {
-                printf("  [rank %.2d] [%.2d] pid = %ld ; viscosity = %1.4e\n",rank,k,mp_list[k].pid,mp_list[k].viscosity);
+                printf("  [rank %.2d] [%.2d] pid = %.4ld ; viscosity = %1.4e\n",rank,k,mp_list[k].pid,mp_list[k].viscosity); fflush(stdout);
             }
         }
-    }
+    } fflush(stdout);
 
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
     
@@ -284,7 +291,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     for (k=0; k<num_items_recv; k++) {
         DataFieldInsertPoint(dbField,L_local+k,&mp_list_recv[k]);
     }
-    DataFieldRestoreEntries(dbField,(void**)&mp_list);
 
     
     /* View result */
@@ -292,19 +298,271 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     DataFieldGetEntries(dbField,(void**)&mp_list);
 	DataBucketGetSizes(db,&L_local,NULL,NULL);
     
-    if (rank) { printf("[Final data bucket (post communication)]\n"); } ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr); fflush(stdout);
+    if (rank) { printf("[Final data bucket (post communication)]\n"); fflush(stdout); } ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     for (i=0; i<nproc; i++) {
         ierr = MPI_Barrier(comm);CHKERRQ(ierr);
         if (rank == i) {
             for (k=0; k<L_local; k++) {
-                printf("  [rank %.2d] [%.2d] pid = %ld ; viscosity = %1.4e\n",rank,k,mp_list[k].pid,mp_list[k].viscosity);
+                printf("  [*rank %.2d] [%.2d] pid = %.4ld ; viscosity = %1.4e\n",rank,k,mp_list[k].pid,mp_list[k].viscosity); fflush(stdout);
             }
         }
-    }
+    } fflush(stdout);
     
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
     
     
+    
+    /* View information about data_exchanger */
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    ierr = DataExView(data_exchanger);CHKERRQ(ierr);
+    
+    ierr = DataExDestroy(data_exchanger);CHKERRQ(ierr);
+	DataBucketDestroy(&db);
+    
+    PetscFunctionReturn(0);
+}
+
+/* 
+ Communication example when data bucket contains two different data types
+*/
+#undef __FUNCT__
+#define __FUNCT__ "SwarmTest_Communication2"
+PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
+{
+    PetscErrorCode ierr;
+    DataEx          data_exchanger;
+	DataBucket      db;
+	DataField       dbField,dbFieldVP;
+    int             nproc,rank,i,k,init_size,L_local;
+    long int        L_global;
+    PetscInt        num_items_recv;
+    MaterialPoint   *mp,*mp_recv;
+    MaterialPointVP *mpv,*mpv_recv;
+    
+    ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    
+    if (nproc != 2) {
+        SETERRQ(comm,PETSC_ERR_SUP,"Example only valid if nproc = 2");
+    }
+    
+    if (rank) {
+        printf("[[%s]]\n",__FUNCTION__);
+    }
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    
+    DataBucketCreate(&db);
+	DataBucketRegisterField(db,MaterialPointClassName,  sizeof(MaterialPoint),  NULL);
+	DataBucketRegisterField(db,MaterialPointVPClassName,sizeof(MaterialPointVP),NULL);
+	DataBucketFinalize(db);
+    
+    /* Each processor will define a different number of entries */
+    if (rank == 0) { init_size = 7; }
+    if (rank == 1) { init_size = 3; }
+	DataBucketSetSizes(db,init_size,-1);
+	DataBucketGetSizes(db,&L_local,NULL,NULL);
+    
+	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+    DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
+    DataFieldGetEntries(dbField,  (void**)&mp);
+    DataFieldGetEntries(dbFieldVP,(void**)&mpv);
+
+    for (k=0; k<L_local; k++) {
+        /* Set values of standard material point data */
+        mp[k].coor[0] = (double)3*k + 1.1 + (double)(rank*10);
+        mp[k].coor[1] = (double)3*k + 2.2 + (double)(rank*10);
+        mp[k].coor[2] = (double)3*k + 3.3 + (double)(rank*10);
+        
+        mp[k].pid       = (long int)k + (double)(rank*100);
+        mp[k].viscosity = (float)(k+10) + (float)(rank*10);
+        mp[k].region_id = (short int)(rank+1);
+
+        /* Set values of visco-plastic material point data */
+        mpv[k].plastic_strain = 0.1 * ( (float)(k+10) + (double)(rank*100) );
+        mpv[k].failure_type   = (char)(rank+1);
+    }
+
+    DataFieldRestoreEntries(dbFieldVP,(void**)&mpv);
+    DataFieldRestoreEntries(dbField,(void**)&mp);
+
+
+    /* Examine result */
+	DataBucketGetSizes(db,&L_local,NULL,NULL);
+
+	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+    DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
+    DataFieldGetEntries(dbField,  (void**)&mp);
+    DataFieldGetEntries(dbFieldVP,(void**)&mpv);
+    
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr); fflush(stdout);
+    if (rank) { printf("[Initial data bucket (pre communication)]\n"); fflush(stdout); } ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    for (i=0; i<nproc; i++) {
+        ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+        if (rank == i) {
+            for (k=0; k<L_local; k++) {
+                printf("  [rank %.2d] [%.2d] { pid = %.4ld ; viscosity = %1.4e ; e_plastic = %1.4e }\n",
+                       rank,k,mp[k].pid,mp[k].viscosity,mpv[k].plastic_strain); fflush(stdout);
+            }
+        }
+    } fflush(stdout);
+    DataFieldRestoreEntries(dbField,(void**)&mpv);
+    DataFieldRestoreEntries(dbField,(void**)&mp);
+    
+    /* Get total number of entries (summed over all ranks in comm */
+	DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
+    
+    /* Report parallel information about data bucket */
+    DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
+    
+    
+    
+    /* Create the data exchanger */
+    data_exchanger = DataExCreate(comm,0);
+    
+    
+    /* Define communication topology */
+    ierr = DataExTopologyInitialize(data_exchanger);CHKERRQ(ierr);
+    
+    if (rank == 0) {  ierr = DataExTopologyAddNeighbour(data_exchanger,1);CHKERRQ(ierr); }
+    if (rank == 1) {  ierr = DataExTopologyAddNeighbour(data_exchanger,0);CHKERRQ(ierr); }
+    
+    ierr = DataExTopologyFinalize(data_exchanger);CHKERRQ(ierr);
+    
+    /* Phase a) Establish send counts */
+    ierr = DataExInitializeSendCount(data_exchanger);CHKERRQ(ierr);
+    if (rank == 0) { /* send three items form rank 0 to rank 1 */
+        ierr = DataExAddToSendCount(data_exchanger,1,3);CHKERRQ(ierr);
+    }
+    if (rank == 1) { /* send one item from rank 1 to rank 0 */
+        ierr = DataExAddToSendCount(data_exchanger,0,1);CHKERRQ(ierr);
+    }
+    ierr = DataExFinalizeSendCount(data_exchanger);CHKERRQ(ierr);
+
+    /* ---------------------------------------------------------- */
+    /* Phase b) Pack data into buffers to be sent [MaterialPoint] */
+    ierr = DataExPackInitialize(data_exchanger,sizeof(MaterialPoint));CHKERRQ(ierr);
+    
+    DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+    DataFieldGetEntries(dbField,(void**)&mp);
+    if (rank == 0) {
+        /* Insert markers 1, 3, 6 (to be sent to rank 1) */
+        ierr = DataExPackData(data_exchanger,1,1,&mp[1]);CHKERRQ(ierr);
+        ierr = DataExPackData(data_exchanger,1,1,&mp[3]);CHKERRQ(ierr);
+        ierr = DataExPackData(data_exchanger,1,1,&mp[6]);CHKERRQ(ierr);
+        
+        /* tag points to be removed */
+        mp[1].region_id = -10;
+        mp[3].region_id = -10;
+        mp[6].region_id = -10;
+    }
+    if (rank == 1) {
+        /* Insert markers 0 (to be sent to rank 0) */
+        ierr = DataExPackData(data_exchanger,0,1,&mp[0]);CHKERRQ(ierr);
+
+        /* tag points to be removed */
+        mp[0].region_id = -10;
+    }
+    DataFieldRestoreEntries(dbField,(void**)&mp);
+    
+    /* Finalize packing - no further data can be added into the buffer after this call */
+    ierr = DataExPackFinalize(data_exchanger);CHKERRQ(ierr);
+    
+    /* Phase c) Send the data */
+    ierr = DataExBegin(data_exchanger);CHKERRQ(ierr);
+    ierr = DataExEnd(data_exchanger);CHKERRQ(ierr);
+    
+    /* Phase d) Fetch the recv buffer and do something with it */
+    ierr = DataExGetRecvData(data_exchanger,&num_items_recv,(void**)&mp_recv);CHKERRQ(ierr);
+
+    /* Increase size of data bucket */
+	DataBucketGetSizes(db,&L_local,NULL,NULL);
+	DataBucketSetSizes(db,L_local + num_items_recv,-1);
+    
+    /* Insert new values for MaterialPoint */
+    DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+    for (k=0; k<num_items_recv; k++) {
+        DataFieldInsertPoint(dbField,L_local+k,&mp_recv[k]);
+    }
+
+    
+    
+    /* ------------------------------------------------------------ */
+    /* Phase b) Pack data into buffers to be sent [MaterialPointVP] */
+    ierr = DataExPackInitialize(data_exchanger,sizeof(MaterialPointVP));CHKERRQ(ierr);
+    
+    DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
+    DataFieldGetEntries(dbFieldVP,(void**)&mpv);
+    if (rank == 0) {
+        /* Insert markers 1, 3, 6 (to be sent to rank 1) */
+        ierr = DataExPackData(data_exchanger,1,1,&mpv[1]);CHKERRQ(ierr);
+        ierr = DataExPackData(data_exchanger,1,1,&mpv[3]);CHKERRQ(ierr);
+        ierr = DataExPackData(data_exchanger,1,1,&mpv[6]);CHKERRQ(ierr);
+    }
+    if (rank == 1) {
+        /* Insert markers 0 (to be sent to rank 0) */
+        ierr = DataExPackData(data_exchanger,0,1,&mpv[0]);CHKERRQ(ierr);
+    }
+    DataFieldRestoreEntries(dbFieldVP,(void**)&mpv);
+    
+    /* Finalize packing - no further data can be added into the buffer after this call */
+    ierr = DataExPackFinalize(data_exchanger);CHKERRQ(ierr);
+    
+    /* Phase c) Send the data */
+    ierr = DataExBegin(data_exchanger);CHKERRQ(ierr);
+    ierr = DataExEnd(data_exchanger);CHKERRQ(ierr);
+    
+    /* Phase d) Fetch the recv buffer and do something with it */
+    ierr = DataExGetRecvData(data_exchanger,&num_items_recv,(void**)&mpv_recv);CHKERRQ(ierr);
+
+    /* Insert new values for MaterialPointVP */
+    DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
+    for (k=0; k<num_items_recv; k++) {
+        DataFieldInsertPoint(dbFieldVP,L_local+k,&mpv_recv[k]);
+    }
+    
+    
+    /*
+     [DATASTRUCTURE - APPLICATION SPECIFIC] NOTE
+     
+     Users should consider if they want to remove the items being sent from their data structure.
+     This is an application specific choice.
+     For a typical material point implementation, sending a marker to another processor indicates
+     that the material point has physically moved from one part of the domain to another, and thus
+     "ownership" of the material point has changed - hence we should remove the material points which
+     are being sent.
+     */
+	DataBucketGetSizes(db,&L_local,NULL,NULL);
+	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+    DataFieldGetEntries(dbField,(void**)&mp);
+    for (k=0; k<L_local; k++) {
+        if (mp[k].region_id == -10) {
+            DataBucketRemovePointAtIndex(db,k);
+        }
+    }
+    DataFieldRestoreEntries(dbField,(void**)&mp);
+    
+    
+    /* View result */
+	DataBucketGetSizes(db,&L_local,NULL,NULL);
+
+	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+    DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
+    DataFieldGetEntries(dbField,  (void**)&mp);
+    DataFieldGetEntries(dbFieldVP,(void**)&mpv);
+    ierr = MPI_Barrier(comm);CHKERRQ(ierr); fflush(stdout);
+    if (rank) { printf("[Final data bucket (post communication)]\n"); fflush(stdout); } ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+    for (i=0; i<nproc; i++) {
+        ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+        if (rank == i) {
+            for (k=0; k<L_local; k++) {
+                printf("  [*rank %.2d] [%.2d] { pid = %.4ld ; viscosity = %1.4e ; e_plastic = %1.4e }\n",
+                       rank,k,mp[k].pid,mp[k].viscosity,mpv[k].plastic_strain); fflush(stdout);
+            }
+        }
+    } fflush(stdout);
+    DataFieldRestoreEntries(dbFieldVP,(void**)&mpv);
+    DataFieldRestoreEntries(dbField,(void**)&mp);
     
     /* View information about data_exchanger */
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -337,6 +595,9 @@ int main(int nargs,char **args)
             
         case 1:
             ierr = SwarmTest_Communication1(PETSC_COMM_WORLD);CHKERRQ(ierr);
+            break;
+        case 2:
+            ierr = SwarmTest_Communication2(PETSC_COMM_WORLD);CHKERRQ(ierr);
             break;
             
     }
