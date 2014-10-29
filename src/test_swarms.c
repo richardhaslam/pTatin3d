@@ -165,7 +165,7 @@ int SwarmTest_AccessPatterns1(void)
         mp_k->coor[2] = (double)3*k + 3.3;
 
         mp_k->pid       = (long int)k;
-        mp_k->viscosity = (double)(k*10);
+        mp_k->viscosity = (float)(k*10);
         mp_k->region_id = 2;
     }
     
@@ -226,7 +226,7 @@ int SwarmTest_AccessPatterns2(void)
         mp_k->coor[2] = (double)3*k + 3.3;
         
         mp_k->pid       = (long int)k;
-        mp_k->viscosity = (double)(k*10);
+        mp_k->viscosity = (float)(k*10);
         mp_k->region_id = 2;
     }
     
@@ -364,7 +364,7 @@ int SwarmTest_LengthManipulations1(void)
         mp_k->coor[2] = (double)3*k + 3.3;
         
         mp_k->pid       = (long int)k;
-        mp_k->viscosity = (double)(k*10);
+        mp_k->viscosity = (float)(k*10);
         mp_k->region_id = 2;
     }
 	DataFieldRestoreAccess(dbField);
@@ -399,7 +399,7 @@ int SwarmTest_LengthManipulations1(void)
         mp_list[k].coor[2] = (double)3*k + 30.3;
         
         mp_list[k].pid       = (long int)k;
-        mp_list[k].viscosity = (double)(k*100);
+        mp_list[k].viscosity = (float)(k*100);
         mp_list[k].region_id = 3;
     }
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
@@ -483,7 +483,7 @@ int SwarmTest_Parallel1(MPI_Comm comm)
         mp_k->coor[2] = (double)3*k + 3.3 + (double)(rank*10);
         
         mp_k->pid       = (long int)k + (double)(rank*100);
-        mp_k->viscosity = (double)(k+10) + (double)(rank*10);
+        mp_k->viscosity = (float)(k+10) + (float)(rank*10);
         mp_k->region_id = (short int)(rank+1);
     }
 
