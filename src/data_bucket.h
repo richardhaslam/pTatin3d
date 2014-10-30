@@ -114,6 +114,7 @@ void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p );
 void DataFieldRestoreAccess( DataField gfield );
 void DataFieldVerifyAccess( const DataField gfield, const size_t size);
+void DataFieldGetAtomicSize(const DataField gfield,size_t *size);
 
 void DataFieldGetEntries(const DataField gfield,void **data);
 void DataFieldRestoreEntries(const DataField gfield,void **data);
@@ -148,6 +149,13 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const int index );
 
 void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB);
 void DataBucketInsertValues(DataBucket db1,DataBucket db2);
+
+/* helpers for parallel send/recv */
+void DataBucketCreatePackedArray(DataBucket db,size_t *bytes,void **buf);
+void DataBucketDestroyPackedArray(DataBucket db,void **buf);
+void DataBucketFillPackedArray(DataBucket db,const int index,void *buf);
+void DataBucketInsertPackedArray(DataBucket db,const int idx,void *data);
+
 
 #endif
 
