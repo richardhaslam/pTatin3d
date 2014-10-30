@@ -153,8 +153,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     /* Report parallel information about data bucket */
     DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
     
-    
-    
     /*
      Create the data exchanger
      
@@ -163,7 +161,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
                               if multiple data exchangers are to be used simulataneously.
     */
     data_exchanger = DataExCreate(comm,0);
-    
     
     /* 
      Define communication topology using 3 step process
@@ -258,7 +255,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
         DataBucketRemovePointAtIndex(db,0);
     }
     
-    
     /* Finalize packing - no further data can be added into the buffer after this call */
     ierr = DataExPackFinalize(data_exchanger);CHKERRQ(ierr);
     
@@ -278,7 +274,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     */
     ierr = DataExGetRecvData(data_exchanger,&num_items_recv,(void**)&mp_list_recv);CHKERRQ(ierr);
     
-    
     /*
      [DATASTRUCTURE - APPLICATION SPECIFIC] NOTE
      
@@ -291,7 +286,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     for (k=0; k<num_items_recv; k++) {
         DataFieldInsertPoint(dbField,L_local+k,&mp_list_recv[k]);
     }
-
     
     /* View result */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
@@ -310,8 +304,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     } fflush(stdout);
     
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
-    
-    
     
     /* View information about data_exchanger */
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -393,7 +385,6 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     DataFieldRestoreEntries(dbFieldVP,(void**)&mpv);
     DataFieldRestoreEntries(dbField,(void**)&mp);
 
-
     /* Examine result */
 	DataBucketGetSizes(db,&L_local,NULL,NULL);
 
@@ -422,11 +413,8 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     /* Report parallel information about data bucket */
     DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
     
-    
-    
     /* Create the data exchanger */
     data_exchanger = DataExCreate(comm,0);
-    
     
     /* Define communication topology */
     ierr = DataExTopologyInitialize(data_exchanger);CHKERRQ(ierr);
@@ -491,8 +479,6 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     for (k=0; k<num_items_recv; k++) {
         DataFieldInsertPoint(dbField,L_local+k,&mp_recv[k]);
     }
-
-    
     
     /* ------------------------------------------------------------ */
     /* Phase b) Pack data into buffers to be sent [MaterialPointVP] */
@@ -528,7 +514,6 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
         DataFieldInsertPoint(dbFieldVP,L_local+k,&mpv_recv[k]);
     }
     
-    
     /*
      [DATASTRUCTURE - APPLICATION SPECIFIC] NOTE
      
@@ -548,7 +533,6 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
         }
     }
     DataFieldRestoreEntries(dbField,(void**)&mp);
-    
     
     /* View result */
 	DataBucketGetSizes(db,&L_local,NULL,NULL);
@@ -592,15 +576,14 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     PetscErrorCode ierr;
     DataEx          data_exchanger;
 	DataBucket      db;
-	DataField       dbField,dbFieldVP;/*,*dbAllFields;*/
+	DataField       dbField,dbFieldVP;
     int             nproc,rank,i,k,init_size,L_local;
     long int        L_global;
     PetscInt        num_items_recv;
     MaterialPoint   *mp;
     MaterialPointVP *mpv;
-/*    int             nfields; */
 	size_t          sizeof_marker_contents;
-	void            /**data_buffer,*/*recv_buffer,*dbuf;
+	void            *recv_buffer,*dbuf;
     
     
     ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
@@ -649,7 +632,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     DataFieldRestoreEntries(dbFieldVP,(void**)&mpv);
     DataFieldRestoreEntries(dbField,(void**)&mp);
     
-    
     /* Examine result */
 	DataBucketGetSizes(db,&L_local,NULL,NULL);
     
@@ -681,7 +663,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     /* Create the data exchanger */
     data_exchanger = DataExCreate(comm,0);
     
-    
     /* Define communication topology */
     ierr = DataExTopologyInitialize(data_exchanger);CHKERRQ(ierr);
     
@@ -700,21 +681,7 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     }
     ierr = DataExFinalizeSendCount(data_exchanger);CHKERRQ(ierr);
     
-    /* ---------------------------------------------------------- */
-    /* compute size of merged data bucket entries */
-    /*
-    DataBucketGetDataFields(db,&nfields,&dbAllFields);
-    sizeof_marker_contents = 0;
-    for (f=0; f<nfields; f++) {
-        size_t asize;
-        
-        DataFieldGetAtomicSize(dbAllFields[f],&asize);
-        sizeof_marker_contents += asize;
-    }
-    */
-
-	/* allocate a temporary buffer whihc is large enough to store all marker fields from an individual point,p */
-	//ierr = PetscMalloc(sizeof_marker_contents,&data_buffer);CHKERRQ(ierr);
+	/* allocate a temporary buffer which is large enough to store all marker fields from an individual point,p */
     DataBucketCreatePackedArray(db,&sizeof_marker_contents,&dbuf);
     
     /* Phase b) Pack data into buffers to be sent [MaterialPoint + MaterialPointVP] */
@@ -722,7 +689,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     
     {
         int nps,pidx[3];
-        
         
         if (rank == 0) {
             nps = 3;
@@ -736,33 +702,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
             pidx[0] = 0;
         }
      
-/*
-        for (k=0; k<nps; k++) {
-            void *data0,*data;
-            size_t asize,offset;
-            
-            DataFieldGetAtomicSize(dbAllFields[0],&asize);
-            DataFieldGetEntries(dbAllFields[0],&data0);
-			PetscMemcpy((void*)data_buffer,    data0 + pidx[k]*asize,    asize);
-
-            offset = asize;
-            for (f=1; f<nfields; f++) {
-                DataFieldGetAtomicSize(dbAllFields[f],&asize);
-                DataFieldGetEntries(dbAllFields[f],&data);
-                
-                PetscMemcpy((void*)((char*)data_buffer + offset),    data + pidx[k]*asize,    asize);
-				offset = offset + asize;
-            }
-            
-            if (rank == 0) {
-                ierr = DataExPackData(data_exchanger,1,1,(void*)data_buffer);CHKERRQ(ierr);
-            }
-            if (rank == 1) {
-                ierr = DataExPackData(data_exchanger,0,1,(void*)data_buffer);CHKERRQ(ierr);
-            }
-        }
-*/
-  
         for (k=0; k<nps; k++) {
             DataBucketFillPackedArray(db,pidx[k],dbuf);
 
@@ -778,7 +717,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     /* Finalize packing - no further data can be added into the buffer after this call */
     ierr = DataExPackFinalize(data_exchanger);CHKERRQ(ierr);
     
-    
     /*
      [DATASTRUCTURE - APPLICATION SPECIFIC] NOTE
      Rempove points who were sent
@@ -792,7 +730,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     if (rank == 1) {
         DataBucketRemovePointAtIndex(db,0);
     }
-
     
     /* Phase c) Send the data */
     ierr = DataExBegin(data_exchanger);CHKERRQ(ierr);
@@ -806,22 +743,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
 	DataBucketSetSizes(db,L_local + num_items_recv,-1);
     
     /* Insert new values for MaterialPoint */
-    /*
-    for (k=0; k<num_items_recv; k++) {
-        void *data_p;
-        size_t asize,offset;
-        
-        offset = 0;
-        for (f=0; f<nfields; f++) {
-            data_p = (void*)( (char*)recv_buffer + k*(sizeof_marker_contents) + offset );
-            
-            DataFieldInsertPoint(dbAllFields[f], L_local + k, (void*)data_p );
-            
-            DataFieldGetAtomicSize(dbAllFields[f],&asize);
-            offset = offset + asize;
-        }
-    }
-    */
     for (k=0; k<num_items_recv; k++) {
         void *data_p = (void*)( (char*)recv_buffer + k*(sizeof_marker_contents) );
         
