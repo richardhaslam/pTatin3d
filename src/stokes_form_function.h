@@ -38,5 +38,13 @@ PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx);
 PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx);
 PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx);
 
+PetscErrorCode MatStokesJijGetContext(Mat J,void **data);
+PetscErrorCode MatStokesJijUpdateGlobalFields(Mat J,Vec u,Vec p,Vec x);
+PetscErrorCode MatStokesJijUpdateLocalFields(Mat J,Vec u,Vec p,Vec x);
+
+PetscErrorCode MatCreateStokesJux(pTatinCtx ctx,void *Jctx,Mat *_Jux);
+PetscErrorCode MatCreateStokesJpx(pTatinCtx ctx,void *Jctx,Mat *_Jpx);
+PetscErrorCode MatCreateStokesJuu(pTatinCtx ctx,void *Jctx,Mat *_Juu);
+
 #endif
 
