@@ -1645,8 +1645,8 @@ PetscErrorCode StokesUPXNewton_FormJpx_MFFD(void *mffd_ctx,Vec x,Vec Fp)
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Fp);CHKERRQ(ierr);
-	ierr = DMLocalToGlobalBegin(dau,FPloc,ADD_VALUES,Fp);CHKERRQ(ierr);
-	ierr = DMLocalToGlobalEnd  (dau,FPloc,ADD_VALUES,Fp);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalBegin(dap,FPloc,ADD_VALUES,Fp);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd  (dap,FPloc,ADD_VALUES,Fp);CHKERRQ(ierr);
     
 	/* modify F for the boundary conditions, F_k = scale_k(x_k - phi_k) */
 	
@@ -1973,4 +1973,29 @@ PetscErrorCode MatStokesJijUpdateLocalFields(Mat J,Vec u,Vec p,Vec x)
     if (x) { ierr = VecCopy(x,J_ctx->Xloc);CHKERRQ(ierr); }
     
     PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "patch_MatMFFDSetBase_MFFD"
+PetscErrorCode patch_MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
+{
+    MatMFFD        ctx = (MatMFFD)J->data;
+    
+    MatMFFDResetHHistory(J);
+    
+    ctx->current_u = U;
+    if (F) {
+        if (ctx->current_f_allocated) {VecDestroy(&ctx->current_f);}
+        ctx->current_f           = F;
+        ctx->current_f_allocated = PETSC_FALSE;
+    } else if (!ctx->current_f_allocated) {
+        MatGetVecs(J,NULL,&ctx->current_f); /* VecDuplicate(ctx->current_u, &ctx->current_f); */
+        
+        ctx->current_f_allocated = PETSC_TRUE;
+    }
+    if (!ctx->w) {
+        VecDuplicate(ctx->current_u, &ctx->w);
+    }
+    J->assembled = PETSC_TRUE;
+    return(0);
 }
