@@ -2197,7 +2197,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		if (!activate_quasi_newton_coord_update) {
 			ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes,user);CHKERRQ(ierr);
 		} else {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
 		}
 		// Force mffd
 		ierr = SNESSetJacobian(snes_newton,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
@@ -2211,7 +2211,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* configure KSP */
 		ierr = SNESGetKSP(snes_newton,&ksp);CHKERRQ(ierr);
 		
-    ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
+    ierr = pTatin_Stokes_ActivateMonitors(user,snes_newton);CHKERRQ(ierr);
     
 		/* configure for fieldsplit */
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -2229,7 +2229,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = pTatinLogBasicSNES(user,"Stokes[NewtonStage]",snes_newton);CHKERRQ(ierr);
 		ierr = pTatinLogBasicCPUtime(user,"Stokes[NewtonStage]",time[1]-time[0]);CHKERRQ(ierr);
 		ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
-        ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
+        ierr = pTatinLogBasicStokesSolutionResiduals(user,snes_newton,multipys_pack,X);CHKERRQ(ierr);
 		ierr = pTatinLogPetscLog(user,"Stokes[NewtonStage]");CHKERRQ(ierr);
 		if (monitor_stages) {
 			ierr = pTatinModel_Output(model,user,X,"newton_stage");CHKERRQ(ierr);
