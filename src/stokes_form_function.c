@@ -1502,3 +1502,500 @@ PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx)
 }
 
 
+typedef struct {
+    PetscInt  refcnt;
+    Vec       u,p,x;
+    Vec       Uloc,Ploc,Xloc;
+    pTatinCtx user_context;
+} pTatinStokesFields;
+
+#undef __FUNCT__
+#define __FUNCT__ "StokesUPXNewton_FormJux_MFFD"
+PetscErrorCode StokesUPXNewton_FormJux_MFFD(void *mffd_ctx,Vec x,Vec Fu)
+{
+    PetscErrorCode     ierr;
+    pTatinStokesFields *stokes_j;
+    pTatinCtx          ptatin;
+    DM                 stokes_pack,dau,dap,dax;
+    Vec                Uloc,Ploc,Xloc,FUloc;
+    PetscScalar        *LA_Uloc,*LA_Ploc,*LA_Xloc;
+    PetscScalar        *LA_FUloc;
+	PhysCompStokes     stokes;
+	
+    PetscFunctionBegin;
+    
+    stokes_j    = (pTatinStokesFields*)mffd_ctx;
+	ptatin      = stokes_j->user_context;
+    
+	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    
+	/* fetch DM's */
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
+	
+	/* fetch local vectors */
+	ierr = DMGetLocalVector(dau,&FUloc);CHKERRQ(ierr);
+    Uloc = stokes_j->Uloc;
+    Ploc = stokes_j->Ploc;
+    Xloc = stokes_j->Xloc;
+    
+	/* get the local (ghosted) entries for each physics */
+	//ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr); /* this scatter should be performed in the FormJacobian function */
+	ierr = DMGlobalToLocalBegin(dax,x,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd  (dax,x,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+		
+	/* insert boundary conditions into local vectors */
+	ierr = BCListInsertLocal(stokes->u_bclist,Uloc);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Xloc,&LA_Xloc);CHKERRQ(ierr);
+	
+	/* compute Ax - b */
+	ierr = VecZeroEntries(FUloc);CHKERRQ(ierr);
+	ierr = VecGetArray(FUloc,&LA_FUloc);CHKERRQ(ierr);
+	
+	/* ======================================== */
+	/*         UPDATE NON-LINEARITIES           */
+	/* ======================================== */
+	/* This should have already been called from the FormJacobian function */
+    //ierr = pTatin_EvaluateRheologyNonlinearities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+
+	/* momentum */
+	ierr = FormFunctionLocal_U_QuasiNewtonX(stokes,dau,LA_Uloc,dap,LA_Ploc,dax,LA_Xloc,LA_FUloc);CHKERRQ(ierr);
+	//ierr = FormFunctionLocal_U_tractionBC(stokes,dau,LA_Uloc,dap,LA_Ploc,LA_FUloc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(FUloc,&LA_FUloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Xloc,&LA_Xloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	
+	/* do global fem summation */
+	ierr = VecZeroEntries(Fu);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalBegin(dau,FUloc,ADD_VALUES,Fu);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd  (dau,FUloc,ADD_VALUES,Fu);CHKERRQ(ierr);
+    
+	/* modify F for the boundary conditions, F_k = scale_k(x_k - phi_k) */
+	ierr = BCListResidualDirichlet(stokes->u_bclist,stokes_j->u,Fu);CHKERRQ(ierr);
+	
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "StokesUPXNewton_FormJpx_MFFD"
+PetscErrorCode StokesUPXNewton_FormJpx_MFFD(void *mffd_ctx,Vec x,Vec Fp)
+{
+    PetscErrorCode     ierr;
+    pTatinStokesFields *stokes_j;
+    pTatinCtx          ptatin;
+    DM                 stokes_pack,dau,dap,dax;
+    Vec                Uloc,Ploc,Xloc,FPloc;
+    PetscScalar        *LA_Uloc,*LA_Ploc,*LA_Xloc;
+    PetscScalar        *LA_FPloc;
+	PhysCompStokes     stokes;
+	
+    PetscFunctionBegin;
+    
+    stokes_j    = (pTatinStokesFields*)mffd_ctx;
+	ptatin      = stokes_j->user_context;
+    
+	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    
+	/* fetch DM's */
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
+	
+	/* fetch local vectors */
+	ierr = DMGetLocalVector(dap,&FPloc);CHKERRQ(ierr);
+    Uloc = stokes_j->Uloc;
+    Ploc = stokes_j->Ploc;
+    Xloc = stokes_j->Xloc;
+    
+	/* get the local (ghosted) entries for each physics */
+	//ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr); /* this scatter should be performed in the FormJacobian function */
+	ierr = DMGlobalToLocalBegin(dax,x,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd  (dax,x,INSERT_VALUES,Xloc);CHKERRQ(ierr);
+    
+	/* insert boundary conditions into local vectors */
+	ierr = BCListInsertLocal(stokes->u_bclist,Uloc);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecGetArray(Xloc,&LA_Xloc);CHKERRQ(ierr);
+	
+	/* compute Ax - b */
+	ierr = VecZeroEntries(FPloc);CHKERRQ(ierr);
+	ierr = VecGetArray(FPloc,&LA_FPloc);CHKERRQ(ierr);
+	
+	/* ======================================== */
+	/*         UPDATE NON-LINEARITIES           */
+	/* ======================================== */
+	/* This should have already been called from the FormJacobian function */
+    //ierr = pTatin_EvaluateRheologyNonlinearities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+    
+	/* continuity */
+	ierr = FormFunctionLocal_P_QuasiNewtonX(stokes,dau,LA_Uloc,dap,LA_Ploc,dax,LA_Xloc,LA_FPloc);CHKERRQ(ierr);
+    
+	ierr = VecRestoreArray(FPloc,&LA_FPloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Xloc,&LA_Xloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	
+	/* do global fem summation */
+	ierr = VecZeroEntries(Fp);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalBegin(dap,FPloc,ADD_VALUES,Fp);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd  (dap,FPloc,ADD_VALUES,Fp);CHKERRQ(ierr);
+    
+	/* modify F for the boundary conditions, F_k = scale_k(x_k - phi_k) */
+	
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "StokesUPXNewton_FormJuu_MFFD"
+PetscErrorCode StokesUPXNewton_FormJuu_MFFD(void *mffd_ctx,Vec x,Vec Fu)
+{
+    PetscErrorCode     ierr;
+    pTatinStokesFields *stokes_j;
+    pTatinCtx          ptatin;
+    DM                 stokes_pack,dau,dap;
+    Vec                Uloc,Ploc,FUloc;
+    PetscScalar        *LA_Uloc,*LA_Ploc;
+    PetscScalar        *LA_FUloc;
+	PhysCompStokes     stokes;
+	
+    PetscFunctionBegin;
+    
+    stokes_j    = (pTatinStokesFields*)mffd_ctx;
+	ptatin      = stokes_j->user_context;
+    
+	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    
+	/* fetch DM's */
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	
+	/* fetch local vectors */
+	ierr = DMGetLocalVector(dau,&FUloc);CHKERRQ(ierr);
+    Uloc = stokes_j->Uloc;
+    Ploc = stokes_j->Ploc;
+    
+	/* get the local (ghosted) entries for each physics */
+	//ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr); /* this scatter should be performed in the FormJacobian function */
+    
+	/* insert boundary conditions into local vectors */
+	ierr = BCListInsertLocal(stokes->u_bclist,Uloc);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	
+	/* compute Ax - b */
+	ierr = VecZeroEntries(FUloc);CHKERRQ(ierr);
+	ierr = VecGetArray(FUloc,&LA_FUloc);CHKERRQ(ierr);
+	
+	/* ======================================== */
+	/*         UPDATE NON-LINEARITIES           */
+	/* ======================================== */
+	/* This should have already been called from the FormJacobian function */
+    //ierr = pTatin_EvaluateRheologyNonlinearities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+    
+	/* momentum */
+	ierr = FormFunctionLocal_U(stokes,dau,LA_Uloc,dap,LA_Ploc,LA_FUloc);CHKERRQ(ierr);
+	//ierr = FormFunctionLocal_U_tractionBC(stokes,dau,LA_Uloc,dap,LA_Ploc,LA_FUloc);CHKERRQ(ierr);
+	
+	ierr = VecRestoreArray(FUloc,&LA_FUloc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+	
+	/* do global fem summation */
+	ierr = VecZeroEntries(Fu);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalBegin(dau,FUloc,ADD_VALUES,Fu);CHKERRQ(ierr);
+	ierr = DMLocalToGlobalEnd  (dau,FUloc,ADD_VALUES,Fu);CHKERRQ(ierr);
+    
+	/* modify F for the boundary conditions, F_k = scale_k(x_k - phi_k) */
+	ierr = BCListResidualDirichlet(stokes->u_bclist,stokes_j->u,Fu);CHKERRQ(ierr);
+	
+    PetscFunctionReturn(0);
+}
+
+#include <petsc-private/matimpl.h>
+#include <../src/mat/impls/mffd/mffdimpl.h>
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_StokesJctx"
+PetscErrorCode MatDestroy_StokesJctx(MatMFFD ctx)
+{
+    PetscErrorCode ierr;
+    pTatinStokesFields *J_ctx;
+    
+    J_ctx = (pTatinStokesFields*)ctx->funcctx;
+    if (J_ctx->refcnt > 0) { J_ctx->refcnt--; }
+    else {
+        if (J_ctx->u) { ierr = VecDestroy(&J_ctx->u); CHKERRQ(ierr); }
+        if (J_ctx->p) { ierr = VecDestroy(&J_ctx->p); CHKERRQ(ierr); }
+        if (J_ctx->x) { ierr = VecDestroy(&J_ctx->x); CHKERRQ(ierr); }
+        
+        if (J_ctx->Uloc) { ierr = VecDestroy(&J_ctx->Uloc); CHKERRQ(ierr); }
+        if (J_ctx->Ploc) { ierr = VecDestroy(&J_ctx->Ploc); CHKERRQ(ierr); }
+        if (J_ctx->Xloc) { ierr = VecDestroy(&J_ctx->Xloc); CHKERRQ(ierr); }
+        
+        ierr = PetscFree(J_ctx);CHKERRQ(ierr);
+        ctx->funcctx = NULL;
+    }
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateStokesJux"
+PetscErrorCode MatCreateStokesJux(pTatinCtx ctx,void *Jctx,Mat *_Jux)
+{
+    PetscErrorCode     ierr;
+    pTatinStokesFields *Jij_ctx;
+    MatMFFD            mffd_ctx;
+	PhysCompStokes     stokes;
+    DM                 stokes_pack,dau,dap,dax;
+    PetscInt           m,n,M,N;
+    Mat                Jij;
+    MPI_Comm           comm;
+    
+
+	ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
+
+    if (!Jctx) {
+        ierr = PetscMalloc(sizeof(pTatinStokesFields),&Jij_ctx);CHKERRQ(ierr);
+        Jij_ctx->refcnt = 0;
+        Jij_ctx->user_context = ctx;
+        
+        ierr = DMCreateGlobalVector(dau,&Jij_ctx->u);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dau,&Jij_ctx->Uloc);CHKERRQ(ierr);
+
+        ierr = DMCreateGlobalVector(dap,&Jij_ctx->p);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dap,&Jij_ctx->Ploc);CHKERRQ(ierr);
+
+        ierr = DMCreateGlobalVector(dax,&Jij_ctx->x);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dax,&Jij_ctx->Xloc);CHKERRQ(ierr);
+
+    } else {
+        Jij_ctx = (pTatinStokesFields*)Jctx;
+        Jij_ctx->refcnt++;
+    }
+
+    ierr = VecGetSize(Jij_ctx->u,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Jij_ctx->u,&m);CHKERRQ(ierr);
+    
+    ierr = VecGetSize(Jij_ctx->x,&N);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Jij_ctx->x,&n);CHKERRQ(ierr);
+
+    /* Create MFFD and define operations */
+    PetscObjectGetComm((PetscObject)dau,&comm);
+    ierr = MatCreateMFFD(comm,m,n,M,N,&Jij);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(Jij,(PetscErrorCode (*)(void*,Vec,Vec))StokesUPXNewton_FormJux_MFFD,(void*)Jij_ctx);CHKERRQ(ierr);
+    ierr = MatMFFDSetType(Jij,MATMFFD_WP);CHKERRQ(ierr);
+    
+    /* over-ride with my own function which releases Jij_ctx */
+    mffd_ctx = (MatMFFD)Jij->data;
+    mffd_ctx->ops->destroy = MatDestroy_StokesJctx;
+    
+    *_Jux = Jij;
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateStokesJuu"
+PetscErrorCode MatCreateStokesJuu(pTatinCtx ctx,void *Jctx,Mat *_Juu)
+{
+    PetscErrorCode     ierr;
+    pTatinStokesFields *Jij_ctx;
+    MatMFFD            mffd_ctx;
+	PhysCompStokes     stokes;
+    DM                 stokes_pack,dau,dap,dax;
+    PetscInt           m,n,M,N;
+    Mat                Jij;
+    MPI_Comm           comm;
+    
+    
+	ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
+    
+    if (!Jctx) {
+        ierr = PetscMalloc(sizeof(pTatinStokesFields),&Jij_ctx);CHKERRQ(ierr);
+        Jij_ctx->refcnt = 0;
+        Jij_ctx->user_context = ctx;
+        
+        ierr = DMCreateGlobalVector(dau,&Jij_ctx->u);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dau,&Jij_ctx->Uloc);CHKERRQ(ierr);
+        
+        ierr = DMCreateGlobalVector(dap,&Jij_ctx->p);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dap,&Jij_ctx->Ploc);CHKERRQ(ierr);
+        
+        ierr = DMCreateGlobalVector(dax,&Jij_ctx->x);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dax,&Jij_ctx->Xloc);CHKERRQ(ierr);
+        
+    } else {
+        Jij_ctx = (pTatinStokesFields*)Jctx;
+        Jij_ctx->refcnt++;
+    }
+    
+    ierr = VecGetSize(Jij_ctx->u,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Jij_ctx->u,&m);CHKERRQ(ierr);
+    
+    ierr = VecGetSize(Jij_ctx->u,&N);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Jij_ctx->u,&n);CHKERRQ(ierr);
+    
+    /* Create MFFD and define operations */
+    PetscObjectGetComm((PetscObject)dau,&comm);
+    ierr = MatCreateMFFD(comm,m,n,M,N,&Jij);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(Jij,(PetscErrorCode (*)(void*,Vec,Vec))StokesUPXNewton_FormJuu_MFFD,(void*)Jij_ctx);CHKERRQ(ierr);
+    ierr = MatMFFDSetType(Jij,MATMFFD_WP);CHKERRQ(ierr);
+    
+    /* over-ride with my own function which releases Jij_ctx */
+    mffd_ctx = (MatMFFD)Jij->data;
+    mffd_ctx->ops->destroy = MatDestroy_StokesJctx;
+    
+    *_Juu = Jij;
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateStokesJpx"
+PetscErrorCode MatCreateStokesJpx(pTatinCtx ctx,void *Jctx,Mat *_Jpx)
+{
+    PetscErrorCode     ierr;
+    pTatinStokesFields *Jij_ctx;
+    MatMFFD            mffd_ctx;
+	PhysCompStokes     stokes;
+    DM                 stokes_pack,dau,dap,dax;
+    PetscInt           m,n,M,N;
+    Mat                Jij;
+    MPI_Comm           comm;
+    
+    
+	ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+	stokes_pack = stokes->stokes_pack;
+    ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
+	ierr = DMGetCoordinateDM(dau,&dax);CHKERRQ(ierr);
+    
+    if (!Jctx) {
+        ierr = PetscMalloc(sizeof(pTatinStokesFields),&Jij_ctx);CHKERRQ(ierr);
+        Jij_ctx->refcnt = 0;
+        Jij_ctx->user_context = ctx;
+        
+        ierr = DMCreateGlobalVector(dau,&Jij_ctx->u);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dau,&Jij_ctx->Uloc);CHKERRQ(ierr);
+        
+        ierr = DMCreateGlobalVector(dap,&Jij_ctx->p);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dap,&Jij_ctx->Ploc);CHKERRQ(ierr);
+        
+        ierr = DMCreateGlobalVector(dax,&Jij_ctx->x);CHKERRQ(ierr);
+        ierr = DMCreateLocalVector(dax,&Jij_ctx->Xloc);CHKERRQ(ierr);
+        
+    } else {
+        Jij_ctx = (pTatinStokesFields*)Jctx;
+        Jij_ctx->refcnt++;
+    }
+    
+    ierr = VecGetSize(Jij_ctx->p,&M);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Jij_ctx->p,&m);CHKERRQ(ierr);
+    
+    ierr = VecGetSize(Jij_ctx->x,&N);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(Jij_ctx->x,&n);CHKERRQ(ierr);
+    
+    /* Create MFFD and define operations */
+    PetscObjectGetComm((PetscObject)dau,&comm);
+    ierr = MatCreateMFFD(comm,m,n,M,N,&Jij);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(Jij,(PetscErrorCode (*)(void*,Vec,Vec))StokesUPXNewton_FormJpx_MFFD,(void*)Jij_ctx);CHKERRQ(ierr);
+    ierr = MatMFFDSetType(Jij,MATMFFD_WP);CHKERRQ(ierr);
+    
+    /* over-ride with my own function which releases Jij_ctx */
+    mffd_ctx = (MatMFFD)Jij->data;
+    mffd_ctx->ops->destroy = MatDestroy_StokesJctx;
+    
+    *_Jpx = Jij;
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatStokesJijGetContext"
+PetscErrorCode MatStokesJijGetContext(Mat J,void **data)
+{
+    MatMFFD            mffd_ctx;
+    pTatinStokesFields *J_ctx;
+    
+    mffd_ctx = (MatMFFD)J->data;
+    J_ctx    = (pTatinStokesFields*)mffd_ctx->funcctx;
+    
+    *data = J_ctx;
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatStokesJijUpdateGlobalFields"
+PetscErrorCode MatStokesJijUpdateGlobalFields(Mat J,Vec u,Vec p,Vec x)
+{
+    PetscErrorCode     ierr;
+    MatMFFD            mffd_ctx;
+    pTatinStokesFields *J_ctx;
+
+    mffd_ctx = (MatMFFD)J->data;
+    J_ctx    = (pTatinStokesFields*)mffd_ctx->funcctx;
+    
+    if (u) { ierr = VecCopy(u,J_ctx->u);CHKERRQ(ierr); }
+    if (p) { ierr = VecCopy(p,J_ctx->p);CHKERRQ(ierr); }
+    if (x) { ierr = VecCopy(x,J_ctx->x);CHKERRQ(ierr); }
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatStokesJijUpdateLocalFields"
+PetscErrorCode MatStokesJijUpdateLocalFields(Mat J,Vec u,Vec p,Vec x)
+{
+    PetscErrorCode     ierr;
+    MatMFFD            mffd_ctx;
+    pTatinStokesFields *J_ctx;
+    
+    mffd_ctx = (MatMFFD)J->data;
+    J_ctx    = (pTatinStokesFields*)mffd_ctx->funcctx;
+    
+    if (u) { ierr = VecCopy(u,J_ctx->Uloc);CHKERRQ(ierr); }
+    if (p) { ierr = VecCopy(p,J_ctx->Ploc);CHKERRQ(ierr); }
+    if (x) { ierr = VecCopy(x,J_ctx->Xloc);CHKERRQ(ierr); }
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "patch_MatMFFDSetBase_MFFD"
+PetscErrorCode patch_MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
+{
+    MatMFFD        ctx = (MatMFFD)J->data;
+    
+    MatMFFDResetHHistory(J);
+    
+    ctx->current_u = U;
+    if (F) {
+        if (ctx->current_f_allocated) {VecDestroy(&ctx->current_f);}
+        ctx->current_f           = F;
+        ctx->current_f_allocated = PETSC_FALSE;
+    } else if (!ctx->current_f_allocated) {
+        MatGetVecs(J,NULL,&ctx->current_f); /* VecDuplicate(ctx->current_u, &ctx->current_f); */
+        
+        ctx->current_f_allocated = PETSC_TRUE;
+    }
+    if (!ctx->w) {
+        VecDuplicate(ctx->current_u, &ctx->w);
+    }
+    J->assembled = PETSC_TRUE;
+    return(0);
+}

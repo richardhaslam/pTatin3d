@@ -40,11 +40,11 @@ static char model_help[] = "\
 | \n\
 | ModelDetails: \n\
 |   The default setup is defined by the model labelled as \"Case 1\" from the following paper: \n\
-|    \"A benchmark comparison of spontaneous subduction models - Towards a free surface\"                                   \n\
-|     Schmeling, Babeyko, Enns, Faccenna, Funiciello, Gerya, Golabek, Grigull, Kaus, Morra, Schmalholz, van Hunen           \n\
-|		 Physics of the Earth and Planetary Interiors 171 (2008) 198–223                                                        \n\
-|   See Figure 1 in this paper for the geometric and material paramters used.                                               \n\
-|   Note that our \"Case 1\" setup employs a free surface, and not a `sticky-air' layer.                                    \n\
+|    \"A benchmark comparison of spontaneous subduction models - Towards a free surface\" \n\
+|     Schmeling, Babeyko, Enns, Faccenna, Funiciello, Gerya, Golabek, Grigull, Kaus, Morra, Schmalholz, van Hunen \n\
+|		 Physics of the Earth and Planetary Interiors 171 (2008) 198--223 \n\
+|   See Figure 1 in this paper for the geometric and material paramters used. \n\
+|   Note that our \"Case 1\" setup employs a free surface, and not a `sticky-air' layer. \n\
 | \n\
 | ModelOptions: \n\
 |   -exsubduction_mode2d : Defines a two geometry for the domain (one-element thick) \n\
