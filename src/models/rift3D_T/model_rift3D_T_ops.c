@@ -106,7 +106,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VP_STD;
 	/* I REALLY DONT LIKE THE FOLLOWING ONE, SHOULD BE  in model data */
-	rheology->nphases_active = 5;
+	rheology->nphases_active = 6;
 	rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
 	rheology->eta_upper_cutoff_global = 1.e+25;
 	rheology->eta_lower_cutoff_global = 1.e+19;
@@ -861,8 +861,8 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	}
     
 	{
-		const int                   nf = 3;
-		const MaterialPointVariable mp_prop_list[] = { MPV_viscosity, MPV_density, MPV_plastic_strain };
+		const int                   nf = 4;
+		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
 		
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}
@@ -1176,7 +1176,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 		} else if (ycoord < y_midcrust) {
 			phase = 1;
 			if (addstripes){
-				if ( fmod(ycoord,10.e3) < 5.e3 ){
+				if ( fmod(-ycoord,10.e3) < 5.e3 ){
 				phase = 5;
 			    }			
 			}
@@ -1184,7 +1184,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 		} else {
 			phase = 0;
 			if(addstripes){
-				if ( fmod(xcoord,20.e3) < 10.e3 && fmod(zcoord,20.e3) > 10.e3 || fmod(xcoord,20.e3) >= 10.e3 && fmod(zcoord,20.e3) <= 10.e3 ){
+				if ( (fmod(xcoord,20.e3) < 10.e3 && fmod(zcoord,20.e3) > 10.e3) || (fmod(xcoord,20.e3) >= 10.e3 && fmod(zcoord,20.e3) <= 10.e3) ){
 				phase = 4;
 			    }
 			}
@@ -1208,7 +1208,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 		    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_notchspace",&notchspace,NULL);CHKERRQ(ierr);
             xc1 = (data->Lx + data->Ox)/2.0* data->length_bar - notchspace/2;
 			xc2 = (data->Lx + data->Ox)/2.0* data->length_bar + notchspace/2;
-			Lz  = data->Lx*data->length_bar;
+			Lz  = data->Lz*data->length_bar;
 		
 			if (norandomiseplastic) {
 				pls   = 0.0;
