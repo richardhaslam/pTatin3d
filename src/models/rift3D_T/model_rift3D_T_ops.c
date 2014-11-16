@@ -167,32 +167,50 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     }
     /* Material constant */
 	MaterialConstantsSetDefaults(materialconstants);
-    
-	MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-    //MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,0,1.0e27,0.020);
-    
-    //MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_ARRHENIUS,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	//MaterialConstantsSetValues_ViscosityArrh(materialconstants,0,1.0e27,0.05357142857145);
-    
+    // UPPER CRUST WITH STRIPES OF 4
+    MaterialConstantsSetValues_MaterialType(materialconstants,0,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,0,1.0e27,0.020);    
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,0,2700,2.e-5,0.0);
     MaterialConstantsSetValues_DensityConst(materialconstants,0,2700);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,0,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,0,1.e8,1.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,0,0.0,0.3);
     
-    //MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+    
+    MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,4,1.0e27,0.020);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,4,2700,2.e-5,0.0);
+    MaterialConstantsSetValues_DensityConst(materialconstants,4,2700);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,4,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,4,1.e8,1.e8);
+    MaterialConstantsSetValues_SoftLin(materialconstants,4,0.0,0.3);
+    
+    // LOWER CRUST WITH STRIPES OF 5
+    {
+    PetscReal theta_lc = 0.020; 
+    // weak = 0.030
+    // vstrong = 0.010;
+    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_theta_lower_crust",&theta_lc,NULL);CHKERRQ(ierr);
 	MaterialConstantsSetValues_MaterialType(materialconstants,1,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,0.020);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,1,1.0e27,theta_lc);
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,1,2800,2.e-5,3.e-12);
-    MaterialConstantsSetValues_DensityConst(materialconstants,1,2700);
+    MaterialConstantsSetValues_DensityConst(materialconstants,1,2800);
 	MaterialConstantsSetValues_PlasticDP(materialconstants,1,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,1,0.0,0.3);
     
-    //MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+    MaterialConstantsSetValues_MaterialType(materialconstants,5,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,5,1.0e27,theta_lc);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,5,2800,2.e-5,3.e-12);
+    MaterialConstantsSetValues_DensityConst(materialconstants,5,2800);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,5,0.6,0.1,2.e7,2.e7,1.e7,2.e8);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,1,1.e8,1.e8);
+    MaterialConstantsSetValues_SoftLin(materialconstants,5,0.0,0.3);
+    }
+    
+    
 	MaterialConstantsSetValues_MaterialType(materialconstants,2,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,2,1.0e27,0.012);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,2,1.0e30,0.018);
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,2,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,2,3300);
     MaterialConstantsSetValues_PlasticDP(materialconstants,2,0.0,0.0,3.e8,1.e8,2.e7,3.e8);
@@ -201,21 +219,13 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
     
     //MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	MaterialConstantsSetValues_MaterialType(materialconstants,3,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e27,0.012);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,3,1.0e30,0.018);
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,3,3300,2.e-5,3.e-12);
 	MaterialConstantsSetValues_DensityConst(materialconstants,3,3300);
     MaterialConstantsSetValues_PlasticDP(materialconstants,3,0.0,0.0,3.e8,1.e8,2.e7,3.e8);
     MaterialConstantsSetValues_PlasticMises(materialconstants,3,3.e8,3.e8);
     MaterialConstantsSetValues_SoftLin(materialconstants,3,0.0,0.3);
     
-    //MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
-    MaterialConstantsSetValues_MaterialType(materialconstants,4,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-	MaterialConstantsSetValues_ViscosityFK(materialconstants,4,1.0e26,0.02);
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,4,3300,2.e-5,3.e-12);
-	MaterialConstantsSetValues_DensityConst(materialconstants,4,3300);
-    MaterialConstantsSetValues_PlasticDP(materialconstants,4,0.6,0.6,2.e7,2.e7,1.e7,3.e8);
-	MaterialConstantsSetValues_PlasticMises(materialconstants,4,3.e8,3.e8);
-    MaterialConstantsSetValues_SoftLin(materialconstants,4,0.01,1.0);
     
 	/* Read the options */
 	/*cutoff */
@@ -1106,7 +1116,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 	DataField              PField_std,PField_pls;
 	int                    phase;
 	MPAccess               mpX;
-	PetscBool              norandomiseplastic;
+	PetscBool              norandomiseplastic,double_notch,addstripes;
 	PetscErrorCode         ierr;
     
 	PetscFunctionBegin;
@@ -1127,7 +1137,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 	y_moho     = -40.0e3;
 	y_midcrust = -20.0e3;
 	notch_w2   = 50.e3;
-    notch_l    = 150.e3;
+    notch_l    = 100.e3;
     xc         = (data->Lx + data->Ox)/2.0* data->length_bar;
     //xc         = 0.0;
 	DataBucketGetSizes(db,&n_mp_points,0,0);
@@ -1136,6 +1146,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
     
 	norandomiseplastic = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_norandom",&norandomiseplastic,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_DoubleNotch",&double_notch,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-model_rift3D_T_addstripes",&addstripes,NULL);CHKERRQ(ierr);
+
+ 
     
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
@@ -1161,22 +1175,62 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 			phase = 2;
 		} else if (ycoord < y_midcrust) {
 			phase = 1;
+			if (addstripes){
+				if ( fmod(ycoord,10.e3) < 5.e3 ){
+				phase = 5;
+			    }			
+			}
+			
 		} else {
 			phase = 0;
+			if(addstripes){
+				if ( fmod(xcoord,20.e3) < 10.e3 && fmod(zcoord,20.e3) > 10.e3 || fmod(xcoord,20.e3) >= 10.e3 && fmod(zcoord,20.e3) <= 10.e3 ){
+				phase = 4;
+			    }
+			}
 		}
-        
-		if (norandomiseplastic) {
-			pls   = 0.0;
-			if ( (xcoord > 250.0e3) && (xcoord < 350.0e3) &&  (zcoord < 150.0e3) ) {
-				pls = 0.05;
+        if (!double_notch){
+			if (norandomiseplastic) {
+				pls   = 0.0;
+				if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
+					pls = 0.05;
+				}
+			} else {
+				//pls = 0.03 * rand() / (RAND_MAX + 1.0);
+				pls = ptatin_RandomNumberGetDouble(0.0,0.03);
+				if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
+					//pls = 0.3 * rand() / (RAND_MAX + 1.0);
+					pls = ptatin_RandomNumberGetDouble(0.0,0.3);
+				}
 			}
-		} else {
-			//pls = 0.03 * rand() / (RAND_MAX + 1.0);
-			pls = ptatin_RandomNumberGetDouble(0.0,0.03);
-			if ( (fabs(xcoord - xc) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
-				//pls = 0.3 * rand() / (RAND_MAX + 1.0);
-				pls = ptatin_RandomNumberGetDouble(0.0,0.3);
+		}else{
+		    PetscScalar xc1,xc2,notchspace,Lz;
+		    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_T_notchspace",&notchspace,NULL);CHKERRQ(ierr);
+            xc1 = (data->Lx + data->Ox)/2.0* data->length_bar - notchspace/2;
+			xc2 = (data->Lx + data->Ox)/2.0* data->length_bar + notchspace/2;
+			Lz  = data->Lx*data->length_bar;
+		
+			if (norandomiseplastic) {
+				pls   = 0.0;
+				if ( (fabs(xcoord - xc1) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) )  {
+					pls = 0.05;
+				}
+				if ( (fabs(xcoord - xc2) < notch_w2) && (zcoord > Lz-notch_l) && (ycoord > y_lab) )  {
+					pls = 0.05;
+				}
+			} else {
+				//pls = 0.03 * rand() / (RAND_MAX + 1.0);
+				pls = ptatin_RandomNumberGetDouble(0.0,0.03);
+				if ( (fabs(xcoord - xc1) < notch_w2) && (zcoord < notch_l) && (ycoord > y_lab) ) {
+					//pls = 0.3 * rand() / (RAND_MAX + 1.0);
+					pls = ptatin_RandomNumberGetDouble(0.0,0.3);
+				}
+				if ( (fabs(xcoord - xc2) < notch_w2) && (zcoord > Lz-notch_l) && (ycoord > y_lab) ) {
+					//pls = 0.3 * rand() / (RAND_MAX + 1.0);
+					pls = ptatin_RandomNumberGetDouble(0.0,0.3);
+				}
 			}
+		
 		}
 		
         yield = 0;
