@@ -562,20 +562,15 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         ierr = _DMDARepart_SetupScatters(pc,red);CHKERRQ(ierr);
 	}
 	
-	/* fetch redundant matrix */
-	if (!pc->setupcalled) {
-        ierr = _DMDARepart_SetupMatrix(pc,red);CHKERRQ(ierr);
-	} else {
-        
-	}
+	/* fetch redundant matrix - PCSetUp_DMDARepart is called we need to update the entires in the matrix */
+    ierr = _DMDARepart_SetupMatrix(pc,red);CHKERRQ(ierr);
 	   
 	/* common - no construction */
 	if (red->Bsub) {
 		ierr = KSPSetOperators(red->ksp,red->Bsub,red->Bsub);CHKERRQ(ierr);
-		if (pc->setfromoptionscalled){
+		if (pc->setfromoptionscalled && !pc->setupcalled){
 			ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
 		}
-		//ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
 	}
     PetscFunctionReturn(0);
 }
