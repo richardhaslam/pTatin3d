@@ -600,7 +600,6 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 	}
 
 #if 1
-	printf("Scanning \n");
 	/* check cells if empty */
 	for (ek=0; ek<mz; ek++) {
 		for (ej=0; ej<my; ej++) {
