@@ -150,5 +150,5 @@
 -snes_monitor
 -snes_rtol 1e-3
 -snes_type newtonls
--stk_velocity_dm_mat_type aaij
+-stk_velocity_dm_mat_type aij
 #End of PETSc Option Table entries
