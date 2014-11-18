@@ -12,6 +12,7 @@
 ##
 ## =================================================================================== 
 #PETSc Option Table entries:
+-nonlinear_driver_v1
 -A11_operator_type 0,1,1
 
 # -----------------
@@ -69,6 +70,7 @@
 
     -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_type gmres
     -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_norm_type NONE
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_pc_type jacobi
     -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
 
 # -----------------
@@ -84,6 +86,7 @@
     -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_mg_levels 2
     -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_type gmres
     -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_norm_type NONE
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_pc_type bjacobi
     -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
 
 -fieldsplit_u_pc_mg_log
@@ -143,9 +146,9 @@
 -snes_linesearch_type l2
 -snes_max_it 8
 -snes_max_linear_solve_fail 10
--snes_mf_operators
+#-snes_mf_operators
 -snes_monitor
 -snes_rtol 1e-3
 -snes_type newtonls
--stk_velocity_dm_mat_type baij
+-stk_velocity_dm_mat_type aaij
 #End of PETSc Option Table entries
