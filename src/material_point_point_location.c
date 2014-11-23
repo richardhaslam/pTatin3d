@@ -55,7 +55,7 @@ void _compute_deltaX_2d(PetscReal J[2][2],PetscReal f[],PetscReal h[])
 	ElementHelper_matrix_inverse_2x2(J,invJ);
 	
 	h[0] = h[1] = 0.0;	
-	for (i=0; i<2; i++) {
+	for (i=0; i<NSD2d; i++) {
 		h[0] = h[0] + invJ[0][i] * f[i];
 		h[1] = h[1] + invJ[1][i] * f[i];
 	}
@@ -88,6 +88,7 @@ void _compute_F_2dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 {
 	PetscInt  i;
 	PetscReal Ni[Q2_NODES_PER_EL_2D];
+    
 	
 	/* Update F for the next iteration */
 	f[0] = f[1] = 0.0;
@@ -124,6 +125,7 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 	PetscReal vertex[NSD2d * Q2_NODES_PER_EL_2D];
 	PetscBool point_found;
 	
+    
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */
 
 #ifdef PTAT3D_DBG_PointLocation
@@ -401,9 +403,9 @@ void LSFDeriv3dQ2(PetscReal _xi[],PetscReal **GNi)
 	}
 	
 	cnt = 0;
-	for (k=0; k<3; k++) {
-		for (j=0; j<3; j++) {
-			for (i=0; i<3; i++) {
+	for (k=0; k<NSD3d; k++) {
+		for (j=0; j<NSD3d; j++) {
+			for (i=0; i<NSD3d; i++) {
 				
 				GNi[0][cnt] = basis_GNI[0][i]  *  basis_NI[1][j]  *  basis_NI[2][k];
 				GNi[1][cnt] = basis_NI[0][i]   *  basis_GNI[1][j] *  basis_NI[2][k];
@@ -446,9 +448,9 @@ void LSF3dQ2_CheckGlobalCoordinate(PetscReal element_coord[],PetscReal xi[],Pets
 	xp_interp[2] = 0.0;
 	
 	for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-		xp_interp[0] += Ni[i] * element_coord[3*i + 0];
-		xp_interp[1] += Ni[i] * element_coord[3*i + 1];
-		xp_interp[2] += Ni[i] * element_coord[3*i + 2];
+		xp_interp[0] += Ni[i] * element_coord[NSD3d*i + 0];
+		xp_interp[1] += Ni[i] * element_coord[NSD3d*i + 1];
+		xp_interp[2] += Ni[i] * element_coord[NSD3d*i + 2];
 	}
 	err[0] = (xp[0] - xp_interp[0]);
 	err[1] = (xp[1] - xp_interp[1]);
@@ -471,6 +473,7 @@ void _compute_deltaX(PetscReal A[NSD3d][NSD3d],PetscReal f[],PetscReal h[])
 	PetscReal B[NSD3d][NSD3d];
 	PetscReal t4, t6, t8, t10, t12, t14, t17;
 	
+    
 	t4 = A[2][0] * A[0][1];
 	t6 = A[2][0] * A[0][2];
 	t8 = A[1][0] * A[0][1];
@@ -500,8 +503,8 @@ void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[NSD3d][NSD3d]
 	PetscReal GNi[NSD3d][Q2_NODES_PER_EL_3D];
 	
 	
-    for (i=0; i<3; i++) {
-		for (j=0; j<3; j++) {
+    for (i=0; i<NSD3d; i++) {
+		for (j=0; j<NSD3d; j++) {
 			J[i][j] = 0.0;
 		}
 	}
@@ -537,7 +540,7 @@ void _compute_F_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 	f[0] = f[1] = f[2] = 0.0;
 	
 	P3D_ConstructNi_Q2_3D(xi,Ni);
-	for (i=0; i<27; i++) {
+	for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
 		PetscInt i3   = i * NSD3d;
 		PetscInt i3p1 = i3+1;
 		PetscInt i3p2 = i3+2;
@@ -630,7 +633,7 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 			/* check */
 #ifdef PTAT3D_DBG_PointLocation
 			{
-				PetscReal err[3];
+				PetscReal err[NSD3d];
                 
 				for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 					PetscInt nid = element[wil_IJ*Q2_NODES_PER_EL_3D+k];
