@@ -35,19 +35,17 @@
 #ifndef __ptatin3d_MATERIAL_POINT_POINT_LOCATION_H__
 #define __ptatin3d_MATERIAL_POINT_POINT_LOCATION_H__
 
-typedef enum { _FALSE=0, _TRUE=1 } Truth;
-
-void InverseMappingDomain_2dQ2(PetscReal tolerance, PetscInt max_its,
-                               Truth use_nonzero_guess,
-                               Truth monitor,
-                               const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt element[],
-                               PetscInt np, MPntStd marker[] );
+void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
+                               PetscBool use_nonzero_guess,
+                               PetscBool monitor,
+                               const PetscReal coords[],const PetscInt mx,const PetscInt my,const PetscInt element[],
+                               PetscInt np,MPntStd marker[]);
 
 void InverseMappingDomain_3dQ2(PetscReal tolerance, PetscInt max_its,
                                PetscBool use_nonzero_guess,
-                               PetscBool monitor, PetscBool log,
-                               const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt mz,const PetscInt element[],
-                               int np, MPntStd marker[] );
+                               PetscBool monitor,PetscBool log,
+                               const PetscReal coords[],const PetscInt mx,const PetscInt my,const PetscInt mz,const PetscInt element[],
+                               int np,MPntStd marker[]);
 
 #endif
 

@@ -224,7 +224,7 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 	PetscScalar *LA_gcoords;
 	double tolerance;
 	int p,max_its;
-	Truth use_nonzero_guess, monitor, log;
+	PetscBool use_nonzero_guess, monitor, log;
 	PetscInt lmx,lmy,lmz;
 	PetscInt nel,nen_u;
 	const PetscInt *elnidx_u;
@@ -271,10 +271,10 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
 		
 		InverseMappingDomain_3dQ2(tolerance, max_its,
-															use_nonzero_guess, 
-															monitor, log,
-															(const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
-															1, material_point );
+                                use_nonzero_guess,
+                                monitor, log,
+                                (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
+                                1, material_point );
 	}
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
