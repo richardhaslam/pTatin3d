@@ -1238,7 +1238,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	MPAccess       mpX;
 	double         tolerance;
 	int            max_its;
-	PetscBool      use_nonzero_guess, monitor, log;
+	PetscBool      use_nonzero_guess,monitor;
 	DM             cda;
 	Vec            gcoords;
 	PetscScalar    *LA_gcoords;
@@ -1257,7 +1257,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	max_its           = 10;
 	use_nonzero_guess = PETSC_FALSE;
 	monitor           = PETSC_FALSE;
-	log               = PETSC_FALSE;
     
 	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
@@ -1287,7 +1286,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
             
             InverseMappingDomain_3dQ2(tolerance,max_its,
                                       use_nonzero_guess,
-                                      monitor, log,
+                                      monitor,
                                       (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
                                       1, &mp_std );
             

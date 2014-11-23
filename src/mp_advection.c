@@ -254,7 +254,7 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	DataField      PField;
 	PetscReal      tolerance;
 	int            max_its;
-	PetscBool      use_nonzero_guess, monitor, log;
+	PetscBool      use_nonzero_guess,monitor;
 	DM             cda;
 	Vec            gcoords;
 	PetscScalar    *LA_gcoords;
@@ -284,11 +284,10 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	max_its           = 10;
 	use_nonzero_guess = PETSC_TRUE;
 	monitor           = PETSC_FALSE;
-	log               = PETSC_FALSE;
 	
 	InverseMappingDomain_3dQ2(tolerance, max_its,
                               use_nonzero_guess,
-                              monitor, log,
+                              monitor,
                               (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
                               npoints, mp_std );
 	
@@ -505,7 +504,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		PetscScalar *LA_gcoords;
 		PetscReal tolerance;
 		PetscInt max_its;
-		PetscBool use_nonzero_guess, monitor, log;
+		PetscBool use_nonzero_guess,monitor;
 		PetscInt lmx,lmy,lmz;
 		PetscInt nel,nen_u;
 		MPntStd *marker_p;
@@ -525,7 +524,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		max_its           = 10;
 		use_nonzero_guess = PETSC_FALSE; /* for markers sent across processors, it is necessary to NOT use the last known values! */
 		monitor           = PETSC_FALSE;
-		log               = PETSC_FALSE;
 		
 		/* 
 		 NOTE: My algorithm will break down if you try to use an non-zero initial guess
@@ -542,7 +540,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 			
 			InverseMappingDomain_3dQ2(tolerance, max_its,
                                       use_nonzero_guess,
-                                      monitor, log,
+                                      monitor,
                                       (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
                                       1, marker_p );
 		}

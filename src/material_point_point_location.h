@@ -43,7 +43,7 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 
 void InverseMappingDomain_3dQ2(PetscReal tolerance, PetscInt max_its,
                                PetscBool use_nonzero_guess,
-                               PetscBool monitor,PetscBool log,
+                               PetscBool monitor,
                                const PetscReal coords[],const PetscInt mx,const PetscInt my,const PetscInt mz,const PetscInt element[],
                                int np,MPntStd marker[]);
 

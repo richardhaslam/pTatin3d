@@ -224,7 +224,7 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 	PetscScalar *LA_gcoords;
 	double tolerance;
 	int p,max_its;
-	PetscBool use_nonzero_guess, monitor, log;
+	PetscBool use_nonzero_guess, monitor;
 	PetscInt lmx,lmy,lmz;
 	PetscInt nel,nen_u;
 	const PetscInt *elnidx_u;
@@ -243,9 +243,8 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 	/* point location parameters */
 	tolerance         = 1.0e-10;
 	max_its           = 10;
-	use_nonzero_guess = 0; //_FALSE;
-	monitor           = 0; //_FALSE;
-	log               = 0; //_FALSE;
+	use_nonzero_guess = PETSC_FALSE; //_FALSE;
+	monitor           = PETSC_FALSE; //_FALSE;
 	
 	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
@@ -272,7 +271,7 @@ PetscErrorCode MaterialPointStdInsertBasic(DataBucket db,DM da,long int start,lo
 		
 		InverseMappingDomain_3dQ2(tolerance, max_its,
                                 use_nonzero_guess,
-                                monitor, log,
+                                monitor,
                                 (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
                                 1, material_point );
 	}

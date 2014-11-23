@@ -562,7 +562,7 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 					marker.coor[2] = gmin[2] + pk*dz  + 0.5*dz + rz;
 					marker.phase   = 1;
 					
-					InverseMappingDomain_3dQ2(1.0e-8,40,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE,
+					InverseMappingDomain_3dQ2(1.0e-8,40,PETSC_FALSE,PETSC_FALSE,
 																		LA_gcoords,lmx,lmy,lmz,elnidx_u,
 																		1,&marker);
 					

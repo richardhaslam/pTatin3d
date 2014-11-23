@@ -262,7 +262,7 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
     PetscInt   nyp,nzp,j,k;
 	double         tolerance;
 	int            max_its;
-	PetscBool      use_nonzero_guess, monitor, log;
+	PetscBool      use_nonzero_guess,monitor;
 	DM             cda;
 	Vec            gcoords;
 	PetscScalar    *LA_gcoords;
@@ -305,7 +305,6 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
 	max_its           = 10;
 	use_nonzero_guess = PETSC_FALSE;
 	monitor           = PETSC_FALSE;
-	log               = PETSC_FALSE;
     
 	/* setup for coords */
 	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
@@ -340,7 +339,7 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
             
             InverseMappingDomain_3dQ2(tolerance,max_its,
                                       use_nonzero_guess,
-                                      monitor, log,
+                                      monitor,
                                       (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
                                       1, &mp_std );
             

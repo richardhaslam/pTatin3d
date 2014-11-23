@@ -553,7 +553,7 @@ void _compute_F_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 
 void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
                                PetscBool use_nonzero_guess,
-                               PetscBool monitor,PetscBool log,
+                               PetscBool monitor,
                                const PetscReal coords[],const PetscInt mx,const PetscInt my,const PetscInt mz,const PetscInt element[],
                                int np,MPntStd marker[] )
 {
