@@ -42,15 +42,16 @@
 /* debugging variable for point location routines */
 //#define PTAT3D_DBG_PointLocation
 
-#define NSD2 2
-#define NSD3 3
+#define NSD2d 2
+#define NSD3d 3
 
 /* 2d implementation */
 void _compute_deltaX_2d(PetscReal J[2][2],PetscReal f[],PetscReal h[])
 {
 	PetscInt  i;
-	PetscReal invJ[2][2];
+	PetscReal invJ[NSD2d][NSD2d];
 	
+    
 	ElementHelper_matrix_inverse_2x2(J,invJ);
 	
 	h[0] = h[1] = 0.0;	
@@ -63,14 +64,15 @@ void _compute_deltaX_2d(PetscReal J[2][2],PetscReal f[],PetscReal h[])
 void _compute_J_2dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[2][2])
 {
 	PetscInt  i;
-	PetscReal GNi[2][Q2_NODES_PER_EL_2D];
+	PetscReal GNi[NSD2d][Q2_NODES_PER_EL_2D];
 	
+    
 	J[0][0] = J[0][1] = 0.0;
 	J[1][0] = J[1][1] = 0.0;
 	
 	P3D_ConstructGNi_Q2_2D(xi,GNi);
 	for (i=0; i<Q2_NODES_PER_EL_2D; i++) {
-		PetscInt    i2 = i*2;
+		PetscInt  i2 = i * NSD2d;
 		PetscReal x = vertex[i2];
 		PetscReal y = vertex[i2+1];
 		
@@ -93,7 +95,7 @@ void _compute_F_2dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 	P3D_ConstructNi_Q2_2D(xi,Ni);
 	
 	for (i=0; i<Q2_NODES_PER_EL_2D; i++) {
-		PetscInt i2   = i*2;
+		PetscInt i2   = i * NSD2d;
 		PetscInt i2p1 = i2+1;
 		
 		f[0] += vertex[i2]   * Ni[i];
@@ -109,20 +111,18 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
                                const PetscReal coords[],const PetscInt mx,const PetscInt my,const PetscInt element[],
                                PetscInt np,MPntStd marker[] )
 {
-	const PetscInt dim = 2;
-	const PetscInt nodesPerEl = Q2_NODES_PER_EL_2D; 
-	PetscReal h[dim];
-	PetscReal Jacobian[2][2];
-	PetscReal f[2];
-	PetscInt    d;
-	PetscInt    its;
+	PetscReal h[NSD2d];
+	PetscReal Jacobian[NSD2d][NSD2d];
+	PetscReal f[NSD2d];
+	PetscInt  d;
+	PetscInt  its;
 	PetscReal residual2,tolerance2,F2;
-	PetscInt    p;
-	PetscReal cxip[2],Lxip[2],Gxip[2];
+	PetscInt  p;
+	PetscReal cxip[NSD2d],Lxip[NSD2d],Gxip[NSD2d];
 	PetscReal dxi,deta,xi0,eta0;
-	PetscInt    I,J,wil_IJ,k;
-	PetscReal vertex[2 * Q2_NODES_PER_EL_2D];
-	PetscBool  point_found;
+	PetscInt  I,J,wil_IJ,k;
+	PetscReal vertex[NSD2d * Q2_NODES_PER_EL_2D];
+	PetscBool point_found;
 	
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */
 
@@ -220,11 +220,11 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 #ifdef PTAT3D_DBG_PointLocation
 			PetscPrintf(PETSC_COMM_SELF,"  I,J=%D/%D : wil_IJ %D : nid = ", I,J,wil_IJ);
 #endif
-			for (k=0; k<nodesPerEl; k++) {
-				PetscInt nid = element[wil_IJ*nodesPerEl+k];
+			for (k=0; k<Q2_NODES_PER_EL_2D; k++) {
+				PetscInt nid = element[wil_IJ*Q2_NODES_PER_EL_2D+k];
 				
-				vertex[dim*k+0] = coords[dim*nid+0];
-				vertex[dim*k+1] = coords[dim*nid+1];
+				vertex[NSD2d*k+0] = coords[NSD2d*nid+0];
+				vertex[NSD2d*k+1] = coords[NSD2d*nid+1];
 #ifdef PTAT3D_DBG_PointLocation
 				PetscPrintf(PETSC_COMM_SELF,"%D ", nid);
 #endif
@@ -235,8 +235,8 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 			
 #ifdef PTAT3D_DBG_PointLocation
 			PetscPrintf(PETSC_COMM_SELF,"  [vertex] ");
-			for (k=0; k<nodesPerEl; k++) {
-				PetscPrintf(PETSC_COMM_SELF,"(%1.8e , %1.8e) ",vertex[dim*k+0],vertex[dim*k+1] );
+			for (k=0; k<Q2_NODES_PER_EL_2D; k++) {
+				PetscPrintf(PETSC_COMM_SELF,"(%1.8e , %1.8e) ",vertex[NSD2d*k+0],vertex[NSD2d*k+1] );
 			}
 			PetscPrintf(PETSC_COMM_SELF,"\n");
 #endif
@@ -305,7 +305,7 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 			PetscPrintf(PETSC_COMM_SELF,"  [Gxi] = %1.8e %1.8e \n", Gxip[0], Gxip[1] );
 #endif
 			
-			for (d=0; d<dim; d++) {
+			for (d=0; d<NSD2d; d++) {
 				if (Gxip[d] < -1.0) { 
 					Gxip[d] = -1.0;
 #ifdef PTAT3D_DBG_PointLocation
@@ -322,9 +322,9 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 			}
 			
 			its++;
-		} while(its < max_its);
+		} while (its < max_its);
 		
-		if (monitor && point_found == PETSC_FALSE){
+		if (monitor && (point_found == PETSC_FALSE)){
 			if (its >= max_its) {
 				PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, __FUNCTION__, max_its );
 			} else {
@@ -383,12 +383,12 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 /* 3d implementation */
 void LSFDeriv3dQ2(PetscReal _xi[],PetscReal **GNi)
 {
-	PetscReal basis_NI[3][3];
-	PetscReal basis_GNI[3][3];
+	PetscReal basis_NI[NSD3d][NSD3d];
+	PetscReal basis_GNI[NSD3d][NSD3d];
 	PetscInt  i,j,k,d,cnt;
 	
 	
-	for (d=0; d<3; d++) {
+	for (d=0; d<NSD3d; d++) {
 		PetscReal xi = _xi[d];
 		
 		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
@@ -418,13 +418,13 @@ void LSFDeriv3dQ2(PetscReal _xi[],PetscReal **GNi)
 void LSF3dQ2_CheckPartitionOfUnity(PetscReal xi[],PetscReal *val)
 {
 	const PetscReal tol = 1.0e-6;
-	PetscReal       Ni[27],sum;
+	PetscReal       Ni[Q2_NODES_PER_EL_3D],sum;
 	PetscInt        i;
 	
     
 	P3D_ConstructNi_Q2_3D(xi,Ni);
 	sum = 0.0;
-	for (i=0; i<27; i++) {
+	for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
 		sum += Ni[i];
 	}
 	*val = sum;
@@ -436,7 +436,7 @@ void LSF3dQ2_CheckPartitionOfUnity(PetscReal xi[],PetscReal *val)
 void LSF3dQ2_CheckGlobalCoordinate(PetscReal element_coord[],PetscReal xi[],PetscReal xp[],PetscReal err[])
 {
 	const PetscReal tol = 1.0e-6;
-	PetscReal       Ni[27],xp_interp[3];
+	PetscReal       Ni[Q2_NODES_PER_EL_3D],xp_interp[NSD3d];
 	PetscInt        i;
 	
     
@@ -445,7 +445,7 @@ void LSF3dQ2_CheckGlobalCoordinate(PetscReal element_coord[],PetscReal xi[],Pets
 	xp_interp[1] = 0.0;
 	xp_interp[2] = 0.0;
 	
-	for (i=0; i<27; i++) {
+	for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
 		xp_interp[0] += Ni[i] * element_coord[3*i + 0];
 		xp_interp[1] += Ni[i] * element_coord[3*i + 1];
 		xp_interp[2] += Ni[i] * element_coord[3*i + 2];
@@ -466,9 +466,9 @@ void LSF3dQ2_CheckGlobalCoordinate(PetscReal element_coord[],PetscReal xi[],Pets
 }
 
 /* computes h = inv(J) f */
-void _compute_deltaX(PetscReal A[3][3],PetscReal f[],PetscReal h[] )
+void _compute_deltaX(PetscReal A[NSD3d][NSD3d],PetscReal f[],PetscReal h[])
 {
-	PetscReal B[3][3];
+	PetscReal B[NSD3d][NSD3d];
 	PetscReal t4, t6, t8, t10, t12, t14, t17;
 	
 	t4 = A[2][0] * A[0][1];
@@ -494,10 +494,10 @@ void _compute_deltaX(PetscReal A[3][3],PetscReal f[],PetscReal h[] )
 	h[2] = B[2][0]*f[0] + B[2][1]*f[1] + B[2][2]*f[2];
 }
 
-void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[3][3])
+void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[NSD3d][NSD3d])
 {
 	PetscInt  i,j;
-	PetscReal GNi[3][27];
+	PetscReal GNi[NSD3d][Q2_NODES_PER_EL_3D];
 	
 	
     for (i=0; i<3; i++) {
@@ -507,8 +507,8 @@ void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[3][3])
 	}
 	
 	P3D_ConstructGNi_Q2_3D(xi,GNi);
-	for (i=0; i<27; i++) {
-		int i3 = i*3;
+	for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+		int i3 = i * NSD3d;
 		PetscReal x = vertex[i3];
 		PetscReal y = vertex[i3+1];
 		PetscReal z = vertex[i3+2];
@@ -530,7 +530,7 @@ void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[3][3])
 void _compute_F_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal f[])
 {
 	PetscInt  i;
-	PetscReal Ni[27];
+	PetscReal Ni[Q2_NODES_PER_EL_3D];
 	
     
 	/* Update F for the next iteration */
@@ -538,7 +538,7 @@ void _compute_F_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 	
 	P3D_ConstructNi_Q2_3D(xi,Ni);
 	for (i=0; i<27; i++) {
-		PetscInt i3   = i*3;
+		PetscInt i3   = i * NSD3d;
 		PetscInt i3p1 = i3+1;
 		PetscInt i3p2 = i3+2;
 		
@@ -563,7 +563,7 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 	int       p;
 	PetscInt  its;
 	PetscReal residual2,tolerance2,F2;
-	PetscReal cxip[3],Lxip[3],Gxip[3];
+	PetscReal cxip[NSD3d],Lxip[NSD3d],Gxip[NSD3d];
 	PetscReal dxi,deta,dzeta,xi0,eta0,zeta0;
 	PetscInt  I,J,K,wil_IJ,wil_2d,k;
 	PetscReal vertex[NSD * Q2_NODES_PER_EL_3D];
@@ -635,9 +635,9 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 				for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 					PetscInt nid = element[wil_IJ*Q2_NODES_PER_EL_3D+k];
 					
-					vertex[3*k+0] = coords[3*nid+0];
-					vertex[3*k+1] = coords[3*nid+1];
-					vertex[3*k+2] = coords[3*nid+2];
+					vertex[NSD3d*k+0] = coords[NSD3d*nid+0];
+					vertex[NSD3d*k+1] = coords[NSD3d*nid+1];
+					vertex[NSD3d*k+2] = coords[NSD3d*nid+2];
 				}
 				LSF3dQ2_CheckGlobalCoordinate(vertex,cxip,marker_p->coor,err);
 				PetscPrintf(PETSC_COMM_SELF,"  interpolated coord err %1.4e %1.4e %1.4e \n",err[0],err[1],err[2]);
@@ -695,9 +695,9 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 			for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 				PetscInt nid = element[wil_IJ*Q2_NODES_PER_EL_3D+k];
 				
-				vertex[3*k+0] = coords[3*nid+0];
-				vertex[3*k+1] = coords[3*nid+1];
-				vertex[3*k+2] = coords[3*nid+2];
+				vertex[NSD3d*k+0] = coords[NSD3d*nid+0];
+				vertex[NSD3d*k+1] = coords[NSD3d*nid+1];
+				vertex[NSD3d*k+2] = coords[NSD3d*nid+2];
 #ifdef PTAT3D_DBG_PointLocation
 				PetscPrintf(PETSC_COMM_SELF,"%D ", nid);
 #endif
@@ -817,7 +817,7 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 			its++;
 		} while (its < max_its);
 		
-		if (monitor && point_found == PETSC_FALSE) {
+		if (monitor && (point_found == PETSC_FALSE)) {
 			if (its >= max_its) {
 				PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, __FUNCTION__, max_its );
 			} else {
