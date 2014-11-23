@@ -30,15 +30,10 @@
  **    $Id$
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
-/*
- *  mp_advection.c
- *  
- *
- *  Created by Dave May on 3/4/12.
- *  Copyright 2012 ETH Zurich. All rights reserved.
- *
- */
 
+
+//#define PTAT3D_DBG_UpdateLocalCoordinates
+#define PTAT3D_PROFILE_SwarmUpdatePosition
 
 #include "stdio.h"
 #include "stdlib.h"
@@ -63,8 +58,8 @@ PetscLogEvent PTATIN_MaterialPointAdvRemoval;
 
 
 #undef __FUNCT__
-#define __FUNCT__ "SwarmUpdatePosition_MPntStd_Euler"
-PetscErrorCode SwarmUpdatePosition_MPntStd_Euler(DM da,Vec velocity,PetscReal step,int npoints,MPntStd marker[])
+#define __FUNCT__ "MaterialPointStd_AdvectEuler"
+PetscErrorCode MaterialPointStd_AdvectEuler(DM da,Vec velocity,PetscReal step,int npoints,MPntStd marker[])
 {
 	Vec             Lvelocity;
 	PetscScalar     *LA_velocity;
@@ -76,10 +71,10 @@ PetscErrorCode SwarmUpdatePosition_MPntStd_Euler(DM da,Vec velocity,PetscReal st
 	PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
 	int             p,wil;
 	PetscErrorCode  ierr;
-	
+
+    
 	PetscFunctionBegin;
-	
-	/* advect */
+	/* scatter velocity to local vector */
 	ierr = DMGetLocalVector(da,&Lvelocity);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalBegin(da,velocity,INSERT_VALUES,Lvelocity);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalEnd(  da,velocity,INSERT_VALUES,Lvelocity);CHKERRQ(ierr);
@@ -113,7 +108,7 @@ PetscErrorCode SwarmUpdatePosition_MPntStd_Euler(DM da,Vec velocity,PetscReal st
 		marker_p->coor[2] = marker_p->coor[2] + step * vel_p[2];
 	}
 	
-  ierr = VecRestoreArray(Lvelocity,&LA_velocity);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Lvelocity,&LA_velocity);CHKERRQ(ierr);
 	ierr = DMRestoreLocalVector(da,&Lvelocity);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -159,6 +154,7 @@ void LSF3dQ2_CheckPartitionOfUnity(PetscReal xi[],PetscReal *val)
 	PetscReal       Ni[27],sum;
 	PetscInt        i;
 	
+    
 	P3D_ConstructNi_Q2_3D(xi,Ni);
 	sum = 0.0;
 	for (i=0; i<27; i++) {
@@ -166,7 +162,7 @@ void LSF3dQ2_CheckPartitionOfUnity(PetscReal xi[],PetscReal *val)
 	}
 	*val = sum;
 	if (fabs(sum-1.0) > tol) {
-		printf("**** sum( N_i(xi,eta) ) = %1.8e > 1.0 ==> partition of unity is not satisified, point is likely outside of the element ****\n",sum);
+		PetscPrintf(PETSC_COMM_SELF,"**** sum( N_i(xi,eta) ) = %1.8e > 1.0 ==> partition of unity is not satisified, point is likely outside of the element ****\n",sum);
 	}
 }
 
@@ -176,6 +172,7 @@ void LSF3dQ2_CheckGlobalCoordinate(PetscReal element_coord[],PetscReal xi[],Pets
 	PetscReal       Ni[27],xp_interp[3];
 	PetscInt        i;
 	
+    
 	P3D_ConstructNi_Q2_3D(xi,Ni);
 	xp_interp[0] = 0.0;
 	xp_interp[1] = 0.0;
@@ -191,13 +188,13 @@ void LSF3dQ2_CheckGlobalCoordinate(PetscReal element_coord[],PetscReal xi[],Pets
 	err[2] = (xp[2] - xp_interp[2]);
 	
 	if (fabs(err[0]) > tol) {
-		printf("**** |xp - N_i(xi,eta).x_i| = %1.8e > %1.8e ==> x: coordinate interpolation error occurred ****\n",fabs(err[0]),tol);
+		PetscPrintf(PETSC_COMM_SELF,"**** |xp - N_i(xi,eta).x_i| = %1.8e > %1.8e ==> x: coordinate interpolation error occurred ****\n",fabs(err[0]),tol);
 	}
 	if (fabs(err[1]) > tol) {
-		printf("**** |yp - N_i(xi,eta).y_i| = %1.8e > %1.8e ==> y: coordinate interpolation error occurred ****\n",fabs(err[1]),tol);
+		PetscPrintf(PETSC_COMM_SELF,"**** |yp - N_i(xi,eta).y_i| = %1.8e > %1.8e ==> y: coordinate interpolation error occurred ****\n",fabs(err[1]),tol);
 	}
 	if (fabs(err[2]) > tol) {
-		printf("**** |zp - N_i(xi,eta).z_i| = %1.8e > %1.8e ==> z: coordinate interpolation error occurred ****\n",fabs(err[2]),tol);
+		PetscPrintf(PETSC_COMM_SELF,"**** |zp - N_i(xi,eta).z_i| = %1.8e > %1.8e ==> z: coordinate interpolation error occurred ****\n",fabs(err[2]),tol);
 	}
 }
 
@@ -235,7 +232,8 @@ void _compute_J_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal J[3][3])
 	PetscInt  i,j;
 	PetscReal GNi[3][27];
 	
-	for (i=0; i<3; i++) {
+	
+    for (i=0; i<3; i++) {
 		for (j=0; j<3; j++) {
 			J[i][j] = 0.0;
 		}
@@ -267,6 +265,7 @@ void _compute_F_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 	PetscInt  i;
 	PetscReal Ni[27];
 	
+    
 	/* Update F for the next iteration */
 	f[0] = f[1] = f[2] = 0.0;
 	
@@ -285,12 +284,11 @@ void _compute_F_3dQ2(PetscReal xi[],PetscReal vertex[],PetscReal pos[],PetscReal
 	f[2] = - f[2] + pos[2];
 }
 
-void InverseMappingDomain_3dQ2( 
-															 PetscReal tolerance, PetscInt max_its,
-															 PetscBool use_nonzero_guess, 
-															 PetscBool monitor, PetscBool log,
-															 const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt mz,const PetscInt element[],
-															 int np, MPntStd marker[] )
+void InverseMappingDomain_3dQ2(PetscReal tolerance, PetscInt max_its,
+                               PetscBool use_nonzero_guess,
+                               PetscBool monitor, PetscBool log,
+                               const PetscReal coords[], const PetscInt mx, const PetscInt my, const PetscInt mz,const PetscInt element[],
+                               int np, MPntStd marker[] )
 {
 	PetscReal h[NSD];
 	PetscReal Jacobian[NSD][NSD];
@@ -298,28 +296,33 @@ void InverseMappingDomain_3dQ2(
 	int       p;
 	PetscInt  its;
 	PetscReal residual2,tolerance2,F2;
-	
 	PetscReal cxip[3],Lxip[3],Gxip[3];
 	PetscReal dxi,deta,dzeta,xi0,eta0,zeta0;
 	PetscInt  I,J,K,wil_IJ,wil_2d,k;
 	PetscReal vertex[NSD * Q2_NODES_PER_EL_3D];
 	PetscBool point_found;
 	
+    
 	tolerance2 = tolerance * tolerance; /* Eliminates the need to do a sqrt in the convergence test */
-	
+
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 	if (log) PetscPrintf(PETSC_COMM_SELF,"Domain: ncells = %D x %D x %D = %D \n", mx,my,mz,mx*my*mz );
+#endif
 	
 	/* map domain to [-1,1]x[-1,1]x[-1,1] domain */
 	dxi   = 2.0/((PetscReal)mx);
 	deta  = 2.0/((PetscReal)my);
 	dzeta = 2.0/((PetscReal)mz);
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 	if (log) PetscPrintf(PETSC_COMM_SELF,"Domain: (dxi,eta,zeta) = (%1.8e,%1.8e,%1.8e)\n",dxi,deta,dzeta );
+#endif
 	
 	for (p=0; p<np; p++) {
 		MPntStd *marker_p = &marker[p];
 		
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 		if (log) PetscPrintf(PETSC_COMM_SELF,"POINT[%d]\n", p );
-
+#endif
 		/* copy these values */
 		cxip[0] = marker_p->xi[0];
 		cxip[1] = marker_p->xi[1];
@@ -337,7 +340,9 @@ void InverseMappingDomain_3dQ2(
 			wil_2d = wil_IJ - K*mx*my;
 			J = wil_2d/mx;
 			I = wil_2d - J*mx;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"init I,J,K = %D %D %D [wil=%D]\n", I,J,K,wil_IJ );
+#endif
 			/* convert Lxip => Gxip */
 			xi0   = -1.0 + I*dxi;
 			eta0  = -1.0 + J*deta;
@@ -350,10 +355,13 @@ void InverseMappingDomain_3dQ2(
 			Gxip[0] = dxi   * (cxip[0]+1.0)/2.0 + xi0;
 			Gxip[1] = deta  * (cxip[1]+1.0)/2.0 + eta0;
 			Gxip[2] = dzeta * (cxip[2]+1.0)/2.0 + zeta0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"[Lxi-init] = %1.8e %1.8e %1.8e\n", cxip[0], cxip[1], cxip[2] );
 			if (log) PetscPrintf(PETSC_COMM_SELF,"[Gxi-init] = %1.8e %1.8e %1.8e\n", Gxip[0], Gxip[1], Gxip[2] );
+#endif
 			
 			/* check */
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) {
 				PetscReal err[3];
 
@@ -367,7 +375,7 @@ void InverseMappingDomain_3dQ2(
 				LSF3dQ2_CheckGlobalCoordinate(vertex,cxip,marker_p->coor,err);
 				PetscPrintf(PETSC_COMM_SELF,"  interpolated coord err %1.4e %1.4e %1.4e \n",err[0],err[1],err[2]);
 			}
-			
+#endif
 		}
 		if (monitor) PetscPrintf(PETSC_COMM_SELF,"point[%d]: pos = ( %+1.8e, %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e, %+1.8e ) \n", p, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2], marker_p->xi[0],marker_p->xi[1],marker_p->xi[2] );
 		
@@ -375,7 +383,9 @@ void InverseMappingDomain_3dQ2(
 		
 		its = 0;
 		do {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"iteration: %D\n",its);
+#endif
 			/* convert Gxi to IJ */
 			I = (Gxip[0]+1.0)/dxi;
 			J = (Gxip[1]+1.0)/deta;
@@ -386,36 +396,49 @@ void InverseMappingDomain_3dQ2(
 			if (K == mz) K--;
 			
 			if ( (I<0) || (J<0)|| (K<0) ) {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  I(%D),J(%D),K(%D) negative Gxip %1.8e,%1.8e,%1.8e \n",I,J,K,Gxip[0],Gxip[1],Gxip[2]);
+#endif
 				break;
 			}
 			if (I >= mx) { 
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  I too large \n");
+#endif
 				break;
 			}
 			if (J >= my) {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  J too large \n");
+#endif
 				break;
 			}
 			if (K >= mz) {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  K too large \n");
+#endif
 				break;
 			}
 			
 			/* Get coords of cell IJ */
 			wil_IJ = I + J*mx + K*mx*my;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"  I,J,K=%D/%D/%D : wil_IJ %D : nid = ", I,J,K,wil_IJ);
+#endif
 			for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
 				PetscInt nid = element[wil_IJ*Q2_NODES_PER_EL_3D+k];
 				
 				vertex[3*k+0] = coords[3*nid+0];
 				vertex[3*k+1] = coords[3*nid+1];
 				vertex[3*k+2] = coords[3*nid+2];
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"%D ", nid);
+#endif
 			}
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"\n");
-			
-			
+#endif
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) {
 				PetscPrintf(PETSC_COMM_SELF,"  [vertex] ");
 				for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
@@ -423,7 +446,7 @@ void InverseMappingDomain_3dQ2(
 				}
 				PetscPrintf(PETSC_COMM_SELF,"\n");
 			}
-			
+#endif
 			/* convert global (domain) xi TO local (element) xi  */
 			xi0   = -1.0 + I*dxi;
 			eta0  = -1.0 + J*deta;
@@ -437,11 +460,13 @@ void InverseMappingDomain_3dQ2(
 			Lxip[1] = 2.0*(Gxip[1]-eta0 )/deta  - 1.0;
 			Lxip[2] = 2.0*(Gxip[2]-zeta0)/dzeta - 1.0;
 			
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"  Lxi,Lxeta,Lzeta = %1.8e, %1.8e, %1.8e (%D,%D,%D) \n", Lxip[0],Lxip[1],Lxip[2],I,J,K );
-			
+#endif
 			_compute_F_3dQ2( Lxip, vertex, marker_p->coor, f );
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (monitor) PetscPrintf(PETSC_COMM_SELF,"%4D InverseMapping : F = ( %+1.8e, %+1.8e, %+1.8e ) : xi = ( %+1.8e, %+1.8e, %+1.8e ) \n", its, f[0],f[1],f[2], Lxip[0],Lxip[1],Lxip[2] );
-			
+#endif
 			/* Check for convergence */
 			F2 = (f[0]*f[0] + f[1]*f[1] + f[2]*f[2]);
 			if (F2 < tolerance2) {
@@ -454,14 +479,16 @@ void InverseMappingDomain_3dQ2(
 			
 			/* compute update */
 			_compute_deltaX( Jacobian, f, h );
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"  [delta] = %1.8e %1.8e %1.8e \n", h[0],h[1],h[2] );
-			
+#endif
 			/* update Lxip */
 			Lxip[0] += 10.0e-1 *h[0];
 			Lxip[1] += 10.0e-1 *h[1];
 			Lxip[2] += 10.0e-1 *h[2];
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"  [corrected] Lxi,Leta,Lzeta = %1.8e, %1.8e, %1.8e \n", Lxip[0],Lxip[1],Lxip[2] );
-			
+#endif
 			residual2 = ( h[0]*h[0] + h[1]*h[1] + h[2]*h[2] );
 			if (residual2 < tolerance2) {
 				if (monitor) PetscPrintf(PETSC_COMM_SELF,"%4D InverseMapping : converged : Norm of correction %1.8e \n", its, sqrt(residual2) );
@@ -479,32 +506,45 @@ void InverseMappingDomain_3dQ2(
 			Gxip[0] = dxi   * (Lxip[0]+1.0)/2.0 + xi0;
 			Gxip[1] = deta  * (Lxip[1]+1.0)/2.0 + eta0;
 			Gxip[2] = dzeta * (Lxip[2]+1.0)/2.0 + zeta0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 			if (log) PetscPrintf(PETSC_COMM_SELF,"  [Gxi] = %1.8e %1.8e %1.8e\n", Gxip[0], Gxip[1], Gxip[2] );
-			
+#endif
 			if (Gxip[0] < -1.0) { 
 				Gxip[0] = -1.0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
+#endif
 			}
 			if (Gxip[1] < -1.0) {
 				Gxip[1] = -1.0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
+#endif
 			}
 			if (Gxip[2] < -1.0) {
 				Gxip[2] = -1.0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
+#endif
 			}
 			
 			if (Gxip[0] > 1.0) {
 				Gxip[0] = 1.0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
+#endif
 			}
 			if (Gxip[1] > 1.0) {
 				Gxip[1] = 1.0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
+#endif
 			}
 			if (Gxip[2] > 1.0) {
 				Gxip[2] = 1.0;
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  correction outside box: correcting \n");
+#endif
 			}
 			
 			its++;
@@ -539,15 +579,21 @@ void InverseMappingDomain_3dQ2(
 			if (K == mz) K--;
 			
 			if (I >= mx) {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  I too large \n");
+#endif
 				break;
 			}
 			if (J >= my) {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  J too large \n");
+#endif
 				break;
 			}
 			if (K >= mz) {
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 				if (log) PetscPrintf(PETSC_COMM_SELF,"  K too large \n");
+#endif
 				break;
 			}
 			
@@ -571,7 +617,9 @@ void InverseMappingDomain_3dQ2(
 		marker_p->xi[2] = Lxip[2];
 		marker_p->wil   = wil_IJ;
 
+#ifdef PTAT3D_DBG_UpdateLocalCoordinates
 		if (log) PetscPrintf(PETSC_COMM_SELF,"  <<final>> xi,eta,zeta = %1.8e, %1.8e, %1.8e [wil=%D] \n", Lxip[0],Lxip[1],Lxip[2],wil_IJ);
+#endif
 	}
 }
 
@@ -593,12 +641,12 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 	PetscReal       xmin,xmax,ymin,ymax,zmin,zmax,coor;
 	PetscErrorCode  ierr;
 	
+    
 	PetscFunctionBegin;
-	
-  /* setup for coords */
-  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
-  ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
+    /* setup for coords */
+    ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+    ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	/* setup velocity */
 	ierr = DMGetLocalVector(da,&Lvelocity);CHKERRQ(ierr);
@@ -655,8 +703,8 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 		if (dtz < dt_min_local) { dt_min_local = dtz; }
 	}
 	
-  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
-  ierr = VecRestoreArray(Lvelocity,&LA_velocity);CHKERRQ(ierr);
+    ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Lvelocity,&LA_velocity);CHKERRQ(ierr);
 	ierr = DMRestoreLocalVector(da,&Lvelocity);CHKERRQ(ierr);
 	
 	ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -671,15 +719,13 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 #define __FUNCT__ "SwarmUpdateProperties_MPntStd"
 PetscErrorCode SwarmUpdateProperties_MPntStd(DataBucket db,pTatinCtx ctx,Vec X)
 {
-	BTruth         found;
+	BTruth found;
 	
 	PetscFunctionBegin;
-	
 	DataBucketQueryDataFieldByName(db,MPntStd_classname,&found);
 	if (found == BFALSE) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot find DataField with name %s \n", MPntStd_classname );
 	}
-	
 	PetscFunctionReturn(0);
 }
 
@@ -700,7 +746,7 @@ PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates(DataBucket materialpoint
 	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
 	mp_std = PField->data;
 	
-	ierr = SwarmUpdatePosition_MPntStd_Euler(dav,velocity,dt,npoints,mp_std);CHKERRQ(ierr);
+	ierr = MaterialPointStd_AdvectEuler(dav,velocity,dt,npoints,mp_std);CHKERRQ(ierr);
 	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -749,11 +795,11 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 	monitor           = PETSC_FALSE;
 	log               = PETSC_FALSE;
 	
-	InverseMappingDomain_3dQ2( 		 tolerance, max_its,
-														use_nonzero_guess, 
-														monitor, log,
-														(const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
-														npoints, mp_std );
+	InverseMappingDomain_3dQ2(tolerance, max_its,
+                              use_nonzero_guess,
+                              monitor, log,
+                              (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
+                              npoints, mp_std );
 	
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvLocalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
@@ -787,9 +833,11 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
 	}
 	
 	/* remove points which left processor */
+/*
 	if (escaped != 0) {
 		PetscPrintf(PETSC_COMM_SELF,"  *** MPntStd removal: Identified %d points which are not contained on subdomain (after communication) \n", escaped );
 	}
+*/
 	if (escaped != 0) {
 		for (p=0; p<npoints; p++) {
 			if (mp_std[p].wil == -1) {
@@ -815,7 +863,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	int            f,nfields;
 	size_t         sizeof_marker_contents;
 	int            p,npoints;
-	long int       npoints_global_init,npoints_global_fin;
 	void           *recv_data;
 	void           *data_p;
 	PetscMPIInt    n,neighborcount, *neighborranks2;
@@ -825,8 +872,8 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	MPntStd        *marker_std;
 	PetscErrorCode ierr;
 	
+    
 	PetscFunctionBegin;
-	
 	/* communucate */
 	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
 	if (size == 1) {
@@ -839,7 +886,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	neighborcount  = de->n_neighbour_procs;
 	neighborranks2 = de->neighbour_procs;
 	
-	
 	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
 	DataBucketGetDataFields(db,&nfields,&PField_all);
 	for (f=1; f<nfields; f++) {
@@ -849,9 +895,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	DataFieldGetAccess(PField_std);
 	DataFieldVerifyAccess(PField_std,sizeof(MPntStd));
 	DataBucketGetSizes(db,&npoints,0,0);
-	
-	//ierr = MPI_Allreduce(&npoints,&npoints_global_init,1,MPI_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
-	DataBucketGetGlobalSizes(de->comm,db,&npoints_global_init,NULL,NULL);
 	
 	/* figure out how many points left processor */
 	ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
@@ -867,7 +910,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		
 		if (onproc == PETSC_FALSE) {
 			for (n=0; n<neighborcount; n++) {
-				//	printf("  DataEx: rank %d sending %d to %d \n",rank,1,neighborranks2[n] );
 				ierr = DataExAddToSendCount( de, neighborranks2[n], 1 );CHKERRQ(ierr);
 			}
 		}
@@ -958,12 +1000,13 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	
 	// receive, if i own them, add new points to list //
 	ierr = DataExGetRecvData( de, &recv_length, (void**)&recv_data );CHKERRQ(ierr);
+    /*
 	{
 		PetscInt totalsent;
 		ierr = MPI_Allreduce(&recv_length,&totalsent,1,MPIU_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  DataEx: total points sent = %D \n", totalsent);
 	}
-	
+	*/
 	/* update the local coordinates and cell owner for all recieved points */
 	{
 		DM cda;
@@ -1007,10 +1050,10 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 			marker_p = (MPntStd*)( (char*)recv_data + p*(sizeof_marker_contents) );
 			
 			InverseMappingDomain_3dQ2(tolerance, max_its,
-																use_nonzero_guess, 
-																monitor, log,
-																(const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
-																1, marker_p );
+                                      use_nonzero_guess,
+                                      monitor, log,
+                                      (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
+                                      1, marker_p );
 		}
 		
 		ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
@@ -1023,8 +1066,8 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		MPntStd     *marker_p;
 		size_t      offset;
 		
-		offset = 0;
-		marker_p     = (MPntStd*)(     (char*)recv_data + p*(sizeof_marker_contents) + offset);
+		offset   = 0;
+		marker_p = (MPntStd*)(     (char*)recv_data + p*(sizeof_marker_contents) + offset);
 		
 		onproc = PETSC_TRUE;
 		if (marker_p->wil == -1) {
@@ -1050,11 +1093,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		}
 	}	
 	
-	//DataBucketGetSizes(db,&npoints,0,0);
-	//ierr = MPI_Allreduce(&npoints,&npoints_global_fin,1,MPI_INT,MPI_SUM,de->comm);CHKERRQ(ierr);
-	DataBucketGetGlobalSizes(de->comm,db,&npoints_global_fin,NULL,NULL);
-
-	PetscPrintf(PETSC_COMM_WORLD,"  SwarmUpdatePosition_GENERIC(Communication): num. points global ( init. = %ld : final = %ld )\n", npoints_global_init,npoints_global_fin);
 	ierr = PetscFree(data_p);CHKERRQ(ierr);
 	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvCommunication,0,0,0,0);CHKERRQ(ierr);
 	
@@ -1066,35 +1104,45 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM dav,DataEx de)
 {
 	PetscErrorCode ierr;
+	PetscLogDouble t0,t1;
+#ifdef PTAT3D_PROFILE_SwarmUpdatePosition
+	PetscLogDouble tlocal[3],tgmax[3],tgmin[3];
+	long int       npoints_global_init,npoints_global_fin;
+#endif
+    
 	PetscFunctionBegin;
-	PetscLogDouble t0,t1,tl,tg,tgmn;
-	
-	PetscPrintf(PETSC_COMM_WORLD,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
 	PetscTime(&t0);
 	ierr = MaterialPointStd_UpdateLocalCoordinates(materialpoints,dav);CHKERRQ(ierr);
 	PetscTime(&t1);
-	tl = t1 - t0;
-	ierr = MPI_Allreduce(&tl,&tg,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_UpdateLocalCoordinates   %10.2e (sec) efficiency %1.1lf%%\n", tg, 100.0 - 100.0*(tg-tgmn)/tg );
+	tlocal[0] = t1 - t0;
 	
 	PetscTime(&t0);
+#ifdef PTAT3D_PROFILE_SwarmUpdatePosition
+	DataBucketGetGlobalSizes(de->comm,materialpoints,&npoints_global_init,NULL,NULL);
+#endif
 	ierr = SwarmUpdatePosition_Communication_Generic(materialpoints,dav,de);CHKERRQ(ierr);
+#ifdef PTAT3D_PROFILE_SwarmUpdatePosition
+	DataBucketGetGlobalSizes(de->comm,materialpoints,&npoints_global_fin,NULL,NULL);
+#endif
 	PetscTime(&t1);
-	ierr = MPI_Allreduce(&tl,&tg,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"    	SwarmUpdatePosition_Communication_Generic %10.2e (sec) efficiency %1.1lf%%\n", tg, 100.0 - 100.0*(tg-tgmn)/tg );
-	tl = t1 - t0;
+	tlocal[1] = t1 - t0;
 
 	PetscTime(&t0);
 	ierr = MaterialPointStd_Removal(materialpoints);CHKERRQ(ierr);
 	PetscTime(&t1);
-	tl = t1 - t0;
-	ierr = MPI_Allreduce(&tl,&tg,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&tl,&tgmn,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_Removal                  %10.2e (sec) efficiency %1.1lf%%\n", tg, 100.0 - 100.0*(tg-tgmn)/tg );
-	
-	PetscPrintf(PETSC_COMM_WORLD,"=========== ================================== ============= \n");
+	tlocal[2] = t1 - t0;
 
+#ifdef PTAT3D_PROFILE_SwarmUpdatePosition
+	ierr = MPI_Allreduce(tlocal,tgmax,3,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(tlocal,tgmin,3,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    
+	PetscPrintf(PETSC_COMM_WORLD,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
+	PetscPrintf(PETSC_COMM_WORLD,"      Number of material points                     %ld (init) / %ld (final)\n",npoints_global_init,npoints_global_fin);
+	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_UpdateLocalCoordinates   %10.2e (sec) efficiency %1.1lf%%\n",tgmax[0],100.0 - 100.0*(tgmax[0]-tgmin[0])/tgmax[0]);
+	PetscPrintf(PETSC_COMM_WORLD,"    	SwarmUpdatePosition_Communication_Generic %10.2e (sec) efficiency %1.1lf%%\n",tgmax[1],100.0 - 100.0*(tgmax[1]-tgmin[1])/tgmax[1]);
+	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_Removal                  %10.2e (sec) efficiency %1.1lf%%\n",tgmax[2],100.0 - 100.0*(tgmax[2]-tgmin[2])/tgmax[2]);
+	PetscPrintf(PETSC_COMM_WORLD,"=========== ================================== ============= \n");
+#endif
+    
 	PetscFunctionReturn(0);
 }
