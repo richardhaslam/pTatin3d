@@ -1105,8 +1105,9 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers before population control (%ld) \n", np_g );
 #endif
 	
-	ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
-	
+	if (np_lower != -1) {
+        ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+	}
 #if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
