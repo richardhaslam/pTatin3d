@@ -50,6 +50,7 @@
 #include "element_utils_q2.h"
 #include "dmda_element_q2p1.h"
 #include "material_point_point_location.h"
+#include "mp_advection.h"
 
 PetscLogEvent PTATIN_MaterialPointAdvGlobalCoordUpdate;
 PetscLogEvent PTATIN_MaterialPointAdvLocalCoordUpdate;
@@ -635,3 +636,633 @@ PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM d
     
 	PetscFunctionReturn(0);
 }
+
+/* ADVECT MARKERS USING RK2,RK3,RK4 */
+typedef struct {
+    double coor[3];
+    double k1[3];
+    double k2[3];
+} MaterialPointRK2;
+const char MaterialPointRK2ClassName[] = "MaterialPointRK2";
+
+typedef struct {
+    double coor[3];
+    double k1[3];
+    double k2[3];
+    double k3[3];
+} MaterialPointRK3;
+const char MaterialPointRK3ClassName[] = "MaterialPointRK3";
+
+typedef struct {
+    double coor[3];
+    double k1[3];
+    double k2[3];
+    double k3[3];
+    double k4[3];
+} MaterialPointRK4;
+const char MaterialPointRK4ClassName[] = "MaterialPointRK4";
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointRK4_Interp"
+PetscErrorCode MaterialPointRK4_Interp(DM da,Vec velocity,RKOrder order,PetscInt stage,int npoints,MPntStd marker[],
+                                       MaterialPointRK2 markerrk2[],
+                                       MaterialPointRK3 markerrk3[],
+                                       MaterialPointRK4 markerrk4[])
+{
+	Vec             Lvelocity;
+	PetscScalar     *LA_velocity;
+	PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
+	PetscInt        e,i;
+	PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
+	PetscInt        nel,nen_u;
+	const PetscInt  *elnidx_u;
+	PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
+	int             p,wil;
+	PetscErrorCode  ierr;
+    
+    
+	PetscFunctionBegin;
+	/* scatter velocity to local vector */
+	ierr = DMGetLocalVector(da,&Lvelocity);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalBegin(da,velocity,INSERT_VALUES,Lvelocity);CHKERRQ(ierr);
+	ierr = DMGlobalToLocalEnd(  da,velocity,INSERT_VALUES,Lvelocity);CHKERRQ(ierr);
+	
+	ierr = VecGetArray(Lvelocity,&LA_velocity);CHKERRQ(ierr);
+	
+	/* traverse elements and interpolate */
+	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+	
+	for (p=0; p<npoints; p++) {
+		MPntStd *marker_p = &marker[p];
+		
+		wil   = marker_p->wil;
+		e     = wil;
+		if (wil < 0) { SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Point[%d] has wil_e < 0", wil ); }
+		
+		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+		ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr);
+		
+		P3D_ConstructNi_Q2_3D(marker_p->xi,Ni_p);
+		
+		vel_p[0] = vel_p[1] = vel_p[2] = 0.0;
+		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+			vel_p[0] += Ni_p[i] * el_velocity[NSD*i+0];
+			vel_p[1] += Ni_p[i] * el_velocity[NSD*i+1];
+			vel_p[2] += Ni_p[i] * el_velocity[NSD*i+2];
+		}
+        
+        switch (order) {
+                
+            case RK_ORDER_2:
+                switch (stage) {
+                    case 1:
+                        markerrk2[p].k1[0] = vel_p[0];
+                        markerrk2[p].k1[1] = vel_p[1];
+                        markerrk2[p].k1[2] = vel_p[2];
+                        break;
+                    case 2:
+                        markerrk2[p].k2[0] = vel_p[0];
+                        markerrk2[p].k2[1] = vel_p[1];
+                        markerrk2[p].k2[2] = vel_p[2];
+                        break;
+                }
+                break;
+                
+                
+            case RK_ORDER_3:
+                switch (stage) {
+                    case 1:
+                        markerrk3[p].k1[0] = vel_p[0];
+                        markerrk3[p].k1[1] = vel_p[1];
+                        markerrk3[p].k1[2] = vel_p[2];
+                        break;
+                    case 2:
+                        markerrk3[p].k2[0] = vel_p[0];
+                        markerrk3[p].k2[1] = vel_p[1];
+                        markerrk3[p].k2[2] = vel_p[2];
+                        break;
+                    case 3:
+                        markerrk3[p].k3[0] = vel_p[0];
+                        markerrk3[p].k3[1] = vel_p[1];
+                        markerrk3[p].k3[2] = vel_p[2];
+                        break;
+                }
+                break;
+                
+            case RK_ORDER_4:
+                switch (stage) {
+                    case 1:
+                        markerrk4[p].k1[0] = vel_p[0];
+                        markerrk4[p].k1[1] = vel_p[1];
+                        markerrk4[p].k1[2] = vel_p[2];
+                        break;
+                    case 2:
+                        markerrk4[p].k2[0] = vel_p[0];
+                        markerrk4[p].k2[1] = vel_p[1];
+                        markerrk4[p].k2[2] = vel_p[2];
+                        break;
+                    case 3:
+                        markerrk4[p].k3[0] = vel_p[0];
+                        markerrk4[p].k3[1] = vel_p[1];
+                        markerrk4[p].k3[2] = vel_p[2];
+                        break;
+                    case 4:
+                        markerrk4[p].k4[0] = vel_p[0];
+                        markerrk4[p].k4[1] = vel_p[1];
+                        markerrk4[p].k4[2] = vel_p[2];
+                        break;
+                }
+                break;
+        }
+	}
+	
+    ierr = VecRestoreArray(Lvelocity,&LA_velocity);CHKERRQ(ierr);
+	ierr = DMRestoreLocalVector(da,&Lvelocity);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SwarmUpdatePosition_Communication_Generic_2"
+PetscErrorCode SwarmUpdatePosition_Communication_Generic_2(DataBucket db1,DataBucket db2,DM da,DataEx de)
+{
+	DataField      PField_std;
+	size_t         sizeof_marker_contents,sizeof_db1_contents,sizeof_db2_contents;
+	int            p,npoints;
+	void           *recv_data;
+	PetscMPIInt    n,neighborcount,*neighborranks2;
+	PetscInt       recv_length;
+	PetscInt       npoints_accepted;
+	PetscMPIInt    rank,size;
+	MPntStd        *marker_std;
+    void           *dbuf,*dbuf1,*dbuf2;
+	PetscErrorCode ierr;
+	
+    
+	PetscFunctionBegin;
+    
+	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
+	if (size == 1) {
+		PetscFunctionReturn(0);
+	}
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvCommunication,0,0,0,0);CHKERRQ(ierr);
+	
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
+	
+	neighborcount  = de->n_neighbour_procs;
+	neighborranks2 = de->neighbour_procs;
+	
+    DataBucketCreatePackedArray(db1,&sizeof_db1_contents,&dbuf1);
+    DataBucketCreatePackedArray(db2,&sizeof_db2_contents,&dbuf2);
+    sizeof_marker_contents = sizeof_db1_contents + sizeof_db2_contents;
+    PetscMalloc(sizeof_marker_contents,&dbuf);
+    
+	DataBucketGetDataFieldByName(db1,MPntStd_classname,&PField_std);
+    DataFieldGetEntries(PField_std,(void**)&marker_std);
+    
+	DataBucketGetSizes(db1,&npoints,0,0);
+	
+	/* figure out how many points left processor */
+	ierr = DataExInitializeSendCount(de);CHKERRQ(ierr);
+	for (p=0; p<npoints; p++) {
+		if (marker_std[p].wil == -1) {
+			for (n=0; n<neighborcount; n++) {
+				ierr = DataExAddToSendCount( de, neighborranks2[n], 1 );CHKERRQ(ierr);
+			}
+		}
+	}
+	ierr = DataExFinalizeSendCount(de);CHKERRQ(ierr);
+	
+    DataFieldRestoreEntries(PField_std,(void**)&marker_std);
+	
+	ierr = DataExPackInitialize(de,sizeof_marker_contents);CHKERRQ(ierr);
+	
+    DataFieldGetEntries(PField_std,(void**)&marker_std);
+	for (p=0; p<npoints; p++) {
+		MPntStd     *marker_p;
+		
+		/* access fields from the bucket */
+		marker_p     = &marker_std[p];
+		
+		if (marker_p->wil == -1) {
+            
+            DataBucketFillPackedArray(db1,p,dbuf1);
+            DataBucketFillPackedArray(db2,p,dbuf2);
+            
+            PetscMemcpy(dbuf,dbuf1,sizeof_db1_contents);
+            PetscMemcpy((void*)((char*)dbuf+sizeof_db1_contents),dbuf2,sizeof_db2_contents);
+            
+			for (n=0; n<neighborcount; n++) {
+				ierr = DataExPackData( de, neighborranks2[n], 1,(void*)dbuf );CHKERRQ(ierr);
+            }
+        }
+	}
+    DataFieldRestoreEntries(PField_std,(void**)&marker_std);
+    
+	ierr = DataExPackFinalize(de);CHKERRQ(ierr);
+	
+	/* remove points which left processor */
+	DataBucketGetSizes(db1,&npoints,0,0);
+	DataFieldGetAccess(PField_std);
+	for (p=0; p<npoints; p++) {
+		MPntStd   *marker_p;
+		
+		DataFieldAccessPoint(PField_std,p,(void**)&marker_p);
+		if (marker_p->wil == -1) {
+			/* kill point */
+			DataBucketRemovePointAtIndex(db1,p);
+			DataBucketRemovePointAtIndex(db2,p);
+			DataBucketGetSizes(db1,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+			p--; /* check replacement point */
+		}
+	}
+	DataFieldRestoreAccess(PField_std);
+	
+	// START communicate //
+	ierr = DataExBegin(de);CHKERRQ(ierr);
+	ierr = DataExEnd(de);CHKERRQ(ierr);
+	// END communicate //
+    
+	// receive, if i own them, add new points to list //
+	ierr = DataExGetRecvData( de, &recv_length, (void**)&recv_data );CHKERRQ(ierr);
+    
+	/* update the local coordinates and cell owner for all recieved points */
+	{
+		DM             cda;
+		Vec            gcoords;
+		PetscScalar    *LA_gcoords;
+		PetscReal      tolerance;
+		PetscInt       max_its;
+		PetscBool      use_nonzero_guess,monitor;
+		PetscInt       lmx,lmy,lmz,nel,nen_u;
+		MPntStd        *marker_p;
+		const PetscInt *elnidx_u;
+		
+		/* setup for coords */
+		ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+		ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+		ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+		
+		ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+		
+		ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+		
+		/* point location parameters */
+		tolerance         = 1.0e-10;
+		max_its           = 10;
+		use_nonzero_guess = PETSC_FALSE; /* for markers sent across processors, it is necessary to NOT use the last known values! */
+		monitor           = PETSC_FALSE;
+		
+		for (p=0; p<recv_length; p++) {
+			marker_p = (MPntStd*)( (char*)recv_data + p*(sizeof_marker_contents) );
+			
+			InverseMappingDomain_3dQ2(tolerance, max_its,
+                                      use_nonzero_guess,
+                                      monitor,
+                                      (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, elnidx_u,
+                                      1, marker_p );
+		}
+		
+		ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	}
+	
+	/* accept all points living locally */
+	npoints_accepted = 0;
+	for (p=0; p<recv_length; p++) {
+        MPntStd *marker_p;
+		void  *data1;
+		void  *data2;
+		
+		marker_p = (MPntStd*)( (char*)recv_data + p*(sizeof_marker_contents));
+		data1    = (void*)(    (char*)recv_data + p*(sizeof_marker_contents));
+		data2    = (void*)(    (char*)recv_data + p*(sizeof_marker_contents) + sizeof_db1_contents);
+		
+		if (marker_p->wil != -1) {
+			int end;
+			
+			DataBucketAddPoint(db1);
+			DataBucketAddPoint(db2);
+			DataBucketGetSizes(db1,&end,0,0);
+			end = end - 1;
+			
+            DataBucketInsertPackedArray(db1,end,data1);
+            DataBucketInsertPackedArray(db2,end,data2);
+            
+			npoints_accepted++;
+		}
+	}
+	
+	ierr = PetscFree(dbuf);CHKERRQ(ierr);
+    DataBucketDestroyPackedArray(db1,&dbuf1);
+    DataBucketDestroyPackedArray(db2,&dbuf2);
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvCommunication,0,0,0,0);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointStd_Removal_2"
+PetscErrorCode MaterialPointStd_Removal_2(DataBucket materialpoints,DataBucket db2)
+{
+	int            p,npoints,escaped;
+	MPntStd        *mp_std;
+	DataField      PField;
+	PetscErrorCode ierr;
+	
+	
+	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvRemoval,0,0,0,0);CHKERRQ(ierr);
+	/* get marker fields */
+	DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
+	mp_std = PField->data;
+	
+	escaped = 0;
+	for (p=0; p<npoints; p++) {
+		if (mp_std[p].wil == -1) {
+			escaped++;
+		}
+	}
+	
+	/* remove points which left processor */
+	if (escaped != 0) {
+		for (p=0; p<npoints; p++) {
+			if (mp_std[p].wil == -1) {
+				/* kill point */
+				DataBucketRemovePointAtIndex(materialpoints,p);
+				DataBucketRemovePointAtIndex(db2,p);
+				DataBucketGetSizes(materialpoints,&npoints,0,0); /* you need to update npoints as the list size decreases! */
+				p--; /* check replacement point */
+			}
+		}
+	}
+	ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvRemoval,0,0,0,0);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointStd_UpdateCoordinates_2"
+PetscErrorCode MaterialPointStd_UpdateCoordinates_2(DataBucket materialpoints,DataBucket db2,DM dav,DataEx de)
+{
+	PetscErrorCode ierr;
+    
+	PetscFunctionBegin;
+
+	ierr = MaterialPointStd_UpdateLocalCoordinates(materialpoints,dav);CHKERRQ(ierr);
+	ierr = SwarmUpdatePosition_Communication_Generic_2(materialpoints,db2,dav,de);CHKERRQ(ierr);
+	ierr = MaterialPointStd_Removal_2(materialpoints,db2);CHKERRQ(ierr);
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointStd_UpdateGlobalCoordinates_RK4"
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates_RK4(DataBucket materialpoints,DataEx de,DM dav,Vec velocity,PetscReal dt)
+{
+	PetscErrorCode   ierr;
+	int              p,npoints;
+	MPntStd          *mp_std;
+	MaterialPointRK4 *mp_rk4;
+	DataField        PField,PFieldRK4;
+	DataBucket       dbrk4;
+    
+	
+	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
+    
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+    
+    DataBucketCreate(&dbrk4);
+	DataBucketRegisterField(dbrk4,MaterialPointRK4ClassName,sizeof(MaterialPointRK4),NULL);
+	DataBucketFinalize(dbrk4);
+	DataBucketSetSizes(dbrk4,npoints,100);
+    
+    DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
+	mp_std = PField->data;
+	
+    DataBucketGetDataFieldByName(dbrk4, MaterialPointRK4ClassName ,&PFieldRK4);
+	mp_rk4 = PFieldRK4->data;
+    for (p=0; p<npoints; p++) {
+        mp_rk4[p].coor[0] = mp_std[p].coor[0];
+        mp_rk4[p].coor[1] = mp_std[p].coor[1];
+        mp_rk4[p].coor[2] = mp_std[p].coor[2];
+    }
+    
+    /* stage 1 : k1 = v(x_n) */
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_4,1,npoints,mp_std,NULL,NULL,mp_rk4);CHKERRQ(ierr);
+    
+    /* stage 2 : k2 = v(x_n + 0.5 * dt * k1) */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk4[p].coor[0] + 0.5 * dt * mp_rk4[p].k1[0];
+        mp_std[p].coor[1] = mp_rk4[p].coor[1] + 0.5 * dt * mp_rk4[p].k1[1];
+        mp_std[p].coor[2] = mp_rk4[p].coor[2] + 0.5 * dt * mp_rk4[p].k1[2];
+    }
+    ierr = MaterialPointStd_UpdateCoordinates_2(materialpoints,dbrk4,dav,de);CHKERRQ(ierr);
+    
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	mp_std = PField->data;
+	mp_rk4 = PFieldRK4->data;
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_4,2,npoints,mp_std,NULL,NULL,mp_rk4);CHKERRQ(ierr);
+    
+    /* stage 3 : k3 = v(x_n + 0.5 * dt * k2) */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk4[p].coor[0] + 0.5 * dt * mp_rk4[p].k2[0];
+        mp_std[p].coor[1] = mp_rk4[p].coor[1] + 0.5 * dt * mp_rk4[p].k2[1];
+        mp_std[p].coor[2] = mp_rk4[p].coor[2] + 0.5 * dt * mp_rk4[p].k2[2];
+    }
+    ierr = MaterialPointStd_UpdateCoordinates_2(materialpoints,dbrk4,dav,de);CHKERRQ(ierr);
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	mp_std = PField->data;
+	mp_rk4 = PFieldRK4->data;
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_4,3,npoints,mp_std,NULL,NULL,mp_rk4);CHKERRQ(ierr);
+    
+    /* stage 4 : k4 = v(x_n + dt * k3) */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk4[p].coor[0] + dt * mp_rk4[p].k3[0];
+        mp_std[p].coor[1] = mp_rk4[p].coor[1] + dt * mp_rk4[p].k3[1];
+        mp_std[p].coor[2] = mp_rk4[p].coor[2] + dt * mp_rk4[p].k3[2];
+    }
+    ierr = MaterialPointStd_UpdateCoordinates_2(materialpoints,dbrk4,dav,de);CHKERRQ(ierr);
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	mp_std = PField->data;
+	mp_rk4 = PFieldRK4->data;
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_4,4,npoints,mp_std,NULL,NULL,mp_rk4);CHKERRQ(ierr);
+    
+    /* final step */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk4[p].coor[0] + (1.0/6.0) * dt * ( mp_rk4[p].k1[0] + 2.0*mp_rk4[p].k2[0] + 2.0*mp_rk4[p].k3[0] + mp_rk4[p].k4[0]);
+        mp_std[p].coor[1] = mp_rk4[p].coor[1] + (1.0/6.0) * dt * ( mp_rk4[p].k1[1] + 2.0*mp_rk4[p].k2[1] + 2.0*mp_rk4[p].k3[1] + mp_rk4[p].k4[1]);
+        mp_std[p].coor[2] = mp_rk4[p].coor[2] + (1.0/6.0) * dt * ( mp_rk4[p].k1[2] + 2.0*mp_rk4[p].k2[2] + 2.0*mp_rk4[p].k3[2] + mp_rk4[p].k4[2]);
+    }
+    
+	DataBucketDestroy(&dbrk4);
+    
+    ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointStd_UpdateGlobalCoordinates_RK2"
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates_RK2(DataBucket materialpoints,DataEx de,DM dav,Vec velocity,PetscReal dt)
+{
+	PetscErrorCode    ierr;
+	int               p,npoints;
+	MPntStd           *mp_std;
+	MaterialPointRK2  *mp_rk;
+	DataField         PField,PFieldRK;
+	DataBucket        dbrk;
+	
+    
+	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
+    
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+    
+    DataBucketCreate(&dbrk);
+	DataBucketRegisterField(dbrk,MaterialPointRK2ClassName,sizeof(MaterialPointRK2),NULL);
+	DataBucketFinalize(dbrk);
+	DataBucketSetSizes(dbrk,npoints,100);
+    
+    DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
+	mp_std = PField->data;
+	
+    DataBucketGetDataFieldByName(dbrk, MaterialPointRK2ClassName ,&PFieldRK);
+	mp_rk = PFieldRK->data;
+    for (p=0; p<npoints; p++) {
+        mp_rk[p].coor[0] = mp_std[p].coor[0];
+        mp_rk[p].coor[1] = mp_std[p].coor[1];
+        mp_rk[p].coor[2] = mp_std[p].coor[2];
+    }
+    
+    /* stage 1 : k1 = v(x_n) */
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_2,1,npoints,mp_std,mp_rk,NULL,NULL);CHKERRQ(ierr);
+    
+    /* stage 2 : k2 = v(x_n + 0.5 * dt * k1) */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk[p].coor[0] + 0.5 * dt * mp_rk[p].k1[0];
+        mp_std[p].coor[1] = mp_rk[p].coor[1] + 0.5 * dt * mp_rk[p].k1[1];
+        mp_std[p].coor[2] = mp_rk[p].coor[2] + 0.5 * dt * mp_rk[p].k1[2];
+    }
+    ierr = MaterialPointStd_UpdateCoordinates_2(materialpoints,dbrk,dav,de);CHKERRQ(ierr);
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	mp_std = PField->data;
+	mp_rk  = PFieldRK->data;
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_2,2,npoints,mp_std,mp_rk,NULL,NULL);CHKERRQ(ierr);
+    
+    /* final step */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk[p].coor[0] + dt * mp_rk[p].k2[0];
+        mp_std[p].coor[1] = mp_rk[p].coor[1] + dt * mp_rk[p].k2[1];
+        mp_std[p].coor[2] = mp_rk[p].coor[2] + dt * mp_rk[p].k2[2];
+    }
+    
+	DataBucketDestroy(&dbrk);
+    
+    ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointStd_UpdateGlobalCoordinates_RK3"
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates_RK3(DataBucket materialpoints,DataEx de,DM dav,Vec velocity,PetscReal dt)
+{
+	PetscErrorCode    ierr;
+	int               p,npoints;
+	MPntStd           *mp_std;
+	MaterialPointRK3  *mp_rk;
+	DataField         PField,PFieldRK;
+	DataBucket        dbrk;
+	
+    
+	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
+    
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+    
+    DataBucketCreate(&dbrk);
+	DataBucketRegisterField(dbrk,MaterialPointRK3ClassName,sizeof(MaterialPointRK3),NULL);
+	DataBucketFinalize(dbrk);
+	DataBucketSetSizes(dbrk,npoints,100);
+    
+    DataBucketGetDataFieldByName(materialpoints, MPntStd_classname ,&PField);
+	mp_std = PField->data;
+	
+    DataBucketGetDataFieldByName(dbrk, MaterialPointRK3ClassName ,&PFieldRK);
+	mp_rk = PFieldRK->data;
+    for (p=0; p<npoints; p++) {
+        mp_rk[p].coor[0] = mp_std[p].coor[0];
+        mp_rk[p].coor[1] = mp_std[p].coor[1];
+        mp_rk[p].coor[2] = mp_std[p].coor[2];
+    }
+    
+    /* stage 1 : k1 = v(x_n) */
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_3,1,npoints,mp_std,NULL,mp_rk,NULL);CHKERRQ(ierr);
+    
+    /* stage 2 : k2 = v(x_n + 0.5 * dt * k1) */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk[p].coor[0] + 0.25 * dt * mp_rk[p].k1[0];
+        mp_std[p].coor[1] = mp_rk[p].coor[1] + 0.25 * dt * mp_rk[p].k1[1];
+        mp_std[p].coor[2] = mp_rk[p].coor[2] + 0.25 * dt * mp_rk[p].k1[2];
+    }
+    ierr = MaterialPointStd_UpdateCoordinates_2(materialpoints,dbrk,dav,de);CHKERRQ(ierr);
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	mp_std = PField->data;
+	mp_rk  = PFieldRK->data;
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_3,2,npoints,mp_std,NULL,mp_rk,NULL);CHKERRQ(ierr);
+    
+    /* stage 3 : k2 = v(x_n -(2/3) * dt * k1 + k2) */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk[p].coor[0] - (2.0/3.0) * dt * mp_rk[p].k1[0] + dt * mp_rk[p].k2[0];
+        mp_std[p].coor[1] = mp_rk[p].coor[1] - (2.0/3.0) * dt * mp_rk[p].k1[1] + dt * mp_rk[p].k2[1];
+        mp_std[p].coor[2] = mp_rk[p].coor[2] - (2.0/3.0) * dt * mp_rk[p].k1[2] + dt * mp_rk[p].k2[2];
+    }
+    ierr = MaterialPointStd_UpdateCoordinates_2(materialpoints,dbrk,dav,de);CHKERRQ(ierr);
+    DataBucketGetSizes(materialpoints,&npoints,NULL,NULL);
+	mp_std = PField->data;
+	mp_rk  = PFieldRK->data;
+    ierr = MaterialPointRK4_Interp(dav,velocity,RK_ORDER_3,3,npoints,mp_std,NULL,mp_rk,NULL);CHKERRQ(ierr);
+    
+    /* final step */
+    for (p=0; p<npoints; p++) {
+        mp_std[p].coor[0] = mp_rk[p].coor[0] + (1.0/3.0) * dt * (mp_rk[p].k1[0] + mp_rk[p].k2[0] + mp_rk[p].k3[0]);
+        mp_std[p].coor[1] = mp_rk[p].coor[1] + (1.0/3.0) * dt * (mp_rk[p].k1[1] + mp_rk[p].k2[1] + mp_rk[p].k3[1]);
+        mp_std[p].coor[2] = mp_rk[p].coor[2] + (1.0/3.0) * dt * (mp_rk[p].k1[2] + mp_rk[p].k2[2] + mp_rk[p].k3[2]);
+    }
+    
+	DataBucketDestroy(&dbrk);
+    
+    ierr = PetscLogEventEnd(PTATIN_MaterialPointAdvGlobalCoordUpdate,0,0,0,0);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointStd_UpdateGlobalCoordinatesRK"
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinatesRK(DataBucket materialpoints,RKOrder order,DataEx de,DM dav,Vec velocity,PetscReal dt)
+{
+    PetscErrorCode ierr;
+    
+    switch (order) {
+        case RK_ORDER_1:
+            ierr = MaterialPointStd_UpdateGlobalCoordinates(materialpoints,dav,velocity,dt);CHKERRQ(ierr);
+            break;
+        case RK_ORDER_2:
+            ierr = MaterialPointStd_UpdateGlobalCoordinates_RK2(materialpoints,de,dav,velocity,dt);CHKERRQ(ierr);
+            break;
+        case RK_ORDER_3:
+            ierr = MaterialPointStd_UpdateGlobalCoordinates_RK3(materialpoints,de,dav,velocity,dt);CHKERRQ(ierr);
+            break;
+        case RK_ORDER_4:
+            ierr = MaterialPointStd_UpdateGlobalCoordinates_RK4(materialpoints,de,dav,velocity,dt);CHKERRQ(ierr);
+            break;
+        default:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Runge-Kutta material point advection only supports RK1, RK2, RK3, RK4");
+            break;
+    }
+    
+	PetscFunctionReturn(0);
+}
+
+

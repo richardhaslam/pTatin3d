@@ -34,6 +34,8 @@
 #ifndef __ptatin_mp_advection_h__
 #define __ptatin_mp_advection_h__
 
+typedef enum { RK_ORDER_1=1, RK_ORDER_2, RK_ORDER_3, RK_ORDER_4 } RKOrder;
+
 PetscErrorCode SwarmUpdatePosition_MPntStd_Euler(DM da,Vec velocity,PetscReal step,int npoints,MPntStd marker[]);
 PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscReal *step);
 PetscErrorCode SwarmUpdateProperties_MPntStd(DataBucket db,pTatinCtx ctx,Vec X);
@@ -43,6 +45,10 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints);
 PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,DataEx de);
 PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM dav,DataEx de);
 
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates_RK2(DataBucket materialpoints,DataEx de,DM dav,Vec velocity,PetscReal dt);
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates_RK3(DataBucket materialpoints,DataEx de,DM dav,Vec velocity,PetscReal dt);
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates_RK4(DataBucket materialpoints,DataEx de,DM dav,Vec velocity,PetscReal dt);
+PetscErrorCode MaterialPointStd_UpdateGlobalCoordinatesRK(DataBucket materialpoints,RKOrder order,DataEx de,DM dav,Vec velocity,PetscReal dt);
 
 #endif
 
