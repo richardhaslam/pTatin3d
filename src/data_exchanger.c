@@ -1001,3 +1001,14 @@ PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
 	*recv   = de->recv_message;
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DataExTopologyGetNeighbours"
+PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscInt *neigh[])
+{
+	PetscFunctionBegin;
+	if (n)     { *n     = de->n_neighbour_procs; }
+	if (neigh) { *neigh = de->neighbour_procs; }
+	PetscFunctionReturn(0);
+}
+
