@@ -46,7 +46,7 @@
 \makeatother							
 
 %Titlepage
-	\title{	\normalsize \textsc{pTatin3d Manual} 	% Subtitle of the document
+	\title{	\normalsize \textsc{pTatin3D Manual} 	% Subtitle of the document
 	\\[2.0cm]									% 2cm spacing
 	\HRule{2pt} \\ [0.3cm]						% Upper rule
 	\LARGE \textbf{{pTatin3d User Guide}}			% Title
@@ -59,6 +59,7 @@
 \begin{itemize}
 \item[-] Dave A. May: Institute of Geophysics, ETH Z{\"u}ruch \texttt{(dave.may@erdw.ethz.ch)} 
 \item[-] Laetitia Le Pourhiet: UPMC, Univ. Paris 06  \texttt{(laetitia.le\_pourhiet@upmc.fr)}
+\item[-] Jed Brown: Argonne National Laboratory, IL USA  \texttt{(jedbrown@mcs.anl.gov)}
 \end{itemize}
 }
 
@@ -95,7 +96,7 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 \newpage
 \section{Software Requirements}
 \begin{itemize}
-	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.5.1}
+	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.5.}
 	\item libz (non essential)
 	\item git (non essential - used to obtain the source)
 	\item \href{www.paraview.org}{ParaView} (essential for visualizing simulation output)
@@ -126,7 +127,12 @@ Once the \unix{makefile.arch} is adjusted for your operating system, type \shell
 	\item Compiling with a particular compilation flags (C and Fortran)
 	\shellcmd{make all TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
 \end{itemize}
-The following targets for make exist : \unix{all}, \unix{libs}, \unix{models}, \unix{drivers}, \unix{tests}.
+The following targets for make exist : \unix{all}, \unix{drivers}, \unix{tests}.
+The make system will create all objects, libraries and binary files in the following paths: \newline
+	\unix{ptatin3d/\$\{PETSC\_ARCH\}/obj} \newline
+	\unix{ptatin3d/\$\{PETSC\_ARCH\}/lib} \newline
+	\unix{ptatin3d/\$\{PETSC\_ARCH\}/bin} \newline
+The current build system allows you to conveniently compile different {\ptat} using different pets builds (e.g. a debug versus optimised).
 
 
 % ----------------------------------------------------------------------------------------------------
@@ -151,13 +157,21 @@ and the models are compiled into the following static library:
 An example model called ``template'' is provided in \unix{src/models}.
 \\[8pt]
 %%	
-To add a model, add the directory name containing your model in
+To add a model, you need to (1) add the directory name containing your model in
 	\shellcmd{ptatin3d/src/models/makefile}
 under the variable
 	\shellcmd{
 	TATIN\_MODEL\_DIR = \
         template
 	}
+and (2), you need to add the filename of \textit{all files within your model directory} into the file
+	\shellcmd{ptatin3d/src/models/local.mk}
+under the variable
+	\shellcmd{
+	libptatin3dmodels-y.c = \
+        template
+	}
+%%
 Within the directory
 	\shellcmd{ptatin3d/src/models/template}
 are the files which define any specific data structures needed for the model,
@@ -226,7 +240,7 @@ This will add your model definition into a list which {\ptat} will have access t
 Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()}.
 
 	\item Finally, you need to edit
-	\unix{ptatin\_models.c}
+	\unix{ptatin\_models\_reg.c}
 and add the function call to register your model.
 This should be done within
 		\unix{pTatinModelRegisterAll()}
@@ -252,17 +266,19 @@ MODEL\_SRC = \newline
 }
 Models must be compiled at the root level of the code tree.
 That is, to make a model, you must run ``make'' from 
-	\unix{ptatin3d/src}
-You cannot run make from within the model directory
+	\unix{ptatin3d}
+You \textit{should not} run make from within the model directory
 	\unix{ptatin3d/src/models}
 or
+	\unix{ptatin3d/src}
+or
 	\unix{ptatin3d/src/models/template}.
-If you only want to compile the models within
-	\unix{ptatin3d/src/models},
-then execute the following command
-	\unix{make models}
-from the directory
-	\unix{ptatin3d/src}.
+%If you only want to compile the models within
+%	\unix{ptatin3d/src/models},
+%then execute the following command
+%	\unix{make models}
+%from the directory
+%	\unix{ptatin3d/src}.
 
 \subsection{Implementing Dirichlet boundary conditions}
 {\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
