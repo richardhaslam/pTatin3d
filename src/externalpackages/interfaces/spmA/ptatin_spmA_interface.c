@@ -122,9 +122,6 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
 #define __FUNCT__ "ptatin3d_DMDAAllScatterCoorJMax"
 PetscErrorCode ptatin3d_DMDAAllScatterCoorJMax(PetscMPIInt intput_rank,double ymax[],DM dm)
 {
-	PetscErrorCode ierr;
-	
-	
 	PetscFunctionBegin;
 	
 	PetscFunctionReturn(0);
@@ -138,9 +135,6 @@ PetscErrorCode ptatin3d_DMDAAllScatterCoorJMax(PetscMPIInt intput_rank,double ym
 #define __FUNCT__ "ptatin3d_SEQLEMHelper_InterpolateM2L"
 PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateM2L(DM m_surf,DM l_surf)
 {
-	PetscErrorCode ierr;
-	
-	
 	PetscFunctionBegin;
 	
 	PetscFunctionReturn(0);
@@ -151,7 +145,7 @@ PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateM2L(DM m_surf,DM l_surf)
 #define __FUNCT__ "ptatin3d_SEQLEMHelper_InterpolateL2M"
 PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateL2M(DM l_surf,DM m_surf)
 {
-	PetscErrorCode ierr;
+	PetscFunctionBegin;
 	
 	
 	PetscFunctionReturn(0);
@@ -292,7 +286,9 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 #define __FUNCT__ "ptatin3d_ApplyLandscapeEvolutionModel_SPMA"
 PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 {
+#ifdef PTATIN_HAVE_SPMA
 	PetscErrorCode ierr;
+#endif
 	
 	PetscFunctionBegin;
 

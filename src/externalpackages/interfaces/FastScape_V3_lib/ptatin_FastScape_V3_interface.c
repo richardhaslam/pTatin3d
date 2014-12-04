@@ -20,11 +20,13 @@
 #include "mesh_update.h"
 #include "spm_utils.h"
 
-PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
-																																	 PetscInt refinement_factor,
-																																	 PetscReal Lstar,PetscReal Vstar,
-																																	 PetscReal dt_mechanical,PetscReal dt_spm,
-																																	 PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc);
+PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
+  pTatinCtx pctx,Vec X,
+  PetscInt refinement_factor,
+  PetscReal Lstar,PetscReal Vstar,
+  PetscReal dt_mechanical,PetscReal dt_spm,
+  PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc);
+
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 extern void fastscape_(double *sheight,int* snx,int* sny,double* dx,double* dy,int* nsteps,int* nfreq,double* dt,int* law,double* m,double* kf,double* kd,int* bc);
 #endif
@@ -33,13 +35,16 @@ extern void fastscape_(double *sheight,int* snx,int* sny,double* dx,double* dy,i
 
 #undef __FUNCT__
 #define __FUNCT__ "ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3"
-PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
-																																	PetscInt refinement_factor,
-																																	PetscReal Lstar,PetscReal Vstar,
-																																	PetscReal dt_mechanical,PetscReal dt_spm,
-																																	PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
+PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
+  pTatinCtx pctx,Vec X,
+  PetscInt refinement_factor,
+  PetscReal Lstar,PetscReal Vstar,
+  PetscReal dt_mechanical,PetscReal dt_spm,
+  PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
 {
+#ifdef PTATIN_HAVE_FASTSCAPE_V3
 	PetscErrorCode ierr;
+#endif
 	
 	PetscFunctionBegin;
 	
@@ -54,20 +59,21 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx
 
 #undef __FUNCT__
 #define __FUNCT__ "_ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3"
-PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pctx,Vec X,
-																																	 PetscInt refinement_factor,
-																																	 PetscReal Lstar,PetscReal Vstar,
-																																	 PetscReal dt_mechanical,PetscReal dt_spm,
-																																	 PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
+PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
+  pTatinCtx pctx,Vec X,
+  PetscInt refinement_factor,
+  PetscReal Lstar,PetscReal Vstar,
+  PetscReal dt_mechanical,PetscReal dt_spm,
+  PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc)
 {
 	PetscBool       debug = PETSC_TRUE;
 	PhysCompStokes  stokes;
 	DM              stokes_pack,dav,dap;
 	DM              dm_spmsurf0;
-	PetscInt        k,mx,my,mz,JMAX;
+	PetscInt        mx,my,mz,JMAX;
 	PetscReal       gmin[3],gmax[3];
 	PetscLogDouble  t0,t1;
-	PetscBool        flg;
+	PetscBool       flg;
 	PetscErrorCode  ierr;
 	
 	
@@ -109,11 +115,15 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 	
 	if (dm_spmsurf0) {
 		double *sheight;
-		int    snx,sny,law,bc,nsteps,nfreq;
-		double dx,dy,dt,m,kf,kd;
+		int    snx,sny;
 		int    ii,jj,smx,smy;
 		double *scoord;
 		double Lx,Ly;
+		double dx,dy;
+#ifdef PTATIN_HAVE_FASTSCAPE_V3
+		int    k,law,bc,nsteps,nfreq;
+		double dt,m,kf,kd;
+#endif
 		
 		/* generate regular 2d mesh */
 		smx = mx * refinement_factor;
@@ -160,8 +170,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		/* interpolate topo: da_spmsurf0 -> 2d mesh */
 		ierr = InterpolateMSurf0ToSPMSurfIKGrid(dm_spmsurf0,(PetscInt)smx,(PetscInt)smy,scoord,sheight);CHKERRQ(ierr);
 		
-#ifdef PTATIN_HAVE_FASTSCAPE_V3
 		PetscTime(&t0);
+#ifdef PTATIN_HAVE_FASTSCAPE_V3
 		/* scale topo */
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] * Lstar;
@@ -190,9 +200,9 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(pTatinCtx pct
 		for (k=0; k<snx*sny; k++) {
 			sheight[k] = sheight[k] / Lstar;
 		}
-		PetscTime(&t1);
 		PetscPrintf(PETSC_COMM_WORLD,"  [libFastScape] Compute time %1.4e (sec)\n",t1-t0);
 #endif
+		PetscTime(&t1);
 
 		/* interpolate topo: 2d mesh -> da_spmsurf0  */
 		ierr = InterpolateSPMSurfIKGridToMSurf0((PetscInt)smx,(PetscInt)smy,scoord,sheight,dm_spmsurf0);CHKERRQ(ierr);

@@ -1,1 +1,1 @@
-# include $(addsuffix /local.mk,)
+include $(call incsubdirs,interfaces)
