@@ -16,6 +16,9 @@ OBJDIR ?= $(PETSC_ARCH)/obj
 LIBDIR ?= $(PETSC_ARCH)/lib
 BINDIR ?= $(PETSC_ARCH)/bin
 
+CONFIG_SPMA      ?= y
+CONFIG_FASTSCAPE ?= y
+
 CONFIG_FORTRAN = y
 CONFIG_AVX ?= n
 
@@ -29,6 +32,7 @@ libptatin3dmodels-y.c :=
 libptatin3dmodels-y.f :=
 ptatin-tests-y.c :=
 ptatin-drivers-y.c :=
+ptatin-externals-y.o :=
 TATIN_INC :=
 
 # Recursively include files for all targets
@@ -44,16 +48,25 @@ else				# Show the full command line
   quiet = $($1)
 endif
 
-.PHONY: libptatin3d libptatin3dmodels tests drivers
+.PHONY: libptatin3d libptatin3dmodels externals tests drivers
 all : tests drivers
 
 libptatin3d = $(LIBDIR)/libptatin3d.$(AR_LIB_SUFFIX)
 libptatin3d : $(libptatin3d)
-$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o)
+
+$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 
 libptatin3dmodels = $(LIBDIR)/libptatin3dmodels.$(AR_LIB_SUFFIX)
 libptatin3dmodels : $(libptatin3dmodels)
 $(libptatin3dmodels) : $(libptatin3dmodels-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3dmodels-y.f:%.f90=$(OBJDIR)/%.o)
+
+externals:
+	-@echo ——————— EXTERNAL PACKAGE OBJECT FILES ———————
+	-@echo $(ptatin-externals-y.o)
+	-@echo ——————— EXTERNAL PACKAGE OBJECT INCLUDE PATH ———————
+	-@echo $(TATIN_INC)
+	-@echo ——————— EXTERNAL PACKAGE OBJECT CFLAGS ———————
+	-@echo $(TATIN_CFLAGS)
 
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^
@@ -85,7 +98,7 @@ $(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
-	$(call quiet,CLINKER) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
+	$(call quiet,CLINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
@@ -111,7 +124,9 @@ print:
 	@echo $($(VAR))
 
 srcs.c := $(libptatin3d-y.c) $(libptatin3dmodels-y.c) $(ptatin-tests-y.c) $(ptatin-drivers-y.c)
-srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o)
+# Bundle in objects from external packages
+%srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o)
+srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 srcs.d := $(srcs.o:%.o=%.d)
 # Tell make that srcs.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a
