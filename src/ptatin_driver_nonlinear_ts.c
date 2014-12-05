@@ -1081,7 +1081,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscBool        active_energy;
 	Vec              T,f;
 	RheologyType     init_rheology_type;
-	PetscBool        monitor_stages = PETSC_FALSE;
+	PetscBool        monitor_stages = PETSC_FALSE,write_icbc = PETSC_FALSE;
 	PetscBool        activate_quasi_newton_coord_update = PETSC_FALSE;
 	DataBucket       materialpoint_db;
 	PetscLogDouble   time[2];
@@ -1095,6 +1095,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1289,8 +1290,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	}
 	
 	/* output ic */
-	ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
-
+    if (write_icbc) {
+        ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
+    }
+    
 	/* Define non-linear solver */
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	//ierr = SNESSetApplicationContext(snes,(void*)user);CHKERRQ(ierr);
@@ -1778,7 +1781,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	PetscBool        active_energy;
 	Vec              T,f;
 	RheologyType     init_rheology_type;
-	PetscBool        monitor_stages = PETSC_FALSE;
+	PetscBool        monitor_stages = PETSC_FALSE,write_icbc = PETSC_FALSE;
 	PetscBool        activate_quasi_newton_coord_update = PETSC_FALSE;
 	DataBucket       materialpoint_db;
 	PetscLogDouble   time[2];
@@ -1793,6 +1796,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1976,8 +1980,9 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	}
 	
 	/* output ic */
-	ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
-	
+    if (write_icbc) {
+        ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
+	}
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 
@@ -2571,7 +2576,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	PetscBool        active_energy;
 	Vec              T,f;
 	RheologyType     init_rheology_type;
-	PetscBool        monitor_stages = PETSC_FALSE;
+	PetscBool        monitor_stages = PETSC_FALSE,write_icbc = PETSC_FALSE;
 	PetscBool        activate_quasi_newton_coord_update = PETSC_FALSE;
 	DataBucket       materialpoint_db;
 	PetscReal        surface_displacement_max = 1.0e32;
@@ -2584,6 +2589,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -2747,9 +2753,6 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	PetscPrintf(PETSC_COMM_WORLD,"Generated stokes operators --> ");
 	pTatinGetRangeCurrentMemoryUsage(NULL);
 	
-	
-	
-	
 	/* work vector for solution and residual */
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
@@ -2778,8 +2781,10 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	}
 	
 	/* output ic */
-	ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
-	
+    if (write_icbc) {
+        ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
+	}
+    
 	/* Define non-linear solver */
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes_picard);CHKERRQ(ierr);
 	ierr = SNESSetOptionsPrefix(snes_picard,"p0_");CHKERRQ(ierr);

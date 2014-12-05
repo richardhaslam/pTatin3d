@@ -880,7 +880,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscInt       step;
     pTatinModel    model;
 	PetscLogDouble time[2];
-	PetscReal        surface_displacement_max = 1.0e32;
+	PetscReal      surface_displacement_max = 1.0e32;
+    PetscBool      write_icbc = PETSC_FALSE;
     
 	PetscErrorCode ierr;
 	
@@ -890,6 +891,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
 	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
     
 	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> new simulation");CHKERRQ(ierr);
 	
@@ -1039,8 +1041,9 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	}
     
 	/* write the initial fields */
-	ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
-    
+    if (write_icbc) {
+        ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
+    }
 	
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 	ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
@@ -1212,10 +1215,10 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		PetscTime(&time[0]);
 		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 		PetscTime(&time[1]);
-		ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
-		ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
-    ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
-    ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
+        ierr = pTatinLogBasicSNES(user,"Stokes",snes);CHKERRQ(ierr);
+        ierr = pTatinLogBasicCPUtime(user,"Stokes",time[1]-time[0]);CHKERRQ(ierr);
+        ierr = pTatinLogBasicStokesSolution(user,multipys_pack,X);CHKERRQ(ierr);
+        ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,multipys_pack,X);CHKERRQ(ierr);
 		/*
          {
          Vec velocity,pressure;
@@ -1315,7 +1318,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	Mat            interpolation_v[10],interpolation_eta[10];
 	Quadrature     volQ[10];
 	BCList         u_bclist[10];
-  pTatinModel    model;
+    pTatinModel    model;
 	PetscLogDouble time[2];
 	
 	PetscErrorCode ierr;
