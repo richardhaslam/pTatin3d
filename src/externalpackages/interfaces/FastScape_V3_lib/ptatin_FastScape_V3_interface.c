@@ -28,7 +28,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
   PetscInt _law,PetscReal _m,PetscReal _kf,PetscReal _kd,PetscInt _bc);
 
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
-extern void fastscape_(double *sheight,int* snx,int* sny,double* dx,double* dy,int* nsteps,int* nfreq,double* dt,int* law,double* m,double* kf,double* kd,int* bc);
+extern void fastscape_(char *name,int *len,double *sheight,int* snx,int* sny,double* dx,double* dy,int* nsteps,int* nfreq,double* dt,int* law,double* m,double* kf,double* kd,int* bc);
 #endif
 
 
@@ -123,6 +123,8 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 #ifdef PTATIN_HAVE_FASTSCAPE_V3
 		int    k,law,bc,nsteps,nfreq;
 		double dt,m,kf,kd;
+        char *outputpath;
+        int slen;
 #endif
 		
 		/* generate regular 2d mesh */
@@ -194,7 +196,9 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 		kd  = (double)_kd; /* not used */
 		bc  = (int)_bc;   /* four digit number 0101 */
 		law = (int)_law;
-		fastscape_(sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
+        outputpath = pctx->outputpath;
+        slen = strlen(outputpath);
+		fastscape_(outputpath,&slen,sheight,&snx,&sny,&dx,&dy,&nsteps,&nfreq,&dt,&law,&m,&kf,&kd,&bc);
 		
 		/* unscale topo */
 		for (k=0; k<snx*sny; k++) {
