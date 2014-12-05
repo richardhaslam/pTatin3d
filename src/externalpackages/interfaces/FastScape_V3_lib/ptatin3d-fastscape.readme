@@ -14,14 +14,14 @@ SOFTWARE REQUIREMENTS:
 
 OBTAIN FASTSCAPE:
 [1] Move into this directory
-      >cd ptatin3d/src/externalpackage
+      >cd ptatin3d/src/externalpackages
 [2] Execute the following command
       >git clone https://USERNAME@bitbucket.org/huismans/fastscape_v3_lib.git FastScape_V3_lib
 
 
 INSTALLING FASTSCAPE:
 [1] Move here
-      >cd ptatin3d/src/externalpackage/FastScape_V3_lib
+      >cd ptatin3d/src/externalpackages/FastScape_V3_lib
 
 [2] Execute 
       >make all
@@ -34,7 +34,10 @@ INSTALLING FASTSCAPE:
       Makefile.petsc
 
 LINKING WITH PTATIN3D:
-[1] FastScape uses OpenMP. Hence depending on how you configured petsc, you might have
+
+[1] Edit the Makefile at the root of ptatin3d: CONFIG_FASTSCAPE ?= y
+ 
+[2] FastScape uses OpenMP. Hence depending on how you configured petsc, you might have
     to include the -fopenmp flag when you link ptatin executables. Hence, you may have
     to add the following into your
       TATIN_CFLAGS = -fopenmp
@@ -51,10 +54,11 @@ RUNNING COUPLED MODELS:
 IMPLEMENTATION NOTES:
 * The implementation will only write input/output into the directory FastScapeIO.
   The interface completely ignores the ptatin output directory, -output_path
+* The FastScapeIO directory needs to be created related to where you launch the job
 * Currently some input params for FastScapae are passed into the interface, these
   are used to generate an input file FastScape.in which is then read by FastScape to
   initiate the run
-* In the ptatin interface, currently the topography histroy is not stored.
+* In the ptatin interface, currently the topography history is not stored.
 
 
 
