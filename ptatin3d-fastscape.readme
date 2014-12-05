@@ -1,0 +1,71 @@
+To use the FastScape surface process interface, you will need to have access to this git repository
+  https://USERNAME@bitbucket.org/huismans/fastscape_v3_lib.git
+Here you will obtain a modified version of FastScape - version 3.0
+
+To obtain the repo, do this
+  git clone https://dmay@bitbucket.org/huismans/fastscape_v3_lib.git
+
+SOFTWARE REQUIREMENTS:
+[1] You will need to have installed PETSc with fortran support 
+    (e.g. configure petsc with --with-fc=PATH/TO/FORTRAN_COMPILER)
+[2] Set the environment variables
+      PETSC_DIR
+      PETSC_ARCH
+
+OBTAIN FASTSCAPE:
+[1] Move into this directory
+      >cd ptatin3d/src/externalpackage
+[2] Execute the following command
+      >git clone https://USERNAME@bitbucket.org/huismans/fastscape_v3_lib.git FastScape_V3_lib
+
+
+INSTALLING FASTSCAPE:
+[1] Move here
+      >cd ptatin3d/src/externalpackage/FastScape_V3_lib
+
+[2] Execute 
+      >make all
+    Note that by default, the Makefile includes the file
+      Makefile.petsc.dbg
+    which includes debug compilation flags which will be passed to FastScape.
+    If you want to use optimized compilation flags, edit Makefile and comment out the line
+      Makefile.petsc.dbg
+    and uncomment the line
+      Makefile.petsc
+
+LINKING WITH PTATIN3D:
+[1] FastScape uses OpenMP. Hence depending on how you configured petsc, you might have
+    to include the -fopenmp flag when you link ptatin executables. Hence, you may have
+    to add the following into your
+      TATIN_CFLAGS = -fopenmp
+    which is located in 
+      ptatin3d/src/makefile.arch
+
+RUNNING COUPLED MODELS:
+[1] You will have to create the directory
+      FastScapeIO
+    in the same directory where you launch your job.
+    FastScape will generate input files and any output in this location
+
+
+IMPLEMENTATION NOTES:
+* The implementation will only write input/output into the directory FastScapeIO.
+  The interface completely ignores the ptatin output directory, -output_path
+* Currently some input params for FastScapae are passed into the interface, these
+  are used to generate an input file FastScape.in which is then read by FastScape to
+  initiate the run
+* In the ptatin interface, currently the topography histroy is not stored.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
