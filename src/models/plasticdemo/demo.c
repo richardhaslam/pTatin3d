@@ -379,8 +379,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
 	
     
     {
-        //ierr = PD_MaterialGeometry_ex1(c,data);CHKERRQ(ierr);
-        ierr = PD_MaterialGeometry_ex2(c,data);CHKERRQ(ierr);
+        /* Mises layer over viscous layer */
+        ierr = PD_MaterialGeometry_ex1(c,data);CHKERRQ(ierr);
+        /* Mises layer with viscous notch */
+        //ierr = PD_MaterialGeometry_ex2(c,data);CHKERRQ(ierr);
     }
     
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
