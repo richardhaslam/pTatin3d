@@ -432,8 +432,11 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P1 projection\n");
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P1 not implemented");
 			break;
+		case 4:
+			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using one2one projection\n");
+			break;
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER," -coefficient_projection_type = {0,1,2} implying {P0,Q1,Q2}");
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER," -coefficient_projection_type = {0,1,2,4} implying {P0,Q1,Q2,one2on}");
 			break;
 	}
 	
@@ -455,11 +458,20 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 		PetscInt mplayout = 0;
 		
 		PetscOptionsGetInt(NULL,"-mp_layout",&mplayout,NULL);
-		if (mplayout==0) {
-			ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
-		} else if (mplayout==1) {
-			ierr = SwarmMPntStd_CoordAssignment_RandomLayout3d(dav,nPerCell,db);CHKERRQ(ierr);
-		}
+        switch (mplayout) {
+            case 0:
+                ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
+                break;
+            case 1:
+                ierr = SwarmMPntStd_CoordAssignment_RandomLayout3d(dav,nPerCell,db);CHKERRQ(ierr);
+                break;
+            case 2:
+                ierr = SwarmMPntStd_CoordAssignment_GaussLayout3d(dav,db);CHKERRQ(ierr);
+                break;
+            default:
+                ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
+                break;
+        }
 	}
 	PetscTime(&t1);
 	DataBucketGetSizes(db,&npoints,NULL,NULL);
