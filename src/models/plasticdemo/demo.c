@@ -35,6 +35,7 @@ typedef struct {
     PetscReal domain[3];
     PetscReal vx_bc,vz_bc;
     PetscReal exx_bc,ezz_bc;
+    PetscInt  model_geom_type;
 } ModelCtx;
 
 
@@ -71,6 +72,10 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     modeldata->output_si = PETSC_FALSE;
     PetscOptionsGetBool(PETSC_NULL,"-model_output_si",&modeldata->output_si,0);
     
+    /* --------------------------------- model geometry type ------------------------- */
+    modeldata->model_geom_type = 1;
+    PetscOptionsGetInt(PETSC_NULL,"-model_geom_type",&modeldata->model_geom_type,0);
+
     /* --------------------------------- domain size --------------------------------- */
     modeldata->domain[0] = 120.0e3;
     modeldata->domain[1] = 10.0e3;
@@ -192,8 +197,19 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-    
-	ierr = DMDASetUniformCoordinates(dav,0.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
+
+    switch (modeldata->model_geom_type) {
+        case 1:
+            ierr = DMDASetUniformCoordinates(dav,0.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
+            break;
+        case 2:
+            ierr = DMDASetUniformCoordinates(dav,0.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
+            break;
+        case 3:
+            ierr = DMDASetUniformCoordinates(dav,-modeldata->domain[0]/2.0,modeldata->domain[0]/2.0, -modeldata->domain[1]/2.0,modeldata->domain[1]/2.0, -modeldata->domain[2]/2.0,modeldata->domain[2]/2.0);CHKERRQ(ierr);
+            break;
+    }
+
     
     flg = PETSC_FALSE;
     PetscOptionsGetBool(PETSC_NULL,"-model_domain_3d",&flg,0);
@@ -337,6 +353,75 @@ PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PD_MaterialGeometry_ex3"
+PetscErrorCode PD_MaterialGeometry_ex3(pTatinCtx ptatctx,ModelCtx *mctx)
+{
+	MPAccess         mpX;
+	PetscInt         p,n_mpoints;
+	DataBucket       materialpoint_db;
+    PetscErrorCode   ierr;
+    
+	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+    
+    for (p=0; p<n_mpoints; p++) {
+        PetscBool in_mantle;
+        double *position_p;
+        double xp,yp,zp,H,dnx,dny;
+        
+		ierr = MaterialPointGet_global_coord(mpX,p,&position_p);CHKERRQ(ierr);
+        /* convert into km */
+        xp = position_p[0] * mctx->x_bar;
+        yp = (position_p[1] + mctx->domain[1]*0.5) * mctx->x_bar;
+        zp = position_p[2] * mctx->x_bar;
+        H = mctx->domain[1] * mctx->x_bar;
+        
+        in_mantle = PETSC_FALSE;
+        
+        if ((H-yp) > 22.5*1.0e3) {
+            in_mantle = PETSC_TRUE;
+        }
+        
+        
+        dny = (0.25/3.0) * 30.0e3;
+        dnx = 2.0 * dny;
+        if (fabs(xp) < 1.0*dnx) {
+            if ((H-yp) > (22.5*1.0e3-dny)) {
+                if (zp > 0.0) {
+                    in_mantle = PETSC_TRUE;
+                }
+            }
+        }
+        
+        if (!in_mantle) {
+            ierr = MaterialPointSet_phase_index(mpX,p, C_IDX);CHKERRQ(ierr);
+        }
+    }
+    
+    {
+        PetscBool qp_proj = PETSC_FALSE;
+        
+        PetscOptionsGetBool(PETSC_NULL,"-qp_proj",&qp_proj,0);
+        if (qp_proj) {
+            for (p=0; p<n_mpoints/27; p++) {
+                int pc = p*27 + 13;
+                int pk,region;
+                
+                ierr = MaterialPointGet_phase_index(mpX,pc,&region);CHKERRQ(ierr);
+                for (pk=p*27; pk<p*27+27; pk++) {
+                    ierr = MaterialPointSet_phase_index(mpX,pk,region);CHKERRQ(ierr);
+                }
+            }
+        }
+    }
+    
+    ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+    
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_PD"
 PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
 {
@@ -377,12 +462,19 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
     }
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
-    
-    {
-        /* Mises layer over viscous layer */
-        ierr = PD_MaterialGeometry_ex1(c,data);CHKERRQ(ierr);
-        /* Mises layer with viscous notch */
-        //ierr = PD_MaterialGeometry_ex2(c,data);CHKERRQ(ierr);
+    switch (data->model_geom_type) {
+        case 1:
+            /* Mises layer over viscous layer */
+            ierr = PD_MaterialGeometry_ex1(c,data);CHKERRQ(ierr);
+            break;
+        case 2:
+            /* Mises layer with viscous notch */
+            ierr = PD_MaterialGeometry_ex2(c,data);CHKERRQ(ierr);
+            break;
+        case 3:
+            /* Mises layer with viscous notch */
+            ierr = PD_MaterialGeometry_ex3(c,data);CHKERRQ(ierr);
+            break;
     }
     
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
