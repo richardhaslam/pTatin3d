@@ -14,7 +14,7 @@
 ** Revision: 5040 
 ** Log: r5040 | dmay | 2013-12-17 21:03:16 +0100 (Tue, 17 Dec 2013) | 1 line 
 **                                                                       
-** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function
 **                                                                       
 ** WARNING pTatin3d appears to have been compiled with debug options 
 ** For significant performance improvements, please consult the file makefile.arch  
@@ -23,9 +23,9 @@
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2014.09.04_16:47:59 
+[pTatin] Created log file: pt3dout/ptatin.log-2014.12.16_13:32:24 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2014.09.04_16:47:59 
+[pTatin] Created options file: pt3dout/ptatin.options-2014.12.16_13:32:24 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -35,24 +35,22 @@ RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max =
   [pTatinModel]: Registering model [5] with name "rift3D"
   [pTatinModel]: Registering model [6] with name "rift3D_T"
   [pTatinModel]: Registering model [7] with name "sierra"
-  [pTatinModel]: Registering model [8] with name "folding"
-  [pTatinModel]: Registering model [9] with name "folding2d"
-  [pTatinModel]: Registering model [10] with name "advdiff_example"
-  [pTatinModel]: Registering model [11] with name "basin_comp"
-  [pTatinModel]: Registering model [12] with name "fault_fold"
-  [pTatinModel]: Registering model [13] with name "wrench_fold"
-  [pTatinModel]: Registering model [14] with name "delamination"
-  [pTatinModel]: Registering model [15] with name "Riftrh"
-  [pTatinModel]: Registering model [16] with name "geomod2008"
-  [pTatinModel]: Registering model [17] with name "fault_fold_plastic"
-  [pTatinModel]: Registering model [18] with name "multilayer_folding"
-  [pTatinModel]: Registering model [19] with name "submarinelavaflow"
-  [pTatinModel]: Registering model [20] with name "ex_subduction"
-  [pTatinModel]: Registering model [21] with name "iplus"
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Registering model [11] with name "geomod2008"
+  [pTatinModel]: Registering model [12] with name "multilayer_folding"
+  [pTatinModel]: Registering model [13] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [14] with name "ex_subduction"
+  [pTatinModel]: Registering model [15] with name "iplus"
 [[pTatinModelRegister_Subduction_Initiation2d]]
-  [pTatinModel]: Registering model [22] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [16] with name "subduction_initiation2d"
 [[pTatinModelRegister_Thermal_Convection2d]]
-  [pTatinModel]: Registering model [23] with name "convection2d"
+  [pTatinModel]: Registering model [17] with name "convection2d"
+  [pTatinModel]: Registering model [18] with name "thermal_sb"
+  [pTatinModel]: Registering model [19] with name "sd3d"
+  [pTatinModel]: Registering model [20] with name "pas"
+  [pTatinModel]: Registering model [21] with name "pd"
   [pTatinModel]: -ptatin_model "viscous_sinker" was detected
 pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
 pTatin3dRestart: Unable to restart job
@@ -110,9 +108,9 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
   Total mem. usage                                                      = 6.46e-02 (MB) 
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0002 (sec)]]
+[[Swarm initialization: 0.0003 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 4096 points : 0.0014 (sec)]]
+[[Swarm->coordinate assignment: 4096 points : 0.0021 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
 Mat Object: 1 MPI processes
@@ -121,8 +119,8 @@ Mat Object: 1 MPI processes
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 7.5266e-04 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 7.8691e-04 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 6.0791e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 6.3402e-04 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
 [[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
@@ -166,108 +164,108 @@ Level [0]: Coarse grid type :: Galerkin :: assembled operator
   writing pvdfilename pt3dout/timeseries_vp.pvd 
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 6.73e-03 (sec) 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 4.94e-03 (sec) 
   writing pvdfilename pt3dout/timeseries_mpoints_std.pvd 
-pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 5.63e-03 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 3.24e-03 (sec) 
    [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
 *** Rheology update for RHEOLOGY_VISCOUS selected ***
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 6.44e-05 (sec)
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 6.82e-05 (sec)
-  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 3.238783915315e-03, 0.000000000000e+00, 0.000000000000e+00 ]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.99e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.32e-04 (sec)
+    0 KSP Residual norm 0.00323878 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.000000000000e+00 
-      1 KSP Residual norm 3.640056829796e-01 
-      2 KSP Residual norm 6.931379656803e-03 
-  1 KSP Component U,V,W,P residual norm [ 1.855448336538e-10, 3.238695172096e-03, 2.347630377288e-10, 1.695323672810e-05 ]
+      0 KSP Residual norm 1 
+      1 KSP Residual norm 0.364006 
+      2 KSP Residual norm 0.00693138 
+    1 KSP Residual norm 0.00323874 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.163032220663e-03 
-      1 KSP Residual norm 1.510609854020e-03 
-      2 KSP Residual norm 3.120723212205e-04 
-      3 KSP Residual norm 9.729309322326e-06 
-  2 KSP Component U,V,W,P residual norm [ 7.213128193477e-09, 3.235762032122e-03, 1.143917663488e-08, 9.888424824162e-05 ]
+      0 KSP Residual norm 0.00916303 
+      1 KSP Residual norm 0.00151061 
+      2 KSP Residual norm 0.000312072 
+      3 KSP Residual norm 9.72931e-06 
+    2 KSP Residual norm 0.00323727 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.091159906657e-01 
-      1 KSP Residual norm 8.854513423023e-04 
-  3 KSP Component U,V,W,P residual norm [ 1.678440138690e-07, 3.229966301263e-03, 1.613308940966e-07, 1.687616360947e-04 ]
+      0 KSP Residual norm 0.109116 
+      1 KSP Residual norm 0.000885451 
+    3 KSP Residual norm 0.00323437 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.801576403314e-01 
-      1 KSP Residual norm 2.941351789596e-03 
-  4 KSP Component U,V,W,P residual norm [ 1.404415295696e-06, 3.215532457508e-03, 1.358677468891e-06, 2.734194148977e-04 ]
+      0 KSP Residual norm 0.380158 
+      1 KSP Residual norm 0.00294135 
+    4 KSP Residual norm 0.00322714 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.805830641126e-01 
-      1 KSP Residual norm 9.792161301872e-03 
-  5 KSP Component U,V,W,P residual norm [ 5.157424490757e-06, 3.126921722327e-03, 5.067399517453e-06, 5.913231789761e-04 ]
+      0 KSP Residual norm 0.980583 
+      1 KSP Residual norm 0.00979216 
+    5 KSP Residual norm 0.00318235 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.276077958303e+00 
-      1 KSP Residual norm 1.286336062240e-02 
-      2 KSP Residual norm 4.270381105534e-03 
-  6 KSP Component U,V,W,P residual norm [ 5.485933669098e-06, 2.945469278620e-03, 5.345723506783e-06, 9.294176370751e-04 ]
+      0 KSP Residual norm 1.27608 
+      1 KSP Residual norm 0.0128634 
+      2 KSP Residual norm 0.00427038 
+    6 KSP Residual norm 0.00308863 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.047237310039e+00 
-      1 KSP Residual norm 5.866458194424e-03 
-  7 KSP Component U,V,W,P residual norm [ 1.482806559302e-05, 2.110227473614e-03, 1.417416951683e-05, 1.542930416178e-03 ]
+      0 KSP Residual norm 1.04724 
+      1 KSP Residual norm 0.00586646 
+    7 KSP Residual norm 0.00261421 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 7.429183406350e-01 
-      1 KSP Residual norm 7.799759374995e-03 
-      2 KSP Residual norm 3.684821972322e-03 
-  8 KSP Component U,V,W,P residual norm [ 5.116838484907e-06, 8.829914405829e-04, 4.967219090047e-06, 1.442132712686e-03 ]
+      0 KSP Residual norm 0.742918 
+      1 KSP Residual norm 0.00779976 
+      2 KSP Residual norm 0.00368482 
+    8 KSP Residual norm 0.001691 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 7.371871356508e-01 
-      1 KSP Residual norm 7.652946218902e-03 
-      2 KSP Residual norm 1.122485727037e-03 
-  9 KSP Component U,V,W,P residual norm [ 9.305210041263e-06, 3.243988705395e-04, 8.917578853867e-06, 9.717044719868e-04 ]
+      0 KSP Residual norm 0.737187 
+      1 KSP Residual norm 0.00765295 
+      2 KSP Residual norm 0.00112249 
+    9 KSP Residual norm 0.0010245 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 5.931206383178e-01 
-      1 KSP Residual norm 6.956813990669e-03 
-      2 KSP Residual norm 3.945675973617e-03 
- 10 KSP Component U,V,W,P residual norm [ 1.677639023148e-06, 8.688495173260e-05, 1.717293959238e-06, 5.229487054371e-04 ]
+      0 KSP Residual norm 0.593121 
+      1 KSP Residual norm 0.00695681 
+      2 KSP Residual norm 0.00394568 
+   10 KSP Residual norm 0.000530123 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 4.822770194262e-01 
-      1 KSP Residual norm 5.100754046690e-03 
-      2 KSP Residual norm 1.169274185712e-03 
- 11 KSP Component U,V,W,P residual norm [ 5.208318923731e-07, 2.389656610254e-05, 5.676013220848e-07, 2.766004419051e-04 ]
+      0 KSP Residual norm 0.482277 
+      1 KSP Residual norm 0.00510075 
+      2 KSP Residual norm 0.00116927 
+   11 KSP Residual norm 0.000277632 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 4.280609434293e-01 
-      1 KSP Residual norm 5.058193489597e-03 
-      2 KSP Residual norm 2.066418282319e-03 
- 12 KSP Component U,V,W,P residual norm [ 1.173993575144e-06, 6.765913766015e-06, 1.153972920082e-06, 1.439363087749e-04 ]
+      0 KSP Residual norm 0.428061 
+      1 KSP Residual norm 0.00505819 
+      2 KSP Residual norm 0.00206642 
+   12 KSP Residual norm 0.000144105 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 4.612678498327e-01 
-      1 KSP Residual norm 5.015366364723e-03 
-      2 KSP Residual norm 2.823034978414e-03 
- 13 KSP Component U,V,W,P residual norm [ 4.572637297301e-07, 1.823732370300e-06, 3.128132911090e-07, 7.517322212604e-05 ]
+      0 KSP Residual norm 0.461268 
+      1 KSP Residual norm 0.00501537 
+      2 KSP Residual norm 0.00282303 
+   13 KSP Residual norm 7.51974e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.877329162428e-01 
-      1 KSP Residual norm 7.035607010122e-03 
-      2 KSP Residual norm 4.525975907337e-03 
-      3 KSP Residual norm 1.532976740154e-03 
- 14 KSP Component U,V,W,P residual norm [ 1.644430363123e-07, 5.605558778513e-07, 3.901279303159e-08, 4.231349340141e-05 ]
+      0 KSP Residual norm 0.287733 
+      1 KSP Residual norm 0.00703561 
+      2 KSP Residual norm 0.00452598 
+      3 KSP Residual norm 0.00153298 
+   14 KSP Residual norm 4.23175e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.218653200420e-01 
-      1 KSP Residual norm 2.775208941648e-03 
-      2 KSP Residual norm 1.446143579749e-03 
- 15 KSP Component U,V,W,P residual norm [ 1.294767675888e-07, 3.023515722485e-07, 1.231495348298e-07, 2.552264723357e-05 ]
+      0 KSP Residual norm 0.221865 
+      1 KSP Residual norm 0.00277521 
+      2 KSP Residual norm 0.00144614 
+   15 KSP Residual norm 2.55251e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.536996064707e-01 
-      1 KSP Residual norm 5.154851782778e-03 
-      2 KSP Residual norm 3.270766467560e-03 
- 16 KSP Component U,V,W,P residual norm [ 6.451690136611e-08, 1.037451432440e-07, 2.750899061125e-08, 1.466225472425e-05 ]
+      0 KSP Residual norm 0.3537 
+      1 KSP Residual norm 0.00515485 
+      2 KSP Residual norm 0.00327077 
+   16 KSP Residual norm 1.46628e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.535530579819e-01 
-      1 KSP Residual norm 6.133131002434e-03 
-      2 KSP Residual norm 3.974964320842e-03 
-      3 KSP Residual norm 1.340263377869e-03 
- 17 KSP Component U,V,W,P residual norm [ 5.003739815434e-08, 4.704426362242e-08, 3.488035004488e-08, 7.836406688851e-06 ]
+      0 KSP Residual norm 0.353553 
+      1 KSP Residual norm 0.00613313 
+      2 KSP Residual norm 0.00397496 
+      3 KSP Residual norm 0.00134026 
+   17 KSP Residual norm 7.83679e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.235472248065e-01 
-      1 KSP Residual norm 5.187770097366e-03 
-      2 KSP Residual norm 2.878003455431e-03 
- 18 KSP Component U,V,W,P residual norm [ 1.779107716548e-08, 3.313153735702e-08, 2.153173508264e-08, 4.217037540387e-06 ]
+      0 KSP Residual norm 0.323547 
+      1 KSP Residual norm 0.00518777 
+      2 KSP Residual norm 0.002878 
+   18 KSP Residual norm 4.21726e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.269912254000e-01 
-      1 KSP Residual norm 5.896130850521e-03 
-      2 KSP Residual norm 2.718991351731e-03 
- 19 KSP Component U,V,W,P residual norm [ 1.536922408475e-08, 2.697465093736e-08, 1.631765947134e-08, 2.875575032175e-06 ]
+      0 KSP Residual norm 0.326991 
+      1 KSP Residual norm 0.00589613 
+      2 KSP Residual norm 0.00271899 
+   19 KSP Residual norm 2.87579e-06 
   Linear solve converged due to CONVERGED_RTOL iterations 19
 SNES Object: 1 MPI processes
   type: ksponly
@@ -605,12 +603,12 @@ SNES Object: 1 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
           (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
           (1,1) : prefix="fieldsplit_p_", type=seqsbaij, rows=2048, cols=2048 
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 6.08e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.32e-04 (sec)
 [[ModelOutput_ViscousSinker]]
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 1.80e-03 (sec) 
-pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 2.36e-03 (sec) 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 2.08e-03 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 1.98e-03 (sec) 
   TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 7.9143e-02 [accepted] | ==>> dt used = 7.9143e-02 |
   TimeStep control(StkSurfaceCourant): | current = 7.9143e-02 : trial = 1.0000e+32 | ==>> dt used = 7.9143e-02 |
   timestep[] dt_courant = 7.9143e-02 

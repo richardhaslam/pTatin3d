@@ -9,11 +9,13 @@
 ##
 ## =============================================================== 
 #PETSc Option Table entries:
+-stokes_ksp_monitor 0
+-ptatin_driver_write_icbc
 -A11_operator_type 2,2,0
 -dau_nlevels 3
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
--fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_monitor_short
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
 -fieldsplit_u_mg_coarse_pc_type lu
@@ -26,6 +28,7 @@
 -ksp_converged_reason
 -ksp_rtol 1.0e-3
 -ksp_type fgmres
+-ksp_monitor_short
 -model_viscous_sinker_eta0 1.0e-3
 -mx 8
 -my 8
