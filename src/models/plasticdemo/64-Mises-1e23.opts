@@ -21,9 +21,9 @@
 -fieldsplit_u_ksp_converged_reason
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
--fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
+#-fieldsplit_u_mg_coarse_pc_factor_mat_solver_package umfpack
 -fieldsplit_u_mg_coarse_pc_type lu
--fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
+#-fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
 -fieldsplit_u_mg_levels_ksp_max_it 1
 -fieldsplit_u_mg_levels_ksp_type fgmres
 -fieldsplit_u_mg_levels_pc_type jacobi
@@ -32,7 +32,9 @@
 -ksp_type fgmres
 -log_summary
 -mat_eta0_1 1.0e23
+
 -mat_plastic_type_1 1
+
 -model_charc_eta 1.0e24
 -monitor_stages
 -mp_layout 2
@@ -43,7 +45,7 @@
 -nonlinear_driver_v1
 -nsteps 0
 -output_path mspieg-64-Mises-1e23
--pc_fieldsplit_real_diagonal
+#-pc_fieldsplit_real_diagonal
 -pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
 -pc_type fieldsplit
@@ -60,8 +62,19 @@
 -snes_rtol 1.0e-5
 -snes_type newtonls
 -stk_velocity_dm_mat_type aij
--stk_velocity_da_refine_hierarchy_z 1,1,1
--stokes_snes_monitor_F_paraview
--stokes_snes_monitor_X_paraview
--view_projected_marker_fields
+-stk_velocity_da_refine_hierarchy_z 1,1
+#-stokes_snes_monitor_F_paraview
+#-stokes_snes_monitor_X_paraview
+#-view_projected_marker_fields
+
+#-pc_use_amat
+#-pc_fieldsplit_diag_use_amat 1
+
+-snes_atol 1.0e-8
+-snes_converged_reason
+-snes_ksp_ew
+-snes_ksp_ew_rtol0 1.0e-2
+-snes_max_it 1000
+-snes_max_linear_solve_fail 100000
+
 #End of PETSc Option Table entries
