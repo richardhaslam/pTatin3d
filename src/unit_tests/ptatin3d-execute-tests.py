@@ -33,6 +33,32 @@ def makedir(dirname):
 			pass
 		else: raise
 
+# Determine MPIEXEC
+def determinempilaunchcommand():
+	launch_cmd = None
+
+	if os.environ.get('PETSC_DIR') == None:
+		print('-- Warning: Environment variable PETSC_DIR is not set => all parallel tests will be ignored')
+		return(launch_cmd)
+
+	loc_petsc_var = os.path.join( os.environ['PETSC_DIR'] , os.environ['PETSC_ARCH'] , 'conf' , 'petscvariables' )
+	#print(loc_petsc_var)
+
+	file = open( loc_petsc_var, 'r' )
+	for line in file:
+		#Look for "MPIEXEC = " in petscvariables
+		x = line.find('MPIEXEC =')
+		if x != -1:
+			broken_line = line.split()
+			#print(broken_line)
+			launch_cmd = broken_line[2]
+			break
+	file.close()
+	if launch_cmd == '':
+		exit('-- Error: Failed to determine how to launch parallel job --')
+	
+	return(launch_cmd)
+	
 #
 # Test definitions
 #
@@ -120,6 +146,29 @@ def test03c():
 	print('---- Unix diff with expected file:',efile)
 	os.system('diff ' + ofile+'.strip expected/expected.strip') 
 
+# 3c-parallel/ Linear solve using MF,ASM,Galerkin and user specified level and direction dependent coarsening 
+def test03cp(launcher):
+	test_name = 'test03cp'
+	ofile     = './output/'   + test_name + '.output'
+	efile     = './expected/' + test_name + '.expected'
+	optsfile  = './input/'    + test_name + '.opts'
+	ranks     = 8
+	print('--------------------------------------------------------')
+	print('-- Performing test:' , test_name , '[ processors = ', ranks ,']')
+
+	space = ' '
+	joblauncher = space.join( [launcher , '-np' , str(ranks)] )
+	exec        = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , '>' , ofile] )
+	run         = space.join( [joblauncher , exec] )
+	os.system(run)
+
+	# Filter 
+	strip_keywords(ofile,ofile+'.strip')
+	strip_keywords(efile,'expected/expected.strip')
+	# DIFFERENCES
+	print('---- Unix diff with expected file:',efile)
+	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+
 
 
 # 4/ SNES - MFMG
@@ -148,6 +197,14 @@ def main():
 	ptatin_bin_dir = os.path.join('..', '..', os.environ['PETSC_ARCH'], 'bin')
 	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
 
+	# determine path to mpiexec/mpirun
+	launcher = determinempilaunchcommand()
+	if launcher == None:
+		has_mpi = False
+	else:
+		has_mpi = True
+
+
 	# create output directories
 	makedir('pt3dout')
 	makedir('output')
@@ -162,16 +219,27 @@ def main():
 		test03a()
 		test03b()
 		test03c()
+		if has_mpi == True:
+			test03cp(launcher)
+
 	elif test_name_target == 'test01':
 		test01()
+
 	elif test_name_target == 'test02':
 		test02()
+
 	elif test_name_target == 'test03a':
 		test03a()
+
 	elif test_name_target == 'test03b':
 		test03b()
+
 	elif test_name_target == 'test03c':
 		test03c()
+
+	elif test_name_target == 'test03cp':
+		if has_mpi == True:
+			test03cp(launcher)
 	else:
 		exit('-- Error: Unit test with name = "'+ test_name_target +'" was not found --')
 	
