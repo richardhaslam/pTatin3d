@@ -1053,9 +1053,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	/* configure for fieldsplit */
 	ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-    
-	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-    //	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+
+	ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);    
 	
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 	ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
@@ -1200,8 +1199,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 		
 		/* c) configure for fieldsplit */
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
 		
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 		ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
@@ -1538,8 +1536,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 		
 		/* c) configure for fieldsplit */
 		ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-		ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
-		//	ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr);
+		ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
 		
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
 		ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
