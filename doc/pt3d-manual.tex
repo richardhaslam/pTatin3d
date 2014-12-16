@@ -120,19 +120,20 @@ consult the directory
 where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system. The recommendation would be to copy the closest architecture file matching your system, e.g. \unix{cp machine.arch.XXX  ../makefile.arch}, then make an necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
 \\[8pt]
 %
-Once the \unix{makefile.arch} is adjusted for your operating system, type \shellcmd{make all}
+Once the \unix{makefile.arch} is adjusted for your operating system, \textit{change into the root directory of} {\ptat} and type \unix{make}.
+Do not attempt to run \unix{make} from the directory \unix{ptatin3d/src}
 \begin{itemize}
 	\item Compiling with a particular PETSc build
-	\shellcmd{make all PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
+	\shellcmd{make PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
 	\item Compiling with a particular compilation flags (C and Fortran)
-	\shellcmd{make all TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
+	\shellcmd{make TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
 \end{itemize}
 The following targets for make exist : \unix{all}, \unix{drivers}, \unix{tests}.
 The make system will create all objects, libraries and binary files in the following paths: \newline
 	\unix{ptatin3d/\$\{PETSC\_ARCH\}/obj} \newline
 	\unix{ptatin3d/\$\{PETSC\_ARCH\}/lib} \newline
 	\unix{ptatin3d/\$\{PETSC\_ARCH\}/bin} \newline
-The current build system allows you to conveniently compile different {\ptat} using different pets builds (e.g. a debug versus optimised).
+The current build system allows you to conveniently compile different {\ptat} using different PETSc builds (e.g. a debug PETSc build versus an optimised build).
 
 
 % ----------------------------------------------------------------------------------------------------
