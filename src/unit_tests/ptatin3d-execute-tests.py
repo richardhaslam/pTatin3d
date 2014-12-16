@@ -128,9 +128,19 @@ def test03c():
 
 # Execute all tests
 def main():
-	print('**')
-	print('** Executing pTatin3d unit tests')
-	print('**')
+    
+    
+	if len(sys.argv) == 1:
+		test_name_target = 'all'
+		print('**')
+		print('** Executing all pTatin3d unit tests')
+		print('**')
+	else:
+		test_name_target = sys.argv[1]
+		print('**')
+		print('** Executing pTatin3d unit test: ' + test_name_target)
+		print('**')
+
 
 	# set environment variable for bin directory
 	if os.environ.get('PETSC_ARCH') == None:
@@ -146,12 +156,25 @@ def main():
 	os.system('rm -f pt3dout/*')
 	os.system('rm -f output/*')
 
-	test01()
-	test02()
-	test03a()
-	test03b()
-	test03c()
-
+	if test_name_target == 'all':
+		test01()
+		test02()
+		test03a()
+		test03b()
+		test03c()
+	elif test_name_target == 'test01':
+		test01()
+	elif test_name_target == 'test02':
+		test02()
+	elif test_name_target == 'test03a':
+		test03a()
+	elif test_name_target == 'test03b':
+		test03b()
+	elif test_name_target == 'test03c':
+		test03c()
+	else:
+		exit('-- Error: Unit test with name = "'+ test_name_target +'" was not found --')
+	
 
 if __name__ == "__main__":
 	main()
