@@ -1,6 +1,6 @@
 {
   "GeometryObjectListFilter" : [
-    "fused_crust" , "Umantle"
+    "fused_crust" , "Lmantle"
   ],
 
   "GeometryObjectList": [
@@ -8,57 +8,57 @@
     {
       "name":     "Umantle",
       "type":     "GeomType_Box",
-      "centroid": [1.1, 2.2, 3.3],
-      "length":   [ 4.4, 5.5, 6.6 ]
+      "centroid": [1.1, 0.2, 1.3],
+      "length":   [ 1.4, 1.5, 1.6 ]
     },                 
 
     {
       "name":     "Mmantle",
       "type":     "GeomType_Cylinder",
-      "centroid": [1.1, 2.2, 3.3],
-      "radius":   0.1, 
-      "length":   5.5,
+      "centroid": [1.0, 1.2, 1.5],
+      "radius":   0.4,
+      "length":   1.5,
       "axis":     "X"
     },
   
     {
       "name": "Lmantle",
       "type": "GeomType_Sphere",
-      "origin": [1.1, 2.2, 3.3],
-      "radius": 4.4
+      "origin": [1.5, 1.5, 1.5],
+      "radius": 0.4
     },
 
     {
       "name":     "Ucrust",
       "type":     "GeomType_EllipticCylinder",
-      "centroid": [1.1, 2.2, 3.3],
-      "length":   10.0,
-      "radiusA":  0.1,
-      "radiusB":  0.2,
+      "centroid": [1.5, 1.2, 1.3],
+      "length":   1.0,
+      "radiusA":  0.6,
+      "radiusB":  0.8,
       "axis":     "Y"
     },
   
     {
       "name":     "Mcrust",
       "type":     "GeomType_Ellipsoid",
-      "centroid": [1.1, 2.2, 3.3],
-      "radiusA":  0.1,
-      "radiusB":  0.2,
-      "radiusC":  0.3
+      "centroid": [0.4, 0.2, 0.3],
+      "radiusA":  0.6,
+      "radiusB":  1.2,
+      "radiusC":  2.0
     },
 
     {
       "name":     "Lcrust",
       "type":     "GeomType_InfLayer",
-      "centroid": [1.1, 2.2, 3.3],
-      "thickness":   4.4,
+      "centroid": [1.1, 1.2, 1.3],
+      "thickness":   0.3,
       "axis":     "Z"
     },
 
     {
       "name":     "lithosphere",
       "type":     "GeomType_HalfSpace",
-      "centroid": [1.1, 2.2, 3.3],
+      "centroid": [1.1, 1.2, 0.7],
       "sign":     "+",
       "axis":     "x"
     },
@@ -66,7 +66,7 @@
      {
       "name":   "fused_crust",
       "type":   "GeomType_SetOperation",
-      "operator": "union",
+      "operator": "cup",
       "fields":   [ "UMcrust", "Lcrust" ]
     },
 

@@ -53,6 +53,39 @@ PetscErrorCode test_GeometryObjectParse_cJSON(void)
         ierr = GeometryObjectView(golist[k]);CHKERRQ(ierr);
     }
     
+    /*
+     Gnuplot test viewer
+    */
+    /*
+    {
+        FILE *fp;
+        int i,j,k,nn = 60;
+        double dx,pos[3];
+        
+        fp = fopen("geom.gp","w");
+        dx = 3.0/((double)nn-1.0);
+        for (k=0; k<nn; k++) {
+            for (j=0; j<nn; j++) {
+                for (i=0; i<nn; i++) {
+                    int inside;
+                    
+                    pos[0] = i * dx;
+                    pos[1] = j * dx;
+                    pos[2] = k * dx;
+                    
+                    ierr = GeometryObjectPointInside(golist[0],pos,&inside);CHKERRQ(ierr);
+                    
+                    if (inside == 1) {
+                        fprintf(fp,"%1.4e %1.4e %1.4e\n",pos[0],pos[1],pos[2]);
+                    }
+                }
+            }
+        }
+        
+        fclose(fp);
+    }
+    */
+     
     for (k=0; k<ngo; k++) {
         ierr = GeometryObjectDestroy(&golist[k]);CHKERRQ(ierr);
     }
