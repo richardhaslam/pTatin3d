@@ -1,0 +1,84 @@
+{
+  "GeometryObjectListFilter" : [
+    "fused_crust" , "Umantle"
+  ],
+
+  "GeometryObjectList": [
+                
+    {
+      "name":     "Umantle",
+      "type":     "GeomType_Box",
+      "centroid": [1.1, 2.2, 3.3],
+      "length":   [ 4.4, 5.5, 6.6 ]
+    },                 
+
+    {
+      "name":     "Mmantle",
+      "type":     "GeomType_Cylinder",
+      "centroid": [1.1, 2.2, 3.3],
+      "radius":   0.1, 
+      "length":   5.5,
+      "axis":     "X"
+    },
+  
+    {
+      "name": "Lmantle",
+      "type": "GeomType_Sphere",
+      "origin": [1.1, 2.2, 3.3],
+      "radius": 4.4
+    },
+
+    {
+      "name":     "Ucrust",
+      "type":     "GeomType_EllipticCylinder",
+      "centroid": [1.1, 2.2, 3.3],
+      "length":   10.0,
+      "radiusA":  0.1,
+      "radiusB":  0.2,
+      "axis":     "Y"
+    },
+  
+    {
+      "name":     "Mcrust",
+      "type":     "GeomType_Ellipsoid",
+      "centroid": [1.1, 2.2, 3.3],
+      "radiusA":  0.1,
+      "radiusB":  0.2,
+      "radiusC":  0.3
+    },
+
+    {
+      "name":     "Lcrust",
+      "type":     "GeomType_InfLayer",
+      "centroid": [1.1, 2.2, 3.3],
+      "thickness":   4.4,
+      "axis":     "Z"
+    },
+
+    {
+      "name":     "lithosphere",
+      "type":     "GeomType_HalfSpace",
+      "centroid": [1.1, 2.2, 3.3],
+      "sign":     "+",
+      "axis":     "x"
+    },
+
+     {
+      "name":   "fused_crust",
+      "type":   "GeomType_SetOperation",
+      "operator": "union",
+      "fields":   [ "UMcrust", "Lcrust" ]
+    },
+
+   
+    {
+      "name":   "UMcrust",
+      "type":   "GeomType_SetOperation",
+      "operator": "union",
+      "fields":   [ "Ucrust", "Mcrust" ]
+    }
+
+
+  ]
+}
+
