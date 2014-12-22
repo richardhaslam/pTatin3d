@@ -476,6 +476,11 @@ PetscErrorCode GeometryObjectParseDetermineAxis(const char axisname[],GeomRotate
     same = PETSC_FALSE; PetscStrcmp(axisname,"Z",&same); if (same) { *a = ROTATE_AXIS_Z; }
     same = PETSC_FALSE; PetscStrcmp(axisname,GeomRotateAxisNames[2],&same); if (same) { *a = ROTATE_AXIS_Z; }
 
+    if (*a == ROTATE_AXIS_UNDEFINED) {
+        SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"JSON.GeometryObject - unable to identify axis type from \"%s\"\n",axisname);
+    }
+
+    
     PetscFunctionReturn(0);
 }
 
@@ -495,6 +500,10 @@ PetscErrorCode GeometryObjectParseDetermineSign(const char name[],GeomSign *a)
     same = PETSC_FALSE; PetscStrcmp(name,"negative",&same); if (same) { *a = SIGN_NEGATIVE; }
     same = PETSC_FALSE; PetscStrcmp(name,GeomSignNames[1],&same); if (same) { *a = SIGN_NEGATIVE; }
     
+    if (*a == SIGN_UNDEFINED) {
+        SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"JSON.GeometryObject - unable to identify sign type from \"%s\"\n",name);
+    }
+    
     PetscFunctionReturn(0);
 }
 
@@ -504,15 +513,26 @@ PetscErrorCode GeometryObjectParseDetermineSetOperatorType(const char name[],Geo
 {
     PetscBool same;
     
-    *a = SIGN_UNDEFINED;
+    *a = GeomSet_Undefined;
     
-    same = PETSC_FALSE; PetscStrcmp(name,"+",&same); if (same) { *a = GeomSet_Union; }
-    same = PETSC_FALSE; PetscStrcmp(name,"positive",&same); if (same) { *a = GeomSet_Union; }
-    same = PETSC_FALSE; PetscStrcmp(name,GeomSignNames[0],&same); if (same) { *a = GeomSet_Union; }
+    same = PETSC_FALSE; PetscStrcmp(name,"union",&same); if (same) { *a = GeomSet_Union; }
+    same = PETSC_FALSE; PetscStrcmp(name,"Union",&same); if (same) { *a = GeomSet_Union; }
+    same = PETSC_FALSE; PetscStrcmp(name,"cup",&same); if (same) { *a = GeomSet_Union; }
+    same = PETSC_FALSE; PetscStrcmp(name,GeomTypeSetOperatorNames[(int)GeomSet_Union],&same); if (same) { *a = GeomSet_Union; }
+
+    same = PETSC_FALSE; PetscStrcmp(name,"itersection",&same); if (same) { *a = GeomSet_Intersection; }
+    same = PETSC_FALSE; PetscStrcmp(name,"Intersection",&same); if (same) { *a = GeomSet_Intersection; }
+    same = PETSC_FALSE; PetscStrcmp(name,"cap",&same); if (same) { *a = GeomSet_Intersection; }
+    same = PETSC_FALSE; PetscStrcmp(name,GeomTypeSetOperatorNames[(int)GeomSet_Intersection],&same); if (same) { *a = GeomSet_Intersection; }
+
+    same = PETSC_FALSE; PetscStrcmp(name,"complement",&same); if (same) { *a = GeomSet_Complement; }
+    same = PETSC_FALSE; PetscStrcmp(name,"Complement",&same); if (same) { *a = GeomSet_Complement; }
+    same = PETSC_FALSE; PetscStrcmp(name,"comp",&same); if (same) { *a = GeomSet_Complement; }
+    same = PETSC_FALSE; PetscStrcmp(name,GeomTypeSetOperatorNames[(int)GeomSet_Complement],&same); if (same) { *a = GeomSet_Complement; }
     
-    same = PETSC_FALSE; PetscStrcmp(name,"-",&same); if (same) { *a = SIGN_NEGATIVE; }
-    same = PETSC_FALSE; PetscStrcmp(name,"negative",&same); if (same) { *a = SIGN_NEGATIVE; }
-    same = PETSC_FALSE; PetscStrcmp(name,GeomSignNames[1],&same); if (same) { *a = SIGN_NEGATIVE; }
+    if (*a == GeomSet_Undefined) {
+        SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"JSON.GeometryObject - unable to identify set operator type from \"%s\"\n",name);
+    }
     
     PetscFunctionReturn(0);
 }
