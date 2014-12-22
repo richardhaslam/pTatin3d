@@ -66,6 +66,12 @@ const char *GeomRotateAxisNames[] = {
 	0
 };
 
+const char *GeomSignNames[] = {
+	"GeomSign_Positive",
+	"GeomSign_Negative",
+	0
+};
+
 void PointRotate(double xin[],GeomRotateAxis axis,double angle,double xout[]);
 void PointBackRotate(double xin[],GeomRotateAxis axis,double angle,double xout[]);
 void PointTranslate(double xin[],double shift[],double xout[]);

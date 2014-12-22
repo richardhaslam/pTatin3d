@@ -69,6 +69,7 @@ typedef enum {
 	SIGN_NEGATIVE = 1,
 	SIGN_UNDEFINED
 } GeomSign;
+extern const char *GeomSignNames[];
 
 
 #define GEOM_SHAPE_MAX_ROTATIONS 25
