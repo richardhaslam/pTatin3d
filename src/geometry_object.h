@@ -145,6 +145,7 @@ struct _p_GeomTypeHalfSpace {
 */
 PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G);
 PetscErrorCode GeometryObjectDestroy(GeometryObject *G);
+PetscErrorCode GeometryObjectView(GeometryObject G);
 
 PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double angle);
 PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *inside);
