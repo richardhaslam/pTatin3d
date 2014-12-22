@@ -48,6 +48,7 @@ const char *GeomTypeNames[] = {
 	"GeomType_Ellipsoid",
 	"GeomType_InfLayer",
 	"GeomType_SetOperation",
+	"GeomType_HalfSpace",
 	0
 };
 
