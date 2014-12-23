@@ -121,7 +121,6 @@ PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,Geometry
     
     cJSON_Delete(jfile);
     
-    
     PetscFunctionReturn(0);
 }
 
@@ -169,6 +168,7 @@ void cJSON_GetObjectValue_bool(cJSON *cj,const char name[],int *found,int *val)
         *found = cJSON_False;
         return;
     }
+    
     *val = obj->type;
 }
 
@@ -183,6 +183,7 @@ void cJSON_GetObjectValue_int(cJSON *cj,const char name[],int *found,int *val)
         *found = cJSON_False;
         return;
     }
+    
     *val = obj->valueint;
 }
 
@@ -206,6 +207,7 @@ void cJSON_GetObjectValue_intarray(cJSON *cj,const char name[],int *found,int *n
         list_entry = cJSON_GetArrayItem(list,k);
         vals[k] = list_entry->valueint;
     }
+    
     *nv = len;
 }
 
@@ -220,6 +222,7 @@ void cJSON_GetObjectValue_double(cJSON *cj,const char name[],int *found,double *
         *found = cJSON_False;
         return;
     }
+    
     *val = obj->valuedouble;
 }
 
@@ -243,6 +246,7 @@ void cJSON_GetObjectValue_doublearray(cJSON *cj,const char name[],int *found,int
         list_entry = cJSON_GetArrayItem(list,k);
         vals[k] = list_entry->valuedouble;
     }
+    
     *nv = len;
 }
 
@@ -378,7 +382,6 @@ GeometryObjectSetOperators_Scan:
         if ( (g1 != NULL) && (g2 != NULL) ) {
             char                *setopname;
             GeometryObject      G;
-            double              dummy[] = { 0.0, 0.0, 0.0 };
             GeomSetOperatorType setoptype;
             
             /* fetch operator */
@@ -391,7 +394,7 @@ GeometryObjectSetOperators_Scan:
             PetscPrintf(PETSC_COMM_WORLD,"   ... generatoring geom object\n");
             ierr = GeometryObjectCreate(name,&G);CHKERRQ(ierr);
             ierr = GeometryObjectParseDetermineSetOperatorType(setopname,&setoptype);CHKERRQ(ierr);
-            ierr = GeometryObjectSetType_SetOperation(G,setoptype,dummy,g1,g2);CHKERRQ(ierr);
+            ierr = GeometryObjectSetType_SetOperation(G,setoptype,NULL,g1,g2);CHKERRQ(ierr);
             
             tmp = realloc(primitive_list,sizeof(GeometryObject)*(np+1));
             primitive_list = tmp;
@@ -541,10 +544,9 @@ PetscErrorCode GeometryObjectParseDetermineSetOperatorType(const char name[],Geo
 #define __FUNCT__ "GeometryObjectPrimitiveLoadFromJSON"
 PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
 {
-    char *type;
-    char *name;
-    GeomType gtype;
-    int i,found;
+    char           *type,*name;
+    GeomType       gtype;
+    int            i,found;
     GeometryObject go;
     PetscErrorCode ierr;
     
@@ -569,7 +571,6 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
     }
     
     if (gtype == GeomType_SetOperation) {
-        printf("NNNNN\n");
         *g = NULL;
         PetscFunctionReturn(0);
     }
@@ -837,6 +838,50 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
             break;
     }
 
+    {
+        cJSON *cj_rotation = NULL;
+        
+        cj_rotation = cJSON_GetObjectItem(obj,"rotations");
+        if (cj_rotation) {
+            cJSON  *cj_r_angle = NULL;
+            cJSON  *cj_r_axis = NULL;
+            int    k,nag,nax;
+            double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
+            GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
+            
+            cj_r_angle = cJSON_GetObjectItem(cj_rotation,"angle");
+            cj_r_axis  = cJSON_GetObjectItem(cj_rotation,"axis");
+            
+            if (!cj_r_angle) {
+                SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"JSON.GeometryObject.rotations: Requires field \"angle\"");
+            }
+            if (!cj_r_axis) {
+                SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"JSON.GeometryObject.rotations: Requires field \"axis\"");
+            }
+
+            nag = cJSON_GetArraySize(cj_r_angle);
+            nax = cJSON_GetArraySize(cj_r_axis);
+            if (nag != nax) {
+                SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"JSON.GeometryObject.rotations: Requires fields \"angle\" and \"axis\" be of the same length");
+            }
+            
+            cJSON_GetObjectValue_doublearray(cj_rotation,"angle",&found,&nag,rotation_angle);
+            for (k=0; k<nax; k++) {
+                char *axisname;
+                
+                axisname = cJSON_GetArrayItem(cj_r_axis,k)->valuestring;
+                ierr = GeometryObjectParseDetermineAxis(axisname,&rotation_axis[k]);CHKERRQ(ierr);
+            }
+            
+            /* set the rotations parameters in the geom object */
+            go->n_rotations = nag;
+            for (k=0; k<nag; k++) {
+                go->rotation_angle[k] = rotation_angle[k];
+                go->rotation_axis[k]  = rotation_axis[k];
+            }
+        }
+    }
+    
     *g = go;
     
     PetscFunctionReturn(0);
