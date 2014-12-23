@@ -81,7 +81,6 @@ PetscErrorCode test_GeometryObjectParse_cJSON(void)
                 }
             }
         }
-        
         fclose(fp);
     }
     */

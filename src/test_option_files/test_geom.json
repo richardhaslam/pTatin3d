@@ -1,6 +1,6 @@
 {
   "GeometryObjectListFilter" : [
-    "fused_crust" , "Lmantle"
+    "Mcrust" , "fused_crust" , "Lmantle"
   ],
 
   "GeometryObjectList": [
@@ -25,7 +25,12 @@
       "name": "Lmantle",
       "type": "GeomType_Sphere",
       "origin": [1.5, 1.5, 1.5],
-      "radius": 0.4
+      "radius": 0.4,
+      "rotations" : {
+        "unit":  "degree",
+        "angle": [ 13.3, 14.4, 17.7 ],
+        "axis":  [ "x", "Y", "ROTATE_AXIS_Z" ]
+      }
     },
 
     {
@@ -41,10 +46,15 @@
     {
       "name":     "Mcrust",
       "type":     "GeomType_Ellipsoid",
-      "centroid": [0.4, 0.2, 0.3],
-      "radiusA":  0.6,
-      "radiusB":  1.2,
-      "radiusC":  2.0
+      "centroid": [1.5, 1.5, 1.5],
+      "radiusA":  1.0,
+      "radiusB":  0.5,
+      "radiusC":  0.5,
+         "rotations" : {
+         "unit": "deg",
+         "angle": [ 30.0, 45.0, 90.0 ],
+         "axis":  [ "z", "X", "y" ]
+         }
     },
 
     {
