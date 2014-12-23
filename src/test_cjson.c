@@ -93,6 +93,61 @@ PetscErrorCode test_GeometryObjectParse_cJSON(void)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "test_GeometryObjectParse2_cJSON"
+PetscErrorCode test_GeometryObjectParse2_cJSON(void)
+{
+	PetscErrorCode ierr;
+    PetscInt k,ngo;
+    GeometryObject *golist;
+    FILE *fp;
+    PetscLogDouble t0,t1;
+    
+    PetscPrintf(PETSC_COMM_WORLD,"** test_GeometryObjectParse2_cJSON **\n");
+
+    ngo = 100;
+    PetscOptionsGetInt(NULL,"-ngo",&ngo,NULL);
+    fp = fopen("fat_test_geom.json","w");
+    fprintf(fp,"{\n");
+    
+    fprintf(fp,"\"GeometryObjectList\": [\n");
+    for (k=0; k<ngo; k++) {
+        
+        fprintf(fp,"{\n");
+        fprintf(fp,"    \"name\":     \"Ucrust\",\n");
+        fprintf(fp,"    \"type\":     \"GeomType_EllipticCylinder\",\n");
+        fprintf(fp,"    \"centroid\": [1.5, 1.2, 1.3],\n");
+        fprintf(fp,"    \"length\":   1.0,\n");
+        fprintf(fp,"    \"radiusA\":  0.6,\n");
+        fprintf(fp,"    \"radiusB\":  0.8,\n");
+        fprintf(fp,"    \"axis\":     \"Y\"\n");
+        if (k <= ngo-2) {
+            fprintf(fp,"},\n");
+        } else {
+            fprintf(fp,"}\n");
+        }
+    }
+    
+    fprintf(fp,"]\n");
+    
+    fprintf(fp,"}\n");
+    fclose(fp);
+    
+    PetscTime(&t0);
+    ierr = GeometryObjectLoadJSON("fat_test_geom.json",&ngo,&golist);CHKERRQ(ierr);
+    PetscTime(&t1);
+    PetscPrintf(PETSC_COMM_WORLD,"Time to parse %D geom objects: %1.4e (sec)\n",ngo,t1-t0);
+    
+    
+    for (k=0; k<ngo; k++) {
+        ierr = GeometryObjectDestroy(&golist[k]);CHKERRQ(ierr);
+    }
+    free(golist);
+    
+	PetscFunctionReturn(0);
+}
+
+
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
@@ -102,6 +157,7 @@ int main(int argc,char **argv)
     //for (int i=0; i<100000000; i++) {
         ierr = test_GeometryObjectParse_cJSON();CHKERRQ(ierr);
 	//}
+    //ierr = test_GeometryObjectParse2_cJSON();CHKERRQ(ierr);
     
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
