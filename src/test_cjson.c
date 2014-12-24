@@ -114,7 +114,7 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
     for (k=0; k<ngo; k++) {
         
         fprintf(fp,"{\n");
-        fprintf(fp,"    \"name\":     \"Ucrust\",\n");
+        fprintf(fp,"    \"name\":     \"Ucrust-%d\",\n",k+1);
         fprintf(fp,"    \"type\":     \"GeomType_EllipticCylinder\",\n");
         fprintf(fp,"    \"centroid\": [1.5, 1.2, 1.3],\n");
         fprintf(fp,"    \"length\":   1.0,\n");
@@ -151,13 +151,31 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;
-	
+	PetscInt       i,test_id,nloops;
+    
 	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 
-    //for (int i=0; i<100000000; i++) {
-        ierr = test_GeometryObjectParse_cJSON();CHKERRQ(ierr);
-	//}
-    //ierr = test_GeometryObjectParse2_cJSON();CHKERRQ(ierr);
+    test_id = 1;
+    PetscOptionsGetInt(NULL,"-test_id",&test_id,NULL);
+
+    switch (test_id) {
+
+        case 1:
+            nloops = 1;
+            PetscOptionsGetInt(NULL,"-nloops",&nloops,NULL);
+            for (i=0; i<nloops; i++) {
+                ierr = test_GeometryObjectParse_cJSON();CHKERRQ(ierr);
+            }
+            break;
+
+        case 2:
+            ierr = test_GeometryObjectParse2_cJSON();CHKERRQ(ierr);
+            break;
+            
+        default:
+            ierr = test_GeometryObjectParse_cJSON();CHKERRQ(ierr);
+            break;
+    }
     
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;
