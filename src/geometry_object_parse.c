@@ -391,7 +391,10 @@ GeometryObjectSetOperators_Scan:
         char           *name,*name1,*name2;
         GeometryObject g1,g2;
         
-        if (constructed_list[k]) { continue; }
+        if (constructed_list[k]) {
+            gobj_k = cJSON_GetArrayItemNext(gobj_k);
+            continue;
+        }
         
         
         /* object is a set operation */
