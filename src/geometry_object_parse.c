@@ -124,6 +124,38 @@ PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,Geometry
     PetscFunctionReturn(0);
 }
 
+/*
+ If we only want to go the next item in the list (in sequence),
+ it is pointless to use the function cJSON_GetArrayItem().
+ This function traverses the entire tree from the root upon each call.
+ 
+ Usage:
+ gobject = cJSON_GetObjectItem(jfile,"GeometryObjectList");
+ ngobj = cJSON_GetArraySize(gobject);
+ 
+ gobj_k = cJSON_GetArrayItemRoot(gobject);
+ for (k=0; k<ngobj; k++) {
+   gobj_k = cJSON_GetArrayItemNext(gobj_k);
+ }
+*/
+cJSON* cJSON_GetArrayItemRoot(cJSON *gobject)
+{
+    if (gobject) {
+        return cJSON_GetArrayItem(gobject,0);
+    } else {
+        return NULL;
+    }
+}
+
+cJSON* cJSON_GetArrayItemNext(cJSON *gobj_k)
+{
+    if (gobj_k) {
+        return gobj_k->next;
+    } else {
+        return NULL;
+    }
+}
+
 void cJSON_FileView(const char filename[],cJSON **jf)
 {
     FILE  *fp = NULL;
@@ -310,13 +342,15 @@ PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObje
 
     ngobj = cJSON_GetArraySize(gobject);
     PetscMalloc(sizeof(PetscBool)*ngobj,&constructed_list);
+
+    gobj_k = cJSON_GetArrayItemRoot(gobject);
     
     for (k=0; k<ngobj; k++) {
         PetscBool      isset;
         GeometryObject G;
 
         constructed_list[k] = PETSC_FALSE;
-        gobj_k = cJSON_GetArrayItem(gobject,k);
+        //gobj_k = cJSON_GetArrayItem(gobject,k);
 
         ierr = GeometryObjectQueryFromJSONIsSetOperation(gobj_k,&isset);CHKERRQ(ierr);
         if (isset) { continue; }
@@ -326,7 +360,7 @@ PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObje
         
         /* re-size list and insert G */
         if (G != NULL) {
-            PetscPrintf(PETSC_COMM_WORLD,"   Parsed: %s (%s)\n",G->name,GeomTypeNames[(int)(G->type)]);
+            //PetscPrintf(PETSC_COMM_WORLD,"   Parsed: %s (%s)\n",G->name,GeomTypeNames[(int)(G->type)]);
             
             tmp = realloc(primitive_list,sizeof(GeometryObject)*(np+1));
             primitive_list = tmp;
@@ -336,12 +370,21 @@ PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObje
 
             constructed_list[k] = PETSC_TRUE;
         }
+
+        /*
+         If we only want to go the next item in the list (in sequence),
+         it is pointless to use the function cJSON_GetArrayItem().
+         This function traverses the entire tree from the root upon each call.
+        */
+        //gobj_k = gobj_k->next;
+        gobj_k = cJSON_GetArrayItemNext(gobj_k);
     }
     
     recursion = 0;
 GeometryObjectSetOperators_Scan:
     PetscPrintf(PETSC_COMM_WORLD,"...Processing primitive set operator geometry objects [recursive level %d]\n",recursion);
     
+    gobj_k = cJSON_GetArrayItemRoot(gobject);
     missing_objects = 0;
     for (k=0; k<ngobj; k++) {
         cJSON          *cjl_AB;
@@ -352,7 +395,7 @@ GeometryObjectSetOperators_Scan:
         
         
         /* object is a set operation */
-        gobj_k = cJSON_GetArrayItem(gobject,k);
+        //gobj_k = cJSON_GetArrayItem(gobject,k);
 
         /* fetch name */
         cJSON_GetObjectValue_char(gobj_k,"name",&found,&name);
@@ -411,6 +454,14 @@ GeometryObjectSetOperators_Scan:
             else    {PetscPrintf(PETSC_COMM_WORLD,"      - \"%s\" Not found\n",name1);}
             missing_objects++;
         }
+        
+        /* 
+         If we only want to go the next item in the list (in sequence), 
+         it is pointless to use the function cJSON_GetArrayItem(). 
+         This function traverses the entire tree from the root upon each call.
+        */
+        //gobj_k = gobj_k->next;
+        gobj_k = cJSON_GetArrayItemNext(gobj_k);
     }
     if (missing_objects != 0) {
         if (recursion < 20) {

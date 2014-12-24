@@ -46,6 +46,8 @@ void cJSON_GetObjectValue_intarray(cJSON *cj,const char name[],int *found,int *n
 void cJSON_GetObjectValue_double(cJSON *cj,const char name[],int *found,double *val);
 void cJSON_GetObjectValue_doublearray(cJSON *cj,const char name[],int *found,int *nv,double vals[]);
 void cJSON_GetObjectValue_char(cJSON *cj,const char name[],int *found,char **val);
+cJSON* cJSON_GetArrayItemRoot(cJSON *gobject);
+cJSON* cJSON_GetArrayItemNext(cJSON *gobj_k);
 
 PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,GeometryObject **golist);
 PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObject **_list);
