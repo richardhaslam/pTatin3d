@@ -978,8 +978,6 @@ PetscErrorCode pTatinModelRegister_Subduction_Initiation2d(void)
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
 	/* Allocate memory for the data structure for this model */
 	ierr = PetscMalloc(sizeof(ModelSubduction_Initiation2dCtx),&data);CHKERRQ(ierr);
 	ierr = PetscMemzero(data,sizeof(ModelSubduction_Initiation2dCtx));CHKERRQ(ierr);
