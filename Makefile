@@ -74,6 +74,7 @@ releaseinfo:
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
 	$(shell python tools/ptatin3d-generate-git-info.py)
 	$(shell mv ptatin_version_info.h src/ptatin_version_info.h)
+	$(shell git update-index --assume-unchanged src/ptatin_version_info.h)
 
 externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT FILES ———————
