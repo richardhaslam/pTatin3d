@@ -49,7 +49,7 @@ else				# Show the full command line
 endif
 
 .PHONY: libptatin3d libptatin3dmodels externals tests drivers
-all : tests drivers
+all : info tests drivers
 
 libptatin3d = $(LIBDIR)/libptatin3d.$(AR_LIB_SUFFIX)
 libptatin3d : $(libptatin3d)
@@ -59,6 +59,21 @@ $(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(
 libptatin3dmodels = $(LIBDIR)/libptatin3dmodels.$(AR_LIB_SUFFIX)
 libptatin3dmodels : $(libptatin3dmodels)
 $(libptatin3dmodels) : $(libptatin3dmodels-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3dmodels-y.f:%.f90=$(OBJDIR)/%.o)
+
+info:
+	-@echo "—————————————————————————————————————————————————————————————————"
+	-@echo " pTatin3d"
+	-@echo "    git url: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "    update version information by running \"make releaseinfo\""
+	-@echo "—————————————————————————————————————————————————————————————————"
+
+releaseinfo:
+	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
+	-@echo "  Updating the contents of src/ptatin_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "  pTatin3D version info appears in: stdout; ptat3d log; generated PETSc summary/options files"
+	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
+	$(shell python tools/ptatin3d-generate-git-info.py)
+	$(shell mv ptatin_version_info.h src/ptatin_version_info.h)
 
 externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT FILES ———————

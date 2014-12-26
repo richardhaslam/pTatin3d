@@ -36,7 +36,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "ptatin_svn_info.h"
+#include "ptatin_version_info.h"
 #include "ptatin3d.h"
 
 #define STR_VALUE(arg)      #arg
@@ -84,12 +84,15 @@ PetscErrorCode pTatinWritePreamble(void)
 	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
 	PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
+	PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jedbrown@mcs.anl.gov)            \n");
+	PetscPrintf(PETSC_COMM_WORLD,"**\n");
 	
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_SVN_REPO_UUID);
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_SVN_REPO_REV);
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_SVN_REPO_LAST_CHANGE);
-	
+#if(PTATIN_VERSION_INFO == 1)
+	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REPO);
+	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
+	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_LOG);
+#endif
+    
 #ifdef COMPFLAGS
 	#define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
 	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
