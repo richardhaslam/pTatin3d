@@ -86,11 +86,11 @@ def pTatin3d_GitFoundDefault_WriteInfoHeader():
     hf.write(gitstr + "\n")
     
     # ---------------------------------------------------------------------
-    gitstr = "#define PTATIN_VERSION_CNTR_REVISION \"commit hash: [out-of-date] Execute \"make releaseinfo\" to update to the most recent revision\""
+    gitstr = "#define PTATIN_VERSION_CNTR_REVISION \"commit hash: [out-of-date] Execute " + '\\"make releaseinfo\\"' + " to update to the most recent revision\""
     hf.write(gitstr + "\n")
     
     # ---------------------------------------------------------------------
-    gitstr = "#define PTATIN_VERSION_CNTR_LOG \"log: [out-of-date] Execute \"make releaseinfo\" to update to the most recent revision\""
+    gitstr = "#define PTATIN_VERSION_CNTR_LOG \"log: [out-of-date] Execute " + '\\"make releaseinfo\\"' + " to update to the most recent revision\""
     hf.write(gitstr + "\n")
     
     hf.write("\n")
