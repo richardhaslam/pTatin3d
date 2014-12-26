@@ -71,7 +71,7 @@ def pTatin3d_GitFoundDefault_WriteInfoHeader():
     
     spacer = " "
     
-    hf = open("ptatin_version_info.h",'w')
+    hf = open("ptatin_version_info_default.h",'w')
     hf.write("\n")
     hf.write("#ifndef __ptatin_version_info_h__\n")
     hf.write("#define __ptatin_version_info_h__\n")
