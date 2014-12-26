@@ -36,22 +36,23 @@
 #define __geometry_object_h__
 
 typedef enum { 
-	GeomType_Box=0, 
-	GeomType_Cylinder, 
-	GeomType_Sphere,
-	GeomType_EllipticCylinder,
-	GeomType_Ellipsoid,
-	GeomType_InfLayer,
-	GeomType_SetOperation,
-	GeomType_HalfSpace,
+	GeomType_Box              = 0,
+	GeomType_Cylinder         = 1,
+	GeomType_Sphere           = 2,
+	GeomType_EllipticCylinder = 3,
+	GeomType_Ellipsoid        = 4,
+	GeomType_InfLayer         = 5,
+	GeomType_SetOperation     = 6,
+	GeomType_HalfSpace        = 7,
 	GeomType_NULL
 } GeomType;
 extern const char *GeomTypeNames[];
 
 typedef enum { 
-	GeomSet_Union=0, 
-	GeomSet_Intersection, 
-	GeomSet_Complement,
+	GeomSet_Union        = 0,
+	GeomSet_Intersection = 1,
+	GeomSet_Complement   = 2,
+	GeomSet_Undefined,
 } GeomSetOperatorType;
 extern const char *GeomTypeSetOperatorNames[];
 
@@ -68,6 +69,7 @@ typedef enum {
 	SIGN_NEGATIVE = 1,
 	SIGN_UNDEFINED
 } GeomSign;
+extern const char *GeomSignNames[];
 
 
 #define GEOM_SHAPE_MAX_ROTATIONS 25
@@ -143,6 +145,7 @@ struct _p_GeomTypeHalfSpace {
 */
 PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G);
 PetscErrorCode GeometryObjectDestroy(GeometryObject *G);
+PetscErrorCode GeometryObjectView(GeometryObject G);
 
 PetscErrorCode GeometryObjectRotate(GeometryObject go,GeomRotateAxis dir,double angle);
 PetscErrorCode GeometryObjectPointInside(GeometryObject go,double pos[],int *inside);
