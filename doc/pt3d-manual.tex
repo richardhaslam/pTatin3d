@@ -5,6 +5,9 @@
 \setlength{\oddsidemargin}{5mm}											% Remove 'twosided' indentation
 \setlength{\evensidemargin}{5mm}
 
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
 \usepackage[english]{babel}
 \usepackage[protrusion=true,expansion=true]{microtype}	
 \usepackage{amsmath,amsfonts,amsthm,amssymb}
@@ -20,7 +23,7 @@
 \setcounter{secnumdepth}{3}
 
 % macros
-\newcommand{\ptat}{{{\sc pTatin3d}}}
+\newcommand{\ptat}{{{\sc pTatin3D}}}
 \newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\hspace{5mm}\footnotesize #1}\\}
 \newcommand{\unix}[1]{\texttt{\footnotesize #1}}
 
@@ -49,7 +52,7 @@
 	\title{	\normalsize \textsc{pTatin3D Manual} 	% Subtitle of the document
 	\\[2.0cm]									% 2cm spacing
 	\HRule{2pt} \\ [0.3cm]						% Upper rule
-	\LARGE \textbf{{pTatin3d User Guide}}			% Title
+	\LARGE \textbf{{pTatin3D User Guide}}			% Title
 	\HRule{2pt} \\ [0.5cm]						% Lower rule + 0.5cm spacing
 	\normalsize \today							% Todays date
 	}
@@ -96,16 +99,18 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 \newpage
 \section{Software Requirements}
 \begin{itemize}
-	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.5.}
-	\item libz (non essential)
-	\item git (non essential - used to obtain the source)
-	\item \href{www.paraview.org}{ParaView} (essential for visualizing simulation output)
-	\item Python 2.6-2.7 (to run the test suite)
+	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.5}
+	\item git (used to obtain the source)
+	\item Python 2.6-2.7 (non-essential: required to run the test suite)
+	\item \href{www.paraview.org}{ParaView} (non-essential: required for visualisation of simulation output)
+	\item libz (non essential: used for output file compression)
 \end{itemize}
 
-\section{Obtaining the Code}
-{\ptat} is available via git using the command
-\shellcmd{git clone git@bitbucket.org:jedbrown/ptatin3d.git}
+\section{Obtaining the Source}
+The source code for {\ptat} is hosted at \href{https://bitbucket.org}{BitBucket} using the Git version control system.
+Currently the repository is private. Upon gaining access to BitBucket, and the {\ptat} repository,
+the source code can be obtained using the following git command
+\shellcmd{git clone https://USERNAME@bitbucket.org/jedbrown/ptatin3d.git}
 
 \section{Installation}
 Upon successful installation of PETSc, switch into the source directory of {\ptat}
@@ -117,7 +122,7 @@ By default, the \unix{makefile.arch} provided for you is tailored for Mac OSX.
 If you are trying to install {\ptat} on another system,
 consult the directory
 \shellcmd{ptatin3d/src/machine.arch}
-where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system. The recommendation would be to copy the closest architecture file matching your system, e.g. \unix{cp machine.arch.XXX  ../makefile.arch}, then make an necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system. The recommendation would be to copy the closest architecture file matching your system, e.g. \unix{cp machine.arch.XXX  ../makefile.arch}, then make any necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
 \\[8pt]
 %
 Once the \unix{makefile.arch} is adjusted for your operating system, \textit{change into the root directory of} {\ptat} and type \unix{make}.
@@ -128,11 +133,21 @@ Do not attempt to run \unix{make} from the directory \unix{ptatin3d/src}
 	\item Compiling with a particular compilation flags (C and Fortran)
 	\shellcmd{make TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
 \end{itemize}
-The following targets for make exist : \unix{all}, \unix{drivers}, \unix{tests}.
-The make system will create all objects, libraries and binary files in the following paths: \newline
-	\unix{ptatin3d/\$\{PETSC\_ARCH\}/obj} \newline
-	\unix{ptatin3d/\$\{PETSC\_ARCH\}/lib} \newline
-	\unix{ptatin3d/\$\{PETSC\_ARCH\}/bin} \newline
+%\\[8pt]
+%
+The following targets for make exist : \unix{all}, \unix{drivers}, \unix{tests}, \unix{releaseinfo}.
+The target \unix{releaseinfo} will automatically update the contents of the file \unix{src/ptatin\_version\_info.h}.
+This file is updated to reflect the current revision information associated with the Git master branch. This information is
+propagated into log files and the output of {\ptat}.
+\\[8pt]
+%
+The make system will create all objects, libraries and binary files in the following paths:
+\begin{enumerate}
+\setlength\itemsep{0mm}
+	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/obj}
+	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/lib}
+	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/bin}
+\end{enumerate}
 The current build system allows you to conveniently compile different {\ptat} using different PETSc builds (e.g. a debug PETSc build versus an optimised build).
 
 
