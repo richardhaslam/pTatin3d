@@ -43,6 +43,7 @@
 #include <petscdm.h>
 
 #include "ptatin_init.h"
+#include "dmda_view_petscvtk.h"
 #include "dmda_update_coords.h"
 
 
@@ -50,43 +51,35 @@
 #define __FUNCT__ "test_DMDAUpdateGhostedCoordinates"
 PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscInt nz)
 {
-	PetscErrorCode ierr;
-	PetscReal x0,x1,y0,y1,z0,z1;
-	DM da;
-	Vec coords,x;
-	PetscViewer vv;
+    PetscErrorCode ierr;
+    PetscReal x0,x1,y0,y1,z0,z1;
+    DM da;
+    Vec coords;
 	
 	
-	PetscFunctionBegin;
+    PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
-	x0 = y0 = z0 = -1.0;
-	x1 = y1 = z1 = 1.0;
-	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
+    x0 = y0 = z0 = -1.0;
+    x1 = y1 = z1 =  1.0;
+    ierr = DMDASetUniformCoordinates(da,x0,x1,y0,y1,z0,z1);CHKERRQ(ierr);
 	
-	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
 
 //	ierr = VecScale(coords,10.0);CHKERRQ(ierr);
-	ierr = VecStrideScale(coords,0,10.0);CHKERRQ(ierr);
-	ierr = VecStrideScale(coords,1,20.0);CHKERRQ(ierr);
-	ierr = VecStrideScale(coords,2,30.0);CHKERRQ(ierr);
+    ierr = VecStrideScale(coords,0,10.0);CHKERRQ(ierr);
+    ierr = VecStrideScale(coords,1,20.0);CHKERRQ(ierr);
+    ierr = VecStrideScale(coords,2,30.0);CHKERRQ(ierr);
 
-	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+    ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 	
-	/* output */
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test1.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
-	
-	ierr = DMDestroy(&da);CHKERRQ(ierr);
-	
-  PetscFunctionReturn(0);
+    /* output */
+    ierr = DMDAViewPetscVTS(da,NULL,"test1.vts");CHKERRQ(ierr);
+
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
 }
 
 

@@ -38,6 +38,7 @@
 #include "dmda_compare.h"
 #include "dmda_update_coords.h"
 #include "dmda_redundant.h"
+#include "dmda_view_petscvtk.h"
 #include "dmda_remesh.h"
 
 #undef __FUNCT__
@@ -255,30 +256,8 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	ierr = DMDACreate3dRedundant( da, si,si+nx, sj,sj+ny, endK-1,  endK,     1, &surface2_da );CHKERRQ(ierr);
 	
 	/*
-	{
-		PetscViewer vv;
-		Vec x;
-		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)surface1_da), "test_dmda_remesh_s1.vtk", &vv);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-		ierr = DMCreateGlobalVector(surface1_da,&x);CHKERRQ(ierr);
-		ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-		ierr = DMView(surface1_da, vv);CHKERRQ(ierr);
-		ierr = VecView(x, vv);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-		ierr  = VecDestroy(x);CHKERRQ(ierr);
-	}
-	{
-		PetscViewer vv;
-		Vec x;
-		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)surface2_da), "test_dmda_remesh_s2.vtk", &vv);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-		ierr = DMCreateGlobalVector(surface2_da,&x);CHKERRQ(ierr);
-		ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-		ierr = DMView(surface2_da, vv);CHKERRQ(ierr);
-		ierr = VecView(x, vv);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-		ierr  = VecDestroy(x);CHKERRQ(ierr);
-	}
+     ierr = DMDAViewPetscVTS(surface1_da,NULL,"test_dmda_remesh_s1.vts");CHKERRQ(ierr);
+     ierr = DMDAViewPetscVTS(surface2_da,NULL,"test_dmda_remesh_s2.vts");CHKERRQ(ierr);
 	*/
 	
 
