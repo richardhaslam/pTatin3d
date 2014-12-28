@@ -89,6 +89,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user);
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[]);
 PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,const char prefix[]);
 PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[]);
+PetscErrorCode pTatin3d_ModelOutput_StokesVelocity_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[]);
 
 PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav);
 PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da);

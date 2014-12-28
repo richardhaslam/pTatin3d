@@ -57,6 +57,8 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity_PerStep(DM pack,Vec X,const 
 PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const char name[]);
 PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char subdomain_path[],const char prefix[],const char name[]);
 
+PetscErrorCode pTatinOutputPetscVTSParaViewMeshVelocity(DM pack,Vec X,const char path[],const char subdomain_path[],const char prefix[]);
+
 PetscErrorCode DAQ2PieceExtendForGhostLevelZero(FILE *vtk_fp,int indent_level,DM dau,const char path[],const char local_file_prefix[]);
 PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],const char prefix[]);
 
