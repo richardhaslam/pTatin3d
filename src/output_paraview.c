@@ -1578,3 +1578,46 @@ PetscErrorCode pTatinParaviewSetOutputPrefix(pTatinCtx user,const char prefix[])
     been_here = PETSC_TRUE;
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputPetscVTSParaViewMeshVelocity"
+PetscErrorCode pTatinOutputPetscVTSParaViewMeshVelocity(DM pack,Vec X,const char path[],const char subdomain_path[],const char prefix[])
+{
+    MPI_Comm       comm;
+    Vec            velocity,pressure;
+	char           *vtkfilename,*filename;
+    PetscViewer    viewer;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+    
+    if (!path) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a directory name");
+    }
+
+	ierr = pTatinGenerateVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
+    if (subdomain_path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+    } else {
+        asprintf(&filename,"%s/%s",path,vtkfilename);
+    }
+    pTatinStringPathNormalize(filename);
+
+	PetscObjectGetComm((PetscObject)pack,&comm);
+    ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
+
+	ierr = DMCompositeGetAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    
+    ierr = VecView(velocity,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    
+	ierr = DMCompositeRestoreAccess(pack,X,&velocity,&pressure);CHKERRQ(ierr);
+
+	free(filename);
+	free(vtkfilename);
+	
+	PetscFunctionReturn(0);
+}

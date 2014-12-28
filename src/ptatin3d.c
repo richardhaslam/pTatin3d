@@ -306,6 +306,86 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_ModelOutput_StokesVelocity_PetscVTS"
+PetscErrorCode pTatin3d_ModelOutput_StokesVelocity_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[])
+{
+	PetscErrorCode   ierr;
+	char             *name;
+	char             date_time[1024];
+	DM               stokes_pack;
+	PetscLogDouble   t0,t1;
+	static PetscBool been_here = PETSC_FALSE;
+	static char      *pvdfilename;
+    
+	PetscFunctionBegin;
+	PetscTime(&t0);
+    
+    /* prepare directory structures */
+    ierr = pTatinParaviewSetOutputPrefix(ctx,prefix);CHKERRQ(ierr);
+    
+    /* Create PVD file on first entry to this function */
+	if (!been_here) {
+        
+		if (ctx->restart_from_file) {
+			pTatinGenerateFormattedTimestamp(date_time);
+			asprintf(&pvdfilename,"%s/timeseries_v_%s.pvd",ctx->outputpath,date_time);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
+		} else {
+			asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath);
+			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		}
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+        
+		been_here = PETSC_TRUE;
+	}
+    
+    /* Append file name to PVD file */
+    if (prefix) {
+        asprintf(&name,"%s_v.vts",prefix);
+    } else {
+        asprintf(&name,"v.vts");
+    }
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            break;
+        case TDST_PERSTEP:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,ctx->prefixedoutputpath);CHKERRQ(ierr);
+            break;
+    }
+    free(name);
+	
+	/* Write VTS and PVTS files */
+	if (prefix) {
+		asprintf(&name,"%s_v",prefix);
+	} else {
+		asprintf(&name,"v");
+	}
+	
+	stokes_pack = ctx->stokes_ctx->stokes_pack;
+    switch (ctx->storage_type) {
+            
+        case TDST_FLAT:
+            ierr = pTatinOutputPetscVTSParaViewMeshVelocity(stokes_pack,X,ctx->outputpath,NULL,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"TDST_PERRANK not valid for pTatinOutputPetscVTSParaViewMeshVelocity, use storage_type = \"flat\" or \"perstep\"");
+            break;
+        case TDST_PERSTEP:
+            ierr = pTatinOutputPetscVTSParaViewMeshVelocity(stokes_pack,X,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
+            break;
+    }
+	free(name);
+    
+	PetscTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes"
 PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
@@ -1458,10 +1538,10 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
   if (view) {
 		char levelname[PETSC_MAX_PATH_LEN];
 		
-		ierr = DMDAViewPetscVTK(da,NULL,"dav_fine.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTS(da,NULL,"dav_fine.vtk");CHKERRQ(ierr);
 		for (i=0; i<nlevels; i++) {
 			PetscSNPrintf(levelname,PETSC_MAX_PATH_LEN-1,"dav_level%D.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
-			ierr = DMDAViewPetscVTK(dac[i],NULL,levelname);CHKERRQ(ierr);
+			ierr = DMDAViewPetscVTS(dac[i],NULL,levelname);CHKERRQ(ierr);
 		}
 	}
 	
