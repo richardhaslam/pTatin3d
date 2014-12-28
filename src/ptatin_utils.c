@@ -46,34 +46,35 @@
 #define __FUNCT__ "pTatinCreateDirectory"
 PetscErrorCode pTatinCreateDirectory(const char dirname[])
 {
-	PetscMPIInt rank;
-	int num,error_number;
+	PetscMPIInt    rank;
+	int            status,error_number;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	
 	/* Generate a new directory on proc 0 */
-	if (rank == 0) {
-		num = mkdir(dirname,S_IRWXU);
+	if (!rank) {
+		//status = mkdir(dirname,S_IRWXU);
+        status = mkdir(dirname,S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 		error_number = errno;
-	}
-	ierr = MPI_Bcast(&num,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Bcast(&error_number,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
-	if (error_number == EEXIST) {
-		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Writing output to existing directory: %s \n",dirname);
-	} else if (error_number == EACCES) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] Write permission is denied for the parent directory in which the new directory is to be added");
-	} else if (error_number == EMLINK) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The parent directory has too many links (entries)");
-	} else if (error_number == ENOSPC) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The file system doesn't have enough room to create the new directory");
-	} else if (error_number == ENOSPC) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"[pTatin] The parent directory of the directory being created is on a read-only file system and cannot be modified");
-	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created output directory: %s \n",dirname);
-	}
+        
+        if (status == 0) {
+            PetscPrintf(PETSC_COMM_SELF,"[pTatin] Created output directory: %s \n",dirname);
+        } else {
+            if (error_number == EEXIST) {
+                PetscPrintf(PETSC_COMM_SELF,"[pTatin] Writing output to existing directory: %s \n",dirname);
+            } else if (error_number == EACCES) {
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[pTatin] Write permission is denied for the parent directory in which the new directory is to be added");
+            } else if (error_number == EMLINK) {
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[pTatin] The parent directory has too many links (entries)");
+            } else if (error_number == ENOSPC) {
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[pTatin] The file system doesn't have enough room to create the new directory");
+            } else if (error_number == ENOSPC) {
+                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[pTatin] The parent directory of the directory being created is on a read-only file system and cannot be modified");
+            }
+        }
+    }
 	
 	ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
@@ -209,6 +210,34 @@ int StringEmpty(const char string[])
 	return 0;
 }
 
+void pTatinStringPathNormalize(char str[])
+{
+    char *copy;
+    size_t len,n;
+    int i;
+    
+    len = strlen(str);
+    copy = malloc(sizeof(char)*(len+1));
+    
+    copy[0] = str[0];
+    n = 1;
+    for (i=1; i<len; i++) {
+        if (str[i] == '/') {
+            if (str[i] != copy[n-1]) {
+                copy[n] = str[i];
+                n++;
+            }
+        } else {
+            copy[n] = str[i];
+            n++;
+        }
+    }
+    copy[n] = '\0';
+    n++;
+    strncpy(str,copy,n);
+    free(copy);
+}
+
 void ptatin_RandomNumberSetSeed(unsigned seed)
 {
 	srand(seed);
@@ -287,38 +316,3 @@ PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
 	
 	PetscFunctionReturn(0);
 }
-
-
-# if 0
-
-#undef __FUNCT__
-#define __FUNCT__ "pTatinWriteRevision"
-PetscErrorCode pTatinWriteRevision(const char output_path[])
-{
-	int            svn;
-	PetscMPIInt    rank;
-	char           cmd[256];
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	
-	if (rank == 0) {
-
-		/* subversion */
-		if (svn) {
-			/* svn info svn+ssh://dmay@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d : requires password */
-			
-			/* this will only work if run from the current directory */
-			sprintf(cmd,"svn info > %s/ptatin.revision",output_path);
-			system(cmd);
-		}
-		
-	}
-	
-	ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
-}
-
-#endif
-

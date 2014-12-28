@@ -40,6 +40,7 @@ void pTatinGenerateFormattedTimestamp(char date_time[]);
 void FileExists(const char *fname,int *exists);
 void FileExistsRank(MPI_Comm comm,const char fname[],int *exists);
 int StringEmpty(const char string[]);
+void pTatinStringPathNormalize(char str[]);
 
 void ptatin_RandomNumberSetSeed(unsigned seed);
 void ptatin_RandomNumberSetSeedRank(MPI_Comm comm);
