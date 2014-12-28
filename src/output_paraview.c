@@ -344,7 +344,7 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure_PerStep(DM pack,Vec X,co
 	free(filename);
 	free(vtkfilename);
 	
-    /* write pvts in subdomain directory*/
+    /* write pvts in subdomain directory */
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
         asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
@@ -372,7 +372,6 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure_PerStep(DM pack,Vec X,co
 PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char path[],const char prefix[])
 {
 	char           *vtkfilename,*filename;
-	PetscMPIInt    rank;
 	PetscBool      binary = PETSC_TRUE;
 	PetscErrorCode ierr;
 	
@@ -389,7 +388,6 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	} else {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only binary format implemented");
 	}
-	
 	free(filename);
 	free(vtkfilename);
 	
@@ -399,8 +397,54 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	} else {
 		asprintf(&filename,"./%s",vtkfilename);
 	}
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	ierr = pTatinOutputLiteMeshVelocityPVTS(pack,prefix,filename);CHKERRQ(ierr);
+
+	ierr = pTatinOutputLiteMeshVelocityPVTS(pack,NULL,prefix,filename);CHKERRQ(ierr);
+	free(filename);
+	free(vtkfilename);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputLiteParaViewMeshVelocity_PerStep"
+PetscErrorCode pTatinOutputLiteParaViewMeshVelocity_PerStep(DM pack,Vec X,const char path[],const char subdomain_path[],const char prefix[])
+{
+	char           *vtkfilename,*filename;
+	PetscBool      binary = PETSC_TRUE;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+    
+    if (!subdomain_path) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a subdomain directory name");
+    }
+    
+	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
+    if (path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+    } else {
+        asprintf(&filename,"%s/%s",subdomain_path,vtkfilename);
+	}
+    pTatinStringPathNormalize(filename);
+    
+	if (binary) {
+		ierr = pTatinOutputLiteMeshVelocityVTS_v0_binary(pack,X,filename);CHKERRQ(ierr);
+	} else {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only binary format implemented");
+	}
+	free(filename);
+	free(vtkfilename);
+	
+    /* write pvts in subdomain directory */
+	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+	if (path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+	} else {
+        asprintf(&filename,"%s/%s",subdomain_path,vtkfilename);
+	}
+    pTatinStringPathNormalize(filename);
+    
+	ierr = pTatinOutputLiteMeshVelocityPVTS(pack,NULL,prefix,filename);CHKERRQ(ierr);
 	free(filename);
 	free(vtkfilename);
 	
@@ -1083,7 +1127,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(FILE *vtk_fp,DM pack,const c
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinOutputLiteMeshVelocityPVTS"
-PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char prefix[],const char name[])
+PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char subdomain_path[],const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
 	DM             dau,dap;
@@ -1131,7 +1175,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char prefix[],cons
 	if(vtk_fp) fprintf( vtk_fp, "    </PPointData>\n");
 	
 	/* write out the parallel information */
-	ierr = DAQ2PieceExtendForGhostLevelZero(vtk_fp,2,dau,NULL,prefix);CHKERRQ(ierr);
+	ierr = DAQ2PieceExtendForGhostLevelZero(vtk_fp,2,dau,subdomain_path,prefix);CHKERRQ(ierr);
 	
 	/* VTS HEADER - CLOSE */	
 	if(vtk_fp) fprintf( vtk_fp, "  </PStructuredGrid>\n");

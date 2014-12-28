@@ -218,62 +218,90 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3d_ModelOutputLite_Velocity_Stokes"
 PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	char           *name;
-	char           date_time[1024];
-	DM             stokes_pack;
-	Vec            UP;
-	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
+	PetscErrorCode   ierr;
+	char             *name;
+	char             date_time[1024];
+	DM               stokes_pack;
+	Vec              UP;
+	PetscLogDouble   t0,t1;
+	static PetscBool been_here = PETSC_FALSE;
+	static char      *pvdfilename;
+    
 	PetscFunctionBegin;
-	
 	PetscTime(&t0);
-	// PVD
-	if (beenhere==0) {
-		
+    
+    /* prepare directory structures */
+    ierr = pTatinParaviewSetOutputPrefix(ctx,prefix);CHKERRQ(ierr);
+    
+    /* Create PVD file on first entry to this function */
+	if (!been_here) {
+        
 		if (ctx->restart_from_file) {
 			pTatinGenerateFormattedTimestamp(date_time);
-			asprintf(&pvdfilename,"%s/timeseries_v_%s.pvd",ctx->outputpath,date_time);
+			asprintf(&pvdfilename,"%s/timeseries_vlite_%s.pvd",ctx->outputpath,date_time);
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
 		} else {
-			asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath);
+			asprintf(&pvdfilename,"%s/timeseries_vlite.pvd",ctx->outputpath);
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
+        
+		been_here = PETSC_TRUE;
 	}
-	{
-		char *vtkfilename;
-		
-		if (prefix) {
-			asprintf(&vtkfilename, "%s_v.pvts",prefix);
-		} else {
-			asprintf(&vtkfilename, "v.pvts");
-		}
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, NULL);CHKERRQ(ierr);
-		free(vtkfilename);
-	}
+    
+    /* Append file name to PVD file */
+    if (prefix) {
+        asprintf(&name,"%s_vlite.pvts",prefix);
+    } else {
+        asprintf(&name,"vlite.pvts");
+    }
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,ctx->prefixedoutputpath);CHKERRQ(ierr);
+            break;
+    }
+    free(name);
 	
-	// PVTS + VTS
+	/* Write VTS and PVTS files */
 	if (prefix) {
-		asprintf(&name,"%s_v",prefix);
+		asprintf(&name,"%s_vlite",prefix);
 	} else {
-		asprintf(&name,"v");
+		asprintf(&name,"vlite");
 	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
-	ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+	
+    switch (ctx->storage_type) {
+            
+        case TDST_FLAT:
+            //ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+            ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            PetscPrintf(PETSC_COMM_WORLD,"[pTatin] --- WARNING --- TDST_PERRANK not implemented for pTatinOutputLiteParaViewMeshVelocity --> defaulting to storage_type = \"flat\"\n");
+            ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+            //ierr = pTatinOutputParaViewMeshVelocityPressure_PerRank(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            PetscPrintf(PETSC_COMM_WORLD,"[pTatin] --- WARNING --- TDST_PERSTEP not implemented for pTatinOutputLiteParaViewMeshVelocity --> defaulting to storage_type = \"flat\"\n");
+            ierr = pTatinOutputLiteParaViewMeshVelocity_PerStep(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
+            break;
+    }
+    
 	free(name);
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);
 }
