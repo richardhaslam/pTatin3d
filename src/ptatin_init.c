@@ -142,6 +142,8 @@ extern PetscLogEvent PTATIN_ModelApplyMaterialBoundaryCondition;
 extern PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
 extern PetscLogEvent PTATIN_ModelOutput;
 
+const char *TransientDataStorageTypeNames[] = { "flat", "perrank", "perstep", "TransientDataStorageType", "TDST", 0 };
+
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinInitialize"

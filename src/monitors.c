@@ -114,7 +114,7 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
-	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
+	ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(stokes_pack,UP,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
 
 	
 	ierr = VecDestroy(&v);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
 	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
-	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,X,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
+	ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(stokes_pack,X,ctx->outputpath,vtkfilename);CHKERRQ(ierr);
     
 	if (!prefix) {
 		PetscPrintf(PETSC_COMM_WORLD,"%3D SNES [field %s]: ptatin non-linear solution viewer wrote file \n",its,field);

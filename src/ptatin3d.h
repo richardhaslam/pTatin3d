@@ -42,6 +42,8 @@
 
 extern PetscClassId PTATIN_CLASSID;
 
+extern const char *TransientDataStorageTypeNames[];
+
 typedef struct _p_pTatinCtx *pTatinCtx;
 typedef struct _p_pTatinModel *pTatinModel;
 typedef struct _p_PhysCompStokes *PhysCompStokes;

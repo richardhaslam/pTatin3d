@@ -468,7 +468,7 @@ PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char out
 	switch (output_type) {
 		case 0:
 			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
-			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 		case 1:
 			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
@@ -476,7 +476,7 @@ PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char out
 			break;
 		default:
 			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
-			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
+			ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 	}
 	

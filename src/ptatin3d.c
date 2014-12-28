@@ -32,11 +32,12 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
 #define _GNU_SOURCE
-#include "petsc-private/dmdaimpl.h" 
 #include "petsc.h"
+#include "petsc-private/dmdaimpl.h"
 
 #include "ptatin3d.h"
 #include "ptatin3d_defs.h"
+#include "private/ptatin_impl.h"
 
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
@@ -73,7 +74,6 @@ PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 	stokes->mx = user->mx;
 	stokes->my = user->my;
 	stokes->mz = user->mz;
-	stokes->use_mf_stokes = user->use_mf_stokes;
 	
 	ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
 	ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
@@ -143,13 +143,17 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	DM             stokes_pack;
 	Vec            UP;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
+	static PetscBool been_here = PETSC_FALSE;
 	static char    *pvdfilename;
 	PetscFunctionBegin;
 	
 	PetscTime(&t0);
-	// PVD
-	if (beenhere==0) {
+
+    /* prepare directory structures */
+    ierr = pTatinParaviewSetOutputPrefix(ctx,prefix);CHKERRQ(ierr);
+    
+    /* Create PVD file on first entry to this function */
+	if (!been_here) {
 
 		if (ctx->restart_from_file) {
 			pTatinGenerateFormattedTimestamp(date_time);
@@ -161,33 +165,53 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 
-		beenhere = 1;
+		been_here = PETSC_TRUE;
 	}
-	{
-		char *vtkfilename;
 		
-		if (prefix) {
-			asprintf(&vtkfilename, "%s_vp.pvts",prefix);
-		} else {
-			asprintf(&vtkfilename, "vp.pvts");
-		}
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
-		free(vtkfilename);
-	}
+    /* Append file name to PVD file */
+    if (prefix) {
+        asprintf(&name, "%s_vp.pvts",prefix);
+    } else {
+        asprintf(&name, "vp.pvts");
+    }
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,ctx->prefixedoutputpath);CHKERRQ(ierr);
+            break;
+    }
+    free(name);
 	
-	// PVTS + VTS
+	/* Write VTS and PVTS files */
 	if (prefix) {
 		asprintf(&name,"%s_vp",prefix);
 	} else {
 		asprintf(&name,"vp");
 	}
-	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
-	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+	
+    switch (ctx->storage_type) {
+            
+        case TDST_FLAT:
+            ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+//            ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name,PETSC_TRUE);CHKERRQ(ierr);
+            ierr = pTatinOutputParaViewMeshVelocityPressure_PerRank(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            ierr = pTatinOutputParaViewMeshVelocityPressure_PerStep(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
+            break;
+    }
+
 	free(name);
 	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
@@ -631,7 +655,6 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	user->mx               = 4;
 	user->my               = 4;
 	user->mz               = 4;
-	user->use_mf_stokes    = PETSC_FALSE;
 	user->solverstatistics = PETSC_FALSE;
 	
 	user->continuation_m   = 1;
@@ -765,10 +788,10 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
 #define __FUNCT__ "pTatin3dSetFromOptions"
 PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 {
-  char           optionsfile[PETSC_MAX_PATH_LEN];
-	PetscInt       mx3 = 4;
-	PetscBool      flg;
-	PetscErrorCode ierr;
+    char           optionsfile[PETSC_MAX_PATH_LEN];
+    PetscInt       mx3 = 4;
+    PetscBool      flg;
+    PetscErrorCode ierr;
 	
 	/* parse options */
 	ierr = PetscOptionsGetInt(NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
@@ -781,16 +804,20 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 		ctx->mz = mx3;
 	}
 	
-	ierr = PetscOptionsGetBool(NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
 	
-	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_FALSE) { 
-		sprintf(ctx->outputpath,"./output");
-	}
-	ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
+    /* output directory type */
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsGetString(NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+    if (flg == PETSC_FALSE) {
+        sprintf(ctx->outputpath,"./output");
+    }
+    ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
 	
+    ctx->prefixedoutputpath[0] = '\0';
+    ctx->storage_type = TDST_FLAT;
+    ierr = PetscOptionsGetEnum(NULL,"-data_storage_type",TransientDataStorageTypeNames,(PetscEnum*)&ctx->storage_type,&flg);CHKERRQ(ierr);
+    
 	/* checkpointing */
 	ierr = PetscOptionsGetInt(NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetInt(NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
@@ -967,7 +994,6 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad(pTatinCtx user,const char vname[],con
 	stokes->mx = user->mx;
 	stokes->my = user->my;
 	stokes->mz = user->mz;
-	stokes->use_mf_stokes = user->use_mf_stokes;
 	
 	ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
 //	ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
@@ -1454,5 +1480,3 @@ PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],Pets
 	  
 	PetscFunctionReturn(0);
 }
-
-
