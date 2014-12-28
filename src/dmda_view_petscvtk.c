@@ -39,40 +39,70 @@
 
 
 #undef __FUNCT__
-#define __FUNCT__ "DMDAViewPetscVTK"
-PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[])
+#define __FUNCT__ "DMDAViewPetscLegacyVTK"
+PetscErrorCode DMDAViewPetscLegacyVTK(DM da,Vec field,const char filename[])
 {
-	Vec x;
-	PetscViewer vv;
-	PetscErrorCode ierr;
-	
-	
-	PetscFunctionBegin;
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), name, &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    PetscViewer    vv;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da),filename,&vv);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(vv,PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 
-	/* view mesh */
-	ierr = DMView(da, vv);CHKERRQ(ierr);
+    /* view mesh */
+    ierr = DMView(da,vv);CHKERRQ(ierr);
 
-	/* view field */
-	/* if the vector is valid, write it out - else create an empty field */
-	if (field) {
-		const char *name;
-		name = NULL;
-		/* temp work around - calling GetName forces a name to be inserted if you isn't there 
-		- in parallel an error will occur if [1]PETSC ERROR: VecView_MPI_DA() line 464 in src/dm/impls/da/gr2.c
-		if the name is null
-		*/
-		ierr = PetscObjectGetName( (PetscObject)field,&name);CHKERRQ(ierr);
-		ierr = VecView(field,vv);CHKERRQ(ierr);
-	} else {
-		ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-		ierr = PetscObjectSetName( (PetscObject)x, "empty_field" );CHKERRQ(ierr);
-		ierr = VecView(x,vv);CHKERRQ(ierr);
-		ierr  = VecDestroy(&x);CHKERRQ(ierr);
-	}
-	
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    /* view field */
+    /* if the vector is valid, write it out - else create an empty field */
+    if (field) {
+        const char *name;
+		
+        name = NULL;
+        /* temp work around - calling GetName forces a name to be inserted if you isn't there
+         - in parallel an error will occur if [1]PETSC ERROR: VecView_MPI_DA() line 464 in src/dm/impls/da/gr2.c
+         if the name is null
+        */
+        ierr = PetscObjectGetName((PetscObject)field,&name);CHKERRQ(ierr);
+        ierr = VecView(field,vv);CHKERRQ(ierr);
+    } else {
+        Vec x;
+        
+        ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject)x,"empty_field");CHKERRQ(ierr);
+        ierr = VecView(x,vv);CHKERRQ(ierr);
+        ierr = VecDestroy(&x);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAViewPetscVTS"
+PetscErrorCode DMDAViewPetscVTS(DM dm,Vec field,const char filename[])
+{
+    MPI_Comm       comm;
+    PetscViewer    viewer;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    PetscObjectGetComm((PetscObject)dm,&comm);
+    ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
+    
+    if (field) {
+        ierr = VecView(field,viewer);CHKERRQ(ierr);
+    } else {
+        Vec x;
+        
+        ierr = DMCreateGlobalVector(dm,&x);CHKERRQ(ierr);
+        ierr = VecView(x,viewer);CHKERRQ(ierr);
+        ierr = VecDestroy(&x);CHKERRQ(ierr);
+    }
+
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
 }

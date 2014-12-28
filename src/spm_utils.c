@@ -476,7 +476,7 @@ PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 	
 	ierr = DMDAGatherIKRedundantSurfaceDMDA(dav,&dm_spmsurf0);CHKERRQ(ierr);
 	if (dm_spmsurf0) {
-		ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTS(dm_spmsurf0,NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 	}
 	if (dm_spmsurf0) {
 		PetscInt smx,smy,ii,jj;
@@ -528,7 +528,7 @@ PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 		}
 		
 		ierr = InterpolateSPMSurfIKGridToMSurf0(smx,smy,sc,sH,dm_spmsurf0);CHKERRQ(ierr);
-		ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
+		ierr = DMDAViewPetscVTS(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
 		
 		PetscFree(sc);
 		PetscFree(sH);
@@ -609,7 +609,7 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 	
 	ierr = DMDACreate3dRedundant(dm_mech,si2d,si2d+nx2d,N-1,N,sj2d,sj2d+ny2d, 1, &dm_red_spm);CHKERRQ(ierr);
 	//sprintf(name,"surf%d.vtk",rank);
-	//ierr = DMDAViewPetscVTK(da_red_spm,0,name);CHKERRQ(ierr);
+	//ierr = DMDAViewPetscVTS(da_red_spm,0,name);CHKERRQ(ierr);
 	
 	/* copy these values into my parallel surface mesh x,y,z (vol) => x,y (surf) */
 	ierr = DMGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
@@ -812,7 +812,7 @@ PetscErrorCode test_spm_utils_MPItoMPI(DM dav)
 	
 	
 	ierr = DMDAGatherIKSurfaceDMDA(dav,&dm_spmsurf,&height);CHKERRQ(ierr);
-	ierr = DMDAViewPetscVTK(dm_spmsurf,height,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTS(dm_spmsurf,height,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 
 	ierr = VecShift(height,0.5);CHKERRQ(ierr);
 	
@@ -868,7 +868,7 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	
 	ierr = DMDACreate3dRedundant(dm_mech,si2d,si2d+nx2d,N-1,N,sj2d,sj2d+ny2d, 1, &dm_red_spm);CHKERRQ(ierr);
 	//sprintf(name,"surf%d.vtk",rank);
-	//ierr = DMDAViewPetscVTK(da_red_spm,0,name);CHKERRQ(ierr);
+	//ierr = DMDAViewPetscVTS(da_red_spm,0,name);CHKERRQ(ierr);
 	
 	/* copy these values into my parallel surface mesh x,y,z (vol) => x,y (surf) */
 	ierr = DMGetCoordinates(dm_surf,&coords_surf);CHKERRQ(ierr);
@@ -945,7 +945,7 @@ PetscErrorCode DMDAScatterIKNestedSurfaceDMDA(DM dm_msurf,DM dm_msurf_overlap,Ma
 	ierr = MatRestrict(R,height,height_vol);CHKERRQ(ierr);
 	ierr = VecPointwiseMult(height_vol,height_vol,scale);CHKERRQ(ierr);
 	ierr = VecDestroy(&scale);CHKERRQ(ierr);
-	//ierr = DMDAViewPetscVTK(dm_msurf_overlap,height_vol,"surf_interp_ic.vtk");CHKERRQ(ierr);
+	//ierr = DMDAViewPetscVTS(dm_msurf_overlap,height_vol,"surf_interp_ic.vtk");CHKERRQ(ierr);
 
 	/* Use overlapping routine to scatter from surface -> volume */
 	ierr = DMDAScatterIKSurfaceDMDA(dm_msurf_overlap,height_vol,dm_mech);CHKERRQ(ierr);
@@ -968,7 +968,7 @@ PetscErrorCode test_nested_spm_utils_MPItoMPI(DM dav)
 	
 	
 	ierr = DMDAGatherIKNestedSurfaceDMDA(dav,ref,&dm_spmsurf_overlap,&R,&dm_spmsurf,&height);CHKERRQ(ierr);
-	ierr = DMDAViewPetscVTK(dm_spmsurf,height,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTS(dm_spmsurf,height,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 	
 	ierr = VecShift(height,0.5);CHKERRQ(ierr);
 	

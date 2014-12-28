@@ -928,7 +928,7 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
 
             PetscMPIIntCast(s,&s32);
             sprintf(name,"surface_diffusion_%.4d.vtk",s32);
-            ierr = DMDAViewPetscVTK(daH,H,name);CHKERRQ(ierr);
+            ierr = DMDAViewPetscVTS(daH,H,name);CHKERRQ(ierr);
         }
         //
         

@@ -37,7 +37,8 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
-PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[]);
+PetscErrorCode DMDAViewPetscLegacyVTK(DM da,Vec field,const char name[]);
+PetscErrorCode DMDAViewPetscVTS(DM da,Vec field,const char name[]);
 
 #endif
 

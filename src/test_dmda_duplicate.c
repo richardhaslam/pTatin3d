@@ -150,8 +150,8 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = DMDADuplicateLayout(da,5,PETSC_DECIDE,PETSC_DECIDE,&da2);CHKERRQ(ierr);
 	
 	/* output */
-	ierr = DMDAViewPetscVTK(da, NULL, "test_dmda_dup_1.vtk");CHKERRQ(ierr);
-	ierr = DMDAViewPetscVTK(da2, NULL, "test_dmda_dup_2.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTS(da, NULL, "test_dmda_dup_1.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTS(da2, NULL, "test_dmda_dup_2.vtk");CHKERRQ(ierr);
 
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	ierr = DMDestroy(&da2);CHKERRQ(ierr);

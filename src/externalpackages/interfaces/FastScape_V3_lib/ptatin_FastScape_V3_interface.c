@@ -104,7 +104,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	/* debug - write out extracted surface */
 	if (debug) {
 		if (dm_spmsurf0) {
-			ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
+			ierr = DMDAViewPetscVTS(dm_spmsurf0,NULL,"surf_extraction_ic.vtk");CHKERRQ(ierr);
 		}
 	}
 
@@ -211,7 +211,7 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 		/* interpolate topo: 2d mesh -> da_spmsurf0  */
 		ierr = InterpolateSPMSurfIKGridToMSurf0((PetscInt)smx,(PetscInt)smy,scoord,sheight,dm_spmsurf0);CHKERRQ(ierr);
 		if (debug) {
-			ierr = DMDAViewPetscVTK(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
+			ierr = DMDAViewPetscVTS(dm_spmsurf0,NULL,"surf_extraction_interp.vtk");CHKERRQ(ierr);
 		}
 		
 		PetscFree(sheight);

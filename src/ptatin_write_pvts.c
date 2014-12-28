@@ -213,7 +213,7 @@ PetscErrorCode test_pTatinVecFieldWrite(void)
 	ierr = VecMax( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );CHKERRQ(ierr);
 	
 	/* dump field to vtk */
-	ierr = DMDAViewPetscVTK(da, x, "dmda_write.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTS(da, x, "dmda_write.vtk");CHKERRQ(ierr);
 	
 	/* dump field to disk */
 	ierr = pTatinVecFieldWrite(x,"mesh_ufield.ptatinvec",PETSC_TRUE);CHKERRQ(ierr);
@@ -250,7 +250,7 @@ PetscErrorCode test_pTatinVecFieldLoad( void )
 	ierr = VecMax( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );CHKERRQ(ierr);
 	
 	/* dump field to vtk */
-	ierr = DMDAViewPetscVTK(da,x,"dmda_write_2.vtk");CHKERRQ(ierr);
+	ierr = DMDAViewPetscVTS(da,x,"dmda_write_2.vtk");CHKERRQ(ierr);
 	
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
