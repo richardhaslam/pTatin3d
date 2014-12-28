@@ -1059,7 +1059,7 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_PVTS(DM dau,const int nvars,cons
 	if(vtk_fp) fprintf( vtk_fp, "    </PPointData>\n");
 	
 	/* write out the parallel information */
-	ierr = DAQ2PieceExtendForGhostLevelZero(vtk_fp,2,dau,prefix);CHKERRQ(ierr);
+	ierr = DAQ2PieceExtendForGhostLevelZero(vtk_fp,2,dau,NULL,prefix);CHKERRQ(ierr);
 	
 	/* VTS HEADER - CLOSE */	
 	if(vtk_fp) fprintf( vtk_fp, "  </PStructuredGrid>\n");
