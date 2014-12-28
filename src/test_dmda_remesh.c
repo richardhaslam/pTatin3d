@@ -44,118 +44,79 @@
 #include "ptatin_init.h"
 #include "dmda_update_coords.h"
 #include "dmda_remesh.h"
+#include "dmda_view_petscvtk.h"
 #include "mesh_deformation.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesInPlane_IJ"
 PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscInt ny,PetscInt nz)
 {
-	PetscErrorCode ierr;
-	PetscReal x0,x1,y0,y1,z0,z1;
-	DM da;
-	Vec x;
-	DMDACoor3d plane[4];
-	PetscViewer vv;
+    PetscErrorCode ierr;
+    PetscReal x0,x1,y0,y1,z0,z1;
+    DM da;
+    DMDACoor3d plane[4];
+    
+    PetscFunctionBegin;
 	
-	PetscFunctionBegin;
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
-	
-	x0 = y0 = z0 = -1.0;
-	x1 = y1 = z1 = 1.0;
-	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
+    x0 = y0 = z0 = -1.0;
+    x1 = y1 = z1 =  1.0;
+    ierr = DMDASetUniformCoordinates(da,x0,x1,y0,y1,z0,z1);CHKERRQ(ierr);
 
-	/* output */
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
+    /* output */
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_in.vts");CHKERRQ(ierr);
 
-	/* remesh */
-	plane[0].x = -1.5;   plane[0].y = -1.1;   plane[0].z = -2.0;
-	plane[1].x = -1.1;   plane[1].y = 1.1;  	plane[1].z = -1.8;
-	plane[2].x = 1.3;    plane[2].y = 1.2;  	plane[2].z = -1.6;
-	plane[3].x = 0.9;    plane[3].y = -1.2;  	plane[3].z = -1.4;
+    /* remesh */
+    plane[0].x = -1.5;  plane[0].y = -1.1;   plane[0].z = -2.0;
+    plane[1].x = -1.1;  plane[1].y =  1.1;   plane[1].z = -1.8;
+    plane[2].x =  1.3;  plane[2].y =  1.2;   plane[2].z = -1.6;
+    plane[3].x =  0.9;  plane[3].y = -1.2;   plane[3].z = -1.4;
 
-	ierr = DMDARemeshSetUniformCoordinatesInPlane_IJ(da, 0, plane );CHKERRQ(ierr);
+    ierr = DMDARemeshSetUniformCoordinatesInPlane_IJ(da,0,plane);CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	
-	ierr = DMDestroy(&da);CHKERRQ(ierr);
-	
-  PetscFunctionReturn(0);
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_out.vts");CHKERRQ(ierr);
+    
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d"
 PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,PetscInt ny,PetscInt nz)
 {
-	PetscErrorCode ierr;
-	PetscReal x0,x1,y0,y1,z0,z1;
-	DM da;
-	Vec x;
-	DMDACoor3d plane[4];
-	PetscViewer vv;
-	PetscInt M,N,P;
+    PetscErrorCode ierr;
+    PetscReal x0,x1,y0,y1,z0,z1;
+    DM da;
+    DMDACoor3d plane[4];
+    PetscInt M,N,P;
 	
-	PetscFunctionBegin;
+    PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
-	x0 = y0 = z0 = -1.0;
-	x1 = y1 = z1 = 1.0;
-	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
+    x0 = y0 = z0 = -1.0;
+    x1 = y1 = z1 =  1.0;
+    ierr = DMDASetUniformCoordinates(da,x0,x1,y0,y1,z0,z1);CHKERRQ(ierr);
 	
-	/* output */
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
-	
-	/* remesh */
-	plane[0].x = -1.5;   plane[0].y = -1.1;   plane[0].z = -2.0;
-	plane[1].x = -1.1;   plane[1].y = 1.1;  	plane[1].z = -1.8;
-	plane[2].x = 1.3;    plane[2].y = 1.2;  	plane[2].z = -1.6;
-	plane[3].x = 0.9;    plane[3].y = -1.2;  	plane[3].z = -1.4;
-	
-	ierr = DMDARemeshSetUniformCoordinatesInPlane_IJ(da, 0, plane );CHKERRQ(ierr);
+    /* output */
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_in.vts");CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in1.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
+    /* remesh */
+    plane[0].x = -1.5;   plane[0].y = -1.1;  plane[0].z = -2.0;
+    plane[1].x = -1.1;   plane[1].y =  1.1;  plane[1].z = -1.8;
+    plane[2].x =  1.3;   plane[2].y =  1.2;  plane[2].z = -1.6;
+    plane[3].x =  0.9;   plane[3].y = -1.2;  plane[3].z = -1.4;
 	
-	
+    ierr = DMDARemeshSetUniformCoordinatesInPlane_IJ(da,0,plane);CHKERRQ(ierr);
+
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_in1.vts");CHKERRQ(ierr);
+
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDARemeshSetUniformCoordinatesBetweenKLayers3d(da,0,P);CHKERRQ(ierr);
 	
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_out.vts");CHKERRQ(ierr);
 	
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	
@@ -166,45 +127,29 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 #define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b"
 PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt nx,PetscInt ny,PetscInt nz)
 {
-	PetscErrorCode ierr;
-	PetscReal x0,x1,y0,y1,z0,z1;
-	DM da;
-	Vec x;
-	PetscViewer vv;
+    PetscErrorCode ierr;
+    PetscReal x0,x1,y0,y1,z0,z1;
+    DM da;
 	
-	PetscFunctionBegin;
+    PetscFunctionBegin;
 	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
 	
-	x0 = y0 = z0 = -1.0;
-	x1 = y1 = z1 = 1.0;
-	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
+    x0 = y0 = z0 = -1.0;
+    x1 = y1 = z1 =  1.0;
+    ierr = DMDASetUniformCoordinates(da,x0,x1,y0,y1,z0,z1);CHKERRQ(ierr);
 	
-	/* output */
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_in.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
+    /* output */
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_in.vts");CHKERRQ(ierr);
 	
-	ierr = MeshDeformation_ShearXY(da);CHKERRQ(ierr);
+    ierr = MeshDeformation_ShearXY(da);CHKERRQ(ierr);
 	
-	/* output sheared mesh */
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_remesh_out.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
+    /* output sheared mesh */
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_remesh_out.vts");CHKERRQ(ierr);
+
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
 	
-	ierr = DMDestroy(&da);CHKERRQ(ierr);
-	
-  PetscFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
 int main( int argc,char **argv )
