@@ -106,3 +106,53 @@ PetscErrorCode DMDAViewPetscVTS(DM dm,Vec field,const char filename[])
 
     PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAViewFieldsPetscVTS"
+PetscErrorCode DMDAViewFieldsPetscVTS(DM dm,PetscInt nf,Vec fields[],const char filename[])
+{
+    MPI_Comm       comm;
+    PetscInt       n;
+    PetscViewer    viewer;
+    Vec            dummy;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    
+    if (nf == 1) {
+        ierr = DMDAViewPetscVTS(dm,fields[0],filename);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+    }
+    
+    PetscObjectGetComm((PetscObject)dm,&comm);
+    ierr = PetscViewerCreate(comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer,PETSCVIEWERVTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer,filename);CHKERRQ(ierr);
+
+    /* create a dummy vector if required */
+    dummy = NULL;
+    for (n=0; n<nf; n++) {
+        if (!fields[n]) {
+            ierr = DMCreateGlobalVector(dm,&dummy);CHKERRQ(ierr);
+            break;
+        }
+    }
+    
+    /* sweep through all fields[], checking for null entries */
+    for (n=0; n<nf; n++) {
+        Vec field = fields[n];
+        
+        if (field) {
+            ierr = VecView(field,viewer);CHKERRQ(ierr);
+        } else {
+            ierr = VecView(dummy,viewer);CHKERRQ(ierr);
+        }
+    }
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (dummy) {
+        ierr = VecDestroy(&dummy);CHKERRQ(ierr);
+    }
+    
+    PetscFunctionReturn(0);
+}

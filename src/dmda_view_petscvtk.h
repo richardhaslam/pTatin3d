@@ -39,6 +39,7 @@
 
 PetscErrorCode DMDAViewPetscLegacyVTK(DM da,Vec field,const char name[]);
 PetscErrorCode DMDAViewPetscVTS(DM da,Vec field,const char name[]);
+PetscErrorCode DMDAViewFieldsPetscVTS(DM dm,PetscInt nf,Vec fields[],const char filename[]);
 
 #endif
 
