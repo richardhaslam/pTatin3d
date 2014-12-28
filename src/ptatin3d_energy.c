@@ -40,6 +40,7 @@
 #include "ptatin_utils.h"
 #include "dmda_bcs.h"
 #include "dmda_duplicate.h"
+#include "dmda_view_petscvtk.h"
 #include "dmdae.h"
 #include "element_utils_q1.h"
 #include "dmda_element_q1.h"
@@ -226,6 +227,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	/* setup */
 	dof = 1;
 	ierr = DMDADuplicateLayout(da,dof,1,DMDA_STENCIL_BOX,&clone);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(clone,0,"_scalar");CHKERRQ(ierr);
 	ierr = DMGetDMDAE(da,&dae);CHKERRQ(ierr);
 	
 	ierr = DMAttachDMDAE(clone);CHKERRQ(ierr);
@@ -290,11 +292,11 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	/* compute */
 	//
 	ierr = DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
-																								clone,properties_A,properties_B,
-																								//CoefAvgHARMONIC,
-																								CoefAvgARITHMETIC,
-																								npoints,mp_std,
-																								mp_field_offset,mp_offset,material_point_property);CHKERRQ(ierr);
+                                                         clone,properties_A,properties_B,
+                                                         //CoefAvgHARMONIC,
+                                                         CoefAvgARITHMETIC,
+                                                         npoints,mp_std,
+                                                         mp_field_offset,mp_offset,material_point_property);CHKERRQ(ierr);
 	//
 	
 	/*
@@ -317,7 +319,8 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	view = PETSC_FALSE;
 	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
-		char filename[256];
+		char filename[PETSC_MAX_PATH_LEN];
+/*
 		PetscViewer viewer;
 		
 		sprintf(filename,"MaterialPointProjection_energy_member_%d.vtk",(int)member );
@@ -326,6 +329,9 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 		ierr = DMView(clone, viewer);CHKERRQ(ierr);
 		ierr = VecView(properties_A, viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+*/
+        PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"MaterialPointProjection_energy_member_%d.vts",(int)member);
+        ierr = DMDAViewPetscVTS(clone,properties_A,filename);CHKERRQ(ierr);
 	}
 	
 	/* destroy */
