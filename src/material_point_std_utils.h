@@ -45,6 +45,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db);
 PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCell,DataBucket db);
 PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const char prefix[]);
+PetscErrorCode SwarmOutputParaView_MPntStd_PerStep(DataBucket db,const char path[],const char subdomain_path[],const char prefix[]);
 PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,DataBucket db);
 PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,PetscInt ncells_list,PetscInt cell_list[],PetscInt *start_pidx,PetscInt *n_pidx,DataBucket db);
 PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM dav,PetscInt Nxp2[],PetscInt region_idx,PetscReal vert_coord[]);

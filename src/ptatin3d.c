@@ -137,16 +137,16 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 #define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes"
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	char           *name;
-	char           date_time[1024];
-	DM             stokes_pack;
-	Vec            UP;
-	PetscLogDouble t0,t1;
+	PetscErrorCode   ierr;
+	char             *name;
+	char             date_time[1024];
+	DM               stokes_pack;
+	Vec              UP;
+	PetscLogDouble   t0,t1;
 	static PetscBool been_here = PETSC_FALSE;
-	static char    *pvdfilename;
+	static char      *pvdfilename;
+
 	PetscFunctionBegin;
-	
 	PetscTime(&t0);
 
     /* prepare directory structures */
@@ -170,9 +170,9 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 		
     /* Append file name to PVD file */
     if (prefix) {
-        asprintf(&name, "%s_vp.pvts",prefix);
+        asprintf(&name,"%s_vp.pvts",prefix);
     } else {
-        asprintf(&name, "vp.pvts");
+        asprintf(&name,"vp.pvts");
     }
     switch (ctx->storage_type) {
         case TDST_FLAT:
@@ -204,7 +204,6 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
             ierr = pTatinOutputParaViewMeshVelocityPressure_Flat(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
             break;
         case TDST_PERRANK:
-//            ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name,PETSC_TRUE);CHKERRQ(ierr);
             ierr = pTatinOutputParaViewMeshVelocityPressure_PerRank(stokes_pack,UP,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
             break;
         case TDST_PERSTEP:
@@ -578,44 +577,67 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 #define __FUNCT__ "pTatin3d_ModelOutput_MPntStd"
 PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 {
-	PetscErrorCode ierr;
-	char *name;
-	PetscLogDouble t0,t1;
-	static int beenhere=0;
-	static char *pvdfilename;
+	PetscErrorCode   ierr;
+	char             *name;
+	PetscLogDouble   t0,t1;
+	static PetscBool been_here = PETSC_FALSE;
+	static char      *pvdfilename;
 	
 	PetscFunctionBegin;
-	
 	PetscTime(&t0);
-	// PVD
-	if (beenhere==0) {
+
+    /* prepare directory structures */
+    ierr = pTatinParaviewSetOutputPrefix(ctx,prefix);CHKERRQ(ierr);
+
+    /* Create PVD file on first entry to this function */
+	if (!been_here) {
 		asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath);
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
-		beenhere = 1;
+		been_here = PETSC_TRUE;
 	}
-	{
-		char *vtkfilename;
-		
-		if (prefix) {
-			asprintf(&vtkfilename, "%s_mpoints_std.pvtu",prefix);
-		} else {
-			asprintf(&vtkfilename, "mpoints_std.pvtu");
-		}
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
-		free(vtkfilename);
-	}
-	
-	// PVTS + VTS
+    
+    /* Append file name to PVD file */
+    if (prefix) {
+        asprintf(&name,"%s_mpoints_std.pvtu",prefix);
+    } else {
+        asprintf(&name,"mpoints_std.pvtu");
+    }
+    
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,ctx->prefixedoutputpath);CHKERRQ(ierr);
+            break;
+    }
+    free(name);
+    
+	/* Write VTU and PVTU files */
 	if (prefix) {
 		asprintf(&name,"%s_mpoints_std",prefix);
 	} else {
 		asprintf(&name,"mpoints_std");
 	}
 	
-	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,ctx->outputpath,name);CHKERRQ(ierr);
+    switch (ctx->storage_type) {
+            
+        case TDST_FLAT:
+            ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,ctx->outputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            PetscPrintf(PETSC_COMM_WORLD,"[pTatin] --- WARNING --- TDST_PERRANK not implemented for SwarmOutputParaView_MPntStd --> defaulting to storage_type = \"flat\"\n");
+            ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,ctx->outputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            ierr = SwarmOutputParaView_MPntStd_PerStep(ctx->materialpoint_db,ctx->outputpath,ctx->prefixedoutputpath,name);CHKERRQ(ierr);
+            break;
+    }
 	free(name);
 	
 	PetscTime(&t1);
@@ -624,7 +646,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dCreateContext"
 PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {

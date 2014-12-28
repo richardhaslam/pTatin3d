@@ -39,6 +39,7 @@
 #include "math.h"
 
 #include "ptatin3d.h"
+#include "ptatin_utils.h"
 #include "element_utils_q1.h"
 #include "element_type_Q2.h"
 #include "dmda_element_q2p1.h"
@@ -1121,7 +1122,7 @@ PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char nam
 
 #undef __FUNCT__
 #define __FUNCT__ "__SwarmView_MPntStd_PVTU"
-PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
+PetscErrorCode __SwarmView_MPntStd_PVTU(const char path[],const char prefix[],const char name[])
 {
 	PetscMPIInt nproc;
 	FILE *vtk_fp;
@@ -1169,8 +1170,13 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
         int i32;
         
         PetscMPIIntCast(i,&i32);
-		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 );
-		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
+        if (path) {
+            asprintf(&sourcename, "%s/%s-subdomain%1.5d.vtu",path,prefix,i32);
+        } else {
+            asprintf(&sourcename,"%s-subdomain%1.5d.vtu",prefix,i32);
+        }
+		
+        fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 		free(sourcename);
 	}
 	
@@ -1190,8 +1196,8 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 #define __FUNCT__ "SwarmOutputParaView_MPntStd"
 PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const char prefix[])
 { 
-	char *vtkfilename,*filename;
-	PetscMPIInt rank;
+	char           *vtkfilename,*filename;
+	PetscMPIInt    rank;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1220,8 +1226,53 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 	}
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	if (rank==0) {
-		ierr = __SwarmView_MPntStd_PVTU( prefix, filename );CHKERRQ(ierr);
+	if (!rank) {
+		ierr = __SwarmView_MPntStd_PVTU(NULL,prefix,filename);CHKERRQ(ierr);
+	}
+	free(filename);
+	free(vtkfilename);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SwarmOutputParaView_MPntStd_PerStep"
+PetscErrorCode SwarmOutputParaView_MPntStd_PerStep(DataBucket db,const char path[],const char subdomain_path[],const char prefix[])
+{
+	char           *vtkfilename,*filename;
+	PetscMPIInt    rank;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+    if (!subdomain_path) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a subdomain directory name");
+    }
+    
+	ierr = pTatinGenerateParallelVTKName(prefix,"vtu",&vtkfilename);CHKERRQ(ierr);
+	if (path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+	} else {
+        asprintf(&filename,"%s/%s",subdomain_path,vtkfilename);
+	}
+    pTatinStringPathNormalize(filename);
+    
+	ierr = SwarmView_MPntStd_VTKappended_binary(db,filename);CHKERRQ(ierr);
+	free(filename);
+	free(vtkfilename);
+	
+    /* write pvtu in subdomain directory */
+	ierr = pTatinGenerateVTKName(prefix,"pvtu",&vtkfilename);CHKERRQ(ierr);
+	if (path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+	} else {
+        asprintf(&filename,"%s/%s",subdomain_path,vtkfilename);
+	}
+    pTatinStringPathNormalize(filename);
+	
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	if (!rank) {
+		ierr = __SwarmView_MPntStd_PVTU(NULL,prefix,filename);CHKERRQ(ierr);
 	}
 	free(filename);
 	free(vtkfilename);
