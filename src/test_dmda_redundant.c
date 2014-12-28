@@ -45,6 +45,7 @@
 #include "ptatin_init.h"
 #include "dmda_update_coords.h"
 #include "dmda_redundant.h"
+#include "dmda_view_petscvtk.h"
 
 
 #undef __FUNCT__
@@ -112,13 +113,13 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	PetscErrorCode ierr;
 	PetscReal x0,x1,y0,y1,z0,z1;
 	DM da,da_red;
-	Vec x;
-	PetscViewer vv;
 	PetscReal avgdx,avgdy,avgdz,dx;
 	PetscReal gmin[3],gmax[3];
 	PetscInt M,N,P;
 	PetscInt nxs,nys,nzs,si,sj,sk;
-	
+	char name[PETSC_MAX_PATH_LEN];
+    PetscMPIInt rank;
+    
 	PetscFunctionBegin;
 	
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
@@ -144,33 +145,14 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&nxs,&nys,&nzs);CHKERRQ(ierr);
 	ierr = DMDACreate3dRedundant(da, si,si+nxs, sj,sj+nys, P-1,P, 3, &da_red );CHKERRQ(ierr);
 	
-	/* output */
-	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_redundant_in.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
+	/* output original dmda */
+    ierr = DMDAViewPetscVTS(da,NULL,"test_dmda_redundant_in.vts");CHKERRQ(ierr);
 
-	{
-		char *name;
-		PetscMPIInt rank;
-		MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);
-		asprintf(&name,"test_dmda_redundant_out_%d.vtk",rank);
-		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da_red), name, &vv);CHKERRQ(ierr);
-		free(name);
-	}
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(da_red,&x);CHKERRQ(ierr);
-	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
-	ierr = DMView(da_red, vv);CHKERRQ(ierr);
-	ierr = VecView(x, vv);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
-	
-	
+	/* output redundant dmda's */
+    MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);
+    PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"test_dmda_redundant_out_%d.vts",rank);
+    ierr = DMDAViewPetscVTS(da_red,NULL,name);CHKERRQ(ierr);
+
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	ierr = DMDestroy(&da_red);CHKERRQ(ierr);
 	
