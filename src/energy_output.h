@@ -37,6 +37,6 @@
 PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const char prefix[]);
 PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const char path[],const char prefix[]);
 PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char name[]);
-PetscErrorCode pTatin3d_ModelOutput_EnergyTemperatureVelocity_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[]);
+PetscErrorCode pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[]);
 
 #endif

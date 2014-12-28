@@ -663,8 +663,8 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatin3d_ModelOutput_EnergyTemperatureVelocity_PetscVTS"
-PetscErrorCode pTatin3d_ModelOutput_EnergyTemperatureVelocity_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[])
+#define __FUNCT__ "pTatin3d_ModelOutput_EnergyTemperature_PetscVTS"
+PetscErrorCode pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[])
 {
     DM               daT;
     PhysCompEnergy   energy;
@@ -722,7 +722,7 @@ PetscErrorCode pTatin3d_ModelOutput_EnergyTemperatureVelocity_PetscVTS(pTatinCtx
             asprintf(&filename,"%s/%s",ctx->outputpath,vtsfilename);
             break;
         case TDST_PERRANK:
-            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"TDST_PERRANK not valid for pTatinOutputPetscVTSParaViewMeshVelocity, use storage_type = \"flat\" or \"perstep\"");
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"TDST_PERRANK not valid for pTatin3d_ModelOutput_EnergyTemperature_PetscVTS, use storage_type = \"flat\" or \"perstep\"");
             break;
         case TDST_PERSTEP:
             asprintf(&filename,"%s/%s/%s",ctx->outputpath,ctx->prefixedoutputpath,vtsfilename);
