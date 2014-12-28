@@ -38,8 +38,10 @@
 #include "ptatin3d.h"
 #include "ptatin3d_defs.h"
 #include "private/ptatin_impl.h"
+#include "ptatin_utils.h"
 #include "QPntVolCoefEnergy_def.h"
 
+#include "dmda_view_petscvtk.h"
 #include "dmdae.h"
 #include "dmda_element_q1.h"
 #include "quadrature.h"
@@ -658,4 +660,82 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
 	
 	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_ModelOutput_EnergyTemperatureVelocity_PetscVTS"
+PetscErrorCode pTatin3d_ModelOutput_EnergyTemperatureVelocity_PetscVTS(pTatinCtx ctx,Vec X,const char prefix[])
+{
+    DM               daT;
+    PhysCompEnergy   energy;
+    char             *vtsfilename,*filename;
+    char             date_time[1024];
+    PetscLogDouble   t0,t1;
+    static PetscBool been_here = PETSC_FALSE;
+    static char      *pvdfilename;
+    PetscErrorCode   ierr;
+    
+    PetscFunctionBegin;
+    PetscTime(&t0);
+    
+    /* prepare directory structures */
+    ierr = pTatinParaviewSetOutputPrefix(ctx,prefix);CHKERRQ(ierr);
+    
+    ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+    daT  = energy->daT;
+    
+    /* Create PVD file on first entry to this function */
+    if (!been_here) {
+        if (ctx->restart_from_file) {
+            pTatinGenerateFormattedTimestamp(date_time);
+            asprintf(&pvdfilename,"%s/timeseries_temp_%s.pvd",ctx->outputpath,date_time);
+            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n",pvdfilename );
+        } else {
+            asprintf(&pvdfilename,"%s/timeseries_temp.pvd",ctx->outputpath);
+            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename );
+        }
+        ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+        
+        been_here = PETSC_TRUE;
+    }
+    
+    /* Append file name to PVD file */
+    if (prefix) {
+        asprintf(&vtsfilename,"%s_temp.vts",prefix);
+    } else {
+        asprintf(&vtsfilename,"temp.vts");
+    }
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtsfilename,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            break;
+        case TDST_PERSTEP:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtsfilename,ctx->prefixedoutputpath);CHKERRQ(ierr);
+            break;
+    }
+	
+    /* Write VTS and PVTS files */
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            asprintf(&filename,"%s/%s",ctx->outputpath,vtsfilename);
+            break;
+        case TDST_PERRANK:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"TDST_PERRANK not valid for pTatinOutputPetscVTSParaViewMeshVelocity, use storage_type = \"flat\" or \"perstep\"");
+            break;
+        case TDST_PERSTEP:
+            asprintf(&filename,"%s/%s/%s",ctx->outputpath,ctx->prefixedoutputpath,vtsfilename);
+            break;
+    }
+    pTatinStringPathNormalize(filename);
+    ierr = DMDAViewPetscVTS(daT,X,filename);CHKERRQ(ierr);
+
+    free(vtsfilename);
+    free(filename);
+    
+    PetscTime(&t1);
+    PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+    
+    PetscFunctionReturn(0);
 }
