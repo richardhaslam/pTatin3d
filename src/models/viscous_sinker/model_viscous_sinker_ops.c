@@ -1039,25 +1039,23 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void
 #define __FUNCT__ "ModelOutput_ViscousSinker"
 PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
-	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	// testing 
-	//ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
-	//ierr = pTatinOutputLiteMeshVelocitySlicedPVTS(c->stokes_ctx->stokes_pack,c->outputpath,prefix);CHKERRQ(ierr);
-	// testing 
-	//ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-	
-	// tests for alternate (output/load)ing of "single file marker" formats
-	//ierr = SwarmDataWriteToPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
-	//ierr = SwarmDataLoadFromPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
-	
-	
-	PetscFunctionReturn(0);
+    ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+    ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+    // testing
+    //ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
+    //ierr = pTatinOutputLiteMeshVelocitySlicedPVTS(c->stokes_ctx->stokes_pack,c->outputpath,prefix);CHKERRQ(ierr);
+    //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
+    //ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+    // tests for alternate (output/load)ing of "single file marker" formats
+    //ierr = SwarmDataWriteToPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
+    //ierr = SwarmDataLoadFromPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
