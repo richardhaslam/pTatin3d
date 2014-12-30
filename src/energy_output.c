@@ -629,7 +629,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	// PVD
 	if (beenhere==0) {
 		asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename);
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
 		beenhere = 1;
@@ -689,10 +689,10 @@ PetscErrorCode pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(pTatinCtx ctx,Vec
         if (ctx->restart_from_file) {
             pTatinGenerateFormattedTimestamp(date_time);
             asprintf(&pvdfilename,"%s/timeseries_temp_%s.pvd",ctx->outputpath,date_time);
-            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n",pvdfilename );
+            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n",pvdfilename);
         } else {
             asprintf(&pvdfilename,"%s/timeseries_temp.pvd",ctx->outputpath);
-            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename );
+            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename);
         }
         ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
         
