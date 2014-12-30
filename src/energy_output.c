@@ -436,65 +436,65 @@ PetscErrorCode pTatinOutputMeshEnergyVTS(PetscBool binary,Quadrature Q,DM daT,Ve
 #define __FUNCT__ "DAQ1PieceExtendForGhostLevelZero"
 PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level, DM da, const char local_file_prefix[] )
 {
-	PetscMPIInt    nproc,rank;
-	MPI_Comm       comm;
-	PetscInt       M,N,P,pM,pN,pP;
-	PetscInt       i,j,k,II,dim;
-	PetscInt       *olx,*oly,*olz;
-	PetscInt       *lmx,*lmy,*lmz;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	/* create file name */
-	PetscObjectGetComm((PetscObject)da,&comm);
-	ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
-	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-	
-	ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&pM,&pN,&pP,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
-	ierr = DMDAEGetOwnershipRanges(da,&pM,&pN,&pP,&olx,&oly,&olz,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-	
-	if (dim == 3) {
-		for (k=0; k<pP; k++) {
-			for (j=0; j<pN; j++) {
-				for (i=0; i<pM; i++) {
-					char     *name;
-					PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
-					int      procid32;
-					
-					PetscMPIIntCast(procid,&procid32);
-					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
-					for (II=0; II<indent_level; II++) {
-						if(vtk_fp) fprintf(vtk_fp,"  ");
-					}
-					if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "<Piece Extent=\"%D %D %D %D %D %D\"      Source=\"%s\"/>\n",
-														 olx[i],olx[i]+lmx[i],
-														 oly[j],oly[j]+lmy[j],
-														 olz[k],olz[k]+lmz[k],
-														 name);
-					free(name);
-				}
-			}
-		}
-	} else if (dim == 2) {
-		for (j=0; j<pN; j++) {
-			for (i=0; i<pM; i++) {
-				char     *name;
-				PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
+    PetscMPIInt    nproc,rank;
+    MPI_Comm       comm;
+    PetscInt       M,N,P,pM,pN,pP;
+    PetscInt       i,j,k,II,dim;
+    PetscInt       *olx,*oly,*olz;
+    PetscInt       *lmx,*lmy,*lmz;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    /* create file name */
+    PetscObjectGetComm((PetscObject)da,&comm);
+    ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    
+    ierr = DMDAGetInfo(da,&dim,&M,&N,&P,&pM,&pN,&pP,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+    ierr = DMDAEGetOwnershipRanges(da,&pM,&pN,&pP,&olx,&oly,&olz,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+    
+    if (dim == 3) {
+        for (k=0; k<pP; k++) {
+            for (j=0; j<pN; j++) {
+                for (i=0; i<pM; i++) {
+                    char     *name;
+                    PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
+                    int      procid32;
+                    
+                    PetscMPIIntCast(procid,&procid32);
+                    asprintf(&name,"%s-subdomain%1.5d.vts",local_file_prefix,procid32);
+                    for (II=0; II<indent_level; II++) {
+                        if (vtk_fp) fprintf(vtk_fp,"  ");
+                    }
+                    if (vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<Piece Extent=\"%D %D %D %D %D %D\"      Source=\"%s\"/>\n",
+                                             olx[i],olx[i]+lmx[i],
+                                             oly[j],oly[j]+lmy[j],
+                                             olz[k],olz[k]+lmz[k],
+                                             name);
+                    free(name);
+                }
+            }
+        }
+    } else if (dim == 2) {
+        for (j=0; j<pN; j++) {
+            for (i=0; i<pM; i++) {
+                char     *name;
+                PetscInt procid = i + j*pM; /* convert proc(i,j,k) to pid */
                 int      procid32;
                 
                 PetscMPIIntCast(procid,&procid32);
-				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
-				for (II=0; II<indent_level; II++) {
-					if(vtk_fp) fprintf(vtk_fp,"  ");
-				}
-				if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp, "<Piece Extent=\"%D %D %D %D 0 0\"      Source=\"%s\"/>\n",
-													 olx[i],olx[i]+lmx[i],
-													 oly[j],oly[j]+lmy[j],
-													 name);
-				free(name);
-			}
-		}
-	}
+                asprintf(&name,"%s-subdomain%1.5d.vts",local_file_prefix,procid32);
+                for (II=0; II<indent_level; II++) {
+                    if (vtk_fp) fprintf(vtk_fp,"  ");
+                }
+                if (vtk_fp) PetscFPrintf(PETSC_COMM_SELF,vtk_fp,"<Piece Extent=\"%D %D %D %D 0 0\"      Source=\"%s\"/>\n",
+                                         olx[i],olx[i]+lmx[i],
+                                         oly[j],oly[j]+lmy[j],
+                                         name);
+                free(name);
+            }
+        }
+    }
 	//ierr = PetscFree(olx);CHKERRQ(ierr);
 	//ierr = PetscFree(oly);CHKERRQ(ierr);
 	//ierr = PetscFree(olz);CHKERRQ(ierr);
@@ -587,7 +587,7 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const ch
     if (path) {
         asprintf(&filename,"%s/%s",path,vtkfilename);
     } else {
-        asprintf(&filename,"./%s",vtkfilename);
+        asprintf(&filename,"%s",vtkfilename);
     }
     ierr = pTatinOutputMeshEnergyPVTS(daT,prefix,filename);CHKERRQ(ierr);
     free(filename);
