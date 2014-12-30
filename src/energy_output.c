@@ -56,16 +56,16 @@
 #define __FUNCT__ "_apply_threshold"
 PetscErrorCode _apply_threshold(PetscScalar x[],const PetscInt N,const PetscScalar threshold,const PetscScalar value)
 {
-	PetscInt i;
-	PetscFunctionBegin;
-	for (i=0; i<N; i++) {
-		PetscScalar abs;
+    PetscInt i;
+    PetscFunctionBegin;
+    for (i=0; i<N; i++) {
+        PetscScalar abs;
 		
-		abs = PetscAbsScalar(x[i]);
-		if (abs < threshold) {
-			x[i] = value;
-		}
-	}
+        abs = PetscAbsScalar(x[i]);
+        if (abs < threshold) {
+            x[i] = value;
+        }
+    }
 	PetscFunctionReturn(0);
 }
 
@@ -575,33 +575,71 @@ PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,const char prefix[],const char 
 #define __FUNCT__ "pTatinOutputParaViewMeshEnergy"
 PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const char path[],const char prefix[])
 {
-	char           *vtkfilename,*filename;
-	PetscMPIInt    rank;
-	PetscBool      binary = PETSC_TRUE;
-	PetscErrorCode ierr;
+    char           *vtkfilename,*filename;
+    PetscErrorCode ierr;
 	
-	PetscFunctionBegin;
-	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
-	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
-	} else {
-		asprintf(&filename,"./%s",vtkfilename);
-	}
+    PetscFunctionBegin;
+    ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
+    if (path) {
+        asprintf(&filename,"%s/%s",path,vtkfilename);
+    } else {
+        asprintf(&filename,"%s",vtkfilename);
+    }
 	
-	ierr = pTatinOutputMeshEnergyVTS(binary,Q,daT,X,filename);CHKERRQ(ierr); /* binary */
-	free(filename);
-	free(vtkfilename);
+    ierr = pTatinOutputMeshEnergyVTS(PETSC_TRUE,Q,daT,X,filename);CHKERRQ(ierr); /* binary */
+    free(filename);
+    free(vtkfilename);
 	
-	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
-	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
-	} else {
-		asprintf(&filename,"./%s",vtkfilename);
-	}
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	ierr = pTatinOutputMeshEnergyPVTS(daT,prefix,filename);CHKERRQ(ierr);
-	free(filename);
-	free(vtkfilename);
+    ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+    if (path) {
+        asprintf(&filename,"%s/%s",path,vtkfilename);
+    } else {
+        asprintf(&filename,"./%s",vtkfilename);
+    }
+    ierr = pTatinOutputMeshEnergyPVTS(daT,prefix,filename);CHKERRQ(ierr);
+    free(filename);
+    free(vtkfilename);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinOutputParaViewMeshEnergy_PerStep"
+PetscErrorCode pTatinOutputParaViewMeshEnergy_PerStep(Quadrature Q,DM daT,Vec X,const char path[],const char subdomain_path[],const char prefix[])
+{
+    char           *vtkfilename,*filename;
+    PetscErrorCode ierr;
+	
+    PetscFunctionBegin;
+
+    if (!subdomain_path) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a subdomain directory name");
+    }
+
+    ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
+    if (path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+    } else {
+        asprintf(&filename,"%s/%s",subdomain_path,vtkfilename);
+    }
+    pTatinStringPathNormalize(filename);
+	
+    ierr = pTatinOutputMeshEnergyVTS(PETSC_TRUE,Q,daT,X,filename);CHKERRQ(ierr); /* binary */
+    free(filename);
+    free(vtkfilename);
+	
+    /* write pvts in subdomain directory */
+    ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
+    if (path) {
+        asprintf(&filename,"%s/%s/%s",path,subdomain_path,vtkfilename);
+    } else {
+        asprintf(&filename,"%s/%s",subdomain_path,vtkfilename);
+    }
+    pTatinStringPathNormalize(filename);
+
+    ierr = pTatinOutputMeshEnergyPVTS(daT,prefix,filename);CHKERRQ(ierr);
+    free(filename);
+    free(vtkfilename);
 	
 	PetscFunctionReturn(0);
 }
@@ -610,56 +648,76 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(Quadrature Q,DM daT,Vec X,const ch
 #define __FUNCT__ "pTatin3d_ModelOutput_Temperature_Energy"
 PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	char           *name;
-	PhysCompEnergy energy;
-	DM             daT;
-	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
-	Quadrature     volQ;
-
-	PetscFunctionBegin;
+    PetscErrorCode   ierr;
+    char             *name;
+    PhysCompEnergy   energy;
+    DM               daT;
+    PetscLogDouble   t0,t1;
+    static PetscBool beenhere = PETSC_FALSE;
+    static char      *pvdfilename;
+    Quadrature       volQ;
+    
+    PetscFunctionBegin;
+    PetscTime(&t0);
+    
+    ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+    daT  = energy->daT;
+    volQ = energy->volQ;
+    
+    /* prepare directory structures */
+    ierr = pTatinParaviewSetOutputPrefix(ctx,prefix);CHKERRQ(ierr);
+    
+    /* Create PVD file on first entry to this function */
+    if (!beenhere) {
+        asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
+        PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s\n",pvdfilename);
+        ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+        
+        beenhere = PETSC_TRUE;
+    }
+    
+    /* Append file name to PVD file */
+    if (prefix) {
+        asprintf(&name,"%s_energy.pvts",prefix);
+    } else {
+        asprintf(&name,"energy.pvts");
+    }
+    switch (ctx->storage_type) {
+        case TDST_FLAT:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,NULL);CHKERRQ(ierr);
+            break;
+        case TDST_PERSTEP:
+            ierr = ParaviewPVDAppend(pvdfilename,ctx->time,name,ctx->prefixedoutputpath);CHKERRQ(ierr);
+            break;
+    }
+    free(name);
+    
+    /* Write VTS and PVTS files */
+    if (prefix) {
+        asprintf(&name,"%s_energy",prefix);
+    } else {
+        asprintf(&name,"energy");
+    }
 	
-	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
-	daT  = energy->daT;
-	volQ = energy->volQ;
-	
-	PetscTime(&t0);
-	// PVD
-	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename);
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
-	{
-		char *vtkfilename;
-		
-		if (prefix) {
-			asprintf(&vtkfilename, "%s_energy.pvts",prefix);
-		} else {
-			asprintf(&vtkfilename, "energy.pvts");
-		}
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
-		free(vtkfilename);
-	}
-	
-	// PVTS + VTS
-	if (prefix) {
-		asprintf(&name,"%s_energy",prefix);
-	} else {
-		asprintf(&name,"energy");
-	}
-	
-	ierr = pTatinOutputParaViewMeshEnergy(volQ,daT,X,ctx->outputpath,name);CHKERRQ(ierr);
-	free(name);
-	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
-	
-	PetscFunctionReturn(0);
+    switch (ctx->storage_type) {
+            
+        case TDST_FLAT:
+            ierr = pTatinOutputParaViewMeshEnergy(volQ,daT,X,ctx->outputpath,name);CHKERRQ(ierr);
+            break;
+        case TDST_PERRANK:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"TDST_PERRANK not valid for pTatin3d_ModelOutput_Temperature_Energy, use storage_type = \"flat\" or \"perstep\"");
+            break;
+        case TDST_PERSTEP:
+            break;
+    }
+    free(name);
+    PetscTime(&t1);
+    PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec)\n", __FUNCT__,prefix,t1-t0);
+    
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -689,10 +747,10 @@ PetscErrorCode pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(pTatinCtx ctx,Vec
         if (ctx->restart_from_file) {
             pTatinGenerateFormattedTimestamp(date_time);
             asprintf(&pvdfilename,"%s/timeseries_temp_%s.pvd",ctx->outputpath,date_time);
-            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n",pvdfilename);
+            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s\n",pvdfilename);
         } else {
             asprintf(&pvdfilename,"%s/timeseries_temp.pvd",ctx->outputpath);
-            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename);
+            PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s\n",pvdfilename);
         }
         ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
         
@@ -735,7 +793,7 @@ PetscErrorCode pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(pTatinCtx ctx,Vec
     free(filename);
     
     PetscTime(&t1);
-    PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+    PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,vts): CPU time %1.2e (sec)\n", __FUNCT__,prefix,t1-t0);
     
     PetscFunctionReturn(0);
 }
