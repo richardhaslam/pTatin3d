@@ -1,3 +1,31 @@
+/*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ **
+ **    Copyright (c) 2012
+ **        Dave A. May [dave.may@erdw.ethz.ch]
+ **        Institute of Geophysics
+ **        ETH Zürich
+ **        Sonneggstrasse 5
+ **        CH-8092 Zürich
+ **        Switzerland
+ **
+ **    project:    pTatin3d
+ **    filename:   ksp_chebyrn.c
+ **
+ **
+ **    pTatin3d is free software: you can redistribute it and/or modify
+ **    it under the terms of the GNU General Public License as published
+ **    by the Free Software Foundation, either version 3 of the License,
+ **    or (at your option) any later version.
+ **
+ **    pTatin3d is distributed in the hope that it will be useful,
+ **    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ **    See the GNU General Public License for more details.
+ **
+ **    You should have received a copy of the GNU General Public License
+ **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
 #include <petsc-private/kspimpl.h>                    /*I "petscksp.h" I*/
@@ -197,26 +225,6 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebychevRNSetEigenvalues"
-/*@
- KSPChebychevSetEigenvalues - Sets estimates for the extreme eigenvalues
- of the preconditioned problem.
- 
- Logically Collective on KSP
- 
- Input Parameters:
- +  ksp - the Krylov space context
- -  emax, emin - the eigenvalue estimates
- 
- Options Database:
- .  -ksp_chebychev_eigenvalues emin,emax
- 
- Note: If you run with the Krylov method of KSPCG with the option -ksp_monitor_singular_value it will
- for that given matrix and preconditioner an estimate of the extreme eigenvalues.
- 
- Level: intermediate
- 
- .keywords: KSP, Chebyshev, set, eigenvalues
- @*/
 PetscErrorCode  KSPChebychevRNSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
     PetscErrorCode ierr;
@@ -231,36 +239,6 @@ PetscErrorCode  KSPChebychevRNSetEigenvalues(KSP ksp,PetscReal emax,PetscReal em
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPChebychevRNSetEstimateEigenvalues"
-/*@
- KSPChebychevSetEstimateEigenvalues - Automatically estimate the eigenvalues to use for Chebychev
- 
- Logically Collective on KSP
- 
- Input Parameters:
- +  ksp - the Krylov space context
- .  a - multiple of min eigenvalue estimate to use for min Chebychev bound (or PETSC_DECIDE)
- .  b - multiple of max eigenvalue estimate to use for min Chebychev bound (or PETSC_DECIDE)
- .  c - multiple of min eigenvalue estimate to use for max Chebychev bound (or PETSC_DECIDE)
- -  d - multiple of max eigenvalue estimate to use for max Chebychev bound (or PETSC_DECIDE)
- 
- Options Database:
- .  -ksp_chebychev_estimate_eigenvalues a,b,c,d
- 
- Notes:
- The Chebychev bounds are estimated using
- .vb
- minbound = a*minest + b*maxest
- maxbound = c*minest + d*maxest
- .ve
- The default configuration targets the upper part of the spectrum for use as a multigrid smoother, so only the maximum eigenvalue estimate is used.
- The minimum eigenvalue estimate obtained by Krylov iteration is typically not accurate until the method has converged.
- 
- If 0.0 is passed for all transform arguments (a,b,c,d), eigenvalue estimation is disabled.
- 
- Level: intermediate
- 
- .keywords: KSP, Chebyshev, set, eigenvalues
- @*/
 PetscErrorCode KSPChebychevRNSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
     PetscErrorCode ierr;
