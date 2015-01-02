@@ -150,42 +150,36 @@ sub print_header_2012
 	
     print DAT "/*@";
     
-    print DAT " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    print DAT " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
- **    Copyright (c) 2012, 
+ **    Copyright (c) 2012
  **        Dave A. May [dave.may\@erdw.ethz.ch]
- **        Geophysical Fluid Dynamics, 
- **        Department of Earth Sciences,
- **        ETH Zürich,
- **        Sonneggstrasse 5,
- **        CH-8092 Zurich,
+ **        Institute of Geophysics
+ **        ETH Zürich
+ **        Sonneggstrasse 5
+ **        CH-8092 Zürich
  **        Switzerland
  **
- **    Project:       $proj
- **    Filename:      $name
+ **    project:    $proj
+ **    filename:   $name
  **
  **
  **    $proj is free software: you can redistribute it and/or modify
- **    it under the terms of the GNU General Public License as published by
- **    the Free Software Foundation, either version 3 of the License, or
- **    (at your option) any later version.
+ **    it under the terms of the GNU General Public License as published
+ **    by the Free Software Foundation, either version 3 of the License,
+ **    or (at your option) any later version.
  **
  **    $proj is distributed in the hope that it will be useful,
  **    but WITHOUT ANY WARRANTY; without even the implied warranty of
- **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- **    GNU General Public License for more details.
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ **    See the GNU General Public License for more details.
  **
  **    You should have received a copy of the GNU General Public License
- **    along with $proj.  If not, see <http://www.gnu.org/licenses/>.
+ **    along with $proj. If not, see <http://www.gnu.org/licenses/>.
  **
- **
- **    \$Id\$
- **
- ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
-	
-	# Use svn to expand $Id =>  **    \$Id: $name REVISION $year-$mon-$mday $hour:$min:$sec dmay \$ #
-	
-    print DAT "@*/\n";
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+		
+    print DAT " @*/\n";
 	
     close( DAT );
 }
