@@ -18,18 +18,14 @@ sub trim($);
 
 use File::Find;
 
-
 # 1) Generate a list of all *.c and *.h files (full path to file) beneath current directory
 
 ## Set equal to 'true' when debugging. Thus will make a copy of each file with .bup extension
 ## To remove all the buckups do > for i in `find . -name "*.bup"`; do rm -f $i; done
 $paranoid = 'false';
 
-
 find( \&wanted_c_h_files, './' );
 #print @file_list;
-
-
 
 sub wanted_c_h_files 
 {
@@ -42,7 +38,6 @@ sub wanted_c_h_files
     #    print "  Found (.c , .h) $full_path_to_file \n";
         process_file( $full_path_to_file, $cur_file );
     }
-
 }
 
 #
@@ -145,7 +140,6 @@ sub print_header_2012
     ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time);
     $year += 1900;
 	
-    
     open( DAT, ">$filename" ) || die( "Could not open file ($filename) ! \n" );
 	
     print DAT "/*@";
@@ -183,9 +177,6 @@ sub print_header_2012
 	
     close( DAT );
 }
-
-
-
 
 sub trim($)
 {
