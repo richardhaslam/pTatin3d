@@ -1,51 +1,53 @@
 
-/*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  **
  **   This file is part of pTatin3d.
  ** 
- **   pTatin3d is a C library specifically designed to solve variable viscosity Stokes flow 
- **   problems in three dimensions using a mixed finite element (FE) formulation (Q2-P1), together
- **   with a marker-and-cell (MAC) discretisations for the coefficients in the underlying PDE. 
- **   Unique to this FE-MAC package is that we provide support for efficient, parallel scalable 
- **   matrix free operators and matrix free operators/smoothers which can be utilized by geometric 
- **   multi-grid preconditioners.
+ **   pTatin3d is a C library designed to solve variable viscosity Stokes 
+ **   flow problems in three dimensions. The flow problem is discretised  
+ **   using a mixed finite element (FE) formulation (Q2-P1) whilst Lagrangian
+ **   state and history variables are discretised with the material-point 
+ **   method (MPM). Unique to this FE-MPM package is that we provide fast, 
+ **   parallel scalable matrix-free defintions for the Stokes operators which 
+ **   are utilized by a hybrid geometric-algebraic multi-grid preconditioner.
  **
  **
- **    Copyright (c) 2012,
+ **    Copyright (c) 2012
  **        Dave A. May [dave.may@erdw.ethz.ch]
- **        Geophysical Fluid Dynamics,
- **        Department of Earth Sciences,
- **        ETH Zürich,
- **        Sonneggstrasse 5,
- **        CH-8092 Zurich,
+ **        Institute of Geophysics
+ **        ETH Zürich
+ **        Sonneggstrasse 5
+ **        CH-8092 Zürich
  **        Switzerland
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
- **    it under the terms of the GNU General Public License as published by
- **    the Free Software Foundation, either version 3 of the License, or
- **    (at your option) any later version.
+ **    it under the terms of the GNU General Public License as published
+ **    by the Free Software Foundation, either version 3 of the License,
+ **    or (at your option) any later version.
  **
  **    pTatin3d is distributed in the hope that it will be useful,
  **    but WITHOUT ANY WARRANTY; without even the implied warranty of
- **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- **    GNU General Public License for more details.
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ **    See the GNU General Public License for more details.
  **
  **    You should have received a copy of the GNU General Public License
- **    along with pTatin3d.  If not, see <http://www.gnu.org/licenses/>.
+ **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** 
- **    Authors:
- **    Dave A. May [dave.may@erdw.ethz.ch]
+ **    Contributors:
+ **    Jed Brown            [jedbrown@mcs.anl.gov]
+ **    Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
+ **    Dave A. May          [dave.may@erdw.ethz.ch]
+ **    Patrick Sanan        [sananp@usi.ch]
  **
  ** 
  **    Contact:
  **    Dave A. May [dave.may@erdw.ethz.ch]
  ** 
- **    Geophysical Fluid Dynamics, 
- **    Department of Earth Sciences,
- **    ETH Zürich,
- **    Sonneggstrasse 5,
- **    CH-8092 Zurich,
+ **    Institute of Geophysics
+ **    ETH Zürich
+ **    Sonneggstrasse 5
+ **    CH-8092 Zürich
  **    Switzerland
  **
- ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
