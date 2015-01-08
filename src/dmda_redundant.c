@@ -182,7 +182,7 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 		ierr = DMDAGetInfo(_sda,0,&_m,&_n,&_p,&_M,&_N,&_P,0,0,0,0,0,0);CHKERRQ(ierr);
 		ierr = x_DMDACreate3d(PetscObjectComm((PetscObject)_sda),wrapNP,st,_m,_n,_p,_M,_N,_P,3,sw,0,0,0,&dd_da_coordinates);CHKERRQ(ierr);
 		ierr = DMSetCoordinateDM(_sda,dd_da_coordinates);CHKERRQ(ierr);
-	
+        ierr = DMDestroy(&dd_da_coordinates);CHKERRQ(ierr); /* hand back destruction to the _sda object */	
 	}
 	ierr = DMDASetUniformCoordinates( _sda, 0.0,1.0, 0.0,1.0, 0.0,1.0 );CHKERRQ(ierr);
 	
