@@ -75,6 +75,7 @@ libptatin3d-y.c += $(call thisdir, \
             cJSON.c \
             geometry_object_parse.c \
 			spm_utils.c \
+            petsc_utils.c \
 	)
 
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
