@@ -545,9 +545,10 @@ def write_out_mpi_type( prototype, ParticleClass, ParticleClassShortName, variab
 	l = l + '  ierr = MPI_Type_commit(&newtype);'
 	print(l)
 
-	l = '  *ptype = newtype;'
+	l =     '  *ptype = newtype;\n'
+	l = l + '  return 0;\n'
+	l = l + '}\n'
 	print(l)
-	print('}\n')
 
 
 def write_out_c_class( ParticleClass, ParticleClassShortName, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list ):
