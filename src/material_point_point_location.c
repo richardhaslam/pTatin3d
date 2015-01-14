@@ -877,7 +877,7 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 			Lxip[1] = 2.0*(Gxip[1]-eta0 )/deta  - 1.0;
 			Lxip[2] = 2.0*(Gxip[2]-zeta0)/dzeta - 1.0;
 			
-			wil_nInJ = nI + nJ * mx;
+			wil_nInJ = nI + nJ * mx + nK * mx * my;
 		}
 		
 		/* set into vector */
