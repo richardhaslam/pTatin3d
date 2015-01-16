@@ -40,7 +40,38 @@
 #include "ptatin_models.h"
 #include "ptatin_utils.h"
 #include "output_paraview.h"
+#include "petsc_utils.h"
 
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin_SNESMonitor_StdoutStokesResiduals3d"
+PetscErrorCode pTatin_SNESMonitor_StdoutStokesResiduals3d(SNES snes,PetscInt n,PetscReal fnorm,void *data)
+{
+	PetscErrorCode ierr;
+	pTatinCtx      ctx;
+	PetscReal      norms[4];
+	Vec            F,Fu,Fp;
+    MPI_Comm       comm;
+	
+	PetscFunctionBegin;
+	ctx = (pTatinCtx)data;
+
+    ierr = SNESGetFunction(snes,&F,NULL,NULL);CHKERRQ(ierr);
+	
+    ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
+	
+	ierr = VecStrideNormLocal(Fu,0,NORM_2,&norms[0]);CHKERRQ(ierr);
+	ierr = VecStrideNormLocal(Fu,1,NORM_2,&norms[1]);CHKERRQ(ierr);
+	ierr = VecStrideNormLocal(Fu,2,NORM_2,&norms[2]);CHKERRQ(ierr);
+	ierr = VecNormLocal(Fp,NORM_2,&norms[3]);CHKERRQ(ierr);
+	
+	ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,F,&Fu,&Fp);CHKERRQ(ierr);
+	
+    ierr = PetscObjectGetComm((PetscObject)F,&comm);CHKERRQ(ierr);
+	PetscPrintf(comm,"%3D SNES Component Fu,Fv,Fw,Fp function norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);
+	
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatin_KSPMonitor_StdoutStokesResiduals3d"
@@ -230,19 +261,23 @@ PetscErrorCode pTatin_SNESMonitorStokes_Residual_Paraview(SNES snes,PetscInt n,P
 PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
 {
     PetscErrorCode ierr;
-    PetscBool moniter_set;
-    KSP ksp;
-    
+    PetscBool      moniter_set;
+    KSP            ksp;
+
+    moniter_set = PETSC_TRUE;
+    ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor",&moniter_set,NULL);CHKERRQ(ierr);
+    if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
+
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    
+
     moniter_set = PETSC_TRUE;
     ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor",&moniter_set,NULL);CHKERRQ(ierr);
     if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
-    
+
     moniter_set = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_paraview",&moniter_set,NULL);CHKERRQ(ierr);
     if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_ParaviewStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
-    
+
     moniter_set = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_F_paraview",&moniter_set,NULL);CHKERRQ(ierr);
     if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitorStokes_Residual_Paraview,(void*)user,NULL);CHKERRQ(ierr); }
