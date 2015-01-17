@@ -27,18 +27,11 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#include "petsc-private/dmdaimpl.h" 
 #include "petscdm.h"
-
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
-
-#include "material_point_utils.h"
-#include "material_point_std_utils.h"
-#include "ptatin_models.h"
-#include "ptatin_utils.h"
-#include "output_paraview.h"
 #include "petsc_utils.h"
+#include "output_paraview.h"
 
 
 #undef __FUNCT__
@@ -131,11 +124,11 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     
     if (its == 0) {
         PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/stokes_ksp_r_step%.6d.pvd",ctx->outputpath,ctx->step);
-        PetscPrintf(comm,"  writing pvdfilename %s \n", pvdfilename );
+        PetscPrintf(comm,"  writing pvdfilename %s \n",pvdfilename );
         ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
     }
     PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_ksp_r_it%.4d_step%.6d.pvts",its,ctx->step);
-    ierr = ParaviewPVDAppend(pvdfilename,its, vtkfilename,"");CHKERRQ(ierr);
+    ierr = ParaviewPVDAppend(pvdfilename,its,vtkfilename,"");CHKERRQ(ierr);
     
     // PVTS + VTS
     PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_ksp_r_it%.4d_step%.6d",its,ctx->step);
@@ -151,7 +144,6 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     
     PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "_pTatin_SNESMonitorStokes_Paraview"
@@ -185,7 +177,6 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
     }
     ierr = ParaviewPVDAppend(pvdfilename,(double)its,vtkfilename,"");CHKERRQ(ierr);
     
-    
     // PVTS + VTS
     if (!prefix) {
         PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"stokes_snes_%s_it%.4d_step%.6d",field,its,ctx->step);
@@ -202,6 +193,7 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
     } else {
         PetscPrintf(comm,"%3D SNES(%s) [field %s]: ptatin non-linear solution viewer wrote file \n",its,field,prefix);
     }
+    
     PetscFunctionReturn(0);
 }
 
