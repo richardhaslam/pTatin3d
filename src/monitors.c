@@ -92,7 +92,7 @@ PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,Pets
     ierr = VecDestroy(&v);CHKERRQ(ierr);
     ierr = VecDestroy(&w);CHKERRQ(ierr);
 
-    ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     PetscPrintf(comm,"%3D KSP Component U,V,W,P residual norm [ %1.12e, %1.12e, %1.12e, %1.12e ]\n",n,norms[0],norms[1],norms[2],norms[3]);
 
     PetscFunctionReturn(0);
@@ -118,7 +118,7 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
     
     ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
-    ierr = PetscObjectGetComm((PetscObject)X,&comm);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     
