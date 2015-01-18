@@ -7,7 +7,7 @@ Unique to this package is that we provide fast, parallel scalable matrix-free
 defintions for the Stokes operators which are utilized by a hybrid 
 geometric-algebraic multi-grid preconditioner.
 
-pTatin3D includes the following
+pTatin3D includes the following:
 
 * mixed finite elemenets (Q2-P1_disc) for the Stokes problem
 * material points for tracking Lagrangian state and history variables
@@ -23,10 +23,11 @@ pTatin3D heavily leverages functionality from [PETSc](http://www.mcs.anl.gov/pet
 
 
 Contributors:
->  Jed Brown            [jedbrown@mcs.anl.gov]
->  Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
->  Dave A. May          [dave.may@erdw.ethz.ch]
->  Patrick Sanan        [sananp@usi.ch]
+
+* Jed Brown            [jedbrown@mcs.anl.gov]
+* Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
+* Dave A. May          [dave.may@erdw.ethz.ch]
+* Patrick Sanan        [sananp@usi.ch]
 
 More information about the implementation and performance of pTatin3D can be found in the following publications:
 
