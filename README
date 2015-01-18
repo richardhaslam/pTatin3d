@@ -6,8 +6,9 @@ three-dimensional models of lithospheric deformation.
 Unique to this package is that we provide fast, parallel scalable matrix-free 
 defintions for the Stokes operators which are utilized by a hybrid 
 geometric-algebraic multi-grid preconditioner.
-1. ss
-2. xxx 
+ * Red
+ + Green
+ - Blue
 
 pTatin3D includes the following:
 	* mixed finite elemenets (Q2-P1_disc) for the Stokes problem
