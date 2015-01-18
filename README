@@ -30,8 +30,7 @@ Contributors:
 More information about the implementation and performance of pTatin3D can be found in the following publications:
 
 ```
-#!c
-
+#!latex
 \@inproceedings{May:2014:PHM:2683593.2683624,
   author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
   title = {pTatin3D: High-performance Methods for Long-term Lithospheric Dynamics},
@@ -51,8 +50,7 @@ More information about the implementation and performance of pTatin3D can be fou
 }
 ```
 ```
-#!c
-
+#!latex
 \@article{May_etal:2014:cmame,
   author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
   title = {A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
