@@ -8,7 +8,7 @@ defintions for the Stokes operators which are utilized by a hybrid
 geometric-algebraic multi-grid preconditioner.
 
 pTatin3D includes the following:
-*  mixed finite elemenets (Q2-P1_disc) for the Stokes problem
+* mixed finite elemenets (Q2-P1_disc) for the Stokes problem
 * material points for tracking Lagrangian state and history variables
 * energy equation solved with Q1 elements + SUPG
 * ALE formulations (with a varierty of remeshing solutions)
@@ -47,11 +47,11 @@ More information about the implementation and performance of pTatin3D can be fou
   keywords = {geodynamics, matrix-free, multilevel preconditioners, stokes, variable viscosity, vectorization},
 }
 
-\@article{May_etal:2014:cmame,
-  author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
-  title = {A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
-  journals = {Computer Methods in Applied Mechanics and Engineering},
-  volume = {zzz},
-  pages = {xxx--yyy},
-  year = {2015}
-}
+>\@article{May_etal:2014:cmame,
+>  author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
+>  title = {A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
+>  journals = {Computer Methods in Applied Mechanics and Engineering},
+>  volume = {zzz},
+>  pages = {xxx--yyy},
+>  year = {2015}
+>}
