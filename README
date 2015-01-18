@@ -8,27 +8,27 @@ defintions for the Stokes operators which are utilized by a hybrid
 geometric-algebraic multi-grid preconditioner.
 
 pTatin3D includes the following:
-    * mixed finite elemenets (Q2-P1_disc) for the Stokes problem
-    * material points for tracking Lagrangian state and history variables
-    * energy equation solved with Q1 elements + SUPG
-    * ALE formulations (with a varierty of remeshing solutions)
-    * extensible rheology components (currently supports: iso-viscous, Frank-Kamenetskii, Arrhenius, power-law, von Mises, Drucker Prager)
-    * full support for spatio-temporal Dirichlet and non-zero Neumann boundary conditions
-    * extensible coupling with landscape evolution models (curernt support for FastScape)
-    * full support for Newton and Picard non-linear solvers
-    * massively parallel implementation
+	* mixed finite elemenets (Q2-P1_disc) for the Stokes problem
+	* material points for tracking Lagrangian state and history variables
+	* energy equation solved with Q1 elements + SUPG
+	* ALE formulations (with a varierty of remeshing solutions)
+	* extensible rheology components (currently supports: iso-viscous, Frank-Kamenetskii, Arrhenius, power-law, von Mises, Drucker Prager)
+	* full support for spatio-temporal Dirichlet and non-zero Neumann boundary conditions
+	* extensible coupling with landscape evolution models (curernt support for FastScape)
+	* full support for Newton and Picard non-linear solvers
+	* massively parallel implementation
 
 pTatin3D heavily leverages functionality from [PETSc](http://www.mcs.anl.gov/petsc)
 
 
 Contributors:
-  Jed Brown            [jedbrown@mcs.anl.gov]
-  Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
-  Dave A. May          [dave.may@erdw.ethz.ch]
-  Patrick Sanan        [sananp@usi.ch]
+>  Jed Brown            [jedbrown@mcs.anl.gov]
+>  Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
+>  Dave A. May          [dave.may@erdw.ethz.ch]
+>  Patrick Sanan        [sananp@usi.ch]
 
 More information about the implementation and performance of pTatin3D can be found in the following publications:
-
+-----------------------
 \@inproceedings{May:2014:PHM:2683593.2683624,
   author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
   title = {pTatin3D: High-performance Methods for Long-term Lithospheric Dynamics},
@@ -47,11 +47,11 @@ More information about the implementation and performance of pTatin3D can be fou
   keywords = {geodynamics, matrix-free, multilevel preconditioners, stokes, variable viscosity, vectorization},
 }
 
->\@article{May_etal:2014:cmame,
->  author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
->  title = {A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
->  journals = {Computer Methods in Applied Mechanics and Engineering},
->  volume = {zzz},
->  pages = {xxx--yyy},
->  year = {2015}
->}
+\@article{May_etal:2014:cmame,
+  author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
+  title = {A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
+  journals = {Computer Methods in Applied Mechanics and Engineering},
+  volume = {zzz},
+  pages = {xxx--yyy},
+  year = {2015}
+}
