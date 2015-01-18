@@ -11,10 +11,11 @@ geometric-algebraic multi-grid preconditioner.
     - Blue
 
 pTatin3D includes the following:
-	* mixed finite elemenets (Q2-P1_disc) for the Stokes problem
-	* material points for tracking Lagrangian state and history variables
-	* energy equation solved with Q1 elements + SUPG
-	* ALE formulations (with a varierty of remeshing solutions)
+    * mixed finite elemenets (Q2-P1_disc) for the Stokes problem
+    * material points for tracking Lagrangian state and history variables
+    * energy equation solved with Q1 elements + SUPG
+	
+* ALE formulations (with a varierty of remeshing solutions)
 	* extensible rheology components (currently supports: iso-viscous, Frank-Kamenetskii, Arrhenius, power-law, von Mises, Drucker Prager)
 	* full support for spatio-temporal Dirichlet and non-zero Neumann boundary conditions
 	* extensible coupling with landscape evolution models (curernt support for FastScape)
