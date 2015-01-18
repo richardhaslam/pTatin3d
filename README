@@ -29,9 +29,6 @@ Contributors:
 
 More information about the implementation and performance of pTatin3D can be found in the following publications:
 
------------------------
-
-
 ```
 #!c
 
@@ -52,6 +49,9 @@ More information about the implementation and performance of pTatin3D can be fou
   address = {Piscataway, NJ, USA},
   keywords = {geodynamics, matrix-free, multilevel preconditioners, stokes, variable viscosity, vectorization},
 }
+```
+```
+#!c
 
 \@article{May_etal:2014:cmame,
   author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
