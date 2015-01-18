@@ -16,11 +16,11 @@ pTatin3D includes the following:
     * energy equation solved with Q1 elements + SUPG
 	
 * ALE formulations (with a varierty of remeshing solutions)
-	* extensible rheology components (currently supports: iso-viscous, Frank-Kamenetskii, Arrhenius, power-law, von Mises, Drucker Prager)
-	* full support for spatio-temporal Dirichlet and non-zero Neumann boundary conditions
-	* extensible coupling with landscape evolution models (curernt support for FastScape)
-	* full support for Newton and Picard non-linear solvers
-	* massively parallel implementation
+* extensible rheology components (currently supports: iso-viscous, Frank-Kamenetskii, Arrhenius, power-law, von Mises, Drucker Prager)
+* full support for spatio-temporal Dirichlet and non-zero Neumann boundary conditions
+* extensible coupling with landscape evolution models (curernt support for FastScape)
+* full support for Newton and Picard non-linear solvers
+* massively parallel implementation
 
 pTatin3D heavily leverages functionality from [PETSc](http://www.mcs.anl.gov/petsc)
 
