@@ -258,7 +258,7 @@ PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
     KSP            ksp;
 
     PetscFunctionBegin;
-    moniter_set = PETSC_TRUE;
+    moniter_set = PETSC_FALSE;
     ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor",&moniter_set,NULL);CHKERRQ(ierr);
     if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 
