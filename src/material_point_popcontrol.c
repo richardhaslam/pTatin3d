@@ -1934,7 +1934,7 @@ PetscErrorCode MPPCSortedCtxGetPointByCell(DataBucket db,PetscInt cell_idx,Petsc
     PetscInt       pid,pid_unsorted;
     
     points_per_cell = pcell_list[cell_idx+1] - pcell_list[cell_idx];
-    if (pidx > points_per_cell) {
+    if (pidx >= points_per_cell) {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Requesting a marker index which is larger than the number of points per cell");
     }
     
