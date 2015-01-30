@@ -111,6 +111,17 @@ PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModelGetName"
+PetscErrorCode pTatinModelGetName(pTatinModel model,char **name)
+{
+	PetscFunctionBegin;
+	if (name) {
+		*name = model->model_name;
+	}
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "pTatinModelGetModelData"
 PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **data)
