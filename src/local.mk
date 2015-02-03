@@ -28,6 +28,7 @@ libptatin3d-y.c += $(call thisdir, \
 			MPntPEnergy_def.c \
 			QPntVolCoefEnergy_def.c \
 			output_paraview.c \
+            xdmf_writer.c \
 			output_material_points.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
