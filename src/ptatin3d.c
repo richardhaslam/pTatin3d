@@ -413,11 +413,26 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 		case -1:
 			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using null projection\n");
 			break;
+
+        /* P0 variants */
 		case 0:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection\n");
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 not implemented");
+			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [arithmetic avg]\n");
+			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [arithmetic avg] not implemented");
 			break;
-		case 1:
+		case 10:
+			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [harmonic avg]\n");
+			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [harmonic avg] not implemented");
+			break;
+		case 20:
+			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [geometric avg]\n");
+			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [geometric avg] not implemented");
+			break;
+		case 30:
+			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [dominant phase]\n");
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [dominant phase] not implemented");
+			break;
+		
+        case 1:
 			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q1 projection\n");
 			break;
 		case 2:
