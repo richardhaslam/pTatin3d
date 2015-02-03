@@ -1158,6 +1158,139 @@ PetscErrorCode _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGr
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "_BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid"
+PetscErrorCode _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid(
+                   DM clone,Vec properties_A1,Vec properties_A2,Vec properties_B,
+                   Quadrature Q)
+{
+    PetscScalar       NiQ1_p[8];
+    PetscScalar       Ni_p[Q2_NODES_PER_EL_3D];
+    PetscScalar       Ae1[Q2_NODES_PER_EL_3D],Ae2[Q2_NODES_PER_EL_3D],Be[Q2_NODES_PER_EL_3D];
+    PetscInt          el_lidx[U_BASIS_FUNCTIONS];
+    Vec               Lproperties_A1,Lproperties_A2,Lproperties_B;
+    PetscScalar       *LA_properties_A1,*LA_properties_A2,*LA_properties_B;
+    PetscLogDouble    t0,t1;
+    PetscInt          p,i,nel,nen,e;
+    const PetscInt    *elnidx;
+    PetscInt          nqp;
+    PetscReal         *qp_coor,*qp_weight;
+    QPntVolCoefStokes *all_quadraturepoints,*cell_quadraturepoints;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    
+    ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+    ierr = VolumeQuadratureGetAllCellData_Stokes(Q,&all_quadraturepoints);CHKERRQ(ierr);
+    
+    if (nel != Q->n_elements) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"Cloned DMDA doesn't have same number of elements as volume quadrature point");
+    }
+    
+    nqp       = Q->npoints;
+    qp_coor   = Q->q_xi_coor;
+    qp_weight = Q->q_weight;
+    
+    ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);  ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);  ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
+    ierr = DMGetLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);   ierr = VecZeroEntries(Lproperties_B);CHKERRQ(ierr);
+    
+    ierr = VecGetArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+    ierr = VecGetArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+    ierr = VecGetArray(Lproperties_B, &LA_properties_B);CHKERRQ(ierr);
+    
+    
+    PetscTime(&t0);
+    for (e=0; e<nel; e++) {
+        
+        ierr = PetscMemzero(Ae1,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+        ierr = PetscMemzero(Ae2,sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+        ierr = PetscMemzero(Be, sizeof(PetscScalar)*Q2_NODES_PER_EL_3D);CHKERRQ(ierr);
+        
+        ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
+        for (p=0; p<nqp; p++) {
+            PetscReal *xi_p;
+            double    eta_p,rho_p;
+        
+            xi_p  = &qp_coor[3*p];
+            eta_p = cell_quadraturepoints[p].eta;
+            rho_p = cell_quadraturepoints[p].rho;
+                    
+            P3D_ConstructNi_Q1_3D(xi_p,NiQ1_p);
+            
+            Ni_p[0] = NiQ1_p[0];
+            Ni_p[2] = NiQ1_p[1];
+            Ni_p[6] = NiQ1_p[2];
+            Ni_p[8] = NiQ1_p[3];
+            
+            Ni_p[0+18] = NiQ1_p[4];
+            Ni_p[2+18] = NiQ1_p[5];
+            Ni_p[6+18] = NiQ1_p[6];
+            Ni_p[8+18] = NiQ1_p[7];
+            
+            Ni_p[1] = Ni_p[7] = 1.0;
+            Ni_p[3] = Ni_p[4] = Ni_p[5] = 1.0;
+            
+            Ni_p[ 9] = Ni_p[10] = Ni_p[11] = 1.0;
+            Ni_p[12] = Ni_p[13] = Ni_p[14] = 1.0;
+            Ni_p[15] = Ni_p[16] = Ni_p[17] = 1.0;
+            
+            Ni_p[1+18] = Ni_p[7+18] = 1.0;
+            Ni_p[3+18] = Ni_p[4+18] = Ni_p[5+18] = 1.0;
+            
+            for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+                Ae1[i] += Ni_p[i] * eta_p;
+                Ae2[i] += Ni_p[i] * rho_p;
+                Be[i]  += Ni_p[i];
+            }
+        }
+        
+        /* sum into local vectors */
+        ierr = Q2GetElementLocalIndicesDOF(el_lidx,1,(PetscInt*)&elnidx[nen*e]);CHKERRQ(ierr);
+        
+        ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A1, 1, el_lidx,Ae1);CHKERRQ(ierr);
+        ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_A2, 1, el_lidx,Ae2);CHKERRQ(ierr);
+        ierr = DMDASetValuesLocalStencil_AddValues_DOF(LA_properties_B,  1, el_lidx,Be);CHKERRQ(ierr);
+    }
+    PetscTime(&t1);
+    //PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (summation): %1.4lf ]\n",t1-t0);
+    
+    ierr = VecRestoreArray(Lproperties_B,&LA_properties_B);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Lproperties_A2,&LA_properties_A2);CHKERRQ(ierr);
+    ierr = VecRestoreArray(Lproperties_A1,&LA_properties_A1);CHKERRQ(ierr);
+    
+    /* scatter to quadrature points */
+    PetscTime(&t0);
+    ierr = DMLocalToGlobalBegin(clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(  clone,Lproperties_A1,ADD_VALUES,properties_A1);CHKERRQ(ierr);
+    
+    ierr = DMLocalToGlobalBegin(clone,Lproperties_A2,ADD_VALUES,properties_A2);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(  clone,Lproperties_A2,ADD_VALUES,properties_A2);CHKERRQ(ierr);
+    
+    ierr = DMLocalToGlobalBegin(clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(  clone,Lproperties_B,ADD_VALUES,properties_B);CHKERRQ(ierr);
+    
+    /* scale */
+    ierr = VecPointwiseDivide( properties_A1, properties_A1, properties_B );CHKERRQ(ierr);
+    ierr = VecPointwiseDivide( properties_A2, properties_A2, properties_B );CHKERRQ(ierr);
+    PetscTime(&t1);
+    //	PetscPrintf(PETSC_COMM_WORLD,"  [ L2 projectionQ1 (interpolation): %1.4lf ]\n",t1-t0);
+    
+    ierr = DMRestoreLocalVector(clone,&Lproperties_B);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);
+    ierr = DMRestoreLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
+
+/*
+ This function is specifically for projecting the viscosity/density from the 
+ quadrature point values defined on the coarse grid to all other levels in a mesh hierarchy.
+ It is assumed that the viscosity is already defined on the fine grid quadrature points.
+ This values will have been defined via either
+ (i) your model setup, or
+ (ii) through a call to pTatin_EvaluateRheologyNonlinearitiesMarkers()
+*/
+#undef __FUNCT__
 #define __FUNCT__ "SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy"
 PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(PetscInt coefficient_projection_type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[])
 {
@@ -1185,10 +1318,8 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	ierr = DMGetGlobalVector(clone[nlevels-1],&properties_B);CHKERRQ(ierr);
 	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
 	
-	/* compute */
-	ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGrid(
-                clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
-                npoints, mp_std,mp_stokes );CHKERRQ(ierr);
+    
+#if 0
 
 	switch (coefficient_projection_type) {
         case -1:
@@ -1217,7 +1348,78 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
             ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,Q[nlevels-1]);CHKERRQ(ierr);
             break;
 	}
+#endif
 	
+	switch (coefficient_projection_type) {
+        /*
+         If the following projection methods are chosen, 
+         {
+           null                -> -1
+           P0[arith,harm,geom] -> 0,10,20
+           one2on2             -> 4
+         }
+       then we have assumed that quadrature point values on the fine
+         mesh are already defined (by some other means).
+         Projection operators on the fine level need to be generated using quadrature point values.
+         */
+        case -1:
+            ierr =  _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid(
+                        clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                        Q[nlevels-1]);
+            break;
+        case 0:
+            ierr =  _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid(
+                        clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                        Q[nlevels-1]);
+            break;
+        case 10:
+            ierr =  _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid(
+                        clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                        Q[nlevels-1]);
+            break;
+        case 20:
+            ierr =  _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid(
+                        clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                        Q[nlevels-1]);
+            break;
+            
+        case 1:
+            /* 
+             Generate the projection vectors using the material point coordinates.
+             Would could generate the projection operators using the interpolated quadrature point values
+             but that would seem to employ a double-interpolation step which would uneccesarily smooth the coefficients.
+             */
+            ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_FineGrid(
+                       clone[nlevels-1],properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                       npoints,mp_std,mp_stokes);CHKERRQ(ierr);
+            
+            /* 
+             This doesn't need to be performed as any call to pTatin_EvaluateRheologyNonlinearitiesMarkers() will have already performed such an interpolation from markers to quadrature points
+             */
+            //ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
+            //          clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],Q[nlevels-1] );CHKERRQ(ierr);
+            break;
+            
+        case 2:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
+            break;
+            
+        case 3:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
+            break;
+            
+        case 4:
+            //ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,Q[nlevels-1]);CHKERRQ(ierr);
+            ierr =  _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGrid(
+                        clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],properties_B,
+                        Q[nlevels-1]);
+            break;
+            
+        default:
+			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unrecognized coefficient projection provided (%D)",coefficient_projection_type);
+            break;
+    }
+    
 	/* view */
 	view = PETSC_FALSE;
 	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,&flg);
@@ -1277,8 +1479,8 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 		}
 		
 		ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-                    clone[k-1], properties_A1[k-1],properties_A2[k-1],
-					Q[k-1] );CHKERRQ(ierr);
+                    clone[k-1],properties_A1[k-1],properties_A2[k-1],
+					Q[k-1]);CHKERRQ(ierr);
 
 		if (view) {
 			PetscViewer viewer;
@@ -2462,117 +2664,246 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 /* P0 */
 #undef __FUNCT__
 #define __FUNCT__ "_LocalP0Projection_MPntPStokes_MapToQuadratePoints"
-PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints( DM clone,
-																																	const PetscInt mx_fine,const PetscInt my_fine,const PetscInt mz_fine,	
-																																	const PetscInt refx,const PetscInt refy,const PetscInt refz,
-																																	const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],Quadrature Q) 
+PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
+                    CoefficientAveragingType eta_type,CoefficientAveragingType rho_type,
+                    DM clone,const PetscInt mx_fine,const PetscInt my_fine,const PetscInt mz_fine,
+                    const PetscInt refx,const PetscInt refy,const PetscInt refz,
+                    const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],Quadrature Q) 
 {
-	PetscLogDouble t0,t1;
-	PetscInt p;
-	const PetscInt *elnidx;
-	
-	PetscInt ngp;
-	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
-	PetscInt nel,nen,e,e_level,ei,ej,ek,e2d;
-	PetscInt mx_coarse,my_coarse,mz_coarse;
-	PetscErrorCode ierr;
-	
-	
-	PetscFunctionBegin;
-	
-	ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
-	ierr = DMDAGetLocalSizeElementQ2(clone,&mx_coarse,&my_coarse,&mz_coarse);CHKERRQ(ierr);
-	
-	ierr = VolumeQuadratureGetAllCellData_Stokes(Q,&all_gausspoints);CHKERRQ(ierr);
-	
-	/* init eta to zero interpolate */
-
-	ngp       = Q->npoints;
-	
-	for (e=0;e<nel;e++) {
-		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
-		for (p=0; p<ngp; p++) {
-			cell_gausspoints[p].eta = 0.0;
-		}
-	}
-	
-	/* traverse elements and interpolate */
-	PetscTime(&t0);
-	for (p=0; p<npoints; p++) {
-		double eta_p  = mp_stokes[p].eta;
-		
-		/* element index on fine grid */
-		e = mp_std[p].wil;
-		/* compute ei,ej,ek on fine grid */
-		ek = e/(mx_fine*my_fine);
-		e2d = e - ek * (mx_fine*my_fine);
-		ej = e2d / mx_fine;
-		ei = e2d - ej * mx_fine;
-		
-		e_level = (ei/refx) + (ej/refy)*mx_coarse + (ek/refz)*mx_coarse*my_coarse;
-		
-		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e_level,&cell_gausspoints);CHKERRQ(ierr);
-
-		cell_gausspoints[0].eta += eta_p; /* ARTHMATIC */
-		//cell_gausspoints[0].eta += 1.0/eta_p; /* HARMONIC */
-		cell_gausspoints[1].eta += 1.0;
-	}
-	PetscTime(&t1);
-	
-	/* set constant value over all quadrature points */
-	for (e=0;e<nel;e++) {
-		double sum_eta, sum_np;
-		
-		ierr = VolumeQuadratureGetCellData_Stokes(Q,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
-
-		sum_eta = cell_gausspoints[0].eta;
-		sum_np  = cell_gausspoints[1].eta;
-		
-		for (p=0; p<ngp; p++) {
-			cell_gausspoints[p].eta = sum_eta / sum_np; /* ARTHMATIC */
-			//cell_gausspoints[p].eta = 1.0/( sum_np * sum_eta); /* HARMONIC */
-		}
-	}
-	
-	PetscFunctionReturn(0);
+    PetscLogDouble    t0,t1;
+    PetscInt          p;
+    const PetscInt    *elnidx;
+    PetscInt          ngp;
+    QPntVolCoefStokes *all_quadraturepoints,*cell_quadraturepoints;
+    PetscInt          nel,nen,e,e_level,ei,ej,ek,e2d;
+    PetscInt          mx_coarse,my_coarse,mz_coarse;
+    PetscErrorCode    ierr;
+    
+    
+    PetscFunctionBegin;
+    
+    ierr = DMDAGetElements_pTatinQ2P1(clone,&nel,&nen,&elnidx);CHKERRQ(ierr);
+    ierr = DMDAGetLocalSizeElementQ2(clone,&mx_coarse,&my_coarse,&mz_coarse);CHKERRQ(ierr);
+    
+    ierr = VolumeQuadratureGetAllCellData_Stokes(Q,&all_quadraturepoints);CHKERRQ(ierr);
+    
+    ngp = Q->npoints;
+    
+    /* If something other than the null average is selected, initialize fields */
+    if (eta_type != CoefAvgNULL) {
+        for (e=0; e<nel; e++) {
+            ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
+            for (p=0; p<ngp; p++) {
+                cell_quadraturepoints[p].eta = 0.0;
+            }
+            if (eta_type == CoefAvgGEOMETRIC) {
+                cell_quadraturepoints[0].eta = 1.0;
+            }
+        }
+    }
+    
+    if (rho_type != CoefAvgNULL) {
+        for (e=0; e<nel; e++) {
+            ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
+            for (p=0; p<ngp; p++) {
+                cell_quadraturepoints[p].rho = 0.0;
+            }
+            if (rho_type == CoefAvgGEOMETRIC) {
+                cell_quadraturepoints[0].rho = 1.0;
+            }
+        }
+    }
+    
+    /* 
+     Traverse elements and collect cell wise quantities.
+     Note that cell wise quantities are accumlated within the quadrature point data structure.
+    */
+    PetscTime(&t0);
+    for (p=0; p<npoints; p++) {
+        double eta_p = mp_stokes[p].eta;
+        double rho_p = mp_stokes[p].rho;
+        
+        /* element index on fine grid */
+        e = mp_std[p].wil;
+        /* compute ei,ej,ek on fine grid */
+        ek = e/(mx_fine*my_fine);
+        e2d = e - ek * (mx_fine*my_fine);
+        ej = e2d / mx_fine;
+        ei = e2d - ej * mx_fine;
+        
+        e_level = (ei/refx) + (ej/refy)*mx_coarse + (ek/refz)*mx_coarse*my_coarse;
+        
+        ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e_level,&cell_quadraturepoints);CHKERRQ(ierr);
+        
+        switch (eta_type) {
+            case CoefAvgARITHMETIC:
+                cell_quadraturepoints[0].eta += eta_p; /* ARITHMETIC */
+                cell_quadraturepoints[1].eta += 1.0;
+                break;
+            case CoefAvgHARMONIC:
+                cell_quadraturepoints[0].eta += 1.0/eta_p; /* HARMONIC */
+                cell_quadraturepoints[1].eta += 1.0;
+                break;
+            case CoefAvgGEOMETRIC:
+                cell_quadraturepoints[0].eta *= eta_p; /* GEOMETRIC */
+                cell_quadraturepoints[1].eta += 1.0;
+                break;
+        }
+        
+        switch (rho_type) {
+            case CoefAvgARITHMETIC:
+                cell_quadraturepoints[0].rho += rho_p; /* ARITHMETIC */
+                cell_quadraturepoints[1].rho += 1.0;
+                break;
+            case CoefAvgHARMONIC:
+                cell_quadraturepoints[0].rho += 1.0/rho_p; /* HARMONIC */
+                cell_quadraturepoints[1].rho += 1.0;
+                break;
+            case CoefAvgGEOMETRIC:
+                cell_quadraturepoints[0].rho *= rho_p; /* GEOMETRIC */
+                cell_quadraturepoints[1].rho += 1.0;
+                break;
+        }
+    }
+    PetscTime(&t1);
+    
+    /* Compute cell wise average and set constant value on all quadrature points within each element */
+    for (e=0; e<nel; e++) {
+        double avg_field;
+        
+        ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
+        
+        /* viscosity averaging */
+        switch (eta_type) {
+            case CoefAvgARITHMETIC: {
+                double sum_field,sum_np;
+                
+                sum_field = cell_quadraturepoints[0].eta;
+                sum_np    = cell_quadraturepoints[1].eta;
+                avg_field = sum_field / sum_np; /* ARITHMETIC */
+                break;
+            }
+            case CoefAvgHARMONIC: {
+                double sum_field,sum_np;
+                
+                sum_field = cell_quadraturepoints[0].eta;
+                sum_np    = cell_quadraturepoints[1].eta;
+                //avg_field = 1.0/( sum_np * sum_field); /* HARMONIC */
+                avg_field = sum_np / sum_field;
+                break;
+            }
+            case CoefAvgGEOMETRIC: {
+                double prod_field,sum_np;
+                
+                prod_field = cell_quadraturepoints[0].eta;
+                sum_np     = cell_quadraturepoints[1].eta;
+                avg_field  = pow(prod_field,1.0/sum_np);
+                break;
+            }
+        }
+        /* If the averaging type was one of arth,harm,geom, set constant value on quadrature point */
+        if (eta_type != CoefAvgNULL) {
+            for (p=0; p<ngp; p++) {
+                cell_quadraturepoints[p].eta = avg_field;
+            }
+        }
+        
+        /* density averaging */
+        switch (rho_type) {
+            case CoefAvgARITHMETIC: {
+                double sum_field,sum_np;
+                
+                sum_field = cell_quadraturepoints[0].rho;
+                sum_np    = cell_quadraturepoints[1].rho;
+                avg_field = sum_field / sum_np; /* ARITHMETIC */
+                break;
+            }
+            case CoefAvgHARMONIC: {
+                double sum_field,sum_np;
+                
+                sum_field = cell_quadraturepoints[0].rho;
+                sum_np    = cell_quadraturepoints[1].rho;
+                //avg_field = 1.0/( sum_np * sum_field); /* HARMONIC */
+                avg_field = sum_np / sum_field;
+                break;
+            }
+            case CoefAvgGEOMETRIC: {
+                double prod_field,sum_np;
+                
+                prod_field = cell_quadraturepoints[0].rho;
+                sum_np     = cell_quadraturepoints[1].rho;
+                avg_field  = pow(prod_field,1.0/sum_np);
+                break;
+            }
+        }
+        /* If the averaging type was one of arth,harm,geom, set constant value on quadrature point */
+        if (rho_type != CoefAvgNULL) {
+            for (p=0; p<ngp; p++) {
+                cell_quadraturepoints[p].rho = avg_field;
+            }
+        }
+        
+    }
+    
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MProjection_P0Projection_onto_Q2_MPntPStokes_Level"
-PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level)
+PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(
+                    CoefficientAveragingType eta_type,CoefficientAveragingType rho_type,
+                    const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level)
 {
-	DM clone;
-	PetscInt k,refx,refy,refz,REFX[10],REFY[10],REFZ[10];
-	PetscInt mx_fine,my_fine,mz_fine,dof;
+    DM clone;
+    PetscInt k,refx,refy,refz,REFX[10],REFY[10],REFZ[10];
+    PetscInt mx_fine,my_fine,mz_fine,dof;
+    PetscErrorCode ierr;
+    
+    PetscFunctionBegin;
+    /* setup */
+    dof = 1;
+    ierr = DMDADuplicateLayout(da[level],dof,2,DMDA_STENCIL_BOX,&clone);CHKERRQ(ierr);
+    ierr = DMDASetElementType_Q2(clone);CHKERRQ(ierr);
+    
+    /* compute refinement factor for this level */
+    for (k=0; k<nlevels; k++) {
+        ierr = DMDAGetRefinementFactor(da[k],&REFX[k],&REFY[k],&REFZ[k]);CHKERRQ(ierr);
+    }
+    
+    refx = 1;
+    refy = 1;
+    refz = 1;
+    for (k=nlevels-1; k>=level+1; k--) {
+        refx = refx * REFX[k];
+        refy = refy * REFY[k];
+        refz = refz * REFZ[k];
+    }
+    
+    ierr = DMDAGetLocalSizeElementQ2(da[nlevels-1],&mx_fine,&my_fine,&mz_fine);CHKERRQ(ierr);
+    
+    ierr = _LocalP0Projection_MPntPStokes_MapToQuadratePoints(eta_type,rho_type,clone,mx_fine,my_fine,mz_fine,refx,refy,refz,npoints,mp_std,mp_stokes,Q_level);CHKERRQ(ierr);
+    
+    /* destroy */
+    ierr = DMDestroy(&clone);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
+
+/* 
+ Function is to be used for fine grid marker->quadrature point projection
+*/
+#undef __FUNCT__
+#define __FUNCT__ "MPntPStokesProj_P0"
+PetscErrorCode MPntPStokesProj_P0(CoefficientAveragingType type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],DM da,Quadrature Q)
+{
+    PetscInt nlevels,level_idx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	/* setup */
-	dof = 1;
-	ierr = DMDADuplicateLayout(da[level],dof,2,DMDA_STENCIL_BOX,&clone);CHKERRQ(ierr);
-	ierr = DMDASetElementType_Q2(clone);CHKERRQ(ierr);
-	
-	/* compute refinement factor for this level */
-	for (k=0; k<nlevels; k++) {
-		ierr = DMDAGetRefinementFactor(da[k],&REFX[k],&REFY[k],&REFZ[k]);CHKERRQ(ierr);
-	}
-	
-	refx = 1;
-	refy = 1;
-	refz = 1;
-	for (k=nlevels-1; k>=level+1; k--) {
-		refx = refx * REFX[k];
-		refy = refy * REFY[k];
-		refz = refz * REFZ[k];
-	}
-	
-	ierr = DMDAGetLocalSizeElementQ2(da[nlevels-1],&mx_fine,&my_fine,&mz_fine);CHKERRQ(ierr);
-
-	ierr = _LocalP0Projection_MPntPStokes_MapToQuadratePoints(clone, mx_fine,my_fine,mz_fine,	refx,refy,refz, npoints,mp_std,mp_stokes,Q_level);CHKERRQ(ierr);
-	
-	/* destroy */
-	ierr = DMDestroy(&clone);CHKERRQ(ierr);
-	
+    nlevels   = 1;
+    level_idx = 0;
+    ierr = MProjection_P0Projection_onto_Q2_MPntPStokes_Level(type,CoefAvgARITHMETIC,npoints,mp_std,mp_stokes,nlevels,&da,level_idx,Q);CHKERRQ(ierr);
+		
 	PetscFunctionReturn(0);
 }
 

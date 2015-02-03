@@ -41,7 +41,7 @@
 /* add material points into the list */
 typedef enum { MPField_Std=0, MPField_Stokes, MPField_Energy, MPField_StokesPl } MaterialPointField;
 
-typedef enum { CoefAvgARITHMETIC=0, CoefAvgHARMONIC } CoefficientAveragingType;
+typedef enum { CoefAvgNULL=0, CoefAvgARITHMETIC, CoefAvgHARMONIC, CoefAvgGEOMETRIC } CoefficientAveragingType;
 
 
 typedef struct _p_MPAccess *MPAccess;
@@ -65,35 +65,45 @@ PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int n
 PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointField list[],const char prefix[],const char name[]);
 PetscErrorCode SwarmViewGeneric_ParaView(DataBucket db,const int nfields,const MaterialPointField list[],const char path[],const char prefix[]);
 
+/* projections [fine grid] */
+PetscErrorCode MPntPStokesProj_P0(CoefficientAveragingType type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],DM da,Quadrature Q);
 PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],DM da,Quadrature Q);
-PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(PetscInt coefficient_projection_type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[]);
 PetscErrorCode SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],Quadrature Q);
+
+/* projection [for levels in a hierarchy] */
+PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(PetscInt coefficient_projection_type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,Mat R[],DM da[],Quadrature Q[]);
+
+PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(CoefficientAveragingType eta_type,CoefficientAveragingType rho_type,const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level);
+
+
+/* depreciated */
 PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q);
 
 PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level);
-PetscErrorCode MProjection_P0Projection_onto_Q2_MPntPStokes_Level(const int npoints,MPntStd mp_std[],MPntPStokes mp_stokes[],PetscInt nlevels,DM da[],PetscInt level,Quadrature Q_level);
+
+PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
+                                                      DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
+                                                      const int npoints,MPntStd mp_std[],
+                                                      size_t member_offset,size_t point_offset,void *point_data);
+PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
+                                                                                   DM clone,Vec properties_A,
+                                                                                   size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) ;
+
+PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
+                                                             DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
+                                                             const int npoints,MPntStd mp_std[],
+                                                             size_t member_offset,size_t point_offset,void *point_data);
+PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
+                                                                                          DM clone,Vec properties_A,
+                                                                                          size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) ;
+
+
+
 
 PetscErrorCode MPntPStokesPlComputeMemberOffsets(size_t property_offsets[]);
 PetscErrorCode MPntPEnergyComputeMemberOffsets(size_t property_offsets[]);
 PetscErrorCode QPntVolCoefStokesComputeMemberOffsets(size_t property_offsets[]);
 PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[]);
-
-PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh(
-																											DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
-																											const int npoints,MPntStd mp_std[],
-																											size_t member_offset,size_t point_offset,void *point_data);
-PetscErrorCode _MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
-																											DM clone,Vec properties_A,
-																											size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) ;
-
-PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh(
-																											DM clone,Vec properties_A,Vec properties_B,CoefficientAveragingType avg_type,
-																											const int npoints,MPntStd mp_std[],
-																											size_t member_offset,size_t point_offset,void *point_data);
-PetscErrorCode DMDAEQ1_MaterialPointProjection_MapOntoQ2Mesh_InterpolateToQuadraturePoint(
-																																									 DM clone,Vec properties_A,
-																																									 size_t member_offset,size_t qpoint_offset,void *qpoint_data,Quadrature Q) ;
-
 
 PetscErrorCode MaterialPointGetAccess(DataBucket materialpoint_db,MPAccess *helper);
 PetscErrorCode MaterialPointRestoreAccess(DataBucket matpoint_db,MPAccess *helper);

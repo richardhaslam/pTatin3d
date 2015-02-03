@@ -156,7 +156,19 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			break;
 
 		case 0:			/* Perform P0 projection over Q2 element directly onto quadrature points */
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 marker->quadrature projection not supported");
+			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [arithmetic avg] marker->quadrature projection not supported");
+            ierr = MPntPStokesProj_P0(CoefAvgARITHMETIC,npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+			break;
+		case 10:
+			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [harmonic avg] marker->quadrature projection not supported");
+            ierr = MPntPStokesProj_P0(CoefAvgHARMONIC,npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+			break;
+		case 20:
+			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [geometric avg] marker->quadrature projection not supported");
+            ierr = MPntPStokesProj_P0(CoefAvgGEOMETRIC,npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+			break;
+		case 30:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [dominant phase] marker->quadrature projection not supported");
 			break;
 			
 		case 1:			/* Perform Q1 projection over Q2 element and interpolate back to quadrature points */
