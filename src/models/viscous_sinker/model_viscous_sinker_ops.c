@@ -228,7 +228,7 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
             
             ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
             bclist = stokes->u_bclist;
-            ierr = PhysCompStokesGetDMs(stokes,&dav,PETSC_NULL);CHKERRQ(ierr);
+            ierr = PhysCompStokesGetDMs(stokes,&dav,NULL);CHKERRQ(ierr);
             
 			/* free slip */
 			/*
@@ -295,11 +295,11 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
                 PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
                 
                 ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
-                ierr = PhysCompStokesGetDMs(stokes,&dav,PETSC_NULL);CHKERRQ(ierr);
+                ierr = PhysCompStokesGetDMs(stokes,&dav,NULL);CHKERRQ(ierr);
                 
                 ierr = PhysCompStokesGetSurfaceQuadrature(stokes,HEX_FACE_Pxi,&surfQ_east);CHKERRQ(ierr);
-                ierr = SurfaceQuadratureGetQuadratureInfo(surfQ_east,&nqp,PETSC_NULL,&qp3d);CHKERRQ(ierr);
-                ierr = SurfaceQuadratureGetFaceInfo(surfQ_east,PETSC_NULL,&nfaces,&element_list);CHKERRQ(ierr);
+                ierr = SurfaceQuadratureGetQuadratureInfo(surfQ_east,&nqp,NULL,&qp3d);CHKERRQ(ierr);
+                ierr = SurfaceQuadratureGetFaceInfo(surfQ_east,NULL,&nfaces,&element_list);CHKERRQ(ierr);
                 
                 ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
                 /* setup for coords */
@@ -925,7 +925,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 
         //
         ncells_list = 0;
-        cell_list = PETSC_NULL;
+        cell_list = NULL;
         
         /* generate cell list, identifying only those living on the surface */
         if (contains_north_face) {
