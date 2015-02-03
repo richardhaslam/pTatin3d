@@ -31,5 +31,6 @@
 #define __petsc_utils_h__
 
 PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val);
+PetscErrorCode VecStrideNormLocal(Vec v,PetscInt start,NormType ntype,PetscReal *nrm);
 
 #endif

@@ -65,6 +65,8 @@ PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data);
 PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **data);
 PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *data);
 
+PetscErrorCode pTatinModelGetName(pTatinModel model,char **name);
+
 PetscErrorCode pTatinModelRegisterAll(void);
 
 
