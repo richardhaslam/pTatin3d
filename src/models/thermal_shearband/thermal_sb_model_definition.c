@@ -105,7 +105,7 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
     
     
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(PETSC_NULL,"-model_thermal_sb_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,"-model_thermal_sb_output_si",&modeldata->output_si,0);
     
     
     /* force energy equation to be introduced */
@@ -385,7 +385,7 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         //const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl, MPField_Energy };
         char                      mp_file_prefix[256];
         
-        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
         sprintf(mp_file_prefix,"%s_mpoints",prefix);
         ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,ptatinctx->outputpath,mp_file_prefix);CHKERRQ(ierr);
     }
@@ -405,7 +405,7 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 		Vec            temperature;
 		
 		ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
         
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(ptatinctx,temperature,prefix);CHKERRQ(ierr);
 	}
@@ -465,7 +465,7 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
 		DM             daT;
 		
 		ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,PETSC_NULL);CHKERRQ(ierr);
+		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
 		daT  = energy->daT;
         
         ierr = VecSet(temperature,400.0+273.0);CHKERRQ(ierr);
@@ -509,7 +509,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 
     ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
     
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	

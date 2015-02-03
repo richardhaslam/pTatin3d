@@ -108,12 +108,12 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
 
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(PETSC_NULL,"-model_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,"-model_output_si",&modeldata->output_si,0);
     
     modeldata->model_type = CASE_1A;
     modeldata->slab_length = 250.0;
     
-    PetscOptionsGetInt(PETSC_NULL,"-model_sd3d_mtype",&mtype,0);
+    PetscOptionsGetInt(NULL,"-model_sd3d_mtype",&mtype,0);
     switch (mtype) {
         case 0:
             modeldata->model_type = CASE_1A;
@@ -134,7 +134,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         case 4:
             modeldata->model_type = CASE_2C;
             PetscPrintf(PETSC_COMM_WORLD,"  [model sd3d]: CASE 2C\n");
-            PetscOptionsGetReal(PETSC_NULL,"-model_sd3d_case2c_slab_ly",&modeldata->slab_length,0);
+            PetscOptionsGetReal(NULL,"-model_sd3d_case2c_slab_ly",&modeldata->slab_length,0);
             PetscPrintf(PETSC_COMM_WORLD,"  [model sd3d]: slab length = %1.4e (km)\n",modeldata->slab_length);
             break;
     }
@@ -428,7 +428,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
     stokes_pack = stokes->stokes_pack;
     ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
     
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
@@ -656,7 +656,7 @@ PetscErrorCode SD3DOutput_ComputeDs(DataBucket db,PetscReal *Ds)
     PetscReal gmin[3],gmax[3];
     PetscErrorCode ierr;
     
-    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,PETSC_NULL,PETSC_NULL,SLAB_BASE_IDX,gmin,gmax);CHKERRQ(ierr);
+    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,NULL,NULL,SLAB_BASE_IDX,gmin,gmax);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab base range: gmin %1.4e %1.4e %1.4e\n",gmin[0],gmin[1],gmin[2]);
     PetscPrintf(PETSC_COMM_WORLD,"slab base range: gmax %1.4e %1.4e %1.4e\n",gmax[0],gmax[1],gmax[2]);
     *Ds = gmin[1]; /* min y coordinate of the markers on the slab base */
@@ -677,7 +677,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
-    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,PETSC_NULL,PETSC_NULL,SLAB_EDGE_IDX,gmin,gmax);CHKERRQ(ierr);
+    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,NULL,NULL,SLAB_EDGE_IDX,gmin,gmax);CHKERRQ(ierr);
     w = gmax[0];
     PetscPrintf(PETSC_COMM_WORLD,"slab edge range: gmax(x) %1.4e\n",w);
 
@@ -722,7 +722,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
-    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,PETSC_NULL,PETSC_NULL,SLAB_BACK_FACE_IDX,gmin,gmax);CHKERRQ(ierr);
+    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,NULL,NULL,SLAB_BACK_FACE_IDX,gmin,gmax);CHKERRQ(ierr);
     w = gmax[0];
     PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) range: gmax(x) %1.4e\n",w);
     
@@ -767,7 +767,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
-    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,PETSC_NULL,PETSC_NULL,SLAB_FRONT_FACE_IDX,gmin,gmax);CHKERRQ(ierr);
+    ierr = MPntStdComputeBoundingBoxInRangeInRegion(db,NULL,NULL,SLAB_FRONT_FACE_IDX,gmin,gmax);CHKERRQ(ierr);
     w = gmin[2];
     PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) range: gmin(z) %1.4e\n",w);
     
@@ -944,7 +944,7 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
         const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes };
         char                      mp_file_prefix[256];
         
-        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
         sprintf(mp_file_prefix,"%s_mpoints",prefix);
         ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,ptatinctx->outputpath,mp_file_prefix);CHKERRQ(ierr);
     }
@@ -958,7 +958,7 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     }
     
     /* SD3D output */
-    ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+    ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
 
     Ds = Dn = W = 0.0;
     Dnx = Wx = Dnz = Wz = 0.0;

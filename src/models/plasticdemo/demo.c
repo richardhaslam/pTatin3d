@@ -88,9 +88,9 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     modeldata->x_bar   = 10.0*1.0e3;  /* m */
     modeldata->eta_bar = 1.0e22; /* eta */
     
-    PetscOptionsGetReal(PETSC_NULL,"-model_charc_v",&modeldata->v_bar,0);
-    PetscOptionsGetReal(PETSC_NULL,"-model_charc_x",&modeldata->x_bar,0);
-    PetscOptionsGetReal(PETSC_NULL,"-model_charc_eta",&modeldata->eta_bar,0);
+    PetscOptionsGetReal(NULL,"-model_charc_v",&modeldata->v_bar,0);
+    PetscOptionsGetReal(NULL,"-model_charc_x",&modeldata->x_bar,0);
+    PetscOptionsGetReal(NULL,"-model_charc_eta",&modeldata->eta_bar,0);
     
     modeldata->t_bar = modeldata->x_bar/modeldata->v_bar; /* time (sec) */
     modeldata->p_bar = modeldata->eta_bar * modeldata->v_bar / modeldata->x_bar; /* stress */
@@ -98,11 +98,11 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     modeldata->rhs_scale = modeldata->eta_bar * modeldata->v_bar / (modeldata->x_bar * modeldata->x_bar); /* [ eta.u/(L.L) ]^-1 */
     modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(PETSC_NULL,"-model_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,"-model_output_si",&modeldata->output_si,0);
     
     /* --------------------------------- model geometry type ------------------------- */
     modeldata->model_geom_type = 1;
-    PetscOptionsGetInt(PETSC_NULL,"-model_geom_type",&modeldata->model_geom_type,0);
+    PetscOptionsGetInt(NULL,"-model_geom_type",&modeldata->model_geom_type,0);
 
     /* --------------------------------- domain size --------------------------------- */
     modeldata->domain[0] = 120.0e3;
@@ -112,7 +112,7 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
         PetscInt nd = 3;
         
         flg = PETSC_FALSE;
-        PetscOptionsGetRealArray(PETSC_NULL,"-model_domain_size",modeldata->domain,&nd,&flg);
+        PetscOptionsGetRealArray(NULL,"-model_domain_size",modeldata->domain,&nd,&flg);
         if (flg) {
             if (nd != 3) {
                 SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"param:\"model domain size\" - status:\"missing entry\" => expected 3 entries, only found %D",nd);
@@ -240,7 +240,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 
     
     flg = PETSC_FALSE;
-    PetscOptionsGetBool(PETSC_NULL,"-model_domain_3d",&flg,0);
+    PetscOptionsGetBool(NULL,"-model_domain_3d",&flg,0);
     if (!flg) {
         ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(ptatinctx);CHKERRQ(ierr);
     }
@@ -257,7 +257,7 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
 	DataBucket       materialpoint_db;
     PetscErrorCode   ierr;
     
-	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
     
@@ -295,7 +295,7 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
     {
         PetscBool qp_proj = PETSC_FALSE;
         
-        PetscOptionsGetBool(PETSC_NULL,"-qp_proj",&qp_proj,0);
+        PetscOptionsGetBool(NULL,"-qp_proj",&qp_proj,0);
         if (qp_proj) {
             for (p=0; p<n_mpoints/27; p++) {
                 int pc = p*27 + 13;
@@ -324,7 +324,7 @@ PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
     PetscErrorCode   ierr;
     PetscReal        Ly = 10.0e3;
     
-	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
     
@@ -359,7 +359,7 @@ PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
     {
         PetscBool qp_proj = PETSC_FALSE;
         
-        PetscOptionsGetBool(PETSC_NULL,"-qp_proj",&qp_proj,0);
+        PetscOptionsGetBool(NULL,"-qp_proj",&qp_proj,0);
         if (qp_proj) {
             for (p=0; p<n_mpoints/27; p++) {
                 int pc = p*27 + 13;
@@ -389,7 +389,7 @@ PetscErrorCode PD_MaterialGeometry_ex3(pTatinCtx ptatctx,ModelCtx *mctx)
 	DataBucket       materialpoint_db;
     PetscErrorCode   ierr;
     
-	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(ptatctx,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
     
@@ -430,7 +430,7 @@ PetscErrorCode PD_MaterialGeometry_ex3(pTatinCtx ptatctx,ModelCtx *mctx)
     {
         PetscBool qp_proj = PETSC_FALSE;
         
-        PetscOptionsGetBool(PETSC_NULL,"-qp_proj",&qp_proj,0);
+        PetscOptionsGetBool(NULL,"-qp_proj",&qp_proj,0);
         if (qp_proj) {
             for (p=0; p<n_mpoints/27; p++) {
                 int pc = p*27 + 13;
@@ -479,7 +479,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
     stokes_pack = stokes->stokes_pack;
     ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
     
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
@@ -664,7 +664,7 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
         const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
         char                      mp_file_prefix[256];
         
-        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+        ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
         sprintf(mp_file_prefix,"%s_mpoints",prefix);
         ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,ptatinctx->outputpath,mp_file_prefix);CHKERRQ(ierr);
     }
@@ -678,7 +678,7 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
     }
     
     /* SD3D output */
-    ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,PETSC_NULL);CHKERRQ(ierr);
+    ierr = pTatinGetMaterialPoints(ptatinctx,&materialpoint_db,NULL);CHKERRQ(ierr);
     
     
 	PetscFunctionReturn(0);
