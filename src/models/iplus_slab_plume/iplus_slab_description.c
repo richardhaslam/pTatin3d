@@ -90,27 +90,70 @@ PetscErrorCode iPLUS_CreateSlabGeometry_Standard(iPLUSCtx *data)
 PetscErrorCode iPLUS_CreateSlabGeometry_Schellart_G3_2008(iPLUSCtx *data)
 {
 	GeometryObject plate,tip;
-	PetscReal      x0[3],Lx[3],tip_thickness,tip_length,tip_angle;
+	PetscReal      x0[3],Lx[3],tip_thickness,tip_length,tip_angle,slab_origin;
 	PetscErrorCode ierr;
-        /* set default tip length */
-        tip_length = 0.025;
-        /* check for input parameter -iplus_schellart_g3_2008_tip_length from file or command line */
-        PetscOptionsGetReal(PETSC_NULL,"-iplus_schellart_g3_2008_tip_length",&tip_length,PETSC_NULL);
+
+    /* set default tip length */
+    tip_length = 0.025;
+    /* check for input parameter -iplus_schellart_g3_2008_tip_length from file or command line */
+    PetscOptionsGetReal(NULL,"-iplus_schellart_g3_2008_tip_length",&tip_length,NULL);
+
+    /* set default slab origin */
+    slab_origin = 0.31;
+    /* check for input parameter -iplus_schellart_g3_2008_slab_origin from file or command line */
+    PetscOptionsGetReal(NULL,"-iplus_schellart_g3_2008_slab_origin",&slab_origin,NULL);
 	
 	/* Note - 2.5 cm of the slab is bent downwards into the mantle */
 	ierr = GeometryObjectCreate("plate",&plate);CHKERRQ(ierr);
-	x0[0] = 0.31+tip_length;   x0[1] = 0.367;   x0[2] = 0.225;
+	x0[0] = slab_origin+tip_length;   x0[1] = 0.367;   x0[2] = 0.225;
 	Lx[0] = 0.55-tip_length;   Lx[1] = 0.013;   Lx[2] = 0.15;
 	ierr = GeometryObjectSetType_BoxCornerReference(plate,x0,Lx);CHKERRQ(ierr);
 	
 	ierr = GeometryObjectCreate("slab_tip",&tip);CHKERRQ(ierr);
 	tip_thickness  = 0.013;
-	x0[0] = 0.31+tip_length;        x0[1] = 0.38 - 0.5*tip_thickness;  x0[2] = 0.30;
+	x0[0] = slab_origin+tip_length;        x0[1] = 0.38 - 0.5*tip_thickness;  x0[2] = 0.30;
 	Lx[0] = 2.0*tip_length;    Lx[1] = tip_thickness;             Lx[2] = 0.15;
 	ierr = GeometryObjectSetType_Box(tip,x0,Lx);CHKERRQ(ierr);
 	/* Wouter indicates the slab tip has an angle between 15 - 30 degress [paragraph 16] */
 	tip_angle = 30.0;
 	PetscOptionsGetReal(NULL,"-iplus_schellart_g3_2008_tip_angle",&tip_angle,NULL);
+	ierr = GeometryObjectRotate(tip,ROTATE_AXIS_Z, tip_angle);CHKERRQ(ierr);
+	
+	ierr = GeometryObjectCreate("slab",&data->slab_geometry);CHKERRQ(ierr);
+	ierr = GeometryObjectSetType_SetOperationDefault(data->slab_geometry,GeomSet_Union,plate,tip);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&plate);CHKERRQ(ierr);
+	ierr = GeometryObjectDestroy(&tip);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/* ------------- G3, 2014 slab geometry ------------- */
+#undef __FUNCT__
+#define __FUNCT__ "iPLUS_CreateSlabGeometry_G3_2014"
+PetscErrorCode iPLUS_CreateSlabGeometry_G3_2014(iPLUSCtx *data)
+{
+	GeometryObject plate,tip;
+	PetscReal      x0[3],Lx[3],tip_thickness,tip_length,tip_angle;
+	PetscErrorCode ierr;
+    /* set default tip length */
+    tip_length = 0.03;
+    /* check for input parameter -iplus_g3_2014_tip_length from file or command line */
+    PetscOptionsGetReal(NULL,"-iplus_g3_2014_tip_length",&tip_length,NULL);
+	
+	/* Note tip_length of the slab is bent downwards into the mantle */
+	ierr = GeometryObjectCreate("plate",&plate);CHKERRQ(ierr);
+	x0[0] = 0.0;   x0[1] = 0.435;   x0[2] = 0.21;
+	Lx[0] = 0.5-tip_length;   Lx[1] = 0.015;   Lx[2] = 0.20;
+	ierr = GeometryObjectSetType_BoxCornerReference(plate,x0,Lx);CHKERRQ(ierr);
+	
+	ierr = GeometryObjectCreate("slab_tip",&tip);CHKERRQ(ierr);
+	tip_thickness  = 0.015;
+	x0[0] = 0.5-tip_length;        x0[1] = 0.45 - 0.5*tip_thickness;  x0[2] = 0.31;
+	Lx[0] = 2.0*tip_length;    Lx[1] = tip_thickness;             Lx[2] = 0.2;
+	ierr = GeometryObjectSetType_Box(tip,x0,Lx);CHKERRQ(ierr);
+	/* measured range experiments 2014 16-24º */
+	tip_angle = 20.0;
+	PetscOptionsGetReal(NULL,"-iplus_g3_2014_tip_angle",&tip_angle,NULL);
 	ierr = GeometryObjectRotate(tip,ROTATE_AXIS_Z, tip_angle);CHKERRQ(ierr);
 	
 	ierr = GeometryObjectCreate("slab",&data->slab_geometry);CHKERRQ(ierr);
@@ -143,14 +186,14 @@ PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
 	W  = 0.15;   /* plate width */
 	
 	l = 4.0 * h; /* input from paper, use default of l/h = 4 */
-	PetscOptionsGetReal(PETSC_NULL,"-iplus_liribe_jgr_2012_l",&l,PETSC_NULL);
+	PetscOptionsGetReal(NULL,"-iplus_liribe_jgr_2012_l",&l,NULL);
         
 
 	theta_0 = 60.0; /* input from paper */
-	PetscOptionsGetReal(PETSC_NULL,"-iplus_liribe_jgr_2012_theta0",&theta_0,PETSC_NULL);
+	PetscOptionsGetReal(NULL,"-iplus_liribe_jgr_2012_theta0",&theta_0,NULL);
 	
 	arcuate_slab_ends = PETSC_FALSE;
-	PetscOptionsGetBool(PETSC_NULL,"-iplus_liribe_jgr_2012_arcuate_slab_ends",&arcuate_slab_ends,PETSC_NULL);
+	PetscOptionsGetBool(NULL,"-iplus_liribe_jgr_2012_arcuate_slab_ends",&arcuate_slab_ends,NULL);
 	
 	
 	/* horizontal plate ------------------------- */	
@@ -290,21 +333,25 @@ PetscErrorCode iPLUS_DefineSlabMaterial(DM dav,DataBucket materialpoint_db,iPLUS
 PetscErrorCode iPLUS_CreateSlabGeometry(iPLUSCtx *data)
 {
 	PetscErrorCode ierr;
-	PetscBool      wouter_slab  = PETSC_FALSE;
-	PetscBool      ribe_slab = PETSC_FALSE;
+	PetscBool      wouter_slab = PETSC_FALSE;
+	PetscBool      ribe_slab   = PETSC_FALSE;
+    PetscBool      G3_slab     = PETSC_FALSE;
 	
 	PetscOptionsGetBool(NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,NULL);
 	PetscOptionsGetBool(NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,NULL);
+    PetscOptionsGetBool(NULL,"-iplus_slab_type_g3_2014",&G3_slab,NULL);
 	if (wouter_slab) {
 		ierr = iPLUS_CreateSlabGeometry_Schellart_G3_2008(data);CHKERRQ(ierr);
 	}
 	if (ribe_slab) {
 		ierr = iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(data);CHKERRQ(ierr);
 	}
-	
-	if ( (!wouter_slab) && (!ribe_slab) ) {
-		ierr = iPLUS_CreateSlabGeometry_Standard(data);CHKERRQ(ierr);
+	if (G3_slab) {
+		ierr = iPLUS_CreateSlabGeometry_G3_2014(data);CHKERRQ(ierr);
 	}
+    if ( (!wouter_slab) && (!ribe_slab) && (!G3_slab) ) {
+        ierr = iPLUS_CreateSlabGeometry_Standard(data);CHKERRQ(ierr);
+    }
 	
 	PetscFunctionReturn(0);
 }

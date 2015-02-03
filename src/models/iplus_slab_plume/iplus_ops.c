@@ -169,6 +169,16 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 	data->iplus_output_frequency = 1;
 	PetscOptionsGetInt(PETSC_NULL,"-iplus_output_frequency",&data->iplus_output_frequency,&flg);
 	
+    /* Two dimensional mode - force mz = 1 */
+    {
+        PetscBool dim2_mode = PETSC_FALSE;
+        
+        PetscOptionsGetBool(PETSC_NULL,"-iplus_2d_mode",&dim2_mode,NULL);
+        if (dim2_mode) {
+            ierr = pTatin3d_DefineVelocityMeshQuasi2D(c);CHKERRQ(ierr);
+            ierr = PetscOptionsInsertString("-da_refine_z 1");CHKERRQ(ierr);
+        }
+    }
 	PetscFunctionReturn(0);
 }
 
@@ -179,7 +189,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 	iPLUSCtx         *data = (iPLUSCtx*)ctx;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
-	PetscBool        ribe_slab,wouter_slab,shallow_mantle;
+	PetscBool        ribe_slab,wouter_slab,shallow_mantle,G3_slab;
 	PetscReal        Gmin[3],Gmax[3],center_x,center_z,Lx,Ly,Lz;
 	PetscErrorCode   ierr;
 	
@@ -202,6 +212,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 		ribe_slab = PETSC_FALSE;
 		PetscOptionsGetBool(NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,NULL);
 		
+        G3_slab = PETSC_FALSE;
+        PetscOptionsGetBool(PETSC_NULL,"-iplus_slab_type_g3_2014",&G3_slab,PETSC_NULL);
+
 		shallow_mantle = PETSC_FALSE;
 		PetscOptionsGetBool(NULL,"-iplus_slab_domain_shallow_mantle",&shallow_mantle,NULL);
 		
@@ -212,8 +225,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 			} else {
 				ierr = DMDASetUniformCoordinates(dav,0.0,1.0, 0.0,0.38, 0.0,0.6);CHKERRQ(ierr);
 			}
-			
-		} else {
+		} else if (G3_slab) {
+            ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.45,0.0,0.62);CHKERRQ(ierr);
+        } else {
 			ierr = DMDASetUniformCoordinates(dav,0.0,1.0,0.0,0.4,0.0,0.6);CHKERRQ(ierr);
 		}
 
@@ -253,8 +267,30 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 			
 			ierr = DMDASetCoordinatesColumnRefinement(dav,1,4.0, 0.75,1.0);CHKERRQ(ierr);
 			break;
+        case 5:
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 5 (x refinement)\n");
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 2.0, Gmin[0], 0.35, 0.65, Gmax[0]);CHKERRQ(ierr);
+			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 1, 4.0, Gmin[1], 0.75*Ly, Gmax[1], Gmax[1]);CHKERRQ(ierr);
+			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 3.0, Gmin[2], center_z - 0.35*Lz*0.5, center_z + 0.35*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
+            break;
+        case 6:
+			PetscPrintf(PETSC_COMM_WORLD,"  iPLUS: [Mesh refinement] Type 6 (x-z refinement)\n");
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 0, 4.0, Gmin[0], 0.39, 0.54, Gmax[0]);CHKERRQ(ierr);
+			//ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 1, 4.0, Gmin[1], 0.75*Ly, Gmax[1], Gmax[1]);CHKERRQ(ierr);
+			ierr = DMDASetCoordinatesCentralSqueeze1D(dav, 2, 3.0, Gmin[2], center_z - 0.35*Lz*0.5, center_z + 0.35*Lz*0.5, Gmax[2]);CHKERRQ(ierr);
+			break;
 	}
 	
+    /* Two dimensional mode - set start z position to be inside all the slabs, z \in [0.3 , 0.31] */
+    {
+        PetscBool dim2_mode = PETSC_FALSE;
+        
+        PetscOptionsGetBool(PETSC_NULL,"-iplus_2d_mode",&dim2_mode,NULL);
+        if (dim2_mode) {
+            ierr = DMDASetUniformCoordinates1D(dav,2,0.3,0.31);CHKERRQ(ierr);
+        }
+    }
+
 	/* determine elements located within the plume */
 	ierr = iPLUS_DetermineElementsContainingPlumeInlet(dav,data);CHKERRQ(ierr);
 
@@ -342,7 +378,7 @@ PetscErrorCode iPLUS_VelocityBC(BCList bclist,DM dav,pTatinCtx c,iPLUSCtx *data)
 	/* no slip bottom */
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-
+        /*ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);*/
 	/* no slip */
 	/*
 	for (d=0; d<3; d++) {
@@ -357,8 +393,13 @@ PetscErrorCode iPLUS_VelocityBC(BCList bclist,DM dav,pTatinCtx c,iPLUSCtx *data)
 	ierr = DirichletBC_FreeSlip(bclist,dav,BACK_FACE);CHKERRQ(ierr);
 	ierr = DirichletBC_FreeSlip(bclist,dav,WEST_FACE);CHKERRQ(ierr);
 
+	/* West face no slip for fixed slab */
+	/* ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); // set v = 0
+     ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); // set v = 0
+     ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr); // set w = 0*/
 	
-	/* north face is free surface */
+	/* north face is free surface default or test free slip  */
+    ierr = DirichletBC_FreeSlip(bclist,dav,NORTH_FACE);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
