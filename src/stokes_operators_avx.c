@@ -49,7 +49,7 @@ typedef enum {
 } GradMode;
 
 #undef __FUNCT__
-#define __FUNCT__ "TensorContractNEV"
+#define __FUNCT__ "TensorContractNEV_AVX"
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
