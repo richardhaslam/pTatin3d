@@ -25,7 +25,7 @@ PetscErrorCode XDMFMetaXDMFOpen(MPI_Comm comm,const char name[],PetscViewer *v);
 PetscErrorCode XDMFMetaXDMFClose(PetscViewer *v);
 PetscErrorCode XDMFMetaDomainOpen(PetscViewer v,const char name[]);
 PetscErrorCode XDMFMetaDomainClose(PetscViewer v);
-PetscErrorCode XDMFGridOpen_DMDA(PetscViewer v,DM da,const char path[],const char suffix[],const char meshname[],XDMFDataItemFormat format);
+PetscErrorCode XDMFGridOpen_DMDA(PetscViewer v,DM dm,const char path[],const char suffix[],const char meshname[],XDMFDataItemFormat format);
 PetscErrorCode XDMFGridClose_DMDA(PetscViewer v);
 PetscErrorCode XDMFWriteAttribute_DMDA(PetscViewer v,DM da,Vec x,
                                        const char path[],const char suffix[],const char meshname[],const char fieldname[],
@@ -33,7 +33,9 @@ PetscErrorCode XDMFWriteAttribute_DMDA(PetscViewer v,DM da,Vec x,
 PetscErrorCode XDMFDataWriteField_Generic(Vec x,
                                           const char path[],const char filename[],
                                           XDMFDataItemFormat format);
-
-PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,const char suffix[],Vec X);
+PetscErrorCode XDMFDataWriteField_GenericDMDA(DM dm,Vec x,
+                                              const char path[],const char filename[],
+                                              XDMFDataItemFormat format);
+PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char suffix[]);
 
 #endif
