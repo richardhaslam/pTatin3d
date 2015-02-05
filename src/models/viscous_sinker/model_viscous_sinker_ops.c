@@ -46,6 +46,7 @@
 #include "dmda_element_q2p1.h"
 #include "material_point_std_utils.h"
 #include "material_point_popcontrol.h"
+#include "xdmf_writer.h"
 
 #include "private/quadrature_impl.h"
 #include "quadrature.h"
@@ -1044,10 +1045,10 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 	// testing 
 	//ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
 	//ierr = pTatinOutputLiteMeshVelocitySlicedPVTS(c->stokes_ctx->stokes_pack,c->outputpath,prefix);CHKERRQ(ierr);
-	// testing 
+	//ierr = ptatin3d_StokesOutput_VelocityXDMF(c,X,prefix);CHKERRQ(ierr);
+	// testing
 	//ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-	
 	// tests for alternate (output/load)ing of "single file marker" formats
 	//ierr = SwarmDataWriteToPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
 	//ierr = SwarmDataLoadFromPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
