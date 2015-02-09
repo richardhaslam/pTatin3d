@@ -31,8 +31,7 @@
 #ifndef __ptatin3d_model_ex_subduction_ctx_h__
 #define __ptatin3d_model_ex_subduction_ctx_h__
 
-/* define user model */
-
+/* define user regions */
 typedef enum { RegionId_Mantle=0, RegionId_LowerMantle, RegionId_Slab } ExSubductionRegion;
 
 typedef struct {
@@ -42,6 +41,7 @@ typedef struct {
 	PetscReal rho[3];
 	PetscInt       ngo;
 	GeometryObject go[10];
+    PetscViewer    logviewer;
 } ExSubductionCtx;
 
 #endif

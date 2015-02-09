@@ -125,6 +125,7 @@ const double char_rhsscale=    0.0315359920277;
 #include "rheology.h"
 #include "material_constants.h"
 #include "mesh_update.h"
+#include "model_utils.h"
 
 #include "ex_subduction_ctx.h"
 
@@ -141,6 +142,7 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	PetscErrorCode  ierr;
 	PetscBool       mode_2d = PETSC_FALSE;
 	PetscBool       finite_plate = PETSC_FALSE;
+	char            logfilename[PETSC_MAX_PATH_LEN];
 	
 	PetscFunctionBegin;
 
@@ -153,7 +155,7 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	
 	PetscOptionsGetBool(NULL,"-exsubduction_mode2d",&mode_2d,NULL);
 	if (mode_2d) {
-		c->mz           = 1;
+        ierr = pTatin3d_DefineVelocityMeshQuasi2D(c);CHKERRQ(ierr);
 		data->domain[2] = 50.0e3 / char_length;
 		PetscOptionsInsertString("-da_refine_z 1");
 	}
@@ -184,7 +186,7 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 
 	ierr = GeometryObjectCreate("slabtip",&B);CHKERRQ(ierr);
 	x0[0] = 1050.0e3 / char_length;   x0[1] = 650.0e3 / char_length;   x0[2] = 0.5 * data->domain[2];
-	Lx[0] = 100.0e3 / char_length;    Lx[1] = 400.0e3 / char_length;   Lx[2] = data->domain[2];
+	Lx[0] = 100.0e3 / char_length;    Lx[1] = 300.0e3 / char_length;   Lx[2] = data->domain[2];
 	ierr = GeometryObjectSetType_Box(B,x0,Lx);CHKERRQ(ierr);
 	ierr = GeometryObjectRotate(B,ROTATE_AXIS_Z,(data->dip - 90.0));CHKERRQ(ierr);
 	
@@ -227,6 +229,10 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 	/* slab */
 	MaterialConstantsSetValues_MaterialType(materialconstants,  RegionId_Slab,VISCOUS_CONSTANT,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);		
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,RegionId_Slab,data->eta[ RegionId_Slab ]);
+
+    /* Open logfile */
+    PetscSNPrintf(logfilename,PETSC_MAX_PATH_LEN-1,"%s/exsubduction.logfile",c->outputpath);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfilename,&data->logviewer);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -301,6 +307,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ExSubduction(pTatinCtx c,void *ctx)
 	ExSubductionCtx *data = (ExSubductionCtx*)ctx;
 	PhysCompStokes       stokes;
 	DM                   stokes_pack,dav,dap;
+    PetscBool            mode_2d;
 	PetscErrorCode       ierr;
 	
 	PetscFunctionBegin;
@@ -309,7 +316,12 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ExSubduction(pTatinCtx c,void *ctx)
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-	ierr = DMDASetUniformCoordinates(dav,0.0,data->domain[0],0.0,data->domain[1],0.0,data->domain[2]);CHKERRQ(ierr);
+
+    ierr = DMDASetUniformCoordinates(dav,0.0,data->domain[0],0.0,data->domain[1],0.0,data->domain[2]);CHKERRQ(ierr);
+	PetscOptionsGetBool(NULL,"-exsubduction_mode2d",&mode_2d,NULL);
+	if (mode_2d) {
+        ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
+    }
 
 	PetscFunctionReturn(0);
 }
@@ -381,7 +393,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void 
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-  ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,c->dt);CHKERRQ(ierr);
+    //ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,c->dt);CHKERRQ(ierr);
+    ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,PETSC_NULL,c->dt);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
@@ -392,8 +405,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void 
 #define __FUNCT__ "ModelOutput_ExSubduction"
 PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
+	ExSubductionCtx  *data = (ExSubductionCtx*)ctx;
+    static PetscBool beenhere = PETSC_FALSE;
 	PetscBool        output_markers;
 	PetscErrorCode   ierr;
+    PetscReal        slab_range_yp[2];
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -416,10 +432,34 @@ PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],vo
 		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
 	}
 */
-	if (output_markers) {
-		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-	}
+    if (output_markers) {
+        if (c->step%500 == 0) {
+            ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+        }
+    }
 	
+    if (!beenhere) {
+        PetscViewerASCIIPrintf(data->logviewer,"# ex_subduction logfile\n");
+        PetscViewerASCIIPrintf(data->logviewer,"# ----------------------------------------------------------------------------------------------------------------- \n");
+        PetscViewerASCIIPrintf(data->logviewer,"# step , time [ND] , y_min(slab) [ND] , y_max(slab) [ND] , time [Myr] , y_min(slab) [km] , y_max(slab) [km]\n");
+        beenhere = PETSC_TRUE;
+    }
+    
+    {
+        DataBucket  materialpoint_db;
+        PetscReal   gmin[3],gmax[3];
+        
+        ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
+        ierr = MPntStdComputeBoundingBoxInRangeInRegion(materialpoint_db,NULL,NULL,RegionId_Slab,gmin,gmax);CHKERRQ(ierr);
+        
+        slab_range_yp[0] = gmin[1];
+        slab_range_yp[1] = gmax[1];
+    }
+    PetscViewerASCIIPrintf(data->logviewer,"%.7D , %4.4e  , %4.6e , %4.6e , %4.4e  , %4.6e , %4.6e\n",
+                           c->step,
+                           c->time,slab_range_yp[0],slab_range_yp[1],
+                           c->time*char_time/(1.0e6*365.0*24.0*3600.0),slab_range_yp[0]*char_length*1.0e-3,slab_range_yp[1]*char_length*1.0e-3);
+    
 	PetscFunctionReturn(0);
 }
 
@@ -434,6 +474,9 @@ PetscErrorCode ModelDestroy_ExSubduction(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	/* Free contents of structure */
+	if (data->logviewer) {
+		ierr = PetscViewerDestroy(&data->logviewer);CHKERRQ(ierr);
+	}
 	
 	/* Free structure */
 	ierr = PetscFree(data);CHKERRQ(ierr);
