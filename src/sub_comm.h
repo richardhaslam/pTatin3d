@@ -36,13 +36,12 @@
 typedef struct _p_PetscMPISubComm *PetscMPISubComm;
 
 struct _p_PetscMPISubComm {
-	MPI_Comm parent_comm;
-	MPI_Comm sub_comm;
-	PetscMPIInt nranks_from_parent;
-	PetscMPIInt *ranks_from_parent;
-	PetscBool parent_rank_active_in_subcomm; /* 1:true, 0:false */
+    MPI_Comm    parent_comm;
+    MPI_Comm    sub_comm;
+    PetscMPIInt nranks_from_parent;
+    PetscMPIInt *ranks_from_parent;
+    PetscBool   parent_rank_active_in_subcomm; /* 1:true, 0:false */
 };
-
 
 PetscErrorCode PetscMPISubCommCreate(MPI_Comm parent_comm,PetscInt parent_reduction_factor,PetscMPISubComm *scomm);
 PetscErrorCode PetscMPISubCommDestroy(PetscMPISubComm *scomm);
@@ -53,3 +52,4 @@ PetscErrorCode PetscMPISubCommGetNumSubRanks(PetscMPISubComm sc,PetscMPIInt *a);
 PetscErrorCode PetscMPISubCommGetActiveRanks(PetscMPISubComm sc,PetscMPIInt **a);
 
 #endif
+
