@@ -12,6 +12,7 @@
 -A11_operator_type 0,1,1
 -constant_dt 1.0e-4
 -dau_nlevels 3
+-dt_max_surface_displacement 1.0e-3
 -exsubduction_mode2d
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
