@@ -494,7 +494,7 @@ static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_SemiRedundant"
-static PetscErrorCode PCSetFromOptions_SemiRedundant(PC pc)
+static PetscErrorCode PCSetFromOptions_SemiRedundant(PetscOptions *PetscOptionsObject,PC pc)
 {
     PetscErrorCode   ierr;
     PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;

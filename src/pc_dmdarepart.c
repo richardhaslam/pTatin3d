@@ -715,13 +715,13 @@ static PetscErrorCode PCDestroy_DMDARepart(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_DMDARepart"
-static PetscErrorCode PCSetFromOptions_DMDARepart(PC pc)
+static PetscErrorCode PCSetFromOptions_DMDARepart(PetscOptions *PetscOptionsObject,PC pc)
 {
     PetscErrorCode ierr;
     PC_DMDARepart  *red = (PC_DMDARepart*)pc->data;
 
     PetscFunctionBegin;
-    ierr = PetscOptionsHead("DMDARepart options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject, "DMDARepart options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_dmdarepart_factor","Factor to reduce parent communication size by","PCDMDARepartSetFactor",red->nsubcomm_factor,&red->nsubcomm_factor,0);CHKERRQ(ierr);
     ierr = PetscOptionsTail();CHKERRQ(ierr);
     PetscFunctionReturn(0);
