@@ -7,7 +7,7 @@
 .SUFFIXES:	                # Clear .SUFFIXES because we don't use implicit rules
 .DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
 
-include $(PETSC_DIR)/conf/variables
+include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc-conf/petscvariables
 
 # Compilation options are to be placed in makefile.arch
 include src/makefile.arch
@@ -98,7 +98,7 @@ endif
 C_DEPFLAGS ?= -MMD -MP
 FC_DEPFLAGS ?= -MMD -MP
 
-TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
+TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS) $(PETSC_CC_INCLUDES)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
 
 # Tests
