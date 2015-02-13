@@ -33,7 +33,7 @@ libptatin3dmodels-y.f :=
 ptatin-tests-y.c :=
 ptatin-drivers-y.c :=
 ptatin-externals-y.o :=
-TATIN_INC :=
+TATIN_INC := $(PETSC_CC_INCLUDES)
 
 # Recursively include files for all targets
 include local.mk
@@ -98,8 +98,9 @@ endif
 C_DEPFLAGS ?= -MMD -MP
 FC_DEPFLAGS ?= -MMD -MP
 
-TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS) $(PETSC_CC_INCLUDES)
+TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
+
 
 # Tests
 ptatin-tests-y = $(notdir $(ptatin-tests-y.c))
@@ -114,7 +115,7 @@ $(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
-	$(call quiet,CLINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
+	$(call quiet,DYNAMICLINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
