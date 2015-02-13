@@ -90,14 +90,14 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 	
 	if (cheb->use_red_norm) {
         if (!cheb->psubcomm) {
-            ierr = PetscSubcommCreate(comm,&cheb->psubcomm);CHKERRQ(ierr);
-            ierr = PetscSubcommSetNumber(cheb->psubcomm,cheb->nsubcomm);CHKERRQ(ierr);
-            ierr = PetscSubcommSetType(cheb->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
-            ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(PetscSubcomm));CHKERRQ(ierr);
-			
-            subcomm = cheb->psubcomm->comm;
+          ierr = PetscSubcommCreate(comm,&cheb->psubcomm);CHKERRQ(ierr);
+          ierr = PetscSubcommSetNumber(cheb->psubcomm,cheb->nsubcomm);CHKERRQ(ierr);
+          ierr = PetscSubcommSetType(cheb->psubcomm,PETSC_SUBCOMM_INTERLACED);CHKERRQ(ierr);
+          ierr = PetscLogObjectMemory((PetscObject)ksp,sizeof(PetscSubcomm));CHKERRQ(ierr);
+
+          subcomm = PetscSubcommChild(cheb->psubcomm);
         } else {
-			subcomm = cheb->psubcomm->comm;
+          subcomm = PetscSubcommChild(cheb->psubcomm);
         }
 	}
 	
@@ -255,7 +255,7 @@ PetscErrorCode KSPChebychevRNSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_ChebychevRN"
-PetscErrorCode KSPSetFromOptions_ChebychevRN(KSP ksp)
+PetscErrorCode KSPSetFromOptions_ChebychevRN(PetscOptions *PetscOptionsObject,KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
     PetscErrorCode   ierr;
@@ -265,7 +265,7 @@ PetscErrorCode KSPSetFromOptions_ChebychevRN(KSP ksp)
 	PetscMPIInt      size;
 	
     PetscFunctionBegin;
-    ierr = PetscOptionsHead("KSP ChebychevRN Options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"KSP ChebychevRN Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ksp_chebychev_global_reduction_redundant_number","Number of redundant vecs used in VecNorm/VecDot","KSPChebychevGlobalReductionRedundantSetNumber",cheb->nsubcomm,&cheb->nsubcomm,0);CHKERRQ(ierr);
 	ierr = PetscOptionsRealArray("-ksp_chebychev_eigenvalues","extreme eigenvalues","KSPChebychevRNSetEigenvalues",&cheb->emin,&two,0);CHKERRQ(ierr);
     ierr = PetscOptionsRealArray("-ksp_chebychev_estimate_eigenvalues","estimate eigenvalues using a Krylov method, then use this transform for Chebychev eigenvalue bounds","KSPChebychevRNSetEstimateEigenvalues",tform,&four,&flg);CHKERRQ(ierr);
