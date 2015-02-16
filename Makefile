@@ -115,7 +115,7 @@ $(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
-	$(call quiet,DYNAMICLINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
+	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
