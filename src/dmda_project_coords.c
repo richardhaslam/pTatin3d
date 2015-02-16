@@ -43,7 +43,8 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 	DM daf,dac;
 	DM cdaf,cdac;
 	Vec coordsc,coordsf;
-	VecScatter inject;
+    Mat inject;
+    VecScatter vscat;
 	PetscInt L;
 	PetscErrorCode ierr;
 	
@@ -60,9 +61,11 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 		ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 		
 		ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-		ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-		ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+        ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+        ierr = VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(vscat  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);        
+        ierr = MatDestroy(&inject);CHKERRQ(ierr);
+        ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
 	}
 	
 	/* update ghost coordinates for all levels except the finest */
@@ -79,7 +82,8 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 {
 	DM cdaf,cdac;
 	Vec coordsc,coordsf;
-	VecScatter inject;
+    Mat inject;
+    VecScatter vscat;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -91,9 +95,11 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	ierr = DMGetCoordinates(daf,&coordsf);CHKERRQ(ierr);
 	
 	ierr = DMCreateInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
-	ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+    ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(vscat,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vscat  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);        
+    ierr = MatDestroy(&inject);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
 	
 	/* update ghost coordinates */
 	ierr = DMDAUpdateGhostedCoordinates(dac);CHKERRQ(ierr);
