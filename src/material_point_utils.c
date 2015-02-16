@@ -1460,19 +1460,11 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 			case 1:
 			{
                 Mat inject;
-                VecScatter vscat;
 
 				ierr = DMCreateInjection(clone[k-1],clone[k],&inject);CHKERRQ(ierr);
-                ierr = MatScatterGetVecScatter(inject,&vscat);CHKERRQ(ierr);
-				
-				ierr = VecScatterBegin(vscat,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				ierr = VecScatterEnd(vscat  ,properties_A1[k],properties_A1[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				
-				ierr = VecScatterBegin(vscat,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				ierr = VecScatterEnd(vscat  ,properties_A2[k],properties_A2[k-1],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-				
+                ierr = MatMult(inject,properties_A1[k],properties_A1[k-1]);CHKERRQ(ierr);
+                ierr = MatMult(inject,properties_A2[k],properties_A2[k-1]);CHKERRQ(ierr);
                 ierr = MatDestroy(&inject);CHKERRQ(ierr);
-				ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
 			}
 				break;
 				
