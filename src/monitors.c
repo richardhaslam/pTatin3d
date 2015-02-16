@@ -113,7 +113,7 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     PetscFunctionBegin;
     ctx = (pTatinCtx)data;
     ierr = KSPGetOperators(ksp,&A,0);CHKERRQ(ierr);
-    ierr = MatGetVecs(A,&w,&v);CHKERRQ(ierr);
+    ierr = MatCreateVecs(A,&w,&v);CHKERRQ(ierr);
     
     ierr = KSPBuildResidual(ksp,v,w,&X);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
