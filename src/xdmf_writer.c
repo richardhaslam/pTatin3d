@@ -525,7 +525,7 @@ PetscErrorCode XDMFMetaXDMFClose(PetscViewer *v)
     PetscErrorCode ierr;
 
     ierr = PetscViewerASCIIPopTab(*v);CHKERRQ(ierr);
-    ierr = _XDMFMeta_XDMFOpenClose(NULL,NULL,PETSC_FALSE,v);CHKERRQ(ierr);
+    ierr = _XDMFMeta_XDMFOpenClose(MPI_COMM_NULL,NULL,PETSC_FALSE,v);CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
