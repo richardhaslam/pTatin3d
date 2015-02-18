@@ -535,11 +535,12 @@ PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
  */
 #undef __FUNCT__
 #define __FUNCT__ "BCListResidualDirichlet"
-PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
+PetscErrorCode BCListResidualDirichlet(BCList list,const Vec X,Vec F)
 {
-  PetscInt m,k,L,l,locks;
+  PetscInt m,k,L;
 	const PetscInt *idx;
-	PetscScalar *LA_S,*LA_X,*LA_F,*LA_phi;
+	PetscScalar *LA_S,*LA_F,*LA_phi;
+    const PetscScalar *LA_X;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -551,12 +552,8 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
 	LA_phi = list->vals_global;
 	LA_S   = list->scale_global;
 
-    ierr = VecLockGet(X,&locks);CHKERRQ(ierr);
-
-    for (l=0; l<locks; ++l) ierr = VecLockPop(X);CHKERRQ(ierr);
-	ierr = VecGetArray(X,&LA_X);CHKERRQ(ierr);
-	ierr = VecGetArray(F,&LA_F);CHKERRQ(ierr);
-    for (l=0; l<locks; ++l) ierr = VecLockPush(X);CHKERRQ(ierr);
+	ierr = VecGetArrayRead(X,&LA_X);CHKERRQ(ierr);
+	ierr = VecGetArray    (F,&LA_F);CHKERRQ(ierr);
 	
 	/* debug error checking */
 	ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
@@ -569,8 +566,8 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
 			LA_F[k] = LA_S[k]*(LA_X[k] - LA_phi[k]);
 		}
 	}
-	ierr = VecRestoreArray(X,&LA_X);CHKERRQ(ierr);
-	ierr = VecRestoreArray(F,&LA_F);CHKERRQ(ierr);
+	ierr = VecRestoreArrayRead(X,&LA_X);CHKERRQ(ierr);
+	ierr = VecRestoreArray    (F,&LA_F);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -581,11 +578,12 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
  */
 #undef __FUNCT__
 #define __FUNCT__ "BCListInsertDirichlet_MatMult"
-PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
+PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,const Vec X,Vec F)
 {
-    PetscInt m,k,L,l,locks;
+    PetscInt m,k,L;
 	const PetscInt *idx;
-	PetscScalar *LA_S,*LA_X,*LA_F;
+	PetscScalar *LA_S,*LA_F;
+    const PetscScalar *LA_X;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -596,12 +594,8 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 	idx    = list->dofidx_global;
 	LA_S   = list->scale_global;
 	
-    ierr = VecLockGet(X,&locks);CHKERRQ(ierr);
-
-    for (l=0; l<locks; ++l) ierr = VecLockPop(X);CHKERRQ(ierr);
-	ierr = VecGetArray(X,&LA_X);CHKERRQ(ierr);
-	ierr = VecGetArray(F,&LA_F);CHKERRQ(ierr);
-    for (l=0; l<locks; ++l) ierr = VecLockPush(X);CHKERRQ(ierr);
+	ierr = VecGetArrayRead(X,&LA_X);CHKERRQ(ierr);
+	ierr = VecGetArray    (F,&LA_F);CHKERRQ(ierr);
 	
 	/* debug error checking */
 	ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
@@ -614,8 +608,8 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 			LA_F[k] = LA_S[k]*LA_X[k];
 		}
 	}
-	ierr = VecRestoreArray(X,&LA_X);CHKERRQ(ierr);
-	ierr = VecRestoreArray(F,&LA_F);CHKERRQ(ierr);
+	ierr = VecRestoreArrayRead(X,&LA_X);CHKERRQ(ierr);
+	ierr = VecRestoreArray    (F,&LA_F);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
