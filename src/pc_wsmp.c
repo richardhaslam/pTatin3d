@@ -209,7 +209,7 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
     // ja
     if (ja) {
         if (!ia) {
-            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot write ja[] as ia[] isn't provided <require nnz");
+            SETERRQ(comm,PETSC_ERR_USER,"Cannot write ja[] as ia[] isn't provided <require nnz");
         }
         nnz = (PetscInt)ia[m];
         
@@ -227,7 +227,7 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
     // aij
     if (aij) {
         if (!ia) {
-            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot write aij[] as ia[] isn't provided <require nnz>");
+            SETERRQ(comm,PETSC_ERR_USER,"Cannot write aij[] as ia[] isn't provided <require nnz>");
         }
         nnz = (PetscInt)ia[m];
         
@@ -1058,11 +1058,13 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
     static int     beenhere = 0;
     PetscBool      view = PETSC_FALSE;
     int            rank;
+    MPI_Comm       comm;
     
     PetscFunctionBegin;
     PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
     
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+    MPI_Comm_rank(comm,&rank);
     //if (rank == 0) {
     //for (i=0; i<wsmp->Nglobal; i++) {
     //	printf("perm %d : iperm %d \n",wsmp->PERM[i],wsmp->INVP[i]);
