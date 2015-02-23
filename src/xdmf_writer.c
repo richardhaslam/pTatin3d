@@ -281,7 +281,7 @@ PetscErrorCode XDMFDataWriteField_Generic(Vec x,
             else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s.pbvec",filename); }
             ierr = PetscViewerFileSetName(viewer,name);CHKERRQ(ierr);
 
-            ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+            ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
             if (ismpiio) {
                 PetscPrintf(comm,"*** XDMFDataWriteField_Generic using MPI-IO ***\n");
             }
@@ -348,7 +348,7 @@ PetscErrorCode XDMFDataWriteField_GenericDMDA(DM dm,Vec x,
             if (path) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.pbvec",path,filename); }
             else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s.pbvec",filename); }
             ierr = PetscViewerFileSetName(viewer,name);CHKERRQ(ierr);
-            ierr = PetscViewerBinaryGetMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
+            ierr = PetscViewerBinaryGetUseMPIIO(viewer,&ismpiio);CHKERRQ(ierr);
             if (ismpiio) {
                 PetscPrintf(comm,"*** XDMFDataWriteField_GenericDMDA using MPI-IO ***\n");
             }
