@@ -41,7 +41,7 @@ def determinempilaunchcommand():
 		print('-- Warning: Environment variable PETSC_DIR is not set => all parallel tests will be ignored')
 		return(launch_cmd)
 
-	loc_petsc_var = os.path.join( os.environ['PETSC_DIR'] , os.environ['PETSC_ARCH'] , 'conf' , 'petscvariables' )
+	loc_petsc_var = os.path.join( os.environ['PETSC_DIR'] , os.environ['PETSC_ARCH'] , 'lib/petsc-conf/' , 'petscvariables' )
 	#print(loc_petsc_var)
 
 	file = open( loc_petsc_var, 'r' )
@@ -158,8 +158,8 @@ def test03cp(launcher):
 
 	space = ' '
 	joblauncher = space.join( [launcher , '-np' , str(ranks)] )
-	exec        = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , '>' , ofile] )
-	run         = space.join( [joblauncher , exec] )
+	execcmd     = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , '>' , ofile] )
+	run         = space.join( [joblauncher , execcmd] )
 	os.system(run)
 
 	# Filter 
