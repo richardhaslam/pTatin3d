@@ -111,6 +111,7 @@ PetscErrorCode CartGridSetType(CartGrid map,CartGridType t)
             break;
             
         default:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid CartGrid type {inmem,outofcore} must be specified");
             break;
     }
     
@@ -173,7 +174,7 @@ PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type)
             break;
 
         default:
-            map->bytes = -1;
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid data type {char,short,int,long,float,double} must be specified");
             break;
     }
     
@@ -302,6 +303,9 @@ PetscErrorCode CartGridGetIndex_InMem(CartGrid map,PetscInt i,PetscInt j,PetscIn
         case 3:
             ierr = CartGridGetIndex_InMem3d(map,i,j,k,index);CHKERRQ(ierr);
             break;
+        default:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension must be 2 or 3");
+            break;
     }
     PetscFunctionReturn(0);
 }
@@ -383,6 +387,9 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Ca
             break;
         case 3:
             ierr = CartGridGetValue_InMem3d(map,xp,value,found);CHKERRQ(ierr);
+            break;
+        default:
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Dimension must be 2 or 3");
             break;
     }
     
@@ -591,7 +598,7 @@ PetscErrorCode CartGridSetUp(CartGrid map)
             ierr = CartGridSetUp_OutOfCore(map);CHKERRQ(ierr);
             break;
         default:
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Must specify a valid CartGrid type");
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid type {inmem,outofcore} must be specified");
             break;
     }
     
@@ -676,9 +683,8 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
         case CARTGRID_CHAR:
             fprintf(fp,"      <DataArray type=\"Int8\" Name=\"values\" format=\"ascii\">\n");
             break;
-
         default:
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A valid VTK data type must be specified");
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid VTK data type must be specified");
             break;
     }
 
@@ -715,6 +721,9 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
                                 fprintf(fp,"%hd ",(short)*((char*)data_i));
                                 break;
                             case CARTGRID_DTYPE_UDEF:
+                                break;
+                            default:
+                                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid type {char,short,int,long,float,double} must be specified");
                                 break;
                         }
                     }
@@ -757,6 +766,9 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
                                 fprintf(fp,"%hd ",(short)*((char*)data_i));
                                 break;
                             case CARTGRID_DTYPE_UDEF:
+                                break;
+                            default:
+                                SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A valid type {char,short,int,long,float,double} must be specified");
                                 break;
                         }
                     }
