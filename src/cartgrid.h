@@ -80,8 +80,6 @@ PetscErrorCode CartGridGetIndex(CartGrid map,PetscInt i,PetscInt j,PetscInt k,Pe
 
 PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,CartGridValueFound*);
 
-PetscErrorCode CartGridGetDataRange(CartGrid map,void *min,void *max);
-
 PetscErrorCode CartGridView(CartGrid map);
 PetscErrorCode CartGridViewPV(CartGrid map,const char filename[]);
 
