@@ -30,9 +30,8 @@
 #ifndef __ptatin_dmda_element_q1_h__
 #define __ptatin_dmda_element_q1_h__
 
-#include "petsc.h"
-#include "petscdm.h"
-#include "petsc-private/dmdaimpl.h" 
+#include <petsc.h>
+#include <petscdm.h>
 
 PetscErrorCode DMDASetElementType_Q1(DM da);
 PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx);

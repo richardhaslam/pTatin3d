@@ -30,9 +30,8 @@
 #ifndef __ptatin_dmda_element_q1macrop1_h__
 #define __ptatin_dmda_element_q1macrop1_h__
 
-#include "petsc.h"
-#include "petscdm.h"
-#include "petsc-private/dmdaimpl.h" 
+#include <petsc.h>
+#include <petscdm.h>
 
 PetscErrorCode DMDASetElementType_Q1Macro(DM da);
 PetscErrorCode DMDAEQ1Macro_MixedSpace_GetSizeElement(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ);

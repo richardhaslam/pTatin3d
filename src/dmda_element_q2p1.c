@@ -28,8 +28,9 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#include "petsc.h"
-#include "petscdm.h"
+#include <petsc.h>
+#include <petscdm.h>
+#include <petsc-private/dmdaimpl.h>
 #include "ptatin3d_defs.h"
 #include "dmda_element_q2p1.h"
 

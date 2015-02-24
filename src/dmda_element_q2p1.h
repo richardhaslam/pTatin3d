@@ -30,9 +30,8 @@
 #ifndef __ptatin_dmda_element_q2p1_h__
 #define __ptatin_dmda_element_q2p1_h__
 
-#include "petsc.h"
-#include "petscdm.h"
-#include "petsc-private/dmdaimpl.h" 
+#include <petsc.h>
+#include <petscdm.h>
 
 PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz);
 PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ);
