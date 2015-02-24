@@ -463,15 +463,15 @@ PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char out
 	PetscOptionsGetInt(NULL,"-output_type",&output_type,0);
 	switch (output_type) {
 		case 0:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 		case 1:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 			ierr = pTatinOutputLiteParaViewMeshVelocity(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 		default:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 			ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 	}
@@ -519,10 +519,10 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 		//sprintf(pname,"%s%s",pname,suffix);
 		//sprintf(xuname,"%s%s",xuname,suffix);
 		//sprintf(xpname,"%s%s",xpname,suffix);
-		_strlcat(vname,suffix,PETSC_MAX_PATH_LEN-1);
-		_strlcat(pname,suffix,PETSC_MAX_PATH_LEN-1);
-		_strlcat(xuname,suffix,PETSC_MAX_PATH_LEN-1);
-		_strlcat(xpname,suffix,PETSC_MAX_PATH_LEN-1);
+		ierr = PetscStrncat(vname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+		ierr = PetscStrncat(pname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+		ierr = PetscStrncat(xuname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+		ierr = PetscStrncat(xpname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n\t\t(dmda-p) %s\n\t\t(vec-u : p) %s : %s\n", vname,pname,xuname,xpname);
 	
@@ -532,7 +532,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 	sprintf(outfilename,"%s",prefix);
 	if (flg) { 
 		//sprintf(outfilename,"%s%s",outfilename,suffix);
-		_strlcat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);
+		ierr = PetscStrncat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 	}
 	//sprintf(outfilename,"%s_vp",outfilename);
 	//_strlcat(outfilename,"_vp",PETSC_MAX_PATH_LEN-1);
@@ -595,11 +595,11 @@ PetscErrorCode PhysCompEnergyWrite_DM_X(PhysCompEnergy ctx,Vec X,const char outp
 	PetscOptionsGetInt(NULL,"-output_type",&output_type,0);
 	switch (output_type) {
 		case 0:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 			//ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 		default:
-			_strlcat(name,"_X",PETSC_MAX_PATH_LEN-1);
+			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 			//ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
 			break;
 	}
@@ -641,8 +641,8 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg) { 
-		_strlcat(dmdaname,suffix,PETSC_MAX_PATH_LEN-1);
-		_strlcat(tname,suffix,PETSC_MAX_PATH_LEN-1);
+		ierr = PetscStrncat(dmdaname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+		ierr = PetscStrncat(tname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda) %s : (vec) %s\n", dmdaname,tname);
 	
@@ -651,7 +651,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	
 	sprintf(outfilename,"%s",prefix);
 	if (flg) { 
-		_strlcat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);
+		ierr = PetscStrncat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 	}
 	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
 	ierr = PhysCompEnergyWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
