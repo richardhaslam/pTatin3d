@@ -185,6 +185,10 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
         case 4:
             ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
             break;
+            
+		default:
+			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Viscosity projection type is not defined");
+			break;
 	}
 
 	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);

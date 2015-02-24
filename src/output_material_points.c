@@ -378,6 +378,10 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
 			case MPV_yield_indicator:
 				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_yield_indicator is not of type \"double\"");
 				break;
+                
+			default:
+                SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point variable type (MPV_type)");
+				break;
 		}
 		
 		LA_cell[eidx] += var;
@@ -467,8 +471,10 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 			case MPV_yield_indicator:
 				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MPV_yield_indicator is not of type \"float\"");
 				break;
-				
-				
+
+			default:
+                SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point variable type (MPV_type)");
+				break;
 		}
 		
 		LA_cell[eidx] += var;
@@ -881,6 +887,10 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 					
 					ierr = PetscFree(d_LA_cell);CHKERRQ(ierr);
 					break;
+
+                default:
+                    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point variable type (MPV_type)");
+                    break;
 			}
 			
 			fprintf( vtk_fp, "      </DataArray>\n");
@@ -969,6 +979,10 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 					
 					ierr = PetscFree(d_LA_cell);CHKERRQ(ierr);
 					break;
+
+                default:
+                    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown material point variable type (MPV_type)");
+                    break;
 			}
 			
 			
