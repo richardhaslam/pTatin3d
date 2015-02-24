@@ -27,64 +27,63 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#ifndef __PMAP_H__
-#define __PMAP_H__
+#ifndef __CARTGRID_H__
+#define __CARTGRID_H__
 
-typedef enum { PMAP_OUTSIDE=0, PMAP_INSIDE=1 } PMapValueFound;
+typedef enum { CARTGRID_OUTSIDE=0, CARTGRID_INSIDE=1 } CartGridValueFound;
 
-typedef enum { PMAP_ENDIAN_LITTLE , PMPA_ENDIAN_BIG } PMapEndian;
+typedef enum { CARTGRID_ENDIAN_LITTLE , PMPA_ENDIAN_BIG } CartGridEndian;
 
-typedef enum { PMAP_TYPE_UDEF=0, PMAP_INMEM, PMAP_OUTOFCORE } PMapType; /* def, blk, ooc */
-extern const char *PMapTypeNames[];
+typedef enum { CARTGRID_TYPE_UDEF=0, CARTGRID_INMEM, CARTGRID_OUTOFCORE } CartGridType; /* def, blk, ooc */
+extern const char *CartGridTypeNames[];
 
-typedef enum { PMAP_DTYPE_UDEF=0, PMAP_INT, PMAP_LONG, PMAP_FLOAT, PMAP_DOUBLE, PMAP_SHORT, PMAP_CHAR } PMapDataType; /* int, lng, flt, dbl */
-extern const char *PMapDataTypeNames[];
+typedef enum { CARTGRID_DTYPE_UDEF=0, CARTGRID_INT, CARTGRID_LONG, CARTGRID_FLOAT, CARTGRID_DOUBLE, CARTGRID_SHORT, CARTGRID_CHAR } CartGridDataType; /* int, lng, flt, dbl */
+extern const char *CartGridDataTypeNames[];
 
-typedef struct _p_PMap *PMap;
+typedef struct _p_CartGrid *CartGrid;
 
-struct _p_PMap {
+struct _p_CartGrid {
     PetscInt     dim;
     PetscReal    range_x[2],range_y[2],range_z[2];
-    PMapDataType data_type;
+    CartGridDataType data_type;
     size_t       bytes;
     PetscInt     start[3],end[3];
     PetscInt     mx,my,mz;
-    PMapType     type;
-    PMapEndian   endian;
+    CartGridType     type;
+    CartGridEndian   endian;
 	PetscReal    dx,dy,dz;
     char         metadatafile_name[PETSC_MAX_PATH_LEN];
     char         datafile_name[PETSC_MAX_PATH_LEN];
     FILE         *data_fp;
 	void         *data;
-    PetscErrorCode (*getindex)(PMap,PetscInt,PetscInt,PetscInt,PetscInt*);
-    PetscErrorCode (*getvalue)(PMap,PetscReal*,void*,PMapValueFound*);
-    PetscErrorCode (*destroy)(PMap);
+    PetscErrorCode (*getindex)(CartGrid,PetscInt,PetscInt,PetscInt,PetscInt*);
+    PetscErrorCode (*getvalue)(CartGrid,PetscReal*,void*,CartGridValueFound*);
+    PetscErrorCode (*destroy)(CartGrid);
 };
 
-PetscErrorCode PMapCreate(PMap *map);
+PetscErrorCode CartGridCreate(CartGrid *map);
 
-PetscErrorCode PMapSetType(PMap map,PMapType t);
-PetscErrorCode PMapSetDim(PMap map,PetscInt dim);
-PetscErrorCode PMapSetSizes(PMap map,PetscInt m,PetscInt n,PetscInt p);
-PetscErrorCode PMapSetDataType(PMap map,PMapDataType type);
-PetscErrorCode PMapSetDomain(PMap map,PetscReal xr[],PetscReal yr[],PetscReal zr[]);
-PetscErrorCode PMapSetFilename(PMap map,const char fname[]);
-PetscErrorCode PMapSetDataFilename(PMap map,const char fname[]);
-PetscErrorCode PMapViewMetaData(PMap map);
+PetscErrorCode CartGridSetType(CartGrid map,CartGridType t);
+PetscErrorCode CartGridSetDim(CartGrid map,PetscInt dim);
+PetscErrorCode CartGridSetSizes(CartGrid map,PetscInt m,PetscInt n,PetscInt p);
+PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type);
+PetscErrorCode CartGridSetDomain(CartGrid map,PetscReal xr[],PetscReal yr[],PetscReal zr[]);
+PetscErrorCode CartGridSetFilename(CartGrid map,const char fname[]);
+PetscErrorCode CartGridSetDataFilename(CartGrid map,const char fname[]);
+PetscErrorCode CartGridViewMetaData(CartGrid map);
 
-PetscErrorCode PMapSetUp(PMap map);
+PetscErrorCode CartGridSetUp(CartGrid map);
 
-PetscErrorCode PMapDestroy(PMap *map);
+PetscErrorCode CartGridDestroy(CartGrid *map);
 
+PetscErrorCode CartGridGetIndex(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index);
 
-PetscErrorCode PMapGetIndex(PMap map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index);
+PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,CartGridValueFound*);
 
-PetscErrorCode PMapGetValue(PMap map,PetscReal xp[],void *value,PMapValueFound*);
+PetscErrorCode CartGridGetDataRange(CartGrid map,void *min,void *max);
 
-PetscErrorCode PMapGetDataRange(PMap map,void *min,void *max);
-
-PetscErrorCode PMapView(PMap map);
-PetscErrorCode PMapViewPV(PMap map,const char filename[]);
+PetscErrorCode CartGridView(CartGrid map);
+PetscErrorCode CartGridViewPV(CartGrid map,const char filename[]);
 
 
 #endif
