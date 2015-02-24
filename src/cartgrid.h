@@ -30,8 +30,6 @@
 #ifndef __CARTGRID_H__
 #define __CARTGRID_H__
 
-typedef enum { CARTGRID_OUTSIDE=0, CARTGRID_INSIDE=1 } CartGridValueFound;
-
 typedef enum { CARTGRID_ENDIAN_LITTLE , PMPA_ENDIAN_BIG } CartGridEndian;
 
 typedef enum { CARTGRID_TYPE_UDEF=0, CARTGRID_INMEM, CARTGRID_OUTOFCORE } CartGridType; /* def, blk, ooc */
@@ -57,7 +55,7 @@ struct _p_CartGrid {
     FILE         *data_fp;
 	void         *data;
     PetscErrorCode (*getindex)(CartGrid,PetscInt,PetscInt,PetscInt,PetscInt*);
-    PetscErrorCode (*getvalue)(CartGrid,PetscReal*,void*,CartGridValueFound*);
+    PetscErrorCode (*getvalue)(CartGrid,PetscReal*,void*,PetscBool*);
     PetscErrorCode (*destroy)(CartGrid);
 };
 
@@ -78,7 +76,7 @@ PetscErrorCode CartGridDestroy(CartGrid *map);
 
 PetscErrorCode CartGridGetIndex(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index);
 
-PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,CartGridValueFound*);
+PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,PetscBool*);
 
 PetscErrorCode CartGridView(CartGrid map);
 PetscErrorCode CartGridViewPV(CartGrid map,const char filename[]);

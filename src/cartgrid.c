@@ -38,8 +38,8 @@ const char *CartGridDataTypeNames[] = { "udef", "int", "long", "float", "double"
 
 
 PetscErrorCode CartGridGetIndex_InMem(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index);
-PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found);
-PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found);
+PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,PetscBool *found);
+PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found);
 
 
 
@@ -312,7 +312,7 @@ PetscErrorCode CartGridGetIndex_InMem(CartGrid map,PetscInt i,PetscInt j,PetscIn
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridGetValue_InMem2d"
-PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found)
+PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
 	PetscInt i,j,index;
     void     *value_i;
@@ -332,7 +332,7 @@ PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,
 	CartGridGetIndex_InMem2d(map,i,j,-1,&index);
 	if (index < 0) { PetscFunctionReturn(0); }
     
-    *found = CARTGRID_INSIDE;
+    *found = PETSC_TRUE;
     
     value_i = (void*)( (char*)map->data + index * map->bytes );
     PetscMemcpy(value,value_i,map->bytes);
@@ -342,7 +342,7 @@ PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridGetValue_InMem3d"
-PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found)
+PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
 	PetscInt i,j,k,index;
     void     *value_i;
@@ -367,7 +367,7 @@ PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,
 	CartGridGetIndex_InMem3d(map,i,j,k,&index);
 	if (index < 0) { PetscFunctionReturn(0); }
     
-    *found = CARTGRID_INSIDE;
+    *found = PETSC_TRUE;
     
     value_i = (void*)( (char*)map->data + index * map->bytes );
     PetscMemcpy(value,value_i,map->bytes);
@@ -377,7 +377,7 @@ PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridGetValue_InMem"
-PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found)
+PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -398,7 +398,7 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Ca
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridGetValue_OutOfCore"
-PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found)
+PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
 	PetscInt i,j,k,index;
     long     offset;
@@ -427,7 +427,7 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
     }
 	if (index < 0) { PetscFunctionReturn(0); }
     
-    *found = CARTGRID_INSIDE;
+    *found = PETSC_TRUE;
 
     /* reset position */
     fseek(map->data_fp,0,SEEK_SET);
@@ -443,11 +443,11 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridGetValue"
-PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,CartGridValueFound *found)
+PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
-	(*found) = CARTGRID_OUTSIDE;
+	(*found) = PETSC_FALSE;
     ierr = map->getvalue(map,xp,value,found);CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
@@ -840,10 +840,10 @@ PetscErrorCode ex1(void)
     ierr = CartGridSetUp(cg);CHKERRQ(ierr);
     
     {
-        int            k;
-        double         pos[] = {1.0,60.0};
-        double         value;
-        CartGridValueFound found;
+        int       k;
+        double    pos[] = {1.0,60.0};
+        double    value;
+        PetscBool found;
         
         value = 0.0;
         for (k=0; k<10; k++) {
