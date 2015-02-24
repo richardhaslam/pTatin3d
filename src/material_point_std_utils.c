@@ -820,7 +820,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	DataFieldRestoreAccess(PField);
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,np_current,np_new);CHKERRQ(ierr);
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,np_current,np_new);CHKERRQ(ierr);
 	
     /* length of new points added */
 	DataBucketGetSizes(db,&np_current,NULL,NULL);
