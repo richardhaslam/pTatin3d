@@ -269,7 +269,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	}
 	
 	/* Report mesh sizes */
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	for (k=0; k<nlevels; k++) {
 		PetscInt nels,nen;
 		const PetscInt *els;

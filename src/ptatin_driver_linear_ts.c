@@ -528,7 +528,7 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	
 	PetscFunctionBegin;
 	
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     
 	/* Report mesh sizes */
 	for (k=0; k<nlevels; k++) {

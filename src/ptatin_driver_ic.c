@@ -96,7 +96,7 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 		MPI_Subcomm scomm;
 		Vec field;
 		
-		MPI_Comm_size(PETSC_COMM_WORLD,&nproc);
+		ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
 		
 		ierr = DMDACreate3dSemiRedundant(dav,nproc/8,&scomm,&sdav);CHKERRQ(ierr);
 

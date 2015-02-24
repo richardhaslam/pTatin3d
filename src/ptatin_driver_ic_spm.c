@@ -69,7 +69,7 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 	PetscFunctionBegin;
 	
 	comm = PetscObjectComm((PetscObject)dav);
-	MPI_Comm_rank(comm,&rank);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&da_surf);CHKERRQ(ierr);	
@@ -164,7 +164,7 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 	PetscFunctionBegin;
 	
 	comm = PetscObjectComm((PetscObject)da_vol);
-	MPI_Comm_rank(comm,&rank);
+	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 	
 
 	ierr = DMDAGetInfo(da_vol,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);

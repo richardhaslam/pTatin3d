@@ -348,7 +348,7 @@ PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],P
 		ops_element_sum = (double)( (1058 * ngp + ngp ) * nel ); /* extra ngp is for the weight x detJ done prior to MatMultMF_Stokes_MixedFEM3d_B11 */
 		ops_insert      = (double)( (3 * Q2_NODES_PER_EL_3D ) * nel );
 		ops            = ops_geom  +  ops_element_sum  +  ops_insert;
-		MPI_Allreduce(&ops,&ops_total,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);	
+		ierr = MPI_Allreduce(&ops,&ops_total,1,MPI_DOUBLE,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
 		
 		flops = ((double)ops_total)/(t1-t0);
 		flops = flops * 1.0e-9;

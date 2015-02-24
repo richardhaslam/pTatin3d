@@ -156,7 +156,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	}
 	
 	/* test */
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	for (k=0; k<nlevels; k++) {
 		PetscInt nels,nen;
 		const PetscInt *els;
@@ -388,7 +388,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	}
 	
 	/* test */
-	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	for (k=0; k<nlevels; k++) {
 		PetscInt nels,nen;
 		const PetscInt *els;
