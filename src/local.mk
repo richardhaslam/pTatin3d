@@ -59,6 +59,7 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_operators_tensor.c \
 			quadrature.c \
 			phase_map.c \
+            cartgrid.c \
 			element_utils_q2.c \
 			element_utils_q1.c \
 			stokes_assembly.c \
