@@ -48,12 +48,7 @@
 */
 
 
-#include "petsc.h"
-#include "petscvec.h"
-#include "petscdm.h"
-#include "petsc-private/matimpl.h" /*I   "petscmat.h"   I*/
-
-
+#include "petsc.h" /*I   "petscmat.h"   I*/
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -688,11 +683,13 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		same = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
 		if (same) {
-			PetscInt n,first,step;
+			PetscInt nc,n,cstart,first,step;
 			ierr = ISStrideGetInfo(isc,&first,&step);CHKERRQ(ierr);
 			ierr = ISGetLocalSize(isc,&n);CHKERRQ(ierr);
-			if  ((A->cmap->n==n)
-					 && (A->cmap->rstart==first)
+            ierr = MatGetLocalSize(A,NULL,&nc);CHKERRQ(ierr);
+            ierr = MatGetOwnershipRange(A,&cstart,NULL);CHKERRQ(ierr);
+			if  (    (nc == n)
+					 && (cstart == first)
 					 && (step==1) ) {
 				//isFullCol = PETSC_TRUE;
 				PetscPrintf(PetscObjectComm((PetscObject)A),"Detected full column space\n");
@@ -809,12 +806,14 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 		same = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)isc,"stride",&same);CHKERRQ(ierr);
 		if (same) {
-			PetscInt n,first,step;
+			PetscInt nc,n,cstart,first,step;
 			ierr = ISStrideGetInfo(isc,&first,&step);CHKERRQ(ierr);
 			ierr = ISGetLocalSize(isc,&n);CHKERRQ(ierr);
-			if  ((A->cmap->n==n)
-					 && (A->cmap->rstart==first)
-					 && (step==1) ) {
+            ierr = MatGetLocalSize(A,NULL,&nc);CHKERRQ(ierr);
+            ierr = MatGetOwnershipRange(A,&cstart,NULL);CHKERRQ(ierr);
+			if  (   (nc == n)
+					 && (cstart == first)
+					 && (step == 1) ) {
 				//isFullCol = PETSC_TRUE;
 				PetscPrintf(PetscObjectComm((PetscObject)A),"Detected full column space\n");
 				

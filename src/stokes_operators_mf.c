@@ -28,9 +28,8 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 #include "petsc.h"
-#include "petscvec.h"
+#include "petscvec.h" /*I   "petscmat.h"   I*/
 #include "petscdm.h"
-#include "petsc-private/matimpl.h" /*I   "petscmat.h"   I*/
 
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
