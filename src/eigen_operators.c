@@ -66,13 +66,13 @@ PetscErrorCode MatMult_MatEigenOperator(Mat A,Vec X,Vec Y)
 			ierr = MatMult(ctx->A,ctx->t,Y);CHKERRQ(ierr);
 			break;
 		case PC_SYMMETRIC:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 		case PC_SIDE_DEFAULT:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;			
 	}
 	
@@ -131,13 +131,13 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 			ierr = MatGetVecs(ctx->A,NULL,&ctx->t);CHKERRQ(ierr);
 			break;
 		case PC_SYMMETRIC:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 		case PC_SIDE_DEFAULT:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 	}
 	
@@ -154,13 +154,13 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 			ierr = MatCreateShell(PetscObjectComm((PetscObject)ksp),mA,nB,MA,NB,(void*)ctx,&B);CHKERRQ(ierr);
 			break;
 		case PC_SYMMETRIC:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 		case PC_SIDE_DEFAULT:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
+			SETERRQ(PetscObjectComm((PetscObject)ksp),PETSC_ERR_SUP,"Only PCSide PC_LEFT and PC_RIGHT are supported");
 			break;
 	}
 	

@@ -189,7 +189,7 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 	ierr = DMGetCoordinates(_sda,&new_local_coords);CHKERRQ(ierr);
 	
 	/* generate scatter */
-	ierr = ISCreateGeneral( PETSC_COMM_WORLD, Ml*Nl*Pl*3, fine_indices, PETSC_USE_POINTER, &is_fine );CHKERRQ(ierr);
+	ierr = ISCreateGeneral( PetscObjectComm((PetscObject)da), Ml*Nl*Pl*3, fine_indices, PETSC_USE_POINTER, &is_fine );CHKERRQ(ierr);
 	ierr = ISCreateStride( PETSC_COMM_SELF,Ml*Nl*Pl*3,0,1,&is_local);CHKERRQ(ierr);
 	
 	ierr = VecScatterCreate( global_coords_fine_NATURAL,is_fine, new_local_coords,is_local, &sctx );CHKERRQ(ierr);

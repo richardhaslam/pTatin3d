@@ -626,7 +626,7 @@ PetscErrorCode apply_mppc_nn_patch2(
 #if (MPPC_LOG_LEVEL >= 1)
 	printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
 #endif	
-	ierr = MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
 	if (cells_needing_new_points_g==0) {
 		//		PetscPrintf(PETSC_COMM_WORLD,"!! No population control required <global>!!\n");
 		PetscFunctionReturn(0);
@@ -744,13 +744,13 @@ PetscErrorCode apply_mppc_nn_patch2(
 						xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
 						
 						if (fabs(xip_rand[0]) > 1.0) {
-							SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
 						}
 						if (fabs(xip_rand[1]) > 1.0) {
-							SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
 						}
 						if (fabs(xip_rand[2]) > 1.0) {
-							SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
+							SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
 						}
 						
 						P3D_ConstructNi_Q2_3D(xip_rand,Ni);
@@ -844,7 +844,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	
 	ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -890,8 +890,8 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 		if (points_per_cell > np_upper) { cells_np_upper++; }
 	}
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  %d cells with points < np_lower (%d) \n", cells_np_lower,np_lower );
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  %d cells with points > np_upper (%d) \n", cells_np_upper,np_upper);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %d cells with points < np_lower (%d) \n", cells_np_lower,np_lower );
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %d cells with points > np_upper (%d) \n", cells_np_upper,np_upper);
 #endif
 	
 	/* apply point injection routine */
@@ -903,7 +903,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 											patch_extend, nxp,nyp,nzp, pertub, da,db);CHKERRQ(ierr);
 	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_nn_patch): %1.4e (sec)\n", t1-t0);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_nn_patch): %1.4e (sec)\n", t1-t0);
 #endif
 	
 	
@@ -930,7 +930,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlRemove,0,0,0,0);CHKERRQ(ierr);
 	
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -961,7 +961,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	}
 	
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  %d cells with points > np_upper (%d) \n", count, np_upper);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %d cells with points > np_upper (%d) \n", count, np_upper);
 #endif
 	
 	
@@ -1050,7 +1050,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 	
 	
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(MPPC_SimpleRemoval): %1.4e (sec)\n", t1-t0);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(MPPC_SimpleRemoval): %1.4e (sec)\n", t1-t0);
 #endif
 	
 	ierr = PetscFree(cell_count);CHKERRQ(ierr);
@@ -1069,6 +1069,7 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	PetscBool      flg;
 	DataBucket     db;
 	PetscBool      reverse_order_removal;
+    MPI_Comm       comm;
 	
 	PetscFunctionBegin;
 
@@ -1092,13 +1093,14 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 	ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
 
 	ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)ctx->stokes_ctx->dav,&comm);CHKERRQ(ierr);
 	
 	/* insertion */
 #if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
-	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers before population control (%ld) \n", np_g );
+	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,comm);CHKERRQ(ierr);
+	PetscPrintf(comm,"[LOG]  total markers before population control (%ld) \n", np_g );
 #endif
 	
 	ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
@@ -1106,8 +1108,8 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 #if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
-	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers after INJECTION (%ld) \n", np_g );
+	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,comm);CHKERRQ(ierr);
+	PetscPrintf(comm,"[LOG]  total markers after INJECTION (%ld) \n", np_g );
 #endif
 	
 	/* removal */
@@ -1119,8 +1121,8 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 #if (MPPC_LOG_LEVEL >= 1)
 	DataBucketGetSizes(db,&npoints,0,0);
 	np = npoints;
-	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  total markers after DELETION (%ld) \n", np_g );
+	ierr = MPI_Allreduce(&np,&np_g,1,MPI_LONG,MPI_SUM,comm);CHKERRQ(ierr);
+	PetscPrintf(comm,"[LOG]  total markers after DELETION (%ld) \n", np_g );
 #endif
 	
 	PetscFunctionReturn(0);
@@ -1385,7 +1387,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	DataBucketGetSizes(db,&npoints,NULL,NULL);
 
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -1421,18 +1423,18 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 	}
 
 	/* check if we can exit early */
-	ierr = MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
 	if (cells_needing_reassignment_g == 0) {
 #if (MPPC_LOG_LEVEL >= 1)
-		PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! No region re-assignment equired <global> !!\n");
+		PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! No region re-assignment equired <global> !!\n");
 #endif
 		ierr = PetscFree(cell_count);CHKERRQ(ierr);
 		PetscFunctionReturn(0);
 	}
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g);
-	ierr = MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g);
+	ierr = MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g);
 #endif	
 
 	
@@ -1478,7 +1480,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 														 patch_extend, da,db);CHKERRQ(ierr);
 	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
 	
 	
@@ -1723,7 +1725,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 	DataBucketGetSizes(db,&npoints,NULL,NULL);
 	
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG] %s: \n", __FUNCTION__);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -1759,18 +1761,18 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 	}
 	
 	/* check if we can exit early */
-	ierr = MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
+	ierr = MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
 	if (cells_needing_reassignment_g == 0) {
 #if (MPPC_LOG_LEVEL >= 1)
-		PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! No region re-assignment equired <global> !!\n");
+		PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! No region re-assignment equired <global> !!\n");
 #endif
 		ierr = PetscFree(cell_count);CHKERRQ(ierr);
 		PetscFunctionReturn(0);
 	}
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g);
-	ierr = MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g);
+	ierr = MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g);
 #endif	
 	
 	
@@ -1816,7 +1818,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 																			patch_extend, da,db);CHKERRQ(ierr);
 	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
+	PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
 	
 	

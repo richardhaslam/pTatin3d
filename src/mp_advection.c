@@ -85,7 +85,7 @@ PetscErrorCode MaterialPointStd_AdvectEuler(DM da,Vec velocity,PetscReal step,in
 		
 		wil   = marker_p->wil;
 		e     = wil;
-		if (wil < 0) { SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Point[%d] has wil_e < 0", wil ); }
+		if (wil < 0) { SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Point[%d] has wil_e < 0", wil ); }
 		
 		ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
 		ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr);
@@ -211,7 +211,7 @@ PetscErrorCode SwarmUpdateProperties_MPntStd(DataBucket db,pTatinCtx ctx,Vec X)
 	PetscFunctionBegin;
 	DataBucketQueryDataFieldByName(db,MPntStd_classname,&found);
 	if (found == BFALSE) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot find DataField with name %s \n", MPntStd_classname );
+		SETERRQ1(PetscObjectComm((PetscObject)X),PETSC_ERR_USER,"Cannot find DataField with name %s \n", MPntStd_classname );
 	}
 	PetscFunctionReturn(0);
 }
@@ -618,15 +618,15 @@ PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM d
 	tlocal[2] = t1 - t0;
 
 #ifdef PTAT3D_PROFILE_SwarmUpdatePosition
-	ierr = MPI_Allreduce(tlocal,tgmax,3,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(tlocal,tgmin,3,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(tlocal,tgmax,3,MPI_DOUBLE,MPI_MAX,de->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(tlocal,tgmin,3,MPI_DOUBLE,MPI_MIN,de->comm);CHKERRQ(ierr);
     
-	PetscPrintf(PETSC_COMM_WORLD,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
-	PetscPrintf(PETSC_COMM_WORLD,"      Number of material points                     %ld (init) / %ld (final)\n",npoints_global_init,npoints_global_fin);
-	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_UpdateLocalCoordinates   %10.2e (sec) efficiency %1.1lf%%\n",tgmax[0],100.0 - 100.0*(tgmax[0]-tgmin[0])/tgmax[0]);
-	PetscPrintf(PETSC_COMM_WORLD,"    	SwarmUpdatePosition_Communication_Generic %10.2e (sec) efficiency %1.1lf%%\n",tgmax[1],100.0 - 100.0*(tgmax[1]-tgmin[1])/tgmax[1]);
-	PetscPrintf(PETSC_COMM_WORLD,"    	MaterialPointStd_Removal                  %10.2e (sec) efficiency %1.1lf%%\n",tgmax[2],100.0 - 100.0*(tgmax[2]-tgmin[2])/tgmax[2]);
-	PetscPrintf(PETSC_COMM_WORLD,"=========== ================================== ============= \n");
+	PetscPrintf(de->comm,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
+	PetscPrintf(de->comm,"      Number of material points                     %ld (init) / %ld (final)\n",npoints_global_init,npoints_global_fin);
+	PetscPrintf(de->comm,"    	MaterialPointStd_UpdateLocalCoordinates   %10.2e (sec) efficiency %1.1lf%%\n",tgmax[0],100.0 - 100.0*(tgmax[0]-tgmin[0])/tgmax[0]);
+	PetscPrintf(de->comm,"    	SwarmUpdatePosition_Communication_Generic %10.2e (sec) efficiency %1.1lf%%\n",tgmax[1],100.0 - 100.0*(tgmax[1]-tgmin[1])/tgmax[1]);
+	PetscPrintf(de->comm,"    	MaterialPointStd_Removal                  %10.2e (sec) efficiency %1.1lf%%\n",tgmax[2],100.0 - 100.0*(tgmax[2]-tgmin[2])/tgmax[2]);
+	PetscPrintf(de->comm,"=========== ================================== ============= \n");
 #endif
     
 	PetscFunctionReturn(0);

@@ -130,7 +130,7 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 			mloc_sub = rend_sub - rstart_sub;
 			PetscPrintf(PETSC_COMM_SELF,"mloc_sub = %D \n",mloc_sub);
 			PetscPrintf(PETSC_COMM_SELF,"nsubcomm %D \n",cheb->nsubcomm);
-			MPI_Barrier(PETSC_COMM_WORLD);
+			ierr = MPI_Barrier(subcomm);CHKERRQ(ierr); /* what is this doing in here?? */
             
 			/* create xsub with empty local arrays, because xdup's arrays will be placed into it */
 			ierr = VecCreateMPIWithArray(subcomm,1,mloc_sub,PETSC_DECIDE,NULL,&cheb->xsub);CHKERRQ(ierr);

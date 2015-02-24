@@ -139,7 +139,7 @@ PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_loca
 	mem_usage = mem_usage * 1.0e-6;
 	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
 	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
+	PetscPrintf(PetscObjectComm((PetscObject)list->dm),"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	PetscFunctionReturn(0);
 }
@@ -178,7 +178,7 @@ PetscErrorCode BCListInitGlobal(BCList list)
 	ierr = DMGetGlobalVector(list->dm,&dindices_g);CHKERRQ(ierr);
 	ierr = DMGetLocalVector(list->dm,&dindices);CHKERRQ(ierr);
 	ierr = VecGetLocalSize(dindices,&lsize);CHKERRQ(ierr);
-	if (lsize!=max) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Sizes don't match 1"); }
+	if (lsize!=max) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_USER,"Sizes don't match 1"); }
 	ierr = VecGetArray(dindices,&_dindices);CHKERRQ(ierr);
 	/* convert to scalar */
 	for (i=0; i<lsize; i++) {
@@ -193,7 +193,7 @@ PetscErrorCode BCListInitGlobal(BCList list)
 	
 	/* convert to int */
 	ierr = VecGetLocalSize(dindices_g,&lsize);CHKERRQ(ierr);
-	if (list->L!=lsize) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Sizes don't match 2"); }
+	if (list->L!=lsize) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_USER,"Sizes don't match 2"); }
 	ierr = VecGetArray(dindices_g,&_dindices);CHKERRQ(ierr);
 	for (i=0; i<lsize; i++) {
 		list->dofidx_global[i] = (PetscInt)_dindices[i];
@@ -222,7 +222,7 @@ PetscErrorCode BCListGlobalToLocal(BCList list)
 	
 	/* clean up indices (global -> local) */
 	ierr = VecGetLocalSize(dindices_g,&lsize);CHKERRQ(ierr);
-	if (lsize!=list->L) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Sizes don't match 1"); }
+	if (lsize!=list->L) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_USER,"Sizes don't match 1"); }
 	ierr = VecGetArray(dindices_g,&_dindices);CHKERRQ(ierr);
 	/* convert to scalar and copy values */
 	for (i=0; i<lsize; i++) {
@@ -241,7 +241,7 @@ PetscErrorCode BCListGlobalToLocal(BCList list)
 	
 	/* convert to int */
 	ierr = VecGetLocalSize(dindices,&lsize);CHKERRQ(ierr);
-	if (list->L_local!=lsize) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Sizes don't match 2"); }
+	if (list->L_local!=lsize) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_USER,"Sizes don't match 2"); }
 	ierr = VecGetArray(dindices,&_dindices);CHKERRQ(ierr);
 	for (i=0; i<lsize; i++) {
 		list->dofidx_local[i] = (PetscInt)_dindices[i];
@@ -480,9 +480,9 @@ PetscErrorCode BCListInsertLocal(BCList list,Vec y)
 	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
 	
 	/* debug error checking */
-	if (L!=M) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
+	if (L!=M) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
 	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
-	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
+	if (!is_seq) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<M; k++) {
 		if (idx[k]==BCList_DIRICHLET) {
@@ -515,9 +515,9 @@ PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
 	ierr = VecGetSize(y,&M);CHKERRQ(ierr);
 	
 	/* debug error checking */
-	if (L!=M) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
+	if (L!=M) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_SIZ,"Sizes do not match"); };
 	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
-	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
+	if (!is_seq) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<M; k++) {
 		if (idx[k]==BCList_DIRICHLET) {
@@ -543,8 +543,8 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
+	if (!X) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
@@ -556,9 +556,9 @@ PetscErrorCode BCListResidualDirichlet(BCList list,Vec X,Vec F)
 	
 	/* debug error checking */
 	ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-	if (L!=m) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match (X)"); };
+	if (L!=m) { SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_SIZ,"Sizes do not match (X)"); };
 	ierr = VecGetLocalSize(F,&m);CHKERRQ(ierr);
-	if (L!=m) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match (F)"); };
+	if (L!=m) { SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_SIZ,"Sizes do not match (F)"); };
 	
 	for (k=0; k<m; k++) {
 		if (idx[k]==BCList_DIRICHLET) {
@@ -585,8 +585,8 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
+	if (!X) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;
@@ -597,9 +597,9 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,Vec X,Vec F)
 	
 	/* debug error checking */
 	ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
-	if (L!=m) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match (X)"); };
+	if (L!=m) { SETERRQ(PetscObjectComm((PetscObject)X),PETSC_ERR_ARG_SIZ,"Sizes do not match (X)"); };
 	ierr = VecGetLocalSize(F,&m);CHKERRQ(ierr);
-	if (L!=m) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"Sizes do not match (F)"); };
+	if (L!=m) { SETERRQ(PetscObjectComm((PetscObject)F),PETSC_ERR_ARG_SIZ,"Sizes do not match (F)"); };
 	
 	for (k=0; k<m; k++) {
 		if (idx[k]==BCList_DIRICHLET) {
@@ -644,12 +644,12 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 	PetscErrorCode ierr;
 	
 	ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
-	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
+	if (dof_idx >= ndof) { SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
 	
 	ierr = DMDAGetCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
 	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinates(da,&coords);CHKERRQ(ierr);
-	if (!coords) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Coordinates must be set"); }
+	if (!coords) { SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Coordinates must be set"); }
 	ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	
 	ierr = BCListGetGlobalIndices(list,&L,&idx);
@@ -815,7 +815,7 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 			break;
 			
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown Dirichlet boundary condition specified");
+			SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_USER,"Unknown Dirichlet boundary condition specified");
 			break;
 	}
 	
@@ -905,7 +905,7 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	mem_usage = mem_usage * 1.0e-6;
 	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
 	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
+	PetscPrintf(PetscObjectComm((PetscObject)std->dm),"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
 	
 	
 	*flat = F;
@@ -966,7 +966,7 @@ PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
 	
 	/* debug error checking */
 	ierr = PetscObjectTypeCompare((PetscObject)y,VECSEQ,&is_seq);CHKERRQ(ierr);
-	if (!is_seq) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
+	if (!is_seq) { SETERRQ(PetscObjectComm((PetscObject)y),PETSC_ERR_ARG_WRONG,"Vec must be VECSEQ, i.e. a local (ghosted) vec"); };
 	
 	for (k=0; k<L; k++) {
 		PetscInt dirichlet_idx = idx[k];
@@ -992,8 +992,8 @@ PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	if (!X) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
-	if (!F) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
+	if (!X) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_NULL,"Vec X cannot be NULL"); }
+	if (!F) { SETERRQ(PetscObjectComm((PetscObject)list->dm),PETSC_ERR_ARG_NULL,"Vec F cannot be NULL"); }
 	
 	L      = list->L;
 	idx    = list->dofidx_global;

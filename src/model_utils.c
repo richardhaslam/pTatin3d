@@ -949,8 +949,8 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
     }
     ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
-    if (min) { ierr = MPI_Allreduce(gmin,min,3,MPIU_REAL,MPI_MIN,((PetscObject)dav)->comm);CHKERRQ(ierr); }
-	if (max) { ierr = MPI_Allreduce(gmax,max,3,MPIU_REAL,MPI_MAX,((PetscObject)dav)->comm);CHKERRQ(ierr); }
+    if (min) { ierr = MPI_Allreduce(gmin,min,3,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
+	if (max) { ierr = MPI_Allreduce(gmax,max,3,MPIU_REAL,MPI_MAX,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
     
 	PetscFunctionReturn(0);
 }
@@ -1029,8 +1029,8 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
     ierr = VecRestoreArray(v_local,&LA_v);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dav,&v_local);CHKERRQ(ierr);
 	
-    ierr = MPI_Allreduce(&_value_vol, value_vol, 1,MPIU_REAL,MPI_SUM,((PetscObject)dav)->comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&_value_vrms,value_vrms,1,MPIU_REAL,MPI_SUM,((PetscObject)dav)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&_value_vol, value_vol, 1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&_value_vrms,value_vrms,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
 	//*value_vrms = PetscSqrtReal(*value_vrms);
     
 	PetscFunctionReturn(0);
@@ -1194,7 +1194,7 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
     ierr = DMRestoreLocalVector(dav,&sv_local);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dap,&sp_local);CHKERRQ(ierr);
 	
-    ierr = MPI_Allreduce(&value_local, value, 1,MPIU_REAL,MPI_SUM,((PetscObject)dav)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&value_local, value, 1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
     
     
 	PetscFunctionReturn(0);

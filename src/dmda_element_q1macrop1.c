@@ -75,7 +75,7 @@ PetscErrorCode DMDAEQ1Macro_FetchContext(DM da,DMDAEQ1MacroCtx *ctx)
 	
 	container = NULL;
 	ierr = PetscObjectQuery((PetscObject)da,DMDAEQ1MacroCtxName,(PetscObject*)&container);CHKERRQ(ierr);
-	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with this DAE",DMDAEQ1MacroCtxName);
+	if (!container) SETERRQ1(PetscObjectComm((PetscObject)da),PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with this DAE",DMDAEQ1MacroCtxName);
 	ierr = PetscContainerGetPointer(container,(void**)ctx);CHKERRQ(ierr);
 	
 	
@@ -95,24 +95,24 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetSizeElement(DM da,PetscInt *MX,PetscI
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=1) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");
 	}
 	
 	/* M = order*mx+1 */
 	if ( (M-1)%order != 0 ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in x direction");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in x direction");
 	}
 	if (MX) { *MX = (M-1)/order; }
 	
 	//
 	if ( (N-1)%order != 0 ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in y direction");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in y direction");
 	}
 	if (MY) { *MY = (N-1)/order; }
 	
 	//
 	if ( (P-1)%order != 0 ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in z direction");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in z direction");
 	}
 	if (MZ) { *MZ = (P-1)/order; }
 	
@@ -152,7 +152,7 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(DM da,PetscInt *mx,P
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
 	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
 	
 	cntx = cnty = cntz = 0;

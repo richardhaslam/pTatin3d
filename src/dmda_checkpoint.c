@@ -229,7 +229,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 			st = DMDA_STENCIL_BOX;
 			break;
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown stenctil type detected");
+			SETERRQ(comm,PETSC_ERR_USER,"Unknown stenctil type detected");
 			break;
 	}			
 	
@@ -249,7 +249,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
     if (dim == 3) {
         ierr = DMDACreate3d( comm, wrap[0],wrap[1],wrap[2], st, M,N,P, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, dof,sw, 0,0,0, da );CHKERRQ(ierr);
     } else {
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only dimension=3 supported");
+        SETERRQ(comm,PETSC_ERR_SUP,"Only dimension=3 supported");
     }
 	ierr = DMDASetRefinementFactor( *da, refine_x, refine_y, refine_z );CHKERRQ(ierr);
 	

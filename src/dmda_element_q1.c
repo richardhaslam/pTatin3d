@@ -54,9 +54,9 @@ PetscErrorCode DMDAGetLocalSizeElementQ1(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&m,&n,&p);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,&mg,&ng,&pg);CHKERRQ(ierr);
 	if (width != 1) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
 	}
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
 	//printf("[%d]: i(%d->%d) : j(%d->%d) \n", rank,si,si+m,sj,sj+n);
 	
 	cntx = cnty = cntz = 0;
@@ -100,7 +100,7 @@ PetscErrorCode DMDAGetCornersElementQ1(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da,&sig,&sjg,&skg,0,0,0);CHKERRQ(ierr);
 	if (width != 1) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
 	}
 	
 	// x
@@ -129,10 +129,10 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscMPIInt rank;
 	PetscFunctionBegin;
 	
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)dm),&rank);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0, &M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
 	if (width!=1) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
+		SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_SUP,"Stencil width must be 1 for Q1");
 	}
 	
 	_npe = (order + 1)*(order + 1)*(order + 1);
@@ -215,14 +215,14 @@ PetscErrorCode DMDAGetElementsQ1(DM dm,PetscInt *nel,PetscInt *npe,const PetscIn
 	
 	ierr = DMDAGetInfo(dm, &dim, 0,0,0, 0,0,0, 0,&sw, 0,0,0, 0);CHKERRQ(ierr);
 	if (sw != 1) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Stencil width must equal 1");
+		SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Stencil width must equal 1");
 	}
 	switch (dim) {
 		case 1:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimension width must equal 3. Your DM has dim=1");
+			SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension width must equal 3. Your DM has dim=1");
 			break;
 		case 2:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Dimension width must equal 3. Your DM has dim=2");
+			SETERRQ(PetscObjectComm((PetscObject)dm),PETSC_ERR_USER,"Dimension width must equal 3. Your DM has dim=2");
 			break;
 		case 3:
 			ierr = DMDAGetElements_DA_Q1_3D(dm,nel,npe,eidx);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	ierr = DMDAGetSizeElementQ2(dmq2,&MX,&MY,&MZ);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dmq2,0, 0,0,0, &Mp,&Np,&Pp,0,&stencilq2, 0,0,0, 0);CHKERRQ(ierr);
 	if (stencilq2 != 2) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Attempting to create an overlapping DMDA from a DMDA which doesn't have a stencil width of 2... probably the generator isn't a Q2");
+		SETERRQ(PetscObjectComm((PetscObject)dmq2),PETSC_ERR_SUP,"Attempting to create an overlapping DMDA from a DMDA which doesn't have a stencil width of 2... probably the generator isn't a Q2");
 	}
 	ierr = DMDAGetOwnershipRangesElementQ2(dmq2,0,0,0,&siq2,&sjq2,&skq2,&lmxq2,&lmyq2,&lmzq2);CHKERRQ(ierr);
 	
@@ -493,7 +493,7 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	ierr = DMDAGetSizeElementQ2(dmq2,&MX,&MY,&MZ);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dmq2,0, 0,0,0, &Mp,&Np,&Pp,0,&stencilq2, 0,0,0, 0);CHKERRQ(ierr);
 	if (stencilq2 != 2) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Attempting to create an overlapping DMDA from a DMDA which doesn't have a stencil width of 2... probably the generator isn't a Q2");
+		SETERRQ(PetscObjectComm((PetscObject)dmq2),PETSC_ERR_SUP,"Attempting to create an overlapping DMDA from a DMDA which doesn't have a stencil width of 2... probably the generator isn't a Q2");
 	}
 	
 	ierr = DMDAGetOwnershipRangesElementQ2(dmq2,0,0,0,&siq2,&sjq2,&skq2,&lmxq2,&lmyq2,&lmzq2);CHKERRQ(ierr);
@@ -862,13 +862,13 @@ PetscErrorCode DMDAProjectVectorQ2toNestedQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
 	ierr = DMDAGetCorners(daq1,&si1,&sj1,&sk1 , &nx1,&ny1,&nz1);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(daq2,&si2,&sj2,&sk2 , &nx2,&ny2,&nz2);CHKERRQ(ierr);
 
-	if (si1 != si2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (si)"); }
-	if (sj1 != sj2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (sj)"); }
-	if (sk1 != sk2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (sk)"); }
+	if (si1 != si2){ SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"index does not match (si)"); }
+	if (sj1 != sj2){ SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"index does not match (sj)"); }
+	if (sk1 != sk2){ SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"index does not match (sk)"); }
 
-	if (nx1 != nz2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (nx)"); }
-	if (ny1 != ny2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (ny)"); }
-	if (nz1 != nz2){ SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"index does not match (nz)"); }
+	if (nx1 != nz2){ SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"index does not match (nx)"); }
+	if (ny1 != ny2){ SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"index does not match (ny)"); }
+	if (nz1 != nz2){ SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"index does not match (nz)"); }
 		
 	ierr = VecCopy(x2,x1);CHKERRQ(ierr);
 	
@@ -888,25 +888,25 @@ PetscErrorCode DMDAProjectVectorQ2toQ1(DM daq2,Vec x2,DM daq1,Vec x1,PetscInt me
 	ierr = DMDAGetInfo(daq2,&dim, 0,0,0, 0,0,0, &ndofq2,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(daq1,0, 0,0,0, 0,0,0, &ndofq1,0, 0,0,0, 0);CHKERRQ(ierr);
 	if (ndofq1 != ndofq2) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"ndof on DM's do not match");
+		SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"ndof on DM's do not match");
 	}
 	
 	switch (dim) {
 		case 1:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 3d supported");
+			SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"Only 3d supported");
 			break;
 		case 2:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only 3d supported");
+			SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"Only 3d supported");
 			break;
 		case 3:
 			if (mesh_type == 0) {
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"mesh type must be 1 or 2");
+				SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"mesh type must be 1 or 2");
 			} else if (mesh_type == 1) {
 				ierr = DMDAProjectVectorQ2toOverlappingQ1_3d(daq2,x2,daq1,x1);CHKERRQ(ierr);
 			} else if (mesh_type == 2) {
 				ierr = DMDAProjectVectorQ2toNestedQ1_3d(daq2,x2,daq1,x1);CHKERRQ(ierr);
 			} else {
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unknown mesh type");
+				SETERRQ(PetscObjectComm((PetscObject)daq2),PETSC_ERR_SUP,"Unknown mesh type");
 			}
 			break;
 	}

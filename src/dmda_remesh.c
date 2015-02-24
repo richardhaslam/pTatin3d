@@ -605,10 +605,10 @@ PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal f
 	PetscFunctionBegin;
 	
 	if ((dir < 0) || (dir > 3)) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"dir\" must be one of {0,1,2}");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Value \"dir\" must be one of {0,1,2}");
 	}
 	if (factor < 1.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Value \"factor\" must be >= 1.0");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Value \"factor\" must be >= 1.0");
 	}
 	
 	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);

@@ -77,7 +77,7 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 		}
 	}
 	ierr = MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);
+	PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);
 	max = max + 1;
 	
 	/* give particles a unique identifier */
@@ -133,10 +133,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	DataBucketSetSizes(db,np_per_cell*ncells,-1);
 	
 	if (perturb<0.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a negative perturbation");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
 	}
 	if (perturb>1.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
 	}
 	
   /* setup for coords */
@@ -176,13 +176,13 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 					xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
 					
 					if (fabs(xip_rand[0]) > 1.0) {
-						SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+						SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
 					}
 					if (fabs(xip_rand[1]) > 1.0) {
-						SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+						SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
 					}
 					if (fabs(xip_rand[2]) > 1.0) {
-						SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
+						SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
 					}
 					
 					pTatin_ConstructNi_Q2_3D(xip_rand,Ni);
@@ -301,7 +301,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 	
 	np_local = np_per_cell * ncells;
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(((PetscObject)da)->comm,db,0,np_local);CHKERRQ(ierr);
+	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 	
     PetscFree(q_coor);
     PetscFree(q_weight);
@@ -456,7 +456,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 			break;
 			
 		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Unknown face index");
+			SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Unknown face index");
 			break;
 	}
 	
@@ -470,10 +470,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 	
 	
 	if (perturb<0.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a negative perturbation");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
 	}
 	if (perturb>1.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
 	}
 
 	
@@ -559,10 +559,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 				xip_rand2d[1] = xip2d[1] + perturb * deta   * xip_shift2d[1];
 				
 				if (fabs(xip_rand2d[0]) > 1.0) {
-					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
 				}
 				if (fabs(xip_rand2d[1]) > 1.0) {
-					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
 				}
 				
 				/* set to 3d dependnent on face*/
@@ -688,10 +688,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	
 	
 	if (perturb < 0.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a negative perturbation");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
 	}
 	if (perturb > 1.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
 	}
     
 	
@@ -744,10 +744,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 				xip_rand2d[1] = xip2d[1] + perturb * deta   * xip_shift2d[1];
 				
 				if (PetscAbsReal(xip_rand2d[0]) > 1.0) {
-					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
 				}
 				if (PetscAbsReal(xip_rand2d[1]) > 1.0) {
-					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
 				}
 				
 				/* set to 3d dependnent on face*/
