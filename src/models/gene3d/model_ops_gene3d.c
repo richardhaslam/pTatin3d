@@ -41,7 +41,7 @@
 #include "data_bucket.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-#include "phase_map.h"
+#include "cartgrid.h"
 
 #include "model_gene3d_ctx.h"
 
@@ -486,14 +486,15 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
     PetscErrorCode ierr;
-    PhaseMap phasemap;
+    CartGrid phasemap;
     PetscInt dir_0,dir_1,direction;
     DataBucket db;
     int p,n_mp_points;
     DataField PField_std;
     int phase_init, phase, phase_index, is_valid;
     char map_file[PETSC_MAX_PATH_LEN], *name;
-    PetscBool flg;
+    PetscBool flg,phasefound;
+    
     
 	PetscFunctionBegin;
     PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
@@ -528,11 +529,13 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
     }
     
     asprintf(&name,"./inputdata/%s.pmap",map_file);
-    PhaseMapLoadFromFile(name,&phasemap);
+    ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
+    ierr = CartGridSetFilename(phasemap,map_file);CHKERRQ(ierr);
+    ierr = CartGridSetUp(phasemap);CHKERRQ(ierr);
     free(name);
 	
     asprintf(&name,"./inputdata/%s_phase_map.gp",map_file);
-    PhaseMapViewGnuplot(name,phasemap);
+    ierr = CartGridViewPV(phasemap,name);CHKERRQ(ierr);
     free(name);
 	
 	
@@ -558,21 +561,18 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
 		
 		MPntStdGetField_phase_index(material_point, &phase_init);
 		
-		PhaseMapGetPhaseIndex(phasemap, position2D, &phase_index);
+		ierr = CartGridGetValue(phasemap, position2D, (int*)&phase_index, &phasefound);CHKERRQ(ierr);
 		
-		PhaseMapCheckValidity(phasemap, phase_index, &is_valid);
-		//PetscPrintf(PETSC_COMM_WORLD,"Phase index : %d  is_valid %d \n", phase_index,is_valid);
-		
-		if (is_valid == 1) {			/* point located in the phase map */
+		if (phasefound) {			/* point located in the phase map */
 			phase = phase_index;
 		} else {
-			SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"marker outside the domain\n your phasemap is smaller than the domain \n please check your parameters and retry");
+			SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"marker outside the domain\n your phasemap is smaller than the domain \n please check your parameters and retry");
 		}
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point, phase);
 		
 	}
-    PhaseMapDestroy(&phasemap);
+    ierr = CartGridDestroy(&phasemap);CHKERRQ(ierr);
     DataFieldRestoreAccess(PField_std);
 	
     PetscFunctionReturn (0);
