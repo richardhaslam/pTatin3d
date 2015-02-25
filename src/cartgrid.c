@@ -492,23 +492,33 @@ PetscErrorCode CartGridSetUp(CartGrid map)
     FILE           *fp;
     int            t,dim,mx,my,mz;
     double         xr[2],yr[2],zr[2],dx,dy,dz;
-    char           str[60];
+    char           str[256];
     int            matched;
+    const int      STRMAX = 256;
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
 	/* open file to parse */
     fp = fopen(map->metadatafile_name,"r");
     if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->metadatafile_name);
+
+    /* header */
+ParseHeader:
+    fgets(str,STRMAX,fp);
+    if (str[0] == '#') { goto ParseHeader; }
+    if (str[0] == '!') { goto ParseHeader; }
+    if (str[0] == '%') { goto ParseHeader; }
+    if (str[0] == '#') { goto ParseHeader; }
+    
     
     /* CartGrid type */
-    if( fgets (str,60,fp) != NULL) {
+    {
         CartGridType type;
         
         trimnewline(str);
         trimright(str);
         type = CARTGRID_TYPE_UDEF;
-        for (t=1; t<4; t++) {
+        for (t=1; t<3; t++) {
             matched = strcmp(str,CartGridTypeNames[t]);
             if (matched == 0) {
                 type = (CartGridType)t;
@@ -516,17 +526,17 @@ PetscErrorCode CartGridSetUp(CartGrid map)
             }
         }
         ierr = CartGridSetType(map,type);CHKERRQ(ierr);
-        printf("CartGridtype: %s\n",CartGridTypeNames[(int)map->type]);
+        PetscPrintf(PETSC_COMM_WORLD,"CartGrid:type: %s\n",CartGridTypeNames[(int)map->type]);
     }
     
     /* data_type */
-    if( fgets (str,60,fp) != NULL) {
+    if( fgets(str,STRMAX,fp) != NULL) {
         CartGridDataType data_type;
         
         trimnewline(str);
         trimright(str);
         data_type = CARTGRID_DTYPE_UDEF;
-        for (t=1; t<5; t++) {
+        for (t=1; t<7; t++) {
             matched = strcmp(str,CartGridDataTypeNames[t]);
             if (matched == 0) {
                 data_type = (CartGridDataType)t;
@@ -534,14 +544,14 @@ PetscErrorCode CartGridSetUp(CartGrid map)
             }
         }
         ierr = CartGridSetDataType(map,data_type);CHKERRQ(ierr);
-        printf("datatype: %s\n",CartGridDataTypeNames[(int)map->data_type]);
+        PetscPrintf(PETSC_COMM_WORLD,"CartGrid:datatype: %s\n",CartGridDataTypeNames[(int)map->data_type]);
     }
     
     /* datafile_name */
-    if( fgets (str,60,fp) != NULL) {
+    if( fgets(str,STRMAX,fp) != NULL) {
         trimnewline(str);
         trimright(str);
-        printf("datafile: %s\n",str);
+        PetscPrintf(PETSC_COMM_WORLD,"CartGrid:datafile: %s\n",str);
         ierr = CartGridSetDataFilename(map,str);CHKERRQ(ierr);
     }
     
@@ -551,10 +561,10 @@ PetscErrorCode CartGridSetUp(CartGrid map)
     
     if (dim == 2) {
         /* read header: mx,my */
-        fscanf(fp,"%d %d\n",&mx,&my);
+        fscanf(fp,"%d %d",&mx,&my);
         mz = 1;
         /* read header: x0,x1,y0,y1 */
-        fscanf(fp,"%lf %lf %lf %lf\n",&xr[0],&xr[1],&yr[0],&yr[1]);
+        fscanf(fp,"%lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1]);
         zr[0] = -1.0e32;
         zr[1] =  1.032;
         printf("[%d x %d] --> [%1.4e,%1.4e] x [%1.4e,%1.4e]\n",mx,my,xr[0],xr[1],yr[0],yr[1]);
@@ -564,9 +574,9 @@ PetscErrorCode CartGridSetUp(CartGrid map)
         dz = 0.0;
     } else if (dim == 3) {
         /* read header: mx,my,mz */
-        fscanf(fp,"%d %d %d\n",&mx,&my,&mz);
+        fscanf(fp,"%d %d %d",&mx,&my,&mz);
         /* read header: x0,x1,y0,y1,z0,z1 */
-        fscanf(fp,"%lf %lf %lf %lf %lf %lf\n",&xr[0],&xr[1],&yr[0],&yr[1],&zr[0],&zr[1]);
+        fscanf(fp,"%lf %lf %lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1],&zr[0],&zr[1]);
         printf("[%d x %d x %d] --> [%1.2e,%1.2e] x [%1.2e,%1.2e] x [%1.2e,%1.2e]\n",mx,my,mz,xr[0],xr[1],yr[0],yr[1],zr[0],zr[1]);
 
         dx = (xr[1] - xr[0])/(double)(mx);
@@ -621,12 +631,12 @@ PetscErrorCode CartGridViewMetaData(CartGrid map)
 
     fprintf(fp,"%d\n",map->dim);
     if (map->dim == 2) {
-        fprintf(fp,"%d %d\n",map->mx,map->my);
+        fprintf(fp,"%d %d\n",(int)map->mx,(int)map->my);
         fprintf(fp,"%1.4e %1.4e %1.4e %1.4e\n",
                 map->range_x[0],map->range_x[1],
                 map->range_y[0],map->range_y[1]);
     } else {
-        fprintf(fp,"%d %d %d\n",map->mx,map->my,map->mz);
+        fprintf(fp,"%d %d %d\n",(int)map->mx,(int)map->my,(int)map->mz);
         fprintf(fp,"%1.4e %1.4e %1.4e %1.4e %1.4e %1.4e\n",
                 map->range_x[0],map->range_x[1],
                 map->range_y[0],map->range_y[1],
@@ -650,17 +660,21 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
     if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",filename);
 
     fprintf(fp,"<?xml version=\"1.0\"?>\n");
+#ifdef WORDSIZE_BIGENDIAN
+    fprintf(fp,"<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
     fprintf(fp,"<VTKFile type=\"ImageData\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
     if (map->dim == 2) {
-        fprintf(fp,"  <ImageData WholeExtent=\"%d %d %d %d %d %d\"\n",0,map->mx,0,map->my,0,1);
+        fprintf(fp,"  <ImageData WholeExtent=\"%d %d %d %d %d %d\"\n",0,(int)map->mx,0,(int)map->my,0,1);
         fprintf(fp,"   Origin=\"%1.4e %1.4e 0.0\"\n",map->range_x[0],map->range_y[0]);
         fprintf(fp,"   Spacing=\"%1.2e %1.2e %1.2e\">\n",map->dx,map->dy,1.0e-3);
-        fprintf(fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",0,map->mx,0,map->my,0,1);
+        fprintf(fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",0,(int)map->mx,0,(int)map->my,0,1);
     } else {
-        fprintf(fp,"  <ImageData WholeExtent=\"%d %d %d %d %d %d\"\n",0,map->mx,0,map->my,0,map->mz);
+        fprintf(fp,"  <ImageData WholeExtent=\"%d %d %d %d %d %d\"\n",0,(int)map->mx,0,(int)map->my,0,(int)map->mz);
         fprintf(fp,"   Origin=\"%1.4e %1.4e %1.4e\"\n",map->range_x[0],map->range_y[0],map->range_z[0]);
         fprintf(fp,"   Spacing=\"%1.2e %1.2e %1.2e\">\n",map->dx,map->dy,map->dz);
-        fprintf(fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",0,map->mx,0,map->my,0,map->mz);
+        fprintf(fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n",0,(int)map->mx,0,(int)map->my,0,(int)map->mz);
     }
 
     fprintf(fp,"      <CellData>\n");
