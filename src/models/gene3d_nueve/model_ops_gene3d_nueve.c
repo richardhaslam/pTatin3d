@@ -42,7 +42,7 @@
 #include "data_bucket.h"
 #include "MPntStd_def.h"
 #include "MPntPStokes_def.h"
-#include "phase_map.h"
+#include "cartgrid.h"
 
 #include "model_gene3d_ctx.h"
 
@@ -613,14 +613,14 @@ PetscErrorCode MaterialPointSetRegion_MyFunction(pTatinCtx c,void *ctx)
 PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 {
     PetscErrorCode ierr;
-    PhaseMap phasemap;
+    CartGrid phasemap;
     PetscInt dir_0,dir_1,direction;
     int p, n_mp_points;
     DataBucket db;
     DataField PField_std;
-    int phase_init, phase, phase_index, is_valid;
+    int phase_init, phase, phase_index;
     char map_file[PETSC_MAX_PATH_LEN], *name;
-    PetscBool flg;
+    PetscBool flg,phasefound;
     
 	PetscFunctionBegin;
     PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
@@ -658,7 +658,9 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
     }
 	
     asprintf(&name,"./inputdata/%s.pmap",map_file);
-    PhaseMapLoadFromFile(name,&phasemap);
+    ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
+    ierr = CartGridSetFilename(phasemap,map_file);CHKERRQ(ierr);
+    ierr = CartGridSetUp(phasemap);CHKERRQ(ierr);
     free(name);
 	
     /* define properties on material points */
@@ -682,12 +684,9 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 		
 		MPntStdGetField_phase_index(material_point, &phase_init);
 		
-		PhaseMapGetPhaseIndex(phasemap, position2D, &phase_index);
+		ierr = CartGridGetValue(phasemap,position2D,&phase_index,&phasefound);CHKERRQ(ierr);
 		
-		PhaseMapCheckValidity(phasemap, phase_index, &is_valid);
-		//PetscPrintf(PETSC_COMM_WORLD,"Phase index : %d  is_valid %d \n", phase_index,is_valid);
-		
-		if (is_valid == 1) {			/* point located in the phase map */
+		if (phasefound == 1) {			/* point located in the phase map */
 			phase = phase_index;
 		} else {
 			SETERRQ(PETSC_COMM_SELF, PETSC_ERR_SUP,"marker outside the domain\n your phasemap is smaller than the domain \n please check your parameters and retry");
@@ -695,7 +694,7 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 		MPntStdSetField_phase_index(material_point, phase);
 		
 	}
-    PhaseMapDestroy(&phasemap);
+    ierr = CartGridDestroy(&phasemap);CHKERRQ(ierr);
     DataFieldRestoreAccess(PField_std);
 	
     PetscFunctionReturn(0);
@@ -705,11 +704,13 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 #define __FUNCT__ "MaterialPointSetRegionIndexFromExtrudedMap"
 PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const char map_filename[],PetscInt direction,double c0,double c1)
 {
-    PhaseMap  phasemap;
+    CartGrid  phasemap;
     PetscInt  dir_0,dir_1,dir_normal;
     int p, n_mp_points;
     DataField PField_std;
-    int       phase_init,phase,phase_index,is_valid;
+    int       phase_init,phase,phase_index;
+    PetscBool phasefound;
+    PetscErrorCode ierr;
     
 	PetscFunctionBegin;
 	
@@ -739,7 +740,9 @@ PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const ch
 			break;
     }
 	
-    PhaseMapLoadFromFile(map_filename,&phasemap);
+    ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
+    ierr = CartGridSetFilename(phasemap,map_filename);CHKERRQ(ierr);
+    ierr = CartGridSetUp(phasemap);CHKERRQ(ierr);
 	
     /* define properties on material points */
     DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
@@ -764,11 +767,9 @@ PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const ch
 		
 		MPntStdGetField_phase_index(material_point, &phase_init);
 		
-		PhaseMapGetPhaseIndex(phasemap, position2D, &phase_index);
+		ierr = CartGridGetValue(phasemap,position2D,&phase_index,&phasefound);CHKERRQ(ierr);
 		
-		PhaseMapCheckValidity(phasemap, phase_index, &is_valid);
-		
-		if (is_valid == 1) {			/* point located in the phase map */
+		if (phasefound) {			/* point located in the phase map */
 			phase = phase_index;
 		} else { /* Don't error if the point is outside the phase map - catch this error outside this function */
 			phase = -1;
@@ -777,7 +778,7 @@ PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const ch
 		
 	}
     DataFieldRestoreAccess(PField_std);
-    PhaseMapDestroy(&phasemap);
+    ierr = CartGridDestroy(&phasemap);CHKERRQ(ierr);
 	
     PetscFunctionReturn(0);
 }
