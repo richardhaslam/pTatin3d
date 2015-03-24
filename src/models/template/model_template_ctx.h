@@ -33,8 +33,8 @@
 
 /* define user model */
 typedef struct {
-	PetscReal param1;
-	PetscInt  param2;
+  PetscReal param1;
+  PetscInt  param2;
 } ModelTemplateCtx;
 
 #endif
