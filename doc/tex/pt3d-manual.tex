@@ -60,7 +60,7 @@
 \author{
 {\normalsize \textsc{Developers}}
 \begin{itemize}
-\item[-] Dave A. May: Institute of Geophysics, ETH Z{\"u}ruch \texttt{(dave.may@erdw.ethz.ch)} 
+\item[-] Dave A. May: Institute of Geophysics, ETH Z{\"u}rich \texttt{(dave.may@erdw.ethz.ch)} 
 \item[-] Laetitia Le Pourhiet: UPMC, Univ. Paris 06  \texttt{(laetitia.le\_pourhiet@upmc.fr)}
 \item[-] Jed Brown: Argonne National Laboratory, IL USA  \texttt{(jedbrown@mcs.anl.gov)}
 \end{itemize}
@@ -208,7 +208,7 @@ A ``model'' description in {\ptat} consists of defining the following operations
 	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n < 0$ (e.g. inflow boundary conditions).
 
 	\item \unix{FP\_pTatinModel\_ApplyInitialSolution} (non essential for Stokes)
-	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value my improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
+	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value may improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
 	
 	\item \unix{FP\_pTatinModel\_ApplyInitialMeshGeometry}
 	Define the geometry of the mesh. Typically this is done simply by described a hex domain via the PETSc function \unix{DMDASetUniformCoordinates()}.
@@ -263,7 +263,7 @@ This should be done within
 as you'll note, you will see the ``template'' model registration function 	
 		\unix{pTatinModelRegister\_Template();}
 
-So you don't have the compiler warning about ``implicitly defined function'', simply add the protoytype as an \unix{extern}, e.g.
+So you don't have the compiler warning about ``implicitly defined function'', simply add the prototype as an \unix{extern}, e.g.
 	\shellcmd{extern PetscErrorCode pTatinModelRegister\_Template(void);}
 \end{enumerate}
 
@@ -764,7 +764,7 @@ Within {\ptat}, the style of coarse grid operator can be configured at run time.
 where valid indices are $\{ 0, 1, 2 \}$ and operators on each level are specified from coarse to fine (left to right).
 
 \subsection{Multi-grid performance profiling}
-To activate monitors which report CPU times on each mult-grid level, one must specify the following options
+To activate monitors which report CPU times on each multi-grid level, one must specify the following options
 \shellcmd{-dau\_nlevels X -fieldsplit\_u\_pc\_type mg -fieldsplit\_u\_pc\_mg\_levels X -fieldsplit\_u\_pc\_mg\_log -log\_summary}
 Note that if the values for \unix{-dau\_nlevels X} and \unix{-fieldsplit\_u\_pc\_mg\_levels X} do not match, logging will not be performed.
 
@@ -847,7 +847,7 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 	(1) Use algebraic multigrid (ML, Hypre) as a preconditioner; 
 	(2) Use heavy sub-domain preconditioners, e.g. \unix{-fieldsplit\_u\_mg\_coarse\_pc\_type asm -fieldsplit\_u\_mg\_coarse\_pc\_asm\_overlap 2 
 	-fieldsplit\_u\_mg\_coarse\_sub\_pc\_type ilu -fieldsplit\_u\_mg\_coarse\_sub\_pc\_factor\_levels 2};
-	(3) Try using a semi-redundant approach where you accumulate the coarse grid problem on a sub-set of cores and use stronger sub-domain preconditoners.
+	(3) Try using a semi-redundant approach where you accumulate the coarse grid problem on a sub-set of cores and use stronger sub-domain preconditioners.
 	%%%%%%%%%%%%
 \end{enumerate}
 
@@ -922,7 +922,7 @@ $$
 \subsection{Additional notes}
 \begin{enumerate}
 % -------
-	\item The ideal choice of $x^*, v^*, \eta^*$ scaling should result in values of velocity and pressure which follow $\bar{v} = \max_k(\vert v'_k \vert) \sim 1$ and $\bar{p} = \max_k(\vert p'_k \vert) \sim 1$. If your scaling doesn't produce this type of behaviour, then one should be careful in choosing the stopping condition applied to both the non-linear and linear solvers. For example, if $\bar{v} \sim 10^6$, it does't make much sense to solve the non-linear equations to a tolerance of $F_u, F_p \sim 10^{-9}$.
+	\item The ideal choice of $x^*, v^*, \eta^*$ scaling should result in values of velocity and pressure which follow $\bar{v} = \max_k(\vert v'_k \vert) \sim 1$ and $\bar{p} = \max_k(\vert p'_k \vert) \sim 1$. If your scaling doesn't produce this type of behaviour, then one should be careful in choosing the stopping condition applied to both the non-linear and linear solvers. For example, if $\bar{v} \sim 10^6$, it doesn't make much sense to solve the non-linear equations to a tolerance of $F_u, F_p \sim 10^{-9}$.
 % -------
 	\item Convergence of both linear and non-linear solver will appear slow if the scaling if the characteristic size of the velocity and pressure coming out of your model are orders of magnitude different. For instance, if your choice of scaling produces $F_u \sim 10^6$ and $F_p \sim 10^{-1}$ and you stop on $\delta_\text{abs} = 10^{-6}$, then a large number of iterations will be required to reduce the 2-norm of $(F_u, F_p)$ to be less than $10^{-6}$.
 % -------
