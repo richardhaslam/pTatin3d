@@ -70,5 +70,6 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
 PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *value_vol);
 PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec v,Vec p,Quadrature volQ,PetscInt stress_type,PetscReal *value);
 PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal coord[],PetscBool mask[],PetscInt region_idx,PetscReal tolerance,int *_pidx,PetscMPIInt *_rank);
+PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal avg[]);
 
 #endif

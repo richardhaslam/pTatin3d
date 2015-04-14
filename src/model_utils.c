@@ -956,6 +956,123 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMDAComputeCoordinateAverageBoundaryFace"
+PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal avg[])
+{
+    DM             cda;
+    Vec            coords;
+    PetscInt       i,j,k,si,sj,sk,ni,nj,nk,M,N,P,n_face;
+    DMDACoor3d     ***LA_coords;
+    PetscReal      gavg[3];
+    PetscErrorCode ierr;
+    
+    ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+    ierr = DMGetCoordinates(dav,&coords);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(dav,&si,&sj,&sk,&ni,&nj,&nk);CHKERRQ(ierr);
+    
+    gavg[0] = gavg[1] = gavg[2] = 0.0;
+    
+    ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+    
+    switch (ft) {
+        case NORTH_FACE:
+            if (sj+nj == N) {
+                j = N-1;
+                for (k=sk; k<sk+nk; k++) {
+                    for (i=si; i<si+ni; i++) {
+                        gavg[0] += LA_coords[k][j][i].x;
+                        gavg[1] += LA_coords[k][j][i].y;
+                        gavg[2] += LA_coords[k][j][i].z;
+                    }
+                }
+            }
+            n_face = M * P;
+            break;
+            
+        case SOUTH_FACE:
+            if (sj == 0) {
+                j = 0;
+                for (k=sk; k<sk+nk; k++) {
+                    for (i=si; i<si+ni; i++) {
+                        gavg[0] += LA_coords[k][j][i].x;
+                        gavg[1] += LA_coords[k][j][i].y;
+                        gavg[2] += LA_coords[k][j][i].z;
+                    }
+                }
+            }
+            n_face = M * P;
+            break;
+            
+        case EAST_FACE:
+            if (si+ni == N) {
+                i = N-1;
+                for (k=sk; k<sk+nk; k++) {
+                    for (j=sj; j<sj+nj; j++) {
+                        gavg[0] += LA_coords[k][j][i].x;
+                        gavg[1] += LA_coords[k][j][i].y;
+                        gavg[2] += LA_coords[k][j][i].z;
+                    }
+                }
+            }
+            n_face = N * P;
+            break;
+            
+        case WEST_FACE:
+            if (si == 0) {
+                i = 0;
+                for (k=sk; k<sk+nk; k++) {
+                    for (j=sj; j<sj+nj; j++) {
+                        gavg[0] += LA_coords[k][j][i].x;
+                        gavg[1] += LA_coords[k][j][i].y;
+                        gavg[2] += LA_coords[k][j][i].z;
+                    }
+                }
+            }
+            n_face = N * P;
+            break;
+            
+        case FRONT_FACE:
+            if (sk+nk == P) {
+                k = P-1;
+                for (j=sj; j<sj+nj; j++) {
+                    for (i=si; i<si+ni; i++) {
+                        gavg[0] += LA_coords[k][j][i].x;
+                        gavg[1] += LA_coords[k][j][i].y;
+                        gavg[2] += LA_coords[k][j][i].z;
+                    }
+                }
+            }
+            n_face = M * N;
+            break;
+
+        case BACK_FACE:
+            if (sk == 0) {
+                k = 0;
+                for (j=sj; j<sj+nj; j++) {
+                    for (i=si; i<si+ni; i++) {
+                        gavg[0] += LA_coords[k][j][i].x;
+                        gavg[1] += LA_coords[k][j][i].y;
+                        gavg[2] += LA_coords[k][j][i].z;
+                    }
+                }
+            }
+            n_face = M * N;
+            break;
+    }
+    ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
+    
+    if (avg) {
+        ierr = MPI_Allreduce(gavg,avg,3,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
+        avg[0] = avg[0] / ((PetscReal)n_face);
+        avg[1] = avg[1] / ((PetscReal)n_face);
+        avg[2] = avg[2] / ((PetscReal)n_face);
+    }
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "StokesComputeVRMS"
 PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *value_vol)
 {
