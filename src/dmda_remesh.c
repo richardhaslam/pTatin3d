@@ -35,6 +35,7 @@
 #include "dmda_update_coords.h"
 #include "dmda_redundant.h"
 #include "dmda_remesh.h"
+#include "mesh_deformation.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetCornerCoordinatesInPlane_IJ"
@@ -792,3 +793,333 @@ PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal f
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDACoordinateRefinementTransferFunction_OrthogonalFaces"
+PetscErrorCode DMDACoordinateRefinementTransferFunction_OrthogonalFaces(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
+{
+    PetscErrorCode ierr;
+    DM cda;
+    Vec coord;
+    PetscReal gmin[3],gmax[3];
+    PetscInt nc,M,N,P,si,sj,sk,nx,ny,nz,i,j,k;
+    PetscScalar *LA_coords;
+    MPI_Comm comm;
+    
+    ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+    ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
+    
+    if (xnatural[0] < 0.0) SETERRQ1(comm,PETSC_ERR_USER,"xnatural[0] must be >= 0.0 (%1.4e)",xnatural[0]);
+    if (xnatural[npoints-1] > 1.0) SETERRQ1(comm,PETSC_ERR_USER,"mesh_xmax > xnatural[last] must be < 1.0 (%1.4e)",xnatural[npoints-1]);
+    
+    /* reset mesh to be mapped to the reference coordinate system [0,1] */
+    ierr = DMDASetUniformCoordinates1D(da,dir,0.0,1.0);CHKERRQ(ierr);
+    
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = VecGetArray(coord,&LA_coords);CHKERRQ(ierr);
+    
+    for (k=0; k<nz; k++) {
+        for (j=0; j<ny; j++) {
+            for (i=0; i<nx; i++) {
+                PetscReal xc_nat,xc_ref,xnatural0,xnatural1,xref0,xref1;
+                PetscInt nid,region;
+                
+                nid = (i) + (j) * nx + (k) * nx * ny;
+                xc_ref = LA_coords[3*nid + dir]; /* dir = 0,1,2 */
+                
+                region = -1;
+                for (nc=0; nc<npoints-1; nc++) {
+                    if ((xc_ref >= xref[nc]) && (xc_ref <= xref[nc+1])) {
+                        region = nc;
+                        break;
+                    }
+                }
+                if (region == -1) {
+                    switch (dir) {
+                        case 0:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index i=%D",i);
+                            break;
+                        case 1:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index j=%D",j);
+                            break;
+                        case 2:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index k=%D",k);
+                            break;
+                    }
+                }
+                
+                /* perform interpolation */
+                xc_nat = 0.0;
+                
+                xnatural0 = xnatural[region];
+                xnatural1 = xnatural[region+1];
+                
+                xref0 = xref[region];
+                xref1 = xref[region+1];
+                
+                xc_nat = (xc_ref - xref0) * (xnatural1 - xnatural0)/(xref1 - xref0) + xnatural0;
+                
+                /* set new coordinate */
+                LA_coords[3*nid + dir] = gmin[dir] + xc_nat * (gmax[dir] - gmin[dir]);  /* dir = 0,1,2 */
+            }
+        }
+    }
+    
+	ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
+    
+    ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry"
+PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
+{
+    PetscErrorCode ierr;
+    DM da_min,da_max,cda,cda_min,cda_max;
+	Vec coord,coord_min,coord_max;
+	DMDACoor3d ***LA_coords_da_min,***LA_coords_da_max;
+    PetscReal gmin[3],gmax[3];
+    PetscInt nc,M,N,P,si,sj,sk,nx,ny,nz,i,j,k;
+    PetscScalar *LA_coords;
+    MPI_Comm comm;
+    
+    ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+    ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
+    
+    if (xnatural[0] < 0.0) SETERRQ1(comm,PETSC_ERR_USER,"xnatural[0] must be >= 0.0 (%1.4e)",xnatural[0]);
+    if (xnatural[npoints-1] > 1.0) SETERRQ1(comm,PETSC_ERR_USER,"mesh_xmax > xnatural[last] must be < 1.0 (%1.4e)",xnatural[npoints-1]);
+    
+	switch (dir) {
+		case 0:
+			ierr = DMDACreate3dRedundant(da,M-1,M,sj,sj+ny,sk,sk+nz, 1, &da_max);CHKERRQ(ierr);
+			ierr = DMDACreate3dRedundant(da,0,1,  sj,sj+ny,sk,sk+nz, 1, &da_min);CHKERRQ(ierr);
+			break;
+		case 1:
+			ierr = DMDACreate3dRedundant(da,si,si+nx,N-1,N,sk,sk+nz, 1, &da_max);CHKERRQ(ierr);
+			ierr = DMDACreate3dRedundant(da,si,si+nx,0,1,  sk,sk+nz, 1, &da_min);CHKERRQ(ierr);
+			break;
+		case 2:
+			ierr = DMDACreate3dRedundant(da,si,si+nx,sj,sj+ny,P-1,P, 1, &da_max);CHKERRQ(ierr);
+			ierr = DMDACreate3dRedundant(da,si,si+nx,sj,sj+ny,0,1,   1, &da_min);CHKERRQ(ierr);
+			break;
+	}
+    
+    /* reset mesh to be mapped to the reference coordinate system [0,1] */
+    ierr = DMDASetUniformCoordinates1D(da,dir,0.0,1.0);CHKERRQ(ierr);
+    
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = VecGetArray(coord,&LA_coords);CHKERRQ(ierr);
+    
+	ierr = DMGetCoordinateDM(da_min,&cda_min);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_min,&coord_min);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
+	
+	ierr = DMGetCoordinateDM(da_max,&cda_max);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da_max,&coord_max);CHKERRQ(ierr);
+	ierr = DMDAVecGetArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
+    
+    for (k=0; k<nz; k++) {
+        for (j=0; j<ny; j++) {
+            for (i=0; i<nx; i++) {
+                PetscReal xc_nat,xc_ref,xnatural0,xnatural1,xref0,xref1,gmin_col,gmax_gmin_col;
+                PetscInt nid,region;
+                
+                nid = (i) + (j) * nx + (k) * nx * ny;
+                xc_ref = LA_coords[3*nid + dir]; /* dir = 0,1,2 */
+                
+                region = -1;
+                for (nc=0; nc<npoints-1; nc++) {
+                    if ((xc_ref >= xref[nc]) && (xc_ref <= xref[nc+1])) {
+                        region = nc;
+                        break;
+                    }
+                }
+                if (region == -1) {
+                    switch (dir) {
+                        case 0:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index i=%D",i);
+                            break;
+                        case 1:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index j=%D",j);
+                            break;
+                        case 2:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index k=%D",k);
+                            break;
+                    }
+                }
+                
+                /* perform interpolation */
+                xc_nat = 0.0;
+                
+                xnatural0 = xnatural[region];
+                xnatural1 = xnatural[region+1];
+                
+                xref0 = xref[region];
+                xref1 = xref[region+1];
+                
+                switch (dir) {
+                    case 0:
+                        gmin_col      = LA_coords_da_min[k][j][0].x;
+                        gmax_gmin_col = LA_coords_da_max[k][j][0].x - LA_coords_da_min[k][j][0].x;
+                        break;
+                    case 1:
+                        gmin_col      = LA_coords_da_min[k][0][i].y;
+                        gmax_gmin_col = LA_coords_da_max[k][0][i].y - LA_coords_da_min[k][0][i].y;
+                        break;
+                    case 2:
+                        gmin_col      = LA_coords_da_min[0][j][i].z;
+                        gmax_gmin_col = LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z;
+                        break;
+                }
+                
+                /* set new coordinate */
+                xc_nat = (xc_ref - xref0) * (xnatural1 - xnatural0)/(xref1 - xref0) + xnatural0;
+                LA_coords[3*nid + dir] = gmin_col + xc_nat * (gmax_gmin_col);  /* dir = 0,1,2 */
+            }
+        }
+    }
+    
+	ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
+
+	ierr = DMDAVecRestoreArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArray(cda_min,coord_min,&LA_coords_da_min);CHKERRQ(ierr);
+    
+    ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+
+    ierr = DMDestroy(&da_min);CHKERRQ(ierr);
+    ierr = DMDestroy(&da_max);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
+
+/*
+ Maps xref[] --> xnatural[] in any i,j,k direction
+ - xref[] represents a point distribution
+ - xnatural[] represents the graduated point distribution
+ 
+ A reference coordinate system is used to allow using the mesh graduating functions.
+ Thus, each xref[i] and xnatural[i] must be in the range [0,1].
+ This formulation allows one to defined arbitrary mesh space under the following conditions:
+    (i) for any domain size
+   (ii) for case when you wish to preserve an existing geometry on two faces
+ To utilize case (ii), set preserve_face_geometry = PETSC_TRUE
+*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDACoordinateRefinementTransferFunction"
+PetscErrorCode DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,PetscBool preserve_face_geometry,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
+{
+    PetscErrorCode ierr;
+
+    if (!preserve_face_geometry) {
+        ierr = DMDACoordinateRefinementTransferFunction_OrthogonalFaces(da,dir,npoints,xref,xnatural);CHKERRQ(ierr);
+    } else {
+        ierr = DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(da,dir,npoints,xref,xnatural);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+}
+
+/* Depreciated */
+#undef __FUNCT__
+#define __FUNCT__ "_DMDACoordinateRefinementTransferFunction"
+PetscErrorCode _DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
+{
+    PetscErrorCode ierr;
+    DM cda;
+    Vec coord;
+    PetscReal gmin[3],gmax[3];
+    PetscInt nc,M,N,P,si,sj,sk,nx,ny,nz,i,j,k;
+    PetscScalar *LA_coords;
+    MPI_Comm comm;
+    
+    ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(da,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
+    ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
+    
+    switch (dir) {
+        case 0:
+            if (gmin[0] < xnatural[0]) SETERRQ2(comm,PETSC_ERR_USER,"mesh_xmin[0] < xnatural[0] (%1.4e < %1.4e)",gmin[0],xnatural[0]);
+            if (gmax[0] > xnatural[npoints-1]) SETERRQ2(comm,PETSC_ERR_USER,"mesh_xmax > xnatural[last] (%1.4e > %1.4e)",gmax[0],xnatural[npoints-1]);
+            break;
+        case 1:
+            if (gmin[1] < xnatural[0]) SETERRQ2(comm,PETSC_ERR_USER,"mesh_xmin[0] < xnatural[0] (%1.4e < %1.4e)",gmin[1],xnatural[0]);
+            if (gmax[1] > xnatural[npoints-1]) SETERRQ2(comm,PETSC_ERR_USER,"mesh_xmax > xnatural[last] (%1.4e > %1.4e)",gmax[1],xnatural[npoints-1]);
+            break;
+        case 2:
+            if (gmin[2] < xnatural[0]) SETERRQ2(comm,PETSC_ERR_USER,"mesh_xmin[0] < xnatural[0] (%1.4e < %1.4e)",gmin[2],xnatural[0]);
+            if (gmax[2] > xnatural[npoints-1]) SETERRQ2(comm,PETSC_ERR_USER,"mesh_xmax > xnatural[last] (%1.4e > %1.4e)",gmax[2],xnatural[npoints-1]);
+            break;
+        default:
+            SETERRQ(comm,PETSC_ERR_SUP,"Default direction no supported. dir must be [0,1,2]");
+            break;
+    }
+    
+    /* reset mesh to be mapped to the reference coordinate system [0,1] */
+    ierr = DMDASetUniformCoordinates1D(da,dir,0.0,1.0);CHKERRQ(ierr);
+
+	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
+	ierr = VecGetArray(coord,&LA_coords);CHKERRQ(ierr);
+    
+    for (k=0; k<nz; k++) {
+        for (j=0; j<ny; j++) {
+            for (i=0; i<nx; i++) {
+                PetscReal xc_nat,xc_ref,xnatural0,xnatural1,xref0,xref1;
+                PetscInt nid,region;
+                
+                nid = (i) + (j) * nx + (k) * nx * ny;
+                xc_ref = LA_coords[3*nid + dir]; /* dir = 0,1,2 */
+                
+                region = -1;
+                for (nc=0; nc<npoints-1; nc++) {
+                    if ((xc_ref >= xref[nc]) && (xc_ref <= xref[nc+1])) {
+                        region = nc;
+                        break;
+                    }
+                }
+                if (region == -1) {
+                    switch (dir) {
+                        case 0:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index i=%D",i);
+                            break;
+                        case 1:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index j=%D",j);
+                            break;
+                        case 2:
+                            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index k=%D",k);
+                            break;
+                    }
+                }
+                
+                /* perform interpolation */
+                xc_nat = 0.0;
+                
+                xnatural0 = xnatural[region];
+                xnatural1 = xnatural[region+1];
+
+                xref0 = xref[region];
+                xref1 = xref[region+1];
+                
+                xc_nat = (xc_ref - xref0) * (xnatural1 - xnatural0)/(xref1 - xref0) + xnatural0;
+                
+                /* set new coordinate */
+                LA_coords[3*nid + dir] = xc_nat;  /* dir = 0,1,2 */
+            }
+        }
+    }
+
+	ierr = VecRestoreArray(coord,&LA_coords);CHKERRQ(ierr);
+    
+    ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+}
+
