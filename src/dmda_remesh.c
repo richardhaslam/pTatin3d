@@ -911,9 +911,6 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
 			break;
 	}
     
-    /* reset mesh to be mapped to the reference coordinate system [0,1] */
-    ierr = DMDASetUniformCoordinates1D(da,dir,0.0,1.0);CHKERRQ(ierr);
-    
 	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
 	ierr = DMGetCoordinates(da,&coord);CHKERRQ(ierr);
 	ierr = VecGetArray(coord,&LA_coords);CHKERRQ(ierr);
@@ -933,7 +930,25 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
                 PetscInt nid,region;
                 
                 nid = (i) + (j) * nx + (k) * nx * ny;
-                xc_ref = LA_coords[3*nid + dir]; /* dir = 0,1,2 */
+
+                switch (dir) {
+                    case 0:
+                        gmin_col      = LA_coords_da_min[k][j][0].x;
+                        gmax_gmin_col = LA_coords_da_max[k][j][0].x - LA_coords_da_min[k][j][0].x;
+                        break;
+                    case 1:
+                        gmin_col      = LA_coords_da_min[k][0][i].y;
+                        gmax_gmin_col = LA_coords_da_max[k][0][i].y - LA_coords_da_min[k][0][i].y;
+                        break;
+                    case 2:
+                        gmin_col      = LA_coords_da_min[0][j][i].z;
+                        gmax_gmin_col = LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z;
+                        break;
+                }
+                
+                
+                /* normalize mesh coord(dir) to be mapped to the reference coordinate system [0,1] */
+                xc_ref = (LA_coords[3*nid + dir] - gmin_col)/gmax_gmin_col; /* dir = 0,1,2 */
                 
                 region = -1;
                 for (nc=0; nc<npoints-1; nc++) {
@@ -964,21 +979,6 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
                 
                 xref0 = xref[region];
                 xref1 = xref[region+1];
-                
-                switch (dir) {
-                    case 0:
-                        gmin_col      = LA_coords_da_min[k][j][0].x;
-                        gmax_gmin_col = LA_coords_da_max[k][j][0].x - LA_coords_da_min[k][j][0].x;
-                        break;
-                    case 1:
-                        gmin_col      = LA_coords_da_min[k][0][i].y;
-                        gmax_gmin_col = LA_coords_da_max[k][0][i].y - LA_coords_da_min[k][0][i].y;
-                        break;
-                    case 2:
-                        gmin_col      = LA_coords_da_min[0][j][i].z;
-                        gmax_gmin_col = LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z;
-                        break;
-                }
                 
                 /* set new coordinate */
                 xc_nat = (xc_ref - xref0) * (xnatural1 - xnatural0)/(xref1 - xref0) + xnatural0;
