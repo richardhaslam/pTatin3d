@@ -813,6 +813,8 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_OrthogonalFaces(DM da,Pe
     
     if (xnatural[0] < 0.0) SETERRQ1(comm,PETSC_ERR_USER,"xnatural[0] must be >= 0.0 (%1.4e)",xnatural[0]);
     if (xnatural[npoints-1] > 1.0) SETERRQ1(comm,PETSC_ERR_USER,"mesh_xmax > xnatural[last] must be < 1.0 (%1.4e)",xnatural[npoints-1]);
+    if ((dir < 0) || (dir > 3)) SETERRQ(comm,PETSC_ERR_SUP,"Direction must be {0,1,2}");
+
     
     /* reset mesh to be mapped to the reference coordinate system [0,1] */
     ierr = DMDASetUniformCoordinates1D(da,dir,0.0,1.0);CHKERRQ(ierr);
@@ -847,6 +849,8 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_OrthogonalFaces(DM da,Pe
                             break;
                         case 2:
                             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index k=%D",k);
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -909,6 +913,9 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
 			ierr = DMDACreate3dRedundant(da,si,si+nx,sj,sj+ny,P-1,P, 1, &da_max);CHKERRQ(ierr);
 			ierr = DMDACreate3dRedundant(da,si,si+nx,sj,sj+ny,0,1,   1, &da_min);CHKERRQ(ierr);
 			break;
+        default:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Direction must be {0,1,2}");
+            break;
 	}
     
 	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -923,11 +930,45 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
 	ierr = DMGetCoordinates(da_max,&coord_max);CHKERRQ(ierr);
 	ierr = DMDAVecGetArray(cda_max,coord_max,&LA_coords_da_max);CHKERRQ(ierr);
     
+    /* define uniform coordinate spacing in direction */
+    for (k=0; k<nz; k++) {
+        for (j=0; j<ny; j++) {
+            for (i=0; i<nx; i++) {
+                PetscReal gmin_col,ds;
+                PetscInt  nid;
+                
+                nid = (i) + (j) * nx + (k) * nx * ny;
+
+                switch (dir) {
+                    case 0:
+                        gmin_col = LA_coords_da_min[k][j][0].x;
+                        ds = (LA_coords_da_max[k][j][0].x - LA_coords_da_min[k][j][0].x)/((PetscReal)M);
+                        LA_coords[3*nid + dir] = gmin_col + (i+si)*ds;
+                        break;
+                    case 1:
+                        gmin_col = LA_coords_da_min[k][0][i].y;
+                        ds = (LA_coords_da_max[k][0][i].y - LA_coords_da_min[k][0][i].y)/((PetscReal)N);
+                        LA_coords[3*nid + dir] = gmin_col + (j+sj)*ds;
+                        break;
+                    case 2:
+                        gmin_col = LA_coords_da_min[0][j][i].z;
+                        ds = (LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z)/((PetscReal)P);
+                        LA_coords[3*nid + dir] = gmin_col + (k+sk)*ds;
+                        break;
+                    default:
+                        gmin_col = 0.0;
+                        ds = 0.0;
+                        break;
+                }
+            }
+        }
+    }
+    
     for (k=0; k<nz; k++) {
         for (j=0; j<ny; j++) {
             for (i=0; i<nx; i++) {
                 PetscReal xc_nat,xc_ref,xnatural0,xnatural1,xref0,xref1,gmin_col,gmax_gmin_col;
-                PetscInt nid,region;
+                PetscInt  nid,region;
                 
                 nid = (i) + (j) * nx + (k) * nx * ny;
 
@@ -944,8 +985,11 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
                         gmin_col      = LA_coords_da_min[0][j][i].z;
                         gmax_gmin_col = LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z;
                         break;
+                    default:
+                        gmin_col = 0.0;
+                        gmax_gmin_col = 0.0;
+                        break;
                 }
-                
                 
                 /* normalize mesh coord(dir) to be mapped to the reference coordinate system [0,1] */
                 xc_ref = (LA_coords[3*nid + dir] - gmin_col)/gmax_gmin_col; /* dir = 0,1,2 */
@@ -967,6 +1011,8 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
                             break;
                         case 2:
                             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to determine which sector contains node index k=%D",k);
+                            break;
+                        default:
                             break;
                     }
                 }
