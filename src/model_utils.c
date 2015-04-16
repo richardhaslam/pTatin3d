@@ -1063,7 +1063,7 @@ PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType 
     ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
     
     if (avg) {
-        ierr = MPI_Allreduce(gavg,avg,3,MPIU_REAL,MPI_MIN,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
+        ierr = MPI_Allreduce(gavg,avg,3,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
         avg[0] = avg[0] / ((PetscReal)n_face);
         avg[1] = avg[1] / ((PetscReal)n_face);
         avg[2] = avg[2] / ((PetscReal)n_face);
