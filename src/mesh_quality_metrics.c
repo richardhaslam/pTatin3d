@@ -86,19 +86,19 @@
 */
 
 /* protoypes for helpers */
-void get_node_coordinate(double el_coords[],int index,double pos[]);
-void get_face_coordinates(double el_coords[],Q2Face face,double coords[][3]);
-void get_vertex_vectors(double el_coords[],int vertex,double vectors[][3]);
-double compute_quadrilateral_area_(double vertex[][3]);
-void compute_cossin(double vectors[][3], double cossin[]);
-double compute_distance3(double posA[],double posB[]);
-double compute_norm3(double a[]);
-double compute_dot_product3(double a[],double b[]);
-void compute_quadrilateral_area_approximate(double quad_coords[],double *area);
-void compute_cross_product3(double a[],double b[],double crossprod[]);
+void get_node_coordinate(PetscReal el_coords[],int index,PetscReal pos[]);
+void get_face_coordinates(PetscReal el_coords[],Q2Face face,PetscReal coords[][3]);
+void get_vertex_vectors(PetscReal el_coords[],int vertex,PetscReal vectors[][3]);
+PetscReal compute_quadrilateral_area_(PetscReal vertex[][3]);
+void compute_cossin(PetscReal vectors[][3], PetscReal cossin[]);
+PetscReal compute_distance3(PetscReal posA[],PetscReal posB[]);
+PetscReal compute_norm3(PetscReal a[]);
+PetscReal compute_dot_product3(PetscReal a[],PetscReal b[]);
+void compute_quadrilateral_area_approximate(PetscReal quad_coords[],PetscReal *area);
+void compute_cross_product3(PetscReal a[],PetscReal b[],PetscReal crossprod[]);
 
 
-void get_node_coordinate(double el_coords[],int index,double pos[])
+void get_node_coordinate(PetscReal el_coords[],PetscInt index,PetscReal pos[])
 {
 	pos[0] = el_coords[3*index+0];
 	pos[1] = el_coords[3*index+1];
@@ -119,9 +119,9 @@ void get_node_coordinate(double el_coords[],int index,double pos[])
  F_SOUTH: 0,  2,  20, 18
  F_NORTH: 6,  24, 26, 8
  */
-void get_face_coordinates(double el_coords[],Q2Face face,double coords[][3])
+void get_face_coordinates(PetscReal el_coords[],Q2Face face,PetscReal coords[][3])
 {
-	int nodes[4], i;
+	PetscInt nodes[4], i;
 
 	nodes[0] = nodes[1] = nodes[2] = nodes[3] = -1;	
 	switch (face) {
@@ -170,7 +170,7 @@ void get_face_coordinates(double el_coords[],Q2Face face,double coords[][3])
  C24: 24-6, 24-26, 24-18
  C26: 26-24, 26-8, 26-20
 */
-void get_vertex_vectors(double el_coords[],int vertex,double vectors[][3])
+void get_vertex_vectors(PetscReal el_coords[],PetscInt vertex,PetscReal vectors[][3])
 {
 	int nodes[4], i;
 
@@ -219,17 +219,17 @@ void get_vertex_vectors(double el_coords[],int vertex,double vectors[][3])
 /* 
  Compute a x b
 */
-void compute_cross_product3(double a[],double b[],double crossprod[])
+void compute_cross_product3(PetscReal a[],PetscReal b[],PetscReal crossprod[])
 {
 	crossprod[0] =    a[1]*b[2] - a[2]*b[1];
 	crossprod[1] = -( a[0]*b[2] - a[2]*b[0] );
 	crossprod[2] =    a[0]*b[1] - a[1]*b[0];
 }
 
-double compute_quadrilateral_area_(double vertex[][3])
+PetscReal compute_quadrilateral_area_(PetscReal vertex[][3])
 {
-	int i, c1, c2;
-	double crossprods[4][3], scalarprod[4], normcrossprod[4], a[3], b[3];
+	PetscInt i, c1, c2;
+	PetscReal crossprods[4][3], scalarprod[4], normcrossprod[4], a[3], b[3];
 	
 	for(i = 0; i<4; i++){
 		c1 = (i+1)%4;
@@ -247,16 +247,16 @@ double compute_quadrilateral_area_(double vertex[][3])
 			break;
 		}
 	}
-	return 0.5*(sqrt(normcrossprod[i]) + sqrt(normcrossprod[(i+2)%4]));
+	return 0.5*(PetscSqrtReal(normcrossprod[i]) + PetscSqrtReal(normcrossprod[(i+2)%4]));
 }
 
 /*
  Given three vectors a,b,c, compute ||c.(a x b)|| = |a|*|b|*|c|*cos(alpha)*sin(theta),
  it returns cossin[0] = cos(alpha); cossin[1] = sin(theta)
  */
-void compute_cossin(double vectors[][3], double cossin[])
+void compute_cossin(PetscReal vectors[][3], PetscReal cossin[])
 {
-	double crossprod[3], a[3], b[3], c[3], scalarprod, ncross, n0, n1, n2;
+	PetscReal crossprod[3], a[3], b[3], c[3], scalarprod, ncross, n0, n1, n2;
 	
   a[0] = vectors[0][0]; a[1] = vectors[0][1]; a[2] = vectors[0][2];
   b[0] = vectors[1][0]; b[1] = vectors[1][1]; b[2] = vectors[1][2];
@@ -278,23 +278,23 @@ void compute_cossin(double vectors[][3], double cossin[])
 //    ierr = PetscPrintf(PETSC_COMM_SELF,"---> scalarprod: %f c(%f, %f, %f) cross(%f, %f, %f)  a(%f, %f, %f)  b(%f, %f, %f)\n", scalarprod,c[0],c[1],c[2],  crossprod[0],crossprod[1],crossprod[2], a[0],a[1],a[2], b[0],b[1],b[2]);CHKERRQ(ierr);
 }
 
-double compute_distance3(double posA[],double posB[])
+PetscReal compute_distance3(PetscReal posA[],PetscReal posB[])
 {
-	double val;
-	val = sqrt(  (posA[0]-posB[0])*(posA[0]-posB[0])  +  (posA[1]-posB[1])*(posA[1]-posB[1])  +  (posA[2]-posB[2])*(posA[2]-posB[2])  );
+	PetscReal val;
+	val = PetscSqrtReal(  (posA[0]-posB[0])*(posA[0]-posB[0])  +  (posA[1]-posB[1])*(posA[1]-posB[1])  +  (posA[2]-posB[2])*(posA[2]-posB[2])  );
 	return val;
 }
 
-double compute_norm3(double a[])
+PetscReal compute_norm3(PetscReal a[])
 {
-	double val;
-	val = sqrt( a[0]*a[0] + a[1]*a[1] + a[2]*a[2] );
+	PetscReal val;
+	val = PetscSqrtReal( a[0]*a[0] + a[1]*a[1] + a[2]*a[2] );
 	return val;
 }
 
-double compute_dot_product3(double a[],double b[])
+PetscReal compute_dot_product3(PetscReal a[],PetscReal b[])
 {
-	double val;
+	PetscReal val;
 	val = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 	return val;
 }
@@ -311,11 +311,11 @@ double compute_dot_product3(double a[],double b[])
  
  area( trianlge [0,1,2] ) + area( triangle[0,2,3] )
  */
-void compute_quadrilateral_area_approximate(double quad_coords[],double *area)
+void compute_quadrilateral_area_approximate(PetscReal quad_coords[],PetscReal *area)
 {
-	double triangle_012[3][3];
-	double triangle_023[3][3];
-	double b,l,h,a_012,a_023,theta;
+	PetscReal triangle_012[3][3];
+	PetscReal triangle_023[3][3];
+	PetscReal b,l,h,a_012,a_023,theta;
 	
 	get_node_coordinate( quad_coords, 0, triangle_012[0] );
 	get_node_coordinate( quad_coords, 1, triangle_012[1] );
@@ -353,7 +353,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	double          dx,dy,dz,dl_min,dl_max,el_ar,max_ar,max_ar_g;
+	PetscReal       dx,dy,dz,dl_min,dl_max,el_ar,max_ar,max_ar_g;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
@@ -372,9 +372,9 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 		dl_min = 1.0e32;
 		dl_max = 1.0e-32;
 
-		dx = fabs( el_coords[3*Q2_FACE_NODE_EAST +0] - el_coords[3*Q2_FACE_NODE_WEST +0]  );
-		dy = fabs( el_coords[3*Q2_FACE_NODE_NORTH+1] - el_coords[3*Q2_FACE_NODE_SOUTH+1] );
-		dz = fabs( el_coords[3*Q2_FACE_NODE_FRONT+2] - el_coords[3*Q2_FACE_NODE_BACK +2]  );
+		dx = PetscAbsReal( el_coords[3*Q2_FACE_NODE_EAST +0] - el_coords[3*Q2_FACE_NODE_WEST +0]  );
+		dy = PetscAbsReal( el_coords[3*Q2_FACE_NODE_NORTH+1] - el_coords[3*Q2_FACE_NODE_SOUTH+1] );
+		dz = PetscAbsReal( el_coords[3*Q2_FACE_NODE_FRONT+2] - el_coords[3*Q2_FACE_NODE_BACK +2]  );
 		//printf("e=%d: %1.4e %1.4e %1.4e \n", e, dx, dy, dz );
 		
 		if (dx < dl_min) { dl_min = dx; }
@@ -392,9 +392,9 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(&max_ar,&max_ar_g,1,MPI_DOUBLE,MPI_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&max_ar,&max_ar_g,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 											 
-	*value = (PetscReal)max_ar_g;
+	*value = max_ar_g;
 		
 	PetscFunctionReturn(0);
 }
@@ -412,7 +412,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 	PetscInt        nel,nen,e,p;
 	const PetscInt  *el_nidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	double          el_dist,min_dist,min_dist_g,el_vol;
+	PetscReal       el_dist,min_dist,min_dist_g,el_vol;
 	PetscInt        ngp;
 	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
 	PetscReal       min_detJ,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
@@ -454,9 +454,9 @@ PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&min_dist,&min_dist_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&min_dist,&min_dist_g,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
-	*value = (PetscReal)(min_dist_g);
+	*value = min_dist_g;
 	
 	PetscFunctionReturn(0);
 }
@@ -474,8 +474,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	double          posA[3],posB[3];
-	double          diag,dl_min,dl_max,dr,dr_min,dr_min_g;
+	PetscReal       posA[3],posB[3];
+	PetscReal       diag,dl_min,dl_max,dr,dr_min,dr_min_g;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
@@ -523,9 +523,9 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&dr_min,&dr_min_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&dr_min,&dr_min_g,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
-	*value = (PetscReal)dr_min_g;
+	*value = dr_min_g;
 	
 	PetscFunctionReturn(0);
 }
@@ -543,8 +543,8 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	double          a1,a2,vertices[4][3];
-	double          ratio,ratio_min,ratio_min_g;
+	PetscReal       a1,a2,vertices[4][3];
+	PetscReal       ratio,ratio_min,ratio_min_g;
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
@@ -584,9 +584,9 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&ratio_min,&ratio_min_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&ratio_min,&ratio_min_g,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 	
-	*value = (PetscReal)ratio_min_g;
+	*value = ratio_min_g;
 	
 	PetscFunctionReturn(0);
 }
@@ -601,7 +601,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	PetscInt        nel,nen,e;
 	const PetscInt  *el_nidx;
 	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	double          val, val_min, val_min_g, cossin[2], vectors[3][3];
+	PetscReal       val, val_min, val_min_g, cossin[2], vectors[3][3];
 	PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
@@ -658,9 +658,9 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	}
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     
-	ierr = MPI_Allreduce(&val_min,&val_min_g,1,MPI_DOUBLE,MPI_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&val_min,&val_min_g,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
     
-	*value = (PetscReal)val_min_g;
+	*value = val_min_g;
     
 	PetscFunctionReturn(0);
 }
