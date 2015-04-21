@@ -516,8 +516,8 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 		vxl = -data->vx_up;
 		vxr = data->vx_up;
 		ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
-		//ierr = DMDAComputeCoordinateAverageBoundaryFace(dav,NORTH_FACE,avg);CHKERRQ(ierr);
-		height = MeshMax[1] - MeshMin[1];//avg[1]
+		ierr = DMDAComputeCoordinateAverageBoundaryFace(dav,NORTH_FACE,avg);CHKERRQ(ierr);
+		height = avg[1] - MeshMin[1];
 		length = MeshMax[0] - MeshMin[0];
 		vybottom = 2.*data->vx_up * height / length;
 		
