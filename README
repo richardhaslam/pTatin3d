@@ -53,12 +53,12 @@ More information about the implementation and performance of pTatin3D can be fou
 ```
 ```
 #!latex
-\@article{May_etal:2014:cmame,
+\@article{May_etal:2015:cmame,
   author = {May, Dave A. and Brown, Jed and Le Pourhiet, Laetitia},
   title = {A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
   journals = {Computer Methods in Applied Mechanics and Engineering},
-  volume = {zzz},
-  pages = {xxx--yyy},
+  volume = {290},
+  pages = {496--523},
   year = {2015}
 }
 ```
