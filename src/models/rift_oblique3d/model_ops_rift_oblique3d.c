@@ -132,7 +132,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->hvbx1 = 125.0e3;
 	data->hvbx2 = 115.0e3;
 	data->vx_up = 0.5*cm_per_yer2m_per_sec;
-	data->vybottom = 2.*data->vx_up * data->Ly / data->Lx 
+	data->vybottom = 2.*data->vx_up * data->Ly / data->Lx; 
 	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
@@ -361,6 +361,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		//scale velocity
 		data->vx_up   = data->vx_up  /data->velocity_bar;
 		data->vx_down = data->vx_down/data->velocity_bar;
+		data->vybottom = data->vybottom/data->velocity_bar;
 		data->hvbx1   = data->hvbx1/data->length_bar;
 		data->hvbx2   = data->hvbx2/data->length_bar;
 		//scale rho
@@ -477,10 +478,10 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 #define __FUNCT__ "ModelRift_oblique3d_DefineBCList"
 PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRift_oblique3dCtx *data)
 {
-	PetscScalar    vxl,vxr,vybottom,zero,height,length;
+	PetscScalar    vxl,vxr,vybottom,zero;//,height,length;
 	PetscInt       vbc_type;
 	PetscErrorCode ierr;
-	PetscReal MeshMin[3],MeshMax[3];//,avg[3];
+	//PetscReal MeshMin[3],MeshMax[3];//,avg[3];
 	DM stokes_pack,dau,dap;
 	
 	
@@ -516,11 +517,11 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	if (vbc_type == 2) {
 		vxl = -data->vx_up;
 		vxr = data->vx_up;
-		ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
-		ierr = DMDAComputeCoordinateAverageBoundaryFace(dav,NORTH_FACE,avg);CHKERRQ(ierr);
-		height = avg[1] - MeshMin[1];
-		length = MeshMax[0] - MeshMin[0];
-		vybottom = 2.*data->vx_up * height / length;
+		//ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
+		//ierr = DMDAComputeCoordinateAverageBoundaryFace(dav,NORTH_FACE,avg);CHKERRQ(ierr);
+		//height = avg[1] - MeshMin[1];
+		//length = MeshMax[0] - MeshMin[0];
+		vybottom = data->vybottom; //2.*data->vx_up * height / length;
 		
 		/* infilling free slip base */
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -956,11 +957,14 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 /* DEFINE ALE */
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
+	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
 	PetscReal        step;
+	PetscReal        MeshMin[3],MeshMax[3],avg[3];
 	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
+	DM               stokes_pack,dav,dap,dau;
 	Vec              velocity,pressure;
 	PetscErrorCode   ierr;
+
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -977,6 +981,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
+	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+	ierr = DMDAComputeCoordinateAverageBoundaryFace(dau,NORTH_FACE,avg);CHKERRQ(ierr);
+	data->vybottom = avg[1] - MeshMin[1];
 	
 	PetscFunctionReturn(0);
 }
