@@ -246,7 +246,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	
 	nlevels = 1;
 	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
-	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
+	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
 	
@@ -436,7 +436,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 				PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
-				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
+				PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
 				ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
 				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
@@ -463,7 +463,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 				Mat Auu;
 				MatA11MF mf,A11Ctx;
 
-				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
+				PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
 				ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
 				ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
 				
@@ -488,7 +488,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
 				}	
 				
-				PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Galerkin :: assembled operator \n", k);
+				PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
 				
 				/* should move coarse grid assembly into jacobian */
 				ierr = MatPtAP(operatorA11[k+1],interpolatation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
@@ -575,7 +575,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	/* solve once, then advect */
 	ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%d]: time %lf Myr \n", user->step, user->time );
+	PetscPrintf(PETSC_COMM_WORLD,"[Initial condition] Timestep[%D]: time %lf Myr \n", user->step, user->time );
 	for (kk=0; kk<user->nsteps; kk++) {
 		PetscInt tk = user->step+1;
 		PetscReal timestep;
@@ -959,7 +959,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		ierr = MaterialPointPopulationControl_v1(user);CHKERRQ(ierr);
         
 		/* output material points */
-		if ( (step%user->output_frequency == 0) || (step == 1) ) {
+		if (step%user->output_frequency == 0) {
 			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
             ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
 		}
@@ -974,7 +974,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
         
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
-		PetscPrintf(PETSC_COMM_WORLD,"  timestep_stokes[%d] dt_courant = %1.4e \n", step,user->dt );
+		PetscPrintf(PETSC_COMM_WORLD,"  timestep_stokes[%D] dt_courant = %1.4e \n", step,user->dt );
 
 		/* Terminate time stepping */
 		if (user->time >= user->time_max) {
