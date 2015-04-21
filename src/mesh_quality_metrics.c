@@ -86,9 +86,9 @@
 */
 
 /* protoypes for helpers */
-void get_node_coordinate(PetscReal el_coords[],int index,PetscReal pos[]);
+void get_node_coordinate(PetscReal el_coords[],PetscInt index,PetscReal pos[]);
 void get_face_coordinates(PetscReal el_coords[],Q2Face face,PetscReal coords[][3]);
-void get_vertex_vectors(PetscReal el_coords[],int vertex,PetscReal vectors[][3]);
+void get_vertex_vectors(PetscReal el_coords[],PetscInt vertex,PetscReal vectors[][3]);
 PetscReal compute_quadrilateral_area_(PetscReal vertex[][3]);
 void compute_cossin(PetscReal vectors[][3], PetscReal cossin[]);
 PetscReal compute_distance3(PetscReal posA[],PetscReal posB[]);
