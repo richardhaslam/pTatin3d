@@ -317,7 +317,7 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	ierr = DMCompositeRestoreAccess(ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	PetscTime(&t1);
 	tl = t1-t0;
-	ierr = MPI_Allreduce(&tl,&tg,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);	
+	ierr = MPI_Allreduce(&tl,&tg,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);	
 
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> pt3d_stokes.{dmda.v,dmda,p,dmda.Xu,dmda.Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,tg);
 	
@@ -694,7 +694,7 @@ int main(int nargs,char *args[])
 	
 	PetscTime(&t1);
 	lt = t1-t0;
-	ierr = MPI_Allreduce(&lt,&gt,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&lt,&gt,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Stokes: CPU time %1.4e (sec)\n", gt);
 	
 	ierr = pTatinFinalize();CHKERRQ(ierr);

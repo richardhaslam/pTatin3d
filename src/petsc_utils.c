@@ -57,7 +57,7 @@ PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val)
             for (i=0; i<n; i++) {
                 sum += PetscAbsScalar(array[i]);
             }
-            ierr = MPI_Reduce(&sum,val,1,MPIU_REAL,MPI_SUM,0,comm);CHKERRQ(ierr);
+            ierr = MPI_Reduce(&sum,val,1,MPIU_REAL,MPIU_SUM,0,comm);CHKERRQ(ierr);
             
         }
             break;
@@ -70,7 +70,7 @@ PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val)
                 sum += array[i]*(PetscConj(array[i]));
             }
             rsum = PetscRealPart(sum);
-            ierr = MPI_Reduce(&rsum,val,1,MPIU_REAL,MPI_SUM,0,comm);CHKERRQ(ierr);
+            ierr = MPI_Reduce(&rsum,val,1,MPIU_REAL,MPIU_SUM,0,comm);CHKERRQ(ierr);
             *val = PetscSqrtReal(*val);
         }
             break;
@@ -85,7 +85,7 @@ PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val)
                 sum     += array[i]*(PetscConj(array[i]));
             }
             sum2[1] = PetscRealPart(sum);
-            ierr = MPI_Reduce(sum2,val,2,MPIU_REAL,MPI_SUM,0,comm);CHKERRQ(ierr);
+            ierr = MPI_Reduce(sum2,val,2,MPIU_REAL,MPIU_SUM,0,comm);CHKERRQ(ierr);
             val[1] = PetscSqrtReal(val[1]);
         }
             break;
@@ -104,7 +104,7 @@ PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val)
                     break;
                 }
             }
-            ierr = MPI_Reduce(&max,val,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+            ierr = MPI_Reduce(&max,val,1,MPIU_REAL,MPIU_MAX,0,comm);CHKERRQ(ierr);
         }
             break;
 

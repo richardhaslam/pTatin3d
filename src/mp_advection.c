@@ -195,7 +195,7 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 	ierr = DMRestoreLocalVector(da,&Lvelocity);CHKERRQ(ierr);
 	
 	ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&dt_min_local,&dt_min,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&dt_min_local,&dt_min,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
 	
 	*step = dt_min;
 	

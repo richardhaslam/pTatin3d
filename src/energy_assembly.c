@@ -895,7 +895,7 @@ PetscErrorCode FormFunctionLocal_T(
          }
          */
 	}
-    //ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPI_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+    //ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 	//PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
 	
     /* tidy up local arrays (input) */

@@ -528,8 +528,8 @@ PetscErrorCode iPLUSOutput_ComputeVerticalRangeOfRegion(DataBucket materialpoint
     }
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
     
-    ierr = MPI_Allreduce(&_range_yp[0],&range_yp[0],1,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&_range_yp[1],&range_yp[1],1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&_range_yp[0],&range_yp[0],1,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&_range_yp[1],&range_yp[1],1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
     
     ierr = MPI_Allreduce(&found_region,&found_region_g,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
     

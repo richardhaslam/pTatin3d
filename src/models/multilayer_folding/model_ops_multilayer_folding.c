@@ -1921,8 +1921,8 @@ PetscErrorCode MultilayerFoldingOutput_q(pTatinCtx c,ModelMultilayerFoldingCtx *
 	
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	
-	ierr = MPI_Allreduce(&peak_min,&g_peak_min,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&peak_max,&g_peak_max,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&peak_min,&g_peak_min,1,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&peak_max,&g_peak_max,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
 	
 	PetscPrintf(PETSC_COMM_WORLD,"# A_max %1.8e [x,z %1.4e,%1.4e] time %1.4e \n", g_peak_max,xz[0],xz[1],c->time);

@@ -638,7 +638,7 @@ PetscErrorCode UpdateMeshGeometry_ComputeSurfaceCourantTimestep(DM dav,Vec veloc
 	ierr = DMDAVecRestoreArray(dav,velocity,&LA_vel);CHKERRQ(ierr);
 
 	ierr = PetscObjectGetComm((PetscObject)dav,&comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&dt_min_local,&dt_min,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(&dt_min_local,&dt_min,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
 	
 	*step = dt_min;
 	
