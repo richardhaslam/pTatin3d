@@ -40,6 +40,7 @@ extern PetscErrorCode pTatinModelRegister_Sierra(void);
 extern PetscErrorCode pTatinModelRegister_AdvDiffExample(void);
 extern PetscErrorCode pTatinModelRegister_Delamination(void);
 extern PetscErrorCode pTatinModelRegister_Riftrh(void);
+extern PetscErrorCode pTatinModelRegister_Rift_oblique3d(void);
 extern PetscErrorCode pTatinModelRegister_GeoMod2008(void);
 extern PetscErrorCode pTatinModelRegister_MultilayerFolding(void);
 extern PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void);
@@ -71,6 +72,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
+	ierr = pTatinModelRegister_Rift_oblique3d();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);

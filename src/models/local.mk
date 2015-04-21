@@ -10,6 +10,7 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			sierra/model_ops_Sierra.c \
 			advdiff_example/model_ops_advdiff_example.c \
 			delamination/model_delamination_ops.c \
+			rift_oblique3d/model_ops_rift_oblique3d.c \
 			riftrh/model_ops_riftrh.c \
 			geomod2008/model_geomod2008.c \
 			multilayer_folding/model_ops_multilayer_folding.c \
