@@ -132,6 +132,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->hvbx1 = 125.0e3;
 	data->hvbx2 = 115.0e3;
 	data->vx_up = 0.5*cm_per_yer2m_per_sec;
+	data->vybottom = 2.*data->vx_up * data->Ly / data->Lx 
 	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
