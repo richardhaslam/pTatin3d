@@ -1154,13 +1154,12 @@ PetscErrorCode apply_mppc_region_assignment(
 {
     PetscInt        np_per_cell_max,mx,my,mz;
     PetscInt        c,i,j,k,cell_index_i,cell_index_j,cell_index_k,cidx2d,point_count;
-    PetscInt        points_per_cell,points_per_patch;
-    PetscInt        p;
+    PetscInt        p,points_per_cell,points_per_patch;
     DataField       PField;
     double          *patch_point_coords;
-    int             *patch_point_idx;
+    PetscInt        *patch_point_idx;
     PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
-    int             points_assigned = 0;
+    PetscInt        points_assigned = 0;
     PetscErrorCode  ierr;
     
     PetscFunctionBegin;
@@ -1208,11 +1207,11 @@ PetscErrorCode apply_mppc_region_assignment(
     }
     
 #if (MPPC_LOG_LEVEL >= 1)
-    printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
 #endif
     
     ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(int)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscInt)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
     
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     
@@ -1230,7 +1229,7 @@ PetscErrorCode apply_mppc_region_assignment(
         
         /* load points from the patch into a list - only load points with an assigned phase index */
         ierr = PetscMemzero( patch_point_coords, sizeof(double)*3*np_per_cell_max );CHKERRQ(ierr);
-        ierr = PetscMemzero( patch_point_idx, sizeof(int)*np_per_cell_max );CHKERRQ(ierr);
+        ierr = PetscMemzero( patch_point_idx, sizeof(PetscInt)*np_per_cell_max );CHKERRQ(ierr);
         
         point_count = 0;
         
@@ -1250,7 +1249,7 @@ PetscErrorCode apply_mppc_region_assignment(
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
-                    printf("[LOG]     patch(%d)-(%d,%d,%d) cell(%d)-(%d,%d,%d)  : ppcell = %d \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
+                    PetscPrintf(PETSC_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
 #endif
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
@@ -1259,7 +1258,7 @@ PetscErrorCode apply_mppc_region_assignment(
                         pid = pcell_list[patch_cell_id] + p;
                         pid_unsorted = plist[pid].point_index;
                         
-                        DataFieldAccessPoint(PField, pid_unsorted ,(void**)&marker_p);
+                        DataFieldAccessPoint(PField, (int)pid_unsorted ,(void**)&marker_p);
                         
                         /* skip markers from patch which need to be assigned */
                         if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) { continue; }
@@ -1269,7 +1268,7 @@ PetscErrorCode apply_mppc_region_assignment(
                         patch_point_coords[3*point_count+2] = marker_p->coor[2];
                         patch_point_idx[point_count]        = pid_unsorted;
 #if (MPPC_LOG_LEVEL >= 2)
-                        printf("[LOG]       patch(%d)/cell(%d) -> p(%d):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
+                        PetscPrintf(PETSC_COMM_SELF,"[LOG]       patch(%D)/cell(%D) -> p(%D):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
 #endif
                         point_count++;
                     }
@@ -1279,24 +1278,24 @@ PetscErrorCode apply_mppc_region_assignment(
         }
         DataFieldRestoreAccess(PField);
 #if (MPPC_LOG_LEVEL >= 2)
-        printf("[LOG]  cell = %d: total points per patch = %d \n", c,point_count);
+        PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
         
         /* traverse points in this cell with phase = MATERIAL_POINT_PHASE_UNASSIGNED and find closest point */
         points_per_cell = pcell_list[c+1] - pcell_list[c];
         
         for (p=0; p<points_per_cell; p++) {
-            MPntStd  *marker_p,*marker_nearest;
-            double   *pos_p;
-            int      pid,pid_unsorted,nearest_idx,marker_index;
-            double   xp_orig[3],xip_orig[3];
-            long int pid_orig;
+            MPntStd   *marker_p,*marker_nearest;
+            double    *pos_p;
+            PetscInt  pid,pid_unsorted,nearest_idx,marker_index;
+            PetscReal xp_orig[3],xip_orig[3];
+            long int  pid_orig;
             
             pid = pcell_list[c] + p;
             pid_unsorted = plist[pid].point_index;
             
             DataFieldGetAccess(PField);
-            DataFieldAccessPoint(PField,pid_unsorted,(void**)&marker_p);
+            DataFieldAccessPoint(PField,(int)pid_unsorted,(void**)&marker_p);
             
             /* if marker is assigned - skip */
             if (marker_p->phase != MATERIAL_POINT_PHASE_UNASSIGNED) {
@@ -1305,16 +1304,16 @@ PetscErrorCode apply_mppc_region_assignment(
             }
             
             pid_orig    = marker_p->pid;
-            xp_orig[0]  = marker_p->coor[0];
-            xp_orig[1]  = marker_p->coor[1];
-            xp_orig[2]  = marker_p->coor[2];
-            xip_orig[0] = marker_p->xi[0];
-            xip_orig[1] = marker_p->xi[1];
-            xip_orig[2] = marker_p->xi[2];
+            xp_orig[0]  = (PetscReal)marker_p->coor[0];
+            xp_orig[1]  = (PetscReal)marker_p->coor[1];
+            xp_orig[2]  = (PetscReal)marker_p->coor[2];
+            xip_orig[0] = (PetscReal)marker_p->xi[0];
+            xip_orig[1] = (PetscReal)marker_p->xi[1];
+            xip_orig[2] = (PetscReal)marker_p->xi[2];
             
             
 #if (MPPC_LOG_LEVEL >= 2)
-            PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell(%d) point(%d) is un-assigned\n",c,pid_unsorted);
+            PetscPrintf(PETSC_COMM_SELF,"[LOG]  cell(%D) point(%D) is un-assigned\n",c,pid_unsorted);
 #endif
             
             pos_p = marker_p->coor;
@@ -1329,31 +1328,31 @@ PetscErrorCode apply_mppc_region_assignment(
             marker_index = patch_point_idx[ nearest_idx ];
             
             /* fetch nearest with index "marker_index" */
-            DataFieldAccessPoint(PField,marker_index,(void**)&marker_nearest);
+            DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest);
             DataFieldRestoreAccess(PField);
             
             /* set phase to match the nearest */
             //marker_p->phase = marker_nearest->phase;
             
-            DataBucketCopyPoint(db,marker_index, db,pid_unsorted);
+            DataBucketCopyPoint(db,(int)marker_index, db,(int)pid_unsorted);
             
             /* override unique values */
             DataFieldGetAccess(PField);
-            DataFieldAccessPoint(PField,pid_unsorted,(void**)&marker_p);
+            DataFieldAccessPoint(PField,(int)pid_unsorted,(void**)&marker_p);
             marker_p->pid     = pid_orig;
-            marker_p->coor[0] = xp_orig[0];
-            marker_p->coor[1] = xp_orig[1];
-            marker_p->coor[2] = xp_orig[2];
-            marker_p->wil     = c;
-            marker_p->xi[0]   = xip_orig[0];
-            marker_p->xi[1]   = xip_orig[1];
-            marker_p->xi[2]   = xip_orig[2];
+            marker_p->coor[0] = (double)xp_orig[0];
+            marker_p->coor[1] = (double)xp_orig[1];
+            marker_p->coor[2] = (double)xp_orig[2];
+            marker_p->wil     = (int)c;
+            marker_p->xi[0]   = (double)xip_orig[0];
+            marker_p->xi[1]   = (double)xip_orig[1];
+            marker_p->xi[2]   = (double)xip_orig[2];
             DataFieldRestoreAccess(PField);
             
             points_assigned++;
             
 #if (MPPC_LOG_LEVEL >= 2)
-            PetscPrintf(PETSC_COMM_SELF,"[LOG]  point(%d) nearest neighbour(%d) -> phase %d\n",pid_unsorted,marker_index,marker_nearest->phase);
+            PetscPrintf(PETSC_COMM_SELF,"[LOG]  point(%D) nearest neighbour(%D) -> phase %d\n",pid_unsorted,marker_index,marker_nearest->phase);
 #endif
             
             if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
@@ -1369,8 +1368,8 @@ PetscErrorCode apply_mppc_region_assignment(
     
     
 #if (MPPC_LOG_LEVEL >= 1)
-    printf("[LOG]  points assigned   = %d\n", points_assigned);
-    printf("[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  points assigned   = %D\n", points_assigned);
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
 #endif
     
     PetscFunctionReturn(0);
