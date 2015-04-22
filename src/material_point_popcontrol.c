@@ -76,7 +76,7 @@ void sort_PSortCx(const int np32, PSortCtx list[])
     qsort( list, np, sizeof(PSortCtx), sort_ComparePSortCtx );
     PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PETSC_COMM_WORLD,"[LOG]  sort_PSortCx [npoints = %d] -> qsort %1.4e (sec)\n", np32,t1-t0 );
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  sort_PSortCx [npoints = %d] -> qsort %1.4e (sec)\n", np32,t1-t0 );
 #endif
 }
 
@@ -105,9 +105,16 @@ int sort_CompareNNSortCtx(const void *dataA,const void *dataB)
 }
 void sort_NNSortCx(const int np32, NNSortCtx list[])
 {
+    PetscLogDouble t0,t1;
     size_t np;
+
     np = (size_t)np32;
+    PetscTime(&t0);
     qsort( list, np, sizeof(NNSortCtx), sort_CompareNNSortCtx );
+    PetscTime(&t1);
+#if (MPPC_LOG_LEVEL >= 1)
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  sort_NNSortCx [npoints = %d] -> qsort %1.4e (sec)\n", np32,t1-t0 );
+#endif
 }
 
 
@@ -284,16 +291,15 @@ PetscErrorCode apply_mppc_nn_patch(
 {
     PetscInt        np_per_cell_max,mx,my,mz;
     PetscInt        c,i,j,k,cell_index_i,cell_index_j,cell_index_k,cidx2d,point_count,points_per_patch;
-    PetscInt        p;
     const PetscInt  *elnidx;
-    PetscInt        nel,nen;
+    PetscInt        nel,nen,p;
     Vec             gcoords;
     PetscScalar     *LA_coords;
     PetscScalar     el_coords[Q2_NODES_PER_EL_3D*NSD];
     DM              cda;
     DataField       PField;
-    int             Lnew,nx3,npoints_current,npoints_init;
-    long int        cells_needing_new_points,cells_needing_new_points_g;
+    int             Lnew32,nxcubed32,npoints_current32,npoints_init32;
+    long int        cells_needing_new_points64,cells_needing_new_points_g64;
     double          *patch_point_coords;
     PetscInt        *patch_point_idx;
     PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
@@ -307,14 +313,14 @@ PetscErrorCode apply_mppc_nn_patch(
     /* get mx,my from the da */
     ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
     
-    DataBucketGetSizes(db,&npoints_init,NULL,NULL);
-    npoints_current = npoints_init;
+    DataBucketGetSizes(db,&npoints_init32,NULL,NULL);
+    npoints_current32 = npoints_init32;
     
     /* find max np_per_cell I will need */
-    nx3 = (int)(nxp * nyp * nzp);
+    nxcubed32 = (int)(nxp * nyp * nzp);
     np_per_cell_max = 0;
-    cells_needing_new_points = 0;
-    DataBucketGetSizes(db,&Lnew,NULL,NULL);
+    cells_needing_new_points64 = 0;
+    DataBucketGetSizes(db,&Lnew32,NULL,NULL);
     for (c=0; c<nel; c++) {
         PetscInt points_per_cell;
         PetscInt points_per_patch;
@@ -352,21 +358,19 @@ PetscErrorCode apply_mppc_nn_patch(
             np_per_cell_max = points_per_patch;
         }
         
-        Lnew = Lnew + nx3;
-        cells_needing_new_points++;
+        Lnew32 = Lnew32 + nxcubed32;
+        cells_needing_new_points64++;
     }
     
 #if (MPPC_LOG_LEVEL >= 1)
-    printf("[LOG]  np_per_patch_max = %d \n", np_per_cell_max );
+    PetscPrintf(PETSC_COMM_SELF,"[LOG]  np_per_patch_max = %D \n", np_per_cell_max );
 #endif
-    ierr = MPI_Allreduce( &cells_needing_new_points, &cells_needing_new_points_g, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
-    if (cells_needing_new_points_g == 0) {
-        //		PetscPrintf(PETSC_COMM_WORLD,"!! No population control required <global>!!\n");
+    ierr = MPI_Allreduce( &cells_needing_new_points64, &cells_needing_new_points_g64, 1, MPI_LONG, MPI_SUM, PETSC_COMM_WORLD );CHKERRQ(ierr);
+    if (cells_needing_new_points_g64 == 0) {
         PetscFunctionReturn(0);
     }
-    //PetscPrintf(PETSC_COMM_WORLD,"!! Population control required <global>!!\n");
     
-    DataBucketSetSizes(db,Lnew,-1);
+    DataBucketSetSizes(db,Lnew32,-1);
     
     ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
     ierr = PetscMalloc(sizeof(PetscInt)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
@@ -412,7 +416,7 @@ PetscErrorCode apply_mppc_nn_patch(
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
 #if (MPPC_LOG_LEVEL >= 2)
-                    printf("[LOG]     patch(%d)-(%d,%d,%d) cell(%d)-(%d,%d,%d)  : ppcell = %d \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
+                    PetscPrintf(PETCS_COMM_SELF,"[LOG]     patch(%D)-(%D,%D,%D) cell(%D)-(%D,%D,%D)  : ppcell = %D \n", c, cell_index_i,cell_index_j,cell_index_k, patch_cell_id,i,j,k,points_per_patch);
 #endif
                     for (p=0; p<points_per_patch; p++) {
                         MPntStd *marker_p;
@@ -421,14 +425,14 @@ PetscErrorCode apply_mppc_nn_patch(
                         pid = pcell_list[patch_cell_id] + p;
                         pid_unsorted = plist[pid].point_index;
                         
-                        DataFieldAccessPoint(PField, pid_unsorted ,(void**)&marker_p);
+                        DataFieldAccessPoint(PField, (int)pid_unsorted ,(void**)&marker_p);
                         
                         patch_point_coords[3*point_count+0] = marker_p->coor[0];
                         patch_point_coords[3*point_count+1] = marker_p->coor[1];
                         patch_point_coords[3*point_count+2] = marker_p->coor[2];
                         patch_point_idx[point_count]        = pid_unsorted;
 #if (MPPC_LOG_LEVEL >= 2)
-                        printf("[LOG]       patch(%d)/cell(%d) -> p(%d):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
+                        PetscPrintf(PETCS_COMM_SELF,"[LOG]       patch(%D)/cell(%D) -> p(%D):p->wil,x,y,z = %d %1.4e %1.4e %1.4e \n", c, patch_cell_id, p,marker_p->wil, marker_p->coor[0],marker_p->coor[1],marker_p->coor[2] );
 #endif
                         point_count++;
                     }
@@ -438,7 +442,7 @@ PetscErrorCode apply_mppc_nn_patch(
         }
         DataFieldRestoreAccess(PField);
 #if (MPPC_LOG_LEVEL >= 2)
-        printf("[LOG]  cell = %d: total points per patch = %d \n", c,point_count);
+        PetscPrintf(PETCS_COMM_SELF,"[LOG]  cell = %D: total points per patch = %D \n", c,point_count);
 #endif
         
         /* create trial coordinates - find closest point */
@@ -459,9 +463,9 @@ PetscErrorCode apply_mppc_nn_patch(
             for (pk=0; pk<Nxp[2]; pk++) {
                 for (pj=0; pj<Nxp[1]; pj++) {
                     for (pi=0; pi<Nxp[0]; pi++) {
-                        PetscInt idx;
-                        double   xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
-                        MPntStd  *marker_p,*marker_nearest;
+                        PetscInt  idx;
+                        PetscReal xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+                        MPntStd   *marker_p,*marker_nearest;
                         
                         xip[0] = -1.0 + dxi    * (pi + 0.5);
                         xip[1] = -1.0 + deta   * (pj + 0.5);
@@ -477,13 +481,13 @@ PetscErrorCode apply_mppc_nn_patch(
                         xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
                         
                         if (fabs(xip_rand[0]) > 1.0) {
-                            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+                            SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
                         }
                         if (fabs(xip_rand[1]) > 1.0) {
-                            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+                            SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
                         }
                         if (fabs(xip_rand[2]) > 1.0) {
-                            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
+                            SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
                         }
                         
                         P3D_ConstructNi_Q2_3D(xip_rand,Ni);
@@ -504,27 +508,27 @@ PetscErrorCode apply_mppc_nn_patch(
                         
                         marker_index = patch_point_idx[ idx ];
                         
-                        DataBucketCopyPoint(db,(int)marker_index, db,npoints_current);
+                        DataBucketCopyPoint(db,(int)marker_index, db,npoints_current32);
                         
                         DataFieldGetAccess(PField);
                         
-                        DataFieldAccessPoint(PField,npoints_current,(void**)&marker_p);
+                        DataFieldAccessPoint(PField,npoints_current32,(void**)&marker_p);
                         DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest);
                         
                         marker_p->phase   = marker_nearest->phase;
                         
-                        marker_p->coor[0] = xp_rand[0];
-                        marker_p->coor[1] = xp_rand[1];
-                        marker_p->coor[2] = xp_rand[2];
+                        marker_p->coor[0] = (double)xp_rand[0];
+                        marker_p->coor[1] = (double)xp_rand[1];
+                        marker_p->coor[2] = (double)xp_rand[2];
                         marker_p->wil     = (int)c;
-                        marker_p->xi[0]   = xip_rand[0];
-                        marker_p->xi[1]   = xip_rand[1];
-                        marker_p->xi[2]   = xip_rand[2];
+                        marker_p->xi[0]   = (double)xip_rand[0];
+                        marker_p->xi[1]   = (double)xip_rand[1];
+                        marker_p->xi[2]   = (double)xip_rand[2];
                         
                         DataFieldRestoreAccess(PField);
                         
                         
-                        npoints_current++;
+                        npoints_current32++;
                     }
                 }
             }
@@ -537,15 +541,15 @@ PetscErrorCode apply_mppc_nn_patch(
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
     
-    DataBucketGetSizes(db,&Lnew,NULL,NULL);
+    DataBucketGetSizes(db,&Lnew32,NULL,NULL);
     
-    ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init,Lnew);CHKERRQ(ierr);
+    ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,npoints_init32,Lnew32);CHKERRQ(ierr);
     
 #if (MPPC_LOG_LEVEL >= 1)
-    printf("[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
-    printf("[LOG]  npoints_init      = %d \n", npoints_init);
-    printf("[LOG]  npoints_current-1 = %d \n", npoints_current);
-    printf("[LOG]  npoints_current-2 = %d \n", Lnew);
+    PetscPrintf(PETCS_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
+    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_init      = %d \n", npoints_init32);
+    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_current-1 = %d \n", npoints_current32);
+    PetscPrintf(PETCS_COMM_SELF,"[LOG]  npoints_current-2 = %d \n", Lnew32);
 #endif
     
     PetscFunctionReturn(0);
