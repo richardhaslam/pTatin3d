@@ -31,8 +31,10 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@*/
 
+/*
+ Contributed by Guillaume Duclaux [Guillaume.Duclaux@uib.no]
+*/
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -48,8 +50,8 @@
 
 // added includes
 #include "output_material_points.h"
-#include "stdlib.h" //needed for the 'srand' function
-#include "math.h"  //declare 'atan' function
+//#include "stdlib.h" //needed for the 'srand' function
+//#include "math.h"  //declare 'atan' function
 
 #include "ptatin_models.h"
 
@@ -961,7 +963,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	PetscReal        step;
 	PetscReal        MeshMin[3],MeshMax[3],avg[3];
 	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap,dau;
+	DM               stokes_pack,dav,dap;
 	Vec              velocity,pressure;
 	PetscErrorCode   ierr;
 
@@ -972,8 +974,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-	
-	stokes_pack = stokes->stokes_pack;
+	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
@@ -983,7 +984,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ierr = DMDAComputeCoordinateAverageBoundaryFace(dau,NORTH_FACE,avg);CHKERRQ(ierr);
+	ierr = DMDAComputeCoordinateAverageBoundaryFace(dav,NORTH_FACE,avg);CHKERRQ(ierr);
 	data->vybottom = avg[1] - MeshMin[1];
 	
 	PetscFunctionReturn(0);
