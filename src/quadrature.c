@@ -83,10 +83,10 @@ PetscErrorCode QuadratureView(Quadrature q)
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"QuadratureView:\n");
-	PetscPrintf(PETSC_COMM_WORLD,"  dim    %d\n", q->dim);
-	PetscPrintf(PETSC_COMM_WORLD,"  type    %d\n", (PetscInt)q->type);
-	PetscPrintf(PETSC_COMM_WORLD,"  npoints    %d\n", q->npoints);
-	PetscPrintf(PETSC_COMM_WORLD,"  n_elements %d\n", q->n_elements);
+	PetscPrintf(PETSC_COMM_WORLD,"  dim    %D\n", q->dim);
+	PetscPrintf(PETSC_COMM_WORLD,"  type    %D\n", (PetscInt)q->type);
+	PetscPrintf(PETSC_COMM_WORLD,"  npoints    %D\n", q->npoints);
+	PetscPrintf(PETSC_COMM_WORLD,"  n_elements %D\n", q->n_elements);
 	
 	DataBucketView(PETSC_COMM_WORLD, q->properties_db,"GaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
 
@@ -194,8 +194,8 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
 	
 	quadrature->nfaces = nfaces;
 	
-	//PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQuadrature]: attributing %d edge elements \n", nfaces );
-	//PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQPointCoefficient]: attributing %d surface quadrature points \n", nfaces*quadrature->ngp );
+	//PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQuadrature]: attributing %D edge elements \n", nfaces );
+	//PetscPrintf(PETSC_COMM_WORLD,"\t[SurfaceQPointCoefficient]: attributing %D surface quadrature points \n", nfaces*quadrature->ngp );
 	if (nfaces != 0) {
 		ierr = PetscMalloc( sizeof(PetscInt)*nfaces, &quadrature->element_list);CHKERRQ(ierr);
 	} else {

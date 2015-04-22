@@ -34,7 +34,7 @@
 #include "dmda_compare.h"
 
 
-#define __DMDACompareStructures(var,v1,v2)PetscSynchronizedPrintf( comm, "[%d]: DMDA->%s are different { %d , %d } \n", rank, (var), (int)((v1)),(int)((v2)) )
+#define __DMDACompareStructures(var,v1,v2)PetscSynchronizedPrintf( comm, "[%d]: DMDA->%s are different { %D , %D } \n", ((int)rank), (var), (int)((v1)),(int)((v2)) )
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDACompareStructures"
@@ -66,7 +66,7 @@ PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 	PetscObjectGetComm( (PetscObject)da1, &comm );
 	ierr = MPI_Comm_rank( comm, &rank );CHKERRQ(ierr);
 	
-	if( dim1 != dim2 ) {	PetscSynchronizedPrintf( comm, "[%d]: DA->dim are different { %d , %d } \n", dim1,dim2 );		*flg = PETSC_FALSE;	}
+	if( dim1 != dim2 ) {	PetscSynchronizedPrintf( comm, "[%d]: DA->dim are different { %d , %d } \n", (int)rank,dim1,dim2 );		*flg = PETSC_FALSE;	}
 	
 	if( M1 != M2 ) {	__DMDACompareStructures( "M",M1,M2 );		*flg = PETSC_FALSE;	}
 	if( N1 != N2 ) {	__DMDACompareStructures( "N",N1,N2 );		*flg = PETSC_FALSE;	}
