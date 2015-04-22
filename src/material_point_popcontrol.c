@@ -472,21 +472,21 @@ PetscErrorCode apply_mppc_nn_patch(
                         xip[2] = -1.0 + dzeta  * (pk + 0.5);
                         
                         /* random between -0.5 <= shift <= 0.5 */
-                        xip_shift[0] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
-                        xip_shift[1] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
-                        xip_shift[2] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+                        xip_shift[0] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
+                        xip_shift[1] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
+                        xip_shift[2] = (PetscReal)(1.0*(rand()/(RAND_MAX+1.0))) - 0.5;
                         
                         xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
                         xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
                         xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
                         
-                        if (fabs(xip_rand[0]) > 1.0) {
+                        if (PetscAbsReal(xip_rand[0]) > 1.0) {
                             SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
                         }
-                        if (fabs(xip_rand[1]) > 1.0) {
+                        if (PetscAbsReal(xip_rand[1]) > 1.0) {
                             SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
                         }
-                        if (fabs(xip_rand[2]) > 1.0) {
+                        if (PetscAbsReal(xip_rand[2]) > 1.0) {
                             SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
                         }
                         
