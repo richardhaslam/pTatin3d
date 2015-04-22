@@ -837,7 +837,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 {
     PetscInt        *pcell_list;
     PSortCtx        *plist;
-    int             p,npoints;
+    int             p32,npoints32;
     PetscInt        tmp,c,count,cells_np_lower,cells_np_upper;
     const PetscInt  *elnidx;
     PetscInt        nel,nen;
@@ -849,33 +849,33 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     
     ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
+    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCT__);
 #endif
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
     
     ierr = PetscMalloc( sizeof(PetscInt)*(nel+1),&pcell_list );CHKERRQ(ierr);
     
-    DataBucketGetSizes(db,&npoints,NULL,NULL);
-    ierr = PetscMalloc( sizeof(PSortCtx)*(npoints), &plist);CHKERRQ(ierr);
+    DataBucketGetSizes(db,&npoints32,NULL,NULL);
+    ierr = PetscMalloc( sizeof(PSortCtx)*(npoints32), &plist);CHKERRQ(ierr);
     
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
-    for (p=0; p<npoints; p++) {
+    for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
         
-        DataFieldAccessPoint(PField,p,(void**)&marker_p);
-        plist[p].point_index = (PetscInt)p;
-        plist[p].cell_index  = (PetscInt)marker_p->wil;
+        DataFieldAccessPoint(PField,p32,(void**)&marker_p);
+        plist[p32].point_index = (PetscInt)p32;
+        plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
     
-    sort_PSortCx((int)npoints,plist);
+    sort_PSortCx(npoints32,plist);
     
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
-    for (p=0; p<npoints; p++) {
-        pcell_list[ plist[p].cell_index ]++;
+    for (p32=0; p32<npoints32; p32++) {
+        pcell_list[ plist[p32].cell_index ]++;
     }
     
     /* create offset list */
@@ -896,8 +896,8 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
         if (points_per_cell > np_upper) { cells_np_upper++; }
     }
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %d cells with points < np_lower (%d) \n", cells_np_lower,np_lower );
-    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %d cells with points > np_upper (%d) \n", cells_np_upper,np_upper);
+    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points < np_lower (%D) \n", cells_np_lower,np_lower );
+    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points > np_upper (%D) \n", cells_np_upper,np_upper);
 #endif
     
     /* apply point injection routine */
