@@ -1721,27 +1721,25 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 {
     PetscInt       *pcell_list;
     PSortCtx       *plist;
-    int            p,npoints;
-    PetscInt       tmp,c,count;
+    int            p32,npoints32;
+    PetscInt       tmp,c,count,npoints;
     const PetscInt *elnidx;
     PetscInt       nel,nen;
     DataField      PField;
     PetscLogDouble t0,t1;
-    long int       cells_needing_reassignment,cells_needing_reassignment_g;
-    long int       points_needing_reassignment;
+    long int       cells_needing_reassignment64,cells_needing_reassignment_g64;
+    long int       points_needing_reassignment64;
     PetscInt       *cell_count;
     PetscInt       patch_extend;
     PetscErrorCode ierr;
     
     PetscFunctionBegin;
     
-    DataBucketGetSizes(db,&npoints,NULL,NULL);
-    
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCTION__);
 #endif	
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-    
+    DataBucketGetSizes(db,&npoints32,NULL,NULL);
     
     /* compute number of cells with unassigned region index */
     ierr = PetscMalloc(sizeof(PetscInt)*nel,&cell_count);CHKERRQ(ierr);
@@ -1752,10 +1750,10 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
     
-    for (p=0; p<npoints; p++) {
+    for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
         
-        DataFieldAccessPoint(PField,p,(void**)&marker_p);
+        DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         if (marker_p->phase == MATERIAL_POINT_PHASE_UNASSIGNED) {
             cell_count[ marker_p->wil ]++;
         }
@@ -1764,18 +1762,18 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     DataFieldRestoreAccess(PField);
     
     /* scan number of elements need to be re-assigned */
-    points_needing_reassignment = 0;
-    cells_needing_reassignment = 0;
+    points_needing_reassignment64 = 0;
+    cells_needing_reassignment64 = 0;
     for (c=0; c<nel; c++) {
-        points_needing_reassignment += (long int)cell_count[c];
+        points_needing_reassignment64 += (long int)cell_count[c];
         if (cell_count[c] != 0) {
-            cells_needing_reassignment++;	
+            cells_needing_reassignment64++;
         }
     }
     
     /* check if we can exit early */
-    ierr = MPI_Allreduce( &cells_needing_reassignment, &cells_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
-    if (cells_needing_reassignment_g == 0) {
+    ierr = MPI_Allreduce( &cells_needing_reassignment64, &cells_needing_reassignment_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
+    if (cells_needing_reassignment_g64 == 0) {
 #if (MPPC_LOG_LEVEL >= 1)
         PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! No region re-assignment equired <global> !!\n");
 #endif
@@ -1784,36 +1782,35 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     }
 #if (MPPC_LOG_LEVEL >= 1)
     {
-        long int points_needing_reassignment_g;
-        PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g);
-        ierr = MPI_Allreduce( &points_needing_reassignment, &points_needing_reassignment_g, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
-        PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g);
+        long int points_needing_reassignment_g64;
+        
+        ierr = MPI_Allreduce( &points_needing_reassignment64, &points_needing_reassignment_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
+        PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D cells <global> !!\n",cells_needing_reassignment_g64);
+        PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  !! Region re-assignment required for %D points <global> !!\n",points_needing_reassignment_g64);
     }
 #endif
     
-    
-    
     /* create sorted list */
     ierr = PetscMalloc(sizeof(PetscInt)*(nel+1),&pcell_list);CHKERRQ(ierr);
-    ierr = PetscMalloc(sizeof(PSortCtx)*(npoints),&plist);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PSortCtx)*(npoints32),&plist);CHKERRQ(ierr);
     
     DataBucketGetDataFieldByName(db, MPntStd_classname,&PField);
     DataFieldGetAccess(PField);
-    for (p=0; p<npoints; p++) {
+    for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
         
-        DataFieldAccessPoint(PField,p,(void**)&marker_p);
-        plist[p].point_index = p;
-        plist[p].cell_index  = marker_p->wil;
+        DataFieldAccessPoint(PField,p32,(void**)&marker_p);
+        plist[p32].point_index = (PetscInt)p32;
+        plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
     
-    sort_PSortCx((int)npoints,plist);
+    sort_PSortCx(npoints32,plist);
     
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
-    for (p=0; p<npoints; p++) {
-        pcell_list[ plist[p].cell_index ]++;
+    for (p32=0; p32<npoints32; p32++) {
+        pcell_list[ plist[p32].cell_index ]++;
     }
     
     /* create offset list */
@@ -1828,6 +1825,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     patch_extend = 1;
     
     PetscTime(&t0);
+    npoints = (PetscInt)npoints32;
     ierr = apply_mppc_region_assignment_v2(
                                            nel, cell_count, pcell_list,
                                            npoints, plist,
