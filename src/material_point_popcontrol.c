@@ -228,7 +228,7 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
         patch_points[p].sep = sep;
     }
     
-    sort_NNSortCx(point_count,patch_points);
+    sort_NNSortCx((int)point_count,patch_points);
     
     *idx = 0;
     
@@ -870,7 +870,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     }
     DataFieldRestoreAccess(PField);
     
-    sort_PSortCx(npoints,plist);
+    sort_PSortCx((int)npoints,plist);
     
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
@@ -1466,7 +1466,7 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
     }
     DataFieldRestoreAccess(PField);
     
-    sort_PSortCx(npoints,plist);
+    sort_PSortCx((int)npoints,plist);
     
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
@@ -1807,7 +1807,7 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     }
     DataFieldRestoreAccess(PField);
     
-    sort_PSortCx(npoints,plist);
+    sort_PSortCx((int)npoints,plist);
     
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
