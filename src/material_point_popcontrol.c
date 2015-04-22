@@ -929,7 +929,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBool reverse_order_removal)
 {
     PetscInt        *cell_count,count;
-    int             p,npoints;
+    int             p32,npoints32;
     PetscInt        c,nel,nen;
     const PetscInt  *elnidx;
     DataField       PField;
@@ -947,15 +947,15 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     ierr = PetscMalloc( sizeof(PetscInt)*(nel),&cell_count );CHKERRQ(ierr);
     ierr = PetscMemzero( cell_count, sizeof(PetscInt)*(nel) );CHKERRQ(ierr);
     
-    DataBucketGetSizes(db,&npoints,NULL,NULL);
+    DataBucketGetSizes(db,&npoints32,NULL,NULL);
     
     /* compute number of points per cell */
     DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
     DataFieldGetAccess(PField);
-    for (p=0; p<npoints; p++) {
+    for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
         
-        DataFieldAccessPoint(PField,p,(void**)&marker_p);
+        DataFieldAccessPoint(PField,p32,(void**)&marker_p);
         if (marker_p->wil < 0) { continue; }
         
         cell_count[ marker_p->wil ]++;
@@ -971,7 +971,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     }
     
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %d cells with points > np_upper (%d) \n", count, np_upper);
+    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  %D cells with points > np_upper (%D) \n", count, np_upper);
 #endif
     
     
@@ -986,18 +986,18 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     if (!reverse_order_removal) {
         /* remove points from cells with excessive number */
         DataFieldGetAccess(PField);
-        for (p=0; p<npoints; p++) {
+        for (p32=0; p32<npoints32; p32++) {
             MPntStd *marker_p;
             int wil;
             
-            DataFieldAccessPoint(PField,p,(void**)&marker_p);
+            DataFieldAccessPoint(PField,p32,(void**)&marker_p);
             wil = marker_p->wil;
             
-            if (cell_count[wil] > np_upper) {
-                DataBucketRemovePointAtIndex(db,p);
+            if (cell_count[wil] > (int)np_upper) {
+                DataBucketRemovePointAtIndex(db,p32);
                 
-                DataBucketGetSizes(db,&npoints,0,0); /* you need to update npoints as the list size decreases! */
-                p--; /* check replacement point */
+                DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
+                p32--; /* check replacement point */
                 cell_count[wil]--;
             }
         }
@@ -1033,18 +1033,18 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
             
             remove = 0;
             
-            DataBucketGetSizes(db,&npoints,0,0); // you need to update npoints as the list size decreases! //
+            DataBucketGetSizes(db,&npoints32,0,0); // you need to update npoints as the list size decreases! //
             
             DataFieldGetAccess(PField);
-            for (p=npoints-1; p>=0; p--) {
+            for (p32=npoints32-1; p32>=0; p32--) {
                 MPntStd *marker_p;
                 int wil;
                 
-                DataFieldAccessPoint(PField,p,(void**)&marker_p);
+                DataFieldAccessPoint(PField,p32,(void**)&marker_p);
                 wil = marker_p->wil;
                 
-                if (cell_count[wil] > np_upper) {
-                    DataBucketRemovePointAtIndex(db,p);
+                if (cell_count[wil] > (int)np_upper) {
+                    DataBucketRemovePointAtIndex(db,p32);
                     cell_count[wil]--;
                     
                     remove = 1;
