@@ -280,7 +280,7 @@ PetscErrorCode apply_mppc_nn_patch(
                                    PetscInt ncells, PetscInt pcell_list[],
                                    PSortCtx plist[],
                                    PetscInt np_lower,
-                                   PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar perturb,DM da,DataBucket db)
+                                   PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscReal perturb,DM da,DataBucket db)
 {
     PetscInt        np_per_cell_max,mx,my,mz;
     PetscInt        c,i,j,k,cell_index_i,cell_index_j,cell_index_k,cidx2d,point_count,points_per_patch;
@@ -444,7 +444,7 @@ PetscErrorCode apply_mppc_nn_patch(
         /* create trial coordinates - find closest point */
         {
             PetscInt Nxp[NSD],pi,pj,pk,k;
-            PetscScalar dxi,deta,dzeta;
+            PetscReal dxi,deta,dzeta;
             PetscInt marker_index;
             
             Nxp[0] = nxp;
@@ -557,7 +557,7 @@ PetscErrorCode apply_mppc_nn_patch2(
                                     PetscInt ncells, PetscInt pcell_list[],
                                     PetscInt np, PSortCtx plist[],
                                     PetscInt np_lower,
-                                    PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar perturb,DM da,DataBucket db)
+                                    PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscReal perturb,DM da,DataBucket db)
 {
     PetscInt        np_per_cell_max,mx,my,mz;
     PetscInt        c,i,j,k,cell_index_i,cell_index_j,cell_index_k,cidx2d,point_count,points_per_patch;
@@ -716,7 +716,7 @@ PetscErrorCode apply_mppc_nn_patch2(
         /* create trial coordinates - find closest point */
         {
             PetscInt Nxp[NSD],pi,pj,pk,k;
-            PetscScalar dxi,deta,dzeta;
+            PetscReal dxi,deta,dzeta;
             PetscInt marker_index;
             
             Nxp[0] = nxp;
@@ -833,7 +833,7 @@ PetscErrorCode apply_mppc_nn_patch2(
  */
 #undef __FUNCT__
 #define __FUNCT__ "MPPC_NearestNeighbourPatch"
-PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar pertub,DM da,DataBucket db)
+PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscReal pertub,DM da,DataBucket db)
 {
     PetscInt        *pcell_list;
     PSortCtx        *plist;
@@ -1071,7 +1071,7 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 {
     PetscErrorCode ierr;
     PetscInt       np_lower,np_upper,patch_extent,nxp,nyp,nzp;
-    PetscScalar    perturb;
+    PetscReal      perturb;
     PetscBool      flg;
     DataBucket     db;
     PetscBool      reverse_order_removal;
@@ -1094,7 +1094,7 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
     
     perturb = 0.1;
-    ierr = PetscOptionsGetScalar(NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
     patch_extent = 1;
     ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
     
