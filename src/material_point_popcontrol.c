@@ -103,10 +103,10 @@ int sort_CompareNNSortCtx(const void *dataA,const void *dataB)
         return 0;
     }
 }
-void sort_NNSortCx(const PetscInt _np, NNSortCtx list[])
+void sort_NNSortCx(const int np32, NNSortCtx list[])
 {
     size_t np;
-    np = (size_t)_np;
+    np = (size_t)np32;
     qsort( list, np, sizeof(NNSortCtx), sort_CompareNNSortCtx );
 }
 
