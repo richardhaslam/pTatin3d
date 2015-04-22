@@ -1000,7 +1000,7 @@ PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv)
 
 #undef __FUNCT__
 #define __FUNCT__ "DataExTopologyGetNeighbours"
-PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscInt *neigh[])
+PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscMPIInt *neigh[])
 {
 	PetscFunctionBegin;
 	if (n)     { *n     = de->n_neighbour_procs; }
