@@ -66,17 +66,17 @@ int sort_ComparePSortCtx(const void *dataA,const void *dataB)
         return 0;
     }
 }
-void sort_PSortCx(const int _np, PSortCtx list[])
+void sort_PSortCx(const int np32, PSortCtx list[])
 {
     PetscLogDouble t0,t1;
     size_t np;
     
-    np = (size_t)_np;
+    np = (size_t)np32;
     PetscTime(&t0);
     qsort( list, np, sizeof(PSortCtx), sort_ComparePSortCtx );
     PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PETSC_COMM_WORLD,"[LOG]  sort_PSortCx [npoints = %d] -> qsort %1.4e (sec)\n", _np,t1-t0 );
+    PetscPrintf(PETSC_COMM_WORLD,"[LOG]  sort_PSortCx [npoints = %d] -> qsort %1.4e (sec)\n", np32,t1-t0 );
 #endif
 }
 
@@ -1850,8 +1850,8 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
 {
     PetscInt        *pcell_list;
     PSortCtx        *plist;
-    PetscInt        p,npoints;
-    int             npoints32;
+    PetscInt        npoints;
+    int             p32,npoints32;
     PetscInt        tmp,c,count;
     const PetscInt  *elnidx;
     PetscInt        nel,nen;
@@ -1871,21 +1871,21 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
     DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
     DataFieldGetAccess(PField);
     DataFieldVerifyAccess( PField,sizeof(MPntStd));
-    for (p=0; p<npoints; p++) {
+    for (p32=0; p32<npoints32; p32++) {
         MPntStd *marker_p;
         
-        DataFieldAccessPoint(PField,p,(void**)&marker_p);
-        plist[p].point_index = p;
-        plist[p].cell_index  = marker_p->wil;
+        DataFieldAccessPoint(PField,p32,(void**)&marker_p);
+        plist[p32].point_index = (PetscInt)p32;
+        plist[p32].cell_index  = (PetscInt)marker_p->wil;
     }
     DataFieldRestoreAccess(PField);
     
-    sort_PSortCx(npoints,plist);
+    sort_PSortCx(npoints32,plist);
     
     /* sum points per cell */
     ierr = PetscMemzero( pcell_list,sizeof(PetscInt)*(nel+1) );CHKERRQ(ierr);
-    for (p=0; p<npoints; p++) {
-        pcell_list[ plist[p].cell_index ]++;
+    for (p32=0; p32<npoints32; p32++) {
+        pcell_list[ plist[p32].cell_index ]++;
     }
     
     /* create offset list */
@@ -1897,8 +1897,8 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
     }
     pcell_list[c] = count;
     
-    *_np = (PetscInt)npoints;
-    *_nc = (PetscInt)nel;
+    *_np = npoints;
+    *_nc = nel;
     *_plist      = plist;
     *_pcell_list = pcell_list;
     
