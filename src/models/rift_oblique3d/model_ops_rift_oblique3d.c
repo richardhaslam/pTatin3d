@@ -67,31 +67,29 @@ PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *
 PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	PetscBool flg;
-	RheologyConstants *rheology;
-	DataBucket materialconstants = c->material_constants;
-	PetscBool nondim,use_energy;
-	PetscScalar dh_vx;
-	PetscInt regionidx;
-	PetscReal cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
-	PetscReal preexpA,Ascale,entalpy,Vmol,nexp,Tref;
-	PetscInt nlayers;
-	
+	RheologyConstants      *rheology;
+	PetscBool      flg;
+	DataBucket     materialconstants = c->material_constants;
+	PetscBool      nondim,use_energy;
+	PetscScalar    dh_vx;
+	PetscInt       regionidx;
+	PetscReal      cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
+	PetscReal      preexpA,Ascale,entalpy,Vmol,nexp,Tref;
+	PetscInt       nlayers;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-
 	/* Temperature flag */
-	use_energy=PETSC_TRUE;
+	use_energy = PETSC_TRUE;
 	//    use_energy=PETSC_FALSE;
 	
 	/* set the default values of the material constant for this particular model */
 	/*scaling */
 	data->length_bar    = 100.0 * 1.0e3;
-	data->viscosity_bar = 1e26;
+	data->viscosity_bar = 1.0e26;
 	data->velocity_bar  = 1.0e-10;
 	data->dimensional   = PETSC_TRUE;
 	
@@ -111,13 +109,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_ha",&data->ha,&flg);CHKERRQ(ierr);
 	
 	/* notch geometry */
-	data->notch_type = 1;
-	data->notch_width = 20.0e3;
+	data->notch_type   = 1;
+	data->notch_width  = 20.0e3;
 	data->notch_height = 10.0e3;
 	data->notch_base = data->Ly - data->hc - data->notch_height;
-	data->dxn = 35.0e3; //half distance between notches when notch_type=2
-	data->dyn = 50.0e3;
-	data->beta = 0.0;
+	data->dxn    = 35.0e3; //half distance between notches when notch_type=2
+	data->dyn    = 50.0e3;
+	data->beta   = 0.0;
 	data->damage = 0.1;
 	data->buffer = 50e3;
  	ierr = PetscOptionsGetInt(NULL,"-model_Rift_oblique3d_notch_type",&data->notch_type,&flg);CHKERRQ(ierr);
@@ -133,8 +131,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	/* velocity boundary condition geometry */
 	data->hvbx1 = 125.0e3;
 	data->hvbx2 = 115.0e3;
-	data->vx_up = 0.5*cm_per_yer2m_per_sec;
-	data->vybottom = 2.*data->vx_up * data->Ly / data->Lx; 
+	data->vx_up = 0.5 * cm_per_yer2m_per_sec;
+	data->vybottom = 2.0 * data->vx_up * data->Ly / data->Lx;
 	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
@@ -188,17 +186,17 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		nlayers = data->thermalparams.nlayers;
 		//data->Ttop = data->thermalparams.ttop[nlayers-1];
 		//data->Tbottom = data->thermalparams.ttop[nlayers-1] + ( data->thermalparams.hp[nlayers-1]* pow(data->thermalparams.thick[nlayers-1],2) / 2.0 + data->thermalparams.qbase[nlayers-1] * data->thermalparams.thick[nlayers-1] ) / data->thermalparams.cond[nlayers-1];
-		data->Ttop=0;
-		data->Tbottom=1330;
+		data->Ttop    = 0.0;
+		data->Tbottom = 1330.0;
 	}
 	
 	/* rheology parameters */
-	rheology                = &c->rheology_constants;
-	rheology->rheology_type = RHEOLOGY_VP_STD;
+	rheology                 = &c->rheology_constants;
+	rheology->rheology_type  = RHEOLOGY_VP_STD;
 	rheology->nphases_active = 3;
 	rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
-	rheology->eta_upper_cutoff_global = 1.e+28;
-	rheology->eta_lower_cutoff_global = 1.e+19;
+	rheology->eta_upper_cutoff_global       = 1.0e+28;
+	rheology->eta_lower_cutoff_global       = 1.0e+19;
 	data->runmises = PETSC_FALSE;
 	
 	//    ierr = PetscOptionsGetInt(NULL,"-model_Rift_oblique3d_param2",&data->param2,&flg);CHKERRQ(ierr);
@@ -208,54 +206,48 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	/* PHASE 0, ASTHENOSPHERE */
 	regionidx = 0;
-	if(use_energy == PETSC_FALSE){
-		//    if(PETSC_TRUE){
-		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
-																						DENSITY_CONSTANT);
-	}
-	else {
+	if (use_energy == PETSC_FALSE) {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	} else {
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 	}
 	
 	//VISCOSITY PARAMETERS - wet olivine karato
 	preexpA  = 1.393e-14;
-	Ascale  = 1.;
-	entalpy = 430.e3;
-	Vmol    = 15.e-6;
-	nexp    = 3.;
-	Tref    = 273.;
+	Ascale   = 1.0;
+	entalpy  = 430.e3;
+	Vmol     = 15.0e-6;
+	nexp     = 3.0;
+	Tref     = 273.0;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etaa);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 	
 	//DENSITY PARAMETERS
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.e-5,0.);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhom,2.0e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoa);
 	
 	//PLASTICITY PARAMETERS
-	phi1_rad=M_PI*15./180.;
-	phi2_rad=M_PI*2./180.;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
-	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
+	phi1_rad = M_PI * 15.0/180.0;
+	phi2_rad = M_PI * 2.0/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	/* PHASE 1, MANTLE LITHOSPHERE */
 	regionidx = 1;
-	if(use_energy == PETSC_FALSE){
-		//    if(PETSC_TRUE){
-		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
-																						DENSITY_CONSTANT);
-	}
-	else {
+	if (use_energy == PETSC_FALSE) {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	} else {
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 	}
 	
 	//VISCOSITY PARAMETERS - wet olivine x 5, karato
 	preexpA = 1.393e-14;
-	Ascale  = 5.;
-	entalpy = 430.e3;
-	Vmol    = 15.e-6;
-	nexp    = 3.;
-	Tref    = 273.;
+	Ascale  = 5.0;
+	entalpy = 430.0e3;
+	Vmol    = 15.0e-6;
+	nexp    = 3.0;
+	Tref    = 273.0;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etam);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 	
@@ -264,42 +256,39 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
 	
 	//PLASTICITY PARAMETERS
-	phi1_rad=M_PI*15./180.;
-	phi2_rad=M_PI*2./180.;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
-	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
+	phi1_rad = M_PI * 15.0/180.0;
+	phi2_rad = M_PI * 2.0/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	/* PHASE 2, CRUST / UPPER LITHOSPHERE */
 	regionidx = 2;
-	if(use_energy == PETSC_FALSE){
-		//    if(PETSC_TRUE){
-		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,
-																						DENSITY_CONSTANT);
-	}
-	else {
+	if (use_energy == PETSC_FALSE) {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	} else {
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 	}
 	
 	//VISCOSITY PARAMETERS
 	preexpA = 8.5737e-28;
-	Ascale  = 1.;
-	entalpy = 223.e3;
-	Vmol    = 0.e-6;
-	nexp    = 4.;
-	Tref    = 273.;
+	Ascale  = 1.0;
+	entalpy = 223.0e3;
+	Vmol    = 0.0e-6;
+	nexp    = 4.0;
+	Tref    = 273.0;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 	
 	//DENSITY PARAMETERS
-	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.e-5,0.0);
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.0e-5,0.0);
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
 	
 	//PLASTICITY PARAMETERS
-	phi1_rad=M_PI*15./180.;
-	phi2_rad=M_PI*2./180.;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
-	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
+	phi1_rad = M_PI * 15.0/180.0;
+	phi2_rad = M_PI * 2.0/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	
@@ -312,7 +301,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	/* scaling */
 	nondim = PETSC_FALSE;
 	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_nondimensional",&nondim,NULL);CHKERRQ(ierr);
-	if (nondim){
+	if (nondim) {
 		data->dimensional = PETSC_FALSE;
 	} else {
 		ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
@@ -322,7 +311,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	/* compute vxdown */
 	dh_vx = data->hvbx1 - data->hvbx2;
-	data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2) / (data->ha - dh_vx/2);
+	data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2.0) / (data->ha - dh_vx/2.0);
 	
 	/* reports before scaling */
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  input: -model_Rift_oblique3d_Lx : %+1.4e [SI]\n", data->Lx );
@@ -361,11 +350,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		data->hm = data->hm / data->length_bar;
 		data->ha = data->ha / data->length_bar;
 		//scale velocity
-		data->vx_up   = data->vx_up  /data->velocity_bar;
-		data->vx_down = data->vx_down/data->velocity_bar;
+		data->vx_up    = data->vx_up  /data->velocity_bar;
+		data->vx_down  = data->vx_down/data->velocity_bar;
 		data->vybottom = data->vybottom/data->velocity_bar;
-		data->hvbx1   = data->hvbx1/data->length_bar;
-		data->hvbx2   = data->hvbx2/data->length_bar;
+		data->hvbx1    = data->hvbx1/data->length_bar;
+		data->hvbx2    = data->hvbx2/data->length_bar;
 		//scale rho
 		data->rhoc = data->rhoc/data->density_bar;
 		data->rhom = data->rhom/data->density_bar;
@@ -395,7 +384,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
 	
 	/* USE ENERGY EQUATION */
-	if(use_energy){
+	if (use_energy) {
 		ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
 	}
 	
@@ -408,15 +397,15 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	PetscErrorCode ierr;
-	PetscBool use_energy;
-	PhysCompStokes     stokes;
-	DM stokes_pack,dau,dap;
+	PetscBool       use_energy;
+	PhysCompStokes  stokes;
+	DM              stokes_pack,dau,dap;
 	DMDAVecTraverse3d_InterpCtx IntpCtx;
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
-	Vec velocity,pressure;
-	PetscReal MeshMax[3],MeshMin[3],height,length,vxl,vxr,vybottom;
-	PetscBool use_initial_up_field = PETSC_FALSE;
+	Vec            velocity,pressure;
+	PetscReal      MeshMax[3],MeshMin[3],height,length,vxl,vxr,vybottom;
+	PetscBool      use_initial_up_field = PETSC_FALSE;
+	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -438,7 +427,7 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 		ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
 		height = MeshMax[1] - MeshMin[1];
 		length = MeshMax[0] - MeshMin[0];
-		vybottom = 2.*data->vx_up * height / length;
+		vybottom = 2.0*data->vx_up * height / length;
 		
 		ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(length),vxl,0.0);CHKERRQ(ierr);
 		ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
@@ -471,7 +460,6 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 		
 		ierr = DMDAVecTraverse3d(daT,temperature,0,DMDAVecTraverse_InitialThermalField3D,(void*)&data->thermalparams);CHKERRQ(ierr);
 	}
-	//    exit(1);
 	
 	PetscFunctionReturn(0);
 }
@@ -483,7 +471,6 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	PetscScalar    vxl,vxr,vybottom,zero;//,height,length;
 	PetscInt       vbc_type;
 	PetscErrorCode ierr;
-	//PetscReal MeshMin[3],MeshMax[3];//,avg[3];
 	DM stokes_pack,dau,dap;
 	
 	
@@ -493,7 +480,7 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 	
-	zero=0.;
+	zero=0.0;
 	//    vbc_type = 1; /* in / out flow condition on the sides */
 	vbc_type = 2; /* outflow condition on the sides, inflow condition on the base */
 	
@@ -549,9 +536,9 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 #define __FUNCT__ "BCListEvaluator_rift_oblique3dl"
 PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *value, void *data )
 {
-	PetscBool impose_dirichlet = PETSC_TRUE;
-	PetscScalar vx,dh_vx;
 	ModelRift_oblique3dCtx *datal = (ModelRift_oblique3dCtx*)data;
+	PetscBool   impose_dirichlet = PETSC_TRUE;
+	PetscScalar vx,dh_vx;
 	
 	PetscFunctionBegin;
 	
@@ -571,9 +558,9 @@ PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *
 #define __FUNCT__ "BCListEvaluator_rift_oblique3dr"
 PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *value, void *data )
 {
-	PetscBool impose_dirichlet = PETSC_TRUE;
-	PetscScalar vx,dh_vx;
 	ModelRift_oblique3dCtx *datal = (ModelRift_oblique3dCtx*)data;
+	PetscBool   impose_dirichlet = PETSC_TRUE;
+	PetscScalar vx,dh_vx;
 	
 	PetscFunctionBegin;
 	
@@ -594,7 +581,7 @@ PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *
 PetscErrorCode ModelApplyBoundaryCondition_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	PetscBool use_energy;
+	PetscBool      use_energy;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -627,8 +614,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift_oblique3d(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyBoundaryConditionMG_Rift_oblique3d"
 PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
-	PetscInt n;
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
+	PetscInt       n;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -636,7 +623,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList b
 	
 	for (n=0; n<nl; n++) {
 		ierr = ModelRift_oblique3d_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
-		
 	}	
 	
 	PetscFunctionReturn(0);
@@ -723,7 +709,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	PetscErrorCode ierr;
+	PetscErrorCode         ierr;
 	
 	PetscFunctionBegin;
 	
@@ -993,8 +979,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	PetscFunctionReturn(0);
 }
 
-
-
 #undef __FUNCT__
 #define __FUNCT__ "ModelOutput_Rift_oblique3d"
 PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
@@ -1004,6 +988,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	DataBucket       materialpoint_db;
 	PetscInt         Step,outFre;
 	PetscErrorCode   ierr;
+
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -1070,7 +1055,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	PetscErrorCode ierr;
+	PetscErrorCode         ierr;
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -1089,8 +1074,8 @@ PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 PetscErrorCode pTatinModelRegister_Rift_oblique3d(void)
 {
 	ModelRift_oblique3dCtx *data;
-	pTatinModel    m;
-	PetscErrorCode ierr;
+	pTatinModel            m;
+	PetscErrorCode         ierr;
 	
 	PetscFunctionBegin;
 	
