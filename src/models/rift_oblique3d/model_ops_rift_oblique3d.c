@@ -961,7 +961,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 {
 	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
 	PetscReal        step;
-	PetscReal        MeshMin[3],MeshMax[3],avg[3];
+	PetscReal        MeshMin[3],MeshMax[3],avg[3],height,length;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
 	Vec              velocity,pressure;
@@ -985,7 +985,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	
 	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
 	ierr = DMDAComputeCoordinateAverageBoundaryFace(dav,NORTH_FACE,avg);CHKERRQ(ierr);
-	data->vybottom = avg[1] - MeshMin[1];
+
+    height = avg[1] - MeshMin[1];
+    length = MeshMax[0] - MeshMin[0];
+    data->vybottom = 2.0 * data->vx_up * height / length;
 	
 	PetscFunctionReturn(0);
 }
