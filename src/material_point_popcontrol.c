@@ -67,21 +67,23 @@ int sort_ComparePSortCtx(const void *dataA,const void *dataB)
 		return 0;
 	}
 }
-void sort_PSortCx(const PetscInt np, PSortCtx list[])
+void sort_PSortCx(const int _np, PSortCtx list[])
 {
 	PetscLogDouble t0,t1;
+    size_t np;
 	
+    np = (size_t)_np;
 	PetscTime(&t0);
 	qsort( list, np, sizeof(PSortCtx), sort_ComparePSortCtx );
 	PetscTime(&t1);
 #if (MPPC_LOG_LEVEL >= 1)
-	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  sort_PSortCx [npoints = %ld] -> qsort %1.4e (sec)\n", np,t1-t0 );
+	PetscPrintf(PETSC_COMM_WORLD,"[LOG]  sort_PSortCx [npoints = %d] -> qsort %1.4e (sec)\n", _np,t1-t0 );
 #endif
 }
 
 
 typedef struct _p_NNSortCtx {
-	long int point_index;
+	PetscInt point_index;
 	double   coor[3];
 	double   sep;
 } NNSortCtx;
@@ -102,8 +104,10 @@ int sort_CompareNNSortCtx(const void *dataA,const void *dataB)
 		return 0;
 	}
 }
-void sort_NNSortCx(const PetscInt np, NNSortCtx list[])
+void sort_NNSortCx(const PetscInt _np, NNSortCtx list[])
 {
+    size_t np;
+    np = (size_t)_np;
 	qsort( list, np, sizeof(NNSortCtx), sort_CompareNNSortCtx );
 }
 
@@ -111,11 +115,11 @@ void sort_NNSortCx(const PetscInt np, NNSortCtx list[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "_find_min"
-PetscErrorCode _find_min(double pos[],int point_count,double patch_point_coords[],int *idx)
+PetscErrorCode _find_min(double pos[],PetscInt point_count,double patch_point_coords[],PetscInt *idx)
 {
-	int    p;
-	double dx,dy,dz;
-	double sep,min_sep;
+	PetscInt p;
+	double   dx,dy,dz;
+	double   sep,min_sep;
 	
 	PetscFunctionBegin;
 
@@ -148,11 +152,11 @@ static inline double AVD3dDistanceTest(double p0[],double p1[],double p2[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "_find_min_fast"
-PetscErrorCode _find_min_fast(double pos[],int point_count,double patch_point_coords[],int *idx)
+PetscErrorCode _find_min_fast(double pos[],PetscInt point_count,double patch_point_coords[],PetscInt *idx)
 {
-	int    p,closest;
-	double dist;
-	double *p1,*p2;
+	PetscInt p,closest;
+	double   dist;
+	double   *p1,*p2;
 	
 	PetscFunctionBegin;
 	
@@ -178,11 +182,11 @@ PetscErrorCode _find_min_fast(double pos[],int point_count,double patch_point_co
 
 #undef __FUNCT__  
 #define __FUNCT__ "_find_min_sep_brute_force"
-PetscErrorCode _find_min_sep_brute_force(double pos[],int point_count,NNSortCtx patch_points[],int *idx)
+PetscErrorCode _find_min_sep_brute_force(double pos[],PetscInt point_count,NNSortCtx patch_points[],PetscInt *idx)
 {
-	int    p;
-	double dx,dy,dz;
-	double sep,min_sep;
+	PetscInt p;
+	double   dx,dy,dz;
+	double   sep,min_sep;
 	
 	PetscFunctionBegin;
 	
@@ -209,11 +213,11 @@ PetscErrorCode _find_min_sep_brute_force(double pos[],int point_count,NNSortCtx 
 
 #undef __FUNCT__  
 #define __FUNCT__ "_find_min_sep_qsort"
-PetscErrorCode _find_min_sep_qsort(double pos[],int point_count,NNSortCtx patch_points[],int *idx)
+PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx patch_points[],PetscInt *idx)
 {
-	int    p;
-	double dx,dy,dz;
-	double sep;
+	PetscInt p;
+	double   dx,dy,dz;
+	double   sep;
 	
 	PetscFunctionBegin;
 	
@@ -275,7 +279,7 @@ _find_min_fast:  time_nn           = 2.9685e+00 (sec)
 #define __FUNCT__ "apply_mppc_nn_patch"
 PetscErrorCode apply_mppc_nn_patch(
 														PetscInt ncells, PetscInt pcell_list[],
-														PetscInt np, PSortCtx plist[],
+														PSortCtx plist[],
 														PetscInt np_lower,
 														PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscScalar perturb,DM da,DataBucket db)
 {
@@ -289,10 +293,10 @@ PetscErrorCode apply_mppc_nn_patch(
 	PetscScalar     el_coords[Q2_NODES_PER_EL_3D*NSD];
 	DM              cda;
 	DataField       PField;
-	int             Lnew,npoints_current,npoints_init;
+	int             Lnew,nx3,npoints_current,npoints_init;
 	long int        cells_needing_new_points,cells_needing_new_points_g;
 	double          *patch_point_coords;
-	int             *patch_point_idx;
+	PetscInt        *patch_point_idx;
 	PetscLogDouble  t0_nn,t1_nn,time_nn = 0.0;
 	PetscErrorCode  ierr;
 	
@@ -304,7 +308,11 @@ PetscErrorCode apply_mppc_nn_patch(
 	/* get mx,my from the da */
 	ierr = DMDAGetLocalSizeElementQ2(da,&mx,&my,&mz);CHKERRQ(ierr);
 	
+    DataBucketGetSizes(db,&npoints_init,NULL,NULL);
+	npoints_current = npoints_init;
+    
 	/* find max np_per_cell I will need */
+    nx3 = (int)(nxp * nyp * nzp);
 	np_per_cell_max = 0;
 	cells_needing_new_points = 0;
 	DataBucketGetSizes(db,&Lnew,NULL,NULL);
@@ -345,7 +353,7 @@ PetscErrorCode apply_mppc_nn_patch(
 			np_per_cell_max = points_per_patch;
 		}
 		
-		Lnew = Lnew + nxp * nyp * nzp;
+		Lnew = Lnew + nx3;
 		cells_needing_new_points++;
 	}
 	
@@ -362,7 +370,7 @@ PetscErrorCode apply_mppc_nn_patch(
 	DataBucketSetSizes(db,Lnew,-1);
 
 	ierr = PetscMalloc(sizeof(double)*3*np_per_cell_max,&patch_point_coords);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(int)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
+	ierr = PetscMalloc(sizeof(PetscInt)*np_per_cell_max,&patch_point_idx);CHKERRQ(ierr);
 	
   /* setup for coords */
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
@@ -371,8 +379,6 @@ PetscErrorCode apply_mppc_nn_patch(
 	
 	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
 	
-	npoints_init    = np;
-	npoints_current = np;
 	for (c=0; c<nel; c++) {
 		PetscInt points_per_cell;
 		
@@ -387,7 +393,7 @@ PetscErrorCode apply_mppc_nn_patch(
 		
 		/* load points */
 		ierr = PetscMemzero( patch_point_coords, sizeof(double)*3*np_per_cell_max );CHKERRQ(ierr);
-		ierr = PetscMemzero( patch_point_idx, sizeof(int)*np_per_cell_max );CHKERRQ(ierr);
+		ierr = PetscMemzero( patch_point_idx, sizeof(PetscInt)*np_per_cell_max );CHKERRQ(ierr);
 		
 		point_count = 0;
 		
@@ -454,9 +460,9 @@ PetscErrorCode apply_mppc_nn_patch(
 			for (pk=0; pk<Nxp[2]; pk++) {
 				for (pj=0; pj<Nxp[1]; pj++) {
 					for (pi=0; pi<Nxp[0]; pi++) {
-						int idx;
-						double xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
-						MPntStd *marker_p,*marker_nearest;
+						PetscInt idx;
+						double   xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+						MPntStd  *marker_p,*marker_nearest;
 						
 						xip[0] = -1.0 + dxi    * (pi + 0.5);
 						xip[1] = -1.0 + deta   * (pj + 0.5);
@@ -499,19 +505,19 @@ PetscErrorCode apply_mppc_nn_patch(
 						
 						marker_index = patch_point_idx[ idx ];
 						
-						DataBucketCopyPoint(db,marker_index, db,npoints_current);
+						DataBucketCopyPoint(db,(int)marker_index, db,npoints_current);
 						
 						DataFieldGetAccess(PField);
 						
 						DataFieldAccessPoint(PField,npoints_current,(void**)&marker_p);
-						DataFieldAccessPoint(PField,marker_index,(void**)&marker_nearest);
+						DataFieldAccessPoint(PField,(int)marker_index,(void**)&marker_nearest);
 						
 						marker_p->phase   = marker_nearest->phase;
 						
 						marker_p->coor[0] = xp_rand[0];
 						marker_p->coor[1] = xp_rand[1];
 						marker_p->coor[2] = xp_rand[2];
-						marker_p->wil     = c;
+						marker_p->wil     = (int)c;
 						marker_p->xi[0]   = xip_rand[0];
 						marker_p->xi[1]   = xip_rand[1];
 						marker_p->xi[2]   = xip_rand[2];
@@ -860,8 +866,8 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 		MPntStd *marker_p;
 		
 		DataFieldAccessPoint(PField,p,(void**)&marker_p);
-		plist[p].point_index = p;
-		plist[p].cell_index  = marker_p->wil;
+		plist[p].point_index = (PetscInt)p;
+		plist[p].cell_index  = (PetscInt)marker_p->wil;
 	}
 	DataFieldRestoreAccess(PField);
 	
@@ -885,7 +891,8 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	cells_np_lower = 0;
 	cells_np_upper = 0;
 	for (c=0; c<nel; c++) {
-		int points_per_cell = pcell_list[c+1] - pcell_list[c];
+		PetscInt points_per_cell = pcell_list[c+1] - pcell_list[c];
+        
 		if (points_per_cell <= np_lower) { cells_np_lower++; }
 		if (points_per_cell > np_upper) { cells_np_upper++; }
 	}
@@ -898,7 +905,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
 	PetscTime(&t0);
 	ierr = apply_mppc_nn_patch(
 											nel, pcell_list,
-											npoints, plist,
+											plist,
 											np_lower,
 											patch_extend, nxp,nyp,nzp, pertub, da,db);CHKERRQ(ierr);
 	PetscTime(&t1);
