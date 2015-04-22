@@ -807,12 +807,12 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		phase = 0;
 		eta=data->etaa;
 		rho=data->rhoa;
-		if (position[1] > data->ha && position[1] < (data->ha+data->hm) ) {
+		if ((position[1] > data->ha) && (position[1] < (data->ha+data->hm))) {
 			phase = 1;
 			eta=data->etam;
 			rho=data->rhom;
 		}
-		if (position[1]>data->ha+data->hm ) {
+		if (position[1] > (data->ha+data->hm)) {
 			phase = 2;
 			eta=data->etac;
 			rho=data->rhoc;
@@ -824,23 +824,23 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		plastic_strain = 0.0;
 		
 		if (notch_type == 1 ) {
-			if (xp_dimensional >= x_center - 0.5*notch_width && xp_dimensional <= x_center + 0.5*notch_width) {
-				if(yp_dimensional>= ha_dimensional+hm_dimensional && yp_dimensional< ha_dimensional+hm_dimensional +notch_height) {
+			if ((xp_dimensional >= x_center - 0.5*notch_width) && (xp_dimensional <= x_center + 0.5*notch_width)) {
+				if ((yp_dimensional >= ha_dimensional + hm_dimensional) && (yp_dimensional < ha_dimensional + hm_dimensional + notch_height)) {
 					plastic_strain = 1.0;
 				}
 			}
 		}
 		
 		if (notch_type == 2 ) {
-			if (xp_dimensional >= x_center - data->dxn - 0.5*notch_width && xp_dimensional <= x_center - data->dxn + 0.5*notch_width) {
-				if(yp_dimensional <= ha_dimensional+hm_dimensional && yp_dimensional> ha_dimensional+hm_dimensional - notch_height) {
+			if ((xp_dimensional >= x_center - data->dxn - 0.5*notch_width) && (xp_dimensional <= x_center - data->dxn + 0.5*notch_width)) {
+				if ((yp_dimensional <= ha_dimensional + hm_dimensional) && (yp_dimensional > ha_dimensional + hm_dimensional - notch_height)) {
 					if (zp_dimensional <= 0.2*z_center ) {
 						plastic_strain = 1.0;
 					}
 				}
 			}
-			if (xp_dimensional >= x_center + data->dxn - 0.5*notch_width && xp_dimensional <= x_center + data->dxn + 0.5*notch_width) {
-				if(yp_dimensional <= ha_dimensional+hm_dimensional && yp_dimensional> ha_dimensional+hm_dimensional - notch_height) {
+			if ((xp_dimensional >= x_center + data->dxn - 0.5*notch_width) && (xp_dimensional <= x_center + data->dxn + 0.5*notch_width)) {
+				if ((yp_dimensional <= ha_dimensional + hm_dimensional) && (yp_dimensional > ha_dimensional + hm_dimensional - notch_height)) {
 					if (zp_dimensional >= 1.8*z_center) {
 						plastic_strain = 1.0;
 					}
@@ -858,23 +858,26 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 			dam = data->damage; //maximum plastic strain for damage zone
 			beta =  convert * beta; // convert deg to rad
 
-			if(yp_dimensional < (notch_base + notch_height) && yp_dimensional >= notch_base) {
+			if ((yp_dimensional < (notch_base + notch_height)) && (yp_dimensional >= notch_base)) {
 
 				/* apply damage noise in the central damage domain */
-				if (xp_dimensional >=  (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta)) && xp_dimensional <= (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta))) {
+				if ((xp_dimensional >=  (z_center - zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta))) &&
+                    (xp_dimensional <= (z_center - zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta)))) {
 					plastic_strain = dam*((float)rand()/(float)RAND_MAX);
 				}
 
 				/* apply damage noise in buffer zones (arctan function) on both sides of the central damaged domain */
-				if (xp_dimensional >=  (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta) - buff/cos(beta)) && xp_dimensional <= (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta)))  {
-										a = (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta));
-										b = (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta) - buff/cos(beta));
-										plastic_strain = atan((xp_dimensional-b)/(a-b)*(M_PI/2))*dam*((float)rand()/(float)RAND_MAX);
+				if (xp_dimensional >= (z_center - zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta) - buff/cos(beta)) &&
+                    xp_dimensional <= (z_center - zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta)))  {
+                    a = (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta));
+                    b = (z_center-zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta) - buff/cos(beta));
+                    plastic_strain = atan((xp_dimensional-b)/(a-b)*(M_PI/2))*dam*((float)rand()/(float)RAND_MAX);
 				}
-				if (xp_dimensional <=  (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta) + buff/cos(beta)) && xp_dimensional >= (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta)))  {
-										a = (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta));
-										b = (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta) + buff/cos(beta));
-										plastic_strain = atan((xp_dimensional-b)/(a-b)*(M_PI/2))*dam*((float)rand()/(float)RAND_MAX);
+				if ((xp_dimensional <= (z_center - zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta) + buff/cos(beta))) &&
+                    (xp_dimensional >= (z_center - zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta))))  {
+                    a = (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta));
+                    b = (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta) + buff/cos(beta));
+                    plastic_strain = atan((xp_dimensional-b)/(a-b)*(M_PI/2))*dam*((float)rand()/(float)RAND_MAX);
 				}
 			}
 		}
@@ -903,11 +906,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 			MPntStdGetField_global_coord(material_point_std,&position);
 
 			ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
-			if (position[1] > data->ha+data->hm) {
+			if (position[1] > (data->ha + data->hm)) {
 					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
 					H     = 0.9e-6/data->pressure_bar*data->time_bar;
 				}
-			if (position[1] < data->ha+data->hm) {
+			if (position[1] < (data->ha + data->hm)) {
 					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
 					H     = 0.0;
 				}
