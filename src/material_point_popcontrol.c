@@ -985,7 +985,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
             DataFieldAccessPoint(PField,p32,(void**)&marker_p);
             wil = marker_p->wil;
             
-            if (cell_count[wil] > (int)np_upper) {
+            if (cell_count[wil] > np_upper) {
                 DataBucketRemovePointAtIndex(db,p32);
                 
                 DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
@@ -1000,23 +1000,24 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
 /*
     if (reverse_order_removal) {
         DataFieldGetAccess(PField);
-        for (p=npoints-1; p>=0; p--) {
+        for (p32=npoints32-1; p32>=0; p32--) {
             MPntStd *marker_p;
             int wil;
             
-            DataFieldAccessPoint(PField,p,(void**)&marker_p);
+            DataFieldAccessPoint(PField,p32,(void**)&marker_p);
             wil = marker_p->wil;
             
             if (cell_count[wil] > np_upper) {
-                DataBucketRemovePointAtIndex(db,p);
+                DataBucketRemovePointAtIndex(db,p32);
                 
-                DataBucketGetSizes(db,&npoints,0,0); // you need to update npoints as the list size decreases! //
+                DataBucketGetSizes(db,&npoints32,0,0); // you need to update npoints as the list size decreases! //
                 cell_count[wil]--;
             }
         }
         DataFieldRestoreAccess(PField);
     }
 */
+/*
     if (reverse_order_removal) {
         int remove;
         
@@ -1035,7 +1036,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
                 DataFieldAccessPoint(PField,p32,(void**)&marker_p);
                 wil = marker_p->wil;
                 
-                if (cell_count[wil] > (int)np_upper) {
+                if (cell_count[wil] > np_upper) {
                     DataBucketRemovePointAtIndex(db,p32);
                     cell_count[wil]--;
                     
@@ -1045,8 +1046,39 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
             }
             DataFieldRestoreAccess(PField);
         }
-        
     }
+*/
+    
+    if (reverse_order_removal) {
+        MPntStd *mp_std;
+        int     wil;
+        
+        DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+        mp_std = PField->data;
+
+        for (p32=npoints32-1; p32>=0; p32--) {
+
+            wil = mp_std[p32].wil;
+            if (wil < 0) { continue; }
+
+            if (cell_count[wil] > np_upper) {
+                mp_std[p32].wil = -2;
+                cell_count[wil]--;
+            }
+        }
+        
+        for (p32=0; p32<npoints32; p32++) {
+            wil = mp_std[p32].wil;
+            if (wil == -2) {
+                
+				DataBucketRemovePointAtIndex(db,p32);
+				DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
+				p32--; /* check replacement point */
+                mp_std = PField->data;
+            }
+        }
+    }
+    
     
     PetscTime(&t1);
     
