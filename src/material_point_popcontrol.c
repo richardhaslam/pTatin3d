@@ -997,6 +997,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     }
     
     /* scan in reverse order so that most recent points added to list will be removed as a priority */
+/*
     if (reverse_order_removal) {
         DataFieldGetAccess(PField);
         for (p=npoints-1; p>=0; p--) {
@@ -1015,7 +1016,7 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
         }
         DataFieldRestoreAccess(PField);
     }
-
+*/
     if (reverse_order_removal) {
         int remove;
         
