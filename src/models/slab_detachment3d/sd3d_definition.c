@@ -368,7 +368,7 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
             InverseMappingDomain_3dQ2(tolerance,max_its,
                                       use_nonzero_guess,
                                       monitor,
-                                      (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
+                                      (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, (const PetscInt*)elnidx_u,
                                       1, &mp_std );
             
             point_on_edge = PETSC_FALSE;
@@ -411,7 +411,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
 {
 	SD3DCtx          *data = (SD3DCtx*)ctx;
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
 	DataBucket       materialconstants;
 	PhysCompStokes   stokes;
