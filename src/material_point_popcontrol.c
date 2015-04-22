@@ -66,10 +66,11 @@ int sort_ComparePSortCtx(const void *dataA,const void *dataB)
         return 0;
     }
 }
+
 void sort_PSortCx(const int np32, PSortCtx list[])
 {
     PetscLogDouble t0,t1;
-    size_t np;
+    size_t         np;
     
     np = (size_t)np32;
     PetscTime(&t0);
@@ -79,7 +80,6 @@ void sort_PSortCx(const int np32, PSortCtx list[])
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  sort_PSortCx [npoints = %d] -> qsort %1.4e (sec)\n", np32,t1-t0 );
 #endif
 }
-
 
 typedef struct _p_NNSortCtx {
     PetscInt point_index;
@@ -103,10 +103,11 @@ int sort_CompareNNSortCtx(const void *dataA,const void *dataB)
         return 0;
     }
 }
+
 void sort_NNSortCx(const int np32, NNSortCtx list[])
 {
     PetscLogDouble t0,t1;
-    size_t np;
+    size_t         np;
 
     np = (size_t)np32;
     PetscTime(&t0);
@@ -116,8 +117,6 @@ void sort_NNSortCx(const int np32, NNSortCtx list[])
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  sort_NNSortCx [npoints = %d] -> qsort %1.4e (sec)\n", np32,t1-t0 );
 #endif
 }
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "_find_min"
@@ -242,7 +241,6 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
     PetscFunctionReturn(0);
 }
 
-
 /*
  
  -std=gnu99 -O2 -Wall -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
@@ -279,8 +277,7 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
  [LOG]  npoints_current-2 = 4194304
  [LOG]  time(apply_mppc_nn_patch): 1.2710e+01 (sec)
  
- */
-
+*/
 #undef __FUNCT__
 #define __FUNCT__ "apply_mppc_nn_patch"
 PetscErrorCode apply_mppc_nn_patch(
@@ -335,17 +332,17 @@ PetscErrorCode apply_mppc_nn_patch(
         cell_index_i = cidx2d - cell_index_j * mx;
         
         points_per_patch = 0;
-        for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
-            for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
-                for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+        for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
+            for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
+                for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
                     
-                    if (i>=mx) { continue; }
-                    if (j>=my) { continue; }
-                    if (k>=mz) { continue; }
-                    if (i<0) { continue; }
-                    if (j<0) { continue; }
-                    if (k<0) { continue; }
+                    if (i >= mx) { continue; }
+                    if (j >= my) { continue; }
+                    if (k >= mz) { continue; }
+                    if (i < 0) { continue; }
+                    if (j < 0) { continue; }
+                    if (k < 0) { continue; }
                     
                     patch_cell_id = i + j * mx + k * mx*my;
                     
@@ -401,17 +398,17 @@ PetscErrorCode apply_mppc_nn_patch(
         point_count = 0;
         
         DataFieldGetAccess(PField);
-        for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
-            for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
-                for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+        for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
+            for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
+                for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
                     
-                    if (i>=mx) { continue; }
-                    if (j>=my) { continue; }
-                    if (k>=mz) { continue; }
-                    if (i<0) { continue; }
-                    if (j<0) { continue; }
-                    if (k<0) { continue; }
+                    if (i >= mx) { continue; }
+                    if (j >= my) { continue; }
+                    if (k >= mz) { continue; }
+                    if (i < 0) { continue; }
+                    if (j < 0) { continue; }
+                    if (k < 0) { continue; }
                     
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
@@ -447,9 +444,9 @@ PetscErrorCode apply_mppc_nn_patch(
         
         /* create trial coordinates - find closest point */
         {
-            PetscInt Nxp[NSD],pi,pj,pk,k;
+            PetscInt  Nxp[NSD],pi,pj,pk,k;
             PetscReal dxi,deta,dzeta;
-            PetscInt marker_index;
+            PetscInt  marker_index;
             
             Nxp[0] = nxp;
             Nxp[1] = nyp;
@@ -527,15 +524,12 @@ PetscErrorCode apply_mppc_nn_patch(
                         
                         DataFieldRestoreAccess(PField);
                         
-                        
                         npoints_current32++;
                     }
                 }
             }
             
         }
-        
-        
     }
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
@@ -608,17 +602,17 @@ PetscErrorCode apply_mppc_nn_patch2(
         cell_index_i = cidx2d - cell_index_j * mx;
         
         points_per_patch = 0;
-        for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
-            for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
-                for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+        for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
+            for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
+                for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
                     
-                    if (i>=mx) { continue; }
-                    if (j>=my) { continue; }
-                    if (k>=mz) { continue; }
-                    if (i<0) { continue; }
-                    if (j<0) { continue; }
-                    if (k<0) { continue; }
+                    if (i >= mx) { continue; }
+                    if (j >= my) { continue; }
+                    if (k >= mz) { continue; }
+                    if (i < 0) { continue; }
+                    if (j < 0) { continue; }
+                    if (k < 0) { continue; }
                     
                     patch_cell_id = i + j * mx + k * mx*my;
                     
@@ -674,17 +668,17 @@ PetscErrorCode apply_mppc_nn_patch2(
         point_count = 0;
         
         DataFieldGetAccess(PField);
-        for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
-            for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
-                for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+        for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
+            for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
+                for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
                     
-                    if (i>=mx) { continue; }
-                    if (j>=my) { continue; }
-                    if (k>=mz) { continue; }
-                    if (i<0) { continue; }
-                    if (j<0) { continue; }
-                    if (k<0) { continue; }
+                    if (i >= mx) { continue; }
+                    if (j >= my) { continue; }
+                    if (k >= mz) { continue; }
+                    if (i < 0) { continue; }
+                    if (j < 0) { continue; }
+                    if (k < 0) { continue; }
                     
                     patch_cell_id = i + j * mx + k * mx*my;
                     points_per_patch = (pcell_list[patch_cell_id+1] - pcell_list[patch_cell_id]);
@@ -916,7 +910,6 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_nn_patch): %1.4e (sec)\n", t1-t0);
 #endif
     
-    
     ierr = PetscFree(plist);CHKERRQ(ierr);
     ierr = PetscFree(pcell_list);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
@@ -961,7 +954,6 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
         cell_count[ marker_p->wil ]++;
     }
     DataFieldRestoreAccess(PField);
-    
     
     count = 0;
     for (c=0; c<nel; c++) {
@@ -1058,7 +1050,6 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     
     PetscTime(&t1);
     
-    
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(MPPC_SimpleRemoval): %1.4e (sec)\n", t1-t0);
 #endif
@@ -1141,7 +1132,6 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     PetscFunctionReturn(0);
 }
 
-
 /*
  Assign all markers with phase = MATERIAL_POINT_PHASE_UNASSIGNED to closest phase
  */
@@ -1182,9 +1172,9 @@ PetscErrorCode apply_mppc_region_assignment(
         cell_index_i = cidx2d - cell_index_j * mx;
         
         points_per_patch = 0;
-        for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
-            for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
-                for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+        for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
+            for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
+                for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
                     
                     if (i >= mx) { continue; }
@@ -1366,7 +1356,6 @@ PetscErrorCode apply_mppc_region_assignment(
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
     
-    
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  points assigned   = %D\n", points_assigned);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
@@ -1496,7 +1485,6 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
     
-    
     ierr = PetscFree(cell_count);CHKERRQ(ierr);
     ierr = PetscFree(plist);CHKERRQ(ierr);
     ierr = PetscFree(pcell_list);CHKERRQ(ierr);
@@ -1542,9 +1530,9 @@ PetscErrorCode apply_mppc_region_assignment_v2(
         cell_index_i = cidx2d - cell_index_j * mx;
         
         points_per_patch = 0;
-        for ( k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++ ) {
-            for ( j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++ ) {
-                for ( i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++ ) {
+        for (k=cell_index_k - patch_extend; k<=cell_index_k + patch_extend; k++) {
+            for (j=cell_index_j - patch_extend; j<=cell_index_j + patch_extend; j++) {
+                for (i=cell_index_i - patch_extend; i<=cell_index_i + patch_extend; i++) {
                     PetscInt patch_cell_id;
                     
                     if (i >= mx) { continue; }
@@ -1704,7 +1692,6 @@ PetscErrorCode apply_mppc_region_assignment_v2(
     ierr = PetscFree(patch_point_coords);CHKERRQ(ierr);
     ierr = PetscFree(patch_point_idx);CHKERRQ(ierr);
     
-    
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  points assigned   = %D\n", points_assigned);
     PetscPrintf(PETSC_COMM_SELF,"[LOG]  time_nn           = %1.4e (sec)\n", time_nn);
@@ -1712,7 +1699,6 @@ PetscErrorCode apply_mppc_region_assignment_v2(
     
     PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MaterialPointRegionAssignment_v2"
@@ -1833,7 +1819,6 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 #if (MPPC_LOG_LEVEL >= 1)
     PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG]  time(apply_mppc_region_assignment): %1.4e (sec)\n", t1-t0);
 #endif
-    
     
     ierr = PetscFree(cell_count);CHKERRQ(ierr);
     ierr = PetscFree(plist);CHKERRQ(ierr);
