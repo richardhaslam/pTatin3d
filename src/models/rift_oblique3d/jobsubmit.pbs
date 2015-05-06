@@ -27,14 +27,14 @@ mpiexec_mpt /home/ntnu/gdu001/dev/ptatin3d_master/arch-linux2-c-opt-ext/bin/ptat
   	-options_file ptatin.options \
 	-output_path 050L_cmDeep_45_avg_3 \
 	-data_storage_type perstep \
-	-model_Riftgd_notch_type 3 \
-	-model_Riftgd_notch_width 300.0e3 \
-	-model_Riftgd_notch_height 70.0e3 \
-	-model_Riftgd_notch_base 180e3 \
-	-model_Riftgd_beta -45.0 \
-	-model_Riftgd_damage 0.50 \
-	-model_Riftgd_buffer 50.0e3 \
-	-model_Riftgd_eps1 0.1 \
-	-model_Riftgd_eps2 0.5 \
+	-model_Rift_oblique3d_notch_type 3 \
+	-model_Rift_oblique3d_notch_width 300.0e3 \
+	-model_Rift_oblique3d_notch_height 70.0e3 \
+	-model_Rift_oblique3d_notch_base 180e3 \
+	-model_Rift_oblique3d_beta -45.0 \
+	-model_Rift_oblique3d_damage 0.50 \
+	-model_Rift_oblique3d_buffer 50.0e3 \
+	-model_Rift_oblique3d_eps1 0.1 \
+	-model_Rift_oblique3d_eps2 0.5 \
 	-nsteps 2000 \
 	-output_frequency 50
