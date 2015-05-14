@@ -1111,8 +1111,9 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     }
 #endif
 	
-	ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
-	
+	if (np_lower != -1) {
+        ierr = MPPC_NearestNeighbourPatch(np_lower,np_upper,patch_extent,nxp,nyp,nzp,perturb,ctx->stokes_ctx->dav,db);CHKERRQ(ierr);
+	}
 #if (MPPC_LOG_LEVEL >= 1)
     {
         long int np_g;

@@ -808,11 +808,28 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     PetscReal       timestep;
     PetscReal       dt_factor = 1.0;
     PetscInt        vfield_idx = 0;
+    PetscInt        _rkorderi = 1;
+    RKOrder         rkorder = RK_ORDER_1;
     PetscErrorCode  ierr;
 	
 	PetscFunctionBegin;
 	
     ierr = PetscOptionsGetInt(NULL,"-flow_field",&vfield_idx,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,"-mp_rk_order",&_rkorderi,NULL);CHKERRQ(ierr);
+    switch (_rkorderi) {
+        case 1:
+            rkorder = RK_ORDER_1;
+            break;
+        case 2:
+            rkorder = RK_ORDER_2;
+            break;
+        case 3:
+            rkorder = RK_ORDER_3;
+            break;
+        case 4:
+            rkorder = RK_ORDER_4;
+            break;
+    }
     
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -943,8 +960,12 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		
 		/* update marker positions */
 		ierr = DMCompositeGetAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		ierr = MaterialPointStd_UpdateGlobalCoordinates(materialpoint_db,dmv,velocity,user->dt);CHKERRQ(ierr);
-		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+		//ierr = MaterialPointStd_UpdateGlobalCoordinates(materialpoint_db,dmv,velocity,user->dt);CHKERRQ(ierr);
+		//ierr = MaterialPointStd_UpdateGlobalCoordinates_RK2(materialpoint_db,user->materialpoint_ex,dmv,velocity,user->dt);CHKERRQ(ierr);
+		//ierr = MaterialPointStd_UpdateGlobalCoordinates_RK3(materialpoint_db,user->materialpoint_ex,dmv,velocity,user->dt);CHKERRQ(ierr);
+		//ierr = MaterialPointStd_UpdateGlobalCoordinates_RK4(materialpoint_db,user->materialpoint_ex,dmv,velocity,user->dt);CHKERRQ(ierr);
+		ierr = MaterialPointStd_UpdateGlobalCoordinatesRK(materialpoint_db,rkorder,user->materialpoint_ex,dmv,velocity,user->dt);CHKERRQ(ierr);
+        ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
 		/* update mesh */
 		//ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
