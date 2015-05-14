@@ -42,6 +42,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt 
 PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d( DM da, PetscInt startK, PetscInt endK );
 PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da);
 PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal factor,PetscReal x1_frac,PetscReal x2_frac);
+PetscErrorCode DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,PetscBool preserve_face_geometry,PetscInt npoints,PetscReal xref[],PetscReal xnatural[]);
 
 #endif
 
