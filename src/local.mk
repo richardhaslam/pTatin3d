@@ -109,16 +109,16 @@ ptatin-tests-y.c += $(call thisdir, \
 			ptatin_read_matrix.c \
 			test_petsc_wsmp.c \
 			test_cjson.c \
-	)
-
-ptatin-drivers-y.c += $(call thisdir, \
-			ptatin_driver_ic.c \
 			ptatin_driver_nostokessolve.c \
 			ptatin_driver_asmsolve.c \
 			ptatin_driver_asmsolve_approx.c \
 			ptatin_driver_asmsolve2.c \
 			ptatin_driver_basic.c \
 			ptatin_driver_ic_spm.c \
+	)
+
+ptatin-drivers-y.c += $(call thisdir, \
+			ptatin_driver_ic.c \
 			ptatin_write_pvts.c \
 			ptatin_driver_energy.c \
 			ptatin_driver_linear_ts.c \
