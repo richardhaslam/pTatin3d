@@ -28,7 +28,7 @@ libptatin3d-y.c += $(call thisdir, \
 			MPntPEnergy_def.c \
 			QPntVolCoefEnergy_def.c \
 			output_paraview.c \
-            xdmf_writer.c \
+			xdmf_writer.c \
 			output_material_points.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
@@ -59,7 +59,7 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_operators_tensor.c \
 			quadrature.c \
 			phase_map.c \
-            cartgrid.c \
+			cartgrid.c \
 			element_utils_q2.c \
 			element_utils_q1.c \
 			stokes_assembly.c \
@@ -74,10 +74,10 @@ libptatin3d-y.c += $(call thisdir, \
 			pc_dmdarepart.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
-            cJSON.c \
-            geometry_object_parse.c \
+			cJSON.c \
+			geometry_object_parse.c \
 			spm_utils.c \
-            petsc_utils.c \
+			petsc_utils.c \
 	)
 
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
@@ -108,7 +108,7 @@ ptatin-tests-y.c += $(call thisdir, \
 			test_stokes_q1macrop1.c \
 			ptatin_read_matrix.c \
 			test_petsc_wsmp.c \
-            test_cjson.c \
+			test_cjson.c \
 	)
 
 ptatin-drivers-y.c += $(call thisdir, \
