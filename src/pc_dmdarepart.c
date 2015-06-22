@@ -60,6 +60,7 @@ typedef struct {
     PetscInt        Mp_re,Np_re,Pp_re;
     PetscInt        *range_i_re,*range_j_re,*range_k_re;
     PetscInt        *start_i_re,*start_j_re,*start_k_re;
+    PetscBool       log;
 } PC_DMDARepart;
 
 #undef __FUNCT__
@@ -624,9 +625,9 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
     }
 
     /* fetch redundant matrix - PCSetUp_DMDARepart is called we need to update the entires in the matrix */
-    //ierr = PetscLogStagePush(_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePush(_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
     ierr = _DMDARepart_UpdateOperator(pc,red);CHKERRQ(ierr);
-    //ierr = PetscLogStagePop();CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePop();CHKERRQ(ierr); }
 
     /* common - no construction */
     if (red->Bsub) {
@@ -649,7 +650,7 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     Vec            xtmp;
     
     PetscFunctionBegin;
-    //ierr = PetscLogStagePush(_PCDMDARepart_PCApplyStage);CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePush(_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
     ierr = VecDuplicate(x,&xtmp);CHKERRQ(ierr);
     ierr = MatMultTranspose(red->permutation,x,xtmp);CHKERRQ(ierr);
     //ierr = MatMult(red->permutation,x,xtmp);CHKERRQ(ierr);
@@ -699,7 +700,7 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     //ierr = MatMultTranspose(red->permutation,xtmp,y);CHKERRQ(ierr);
     
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
-    //ierr = PetscLogStagePop();CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePop();CHKERRQ(ierr); }
 
     PetscFunctionReturn(0);
 }
@@ -810,11 +811,21 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
     PetscErrorCode   ierr;
     PC_DMDARepart    *red;
     PetscMPIInt      size;
+    PetscBool        log;
     
     PetscFunctionBegin;
-    
-    //if (_PCDMDARepart_PCSetUpMatrixStage == -1) { ierr = PetscLogStageRegister("PCRprt_SetUpMat",&_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
-    //if (_PCDMDARepart_PCApplyStage == -1) { ierr = PetscLogStageRegister("PCRprt_Apply",&_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
+
+    /* 
+     We cannot provide -XXX_pc_dmdarepart_log as an arg to enable logging of separate pcdmdarepart objects.
+     This is a limitation enforced by petsc logging infrastructure which doesn't accept a communicator as an arguement.
+     As a result all logging objects must be valid on PETSC_COMM_WORLD.
+    */
+    log = PETSC_FALSE;
+    PetscOptionsGetBool(NULL,"-pc_dmdarepart_log",&log,NULL);
+    if (log) {
+        if (_PCDMDARepart_PCSetUpMatrixStage == -1) { ierr = PetscLogStageRegister("PCRprt_SetUpMat",&_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
+        if (_PCDMDARepart_PCApplyStage == -1) { ierr = PetscLogStageRegister("PCRprt_Apply",&_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
+    }
     
     ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
     pc->data            = (void*)red;
@@ -826,6 +837,7 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
         red->nsubcomm_factor = 1;
     }
 
+    red->log         = log;
     red->isin        = NULL;
     red->scatter     = NULL;
     red->xred        = NULL;
