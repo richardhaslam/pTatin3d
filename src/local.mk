@@ -1,4 +1,5 @@
 libptatin3d-y.c += $(call thisdir, \
+            pswarm.c \
 			dmda_update_coords.c \
 			dmda_project_coords.c \
 			dmda_compare.c \
