@@ -117,6 +117,8 @@ PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
     ierr = PSwarmSetTransportModeType(p,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
     
     p->setup = PETSC_FALSE;
+    p->db_set_by_user = PETSC_FALSE;
+    p->de_set_by_user = PETSC_FALSE;
     
     *ps = p;
     PetscFunctionReturn(0);
@@ -150,7 +152,11 @@ PetscErrorCode PSwarmSetPtatinCtx(PSwarm ps,pTatinCtx pctx)
 #define __FUNCT__ "PSwarmSetDataBucket"
 PetscErrorCode PSwarmSetDataBucket(PSwarm ps,DataBucket db)
 {
+    if (ps->db && !ps->db_set_by_user) {
+        DataBucketDestroy(&ps->db);
+    }
     ps->db = db;
+    ps->db_set_by_user = PETSC_TRUE;
     PetscFunctionReturn(0);
 }
 
@@ -166,7 +172,12 @@ PetscErrorCode PSwarmGetDataBucket(PSwarm ps,DataBucket *db)
 #define __FUNCT__ "PSwarmSetDataExchanger"
 PetscErrorCode PSwarmSetDataExchanger(PSwarm ps,DataEx de)
 {
+    PetscErrorCode ierr;
+    if (ps->de && !ps->de_set_by_user) {
+        ierr = DataExDestroy(ps->de);CHKERRQ(ierr);
+    }
     ps->de = de;
+    ps->de_set_by_user = PETSC_TRUE;
     PetscFunctionReturn(0);
 }
 
@@ -222,8 +233,12 @@ PetscErrorCode PSwarmDestroy(PSwarm *ps)
     if (!ps) PetscFunctionReturn(0);
     p = *ps;
     
-    if (p->db) { DataBucketDestroy(&p->db); }
-    if (p->de) { ierr = DataExDestroy(p->de);CHKERRQ(ierr); }
+    if (!p->db_set_by_user) {
+        if (p->db) { DataBucketDestroy(&p->db); }
+    }
+    if (!p->de_set_by_user) {
+        if (p->de) { ierr = DataExDestroy(p->de);CHKERRQ(ierr); }
+    }
 
     PetscHeaderDestroy(ps);
     

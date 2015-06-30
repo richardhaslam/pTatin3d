@@ -57,6 +57,7 @@ struct _p_PSwarm {
     pTatinCtx  pctx;
     PSwarmStateType state;
     PetscBool setup;
+    PetscBool db_set_by_user,de_set_by_user;
 };
 
 #endif
