@@ -43,6 +43,7 @@ typedef enum { PSWARM_FU_NULL=0,
 } PSwarmFieldUpdateType;
 
 typedef enum { PSWARM_TM_EULERIAN=0, PSWARM_TM_LAGRANGIAN } PSwarmTransportModeType;
+typedef enum { PSWARM_ADV_RK1=0, PSWARM_ADV_RK2, PSWARM_ADV_RK4 } PSwarmAdvectopmRKType;
 
 
 PetscErrorCode PSwarmInitializePackage(void);
