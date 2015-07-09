@@ -7,7 +7,7 @@
 .SUFFIXES:	                # Clear .SUFFIXES because we don't use implicit rules
 .DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
 
-include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc-conf/petscvariables
+include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 # Compilation options are to be placed in makefile.arch
 include src/makefile.arch
