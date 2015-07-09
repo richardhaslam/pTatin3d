@@ -14,7 +14,7 @@
 -fieldsplit_u_mg_coarse_pc_asm_overlap 4
 -fieldsplit_u_mg_coarse_pc_type asm
 -fieldsplit_u_mg_coarse_sub_pc_type ilu
--fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
 -fieldsplit_u_mg_levels_ksp_chebyshev_estimate_eigenvalues 0,0.2,0,1.1
 -fieldsplit_u_mg_levels_ksp_max_it 10
 -fieldsplit_u_mg_levels_ksp_norm_type NONE

@@ -94,9 +94,9 @@
 -fieldsplit_u_mg_levels_ksp_type chebyshev
 -fieldsplit_u_mg_levels_pc_type jacobi
 -fieldsplit_u_mg_levels_2_ksp_norm_type NONE
--fieldsplit_u_mg_levels_2_est_ksp_norm_type NONE
+-fieldsplit_u_mg_levels_2_esteig_ksp_norm_type NONE
 
--fieldsplit_u_mg_levels_est_ksp_max_it 6
+-fieldsplit_u_mg_levels_esteig_ksp_max_it 6
 
 
 -fieldsplit_u_mg_levels_1_ksp_max_it 1

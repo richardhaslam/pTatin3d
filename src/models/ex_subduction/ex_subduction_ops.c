@@ -89,10 +89,10 @@ static char model_help[] = "\
  [3] Example usage:
  
  <2d model>
- ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 92 -my 48 -dau_nlevels 3 -exsubduction_mode2d -fieldsplit_u_mg_levels_est_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4
+ ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 92 -my 48 -dau_nlevels 3 -exsubduction_mode2d -fieldsplit_u_mg_levels_esteig_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4
 
  <3d, finite plate model>
- ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 16 -my 12 -mz 16  -dau_nlevels 3 -fieldsplit_u_mg_levels_est_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4 -lattice_layout_Nx 6 -lattice_layout_Ny 6 -lattice_layout_Nz 6 -exsubduction_finite_plate -exsubduction_finite_plate_width_factor 0.5 -mp_popctrl_np_upper 1000 -constant_dt 1.0e-5 -fieldsplit_u_ksp_rtol 1.0e-1 -ksp_atol 1.0e-4 -nsteps 3000
+ ./ptatin_driver_linear_ts.app -options_file test_option_files/test_basic_mfgmg.opts  -ptatin_model ex_subduction -output_path tsub -mx 16 -my 12 -mz 16  -dau_nlevels 3 -fieldsplit_u_mg_levels_esteig_ksp_max_it 4 -fieldsplit_u_mg_levels_ksp_max_it 4 -lattice_layout_Nx 6 -lattice_layout_Ny 6 -lattice_layout_Nz 6 -exsubduction_finite_plate -exsubduction_finite_plate_width_factor 0.5 -mp_popctrl_np_upper 1000 -constant_dt 1.0e-5 -fieldsplit_u_ksp_rtol 1.0e-1 -ksp_atol 1.0e-4 -nsteps 3000
  
 */
 

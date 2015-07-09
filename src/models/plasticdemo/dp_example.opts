@@ -49,7 +49,7 @@
 -fieldsplit_u_mg_levels_ksp_type chebyshev
 -fieldsplit_u_mg_levels_pc_type jacobi
 #-fieldsplit_u_mg_levels_ksp_norm_type NONE
-#-fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
 -ksp_type fgmres
 -mx 128
 -my 32

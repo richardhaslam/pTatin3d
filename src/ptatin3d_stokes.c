@@ -1130,7 +1130,7 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_max_it 6");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_pc_type jacobi");CHKERRQ(ierr);
 	
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	//ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_type gmres");CHKERRQ(ierr);
@@ -1180,7 +1180,7 @@ PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglo
 	PetscSNPrintf(opt,PETSC_MAX_PATH_LEN-1,"-fieldsplit_u_mg_levels_ksp_max_it %D",maxits);
 	ierr = PetscOptionsInsertPrefixString(prefix,opt);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_levels_pc_type jacobi");CHKERRQ(ierr);
@@ -1245,7 +1245,7 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_type chebychev");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_norm_type NONE");CHKERRQ(ierr);
-	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_est_ksp_norm_type NONE");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_esteig_ksp_norm_type NONE");CHKERRQ(ierr);
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_ksp_chebychev_estimate_eigenvalues 0,0.2,0,1.1");CHKERRQ(ierr);
 	
 	ierr = PetscOptionsInsertPrefixString(prefix,"-fieldsplit_u_mg_coarse_ksp_pc_type asm");CHKERRQ(ierr);

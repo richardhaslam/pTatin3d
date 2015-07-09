@@ -49,7 +49,7 @@
 -npc_fieldsplit_u_mg_levels_ksp_type chebyshev
 -npc_fieldsplit_u_mg_levels_pc_type jacobi
 #-npc_fieldsplit_u_mg_levels_ksp_norm_type NONE
-#-npc_fieldsplit_u_mg_levels_est_ksp_norm_type NONE
+#-npc_fieldsplit_u_mg_levels_esteig_ksp_norm_type NONE
 -npc_ksp_type fgmres
 -mx 64
 -my 16
