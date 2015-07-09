@@ -41,7 +41,7 @@ def determinempilaunchcommand():
 		print('-- Warning: Environment variable PETSC_DIR is not set => all parallel tests will be ignored')
 		return(launch_cmd)
 
-	loc_petsc_var = os.path.join( os.environ['PETSC_DIR'] , os.environ['PETSC_ARCH'] , 'lib/petsc-conf/' , 'petscvariables' )
+	loc_petsc_var = os.path.join( os.environ['PETSC_DIR'] , os.environ['PETSC_ARCH'] , 'lib/petsc/conf/' , 'petscvariables' )
 	#print(loc_petsc_var)
 
 	file = open( loc_petsc_var, 'r' )
