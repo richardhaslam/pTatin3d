@@ -30,7 +30,7 @@
 static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 "3D prototype of the (p)ragmatic version of Tatin. (pTatin3d_v0.0)\n\n";
 
-#include "petsc-private/dmdaimpl.h"
+#include "petsc/private/dmdaimpl.h"
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"

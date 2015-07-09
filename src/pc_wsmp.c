@@ -31,7 +31,7 @@
 #include <petscvec.h>
 #include <petscmat.h>
 #include <petscpc.h>
-#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>
 
 #define USE_COMPACT_FORM

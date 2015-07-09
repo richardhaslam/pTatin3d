@@ -35,7 +35,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "petscmat.h"
 #include "petscksp.h"
 #include "petscdm.h"
-#include "petsc-private/dmdaimpl.h" 
+#include "petsc/private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"

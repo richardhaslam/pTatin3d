@@ -30,7 +30,7 @@
 #include <petscvec.h>
 #include <petscdm.h>
 
-#include "petsc-private/dmdaimpl.h"    /*I   "petscdm.h"   I*/
+#include "petsc/private/dmdaimpl.h"    /*I   "petscdm.h"   I*/
 #include "sub_comm.h"
 #include "dmda_update_coords.h"
 #include "dmda_redundant.h"

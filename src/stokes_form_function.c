@@ -1716,7 +1716,7 @@ PetscErrorCode StokesUPXNewton_FormJuu_MFFD(void *mffd_ctx,Vec x,Vec Fu)
     PetscFunctionReturn(0);
 }
 
-#include <petsc-private/matimpl.h>
+#include <petsc/private/matimpl.h>
 #include <../src/mat/impls/mffd/mffdimpl.h>
 
 #undef __FUNCT__

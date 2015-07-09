@@ -28,7 +28,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#include <petsc-private/kspimpl.h>                    /*I "petscksp.h" I*/
+#include <petsc/private/kspimpl.h>                    /*I "petscksp.h" I*/
 
 /*
  Private data structure for Chebychev Iteration

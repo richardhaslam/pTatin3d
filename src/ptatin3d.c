@@ -28,7 +28,7 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 #define _GNU_SOURCE
-#include "petsc-private/dmdaimpl.h" 
+#include "petsc/private/dmdaimpl.h" 
 #include "petsc.h"
 
 #include "ptatin3d.h"

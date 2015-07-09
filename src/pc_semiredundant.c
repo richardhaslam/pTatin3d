@@ -27,7 +27,7 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#include <petsc-private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petsc/private/pcimpl.h>     /*I "petscpc.h" I*/
 #include <petscksp.h>           /*I "petscksp.h" I*/
 #include "sub_comm.h"
 

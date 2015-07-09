@@ -31,7 +31,7 @@
 #include <petsc.h>
 #include <petscvec.h>
 #include <petscdm.h>
-#include <petsc-private/dmdaimpl.h>
+#include <petsc/private/dmdaimpl.h>
 
 #include "dmda_update_coords.h"
 #include "dmda_project_coords.h"

@@ -35,7 +35,7 @@ static const char help[] = "Advection perforamnce / profiling test.\n"
 "    -use_model_vel_field : defines flow field for a given model - solves once, then advects without updating velocity field\n\n";
 
 
-#include "petsc-private/dmdaimpl.h" 
+#include "petsc/private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
