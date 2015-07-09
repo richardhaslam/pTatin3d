@@ -924,7 +924,7 @@ PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
 
 	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
 	
-	ierr = PetscViewerBinaryRead(viewer,cc,sizeof(struct _p_pTatinCtx)/sizeof(char),PETSC_CHAR);
+	ierr = PetscViewerBinaryRead(viewer,cc,sizeof(struct _p_pTatinCtx)/sizeof(char),NULL,PETSC_CHAR);
 	
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	 
