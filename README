@@ -4,7 +4,7 @@ provide the community with an open-source toolkit capable of studying high-resol
 three-dimensional models of lithospheric deformation.
 
 Unique to this package is that we provide fast, parallel scalable matrix-free 
-defintions for the Stokes operators which are utilized by a hybrid 
+definitions for the Stokes operators which are utilized by a hybrid 
 geometric-algebraic multi-grid preconditioner.
 
 pTatin3D includes the following:
@@ -28,6 +28,8 @@ Contributors:
 * Laetitia Le Pourhiet [laetitia.le@pourhiet@upmc.fr]
 * Dave A. May          [dave.may@erdw.ethz.ch]
 * Patrick Sanan        [sananp@usi.ch]
+
+For information about building and using pTatin3D, see the manual located in `doc/tex`.
 
 More information about the implementation and performance of pTatin3D can be found in the following publications:
 
