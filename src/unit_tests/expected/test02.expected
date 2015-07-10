@@ -9,12 +9,13 @@
 **
 ** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
 **           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
 **
-** Repository UUID: 26174531-3d5a-4d31-aba0-7a6658d032cb 
-** Revision: 5040 
-** Log: r5040 | dmay | 2013-12-17 21:03:16 +0100 (Tue, 17 Dec 2013) | 1 line 
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
 **                                                                       
-** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -fopenmp -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-unused-variable
 **                                                                       
 ** WARNING pTatin3d appears to have been compiled with debug options 
 ** For significant performance improvements, please consult the file makefile.arch  
@@ -23,9 +24,9 @@
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2014.12.16_17:42:56 
+[pTatin] Created log file: pt3dout/ptatin.log-2015.07.10_14:56:26 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2014.12.16_17:42:56 
+[pTatin] Created options file: pt3dout/ptatin.options-2015.07.10_14:56:26 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -43,9 +44,7 @@ RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max =
   [pTatinModel]: Registering model [13] with name "submarinelavaflow"
   [pTatinModel]: Registering model [14] with name "ex_subduction"
   [pTatinModel]: Registering model [15] with name "iplus"
-[[pTatinModelRegister_Subduction_Initiation2d]]
   [pTatinModel]: Registering model [16] with name "subduction_initiation2d"
-[[pTatinModelRegister_Thermal_Convection2d]]
   [pTatinModel]: Registering model [17] with name "convection2d"
   [pTatinModel]: Registering model [18] with name "thermal_sb"
   [pTatinModel]: Registering model [19] with name "sd3d"
@@ -106,9 +105,9 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) 
   Total mem. usage                                                      = 6.46e-02 (MB) 
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0003 (sec)]]
+[[Swarm initialization: 0.0002 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 4096 points : 0.0018 (sec)]]
+[[Swarm->coordinate assignment: 4096 points : 0.0014 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
 Mat Object: 1 MPI processes
@@ -117,8 +116,8 @@ Mat Object: 1 MPI processes
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 7.0810e-04 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 7.6985e-04 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 7.7812e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 8.1462e-04 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
 [[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
@@ -129,8 +128,8 @@ RUNNING DEFORMED MESH EXAMPLE
 ====================================================================
 
 +  Test [perform_viscous_solve]: Mesh 8 x 8 x 8 
-MatAssemblyA11(ASM):                time 1.1336e+00 (sec): ratio 1.0000e+02%: min/max 1.1336e+00 1.1336e+00 (sec)
-KSPSetUpA11:                        time 7.1694e-01 (sec): ratio 1.0000e+02%: min/max 7.1694e-01 7.1694e-01 (sec)
+MatAssemblyA11(ASM):                time 1.3425e+00 (sec): ratio 1.0000e+02%: min/max 1.3425e+00 1.3425e+00 (sec)
+KSPSetUpA11:                        time 8.6116e-01 (sec): ratio 1.0000e+02%: min/max 8.6116e-01 8.6116e-01 (sec)
   0 KSP Residual norm 61086.4 
   1 KSP Residual norm 26276.9 
   2 KSP Residual norm 20345.9 
@@ -159,11 +158,11 @@ KSPSetUpA11:                        time 7.1694e-01 (sec): ratio 1.0000e+02%: mi
  25 KSP Residual norm 2.39719e-05 
  26 KSP Residual norm 5.18094e-06 
  27 KSP Residual norm 1.44638e-06 
- 28 KSP Residual norm 3.78086e-07 
- 29 KSP Residual norm 1.14986e-07 
- 30 KSP Residual norm 2.5982e-08 
-KSPSolveA11(its = 30,cycles = 5)   time 3.6592e+00 (sec): ratio 1.0000e+02%: min/max 3.6592e+00 3.6592e+00 (sec)
-KSPSolveA11: average                time 7.3184e-01 (sec): ratio 1.0000e+02%: min/max 7.3184e-01 7.3184e-01 (sec)
+ 28 KSP Residual norm 3.7809e-07 
+ 29 KSP Residual norm 1.14989e-07 
+ 30 KSP Residual norm 2.59811e-08 
+KSPSolveA11(its = 30,cycles = 5)   time 3.5768e+00 (sec): ratio 1.0000e+02%: min/max 3.5768e+00 3.5768e+00 (sec)
+KSPSolveA11: average                time 7.1536e-01 (sec): ratio 1.0000e+02%: min/max 7.1536e-01 7.1536e-01 (sec)
 KSP Object: 1 MPI processes
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
