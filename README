@@ -29,7 +29,7 @@ Contributors:
 * Dave A. May          [dave.may@erdw.ethz.ch]
 * Patrick Sanan        [sananp@usi.ch]
 
-For information about building and using pTatin3D, see the manual located in `doc/tex`.
+For information about building and using pTatin3D, see the manual located in doc/tex.
 
 More information about the implementation and performance of pTatin3D can be found in the following publications:
 
