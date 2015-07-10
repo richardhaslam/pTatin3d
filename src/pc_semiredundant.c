@@ -500,7 +500,7 @@ static PetscErrorCode PCSetFromOptions_SemiRedundant(PetscOptions *PetscOptionsO
     PC_SemiRedundant *red = (PC_SemiRedundant*)pc->data;
     
     PetscFunctionBegin;
-    ierr = PetscOptionsHead("SemiRedundant options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"SemiRedundant options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_semiredundant_factor","Factor to reduce parent communication size by","PCSemiRedundantSetFactor",red->nsubcomm_factor,&red->nsubcomm_factor,0);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-pc_semiredundant_fuse_blocks","Fuse original matrix partitioning and preserve block size","PCSemiRedundantFuseBlocks",red->fuse_blocks,&red->fuse_blocks,0);CHKERRQ(ierr);
     ierr = PetscOptionsTail();CHKERRQ(ierr);
