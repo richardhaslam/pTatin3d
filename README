@@ -9,7 +9,7 @@ geometric-algebraic multi-grid preconditioner.
 
 pTatin3D includes the following:
 
-* mixed finite elemenets (Q2-P1_disc) for the Stokes problem
+* mixed finite elements (Q2-P1_disc) for the Stokes problem
 * material points for tracking Lagrangian state and history variables
 * energy equation solved with Q1 elements + SUPG
 * ALE formulations (with a varierty of remeshing solutions)
