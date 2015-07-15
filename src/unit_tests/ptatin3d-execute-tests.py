@@ -158,8 +158,8 @@ def test03cp(launcher):
 
 	space = ' '
 	joblauncher = space.join( [launcher , '-np' , str(ranks)] )
-	exec        = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , '>' , ofile] )
-	run         = space.join( [joblauncher , exec] )
+	execcmd     = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , '>' , ofile] )
+	run         = space.join( [joblauncher , execcmd] )
 	os.system(run)
 
 	# Filter 
