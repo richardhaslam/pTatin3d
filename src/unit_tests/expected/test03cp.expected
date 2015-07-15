@@ -24,9 +24,9 @@
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2015.07.10_15:02:25 
+[pTatin] Created log file: pt3dout/ptatin.log-2015.07.15_15:39:35 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2015.07.10_15:02:25 
+[pTatin] Created options file: pt3dout/ptatin.options-2015.07.15_15:39:35 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -107,9 +107,9 @@ DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) : rank0
   Total mem. usage                                                      = 2.59e-01 (MB) : collective
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0004 (sec)]]
+[[Swarm initialization: 0.0005 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 4096 points : 0.0031 (sec)]]
+[[Swarm->coordinate assignment: 4096 points : 0.0042 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 7 
 Mat Object: 8 MPI processes
@@ -118,8 +118,8 @@ Mat Object: 8 MPI processes
   total: nonzeros=56, allocated nonzeros=64
   total number of mallocs used during MatSetValues calls =0
     not using I-node (on process 0) routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 4.5999e-02 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 4.6490e-02 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.1221e-01 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.1286e-01 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
 [[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
@@ -157,7 +157,7 @@ BCList: Mem. usage (min,max) = 3.87e-02,5.90e-02 (MB)
 [[ModelApplyBoundaryConditionMG_ViscousSinker]]
 [[ModelInitialCondition_ViscousSinker]]
 *** Rheology update for RHEOLOGY_VISCOUS selected ***
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.23e-03 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.11e-03 (sec)
 Level [2]: Coarse grid type :: Re-discretisation :: matrix free operator 
 Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
 Level [0]: Coarse grid type :: Galerkin :: assembled operator 
@@ -165,250 +165,250 @@ Level [0]: Coarse grid type :: Galerkin :: assembled operator
   writing pvdfilename pt3dout/timeseries_vp.pvd 
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 5.68e-02 (sec) 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> icbc_vp.(pvd,pvts,vts): CPU time 4.49e-02 (sec) 
   writing pvdfilename pt3dout/timeseries_mpoints_std.pvd 
-pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 4.53e-02 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> icbc_mpoints_std.(pvd,pvtu,vtu): CPU time 1.47e-02 (sec) 
    [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.36e-03 (sec)
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 9.65e-04 (sec)
-    0 KSP Residual norm 0.00136185 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.02e-03 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.07e-03 (sec)
+    0 KSP Residual norm 0.00136154 
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1 
-      1 KSP Residual norm 0.999355 
-      2 KSP Residual norm 0.9669 
-    1 KSP Residual norm 0.00134804 
+      1 KSP Residual norm 0.999385 
+      2 KSP Residual norm 0.966711 
+    1 KSP Residual norm 0.00134754 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 0.760022 
-      1 KSP Residual norm 0.208088 
-      2 KSP Residual norm 0.143028 
-    2 KSP Residual norm 0.00134164 
+      0 KSP Residual norm 0.766414 
+      1 KSP Residual norm 0.210816 
+      2 KSP Residual norm 0.143872 
+    2 KSP Residual norm 0.00134119 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.69234 
-      1 KSP Residual norm 0.306639 
-      2 KSP Residual norm 0.140158 
-    3 KSP Residual norm 0.00132866 
+      0 KSP Residual norm 1.7071 
+      1 KSP Residual norm 0.310318 
+      2 KSP Residual norm 0.140504 
+    3 KSP Residual norm 0.00132768 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.65839 
-      1 KSP Residual norm 0.347484 
-      2 KSP Residual norm 0.162666 
-    4 KSP Residual norm 0.00132666 
+      0 KSP Residual norm 2.66941 
+      1 KSP Residual norm 0.348154 
+      2 KSP Residual norm 0.164905 
+    4 KSP Residual norm 0.00132587 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.09325 
-      1 KSP Residual norm 0.161418 
-      2 KSP Residual norm 0.0604564 
-    5 KSP Residual norm 0.00132384 
+      0 KSP Residual norm 2.08016 
+      1 KSP Residual norm 0.1583 
+      2 KSP Residual norm 0.0596081 
+    5 KSP Residual norm 0.00132283 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.71566 
-      1 KSP Residual norm 0.247929 
-      2 KSP Residual norm 0.0999008 
-    6 KSP Residual norm 0.00132384 
+      0 KSP Residual norm 1.72068 
+      1 KSP Residual norm 0.250524 
+      2 KSP Residual norm 0.102618 
+    6 KSP Residual norm 0.00132282 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.70666 
-      1 KSP Residual norm 0.316397 
-      2 KSP Residual norm 0.102452 
-    7 KSP Residual norm 0.00131862 
+      0 KSP Residual norm 1.70363 
+      1 KSP Residual norm 0.316522 
+      2 KSP Residual norm 0.102933 
+    7 KSP Residual norm 0.00131784 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.29917 
-      1 KSP Residual norm 0.310301 
-      2 KSP Residual norm 0.0621086 
-    8 KSP Residual norm 0.00128301 
+      0 KSP Residual norm 2.31799 
+      1 KSP Residual norm 0.312328 
+      2 KSP Residual norm 0.0625906 
+    8 KSP Residual norm 0.00128192 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.51798 
-      1 KSP Residual norm 0.246656 
-      2 KSP Residual norm 0.0747797 
-    9 KSP Residual norm 0.00125205 
+      0 KSP Residual norm 2.53305 
+      1 KSP Residual norm 0.247114 
+      2 KSP Residual norm 0.0763339 
+    9 KSP Residual norm 0.0012512 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.00019 
-      1 KSP Residual norm 0.23784 
-      2 KSP Residual norm 0.0803347 
-   10 KSP Residual norm 0.00112805 
+      0 KSP Residual norm 2.05121 
+      1 KSP Residual norm 0.241698 
+      2 KSP Residual norm 0.0822688 
+   10 KSP Residual norm 0.00112467 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.85345 
-      1 KSP Residual norm 0.209245 
-      2 KSP Residual norm 0.0555516 
-   11 KSP Residual norm 0.000924491 
+      0 KSP Residual norm 1.89844 
+      1 KSP Residual norm 0.210895 
+      2 KSP Residual norm 0.0549383 
+   11 KSP Residual norm 0.000920171 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.55811 
-      1 KSP Residual norm 0.289613 
-      2 KSP Residual norm 0.107052 
-   12 KSP Residual norm 0.000659039 
+      0 KSP Residual norm 1.59034 
+      1 KSP Residual norm 0.29564 
+      2 KSP Residual norm 0.109962 
+   12 KSP Residual norm 0.000652597 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.81937 
-      1 KSP Residual norm 0.236963 
-      2 KSP Residual norm 0.102945 
-   13 KSP Residual norm 0.0005199 
+      0 KSP Residual norm 1.86013 
+      1 KSP Residual norm 0.243708 
+      2 KSP Residual norm 0.102011 
+   13 KSP Residual norm 0.000513751 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.23862 
-      1 KSP Residual norm 0.300083 
-      2 KSP Residual norm 0.0739895 
-   14 KSP Residual norm 0.000364608 
+      0 KSP Residual norm 2.26902 
+      1 KSP Residual norm 0.307081 
+      2 KSP Residual norm 0.0758268 
+   14 KSP Residual norm 0.000362023 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.68814 
-      1 KSP Residual norm 0.196581 
-      2 KSP Residual norm 0.114131 
-   15 KSP Residual norm 0.000214811 
+      0 KSP Residual norm 1.70654 
+      1 KSP Residual norm 0.196423 
+      2 KSP Residual norm 0.113659 
+   15 KSP Residual norm 0.000212726 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.47541 
-      1 KSP Residual norm 0.161484 
-      2 KSP Residual norm 0.0956934 
-   16 KSP Residual norm 0.000122936 
+      0 KSP Residual norm 1.50582 
+      1 KSP Residual norm 0.163042 
+      2 KSP Residual norm 0.0936338 
+   16 KSP Residual norm 0.000120533 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.65034 
-      1 KSP Residual norm 0.30233 
-      2 KSP Residual norm 0.159957 
-   17 KSP Residual norm 8.89987e-05 
+      0 KSP Residual norm 1.69024 
+      1 KSP Residual norm 0.310908 
+      2 KSP Residual norm 0.158326 
+   17 KSP Residual norm 8.6178e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.83258 
-      1 KSP Residual norm 0.333129 
-      2 KSP Residual norm 0.18782 
-   18 KSP Residual norm 7.59343e-05 
+      0 KSP Residual norm 1.857 
+      1 KSP Residual norm 0.342614 
+      2 KSP Residual norm 0.189259 
+   18 KSP Residual norm 7.20463e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.16745 
-      1 KSP Residual norm 0.166439 
-      2 KSP Residual norm 0.1499 
-   19 KSP Residual norm 7.57288e-05 
+      0 KSP Residual norm 1.16527 
+      1 KSP Residual norm 0.17385 
+      2 KSP Residual norm 0.16031 
+   19 KSP Residual norm 7.16807e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.32295 
-      1 KSP Residual norm 0.104974 
-      2 KSP Residual norm 0.0472976 
-   20 KSP Residual norm 7.57207e-05 
+      0 KSP Residual norm 1.37647 
+      1 KSP Residual norm 0.112001 
+      2 KSP Residual norm 0.0524558 
+   20 KSP Residual norm 7.16774e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.18405 
-      1 KSP Residual norm 0.145451 
-      2 KSP Residual norm 0.0557905 
-   21 KSP Residual norm 7.55544e-05 
+      0 KSP Residual norm 1.18769 
+      1 KSP Residual norm 0.13856 
+      2 KSP Residual norm 0.0492147 
+   21 KSP Residual norm 7.14143e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 0.923758 
-      1 KSP Residual norm 0.100268 
-      2 KSP Residual norm 0.0618765 
-   22 KSP Residual norm 7.1275e-05 
+      0 KSP Residual norm 0.963658 
+      1 KSP Residual norm 0.106891 
+      2 KSP Residual norm 0.0596951 
+   22 KSP Residual norm 6.74169e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.27563 
-      1 KSP Residual norm 0.0983995 
-      2 KSP Residual norm 0.0437413 
-   23 KSP Residual norm 4.94206e-05 
+      0 KSP Residual norm 1.30904 
+      1 KSP Residual norm 0.109388 
+      2 KSP Residual norm 0.0426383 
+   23 KSP Residual norm 4.72421e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.23288 
-      1 KSP Residual norm 0.176306 
-      2 KSP Residual norm 0.112324 
-   24 KSP Residual norm 2.59974e-05 
+      0 KSP Residual norm 1.27645 
+      1 KSP Residual norm 0.177878 
+      2 KSP Residual norm 0.104395 
+   24 KSP Residual norm 2.49765e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.06183 
-      1 KSP Residual norm 0.262535 
-      2 KSP Residual norm 0.242785 
-   25 KSP Residual norm 1.7726e-05 
+      0 KSP Residual norm 1.11509 
+      1 KSP Residual norm 0.25036 
+      2 KSP Residual norm 0.231281 
+   25 KSP Residual norm 1.72573e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.1986 
-      1 KSP Residual norm 0.297319 
-      2 KSP Residual norm 0.268183 
-   26 KSP Residual norm 1.33925e-05 
+      0 KSP Residual norm 1.23704 
+      1 KSP Residual norm 0.286116 
+      2 KSP Residual norm 0.256215 
+   26 KSP Residual norm 1.29637e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.02622 
-      1 KSP Residual norm 0.234103 
-      2 KSP Residual norm 0.220957 
-   27 KSP Residual norm 1.14673e-05 
+      0 KSP Residual norm 1.07016 
+      1 KSP Residual norm 0.231779 
+      2 KSP Residual norm 0.215559 
+   27 KSP Residual norm 1.0999e-05 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.46067 
-      1 KSP Residual norm 0.171989 
-      2 KSP Residual norm 0.12643 
-   28 KSP Residual norm 8.35016e-06 
+      0 KSP Residual norm 1.52145 
+      1 KSP Residual norm 0.179749 
+      2 KSP Residual norm 0.128848 
+   28 KSP Residual norm 7.69586e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.08502 
-      1 KSP Residual norm 0.213294 
-      2 KSP Residual norm 0.206263 
-   29 KSP Residual norm 5.69551e-06 
+      0 KSP Residual norm 1.09106 
+      1 KSP Residual norm 0.2248 
+      2 KSP Residual norm 0.218933 
+   29 KSP Residual norm 5.36008e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.32764 
-      1 KSP Residual norm 0.37143 
-      2 KSP Residual norm 0.324284 
-   30 KSP Residual norm 4.24356e-06 
+      0 KSP Residual norm 1.38928 
+      1 KSP Residual norm 0.362369 
+      2 KSP Residual norm 0.311155 
+   30 KSP Residual norm 3.95292e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 0.787595 
-      1 KSP Residual norm 0.615105 
-      2 KSP Residual norm 0.605516 
-   31 KSP Residual norm 4.18757e-06 
+      0 KSP Residual norm 0.787234 
+      1 KSP Residual norm 0.604827 
+      2 KSP Residual norm 0.594809 
+   31 KSP Residual norm 3.90734e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 0.461205 
-      1 KSP Residual norm 0.105584 
-      2 KSP Residual norm 0.0861982 
-   32 KSP Residual norm 4.16188e-06 
+      0 KSP Residual norm 0.438189 
+      1 KSP Residual norm 0.100354 
+      2 KSP Residual norm 0.0786926 
+   32 KSP Residual norm 3.87978e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.17421 
-      1 KSP Residual norm 0.190819 
-      2 KSP Residual norm 0.101237 
-   33 KSP Residual norm 4.14475e-06 
+      0 KSP Residual norm 1.16469 
+      1 KSP Residual norm 0.200291 
+      2 KSP Residual norm 0.105933 
+   33 KSP Residual norm 3.85955e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.33057 
-      1 KSP Residual norm 0.153827 
-      2 KSP Residual norm 0.0476084 
-   34 KSP Residual norm 4.11773e-06 
+      0 KSP Residual norm 1.5258 
+      1 KSP Residual norm 0.181746 
+      2 KSP Residual norm 0.057758 
+   34 KSP Residual norm 3.83246e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 0.94559 
-      1 KSP Residual norm 0.0703459 
-      2 KSP Residual norm 0.0310559 
-   35 KSP Residual norm 3.96021e-06 
+      0 KSP Residual norm 1.19698 
+      1 KSP Residual norm 0.0787679 
+      2 KSP Residual norm 0.0354814 
+   35 KSP Residual norm 3.66619e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.07047 
-      1 KSP Residual norm 0.226314 
-      2 KSP Residual norm 0.0959757 
-   36 KSP Residual norm 3.76597e-06 
+      0 KSP Residual norm 1.0036 
+      1 KSP Residual norm 0.213118 
+      2 KSP Residual norm 0.104511 
+   36 KSP Residual norm 3.4931e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.41068 
-      1 KSP Residual norm 0.204239 
-      2 KSP Residual norm 0.0775191 
-   37 KSP Residual norm 3.35368e-06 
+      0 KSP Residual norm 1.31574 
+      1 KSP Residual norm 0.210048 
+      2 KSP Residual norm 0.0807956 
+   37 KSP Residual norm 3.17012e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.95356 
-      1 KSP Residual norm 0.247119 
-      2 KSP Residual norm 0.113699 
-   38 KSP Residual norm 2.63842e-06 
+      0 KSP Residual norm 2.02226 
+      1 KSP Residual norm 0.278904 
+      2 KSP Residual norm 0.108493 
+   38 KSP Residual norm 2.52737e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.27074 
-      1 KSP Residual norm 0.233129 
-      2 KSP Residual norm 0.214828 
-   39 KSP Residual norm 2.34321e-06 
+      0 KSP Residual norm 1.51039 
+      1 KSP Residual norm 0.230619 
+      2 KSP Residual norm 0.205852 
+   39 KSP Residual norm 2.16937e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.20681 
-      1 KSP Residual norm 0.192995 
-      2 KSP Residual norm 0.131509 
-   40 KSP Residual norm 2.33917e-06 
+      0 KSP Residual norm 1.41434 
+      1 KSP Residual norm 0.202311 
+      2 KSP Residual norm 0.156626 
+   40 KSP Residual norm 2.1601e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.85345 
-      1 KSP Residual norm 0.313132 
-      2 KSP Residual norm 0.0979888 
-   41 KSP Residual norm 2.27991e-06 
+      0 KSP Residual norm 1.7393 
+      1 KSP Residual norm 0.280888 
+      2 KSP Residual norm 0.0871883 
+   41 KSP Residual norm 2.12216e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.7281 
-      1 KSP Residual norm 0.27449 
-      2 KSP Residual norm 0.164804 
-   42 KSP Residual norm 2.23791e-06 
+      0 KSP Residual norm 1.75397 
+      1 KSP Residual norm 0.279145 
+      2 KSP Residual norm 0.154592 
+   42 KSP Residual norm 2.079e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.21782 
-      1 KSP Residual norm 0.169645 
-      2 KSP Residual norm 0.129912 
-   43 KSP Residual norm 2.21786e-06 
+      0 KSP Residual norm 1.12401 
+      1 KSP Residual norm 0.155744 
+      2 KSP Residual norm 0.131357 
+   43 KSP Residual norm 2.05867e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.3971 
-      1 KSP Residual norm 0.173034 
-      2 KSP Residual norm 0.102927 
-   44 KSP Residual norm 2.21641e-06 
+      0 KSP Residual norm 1.51986 
+      1 KSP Residual norm 0.171536 
+      2 KSP Residual norm 0.107456 
+   44 KSP Residual norm 2.05802e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.04668 
-      1 KSP Residual norm 0.187899 
-      2 KSP Residual norm 0.107428 
-   45 KSP Residual norm 2.05817e-06 
+      0 KSP Residual norm 1.09418 
+      1 KSP Residual norm 0.164536 
+      2 KSP Residual norm 0.104262 
+   45 KSP Residual norm 1.91427e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.04614 
-      1 KSP Residual norm 0.15225 
-      2 KSP Residual norm 0.129869 
-   46 KSP Residual norm 1.67125e-06 
+      0 KSP Residual norm 1.25246 
+      1 KSP Residual norm 0.162801 
+      2 KSP Residual norm 0.133885 
+   46 KSP Residual norm 1.55119e-06 
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 0.925699 
-      1 KSP Residual norm 0.196818 
-      2 KSP Residual norm 0.165977 
-   47 KSP Residual norm 1.06653e-06 
+      0 KSP Residual norm 0.940705 
+      1 KSP Residual norm 0.1921 
+      2 KSP Residual norm 0.165399 
+   47 KSP Residual norm 9.7991e-07 
   Linear solve converged due to CONVERGED_RTOL iterations 47
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 4.03e-02 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.78e-03 (sec)
 SNES Object: 8 MPI processes
   type: ksponly
   maximum iterations=50, maximum function evaluations=10000
@@ -553,7 +553,7 @@ SNES Object: 8 MPI processes
           Down solver (pre-smoother) on level 2 -------------------------------
             KSP Object:            (fieldsplit_u_mg_levels_2_)             8 MPI processes
               type: chebyshev
-                Chebyshev: eigenvalue estimates:  min = 0.496672, max = 2.73169
+                Chebyshev: eigenvalue estimates:  min = 0.494526, max = 2.71989
                 Chebyshev: eigenvalues estimated using gmres with translations  [0 0.2; 0 1.1]
                 KSP Object:                (fieldsplit_u_mg_levels_2_esteig_)                 8 MPI processes
                   type: gmres
@@ -719,7 +719,7 @@ SNES Object: 8 MPI processes
                   Down solver (pre-smoother) on level 2 -------------------------------
                     KSP Object:                    (fieldsplit_u_mg_levels_2_)                     8 MPI processes
                       type: chebyshev
-                        Chebyshev: eigenvalue estimates:  min = 0.496672, max = 2.73169
+                        Chebyshev: eigenvalue estimates:  min = 0.494526, max = 2.71989
                         Chebyshev: eigenvalues estimated using gmres with translations  [0 0.2; 0 1.1]
                         KSP Object:                        (fieldsplit_u_mg_levels_2_esteig_)                         8 MPI processes
                           type: gmres
@@ -768,12 +768,12 @@ SNES Object: 8 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=107811, cols=16384 
           (1,0) : prefix="Bpu_", type=shell, rows=16384, cols=107811 
           (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=16384, cols=16384 
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 1.29e-03 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; cpu time 7.98e-04 (sec)
 [[ModelOutput_ViscousSinker]]
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 3.78e-02 (sec) 
-pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 2.09e-02 (sec) 
-  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 2.2528e-02 [accepted] | ==>> dt used = 2.2528e-02 |
-  TimeStep control(StkSurfaceCourant): | current = 2.2528e-02 : trial = 5.9387e+31 | ==>> dt used = 2.2528e-02 |
-  timestep[] dt_courant = 2.2528e-02 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 6.34e-02 (sec) 
+pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 6.57e-02 (sec) 
+  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 2.2602e-02 [accepted] | ==>> dt used = 2.2602e-02 |
+  TimeStep control(StkSurfaceCourant): | current = 2.2602e-02 : trial = 5.9601e+31 | ==>> dt used = 2.2602e-02 |
+  timestep[] dt_courant = 2.2602e-02 

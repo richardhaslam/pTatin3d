@@ -42,4 +42,5 @@
 -snes_type ksponly
 -snes_view
 -stk_velocity_dm_mat_type aij
+-lattice_layout_perturb 0.0
 #End of PETSc Option Table entries

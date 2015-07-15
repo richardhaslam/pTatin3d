@@ -48,4 +48,5 @@
 -stk_velocity_da_refine_hierarchy_x 2,4
 -stk_velocity_da_refine_hierarchy_y 2,1
 -stk_velocity_da_refine_hierarchy_z 2,4
+-lattice_layout_perturb 0.0
 #End of PETSc Option Table entries

@@ -15,4 +15,5 @@
 -output_path pt3dout
 -perform_viscous_solve_A11asm_operator
 -ptatin_model viscous_sinker
+-lattice_layout_perturb 0.0
 #End of PETSc Option Table entries
