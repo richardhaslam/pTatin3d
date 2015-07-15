@@ -1,7 +1,6 @@
 pTatin3D is a software package designed for studying long time-scale processes
 relevant to geodynamics. The original motivation for this development was to
-provide the community with an open-source toolkit capable of studying high-resolution,
-three-dimensional models of lithospheric deformation.
+provide the community with an open-source toolkit capable of studying high-resolution, three-dimensional models of lithospheric deformation.
 
 Unique to this package is that we provide fast, parallel scalable matrix-free 
 definitions for the Stokes operators which are utilized by a hybrid 
@@ -12,7 +11,7 @@ pTatin3D includes the following:
 * mixed finite elements (Q2-P1_disc) for the Stokes problem
 * material points for tracking Lagrangian state and history variables
 * energy equation solved with Q1 elements + SUPG
-* ALE formulations (with a varierty of remeshing solutions)
+* ALE formulations (with a variety of remeshing solutions)
 * extensible rheology components (currently supports: iso-viscous, Frank-Kamenetskii, Arrhenius, power-law, von Mises, Drucker Prager)
 * full support for spatio-temporal Dirichlet and non-zero Neumann boundary conditions
 * extensible coupling with landscape evolution models (current support for FastScape)
