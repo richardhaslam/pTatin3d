@@ -102,10 +102,10 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
     PetscMalloc(sizeof(PetscScalar)*_nnz,&_avals);
     
     for (i=0; i<_Nlocal+1; i++) {
-        _ia[i] = (int)wsmp->IA[i];
+        _ia[i] = (PetscInt)wsmp->IA[i];
     }
     for (i=0; i<_nnz; i++) {
-        _ja[i] = (int)wsmp->JA[i];
+        _ja[i] = (PetscInt)wsmp->JA[i];
         _avals[i] = (PetscScalar)wsmp->AVALS[i];
     }
     
@@ -411,12 +411,13 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nn
             nnz_i = ia[i+1]-ia[i];
             for (j=cnt; j<cnt+nnz_i; j++) {
                 if (ja[j] >= (i+start)) {
-                    PetscReal abs_value;
+                    PetscReal value,abs_value;
                     
+                    value     = PetscRealPart(array[j]);
                     abs_value = PetscAbsReal(array[j]);
                     if (abs_value > drop_tol) {
                     
-                        vals[idx] = (double)array[j];
+                        vals[idx] = value;
                         if (idx >= nnz_ut) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"aij[] failed");}
                         idx++;
                         
