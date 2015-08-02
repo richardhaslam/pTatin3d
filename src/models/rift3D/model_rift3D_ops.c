@@ -392,9 +392,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 		MPntStd       *material_point;
 		MPntPStokes   *mpprop_stokes;
 		MPntPStokesPl *mpprop_pls;
-		double        *position,ycoord,xcoord,zcoord;
-		double        rho;
-		float         pls;
+		PetscReal     *position,ycoord,xcoord,zcoord;
+		PetscReal     rho;
+		PetscReal     pls;
 		char          yield;
 		
 		DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
@@ -405,11 +405,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 		MPntStdGetField_global_coord(material_point,&position);
 		
 		/* convert to scaled units */
+		xcoord = position[0] * data->length_bar;
 		ycoord = position[1] * data->length_bar;
-		xcoord=position[0] * data->length_bar;
-		zcoord=position[2] * data->length_bar;
-		y_moho     = -30.0e3;
-		/*if (abs(data->Lx * data->length_bar/2 - xcoord)<40.e3  & abs(data->Lz * data->length_bar/2 - zcoord) < 40e3){ 
+		zcoord = position[2] * data->length_bar;
+		y_moho = -30.0e3;
+		/*if (PetscAbsReal(data->Lx * data->length_bar/2 - xcoord)<40.e3  && PetscAbsReal(data->Lz * data->length_bar/2 - zcoord) < 40e3){ 
 			y_moho     = -50.0e3;
 		}*/
 		if (ycoord<y_lab) {
@@ -418,8 +418,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 		} else if (ycoord<y_moho) {
 			phase = 2;
 			rho   = DensConst_data[2].density;
-            //if (abs(data->Lx * data->length_bar/2 - xcoord)<40.e3  & abs(data->Lz * data->length_bar/2 - zcoord  ) < 40e3 & ycoord > -50.0e3){
-            if ((zcoord<150.e3)  && (abs(data->Lx * data->length_bar/2 - xcoord  ) < 40e3) && (ycoord > -50.0e3)){    
+            //if (PetscAbsReal(data->Lx * data->length_bar/2 - xcoord)<40.e3  && PetscAbsReal(data->Lz * data->length_bar/2 - zcoord  ) < 40e3 && ycoord > -50.0e3){
+            if ((zcoord < 150.e3)  && (PetscAbsReal(data->Lx * data->length_bar/2 - xcoord  ) < 40e3) && (ycoord > -50.0e3)){    
             phase = 4;
             rho   = DensConst_data[4].density;   
             }

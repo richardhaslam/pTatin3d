@@ -669,7 +669,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	if (rank==0) {
 		pTatinGenerateFormattedTimestamp(user->formatted_timestamp);	
 	}
-	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
 	/* create output directory */
 	flg = PETSC_FALSE;

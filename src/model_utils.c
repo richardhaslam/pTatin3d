@@ -284,9 +284,8 @@ PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 	
 	maxi = 0.0;
 	for (i=1; i<n; i++) {
-		
-		if (abs(rnoise[i]) > maxi) {
-			maxi = abs(rnoise[i]);
+		if (PetscAbsReal(rnoise[i]) > maxi) {
+			maxi = PetscAbsReal(rnoise[i]);
 		}
 	}
 	for (i=1; i<n; i++) {

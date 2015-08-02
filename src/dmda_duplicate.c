@@ -56,7 +56,6 @@ PetscErrorCode DMDADuplicateLayout(DM da1,PetscInt dof2,PetscInt sw2,DMDAStencil
 
     if (dof2==PETSC_DECIDE) { dof2 = dof1; }
     if (sw2==PETSC_DECIDE)  {  sw2 = sw1;  }
-    if (st2==PETSC_DECIDE)  {  st2 = st1;  }
 
     if (dim1==1) {
         ierr = DMDAGetOwnershipRanges(da1,&lx,NULL,NULL);CHKERRQ(ierr);

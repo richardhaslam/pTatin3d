@@ -1082,7 +1082,7 @@ PetscErrorCode GeometryObjectSetFromOptions_HalfSpace(GeometryObject go)
 	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
 
 	ierr = PetscOptionsGetInt(name,"-sign",&ival,&flg);CHKERRQ(ierr);
-	if (flg) { ctx->sign = (GeomRotateAxis)ival; }
+	if (flg) { ctx->sign = (GeomSign)ival; }
 	
 	PetscFunctionReturn(0);
 }
