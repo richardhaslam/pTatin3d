@@ -767,6 +767,16 @@ def Generate_pTatin_QuadraturePointVolumeCoefficientSPM_nonlinear_diffusivity():
 
 	PARTICLE_CLASS_GENERATOR( ClassName, ClassShortName, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
+def Generate_pTatin3d_QuadraturePointVolumeCoefficientEVSS():
+	ParticleClass      = 'QPntVolCoefEVSS'
+	ParticleClassShort = 'QPVCEVSS'
+	variable_name_list = [ 'tau' ]
+	variable_type_list = [ 'double' ]
+	variable_extend_list        = [ 6 ]
+	variable_textural_name_list = [ 'deviatoric_stress' ]
+
+	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
+
 
 # ==================================================================================
 # Material point fields
@@ -817,13 +827,13 @@ def Generate_pTatin_MaterialPointEnergy():
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
 
-def Generate_pTatin_MaterialPointViscoElasticity():
-	ParticleClass      = 'MPntPStokesVE'
-	ParticleClassShort = 'MPPStkVE'
-	variable_name_list = [ 'tau',      'mu' ]
-	variable_type_list = [ 'double',   'double'      ]
-	variable_extend_list        = [ 6, 1  ]
-	variable_textural_name_list = [ 'deviatoric_stress', 'shear_modulus' ]
+def Generate_pTatin_MaterialPointEVSS():
+	ParticleClass      = 'MPntPEVSS'
+	ParticleClassShort = 'MPPEVSS'
+	variable_name_list = [ 'tau',      'mu',     'eta_e' ]
+	variable_type_list = [ 'double',   'double', 'double']
+	variable_extend_list        = [ 6, 1, 1  ]
+	variable_textural_name_list = [ 'deviatoric_stress', 'shear_modulus', 'solid_viscosity' ]
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
@@ -945,6 +955,9 @@ def Generate_pTatin_MaterialConst_SoftExpo():
 Generate_pTatin3d_QuadraturePointVolumeCoefficientStokes()
 Generate_pTatin3d_QuadraturePointSurfaceCoefficientStokes()
 
+# Elasto-Viscous-Stress-Split
+Generate_pTatin3d_QuadraturePointVolumeCoefficientEVSS()
+
 # Energy
 Generate_pTatin_QuadraturePointVolumeCoefficientEnergy()
 
@@ -953,7 +966,7 @@ Generate_pTatin3d_MaterialPointStandard()
 Generate_pTatin_MaterialPointStokesData()
 Generate_pTatin_MaterialPointStokesPlastic()
 Generate_pTatin_MaterialPointEnergy()
-Generate_pTatin_MaterialPointViscoElasticity()
+Generate_pTatin_MaterialPointEVSS() # Elasto-Viscous-Stress-Split
 
 ## material constants ##
 Generate_pTatin_MaterialConst_ViscosityConst()
