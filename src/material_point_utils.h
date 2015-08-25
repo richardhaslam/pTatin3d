@@ -36,6 +36,7 @@
 #include "MPntPStokes_def.h"
 #include "MPntPStokesPl_def.h"
 #include "MPntPEnergy_def.h"
+#include "MPntPEVSS_def.h"
 #include "quadrature.h"
 
 /* add material points into the list */

@@ -1774,7 +1774,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	BCList         u_bclist[MAX_MG_LEVELS];
 	AuuMultiLevelCtx mlctx;
 	PetscInt         newton_its,picard_its;
-	PetscBool        active_energy;
+	PetscBool        active_energy,active_evss;
 	Vec              T,f;
 	RheologyType     init_rheology_type;
 	PetscBool        monitor_stages = PETSC_FALSE,write_icbc = PETSC_FALSE;
@@ -1867,6 +1867,22 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		pTatinGetRangeCurrentMemoryUsage(NULL);
 	}
 	
+  PetscOptionsGetBool(NULL,"-activate_evss",&active_evss,NULL);
+  if (active_evss) {
+    DataBucket mp_db;
+    Quadrature q;
+    
+    /* add material point quantities */
+    ierr = pTatinGetMaterialPoints(user,&mp_db,NULL);CHKERRQ(ierr);
+    DataBucketRegisterField(mp_db,MPntPEVSS_classname,sizeof(MPntPEVSS),NULL);
+    DataBucketFinalize(mp_db);
+    
+    /* add quadrature point quantities */
+    ierr = PhysCompStokesGetVolumeQuadrature(stokes,&q);CHKERRQ(ierr);
+    DataBucketRegisterField(q->properties_db,QPntVolCoefEVSS_classname, sizeof(QPntVolCoefEVSS),NULL);
+    DataBucketFinalize(q->properties_db);
+  }
+  
 	/* interpolate material point coordinates (needed if mesh was modified) */
 	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 	
