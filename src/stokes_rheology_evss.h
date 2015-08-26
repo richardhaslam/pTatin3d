@@ -31,5 +31,7 @@
 #define __ptatin_stokes_rheology_evssh__
 
 PetscErrorCode MPntPEVSSProjection_P0(PetscReal dt,const int npoints,MPntStd mp_std[],MPntPEVSS mp_evss[],DM dmu,Quadrature Q);
+PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[]);
+PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_EVSS(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[]);
 
 #endif

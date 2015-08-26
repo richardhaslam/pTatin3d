@@ -384,3 +384,113 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(pTatinCtx user,
   PetscFunctionReturn(0);
 }
 
+static inline void ComputeGradU3d(PetscReal ux[],PetscReal uy[],PetscReal uz[],
+                                  PetscReal dNudx[],PetscReal dNudy[],PetscReal dNudz[],PetscReal L[])
+{
+	PetscInt k;
+
+	for (k=0; k<9; k++) {
+    L[k] = 0.0;
+  }
+	
+	for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+		L[0] += dNudx[k] * ux[k]; // du/dx_j
+		L[1] += dNudy[k] * ux[k];
+		L[2] += dNudz[k] * ux[k];
+
+		L[3] += dNudx[k] * uy[k]; // dv/dx_j
+		L[4] += dNudy[k] * uy[k];
+		L[5] += dNudz[k] * uy[k];
+
+    L[6] += dNudx[k] * uz[k]; // dw/dx_j
+		L[7] += dNudy[k] * uz[k];
+		L[8] += dNudz[k] * uz[k];
+  }
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "StokesCoefficient_UpdateTimeDependentQuantities_EVSS"
+PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_EVSS(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[])
+{
+  PetscErrorCode ierr;
+  DM             cda;
+  Vec            gcoords;
+  PetscScalar    *LA_gcoords;
+  int            pidx,n_mp_points;
+  DataBucket     db;
+  DataField      PField_std,PField;
+  PetscInt       nel,nen_u,k;
+  const PetscInt *elnidx_u;
+  PetscReal      elcoords[3*Q2_NODES_PER_EL_3D];
+  PetscReal      elu[3*Q2_NODES_PER_EL_3D];
+  PetscReal      ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
+  PetscReal      GNI[3][Q2_NODES_PER_EL_3D];
+  PetscReal      dNudx[Q2_NODES_PER_EL_3D],dNudy[Q2_NODES_PER_EL_3D],dNudz[Q2_NODES_PER_EL_3D];
+  int            eidx_mp;
+  double         *xi_mp;
+  PetscReal      L_mp[9];
+  PetscReal      dt;
+  PetscFunctionBegin;
+  
+  /* access current time step */
+  ierr = pTatinGetTimestep(user,&dt);CHKERRQ(ierr);
+  
+  /* access material point information */
+  ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
+  
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+  DataFieldGetAccess(PField_std);s
+  DataBucketGetDataFieldByName(db,MPntPEVSS_classname,&PField);
+  DataFieldGetAccess(PField);
+  
+  DataBucketGetSizes(db,&n_mp_points,0,0);
+  
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  
+  /* setup for elements */
+  ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+  
+  /* marker loop */
+  for (pidx=0; pidx<n_mp_points; pidx++) {
+    MPntStd   *mpprop_std;
+    MPntPEVSS *mpprop;
+    
+    DataFieldAccessPoint(PField_std, pidx,(void**)&mpprop_std);
+    DataFieldAccessPoint(PField,     pidx,(void**)&mpprop);
+    
+    eidx_mp = mpprop_std->wil;
+    
+    /* Get element coordinates */
+    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx_mp],LA_gcoords);CHKERRQ(ierr);
+    
+    /* Get element velocity */
+    ierr = DMDAGetVectorElementFieldQ2_3D(elu,(PetscInt*)&elnidx_u[nen_u*eidx_mp],ufield);CHKERRQ(ierr);
+
+    /* get velocity components */
+    for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+      ux[k] = elu[3*k  ];
+      uy[k] = elu[3*k+1];
+      uz[k] = elu[3*k+2];
+    }
+    
+    /* Get local coordinate of marker */
+    xi_mp = mpprop_std->xi;
+    
+    /* Prepare basis functions derivatives */
+    P3D_ConstructGNi_Q2_3D(xi_mp,GNI);
+    P3D_evaluate_global_derivatives_Q2(elcoords,GNI,dNudx,dNudy,dNudz);
+    
+    /* strain rate */
+    ComputeGradU3d(ux,uy,uz,dNudx,dNudy,dNudz,L_mp);
+    
+    ierr = EVSSUpdateExtraStress_Jaumman(dt,L_mp,mpprop);CHKERRQ(ierr);
+  }
+  DataFieldRestoreAccess(PField);
+  DataFieldRestoreAccess(PField_std);
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
