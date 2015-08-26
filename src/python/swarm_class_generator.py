@@ -767,13 +767,13 @@ def Generate_pTatin_QuadraturePointVolumeCoefficientSPM_nonlinear_diffusivity():
 
 	PARTICLE_CLASS_GENERATOR( ClassName, ClassShortName, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
-def Generate_pTatin3d_QuadraturePointVolumeCoefficientEVSS():
-	ParticleClass      = 'QPntVolCoefEVSS'
-	ParticleClassShort = 'QPVCEVSS'
-	variable_name_list = [ 'tau' ]
+def Generate_pTatin3d_QuadraturePointVolumeCoefficientSymTens():
+	ParticleClass      = 'QPntVolCoefSymTens'
+	ParticleClassShort = 'QPVCSymTens'
+	variable_name_list = [ 'T' ]
 	variable_type_list = [ 'double' ]
 	variable_extend_list        = [ 6 ]
-	variable_textural_name_list = [ 'deviatoric_stress' ]
+	variable_textural_name_list = [ 'symmetric_tensir' ]
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
@@ -956,7 +956,7 @@ Generate_pTatin3d_QuadraturePointVolumeCoefficientStokes()
 Generate_pTatin3d_QuadraturePointSurfaceCoefficientStokes()
 
 # Elasto-Viscous-Stress-Split
-Generate_pTatin3d_QuadraturePointVolumeCoefficientEVSS()
+Generate_pTatin3d_QuadraturePointVolumeCoefficientSymTens()
 
 # Energy
 Generate_pTatin_QuadraturePointVolumeCoefficientEnergy()
