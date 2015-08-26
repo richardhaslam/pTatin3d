@@ -122,8 +122,8 @@
 #define __FUNCT__ "EVSSComputeViscosities"
 PetscErrorCode EVSSComputeViscosities(PetscReal alpha,PetscReal eta_ref,PetscReal *eta_v,PetscReal *eta_e)
 {
-  if (eta_v) *eta_v = alpha * eta_ref;
-  if (eta_e) *eta_e = (1.0-alpha) * eta_ref;
+  if (eta_v) *eta_v = (1.0 - alpha) * eta_ref;
+  if (eta_e) *eta_e = alpha * eta_ref;
   PetscFunctionReturn(0);
 }
 
@@ -365,8 +365,8 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(pTatinCtx user,
   
   alpha = 0.5;
   PetscOptionsGetReal(NULL,"-evss_alpha",&alpha,NULL);
-  if (alpha < 1.0e-10) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-evss_alpha > 0");
-  if (alpha > 1.0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-evss_alpha <= 1 ");
+  if (alpha < 0.0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-evss_alpha >= 0");
+  if (alpha > 0.999999) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-evss_alpha < 1 ");
   
   for (pidx=0; pidx<n_mp_points; pidx++) {
     MPntStd     *mp;
