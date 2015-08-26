@@ -118,6 +118,15 @@
 #include "element_utils_q1.h"
 
 
+#undef __FUNCT__
+#define __FUNCT__ "EVSSComputeViscosities"
+PetscErrorCode EVSSComputeViscosities(PetscReal alpha,PetscReal eta_ref,PetscReal *eta_v,PetscReal *eta_e)
+{
+  if (eta_v) *eta_v = alpha * eta_ref;
+  if (eta_e) *eta_e = (1.0-alpha) * eta_ref;
+  PetscFunctionReturn(0);
+}
+
 /*
  tau = 2 eta_v E[u] + tau_e
 */
@@ -323,8 +332,8 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(pTatinCtx user,
   int            pidx,n_mp_points;
   DataBucket     db;
   DataField      PField_std,PField_stokes,PField_evss;
-  double         eta_v,eta_e,mu,lambda,factor,eta0;
-  PetscReal      dt;
+  double         eta_ref,eta_v,eta_e,mu,lambda,factor,eta0;
+  PetscReal      dt,alpha;
   int            region_idx;
 	DataBucket                   material_constants;
 	MaterialConst_ViscosityConst *ViscConst_data;
@@ -354,6 +363,11 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(pTatinCtx user,
 	DataBucketGetDataFieldByName(material_constants,MaterialConst_ViscosityConst_classname,&PField_ViscConst);
   DataFieldGetEntries(PField_ViscConst,(void**)&ViscConst_data);
   
+  alpha = 0.5;
+  PetscOptionsGetReal(NULL,"-evss_alpha",&alpha,NULL);
+  if (alpha < 1.0e-10) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-evss_alpha > 0");
+  if (alpha > 1.0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-evss_alpha <= 1 ");
+  
   for (pidx=0; pidx<n_mp_points; pidx++) {
     MPntStd     *mp;
     MPntPStokes *mpprop_stokes;
@@ -365,16 +379,18 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(pTatinCtx user,
     
     MPntStdGetField_phase_index(mp,&region_idx);
     
-    eta_v = ViscConst_data[region_idx].eta0;
+    eta_ref = ViscConst_data[region_idx].eta0;
 
-    MPntPEVSSGetField_solid_viscosity(mpprop_evss,&eta_e);
     MPntPEVSSGetField_shear_modulus(mpprop_evss,&mu);
+
+    ierr = EVSSComputeViscosities(alpha,eta_ref,&eta_v,&eta_e);CHKERRQ(ierr);
     
     lambda = eta_e/mu;
     factor = dt / (dt + lambda);
     
     eta0 = eta_v + factor * eta_e;
     
+    MPntPEVSSSetField_solid_viscosity(mpprop_evss,eta_e);
     MPntPStokesSetField_eta_effective(mpprop_stokes,eta0);
   }
   DataFieldRestoreAccess(PField_evss);
