@@ -40,6 +40,7 @@
 #include "stokes_rheology_viscous.h"
 #include "stokes_rheology_vp_std.h"
 #include "stokes_rheology_lava.h"
+#include "stokes_rheology_evss.h"
 
 
 #undef __FUNCT__
@@ -211,7 +212,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
     DataBucketGetDataFieldByName(user->materialpoint_db,MPntPEVSS_classname,&PField_evss);
     DataFieldGetEntries(PField_evss,(void**)&mp_symtens);
     
-    ierr = MPntPSymTensProj_P0(npoints,mp_std,mp_symtens,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+    ierr = MPntPEVSSProjection_P0(npoints,mp_std,mp_symtens,stokes->dav,stokes->volQ);CHKERRQ(ierr);
   }
   
 	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
