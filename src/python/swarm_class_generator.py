@@ -773,7 +773,7 @@ def Generate_pTatin3d_QuadraturePointVolumeCoefficientSymTens():
 	variable_name_list = [ 'T' ]
 	variable_type_list = [ 'double' ]
 	variable_extend_list        = [ 6 ]
-	variable_textural_name_list = [ 'symmetric_tensir' ]
+	variable_textural_name_list = [ 'symmetric_tensor' ]
 
 	PARTICLE_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list )
 
