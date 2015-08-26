@@ -138,12 +138,12 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			
     case RHEOLOGY_VISCOUS_EVSS:
 			if (been_here == 0) PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS_EVSS selected ***\n");
-      
+      ierr = EvaluateRheologyNonlinearitiesMarkers_ViscousEVSS(user,dau,u,dap,p);CHKERRQ(ierr);
       break;
 
     case RHEOLOGY_VPSTD_EVSS:
 			if (been_here == 0) PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VPSTD_EVSS selected ***\n");
-      
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"VPTSTD+EVSS is not available yet");
       break;
       
 		default:
@@ -203,6 +203,7 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 			break;
 	}
 
+  /* Project the stress coefficient */
   if (rheo->rheology_type == RHEOLOGY_VISCOUS_EVSS || rheo->rheology_type == RHEOLOGY_VPSTD_EVSS) {
     DataField PField_evss;
     MPntPEVSS *mp_evss;
@@ -322,14 +323,14 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 			break;
 
 		case RHEOLOGY_VISCOUS_EVSS:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS_EVSS is not implemented yet [TODO] ***\n");
-			}
+			if (been_here == 0) PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS_EVSS ***\n");
+			
+      ierr = StokesCoefficient_UpdateTimeDependentQuantities_EVSS(user,dau,u,dap,p);CHKERRQ(ierr);
 			break;
 		case RHEOLOGY_VPSTD_EVSS:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VPSTD_EVSS is not implemented yet [TODO] ***\n");
-			}
+			if (been_here == 0) PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS_EVSS ***\n");
+
+      ierr = StokesCoefficient_UpdateTimeDependentQuantities_EVSS(user,dau,u,dap,p);CHKERRQ(ierr);
 			break;
 			
 		default:
