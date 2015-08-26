@@ -82,5 +82,7 @@
 #define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P1GRel_3D(_xi,coords,Ni)
 #endif
 
+typedef enum { voigt_xx=0, voigt_yy, voigt_zz, voigt_xy, voigt_xz, voigt_yz } TensorVoigt;
+
 #endif
 
