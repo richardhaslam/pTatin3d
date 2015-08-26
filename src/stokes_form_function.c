@@ -40,6 +40,7 @@
 #include "dmda_element_q2p1.h"
 #include "element_utils_q2.h"
 #include "QPntVolCoefStokes_def.h"
+#include "QPntVolCoefSymTens_def.h"
 #include "quadrature.h"
 
 //#define NQP 27
@@ -784,6 +785,97 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
+}
+
+/*
+ Adds contibution
+   F = F - div(T)
+ where A is a symmetric rank 2 tensor to the non-linear residual.
+
+ The weak form will be
+   \int_\Omega grad(u):T
+*/
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal_U_DivSymTens"
+PetscErrorCode FormFunctionLocal_U_DivSymTens(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Ru[])
+{
+  PetscErrorCode     ierr;
+  PetscInt           p,nqp,nel,nen_u,nen_p,e,k;
+  Quadrature         volQ;
+  DataField          PField;
+  DM                 cda;
+  Vec                gcoords;
+  PetscReal          *LA_gcoords;
+  const PetscInt     *elnidx_u,*elnidx_p;
+  PetscReal          elcoords[3*Q2_NODES_PER_EL_3D],Fe[3*Q2_NODES_PER_EL_3D];
+  PetscInt           vel_el_lidx[3*U_BASIS_FUNCTIONS];
+  QPntVolCoefSymTens *quadrature_T,*cell_quadrature_T;
+  PetscReal          WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+  PetscReal          detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+  PetscLogDouble     t0,t1;
+  PetscFunctionBegin;
+  
+  /* quadrature */
+  volQ = user->volQ;
+  nqp = user->volQ->npoints;
+  P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
+  
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  
+  ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
+  
+  //ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
+  DataBucketGetDataFieldByName(volQ->properties_db,QPntVolCoefSymTens_classname,&PField);
+  DataFieldGetEntries(PField,(void**)&quadrature_T);
+  
+  PetscTime(&t0);
+  for (e=0;e<nel;e++) {
+    
+    ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+    
+    //ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+    cell_quadrature_T = &quadrature_T[e*nqp];
+    
+    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
+    
+    P3D_evaluate_geometry_elementQ2(nqp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
+    
+    PetscMemzero( Fe, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D*3 );
+    for (p=0; p<nqp; p++) {
+      PetscScalar  txx,tyy,tzz,txy,txz,tyz;
+      PetscScalar fac;
+      
+      fac = WEIGHT[p] * detJ[p];
+      
+      /* stored deviatoric stress */
+      txx = cell_quadrature_T[p].T[voigt_xx];
+      tyy = cell_quadrature_T[p].T[voigt_yy];
+      tzz = cell_quadrature_T[p].T[voigt_zz];
+      
+      txy = cell_quadrature_T[p].T[voigt_xy];
+      txz = cell_quadrature_T[p].T[voigt_xz];
+      tyz = cell_quadrature_T[p].T[voigt_yz];
+      
+      for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+        Fe[3*k  ] += fac * ( dNudx[p][k]*txx   + dNudy[p][k]*txy   + dNudz[p][k]*txz );
+        Fe[3*k+1] += fac * ( dNudy[p][k]*tyy   + dNudx[p][k]*txy   + dNudz[p][k]*tyz );
+        Fe[3*k+2] += fac * ( dNudz[p][k]*tzz   + dNudx[p][k]*txz   + dNudy[p][k]*tyz );
+      }
+    }
+    
+    /* Add contibution */
+    ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
+  }
+  
+  PetscTime(&t1);
+  
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
