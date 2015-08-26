@@ -135,6 +135,16 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
       ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
 			break;
 			
+    case RHEOLOGY_VISCOUS_EVSS:
+			if (been_here == 0) PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS_EVSS selected ***\n");
+      
+      break;
+
+    case RHEOLOGY_VPSTD_EVSS:
+			if (been_here == 0) PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VPSTD_EVSS selected ***\n");
+      
+      break;
+      
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update is not defined");
 			break;
@@ -182,15 +192,28 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 		case 3: 			/* Perform P1 projection and interpolate back to quadrature points */
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
 			break;
-        case 4:
-            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
-            break;
-            
+
+    case 4:
+        ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
+        break;
+      
 		default:
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Viscosity projection type is not defined");
 			break;
 	}
 
+  if (rheo->rheology_type == RHEOLOGY_VISCOUS_EVSS || rheo->rheology_type == RHEOLOGY_VPSTD_EVSS) {
+    DataField PField_evss;
+    MPntPEVSS *mp_symtens;
+    
+    PetscPrintf(PETSC_COMM_WORLD,"[ptatin] Applying P0 projection of symmetric tensor");
+
+    DataBucketGetDataFieldByName(user->materialpoint_db,MPntPEVSS_classname,&PField_evss);
+    DataFieldGetEntries(PField_evss,(void**)&mp_symtens);
+    
+    ierr = MPntPSymTensProj_P0(npoints,mp_std,mp_symtens,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+  }
+  
 	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
 	
 	been_here = 1;
@@ -292,6 +315,17 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 		case RHEOLOGY_LAVA:
 			if (been_here == 0) {
 				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_LAVA is NULL ***\n");
+			}
+			break;
+
+		case RHEOLOGY_VISCOUS_EVSS:
+			if (been_here == 0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS_EVSS is not implemented yet [TODO] ***\n");
+			}
+			break;
+		case RHEOLOGY_VPSTD_EVSS:
+			if (been_here == 0) {
+				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VPSTD_EVSS is not implemented yet [TODO] ***\n");
 			}
 			break;
 			
