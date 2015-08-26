@@ -815,43 +815,41 @@ PetscErrorCode FormFunctionLocal_U_DivSymTens(PhysCompStokes user,DM dau,PetscSc
   PetscLogDouble     t0,t1;
   PetscFunctionBegin;
   
-  /* quadrature */
+  /* Get quadrature point information */
   volQ = user->volQ;
   nqp = user->volQ->npoints;
   P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
   
-  /* setup for coords */
+  /* Get mesh coordinates */
   ierr = DMGetCoordinateDM(dau,&cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dau,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
   
+  /* Get u/p space information (num elements, indices) */
   ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
   ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
-  
-  //ierr = VolumeQuadratureGetAllCellData_Stokes(user->volQ,&all_gausspoints);CHKERRQ(ierr);
+
+  /* Get quadrature point data */
   DataBucketGetDataFieldByName(volQ->properties_db,QPntVolCoefSymTens_classname,&PField);
   DataFieldGetEntries(PField,(void**)&quadrature_T);
   
   PetscTime(&t0);
-  for (e=0;e<nel;e++) {
+  for (e=0; e<nel;e++) {
     
     ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
-    
-    //ierr = VolumeQuadratureGetCellData_Stokes(user->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
-    cell_quadrature_T = &quadrature_T[e*nqp];
-    
     ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
     
     P3D_evaluate_geometry_elementQ2(nqp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
     
+    cell_quadrature_T = &quadrature_T[e*nqp];
+    
     PetscMemzero( Fe, sizeof(PetscScalar)* Q2_NODES_PER_EL_3D*3 );
     for (p=0; p<nqp; p++) {
-      PetscScalar  txx,tyy,tzz,txy,txz,tyz;
-      PetscScalar fac;
+      PetscScalar txx,tyy,tzz,txy,txz,tyz,fac;
       
       fac = WEIGHT[p] * detJ[p];
       
-      /* stored deviatoric stress */
+      /* Get stored symmetric stress */
       txx = cell_quadrature_T[p].T[voigt_xx];
       tyy = cell_quadrature_T[p].T[voigt_yy];
       tzz = cell_quadrature_T[p].T[voigt_zz];
@@ -861,19 +859,17 @@ PetscErrorCode FormFunctionLocal_U_DivSymTens(PhysCompStokes user,DM dau,PetscSc
       tyz = cell_quadrature_T[p].T[voigt_yz];
       
       for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-        Fe[3*k  ] += fac * ( dNudx[p][k]*txx   + dNudy[p][k]*txy   + dNudz[p][k]*txz );
-        Fe[3*k+1] += fac * ( dNudy[p][k]*tyy   + dNudx[p][k]*txy   + dNudz[p][k]*tyz );
-        Fe[3*k+2] += fac * ( dNudz[p][k]*tzz   + dNudx[p][k]*txz   + dNudy[p][k]*tyz );
+        Fe[3*k  ] += fac * ( dNudx[p][k]*txx + dNudy[p][k]*txy + dNudz[p][k]*txz );
+        Fe[3*k+1] += fac * ( dNudy[p][k]*tyy + dNudx[p][k]*txy + dNudz[p][k]*tyz );
+        Fe[3*k+2] += fac * ( dNudz[p][k]*tzz + dNudx[p][k]*txz + dNudy[p][k]*tyz );
       }
     }
     
-    /* Add contibution */
+    /* Add contibution to residual */
     ierr = DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(Ru, vel_el_lidx,Fe);CHKERRQ(ierr);
   }
-  
-  PetscTime(&t1);
-  
   ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  PetscTime(&t1);
   
   PetscFunctionReturn(0);
 }
