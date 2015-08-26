@@ -30,6 +30,6 @@
 #ifndef __ptatin_stokes_rheology_evss_h__
 #define __ptatin_stokes_rheology_evssh__
 
-PetscErrorCode MPntPEVSSProjection_P0(const int npoints,MPntStd mp_std[],MPntPEVSS mp_symtens[],DM dmu,Quadrature Q);
+PetscErrorCode MPntPEVSSProjection_P0(PetscReal dt,const int npoints,MPntStd mp_std[],MPntPEVSS mp_evss[],DM dmu,Quadrature Q);
 
 #endif

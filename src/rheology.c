@@ -205,14 +205,16 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
 
   if (rheo->rheology_type == RHEOLOGY_VISCOUS_EVSS || rheo->rheology_type == RHEOLOGY_VPSTD_EVSS) {
     DataField PField_evss;
-    MPntPEVSS *mp_symtens;
+    MPntPEVSS *mp_evss;
+    PetscReal dt;
     
     PetscPrintf(PETSC_COMM_WORLD,"[ptatin] Applying P0 projection of symmetric tensor");
 
     DataBucketGetDataFieldByName(user->materialpoint_db,MPntPEVSS_classname,&PField_evss);
-    DataFieldGetEntries(PField_evss,(void**)&mp_symtens);
+    DataFieldGetEntries(PField_evss,(void**)&mp_evss);
     
-    ierr = MPntPEVSSProjection_P0(npoints,mp_std,mp_symtens,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+    ierr = pTatinGetTimestep(user,&dt);CHKERRQ(ierr);
+    ierr = MPntPEVSSProjection_P0(dt,npoints,mp_std,mp_evss,stokes->dav,stokes->volQ);CHKERRQ(ierr);
   }
   
 	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
