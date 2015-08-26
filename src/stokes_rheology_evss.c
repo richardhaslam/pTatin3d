@@ -439,7 +439,8 @@ PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_EVSS(pTatinCtx us
   ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
   
   DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
-  DataFieldGetAccess(PField_std);s
+  DataFieldGetAccess(PField_std);
+  
   DataBucketGetDataFieldByName(db,MPntPEVSS_classname,&PField);
   DataFieldGetAccess(PField);
   
