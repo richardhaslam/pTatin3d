@@ -1783,6 +1783,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	PetscLogDouble   time[2];
 	PetscReal        surface_displacement_max = 1.0e32;
 	PetscReal        dt_factor = 10.0;
+  PetscErrorCode   (*FP_FormFunction_Stokes)(SNES,Vec,Vec,void*);
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
@@ -1995,7 +1996,19 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
     if (write_icbc) {
         ierr = pTatinModel_Output(model,user,X,"icbc");CHKERRQ(ierr);
 	}
-	
+
+  /* Determine form function to use */
+  FP_FormFunction_Stokes = FormFunction_Stokes;
+	if (activate_quasi_newton_coord_update) {
+    FP_FormFunction_Stokes = FormFunction_Stokes_QuasiNewtonX;
+  }
+  if (active_evss) {
+    FP_FormFunction_Stokes = FormFunction_StokesVE;
+    if (activate_quasi_newton_coord_update) {
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"EVSS is not compatible with quasi-newton coordinate update");
+    }
+  }
+  
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 
 #if 1
@@ -2010,11 +2023,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* --------------------------------------------------------- */
 		/* Define non-linear solver */
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		if (!activate_quasi_newton_coord_update) {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-		} else {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
-		}
+    ierr = SNESSetFunction(snes,F,FP_FormFunction_Stokes,user);CHKERRQ(ierr);
 		
         
 		// activate mffd via -snes_mf_operator
@@ -2125,11 +2134,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* --------------------------------------------------------- */
 		/* Define non-linear solver */
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		if (!activate_quasi_newton_coord_update) {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-		} else {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
-		}
+    ierr = SNESSetFunction(snes,F,FP_FormFunction_Stokes,user);CHKERRQ(ierr);
 		// activate mffd via -snes_mf_operator
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -2148,11 +2153,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
         ierr = SNESSetOptionsPrefix(snes_pc,"npc_");CHKERRQ(ierr);
         ierr = SNESComposeWithMGCtx(snes_pc,&mlctx);CHKERRQ(ierr);
 
-        if (!activate_quasi_newton_coord_update) {
-          ierr = SNESSetFunction(snes_pc,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-        } else {
-          ierr = SNESSetFunction(snes_pc,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
-        }
+        ierr = SNESSetFunction(snes_pc,F,FP_FormFunction_Stokes,user);CHKERRQ(ierr);
         // activate mffd via -snes_mf_operator
         ierr = SNESSetJacobian(snes_pc,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
         ierr = SNESSetFromOptions(snes_pc);CHKERRQ(ierr);
@@ -2220,11 +2221,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes_newton);CHKERRQ(ierr);
 		//ierr = SNESSetApplicationContext(snes_newton,(void*)user);CHKERRQ(ierr);
 		ierr = SNESSetOptionsPrefix(snes_newton,"n_");CHKERRQ(ierr);
-		if (!activate_quasi_newton_coord_update) {
-			ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-		} else {
-			ierr = SNESSetFunction(snes_newton,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
-		}
+    ierr = SNESSetFunction(snes_newton,F,FP_FormFunction_Stokes,user);CHKERRQ(ierr);
 		// Force mffd
 		ierr = SNESSetJacobian(snes_newton,B,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		
@@ -2434,11 +2431,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 		//ierr = SNESSetApplicationContext(snes,(void*)user);CHKERRQ(ierr);
 		
-		if (!activate_quasi_newton_coord_update) {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-		} else {
-			ierr = SNESSetFunction(snes,F,FormFunction_Stokes_QuasiNewtonX,user);CHKERRQ(ierr);
-		}
+    ierr = SNESSetFunction(snes,F,FP_FormFunction_Stokes,user);CHKERRQ(ierr);
 		ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
 		
 		//ierr = SNESStokesPCSetOptions_A(snes);CHKERRQ(ierr);
