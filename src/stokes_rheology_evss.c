@@ -169,7 +169,7 @@ PetscErrorCode EVSSUpdateExtraStress_Jaumman(PetscReal dt,PetscReal L[],MPntPEVS
   /* compute vorticity */
   for (ii=0; ii<3; ii++) {
     for (jj=0; jj<3; jj++) {
-      W[ii][jj] = 0.5 * ( L[ii+jj*3] - L[jj+ii*3] );
+      W[ii][jj] = 0.5 * ( L[3*ii+jj] - L[3*jj+ii] );
     }
   }
 
