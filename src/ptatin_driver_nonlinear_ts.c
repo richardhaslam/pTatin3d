@@ -1879,7 +1879,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
     
     /* add quadrature point quantities */
     ierr = PhysCompStokesGetVolumeQuadrature(stokes,&q);CHKERRQ(ierr);
-    DataBucketRegisterField(q->properties_db,QPntVolCoefEVSS_classname, sizeof(QPntVolCoefEVSS),NULL);
+    DataBucketRegisterField(q->properties_db,QPntVolCoefSymTens_classname, sizeof(QPntVolCoefSymTens),NULL);
     DataBucketFinalize(q->properties_db);
   }
   

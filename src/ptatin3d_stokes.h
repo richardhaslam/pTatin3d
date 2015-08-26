@@ -34,7 +34,7 @@
 //#include "petscdm.h"
 #include "QPntVolCoefStokes_def.h"
 #include "QPntSurfCoefStokes_def.h"
-#include "QPntVolCoefEVSS_def.h"
+#include "QPntVolCoefSymTens_def.h"
 #include "dmda_bcs.h"
 
 
