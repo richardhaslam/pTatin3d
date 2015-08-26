@@ -174,7 +174,7 @@ PetscErrorCode EVSSUpdateExtraStress_Jaumman(PetscReal dt,PetscReal L[],MPntPEVS
   }
 
   nsubsteps = 10;
-  dt_s = dt/((PetscReal)(nsubsteps-1));
+  dt_s = dt/((PetscReal)nsubsteps);
 
   /* Update spin over maxinc time sub-divisions */
   /* A better approach would be to use RK4 */
