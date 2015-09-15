@@ -787,14 +787,14 @@ static PetscErrorCode PCView_DMDARepart(PC pc,PetscViewer viewer)
             /* ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant preconditioner:\n");CHKERRQ(ierr); */
             ierr = PetscViewerASCIIPrintf(viewer,"  DMDARepart: parent comm size reduction factor = %D\n",red->nsubcomm_factor);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPrintf(viewer,"  DMDARepart: subcomm_size = %D\n",red->nsubcomm_size);CHKERRQ(ierr);
-            ierr = PetscViewerGetSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+            ierr = PetscViewerGetSubViewer(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
             if (red->subcomm->parent_rank_active_in_subcomm) {
                 /*ierr = DMView(red->dmrepart,subviewer);CHKERRQ(ierr);*/
                 ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
             }
             ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-            ierr = PetscViewerRestoreSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+            ierr = PetscViewerRestoreSubViewer(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
         }
     } else if (isstring) {
         ierr = PetscViewerStringSPrintf(viewer," DMDARepart preconditioner");CHKERRQ(ierr);

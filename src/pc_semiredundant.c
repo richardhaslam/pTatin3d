@@ -532,13 +532,13 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
             } else {
                 ierr = PetscViewerASCIIPrintf(viewer,"  SemiRedundant: preserving original matrix partition boundaries\n");CHKERRQ(ierr);
             }
-            ierr = PetscViewerGetSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+            ierr = PetscViewerGetSubViewer(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
             if (red->subcomm->parent_rank_active_in_subcomm) {
                 ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
             }
             ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-            ierr = PetscViewerRestoreSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
+            ierr = PetscViewerRestoreSubViewer(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
         }
     } else if (isstring) { 
         ierr = PetscViewerStringSPrintf(viewer," SemiRedundant preconditioner");CHKERRQ(ierr);
