@@ -1,25 +1,40 @@
+#
 #  -- pTatin Optimization flags --
-#    Operating system: OSX operating system (musashi,tora)
-#    Compiler: gcc,gfortran
 #
 
-export TATIN_CFLAGS_DEBUG	= -std=gnu99 -O0 -g -Wall
-export TATIN_CFLAGS_OPT_a	= -std=gnu99 -O2 -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_OPT_b	= -std=gnu99 -O3 -fast -ftree-vectorize -ftree-vectorizer-verbose=4  -Wstrict-aliasing  -fstrict-aliasing -funroll-loops
+# Written to work on the Piz Daint Cray XC30 system
+# with the PrgEnv-gnu module
+# and the zlib module
 
-export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
+# See http://user.cscs.ch/compiling_optimizing/compiling_your_code/piz_daint/gnu_compiler_collection/index.html
+
+# Set your own PETSC_DIR and PETSC_ARCH 
+# PETSC_ARCH was arch-cray-xc30-gnu at the time of this writing (but you will have picked the name)
+ifndef PETSC_DIR
+  $(error PETSC_DIR must be defined as an environment variable)
+endif
+ifndef PETSC_ARCH
+  $(error PETSC_ARCH must be defined as an environment variable)
+endif
+
+export LIBZ_LIB=-lz
+
+# Various levels of optimization (and warning suppression) for C compilers
+export TATIN_CFLAGS_DEBUG	= -O0 -g -Wall -Wno-unused-variable
+export TATIN_CFLAGS_OPT_a	= -O2 
+export TATIN_CFLAGS_OPT_b	= -O3 -ffast-math -funroll-loops -march=native
+
+export TATIN_FFLAGS_DEBUG	= -O0 -g -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
+export TATIN_FFLAGS_OPT_b = -O2 -ffree-line-length-4000
 
-TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety)
-
-#
-#  Select optimized or debug compilation flags
-#
-export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG)
+# Choose options
+export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
-export LIBZ_LIB = -lz
-# export LIBZ_INC = -I/usr/include
+# flag to allow GNU AVX/SSE intrinsics
+#export TATIN_CFLAGS=-hgnu
+CONFIG_AVX=y
 
 #
 #
@@ -31,5 +46,3 @@ export LIBZ_LIB = -lz
 #
 PTATIN_CONTAINS_SPMA = 0
 PTATIN_CONTAINS_FASTSCAPE_V3 = 0
-
-
