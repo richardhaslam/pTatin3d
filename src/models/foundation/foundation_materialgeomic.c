@@ -35,7 +35,6 @@ PetscErrorCode MaterialICApply_JSON(pTatinCtx c,Foundation f,cJSON *jitem,DataBu
 		DataFieldAccessPoint(PField_std,p,   (void**)&mp);
 		MPntStdGetField_global_coord(mp,&pos);
     
-    region_id = -1;
     for (g=0; g<ng; g++) {
       ierr = GeometryObjectPointInside(golist[g],pos,&inside);CHKERRQ(ierr);
       if (inside) {
@@ -104,6 +103,8 @@ PetscErrorCode ModelInitialMaterialGeometry_Foundation(pTatinCtx c,void *ctx)
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"MatGeomICType.method missing: A valid constructor must be specified");
       break;
   }
+  
+  ierr = ModelInitialMaterialState_Foundation(c,data);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }

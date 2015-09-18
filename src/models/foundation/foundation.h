@@ -41,6 +41,7 @@ extern const char *FND_MaterialRegionTypeNames[];
 PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseJSONGetItemOptional(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f);
+PetscErrorCode ModelInitialMaterialState_Foundation(pTatinCtx c,void *ctx);
 
 PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx);
 PetscErrorCode ModelInitialMeshGeometry_Foundation(pTatinCtx c,void *ctx);
