@@ -1,0 +1,103 @@
+
+Validate an existing JSON file using the online tool at
+  http://jsonlint.com/
+
+
+Introduction:
+
+* JSON (Java Script Object Notation)
+* No comments are allowed directly - must use a special field
+* Last item in object MUST not possess a comma after it
+* Case insensitive
+
+* Always best to validate JSON before running pTatin - error reporting from cJSON
+can be obscure. This has the potential to make tracking down the syntax mistake 
+difficult
+
+------------------------------
+
+Required fields:
+
+All files must contain the following object
+
+{
+"pTatinFoundation": {}
+};
+
+All other objects must be embedded within "pTatinFoundation": {}
+
+------------------------------
+"MaterialModelMetaData": {
+    "MaterialMetaDataFile": "path/to/file" <optional>
+}
+
+"RegionList": [
+ {},
+ {}
+]
+
+{
+  "index": 1,
+  "ViscousFlowLaw": {},
+  "YieldFunction": {},
+  "StrainSoftening": {},
+  "Density": {}
+}
+
+ViscousFlowLaw = "const", "frankkamentskii", "arrhenius", "arrhenius2", "DepthDependent"
+YieldFunction = "none", "mises", "duckerprager", "misesh", "druckerpragerh"
+StrainSoftening = "none", "linear", "exponential"
+Density = "const", "Boussinesq"
+
+------------------------------
+"MatGeomICType": {}
+
+"MeshGeomICType": {}
+
+"ModelUnits": {}
+
+"pTatinParamaters": {}
+
+
+
+
+<Optional objects>
+
+"MaterialPointStateIC": [
+ {},
+ {}
+]
+
+{
+  "Density": {
+    "RegionIndex": [1, 2],
+    "Const": {
+      "value": [2.3, 44.0]
+    }
+  }
+}
+
+Field = "density", "viscosity", "plasticstrain", "diffusivity", "heatsource"
+
+
+"SolverOptionsFile": "path/to/file"
+
+
+
+
+
+Adding comments to JSON files:
+Within any object, you can attach a comment using any of the following keywords
+
+  "description": "You should describe your model in your JSON file",
+
+  "comment": "This is not a comment",
+
+  "doc": "Documentation in scientific code is always non-existant",
+
+  "note": "There are no notes to report",
+
+  "help": "Good users don't need help",
+
+
+
