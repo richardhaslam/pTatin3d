@@ -75,6 +75,7 @@ libptatin3d-y.c += $(call thisdir, \
 			geometry_object.c \
 			geometry_object_evaluator.c \
 			cJSON.c \
+            cJSON_helpers.c \
 			geometry_object_parse.c \
 			spm_utils.c \
 			petsc_utils.c \
