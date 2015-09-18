@@ -30,7 +30,7 @@
 
   "MaterialModelMetaData": {
     
-    "MaterialMetaDataFile": "src/models/foundation/examples/testmat.json",
+    "MaterialMetaDataFile": "src/models/foundation/examples/ex1_material_properties.json",
     "note": "You read from file or just insert material data inside the MaterialModelMetaData JSON struct",
     
     "RegionList": [
@@ -79,7 +79,7 @@
   
   "MatGeomICType": {
     "JSON": {
-      "RegionGeomFile": "src/models/foundation/examples/material_geom.json"
+      "RegionGeomFile": "src/models/foundation/examples/ex1_material_geom.json"
     }
   },
   
