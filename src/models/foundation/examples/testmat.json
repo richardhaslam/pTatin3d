@@ -1,0 +1,56 @@
+{
+"RegionList": [
+               
+  {
+    "index": 2,
+    "ViscousFlowLaw": {
+      "Arrhenius" : {
+        "preexpA": 2.0,
+         "Ascale": 2.0,
+               "entalpy": 2.0,
+               "Vmol": 2.0,
+               "nexp": 2.0,
+               "Tref": 2.0
+      }
+    },
+    "YieldFunction": {
+               "Mises": {
+                 "YieldStress": 50.0e6,
+                 "YieldStressInf": 1.0e6
+               }
+               },
+    "StrainSoftening": { "None": {} },
+
+    "Density": {
+      "Const": {
+        "rho0": 3320.0
+       }
+     }
+               
+  },
+   
+  {
+    "index": 3,
+    "ViscousFlowLaw": {
+      "Arrhenius" : {
+               "preexpA": 3.0,
+               "Ascale": 3.0,
+               "entalpy": 3.0,
+               "Vmol": 3.0,
+               "nexp": 3.0,
+               "Tref": 3.0
+      }
+    },
+    "YieldFunction": { "None": {} },
+    "StrainSoftening": { "None": {} },
+    "Density": {
+      "Boussinesq": {
+        "rho0": 32.00,
+        "alpha": 1.0,
+        "beta": 2.2
+      }
+    }
+  }
+
+]
+}

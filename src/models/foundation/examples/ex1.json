@@ -1,0 +1,100 @@
+
+{
+"pTatinFoundation": {
+  
+  "Description": "Example file for testing parser",
+  "comment": "This is a comment",
+  "DOC": "Documentation is non-existant",
+  "note": "There are no notes to report",
+  "help": "Good users don't need help",
+  
+  "Outputath": "./output-exXXX",
+  "OutputPath": "./output-ex1",
+
+  "ModelUnits": {
+    "type": "scaled",
+    "CharacteristicScales": {
+      "velocity":  1.0e-10,
+      "length":    1.0e6,
+      "viscosity": 1.0e24
+    }
+  },
+  
+  "pTatinParamaters": {
+    "OutputPath": "./myrun",
+    "mx":   4,
+    "my":   5,
+    "mz":   3
+  },
+
+
+  "MaterialModelMetaData": {
+    
+    "MaterialMetaDataFile": "src/models/foundation/examples/testmat.json",
+    "note": "You read from file or just insert material data inside the MaterialModelMetaData JSON struct",
+    
+    "RegionList": [
+    
+      {
+        "index": 1,
+        
+        "ViscousFlowLaw": {
+          "Arrhenius" : {
+                   "preexpA": 1.0,
+                   "Ascale": 1.0,
+                   "entalpy": 1.0,
+                   "Vmol": 1.0,
+                   "nexp": 1.0,
+                   "Tref": 1.0
+          }
+        },
+        
+        "YieldFunction": {
+          "DruckerPrager": {
+          "FrictionCoefficient": 0.4,
+          "FrictionCoefficientInf": 0.01,
+          "Cohesion": 10.0e6,
+          "CohesionInf": 1.0e5,
+          "MaxTensileStress": 100.0e6,
+          "MaxStrainRate": 1.0
+        }},
+        "StrainSoftening": {
+          "Linear": {
+            "StrainMax": 2.0,
+            "StrainMin": 0.4
+          }
+        },
+       
+        "Density": {
+          "Const": {
+            "rho0": 3320.0
+          }
+        }
+                   
+      }
+
+    ]
+  },
+
+  
+  
+  "MeshGeomICType": {
+
+    "Cartesian": {
+      "mx":   4,
+      "my":   5,
+      "mz":   3,
+      "2dmode": "petsc_FALSE",
+      "xrange": [ 0.0, 3.0 ],
+      "yrange": [ 0.0, 2.0 ],
+      "zrange": [ 0.0, 1.0 ]
+    }
+
+    
+  },
+  
+  "SolverOptionsFile": "./defaults/basicmg.opts"
+
+  
+}}
+
