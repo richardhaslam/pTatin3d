@@ -29,6 +29,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+#include "string.h"
 #include "ctype.h"
 #include "cJSON.h"
 #include "cJSON_helpers.h"
