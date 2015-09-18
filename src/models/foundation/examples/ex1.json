@@ -94,12 +94,43 @@
       "yrange": [ -1.0, 1.0 ],
       "zrange": [ -3.0, 3.0 ]
     }
-
-    
   },
+  
+  
+  "MaterialPointStateIC": [
+  {
+    "Density": {
+      "RegionIndex": [1, 2],
+      "Const": {
+        "value": [2.3, 44.0]
+      }
+    }
+  },
+
+
+  {
+    "viscosity": {
+      "RegionIndex": [1,2],
+      "Const": {
+        "value": [ 33.0, 35.0 ]
+      }
+    }
+  },
+
+  {
+    "viscosity": {
+      "RegionIndex": [0],
+      "RandomNumber": {
+        "seed": [2345],
+        "min": [1.0],
+        "max": [10.0]
+      }
+    }
+  }],
+  
   
   "SolverOptionsFile": "./defaults/basicmg.opts"
 
   
-}}
+}};
 
