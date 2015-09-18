@@ -404,7 +404,7 @@ PetscErrorCode GeometryObjectParseDetermineSetOperatorType(const char name[],Geo
     same = PETSC_FALSE; PetscStrcmp(name,"cup",&same); if (same) { *a = GeomSet_Union; }
     same = PETSC_FALSE; PetscStrcmp(name,GeomTypeSetOperatorNames[(int)GeomSet_Union],&same); if (same) { *a = GeomSet_Union; }
 
-    same = PETSC_FALSE; PetscStrcmp(name,"itersection",&same); if (same) { *a = GeomSet_Intersection; }
+    same = PETSC_FALSE; PetscStrcmp(name,"intersection",&same); if (same) { *a = GeomSet_Intersection; }
     same = PETSC_FALSE; PetscStrcmp(name,"Intersection",&same); if (same) { *a = GeomSet_Intersection; }
     same = PETSC_FALSE; PetscStrcmp(name,"cap",&same); if (same) { *a = GeomSet_Intersection; }
     same = PETSC_FALSE; PetscStrcmp(name,GeomTypeSetOperatorNames[(int)GeomSet_Intersection],&same); if (same) { *a = GeomSet_Intersection; }
