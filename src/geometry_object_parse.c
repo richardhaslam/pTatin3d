@@ -29,6 +29,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
+#include "ctype.h"
 #include "petsc.h"
 #include "geometry_object.h"
 #include "cJSON.h"
@@ -198,6 +199,37 @@ void cJSON_GetObjectValue_bool(cJSON *cj,const char name[],int *found,int *val)
     }
     
     *val = obj->type;
+}
+
+void cJSON_GetObjectValue_logical(cJSON *cj,const char name[],int *found,int *val)
+{
+  char *logical = NULL,*upper;
+  const char *positive[] = { "YES", "TRUE",  "PETSC_TRUE",  "Y", "T" };
+  const char *negative[] = { "NO",  "FALSE", "PETSC_FALSE", "N", "F" };
+  int len,cmp,k;
+  
+  cJSON_GetObjectValue_char(cj,name,found,&logical);
+  if (!(*found)) {
+    *val = -1;
+    return;
+  }
+
+  asprintf(&upper,"%s",logical);
+  len = strlen(upper);
+  for (k=0; k<len; k++) {
+    upper[k] = toupper(logical[k]);
+  }
+  
+  /* compare with yes/no, t/f, True/False, PETSC_TRUE/PETSC_FALSE, y/n */
+  for (k=0; k<5; k++) {
+    cmp = strcmp(upper,positive[k]);
+    if (cmp == 0) { *val = 1; break; }
+  }
+  for (k=0; k<5; k++) {
+    cmp = strcmp(upper,negative[k]);
+    if (cmp == 0) { *val = 0; break; }
+  }
+  free(upper);
 }
 
 void cJSON_GetObjectValue_int(cJSON *cj,const char name[],int *found,int *val)
