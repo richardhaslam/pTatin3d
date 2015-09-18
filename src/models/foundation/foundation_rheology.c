@@ -144,9 +144,9 @@ PetscErrorCode FoundationParseViscousFlowLaw(pTatinCtx c,int ridx,cJSON *root)
     PetscFunctionReturn(0);
   }
 
-  ierr = FoundationParseJSONGetItemOptional(root,"DepthDep",&jobj);CHKERRQ(ierr);
+  ierr = FoundationParseJSONGetItemOptional(root,"DepthDependent",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DepthDep\n");
+    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DepthDependent\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,VISCOUS_Z,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseViscousFlowLaw_DepthDep(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
