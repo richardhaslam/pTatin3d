@@ -1560,9 +1560,6 @@ PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int regi
 		if ( (friction > 2.0 * M_PI) || (friction < 0.0) ) {
 			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"The DP phi parameter is assumed to be given as an angle in radians - your value : \"friction = %1.6e\" \n",friction);
 		}
-		if ( (friction_inf > 2.0 * M_PI) || (friction_inf < 0.0) ) {
-			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"The DP phi_inf parameter is assumed to be given as an angle in radians - your value : \"friction_inf = %1.6e\" \n",friction_inf);
-		}
 		if ( friction > 45.0 * M_PI/180.0) {
 			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"The DP phi parameter is using a friction angle greater than 45 degress - your value : \"friction = %1.6e\" \n",friction);
 		}
@@ -1570,6 +1567,9 @@ PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int regi
 		MaterialConst_PlasticDPSetField_friction(data,friction); /* use setter */
 	}
 	if (friction_inf != PETSC_DEFAULT) {
+		if ( (friction_inf > 2.0 * M_PI) || (friction_inf < 0.0) ) {
+			SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"The DP phi_inf parameter is assumed to be given as an angle in radians - your value : \"friction_inf = %1.6e\" \n",friction_inf);
+		}
 		MaterialConst_PlasticDPSetField_friction_inf(data,friction_inf); /* use setter */
 	}
 	if (cohesion != PETSC_DEFAULT) {
