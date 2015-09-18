@@ -32,4 +32,5 @@ libptatin3dmodels-y.c += $(call thisdir, \
             foundation/foundation_meshic.c \
             foundation/foundation_rheology.c \
             foundation/foundation_materialgeomic.c \
+            foundation/foundation_mpeval.c \
 	)
