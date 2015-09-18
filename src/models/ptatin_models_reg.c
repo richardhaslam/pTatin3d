@@ -51,6 +51,8 @@ extern PetscErrorCode pTatinModelRegister_ThermalSB(void);
 extern PetscErrorCode pTatinModelRegister_SD3D(void);
 extern PetscErrorCode pTatinModelRegister_PAS(void);
 extern PetscErrorCode pTatinModelRegister_PD(void);
+extern PetscErrorCode pTatinModelRegister_Foundation(void);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -82,6 +84,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_SD3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PAS();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PD();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Foundation();CHKERRQ(ierr);
  
 	PetscFunctionReturn(0);
 }

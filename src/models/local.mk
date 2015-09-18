@@ -26,4 +26,9 @@ libptatin3dmodels-y.c += $(call thisdir, \
             slab_detachment3d/sd3d_definition.c \
             pinch_and_swell/pinchandswell_def.c \
 			plasticdemo/demo.c \
+			foundation/foundation_reg.c \
+			foundation/foundation_init.c \
+			foundation/foundation_destroy.c \
+            foundation/foundation_meshic.c \
+            foundation/foundation_rheology.c \
 	)
