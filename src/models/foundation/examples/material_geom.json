@@ -1,0 +1,37 @@
+{
+  "GeometryObjectListFilter" : [
+    "background", "sinker", "layer"
+  ],
+
+  "GeometryObjectList": [
+                
+    {
+      "name":     "domain",
+      "type":     "GeomType_Box",
+      "centroid": [0.0, 0.0, 0.0],
+      "length":   [ 100.0, 100.0, 100.0 ]
+    },                 
+
+    {
+      "name":     "layer",
+      "type":     "GeomType_Box",
+      "centroid": [0.0, 0.9, 0.0],
+      "length":   [ 6.0, 0.2, 6.0 ]
+    },
+    {
+      "name": "sinker",
+      "type": "GeomType_Sphere",
+      "origin": [0.0, 0.0, 0.0],
+      "radius": 0.4
+    },
+
+     {
+      "name":   "background",
+      "type":   "GeomType_SetOperation",
+      "operator": "complement",
+      "fields":   [ "domain", "sinker" ]
+    }
+
+  ]
+}
+

@@ -77,6 +77,11 @@
   },
 
   
+  "MatGeomICType": {
+    "JSON": {
+      "RegionGeomFile": "src/models/foundation/examples/material_geom.json"
+    }
+  },
   
   "MeshGeomICType": {
 
@@ -85,9 +90,9 @@
       "my":   5,
       "mz":   3,
       "2dmode": "petsc_FALSE",
-      "xrange": [ 0.0, 3.0 ],
-      "yrange": [ 0.0, 2.0 ],
-      "zrange": [ 0.0, 1.0 ]
+      "xrange": [ -3.0, 3.0 ],
+      "yrange": [ -1.0, 1.0 ],
+      "zrange": [ -3.0, 3.0 ]
     }
 
     
