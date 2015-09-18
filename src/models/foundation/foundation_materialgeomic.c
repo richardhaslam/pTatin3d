@@ -87,7 +87,7 @@ PetscErrorCode ModelInitialMaterialGeometry_Foundation(pTatinCtx c,void *ctx)
   ierr = pTatinGetMaterialPoints(c,&matpoint,NULL);CHKERRQ(ierr);
   switch (data->material_region_type) {
       
-    case FND_MatRefT_JSON:
+    case FND_MatRegT_JSON:
       ierr = MaterialICApply_JSON(c,data,jitem,matpoint);CHKERRQ(ierr);
       break;
       

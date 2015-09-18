@@ -29,7 +29,7 @@ typedef enum {
 extern const char *FND_MeshRefinementTypeNames[];
 
 typedef enum {
-  FND_MatRefT_JSON=0,
+  FND_MatRegT_JSON=0,
   FND_MatRegT_DBFile,
   FND_MatRegT_Lua,
   FND_MatRegT_NULL
