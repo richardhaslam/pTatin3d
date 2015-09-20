@@ -54,5 +54,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Foundation(pTatinCtx c,Vec X,void *c
 PetscErrorCode ModelOutput_Foundation(pTatinCtx c,Vec X,const char prefix[],void *ctx);
 PetscErrorCode ModelDestroy_Foundation(pTatinCtx c,void *ctx);
 
+PetscErrorCode FoundationUserRegisterFunctions(Foundation f);
+
 #endif
 

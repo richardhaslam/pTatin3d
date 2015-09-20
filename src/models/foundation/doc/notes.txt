@@ -101,3 +101,52 @@ Within any object, you can attach a comment using any of the following keywords
 
 
 
+----------------------------
+
+Registering user variables and user functions
+
+* Variables
+Variables can be registerd in a JSON object called "FoundationUserVariables".
+The type of the data is identified via the keyword "datatype": "xxx"
+- Valid definitions of "xxx" include "int", "float" and "double".
+- Each user variable must be provided with a name.
+Within a datatype group, the textual name must be unique. 
+- The textual name may be re-used between different datatype groups
+- Multiple fields of the same datatype can be defined in a single struct
+- Multiple instances of the same datatype can be declared with "FoundationUserVariables"
+
+
+"FoundationUserVariables": [
+  {
+    "datatype": "double",
+    "a": 11.1,
+    "b": 12.3,
+  },
+  {
+    "datatype": "double",
+    "var1": 14.134153
+  },
+  {
+    "datatype": "float",
+    "a": 14.1,
+  },
+  {
+    "datatype": "int",
+    "a": 11
+  }
+]
+
+* User functions
+
+- Functions should be defined in their own file, living in the directory
+  src/models/foundation/usersandbox
+- Files must be added into list defined with the makefile 
+  src/models/foundation/usersandbox/local.mk
+- Functions must be registered within the file
+  src/models/foundation/foundation_userfunctions_reg.c
+
+
+
+
+
+

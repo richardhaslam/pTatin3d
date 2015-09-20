@@ -65,7 +65,6 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
   data->mesh_geom_type       = FND_MeshGeomT_NULL;
   data->mesh_ref_type        = FND_MeshRefT_NULL;
   data->material_region_type = FND_MatRegT_NULL;
-  ierr = FoundationUserVarsCreate(&data->user);CHKERRQ(ierr);
   
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-fndin",filename,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);

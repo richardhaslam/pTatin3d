@@ -1,6 +1,7 @@
 
 #include "foundation.h"
 #include "foundation_impl.h"
+#include "foundation_user.h"
 
 const char *FND_MeshGeomTypeNames[] = { "Cartesian", "Hex", "DMDAFile", "Lua", 0 };
 const char *FND_MeshRefinementTypeName[] = { "A", "B", "Lua", 0 };
@@ -18,6 +19,9 @@ PetscErrorCode pTatinModelRegister_Foundation(void)
   /* Allocate memory for the data structure for this model */
   ierr = PetscMalloc(sizeof(struct _p_Foundation),&data);CHKERRQ(ierr);
   ierr = PetscMemzero(data,sizeof(struct _p_Foundation));CHKERRQ(ierr);
+  
+  ierr = FoundationUserVarsCreate(&data->user);CHKERRQ(ierr);
+  ierr = FoundationUserRegisterFunctions(data);CHKERRQ(ierr);
   
   /* register user model */
   ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
