@@ -29,27 +29,6 @@
 
 
 #undef __FUNCT__
-#define __FUNCT__ "UserEvaluator_Empty"
-PetscErrorCode UserEvaluator_Empty(pTatinCtx ctx,FoundationUserVars user,PetscReal coor[],PetscReal *value)
-{
-  PetscReal *userdata;
-  PetscErrorCode ierr;
-  
-  PetscPrintf(PETSC_COMM_WORLD,"*** Evaluator: Empty\n");
-  PetscPrintf(PETSC_COMM_WORLD,"***  ptatin    %p\n",ctx);
-  PetscPrintf(PETSC_COMM_WORLD,"***  user vars %p\n",user);
-  PetscPrintf(PETSC_COMM_WORLD,"***  coor      [%+1.4e, %+1.4e, %+1.4e]\n",coor[0],coor[1],coor[2]);
-  
-  ierr = UserVariablesGetDoubleFromName(user,"var1",&userdata);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"***  var1      %+1.4e\n",*userdata);
-  
-  *value = 0.0;
-  
-  PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
 #define __FUNCT__ "FoundationUserVarsCreate"
 PetscErrorCode FoundationUserVarsCreate(FoundationUserVars *uv)
 {
@@ -225,7 +204,7 @@ PetscErrorCode FoundationUserEvaluate(Foundation f,FoundationUserVars uv,const c
 
 #undef __FUNCT__
 #define __FUNCT__ "FoundationUserRegisterEvaluator"
-PetscErrorCode FoundationUserRegisterEvaluator(Foundation f,FoundationUserVars uv,const char functionname[],FoundationUserEvaluator fp)
+PetscErrorCode FoundationUserRegisterEvaluator(FoundationUserVars uv,const char functionname[],FoundationUserEvaluator fp)
 {
   PetscErrorCode ierr;
   void (*eval)(void);
@@ -237,7 +216,6 @@ PetscErrorCode FoundationUserRegisterEvaluator(Foundation f,FoundationUserVars u
   
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "FoundationUserVariablesParse"
@@ -306,7 +284,7 @@ PetscErrorCode FoundationUserVariablesParse(Foundation f,cJSON *root)
     ierr = f1(f,uv);CHKERRQ(ierr);
   }
   */
-  ierr = FoundationUserRegisterEvaluator(f,uv,"UserEvaluator_Empty",UserEvaluator_Empty);CHKERRQ(ierr);
+  //ierr = FoundationUserRegisterEvaluator(uv,"UserEvaluator_Empty",UserEvaluator_Empty);CHKERRQ(ierr);
   
 
   PetscFunctionReturn(0);

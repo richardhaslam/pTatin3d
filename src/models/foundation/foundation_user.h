@@ -29,7 +29,7 @@ PetscErrorCode FoundationUserVarsCreate(FoundationUserVars *uv);
 PetscErrorCode FoundationUserVarsDestroy(FoundationUserVars *uv);
 
 PetscErrorCode FoundationUserVariablesParse(Foundation f,cJSON *root);
-PetscErrorCode FoundationUserRegisterEvaluator(Foundation f,FoundationUserVars uv,const char functioname[],FoundationUserEvaluator fp);
+PetscErrorCode FoundationUserRegisterEvaluator(FoundationUserVars uv,const char functioname[],FoundationUserEvaluator fp);
 PetscErrorCode FoundationUserEvaluate(Foundation f,FoundationUserVars uv,const char functioname[],PetscReal *coor,PetscReal *value);
 
 PetscErrorCode UserVariablesGetIntFromName(FoundationUserVars uv,const char name[],int **value);
