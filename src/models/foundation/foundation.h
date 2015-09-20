@@ -11,6 +11,8 @@
 
 
 typedef struct _p_Foundation *Foundation;
+typedef struct _p_FoundationUserVars *FoundationUserVars;
+
 typedef enum {
   FND_MeshGeomT_Cartesian=0,
   FND_MeshGeomT_Hex,

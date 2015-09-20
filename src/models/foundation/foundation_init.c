@@ -1,6 +1,8 @@
 
 #include "foundation.h"
 #include "foundation_impl.h"
+#include "foundation_user.h"
+
 
 #undef __FUNCT__
 #define __FUNCT__ "FoundationParseJSONGetItemEssential"
@@ -55,14 +57,15 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
   char           filename[PETSC_MAX_PATH_LEN];
   char           *pstr;
   PetscBool      flg;
-  cJSON          *jobjectroot = NULL,*jobj_k;
-  int            k,nobj,found;
+  cJSON          *jobjectroot = NULL;
+  int            found;
   
   /* defaults */
+  data->ptatin_ctx           = c;
   data->mesh_geom_type       = FND_MeshGeomT_NULL;
   data->mesh_ref_type        = FND_MeshRefT_NULL;
   data->material_region_type = FND_MatRegT_NULL;
-  
+  ierr = FoundationUserVarsCreate(&data->user);CHKERRQ(ierr);
   
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-fndin",filename,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
@@ -99,6 +102,16 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
   
   ierr = FoundationParseMaterialMetaData(c,data);CHKERRQ(ierr);
 
+  {
+    cJSON *juservarroot;
+    PetscReal coord[] = {1.01, 2.02, 3.3},value;
+    
+    
+    ierr = FoundationParseJSONGetItemOptional(jobjectroot,"FoundationUserVariables",&juservarroot);CHKERRQ(ierr);
+    ierr = FoundationUserVariablesParse(data,juservarroot);CHKERRQ(ierr);
+
+    ierr = FoundationUserEvaluate(data,data->user,"UserEvaluator_Empty",coord,&value);CHKERRQ(ierr);
+  }
   
   PetscFunctionReturn(0);
 }

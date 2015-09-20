@@ -20,7 +20,7 @@
     }
   },
   
-  "pTatinParamaters": {
+  "SimulationParamaters": {
     "OutputPath": "./myrun",
     "mx":   4,
     "my":   5,
@@ -128,6 +128,60 @@
     }
   }],
   
+  
+  "DirichletBoundaryConditions_Stokes": [
+   {"face_imin": {
+      "component": "ux",
+      "Constant": 3.3
+   }},
+   {"face_imax": {
+   }}
+  ],
+  
+  "NeumannBoundaryConditions_Stokes": {
+    
+  },
+
+  "DirichletBoundaryConditions_Energy": {
+    
+  },
+  
+  "FoundationUserVariables": [
+                              {
+                              "datatype": "double",
+                              "a": 11.1,
+                              "b": 12.3,
+                              "v": 14.3,
+                              "aa": 15.1
+                              },
+                              {
+                              "datatype": "double",
+                              "var1": 14.134153
+                              },
+                              {
+                              "datatype": "float",
+                              "a": 14.1,
+                              "1": 15.1,
+                              "22": 16.1,
+                              "33": 17.1,
+                              "abc": 19.1
+                              },
+                              {
+                              "datatype": "int",
+                              "as": 11
+                              }
+                              ],
+
+  "FoundationUserFuncTest": {
+    "User": {
+      "FunctionName": "testme",
+      "FoundationUserVariables": [
+      { "datatype": "double",
+        "var1": 11.1,
+        "var2": 33.55
+      }]
+    }
+  },
   
   "SolverOptionsFile": "./defaults/basicmg.opts"
 
