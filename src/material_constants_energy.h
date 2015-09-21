@@ -31,10 +31,10 @@
 #define __material_constants_energy_h__
 
 /* add auto geneterated classes here */
-#include "EnergyMaterialConstants_def.h"
-#include "EnergySourceConst_def.h"
-#include "EnergySourceDecay_def.h"
-#include "EnergySourceAdiabaticAdvection_def.h"
+#include "material_constants/EnergyMaterialConstants_def.h"
+#include "material_constants/EnergySourceConst_def.h"
+#include "material_constants/EnergySourceDecay_def.h"
+#include "material_constants/EnergySourceAdiabaticAdvection_def.h"
 
 
 typedef enum { 
@@ -57,8 +57,9 @@ typedef enum {
 	ENERGYDENSITY_BOUSSINESQ
 } EnergyDensityType;
 
+PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db);
+
 /*
-PetscErrorCode MaterialConstantsInitialize(DataBucket *_db);
 PetscErrorCode MaterialConstantsSetDefaults(DataBucket db);
 
 PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const char model_name[],const int region_id,PetscBool essential);

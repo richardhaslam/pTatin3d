@@ -29,6 +29,7 @@
 
 #include "petsc.h"
 #include "data_bucket.h"
+#include "material_constants_energy.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsEnergyInitialize"
@@ -36,5 +37,13 @@ PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db)
 {
     PetscErrorCode ierr;
 
+	DataBucketRegisterField(db,EnergyMaterialConstants_classname,       sizeof(EnergyMaterialConstants),NULL);
+	DataBucketRegisterField(db,EnergySourceConst_classname,             sizeof(EnergySourceConst),NULL);
+	DataBucketRegisterField(db,EnergySourceDecay_classname,             sizeof(EnergySourceDecay),NULL);
+	DataBucketRegisterField(db,EnergySourceAdiabaticAdvection_classname,sizeof(EnergySourceAdiabaticAdvection),NULL);
+	DataBucketFinalize(db);
+	
     PetscFunctionReturn(0);
 }
+
+
