@@ -863,6 +863,14 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "pTatinGetTime"
+PetscErrorCode pTatinGetTime(pTatinCtx ctx,PetscReal *time)
+{
+	if (time) { *time = ctx->time; }
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinGetTimestep"
 PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt)
 {
