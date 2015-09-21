@@ -33,17 +33,27 @@
 #include "data_bucket.h"
 #include "rheology.h"
 #include "material_constants.h"
+#include "material_constants_energy.h"
 
 
 #undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsInitialize"
-PetscErrorCode MaterialConstantsInitialize(DataBucket *_db)
+#define __FUNCT__ "MaterialConstantsCreate"
+PetscErrorCode MaterialConstantsCreate(DataBucket *_db)
 {
-	DataBucket     db;
+	DataBucket db;
+
+	DataBucketCreate(&db);
+	*_db = db;
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsStokesInitialize"
+PetscErrorCode MaterialConstantsStokesInitialize(DataBucket db)
+{
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	DataBucketCreate(&db);
 	
 	DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),NULL);
     
@@ -60,14 +70,28 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket *_db)
     
     DataBucketRegisterField(db,MaterialConst_SoftLin_classname,      sizeof(MaterialConst_SoftLin),NULL);
     DataBucketRegisterField(db,MaterialConst_SoftExpo_classname,      sizeof(MaterialConst_SoftExpo),NULL);
-    
-    
+	
     DataBucketFinalize(db);
 	
-	DataBucketSetInitialSizes(db,200,0);
-	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsInitialize"
+PetscErrorCode MaterialConstantsInitialize(DataBucket db)
+{
+	PetscErrorCode ierr;
+	ierr = MaterialConstantsStokesInitialize(db);CHKERRQ(ierr);
+	ierr = MaterialConstantsEnergyInitialize(db);CHKERRQ(ierr);
+
+	DataBucketFinalize(db);
 	
-	*_db = db;
+	DataBucketSetInitialSizes(db,200,0);
+	
+	DataBucketView(MPI_COMM_SELF,db,"Material Constants",DATABUCKET_VIEW_STDOUT);
+	
+	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
+	//ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
