@@ -632,9 +632,9 @@ def Generate_pTatin_MaterialConst_ViscosityArrh():
 	ClassName      = 'MaterialConst_ViscosityArrh'
 	ClassNameShort = 'ViscosityArrh'
 	variable_names =          [ 'preexpA','Ascale' ,'entalpy' , 'Vmol'   ,'nexp'    ,'Tref'    ,'Eta_scale','P_scale']       
-	variable_types =          [ 'double' ,'double' , 'double' , 'double' , 'int' , 'double' ,'double'   ,'int' ]
+	variable_types =          [ 'double' ,'double' , 'double' , 'double' , 'double' , 'double' ,'double'   , 'double' ]
 	variable_extents        = [ 1        ,      1  ,       1  , 1        , 1        ,  1       , 1         ,    1    ]
-	variable_textural_names = [ 'WORDYpreexpA','WORDYAscale' ,'WORDYentalpy' , 'WORDYVmol'   ,'WORDYnexp'    ,'WORDYTref'    ,'WORDYEta_scale','WORDYP_scale']       
+	variable_textural_names = [ 'preexpA','Ascale' ,'entalpy' , 'Vmol'   ,'nexp'    ,'Tref'    ,'Eta_scale','P_scale']       
 	variable_defaults       = [ 1.0      , 1.0     , 0.0      , 0.0      , 0        ,  0.0     , 1.0       , 1.0     ]
 
 	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
@@ -673,6 +673,54 @@ def Generate_pTatin_MaterialConst_PowerLaw():
 
 	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
+# Material constants for energy equation
+def Generate_pTatin_EnergyMaterialConstants():
+	ClassName      = 'EnergyMaterialConstants'
+	ClassNameShort = 'EnergyMaterialConstants'
+	variable_names =          [ 'alpha', 'beta', 'rho_ref', 'Cp', 'conductivity_type', 'source_type'   ]
+	variable_types =          [ 'double', 'double', 'double', 'double', 'int', 'int' ]
+	variable_extents        = [  1,       1,         1,        1,        1,     5    ]
+	variable_textural_names = [ 'ThermalExpansivity', 'Compressibility', 'ReferenceDensity', 'SpecificHeat', 'ConductivityMethod', 'SourceMethod' ]
+	variable_defaults       = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0 ]
+	
+	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+def Generate_pTatin_EnergySourceConst():
+	ClassName      = 'EnergySourceConst'
+	ClassNameShort = 'SourceConst'
+	variable_names =          [ 'H'          ]
+	variable_types =          [ 'double'     ]
+	variable_extents        = [ 1            ]
+	variable_textural_names = [ 'HeatSource' ]
+	variable_defaults       = [ 0.0          ]
+        
+	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+def Generate_pTatin_EnergySourceDecay():
+	ClassName      = 'EnergySourceDecay'
+	ClassNameShort = 'SourceDecay'
+	variable_names =          [ 'H0', 'lambda'      ]
+	variable_types =          [ 'double' , 'double' ]
+	variable_extents        = [ 1, 1           ]
+	variable_textural_names = [ 'HeatSourceRef', 'HalfLife' ]
+	variable_defaults       = [ 0.0, 0.0 ]
+	
+	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+def Generate_pTatin_EnergySourceAdiabaticAdvection():
+	ClassName      = 'EnergySourceAdiabaticAdvection'
+	ClassNameShort = 'SourceAdiabaticAdv'
+	variable_names =          [ 'dTdy'   ]
+	variable_types =          [ 'double' ]
+	variable_extents        = [ 1        ]
+	variable_textural_names = [ 'VerticalThermalGradient' ]
+	variable_defaults       = [ 0.0 ]
+	
+	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+
+
 
 
 # Call all functions to generate all data types
@@ -683,6 +731,16 @@ def main():
 	Generate_pTatin_MaterialConst_DiffusivityConst()
 	Generate_pTatin_MaterialConst_VolumetricHeatingConst()
 	Generate_pTatin_MaterialConst_PowerLaw()
+
+    ## Material metadata for energy equations
+	Generate_pTatin_EnergySourceConst()
+	Generate_pTatin_EnergySourceDecay()
+	Generate_pTatin_EnergySourceAdiabaticAdvection()
+	Generate_pTatin_EnergyMaterialConstants()
+
+
+
+
 
 if __name__ == "__main__":
 	main()
