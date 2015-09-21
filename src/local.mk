@@ -44,6 +44,7 @@ libptatin3d-y.c += $(call thisdir, \
 			phys_comp_energy.c \
 			energy_assembly.c \
 			energy_output.c \
+			energy_coefficients.c \
 			ptatin3d_stokes_q1macrop1.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \
