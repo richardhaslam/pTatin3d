@@ -50,6 +50,7 @@ libptatin3d-y.c += $(call thisdir, \
 			ptatin_models.c \
 			rheology.c \
 			material_constants.c \
+                        material_constants_energy.c \
 			stokes_rheology_viscous.c \
 			stokes_rheology_vp_std.c \
 			stokes_rheology_lava.c \
