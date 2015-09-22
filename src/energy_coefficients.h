@@ -26,3 +26,11 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
+
+#ifndf __energy_coefficients_h__
+#define __energy_coefficients_h__
+
+PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,DM dmT,PetscScalar LA_T[],DM dmU,PetscScalar LA_U[]);
+
+#endif
+

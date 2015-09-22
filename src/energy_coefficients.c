@@ -37,6 +37,8 @@
 #include "material_constants_energy.h"
 #include "dmda_element_q1.h"
 #include "element_utils_q1.h"
+#include "MPntPEnergy_def.h"
+#include "material_point_utils.h"
 
 
 #undef __FUNCT__
@@ -59,7 +61,6 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	PetscReal el_T[Q1_NODES_PER_EL_3D],el_U[Q1_NODES_PER_EL_3D],NQ1[Q1_NODES_PER_EL_3D];
 
 	PetscFunctionBegin;
-
 	ierr = pTatinGetTime(user,&time);CHKERRQ(ierr);
 	
 	/* Get bucket of material constants */
@@ -90,7 +91,6 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	DataBucketGetDataFieldByName(material_points,MPntPEnergy_classname,&PField_energy);
 	DataFieldGetAccess(PField_energy);
 
-
   ierr = DMDAGetElementsQ1(dmT,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
 	for (pidx=0; pidx<n_mp_points; pidx++) {
@@ -101,7 +101,6 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		double        rho_mp,conductivity_mp,diffusivity_mp,H_mp,Cp;
 		int           density_type,conductivity_type;
 		int           *source_type;
-		
     
 		DataFieldAccessPoint(PField_std,    pidx,(void**)&mp_std);
 		DataFieldAccessPoint(PField_energy, pidx,(void**)&mpp_energy);
@@ -113,8 +112,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		
 		/* Get region index */
     region_idx = mp_std->phase;
-		
-		
+				
     /* Get element temperature */
     ierr = DMDAEQ1_GetScalarElementField_3D(el_T,(PetscInt*)&elnidx[nen * eidx],LA_T);CHKERRQ(ierr);
     
@@ -229,7 +227,6 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 			}
 		}
 		
-		
 		diffusivity_mp = conductivity_mp / (rho_mp * Cp);
 		
 		H_mp = H_mp / (rho_mp * Cp);
@@ -241,8 +238,6 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	DataFieldRestoreAccess(PField_std);
 	DataFieldRestoreAccess(PField_energy);
 	
-	
-	
 	PetscFunctionReturn(0);
 }
 
@@ -251,10 +246,23 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,DM dmT,PetscScalar LA_T[],DM dmU,PetscScalar LA_U[])
 {
 	PetscErrorCode ierr;
+  DataBucket     materialpoint;
+  Quadrature     volQ;
+	PhysCompEnergy energy;
+  
 	PetscFunctionBegin;
 	
+  /* Evaluate physics on material points */
 	ierr = EnergyEvaluateCoefficients_MaterialPoints(user,dmT,LA_T,dmU,LA_U);CHKERRQ(ierr);
 	
+  /* Project effective diffusivity and source from material points to quadrature points */
+  ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
+	volQ = energy->volQ;
+	ierr = pTatinGetMaterialPoints(user,&materialpoint,NULL);CHKERRQ(ierr);
+
+	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(dmT,materialpoint,MPField_Energy,MPPEgy_diffusivity,volQ);CHKERRQ(ierr);
+	ierr = MaterialPointQuadraturePointProjectionC0_Q2Energy(dmT,materialpoint,MPField_Energy,MPPEgy_heat_source,volQ);CHKERRQ(ierr);
+  
 	PetscFunctionReturn(0);
 }
 
