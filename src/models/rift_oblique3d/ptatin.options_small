@@ -79,14 +79,14 @@
 -model_Rift_oblique3d_notch_type 3
 -model_Rift_oblique3d_notch_width 300.0e3
 -model_Rift_oblique3d_vis_bar 1.0e26
--mx 16
--my 8
--mz 16
+-mx 8
+-my 4
+-mz 8
 -newton_its 0
 -nonlinear_driver_v1
 -nsteps 10
 -options_left 1
--output_frequency 50
+-output_frequency 2
 -output_path output
 -pc_fieldsplit_schur_fact_type upper
 -pc_fieldsplit_type schur
