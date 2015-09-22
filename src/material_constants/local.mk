@@ -14,5 +14,6 @@ libptatin3d-y.c += $(call thisdir, \
             EnergySourceConst_def.c \
 			EnergySourceDecay_def.c \
 			EnergySourceAdiabaticAdvection_def.c \
+            EnergyConductivityConst_def.c \
             EnergyConductivityThreshold_def.c \
 	)
