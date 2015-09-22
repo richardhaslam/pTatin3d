@@ -432,20 +432,24 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
     /* construction phase */
     if (!pc->setupcalled) {
         DM              dm;
+        PetscBool       isdmda;
         MPI_Comm        comm;
         PetscMPISubComm subcomm;
         PetscMPIInt     rank,nsubcomm_size;
-        PetscInt        sum,k,nx,ny,nz,ndof,nsw;
+        PetscInt        sum,k,nx,ny,nz,ndof,nsw,dim;
         const PetscInt  *_range_i_re;
         const PetscInt  *_range_j_re;
         const PetscInt  *_range_k_re;
         DMDAStencilType stencil;
+        DMBoundaryType  bx,by,bz;
+        DMDAInterpolationType itype;
+        PetscInt              refine_x,refine_y,refine_z;
         
         ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
         ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
-        if (!dm) {
-            SETERRQ(comm,PETSC_ERR_SUP,"You must attach a DM to the PC");
-        }
+        if (!dm) SETERRQ(comm,PETSC_ERR_SUP,"You must attach a DM to the PC via KSPSetDM, or PCSetDM");
+        ierr = PetscObjectTypeCompare((PetscObject)dm,DMDA,&isdmda);CHKERRQ(ierr);
+        if (!isdmda) SETERRQ(comm,PETSC_ERR_SUP,"DM attached to the PC must be of type DMDA");
         
         /* set up sub communicator */
         ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
@@ -478,15 +482,22 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         }
         
         /* setup repartitioned dm */
-        ierr = DMDAGetInfo(dm,0,&nx,&ny,&nz,0,0,0, &ndof,&nsw,0,0,0,&stencil);CHKERRQ(ierr);
+        ierr = DMDAGetInfo(dm,&dim,&nx,&ny,&nz,0,0,0, &ndof,&nsw,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
+        if (dim != 3) SETERRQ(comm,PETSC_ERR_SUP,"DM attached to the PC must be a DMDA defined in three dimensions");
+        ierr = DMDAGetInterpolationType(dm,&itype);CHKERRQ(ierr);
+        ierr = DMDAGetRefinementFactor(dm,&refine_x,&refine_y,&refine_z);CHKERRQ(ierr);
+        
         red->dmrepart = NULL;
         _range_i_re = _range_j_re = _range_k_re = NULL;
         if (red->subcomm->parent_rank_active_in_subcomm) {
             
             //ierr = DMDACreate3d(subcomm->sub_comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
             /* Note - I just use stencil_width = 1 here - this allows me to tunnel down deep with gmg without getting errors about stencil width > overlap */
-            ierr = DMDACreate3d(subcomm->sub_comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,1, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
+            ierr = DMDACreate3d(subcomm->sub_comm,bx,by,bz,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,1, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
             ierr = DMSetOptionsPrefix(red->dmrepart,"repart_");CHKERRQ(ierr);
+            
+            ierr = DMDASetRefinementFactor(red->dmrepart,refine_x,refine_y,refine_z);CHKERRQ(ierr);
+            ierr = DMDASetInterpolationType(red->dmrepart,itype);CHKERRQ(ierr);
             
             //ierr = DMView(red->dmrepart, PETSC_VIEWER_STDOUT_(subcomm->sub_comm));CHKERRQ(ierr);
             

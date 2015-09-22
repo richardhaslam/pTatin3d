@@ -31,8 +31,8 @@
 #define __ptatin_material_point_popcontrol_h__
 
 typedef struct _p_PSortCtx {
-	long int point_index;
-	long int cell_index;
+	PetscInt point_index;
+	PetscInt cell_index;
 } PSortCtx;
 
 PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx);
