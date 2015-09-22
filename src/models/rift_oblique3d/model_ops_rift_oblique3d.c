@@ -51,6 +51,8 @@
 // added includes
 #include "output_material_points.h"
 
+/* add include for energy*/
+#include "material_constants_energy.h"
 
 #include "ptatin_models.h"
 
@@ -83,7 +85,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	/* Temperature flag */
 	use_energy = PETSC_TRUE;
-	//    use_energy=PETSC_FALSE;
+	//use_energy=PETSC_FALSE;
 	
 	/* set the default values of the material constant for this particular model */
 	/*scaling */
@@ -128,12 +130,12 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
  	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_buffer",&data->buffer,&flg);CHKERRQ(ierr);
 
 	/* velocity boundary condition geometry */
-	data->hvbx1 = 125.0e3;
-	data->hvbx2 = 115.0e3;
+	//data->hvbx1 = 125.0e3;
+	//data->hvbx2 = 115.0e3;
 	data->vx_up = 0.5 * cm_per_yer2m_per_sec;
 	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
 	
 	/* material properties */
@@ -1100,9 +1102,9 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	// just plot the velocity field (coords and vel stored in file as floats)
-	ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
+	//ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
 	// previously used option
 	//ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	//ierr = ModelOutput_ExecuteXDMFWriter(c,X,prefix);CHKERRQ(ierr);
