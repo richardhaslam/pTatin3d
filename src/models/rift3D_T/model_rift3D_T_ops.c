@@ -743,6 +743,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	
 	/* note - Don't access the energy mesh here, its not yet created */
 	/* note - The initial velocity mesh geometry will be copied into the energy mesh */
+  {
+    PetscReal gvec[] = { 0.0, -10.0, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }

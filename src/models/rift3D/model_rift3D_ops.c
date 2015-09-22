@@ -340,6 +340,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D(pTatinCtx c,void *ctx)
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,data->Ox,data->Lx,data->Oy,data->Ly,data->Oz,data->Lz);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -10.0, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -434,7 +438,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 		//eta = 1.0; 
 		pls = 0.0;
 		yield = 0; 
-		rho = -rho * 10.0;
 		
 		/* user the setters provided for you */
 		MPntStdSetField_phase_index(material_point,phase);
