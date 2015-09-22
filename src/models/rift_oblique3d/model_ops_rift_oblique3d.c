@@ -50,8 +50,7 @@
 
 // added includes
 #include "output_material_points.h"
-//#include "stdlib.h" //needed for the 'srand' function
-//#include "math.h"  //declare 'atan' function
+
 
 #include "ptatin_models.h"
 
@@ -138,7 +137,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
 	
-	/* material propoerties */
+	/* material properties */
 	data->rhoc = 2800.0;
 	data->rhom = 3300.0;
 	data->rhoa = 3250.0;
