@@ -1,0 +1,36 @@
+/*@ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ **
+ **    Copyright (c) 2012
+ **        Dave A. May [dave.may@erdw.ethz.ch]
+ **        Institute of Geophysics
+ **        ETH Zürich
+ **        Sonneggstrasse 5
+ **        CH-8092 Zürich
+ **        Switzerland
+ **
+ **    project:    pTatin3d
+ **    filename:   energy_coefficients.h
+ **
+ **
+ **    pTatin3d is free software: you can redistribute it and/or modify
+ **    it under the terms of the GNU General Public License as published
+ **    by the Free Software Foundation, either version 3 of the License,
+ **    or (at your option) any later version.
+ **
+ **    pTatin3d is distributed in the hope that it will be useful,
+ **    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ **    See the GNU General Public License for more details.
+ **
+ **    You should have received a copy of the GNU General Public License
+ **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
+ **
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
+
+#ifndf __energy_coefficients_h__
+#define __energy_coefficients_h__
+
+PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,DM dmT,PetscScalar LA_T[],DM dmU,PetscScalar LA_U[]);
+
+#endif
+

@@ -70,7 +70,8 @@ typedef enum {
 	DENSITY_BOUSSINESQ
 } DensityType;
 
-PetscErrorCode MaterialConstantsInitialize(DataBucket *_db);
+PetscErrorCode MaterialConstantsCreate(DataBucket *_db);
+PetscErrorCode MaterialConstantsInitialize(DataBucket db);
 PetscErrorCode MaterialConstantsSetDefaults(DataBucket db);
 
 PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
