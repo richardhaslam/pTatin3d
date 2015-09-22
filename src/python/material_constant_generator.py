@@ -417,14 +417,14 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 				print '  { PetscReal value;'
 				print '    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
-				print '      _data->' + variable_name_list[f] + ' = (float)value;'
+				print '      data->' + variable_name_list[f] + ' = (float)value;'
 			else:
 				print '  { PetscReal value['+ str(variable_extend_list[f]) + '];'
 				print '    PetscInt nv;'
 				print '    ierr = PetscOptionsGetRealArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				for ii in xrange(variable_extend_list[f]):
-					print '      _data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (float)value[' + str(ii) + '];'
+					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (float)value[' + str(ii) + '];'
 			print '    }'
 
 			print '    else if ( (!found)  && (essential) ) {'
@@ -436,14 +436,14 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 				print '  { PetscReal value;'
 				print '    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
-				print '      _data->' + variable_name_list[f] + ' = (double)value;'
+				print '      data->' + variable_name_list[f] + ' = (double)value;'
 			else:
 				print '  { PetscReal value['+ str(variable_extend_list[f]) + '];'
 				print '    PetscInt nv;'
 				print '    ierr = PetscOptionsGetRealArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				for ii in xrange(variable_extend_list[f]):
-					print '      _data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (double)value[' + str(ii) + '];'
+					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (double)value[' + str(ii) + '];'
 			print '    }'
 
 			print '    else if ( (!found)  && (essential) ) {'
@@ -455,14 +455,14 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 				print '  { PetscInt value;'
 				print '    ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
-				print '      _data->' + variable_name_list[f] + ' = (int)value;'
+				print '      data->' + variable_name_list[f] + ' = (int)value;'
 			else:
 				print '  { PetscInt value['+ str(variable_extend_list[f]) + '];'
 				print '    PetscInt nv;'
 				print '    ierr = PetscOptionsGetIntArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				for ii in xrange(variable_extend_list[f]):
-					print '      _data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (int)value[' + str(ii) + '];'
+					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (int)value[' + str(ii) + '];'
 			print '    }'
 
 			print '    else if ( (!found)  && (essential) ) {'
