@@ -47,12 +47,13 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 {
 	PetscErrorCode ierr;
 	DataBucket     material_constants,material_points;
-	DataField      PField_MatConsts,PField_SourceConst,PField_SourceDecay,PField_SourceAdiAdv,PField_ConductivityThreshold;
+	DataField      PField_MatConsts,PField_SourceConst,PField_SourceDecay,PField_SourceAdiAdv,PField_ConductivityConst,PField_ConductivityThreshold;
 	DataField      PField_std,PField_energy;
 	EnergyMaterialConstants        *mat_consts;
 	EnergySourceConst              *source_const;
 	EnergySourceDecay              *source_decay;
 	EnergySourceAdiabaticAdvection *source_adi_adv;
+  EnergyConductivityConst        *k_const;
   EnergyConductivityThreshold    *k_threshold;
 	int       pidx,n_mp_points;
 	PetscReal time;
@@ -79,6 +80,8 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	DataFieldGetEntries(PField_SourceAdiAdv,(void**)&source_adi_adv);
 
 	/* fetch array to data for conductivity method */
+	DataBucketGetDataFieldByName(material_constants, EnergyConductivityConst_classname, &PField_ConductivityConst );
+	DataFieldGetEntries(PField_ConductivityConst,(void**)&k_const);
 	DataBucketGetDataFieldByName(material_constants, EnergyConductivityThreshold_classname, &PField_ConductivityThreshold );
 	DataFieldGetEntries(PField_ConductivityThreshold,(void**)&k_threshold);
 	
@@ -144,7 +147,12 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		/* Compute density */
 		rho_mp = 1.0;
 		switch (density_type) {
-			case ENERGYDENSITY_CONSTANT:
+      case ENERGYDENSITY_NONE:
+        rho_mp = 1.0;
+        Cp = 1.0;
+        break;
+			
+      case ENERGYDENSITY_CONSTANT:
 				rho_mp = mat_consts[ region_idx ].rho_ref;
 			break;
 
@@ -156,10 +164,15 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		/* Compute conductivity */
 		conductivity_mp = 1.0;
 		switch (conductivity_type) {
-			case ENERGYCONDUCTIVITY_CONSTANT:
+      case ENERGYCONDUCTIVITY_DEFAULT:
 				conductivity_mp = mpp_energy->diffusivity;
+        break;
+
+			case ENERGYCONDUCTIVITY_CONSTANT:
+        conductivity_mp = k_const[ region_idx ].k0;
 				break;
-			case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD:
+			
+      case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD:
         /*
         conductivity_mp = k_threshold[ region_idx ].k0;
         if (T_mp >= k_threshold[ region_idx ].T0) {
@@ -187,11 +200,12 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		H_mp = 0.0;
 		for (t=0; t<6; t++) {
 			switch (source_type[t]) {
-				case ENERGYSOURCE_NONE:
+				case ENERGYCONDUCTIVITY_DEFAULT:
+					H_mp += mpp_energy->heat_source;
 					break;
 					
 				case ENERGYSOURCE_CONSTANT:
-					H_mp += mpp_energy->heat_source;
+					H_mp += source_const[ region_idx ].H;
 					break;
 					
 				case ENERGYSOURCE_SHEAR_HEATING:

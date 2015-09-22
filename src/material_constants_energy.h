@@ -35,11 +35,12 @@
 #include "material_constants/EnergySourceConst_def.h"
 #include "material_constants/EnergySourceDecay_def.h"
 #include "material_constants/EnergySourceAdiabaticAdvection_def.h"
+#include "material_constants/EnergyConductivityConst_def.h"
 #include "material_constants/EnergyConductivityThreshold_def.h"
 
 
 typedef enum { 
-	ENERGYSOURCE_NONE = 0,
+	ENERGYSOURCE_DEFAULT = 0,
 	ENERGYSOURCE_CONSTANT ,
   ENERGYSOURCE_SHEAR_HEATING,
   ENERGYSOURCE_DECAY,
@@ -48,13 +49,15 @@ typedef enum {
 } EnergySourceType;
 
 typedef enum {
-  ENERGYCONDUCTIVITY_CONSTANT = 0,
+  ENERGYCONDUCTIVITY_DEFAULT = 0,
+  ENERGYCONDUCTIVITY_CONSTANT,
   ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD,
 } EnergyConductivityType;
 
 
 typedef enum {
-	ENERGYDENSITY_CONSTANT = 0,
+	ENERGYDENSITY_NONE = 0,
+	ENERGYDENSITY_CONSTANT,
 	ENERGYDENSITY_BOUSSINESQ
 } EnergyDensityType;
 
