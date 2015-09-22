@@ -795,6 +795,18 @@ def Generate_EnergySourceAdiabaticAdvection():
 	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
 
+def Generate_EnergyConductivityConst():
+	ClassName      = 'EnergyConductivityConst'
+	ClassNameShort = 'ConductivityConst'
+	variable_names =          [ 'k0' ]
+	variable_types =          [ 'double' ]
+	variable_extents        = [ 1 ]
+	variable_textural_names = [ 'k0' ]
+	variable_defaults       = [ 0.0 ]
+	
+	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
 def Generate_EnergyConductivityThreshold():
 	ClassName      = 'EnergyConductivityThreshold'
 	ClassNameShort = 'ConductivityThreshold'
@@ -824,6 +836,8 @@ def main():
 	Generate_EnergySourceConst()
 	Generate_EnergySourceDecay()
 	Generate_EnergySourceAdiabaticAdvection()
+
+	Generate_EnergyConductivityConst()
 	Generate_EnergyConductivityThreshold()
 
 
