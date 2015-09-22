@@ -35,6 +35,9 @@
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
 #include "material_constants_energy.h"
+#include "dmda_element_q1.h"
+#include "element_utils_q1.h"
+
 
 #undef __FUNCT__
 #define __FUNCT__ "EnergyEvaluateCoefficients_MaterialPoints"
@@ -42,14 +45,19 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 {
 	PetscErrorCode ierr;
 	DataBucket     material_constants,material_points;
-	DataField      PField_MatConsts,PField_SourceConst,PField_SourceDecay,PField_SourceAdiAdv;
+	DataField      PField_MatConsts,PField_SourceConst,PField_SourceDecay,PField_SourceAdiAdv,PField_ConductivityThreshold;
 	DataField      PField_std,PField_energy;
 	EnergyMaterialConstants        *mat_consts;
 	EnergySourceConst              *source_const;
 	EnergySourceDecay              *source_decay;
 	EnergySourceAdiabaticAdvection *source_adi_adv;
-	int pidx,n_mp_points;
+  EnergyConductivityThreshold    *k_threshold;
+	int       pidx,n_mp_points;
 	PetscReal time;
+  PetscInt  k,nel,nen;
+  const     PetscInt *elnidx;
+	PetscReal el_T[Q1_NODES_PER_EL_3D],el_U[Q1_NODES_PER_EL_3D],NQ1[Q1_NODES_PER_EL_3D];
+
 	PetscFunctionBegin;
 
 	ierr = pTatinGetTime(user,&time);CHKERRQ(ierr);
@@ -57,11 +65,11 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	/* Get bucket of material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
 	
-	/* fetch array to material constants */
+	/* fetch array to data for material constants */
 	DataBucketGetDataFieldByName(material_constants,EnergyMaterialConstants_classname,&PField_MatConsts);
 	DataFieldGetEntries(PField_MatConsts,(void**)&mat_consts);
 
-	/* fetch array to source type */
+	/* fetch array to data for source method */
 	DataBucketGetDataFieldByName(material_constants, EnergySourceConst_classname, &PField_SourceConst );
 	DataFieldGetEntries(PField_SourceConst,(void**)&source_const);
 	DataBucketGetDataFieldByName(material_constants, EnergySourceDecay_classname, &PField_SourceDecay );
@@ -69,6 +77,9 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	DataBucketGetDataFieldByName(material_constants, EnergySourceAdiabaticAdvection_classname, &PField_SourceAdiAdv );
 	DataFieldGetEntries(PField_SourceAdiAdv,(void**)&source_adi_adv);
 
+	/* fetch array to data for conductivity method */
+	DataBucketGetDataFieldByName(material_constants, EnergyConductivityThreshold_classname, &PField_ConductivityThreshold );
+	DataFieldGetEntries(PField_ConductivityThreshold,(void**)&k_threshold);
 	
 	/* Get bucket of material points */
 	ierr = pTatinGetMaterialPoints(user,&material_points,NULL);CHKERRQ(ierr);
@@ -79,7 +90,9 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 	DataBucketGetDataFieldByName(material_points,MPntPEnergy_classname,&PField_energy);
 	DataFieldGetAccess(PField_energy);
 
-	
+
+  ierr = DMDAGetElementsQ1(dmT,&nel,&nen,&elnidx);CHKERRQ(ierr);
+
 	for (pidx=0; pidx<n_mp_points; pidx++) {
 		MPntStd       *mp_std;
 		MPntPEnergy   *mpp_energy;
@@ -89,6 +102,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		int           density_type,conductivity_type;
 		int           *source_type;
 		
+    
 		DataFieldAccessPoint(PField_std,    pidx,(void**)&mp_std);
 		DataFieldAccessPoint(PField_energy, pidx,(void**)&mpp_energy);
 		
@@ -98,13 +112,28 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		xi_mp = mp_std->xi;
 		
 		/* Get region index */
-		region_idx = mp_std->phase;
+    region_idx = mp_std->phase;
 		
 		
+    /* Get element temperature */
+    ierr = DMDAEQ1_GetScalarElementField_3D(el_T,(PetscInt*)&elnidx[nen * eidx],LA_T);CHKERRQ(ierr);
+    
 		T_mp = 0.0;
-		u_mp[0] = u_mp[1] = u_mp[2] = 0.0;
+    P3D_ConstructNi_Q1_3D(xi_mp,NQ1);
+    
+    for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
+      T_mp += NQ1[k] * el_T[k];
+    }
+    
+		/* get velocity for the element */
+		ierr = DMDAEQ1_GetVectorElementField_3D(el_U,(PetscInt*)&elnidx[nen * eidx],LA_U);CHKERRQ(ierr);
 
-		
+		u_mp[0] = u_mp[1] = u_mp[2] = 0.0;
+    for (k=0; k<Q1_NODES_PER_EL_3D; k++) {
+      u_mp[0] += NQ1[k] * el_U[3*k+0];      /* compute vx on the particle */
+      u_mp[1] += NQ1[k] * el_U[3*k+1];      /* compute vy on the particle */
+      u_mp[2] += NQ1[k] * el_U[3*k+2];      /* compute vz on the particle */
+    }
 		
 		//density_type      = ematconsts[ region_idx ].density_type;
 		density_type      = 0; /* Hardcoded to be ENERGYDENSITY_CONSTANT */
@@ -133,6 +162,21 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 				conductivity_mp = mpp_energy->diffusivity;
 				break;
 			case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD:
+        /*
+        conductivity_mp = k_threshold[ region_idx ].k0;
+        if (T_mp >= k_threshold[ region_idx ].T0) {
+          conductivity_mp = k_threshold[ region_idx ].k1;
+        }
+        */
+        conductivity_mp = k_threshold[ region_idx ].k0;
+        if (k_threshold[ region_idx ].T_threshold - T_mp < k_threshold[ region_idx ].dT) {
+          double shift_T = T_mp - (k_threshold[ region_idx ].T_threshold - k_threshold[ region_idx ].dT);
+          double dk = k_threshold[ region_idx ].k1 - k_threshold[ region_idx ].k0;
+          
+          conductivity_mp = k_threshold[ region_idx ].k0 + (dk/k_threshold[ region_idx ].dT)*shift_T;
+        } else if (T_mp >= k_threshold[ region_idx ].T_threshold) {
+          conductivity_mp = k_threshold[ region_idx ].k1;
+        }
 				break;
 		}
 
@@ -168,7 +212,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 				{
 					double g_dot_v; /* g_i * u_i */
 					
-					g_dot_v = -(1.0); /* todo */
+					g_dot_v = -(1.0)*u_mp[1]; /* todo - needs to be generalized to use gravity vector */
 					H_mp += T_mp * mat_consts[ region_idx ].alpha * rho_mp * g_dot_v;
 				}
 					break;
@@ -177,7 +221,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 				{
 					double u_vertical;
 					
-					u_vertical = u_mp[1]; /* GD says this is fine */
+					u_vertical = u_mp[1]; /* todo - needs to be generalized to use gravity vector */
 					H_mp += rho_mp * Cp * u_vertical * (-source_adi_adv[ region_idx ].dTdy);
 					
 				}
