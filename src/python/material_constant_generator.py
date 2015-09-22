@@ -798,11 +798,11 @@ def Generate_EnergySourceAdiabaticAdvection():
 def Generate_EnergyConductivityThreshold():
 	ClassName      = 'EnergyConductivityThreshold'
 	ClassNameShort = 'ConductivityThreshold'
-	variable_names =          [ 'k0', 'k1', 'T_threshold'     ]
-	variable_types =          [ 'double' , 'double', 'double' ]
-	variable_extents        = [ 1, 1, 1           ]
-	variable_textural_names = [ 'k0', 'k1', 'ThresholdTemperature' ]
-	variable_defaults       = [ 0.0, 0.0, 0.0 ]
+	variable_names =          [ 'k0', 'k1', 'T_threshold', 'dT'     ]
+	variable_types =          [ 'double' , 'double', 'double', 'double' ]
+	variable_extents        = [ 1, 1, 1, 1           ]
+	variable_textural_names = [ 'k0', 'k1', 'ThresholdTemperature', 'DeltaT' ]
+	variable_defaults       = [ 0.0, 0.0, 0.0, 0.0 ]
 	
 	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
