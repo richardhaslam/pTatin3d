@@ -35,15 +35,13 @@
 #define __FUNCT__ "MaterialConstantsEnergyInitialize"
 PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db)
 {
-    PetscErrorCode ierr;
-
 	DataBucketRegisterField(db,EnergyMaterialConstants_classname,       sizeof(EnergyMaterialConstants),NULL);
 	DataBucketRegisterField(db,EnergySourceConst_classname,             sizeof(EnergySourceConst),NULL);
 	DataBucketRegisterField(db,EnergySourceDecay_classname,             sizeof(EnergySourceDecay),NULL);
 	DataBucketRegisterField(db,EnergySourceAdiabaticAdvection_classname,sizeof(EnergySourceAdiabaticAdvection),NULL);
 	DataBucketFinalize(db);
 	
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 
