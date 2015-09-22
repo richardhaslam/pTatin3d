@@ -51,29 +51,28 @@ PetscErrorCode MaterialConstantsCreate(DataBucket *_db)
 #define __FUNCT__ "MaterialConstantsStokesInitialize"
 PetscErrorCode MaterialConstantsStokesInitialize(DataBucket db)
 {
-	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	
-	DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),NULL);
-    
-	DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,    sizeof(MaterialConst_ViscosityConst),NULL);
-	DataBucketRegisterField(db,MaterialConst_ViscosityZ_classname,    sizeof(MaterialConst_ViscosityZ),NULL);
-	DataBucketRegisterField(db,MaterialConst_ViscosityArrh_classname,      sizeof(MaterialConst_ViscosityArrh),NULL);
-    DataBucketRegisterField(db,MaterialConst_ViscosityFK_classname,      sizeof(MaterialConst_ViscosityFK),NULL);
-    
-	DataBucketRegisterField(db,MaterialConst_PlasticMises_classname,      sizeof(MaterialConst_PlasticMises),NULL);
-	DataBucketRegisterField(db,MaterialConst_PlasticDP_classname,      sizeof(MaterialConst_PlasticDP),NULL);
-	
-    DataBucketRegisterField(db,MaterialConst_DensityConst_classname,      sizeof(MaterialConst_DensityConst),NULL);
-    DataBucketRegisterField(db,MaterialConst_DensityBoussinesq_classname,      sizeof(MaterialConst_DensityBoussinesq),NULL);
-    
-    DataBucketRegisterField(db,MaterialConst_SoftLin_classname,      sizeof(MaterialConst_SoftLin),NULL);
-    DataBucketRegisterField(db,MaterialConst_SoftExpo_classname,      sizeof(MaterialConst_SoftExpo),NULL);
-	
-    DataBucketFinalize(db);
-	
-	PetscFunctionReturn(0);
+  DataBucketRegisterField(db,MaterialConst_MaterialType_classname,      sizeof(MaterialConst_MaterialType),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_ViscosityConst_classname,    sizeof(MaterialConst_ViscosityConst),NULL);
+  DataBucketRegisterField(db,MaterialConst_ViscosityZ_classname,    sizeof(MaterialConst_ViscosityZ),NULL);
+  DataBucketRegisterField(db,MaterialConst_ViscosityArrh_classname,      sizeof(MaterialConst_ViscosityArrh),NULL);
+  DataBucketRegisterField(db,MaterialConst_ViscosityFK_classname,      sizeof(MaterialConst_ViscosityFK),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_PlasticMises_classname,      sizeof(MaterialConst_PlasticMises),NULL);
+  DataBucketRegisterField(db,MaterialConst_PlasticDP_classname,      sizeof(MaterialConst_PlasticDP),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_DensityConst_classname,      sizeof(MaterialConst_DensityConst),NULL);
+  DataBucketRegisterField(db,MaterialConst_DensityBoussinesq_classname,      sizeof(MaterialConst_DensityBoussinesq),NULL);
+
+  DataBucketRegisterField(db,MaterialConst_SoftLin_classname,      sizeof(MaterialConst_SoftLin),NULL);
+  DataBucketRegisterField(db,MaterialConst_SoftExpo_classname,      sizeof(MaterialConst_SoftExpo),NULL);
+
+  DataBucketFinalize(db);
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
