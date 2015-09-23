@@ -212,22 +212,30 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
     ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
 
-#if 0
-	// ENERGY //
 
-	//Conductivity //
-	/* Get the conductivity threshold data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityThreshold_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_cond);
+    // ENERGY //
+    // get fields entries for the various energy law methods
 
-	// SOURCES //
+	/* Get the energy data fields, and the field entries */
 	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
 	DataFieldGetEntries(PField,(void**)&matconstants_e);
 
-	//  DENSITY //
+	// Conductivity threshold //
+	/* Get the conductivity threshold data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityThreshold_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_cond);
 
-#endif
+	// Conductivity constant //
+	/* Get the conductivity threshold data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_cond_cst);
+
+	// Source constant //
+	/* Get the Energy source constant data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_source_cst);
+
+
 	//-------------------------//
 	/* PHASE 0, ASTHENOSPHERE */
     //-------------------------//
@@ -265,20 +273,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	// ENERGY //
-
-	//Conductivity //
-	/* Get the conductivity threshold data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityThreshold_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_cond);
-	//SET values
+	//Conductivity
 	MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
-
-	/* Get the energy data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_e);
-
 	//Source method: set all to NONE, then update the first entry of the array to ADIABATIC_ADVECTION
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
 	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
@@ -321,19 +317,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 
 	//ENERGY//
-	/* Get the conductivity threshold data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_cond_cst);
-
 	//MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
 	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
-
-	/* Get the energy data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_e);
-
 	//Source method: set all energy source to NONE
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
@@ -356,7 +341,6 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
-
 	//VISCOSITY PARAMETERS
 	preexpA = 8.5737e-28;
 	Ascale  = 1.0;
@@ -364,7 +348,6 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	Vmol    = 0.0e-6;
 	nexp    = 4.0;
 	Tref    = 273.0;
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 	
 	//DENSITY PARAMETERS STOKES
@@ -377,24 +360,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	//ENERGY//
-	/* Get the conductivity threshold data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_source_cst);
-
-	EnergySourceConstSetField_HeatSource(&matconstants_source_cst[regionidx],data->thermalparams.hp[0]);
-
-	/* Get the conductivity threshold data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_cond_cst);
 	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-
-	/* Get the energy data fields */
-	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
-	/* Get the data for the field */
-	DataFieldGetEntries(PField,(void**)&matconstants_e);
-
+	EnergySourceConstSetField_HeatSource(&matconstants_source_cst[regionidx],data->thermalparams.hp[0]);
 	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_CONSTANT
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
 	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_CONSTANT);
@@ -406,6 +373,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 
 	/* PHASE 3, CRUST / UPPER LITHOSPHERE */
 	regionidx = 3;
+	alpha = 2e-5;
+	beta = 0;
+	rho_ref = data->rhoc;
+	Cp = 1000;
+	density_type = ENERGYDENSITY_CONSTANT;
+	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+	k0 = 2.5 ; //standard conductivity
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
@@ -417,19 +391,24 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	Vmol    = 0.e-6;
 	nexp    = 4.;
 	Tref    = 273.;
-	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 
 	//DENSITY PARAMETERS
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.e-5,0.0);
-	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
 
 	//PLASTICITY PARAMETERS
 	phi1_rad=M_PI*15./180.;
 	phi2_rad=M_PI*2./180.;
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
-	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.e8,1.e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
+
+	//ENERGY//
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	EnergySourceConstSetField_HeatSource(&matconstants_source_cst[regionidx],data->thermalparams.hp[0]);
+	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_CONSTANT
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_CONSTANT);
+	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
 
