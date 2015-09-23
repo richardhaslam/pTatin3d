@@ -420,6 +420,10 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
+	/* Material constant */
+	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {
+		ierr= MaterialConstantsSetFromOptions(materialconstants,NULL,regionidx,PETSC_FALSE);CHKERRQ(ierr);
+	}
 
 	
 	/* Read the options */
