@@ -139,8 +139,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
       u_mp[2] += NQ1[k] * el_U[3*k+2];      /* compute vz on the particle */
     }
 		
-		//density_type      = ematconsts[ region_idx ].density_type;
-		density_type      = 0; /* Hardcoded to be ENERGYDENSITY_CONSTANT */
+		density_type      = mat_consts[ region_idx ].density_type;
 		conductivity_type = mat_consts[ region_idx ].conductivity_type;
 		source_type       = mat_consts[ region_idx ].source_type;
 		
@@ -201,9 +200,12 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 		    possible cases and sum the resulting source
 		*/
 		H_mp = 0.0;
-		for (t=0; t<6; t++) {
+		for (t=0; t<7; t++) {
 			switch (source_type[t]) {
-				case ENERGYCONDUCTIVITY_DEFAULT:
+				case ENERGYSOURCE_NONE:
+					break;
+
+				case ENERGYSOURCE_DEFAULT:
 					H_mp += mpp_energy->heat_source;
 					break;
 					

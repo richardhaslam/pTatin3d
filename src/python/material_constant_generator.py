@@ -750,11 +750,11 @@ def Generate_pTatin_MaterialConst_PowerLaw():
 def Generate_EnergyMaterialConstants():
 	ClassName      = 'EnergyMaterialConstants'
 	ClassNameShort = 'EnergyMaterialConstants'
-	variable_names =          [ 'alpha', 'beta', 'rho_ref', 'Cp', 'conductivity_type', 'source_type'   ]
-	variable_types =          [ 'double', 'double', 'double', 'double', 'int', 'int' ]
-	variable_extents        = [  1,       1,         1,        1,        1,     5    ]
-	variable_textural_names = [ 'ThermalExpansivity', 'Compressibility', 'ReferenceDensity', 'SpecificHeat', 'ConductivityMethod', 'SourceMethod' ]
-	variable_defaults       = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0 ]
+	variable_names =          [ 'alpha', 'beta', 'rho_ref', 'Cp', 'density_type', 'conductivity_type', 'source_type'   ]
+	variable_types =          [ 'double', 'double', 'double', 'double', 'int', 'int', 'int' ]
+	variable_extents        = [  1,       1,         1,        1,        1,1,7    ]
+	variable_textural_names = [ 'ThermalExpansivity', 'Compressibility', 'ReferenceDensity', 'SpecificHeat', 'DensityMethod', 'ConductivityMethod', 'SourceMethod' ]
+	variable_defaults       = [ 0.0, 0.0, 0.0, 0.0, 0,0,0 ]
 	
 	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
