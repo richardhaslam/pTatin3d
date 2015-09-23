@@ -302,6 +302,7 @@ PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+  if (model->model_name) { free(model->model_name); }
 	if (model->FP_pTatinModel_Destroy) {
 		ierr = model->FP_pTatinModel_Destroy(ctx,model->model_data);CHKERRQ(ierr);
 	}
