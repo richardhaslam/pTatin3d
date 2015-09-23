@@ -73,6 +73,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	EnergyConductivityThreshold *matconstants_cond;
 	EnergyConductivityConst *matconstants_cond_cst;
 	EnergySourceConst *matconstants_source_cst;
+	EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
 	PetscBool      flg;
 	DataBucket     materialconstants;
 	DataField      PField;
@@ -82,7 +83,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscReal      cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal      preexpA,Ascale,entalpy,Vmol,nexp,Tref;
 	int 		   conductivity_type, density_type;
-	double		   alpha, beta, rho_ref, Cp, k0, k1, T_threshold, dT;
+	double		   alpha, beta, rho_ref, Cp, k0, k1, T_threshold, dT, dTdy;
 
 	PetscErrorCode ierr;
 	
@@ -235,6 +236,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField);
 	DataFieldGetEntries(PField,(void**)&matconstants_source_cst);
 
+	// Source Adiabatic Advection //
+	/* Get the Source data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergySourceAdiabaticAdvection_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_source_adi_adv);
+
 
 	//-------------------------//
 	/* PHASE 0, ASTHENOSPHERE */
@@ -250,6 +256,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	k1 = 20.0 ; //conductivity for pseudo-adiabat, when T > T_threshold
 	T_threshold = 1300.0 ;
 	dT = 50.0 ;
+	dTdy = 0.004;
 	
 
 	ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);CHKERRQ(ierr);
@@ -278,6 +285,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	//Source method: set all to NONE, then update the first entry of the array to ADIABATIC_ADVECTION
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
 	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
+	MaterialConstantsSetValues_SourceAdiabaticAdv(regionidx, matconstants_source_adi_adv, dTdy);
+
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
