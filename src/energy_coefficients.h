@@ -30,7 +30,7 @@
 #ifndef __energy_coefficients_h__
 #define __energy_coefficients_h__
 
-PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,DM dmT,PetscScalar LA_T[],DM dmU,PetscScalar LA_U[]);
+PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,PetscReal time,DM dmT,PetscScalar LA_T[],PetscScalar LA_U[]);
 
 #endif
 

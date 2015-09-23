@@ -43,7 +43,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "EnergyEvaluateCoefficients_MaterialPoints"
-PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,PetscScalar LA_T[],DM dmU,PetscScalar LA_U[])
+PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscReal time,DM dmT,PetscScalar LA_T[],PetscScalar LA_U[])
 {
 	PetscErrorCode ierr;
 	DataBucket     material_constants,material_points;
@@ -56,17 +56,20 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
   EnergyConductivityConst        *k_const;
   EnergyConductivityThreshold    *k_threshold;
 	int       pidx,n_mp_points;
-	PetscReal time;
   PetscInt  k,nel,nen;
   const     PetscInt *elnidx;
 	PetscReal el_T[Q1_NODES_PER_EL_3D],el_U[Q1_NODES_PER_EL_3D],NQ1[Q1_NODES_PER_EL_3D];
+	PhysCompStokes stokes;
+  PetscReal *grav_vec;
 
 	PetscFunctionBegin;
-	ierr = pTatinGetTime(user,&time);CHKERRQ(ierr);
 	
 	/* Get bucket of material constants */
 	ierr = pTatinGetMaterialConstants(user,&material_constants);CHKERRQ(ierr);
-	
+  
+  ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+	grav_vec = stokes->gravity_vector;
+
 	/* fetch array to data for material constants */
 	DataBucketGetDataFieldByName(material_constants,EnergyMaterialConstants_classname,&PField_MatConsts);
 	DataFieldGetEntries(PField_MatConsts,(void**)&mat_consts);
@@ -136,8 +139,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
       u_mp[2] += NQ1[k] * el_U[3*k+2];      /* compute vz on the particle */
     }
 		
-		//density_type      = ematconsts[ region_idx ].density_type;
-		density_type      = 0; /* Hardcoded to be ENERGYDENSITY_CONSTANT */
+		density_type      = mat_consts[ region_idx ].density_type;
 		conductivity_type = mat_consts[ region_idx ].conductivity_type;
 		source_type       = mat_consts[ region_idx ].source_type;
 		
@@ -198,9 +200,12 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 		    possible cases and sum the resulting source
 		*/
 		H_mp = 0.0;
-		for (t=0; t<6; t++) {
+		for (t=0; t<7; t++) {
 			switch (source_type[t]) {
-				case ENERGYCONDUCTIVITY_DEFAULT:
+				case ENERGYSOURCE_NONE:
+					break;
+
+				case ENERGYSOURCE_DEFAULT:
 					H_mp += mpp_energy->heat_source;
 					break;
 					
@@ -219,22 +224,32 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 				/*
 						Taken from T. Gerya, "Introduction ot numerical geodynamic modelling"
 				        page 156-157
-			    */
+        */
 				case ENERGYSOURCE_ADIABATIC:
 				{
 					double g_dot_v; /* g_i * u_i */
+          
+					//g_dot_v = -(1.0)*u_mp[1]; /* todo - needs to be generalized to use gravity vector */
+          
+          g_dot_v = -( grav_vec[0]*u_mp[0] + grav_vec[1]*u_mp[1] + grav_vec[2]*u_mp[2] );
 					
-					g_dot_v = -(1.0)*u_mp[1]; /* todo - needs to be generalized to use gravity vector */
-					H_mp += T_mp * mat_consts[ region_idx ].alpha * rho_mp * g_dot_v;
+          H_mp += T_mp * mat_consts[ region_idx ].alpha * rho_mp * g_dot_v;
 				}
 					break;
 					
+        /*
+         vector u point in the direction of gravity
+        */
 				case ENERGYSOURCE_ADIABATIC_ADVECTION:
 				{
-					double u_vertical;
-					
-					u_vertical = u_mp[1]; /* todo - needs to be generalized to use gravity vector */
-					H_mp += rho_mp * Cp * u_vertical * (-source_adi_adv[ region_idx ].dTdy);
+					double grav_nrm,u_vertical;
+					     
+					//u_vertical = u_mp[1]; /* todo - needs to be generalized to use gravity vector */
+
+          grav_nrm = PetscSqrtReal( grav_vec[0]*grav_vec[0] + grav_vec[1]*grav_vec[1] + grav_vec[2]*grav_vec[2] );
+          u_vertical = -(u_mp[0]*grav_vec[0] + u_mp[1]*grav_vec[1] + u_mp[2]*grav_vec[2])/grav_nrm;
+          
+          H_mp += rho_mp * Cp * u_vertical * ( source_adi_adv[ region_idx ].dTdy );
 					
 				}
 					break;
@@ -257,7 +272,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,DM dmT,P
 
 #undef __FUNCT__
 #define __FUNCT__ "EnergyEvaluateCoefficients"
-PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,DM dmT,PetscScalar LA_T[],DM dmU,PetscScalar LA_U[])
+PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,PetscReal time,DM dmT,PetscScalar LA_T[],PetscScalar LA_U[])
 {
 	PetscErrorCode ierr;
   DataBucket     materialpoint;
@@ -267,7 +282,7 @@ PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,DM dmT,PetscScalar LA_T
 	PetscFunctionBegin;
 	
   /* Evaluate physics on material points */
-	ierr = EnergyEvaluateCoefficients_MaterialPoints(user,dmT,LA_T,dmU,LA_U);CHKERRQ(ierr);
+	ierr = EnergyEvaluateCoefficients_MaterialPoints(user,time,dmT,LA_T,LA_U);CHKERRQ(ierr);
 	
   /* Project effective diffusivity and source from material points to quadrature points */
   ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
