@@ -438,7 +438,9 @@ PetscErrorCode MaterialConstantsSetValues_EnergyMaterialConstants(const int regi
   data->Cp =  Cp;
   data->density_type =  density_type;
   data->conductivity_type =  conductivity_type;
-  memcpy(&data->source_type,source_type,7*sizeof(int));
+  if (source_type) {
+    memcpy(&data->source_type,source_type,7*sizeof(int));
+  }
   PetscFunctionReturn(0);
 } 
 
