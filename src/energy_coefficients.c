@@ -58,7 +58,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 	int       pidx,n_mp_points;
   PetscInt  k,nel,nen;
   const     PetscInt *elnidx;
-	PetscReal el_T[Q1_NODES_PER_EL_3D],el_U[Q1_NODES_PER_EL_3D],NQ1[Q1_NODES_PER_EL_3D];
+	PetscReal el_T[Q1_NODES_PER_EL_3D],el_U[3*Q1_NODES_PER_EL_3D],NQ1[Q1_NODES_PER_EL_3D];
 	PhysCompStokes stokes;
   PetscReal *grav_vec;
 
