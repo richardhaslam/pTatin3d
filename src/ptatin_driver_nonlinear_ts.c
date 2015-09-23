@@ -180,6 +180,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
         ierr = KSPSetDM(ksp_smoother,dav_hierarchy[k]);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_smoother,PETSC_FALSE);CHKERRQ(ierr);
 	}
+  PetscFree(sub_ksp);
 	PetscFunctionReturn(0);
 }
 
@@ -952,6 +953,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 					break;
 			}
 		}
+		PetscFree(sub_ksp);
 		
 		/* push operators */
 		for (k=mlctx->nlevels-1; k>=0; k--) {
@@ -1006,10 +1008,9 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 				}
 					break;
 			}
+      PetscFree(sub_ksp);
 		}
-		
-		
-		
+				
 	}
 #endif	
 	

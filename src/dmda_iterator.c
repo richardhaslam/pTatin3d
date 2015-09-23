@@ -82,7 +82,7 @@ PetscErrorCode DMDAVecTraverse3d(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)(
 			}
 		}
 	}
-	ierr = DMDAVecGetArrayDOF(da,X,&LA_X);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArrayDOF(da,X,&LA_X);CHKERRQ(ierr);
 	if (coords) {
 		ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	}
@@ -149,7 +149,7 @@ PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)
 			}
 		}
 	}
-	ierr = DMDAVecGetArrayDOF(da,X,&LA_X);CHKERRQ(ierr);
+	ierr = DMDAVecRestoreArrayDOF(da,X,&LA_X);CHKERRQ(ierr);
 	if (coords) {
 		ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 	}	
