@@ -67,16 +67,21 @@ PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *
 #define __FUNCT__ "ModelInitialize_Rift_oblique3d"
 PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
-	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	RheologyConstants      *rheology;
+	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
+	RheologyConstants       *rheology;
+	EnergyMaterialConstants *matconstants_e;
 	PetscBool      flg;
 	DataBucket     materialconstants;
+	DataField      PField;
 	PetscBool      nondim,use_energy;
 	PetscScalar    dh_vx;
 	PetscInt       regionidx;
 	PetscReal      cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal      preexpA,Ascale,entalpy,Vmol,nexp,Tref;
 	PetscInt       nlayers;
+	int 		   conductivity_type,source_type[5], density_type;
+	double		   alpha, beta, rho_ref, Cp;
+
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -207,6 +212,18 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	/* PHASE 0, ASTHENOSPHERE */
 	regionidx = 0;
+	alpha = 2e-5;
+	beta = 0;
+	rho_ref = data->rhoa;
+	Cp = 1000;
+	conductivity_type = ENERGYCONDUCTIVITY_DEFAULT;
+	source_type[0] = ENERGYSOURCE_ADIABATIC_ADVECTION;
+	source_type[1] = ENERGYSOURCE_DEFAULT; /* todo: after merge this should be ENERGYSOURCE_NONE */
+	source_type[2] = ENERGYSOURCE_DEFAULT; /* todo: after merge this should be ENERGYSOURCE_NONE */
+	source_type[3] = ENERGYSOURCE_DEFAULT; /* todo: after merge this should be ENERGYSOURCE_NONE */
+	source_type[4] = ENERGYSOURCE_DEFAULT; /* todo: after merge this should be ENERGYSOURCE_NONE */
+
+
 	if (use_energy == PETSC_FALSE) {
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	} else {
@@ -234,6 +251,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
+	/* Get the energy data fields */
+	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
+	/* Get the data for the field */
+	DataFieldGetEntries(PField,(void**)&matconstants_e);
+	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,conductivity_type,source_type);
+
+
 	/* PHASE 1, MANTLE LITHOSPHERE */
 	regionidx = 1;
 	if (use_energy == PETSC_FALSE) {
@@ -767,6 +791,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] Lx = %1.4e \n", data->Lx );
 	
+	{
+	    PetscReal gvec[] = { 0.0, -10.0, 0.0 };
+	    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+	  }
+
 	PetscFunctionReturn(0);
 }
 
