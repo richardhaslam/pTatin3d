@@ -41,6 +41,7 @@
 #include "phys_comp_energy.h"
 #include "ptatin3d_energy.h"
 #include "energy_assembly.h"
+#include "energy_coefficients.h"
 
 /*
  
@@ -472,7 +473,8 @@ PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,Petsc
 #define __FUNCT__ "TS_FormJacobianEnergy"
 PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat B,void *ctx)
 {
-    PhysCompEnergy data = (PhysCompEnergy)ctx;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy data;
 	PetscInt          nqp;
 	PetscScalar       *qp_xi,*qp_weight;
 	Quadrature        volQ;
@@ -499,6 +501,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 	
 	
     PetscFunctionBegin;
+	ierr = pTatinGetContext_Energy(ptatin,&data);CHKERRQ(ierr);
 	da     = data->daT;
 	V      = data->u_minus_V;
 	bclist = data->T_bclist;
@@ -526,7 +529,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 
   /* ===================== */
   /* Evaluate coefficients */
-  //ierr = EnergyEvaluateCoefficients(data,time,da,LA_X,LA_V);CHKERRQ(ierr);
+  ierr = EnergyEvaluateCoefficients(ptatin,time,da,LA_X,LA_V);CHKERRQ(ierr);
   
   /* trash old entries */
 	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD,&mat_mffd);CHKERRQ(ierr);
@@ -649,11 +652,13 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
 #define __FUNCT__ "SNES_FormJacobianEnergy"
 PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
-    PhysCompEnergy data  = (PhysCompEnergy)ctx;
-    PetscErrorCode ierr;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy energy  = (PhysCompEnergy)ctx;
+  PetscErrorCode ierr;
+
 	PetscFunctionBegin;
-	
-	ierr = TS_FormJacobianEnergy(data->time,X,data->dt,A,B,ctx);CHKERRQ(ierr);
+	ierr = pTatinGetContext_Energy(ptatin,&energy);CHKERRQ(ierr);
+	ierr = TS_FormJacobianEnergy(energy->time,X,energy->dt,A,B,ctx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -919,7 +924,8 @@ PetscErrorCode FormFunctionLocal_T(
 #define __FUNCT__ "TS_FormFunctionEnergy"
 PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx)
 {
-    PhysCompEnergy data  = (PhysCompEnergy)ctx;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy data;
     DM             da,cda;
 	Vec            philoc, philastloc, Fphiloc;
 	Vec            Vloc;
@@ -928,6 +934,8 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
+
+	ierr = pTatinGetContext_Energy(ptatin,&data);CHKERRQ(ierr);
 	da = data->daT;
 	
 	
@@ -967,7 +975,7 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 	
 	/* ===================== */
 	/* Evaluate coefficients */
-  //ierr = EnergyEvaluateCoefficients(data,time,da,LA_philoc,LA_V);CHKERRQ(ierr);
+  ierr = EnergyEvaluateCoefficients(ptatin,time,da,LA_philoc,LA_V);CHKERRQ(ierr);
   
 	/* ============= */
 	/* FORM_FUNCTION */
@@ -1003,11 +1011,13 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
 #define __FUNCT__ "SNES_FormFunctionEnergy"
 PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
 {
-    PhysCompEnergy data  = (PhysCompEnergy)ctx;
-    PetscErrorCode ierr;
+  pTatinCtx      ptatin = (pTatinCtx)ctx;
+  PhysCompEnergy energy;
+  PetscErrorCode ierr;
+
 	PetscFunctionBegin;
-    
-	ierr = TS_FormFunctionEnergy(data->time,X,data->dt,F,ctx);CHKERRQ(ierr);
+	ierr = pTatinGetContext_Energy(ptatin,&energy);CHKERRQ(ierr);
+	ierr = TS_FormFunctionEnergy(energy->time,X,energy->dt,F,ctx);CHKERRQ(ierr);
     
 	PetscFunctionReturn(0);
 }
