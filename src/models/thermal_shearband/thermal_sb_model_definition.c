@@ -594,7 +594,22 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ct
 	
     PetscFunctionReturn(0);
 }
-    
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelDestroy_ThermalSB"
+PetscErrorCode ModelDestroy_ThermalSB(pTatinCtx c,void *ctx)
+{
+	ThermalSBData *data = (ThermalSBData*)ctx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	/* Free contents of structure */
+	/* Free structure */
+	ierr = PetscFree(data);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegister_ThermalSB"
 PetscErrorCode pTatinModelRegister_ThermalSB(void)
@@ -628,7 +643,7 @@ PetscErrorCode pTatinModelRegister_ThermalSB(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_ThermalSB);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_ThermalSB);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_ThermalSB);CHKERRQ(ierr);
-	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_ViscousSinker);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_ThermalSB);CHKERRQ(ierr);
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);

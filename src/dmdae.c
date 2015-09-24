@@ -58,6 +58,12 @@ PetscErrorCode DMDAEDestroy(DMDAE *dae)
     PetscFunctionBegin;
 	if (!dae){ PetscFunctionReturn(0); }
 	d = (*dae);
+  ierr = PetscFree(d->lsip);CHKERRQ(ierr);
+  ierr = PetscFree(d->lsjp);CHKERRQ(ierr);
+  ierr = PetscFree(d->lskp);CHKERRQ(ierr);
+  ierr = PetscFree(d->lmxp);CHKERRQ(ierr);
+  ierr = PetscFree(d->lmyp);CHKERRQ(ierr);
+  ierr = PetscFree(d->lmzp);CHKERRQ(ierr);
 	ierr = PetscFree(d);CHKERRQ(ierr);
 	*dae = NULL;
 	
@@ -166,7 +172,7 @@ PetscErrorCode DMAttachDMDAE(DM dm)
     ierr = PetscContainerSetPointer(container,(void*)dae);CHKERRQ(ierr);
 	
 	ierr = PetscObjectCompose((PetscObject)dm,"DMDAEobject",(PetscObject)container);CHKERRQ(ierr);
-    
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -202,7 +208,7 @@ PetscErrorCode DMDestroyDMDAE(DM dm)
 	ierr = PetscContainerGetPointer(container,(void**)&d);CHKERRQ(ierr);
     
 	ierr = DMDAEDestroy(&d);CHKERRQ(ierr);
-	ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+	//ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

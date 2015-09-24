@@ -226,14 +226,13 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	
 	ierr = DMAttachDMDAE(clone);CHKERRQ(ierr);
 	ierr = DMGetDMDAE(clone,&dae_clone);CHKERRQ(ierr);
-	/*
 	{
 		PetscInt NP[3];
 
 		ierr = DMDAGetInfo(da,0,0,0,0,&NP[0],&NP[1],&NP[2],0,0, 0,0,0, 0);CHKERRQ(ierr);		
 		ierr = DMDAEDeepCopy(dae,NP,dae_clone);CHKERRQ(ierr);
-	}*/
-	ierr = DMDAECopy(dae,dae_clone);CHKERRQ(ierr);
+	}
+	//ierr = DMDAECopy(dae,dae_clone);CHKERRQ(ierr);
 
 	ierr = DMDASetElementType_Q1(clone);CHKERRQ(ierr);
 	ierr = DMDAGetElements_DA_Q1_3D(clone,&nel,&nen,&els);CHKERRQ(ierr);
