@@ -172,7 +172,7 @@ PetscErrorCode DataExView(DataEx d)
 	
 	
 	PetscFunctionBegin;
-	PetscPrintf( PETSC_COMM_WORLD, "DataEx: instance=%d\n",d->instance);
+	PetscPrintf( PETSC_COMM_WORLD, "DataEx: instance=%D\n",d->instance);
 	
 	PetscPrintf( PETSC_COMM_WORLD, "  topology status:        %s \n", status_names[d->topology_status]);
 	PetscPrintf( PETSC_COMM_WORLD, "  message lengths status: %s \n", status_names[d->message_lengths_status] );
@@ -181,20 +181,20 @@ PetscErrorCode DataExView(DataEx d)
 	
 	if (d->topology_status == DEOBJECT_FINALIZED) {
 		PetscPrintf( PETSC_COMM_WORLD, "  Topology:\n");
-		PetscPrintf( PETSC_COMM_SELF, "    [%d] neighbours: %d \n", d->rank, d->n_neighbour_procs );
+		PetscPrintf( PETSC_COMM_SELF, "    [%d] neighbours: %d \n", (int)d->rank, (int)d->n_neighbour_procs );
 		for (p=0; p<d->n_neighbour_procs; p++) {
-			PetscPrintf( PETSC_COMM_SELF, "    [%d]   neighbour[%d] = %d \n", d->rank, p, d->neighbour_procs[p]);
+			PetscPrintf( PETSC_COMM_SELF, "    [%d]   neighbour[%D] = %d \n", (int)d->rank, p, (int)d->neighbour_procs[p]);
 		}
 	}
 	
 	if (d->message_lengths_status == DEOBJECT_FINALIZED) {
 		PetscPrintf( PETSC_COMM_WORLD, "  Message lengths:\n");
-		PetscPrintf( PETSC_COMM_SELF, "    [%d] atomic size: %d \n", d->rank, d->unit_message_size );
+		PetscPrintf( PETSC_COMM_SELF, "    [%d] atomic size: %ld \n", (int)d->rank, (long int)d->unit_message_size );
 		for (p=0; p<d->n_neighbour_procs; p++) {
-			PetscPrintf( PETSC_COMM_SELF, "    [%d] >>>>> ( %d units :: tag = %d ) >>>>> [%d] \n", d->rank, d->messages_to_be_sent[p], d->send_tags[p], d->neighbour_procs[p] );
+			PetscPrintf( PETSC_COMM_SELF, "    [%d] >>>>> ( %D units :: tag = %d ) >>>>> [%d] \n", (int)d->rank, d->messages_to_be_sent[p], d->send_tags[p], (int)d->neighbour_procs[p] );
 		}
 		for (p=0; p<d->n_neighbour_procs; p++) {
-			PetscPrintf( PETSC_COMM_SELF, "    [%d] <<<<< ( %d units :: tag = %d ) <<<<< [%d] \n", d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], d->neighbour_procs[p] );
+			PetscPrintf( PETSC_COMM_SELF, "    [%d] <<<<< ( %D units :: tag = %d ) <<<<< [%d] \n", (int)d->rank, d->messages_to_be_recvieved[p], d->recv_tags[p], (int)d->neighbour_procs[p] );
 		}
 	}
 	
@@ -642,7 +642,7 @@ PetscErrorCode DataExAddToSendCount(DataEx de,const PetscMPIInt proc_id,const Pe
 	
 	ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local_val );CHKERRQ(ierr);
 	if (local_val == -1) {
-		SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", proc_id );
+		SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Proc %d is not a valid neighbour rank", (int)proc_id );
 	}
 	
 	de->messages_to_be_sent[local_val] = de->messages_to_be_sent[local_val] + count;
@@ -738,7 +738,7 @@ PetscErrorCode DataExPackInitialize(DataEx de,size_t unit_message_size)
 	for (i=0; i<np; i++) {
 		if (de->messages_to_be_sent[i] == -1) {
 			PetscMPIInt proc_neighour = de->neighbour_procs[i];
-			SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ORDER, "Messages_to_be_sent[neighbour_proc=%d] is un-initialised. Call DataExSetSendCount() first", proc_neighour );
+			SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ORDER, "Messages_to_be_sent[neighbour_proc=%d] is un-initialised. Call DataExSetSendCount() first", (int)proc_neighour );
 		}
 		total = total + de->messages_to_be_sent[i];
 	}
@@ -795,12 +795,12 @@ PetscErrorCode DataExPackData(DataEx de,PetscMPIInt proc_id,PetscInt n,void *dat
 	
 	ierr = _DataExConvertProcIdToLocalIndex( de, proc_id, &local );CHKERRQ(ierr);
 	if (local == -1) {
-		SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", proc_id );
+		SETERRQ1( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "proc_id %d is not registered neighbour", (int)proc_id );
 	}
 	
 	if (n+de->pack_cnt[local] > de->messages_to_be_sent[local]) {
-		SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %d: Attempt to insert %d", 
-				proc_id, de->messages_to_be_sent[local], n+de->pack_cnt[local] );
+		SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Trying to pack too many entries to be sent to proc %d. Space requested = %D: Attempt to insert %D",
+				(int)proc_id, de->messages_to_be_sent[local], n+de->pack_cnt[local] );
 		
 		/* don't need this - the catch for too many messages will pick this up. Gives us more info though */
 		if (de->packer_status == DEOBJECT_FINALIZED) {
@@ -840,8 +840,8 @@ PetscErrorCode DataExPackFinalize(DataEx de)
 	
 	for (i=0; i<np; i++) {
 		if (de->pack_cnt[i] != de->messages_to_be_sent[i]) {
-			SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %d : Inserted %d", 
-					de->neighbour_procs[i], de->messages_to_be_sent[i], de->pack_cnt[i] );
+			SETERRQ3( PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Not all messages for neighbour[%d] have been packed. Expected %D : Inserted %D",
+					(int)de->neighbour_procs[i], de->messages_to_be_sent[i], de->pack_cnt[i] );
 		}
 	}
 	

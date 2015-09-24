@@ -618,8 +618,8 @@ PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM d
 	tlocal[2] = t1 - t0;
 
 #ifdef PTAT3D_PROFILE_SwarmUpdatePosition
-	ierr = MPI_Allreduce(tlocal,tgmax,3,MPI_DOUBLE,MPI_MAX,de->comm);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(tlocal,tgmin,3,MPI_DOUBLE,MPI_MIN,de->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(tlocal,tgmax,3,MPIU_PETSCLOGDOUBLE,MPI_MAX,de->comm);CHKERRQ(ierr);
+	ierr = MPI_Allreduce(tlocal,tgmin,3,MPIU_PETSCLOGDOUBLE,MPI_MIN,de->comm);CHKERRQ(ierr);
     
 	PetscPrintf(de->comm,"=========== MaterialPointStd_UpdateCoordinates ============= \n");
 	PetscPrintf(de->comm,"      Number of material points                     %ld (init) / %ld (final)\n",npoints_global_init,npoints_global_fin);
