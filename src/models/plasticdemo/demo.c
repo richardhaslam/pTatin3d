@@ -685,6 +685,21 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelDestroy_PD"
+PetscErrorCode ModelDestroy_PD(pTatinCtx c,void *ctx)
+{
+	ModelCtx *data = (ModelCtx*)ctx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	/* Free contents of structure */
+	/* Free structure */
+	ierr = PetscFree(data);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegister_PD"
 PetscErrorCode pTatinModelRegister_PD(void)
 {
@@ -716,7 +731,7 @@ PetscErrorCode pTatinModelRegister_PD(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_PD);CHKERRQ(ierr);
 	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_PD);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_PD);CHKERRQ(ierr);
-	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_PD);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_PD);CHKERRQ(ierr);
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);

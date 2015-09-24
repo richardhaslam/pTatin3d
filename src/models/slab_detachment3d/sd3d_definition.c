@@ -1049,6 +1049,21 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelDestroy_SD3D"
+PetscErrorCode ModelDestroy_SD3D(pTatinCtx c,void *ctx)
+{
+	SD3DCtx *data = (SD3DCtx*)ctx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	/* Free contents of structure */
+	/* Free structure */
+	ierr = PetscFree(data);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegister_SD3D"
 PetscErrorCode pTatinModelRegister_SD3D(void)
 {
@@ -1080,7 +1095,7 @@ PetscErrorCode pTatinModelRegister_SD3D(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_SD3D);CHKERRQ(ierr);
 	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_ThermalSB);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_SD3D);CHKERRQ(ierr);
-	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_ViscousSinker);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))pTatinModelRegister_SD3D);CHKERRQ(ierr);
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
