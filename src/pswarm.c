@@ -124,6 +124,7 @@ PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
     p->de_set_by_user = PETSC_FALSE;
     p->transport_mode = PSWARM_TM_LAGRANGIAN;
     p->advection_type = PSWARM_ADV_RK1;
+    p->pvdopen = PETSC_FALSE;
   
     *ps = p;
     PetscFunctionReturn(0);
@@ -224,11 +225,18 @@ PetscErrorCode PSwarmAttachStateVecTemperature(PSwarm ps,Vec x)
 #define __FUNCT__ "PSwarmViewInfo"
 PetscErrorCode PSwarmViewInfo(PSwarm ps)
 {
+  const char *prefix;
   int n_points;
+  PetscErrorCode ierr;
   
   DataBucketGetSizes(ps->db,&n_points,0,0);
 
-  PetscPrintf(PETSC_COMM_WORLD,"PSwarm --------------------\n");
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  if (prefix) {
+    PetscPrintf(PETSC_COMM_WORLD,"PSwarm [%s] --------------------\n",prefix);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"PSwarm [%s] --------------------\n",prefix);
+  }
   PetscPrintf(PETSC_COMM_WORLD,"  npoints %D\n",n_points);
   PetscPrintf(PETSC_COMM_WORLD,"  Transport mode: \n");
   if (ps->transport_mode == PSWARM_TM_EULERIAN) {
@@ -901,9 +909,9 @@ PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **
         ierr = PSwarmSetOptionsPrefix(plist[k],prefix);CHKERRQ(ierr);
         
         ierr = PSwarmSetPtatinCtx(plist[k],ctx);CHKERRQ(ierr);
-        ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
-        ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
-        ierr = PSwarmSetFromOptions(plist[k]);CHKERRQ(ierr);
+      if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
+      if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
+        //ierr = PSwarmSetFromOptions(plist[k]);CHKERRQ(ierr);
     }
     
     *pslist = plist;
@@ -1422,8 +1430,7 @@ PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char ste
 {
 	PetscErrorCode ierr;
   pTatinCtx ctx;
-	static int beenhere=0;
-	static char pvdfilename[PETSC_MAX_PATH_LEN];
+	char pvdfilename[PETSC_MAX_PATH_LEN];
   const char *prefix;
   char vtkfilename[PETSC_MAX_PATH_LEN];
 	
@@ -1432,13 +1439,13 @@ PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char ste
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
   
-	if (beenhere == 0) {
-    if (prefix) { sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
-    else { sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",path); }
+  if (prefix) { sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
+  else { sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",path); }
+	if (!ps->pvdopen) {
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
-		beenhere = 1;
+		ps->pvdopen = PETSC_TRUE;
 	}
   if (prefix) { sprintf(vtkfilename, "%s_%spswarm.pvtu",stepprefix,petscprefix); }
   else {        sprintf(vtkfilename, "%s_pswarm.pvtu",stepprefix); }

@@ -61,6 +61,7 @@ struct _p_PSwarm {
     PetscBool db_set_by_user,de_set_by_user;
     PSwarmTransportModeType transport_mode;
     PSwarmAdvectopmRKType advection_type;
+    PetscBool pvdopen;
 };
 
 #endif
