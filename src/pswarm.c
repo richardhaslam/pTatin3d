@@ -578,6 +578,125 @@ PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout"
+PetscErrorCode SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(DataBucket db,DM da,PetscReal xmin[],PetscReal xmax[],PetscInt Nxp[],PetscReal perturb)
+{
+  DataField    PField;
+  PetscInt     e;
+  Vec          gcoords;
+  PetscScalar  *LA_coords;
+  PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
+  int          np_cur;
+  PetscInt     nel,nen;
+  const PetscInt     *elnidx;
+  PetscInt     p,k,pi,pj,pk;
+  PetscReal    dxi,deta,dzeta;
+  long int     np_local;
+  PetscErrorCode ierr;
+  
+  
+  PetscFunctionBegin;
+  
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  
+  //DataBucketSetSizes(db,100,-1);
+  DataBucketSetInitialSizes(db,100,-1);
+  DataBucketGetSizes(db,&np_cur,NULL,NULL);
+  
+  if (perturb < 0.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
+  }
+  if (perturb > 1.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+  }
+  
+  /* setup for coords */
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
+  
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  
+  dxi    = 2.0/(PetscReal)Nxp[0];
+  deta   = 2.0/(PetscReal)Nxp[1];
+  dzeta  = 2.0/(PetscReal)Nxp[2];
+  
+  p = 0;
+  for (e=0; e<nel; e++) {
+    /* get coords for the element */
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
+    
+    for (pk=0; pk<Nxp[2]; pk++) {
+      for (pj=0; pj<Nxp[1]; pj++) {
+        for (pi=0; pi<Nxp[0]; pi++) {
+          MPntStd *marker;
+          double xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+          
+          xip[0] = -1.0 + dxi    * (pi + 0.5);
+          xip[1] = -1.0 + deta   * (pj + 0.5);
+          xip[2] = -1.0 + dzeta  * (pk + 0.5);
+          
+          /* random between -0.5 <= shift <= 0.5 */
+          xip_shift[0] = 1.0*(rand()/((double)RAND_MAX)) - 0.5;
+          xip_shift[1] = 1.0*(rand()/((double)RAND_MAX)) - 0.5;
+          xip_shift[2] = 1.0*(rand()/((double)RAND_MAX)) - 0.5;
+          
+          xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
+          xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
+          xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
+          
+          pTatin_ConstructNi_Q2_3D(xip_rand,Ni);
+          
+          xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
+          for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+            xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
+            xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
+            xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
+          }
+          
+          DataFieldAccessPoint(PField,p,(void**)&marker);
+          
+          if ( (xp_rand[0] >= xmin[0]) && (xp_rand[0] <= xmax[0]) ) {
+            if ( (xp_rand[1] >= xmin[1]) && (xp_rand[1] <= xmax[1]) ) {
+              if ( (xp_rand[2] >= xmin[2]) && (xp_rand[2] <= xmax[2]) ) {
+                marker->coor[0] = xp_rand[0];
+                marker->coor[1] = xp_rand[1];
+                marker->coor[2] = xp_rand[2];
+                
+                marker->xi[0] = xip_rand[0];
+                marker->xi[1] = xip_rand[1];
+                marker->xi[2] = xip_rand[2];
+                
+                marker->wil    = e;
+                marker->pid    = 0;
+                
+                p++;
+              }
+            }
+          }
+          
+          /* Re-size bucket */
+          if (p == np_cur) {
+            DataBucketSetSizes(db,np_cur+100,-1);
+            DataBucketGetSizes(db,&np_cur,NULL,NULL);
+          }
+          
+        }
+      }
+    }
+  }
+  DataFieldRestoreAccess(PField);
+  ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
+  
+  np_local = p;
+  DataBucketSetSizes(db,np_local,-1);
+  ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
+  
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PSwarmSetUpCoords_FillDM"
 PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
 {
@@ -593,28 +712,95 @@ PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
     ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
     
     ierr = DMDAGetLocalSizeElementQ2(dmv,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-    
+
     ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dmv,Nxp,0.0,ps->db);CHKERRQ(ierr);
-    
+  
     ps->state = PSW_TS_INSYNC;
     
     PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PSwarmSetUpCoords_FillPartialDM"
+PetscErrorCode PSwarmSetUpCoords_FillPartialDM(PSwarm ps)
+{
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv;
+  PetscInt       lmx,lmy,lmz;
+  PetscInt       nn,Nxp[] = {1,1,1}; /* change with -lattice_layout_N{x,y,z} */
+  PetscReal      xmin[3],xmax[3];
+  const char     *prefix;
+  
+  PetscFunctionBegin;
+  
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  
+  ierr = DMDAGetLocalSizeElementQ2(dmv,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+
+  xmin[0] = -1.0e32;
+  xmin[1] = -1.0e32;
+  xmin[2] = -1.0e32;
+
+  xmax[0] = 1.0e32;
+  xmax[1] = 1.0e32;
+  xmax[2] = 1.0e32;
+
+  nn = 3;
+	PetscOptionsGetIntArray(prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
+  nn = 3;
+  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_min",xmin,&nn,NULL);
+  nn = 3;
+  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_max",xmax,&nn,NULL);
+
+  ierr = SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(ps->db,dmv,xmin,xmax,Nxp,0.0);CHKERRQ(ierr);
+  
+  ps->state = PSW_TS_INSYNC;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PSwarmSetUpCoords"
 PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
+  PetscErrorCode ierr;
+  const char *prefix;
+  PetscInt type;
+  PetscFunctionBegin;
     
-    ierr = PSwarmSetUpCoords_FillDM(ps);CHKERRQ(ierr);
-    //ierr = PSwarmSetUpCoords_FillDMWithGeometryObject(ps);CHKERRQ(ierr);
-    //ierr = PSwarmSetUpCoords_FromList(ps);CHKERRQ(ierr);
-    
-    ps->state = PSW_TS_INSYNC;
-    
-    PetscFunctionReturn(0);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  
+  type = 1;
+  PetscOptionsGetInt(prefix,"-pswarm_coord_layout",&type,NULL);
+  
+  switch (type) {
+    case 0:
+      ierr = PSwarmSetUpCoords_FillDM(ps);CHKERRQ(ierr);
+      break;
+
+    case 1:
+      ierr = PSwarmSetUpCoords_FillPartialDM(ps);CHKERRQ(ierr);
+      break;
+
+    case 2:
+      //ierr = PSwarmSetUpCoords_FillDMWithGeometryObject(ps);CHKERRQ(ierr);
+      break;
+
+    case 3:
+      //ierr = PSwarmSetUpCoords_FromList(ps);CHKERRQ(ierr);
+      break;
+
+    default:
+      break;
+  }
+
+  ps->state = PSW_TS_INSYNC;
+  
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
