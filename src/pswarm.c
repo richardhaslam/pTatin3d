@@ -290,7 +290,7 @@ PetscErrorCode PSwarmSetTransportModeType(PSwarm ps,PSwarmTransportModeType type
     ps->transport_mode = type;
     switch (type) {
         case PSWARM_TM_EULERIAN:
-            ps->ops->advect = _PSwarmFieldUpdate_AdvectEulerian;
+            ps->ops->advect = NULL;//_PSwarmFieldUpdate_AdvectEulerian;
             break;
         case PSWARM_TM_LAGRANGIAN:
             ps->ops->advect = _PSwarmFieldUpdate_AdvectLagrangian;
@@ -554,34 +554,43 @@ PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps)
         dmT = energy->daT;
         ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
     }
-
-    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    
+  
     if (ps->state == PSW_TS_STALE) {
-		ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+        ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
         ps->state = PSW_TS_INSYNC;
     }
     
     if (ps->ops->field_update_finitestrain) {
+        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
         ierr = ps->ops->field_update_finitestrain(ps,dmv,velocity);CHKERRQ(ierr);
+        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
     }
     
     if (ps->ops->field_update_ptt) {
+        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
         ierr = ps->ops->field_update_ptt(ps,dmp,dmT,pressure,temperature,ps->pctx->time);CHKERRQ(ierr);
+        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
     }
 
     if (ps->ops->field_update_pressure) {
+      if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+      ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
       ierr = ps->ops->field_update_pressure(ps,dmv,dmp,pressure);CHKERRQ(ierr);
+      ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
     }
 
     /* position must always be the last state variable to be updated */
     if (ps->ops->advect) {
+        if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
+        ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
         ierr = ps->ops->advect(ps,dmv,velocity);CHKERRQ(ierr);
         /* flag as being stale => local coordinates need updating */
         ps->state = PSW_TS_STALE;
+        ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
     }
-    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
-    
+  
     PetscFunctionReturn(0);
 }
 
