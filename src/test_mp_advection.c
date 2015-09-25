@@ -810,7 +810,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     PetscReal       dt_factor = 1.0;
     PetscInt        vfield_idx = 0;
     PetscErrorCode  ierr;
-    PSwarm          pswarm;
+    PSwarm          pswarm,*pswarm2;
 	
 	PetscFunctionBegin;
 	
@@ -848,7 +848,14 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
     
     ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
+
+  ierr = PSwarmCreateMultipleInstances(user,NULL,NULL,&pswarm2);CHKERRQ(ierr);
+  for (f=0; f<2; f++) {
+    ierr = PSwarmSetTransportModeType(pswarm2[f],PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+    ierr = PSwarmSetFromOptions(pswarm2[f]);CHKERRQ(ierr);
     
+  }
+  
 	//ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr); /* <<<< User call back >>>> */
 	//ierr = DMDASetUniformCoordinates(dmv,-1.0,1.0,-1.0,1.0,-1.0,1.0);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(dmv,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -898,6 +905,9 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
     ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
+  for (f=0; f<2; f++) {
+    ierr = PSwarmAttachStateVecVelocityPressure(pswarm2[f],X);CHKERRQ(ierr);
+  }
 
 	/* insert boundary conditions into solution vector X */
 	{
@@ -959,7 +969,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
         ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
-        
+    for (f=0; f<2; f++) {
+      ierr = PSwarmFieldUpdateAll(pswarm2[f]);CHKERRQ(ierr);
+    }
+    
 		/* update mesh */
 		//ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
 		
@@ -977,11 +990,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
             ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
 
-			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"%s/step%1.6D",user->outputpath,step);
       ierr = PSwarmView(pswarm);CHKERRQ(ierr);
-      
-			//PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D-passive.vtu",step);
-      //ierr = PSwarmView_VTUXML_binary_appended(pswarm,stepname);CHKERRQ(ierr);
+      for (f=0; f<2; f++) {
+        ierr = PSwarmView(pswarm2[f]);CHKERRQ(ierr);
+      }
 		}
 		
 		/* compute timestep */
@@ -1009,6 +1021,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     /* clean up */
     ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
     ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
+  for (f=0; f<2; f++) {
+    ierr = PSwarmViewInfo(pswarm2[f]);CHKERRQ(ierr);
+    ierr = PSwarmDestroy(&pswarm2[f]);CHKERRQ(ierr);
+  }
 
     ierr = VecDestroy(&X);CHKERRQ(ierr);
 	for (f=0; f<nfields; f++) {
