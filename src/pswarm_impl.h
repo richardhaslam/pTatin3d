@@ -48,6 +48,7 @@ struct _PSwarmOps {
     PetscErrorCode (*advect)(PSwarm,DM,Vec);
     PetscErrorCode (*field_update_finitestrain)(PSwarm,DM,Vec);
     PetscErrorCode (*field_update_ptt)(PSwarm,DM,DM,Vec,Vec,PetscReal);
+    PetscErrorCode (*field_update_pressure)(PSwarm,DM,DM,Vec);
 };
 
 struct _p_PSwarm {
@@ -58,6 +59,8 @@ struct _p_PSwarm {
     PSwarmStateType state;
     PetscBool setup;
     PetscBool db_set_by_user,de_set_by_user;
+    PSwarmTransportModeType transport_mode;
+    PSwarmAdvectopmRKType advection_type;
 };
 
 #endif

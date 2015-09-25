@@ -39,7 +39,8 @@ typedef enum { PSWARM_FU_NULL=0,
     PSWARM_FU_STRESS,
     PSWARM_FU_STRAINRATE,
     PSWARM_FU_FINITESTRAIN,
-    PSWARM_FU_PTT
+    PSWARM_FU_PTT,
+    PSWARM_FU_Pressure
 } PSwarmFieldUpdateType;
 
 typedef enum { PSWARM_TM_EULERIAN=0, PSWARM_TM_LAGRANGIAN } PSwarmTransportModeType;
@@ -58,6 +59,7 @@ PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps);
 PetscErrorCode PSwarmCreateFromPtatinCtx(pTatinCtx pctx,PSwarm *ps);
 PetscErrorCode PSwarmDefineCommTopologyFromDMDA(PSwarm ps,DM dm);
 PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **pslist);
+PetscErrorCode PSwarmViewInfo(PSwarm ps);
 
 PetscErrorCode PSwarmSetPtatinCtx(PSwarm ps,pTatinCtx pctx);
 PetscErrorCode PSwarmSetDataBucket(PSwarm ps,DataBucket db);
