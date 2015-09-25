@@ -976,10 +976,12 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		if (step%user->output_frequency == 0) {
 			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
             ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
-            ierr = PSwarmView(pswarm,NULL);CHKERRQ(ierr);
+
+			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"%s/step%1.6D",user->outputpath,step);
+      ierr = PSwarmView(pswarm);CHKERRQ(ierr);
       
-			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D-passive.vtu",step);
-      ierr = PSwarmView_VTUXML_binary_appended(pswarm,stepname);CHKERRQ(ierr);
+			//PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D-passive.vtu",step);
+      //ierr = PSwarmView_VTUXML_binary_appended(pswarm,stepname);CHKERRQ(ierr);
 		}
 		
 		/* compute timestep */

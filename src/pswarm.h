@@ -51,7 +51,7 @@ PetscErrorCode PSwarmInitializePackage(void);
 
 PetscErrorCode PSwarmSetOptionsPrefix(PSwarm ps,const char prefix[]);
 PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps);
-PetscErrorCode PSwarmView(PSwarm ps,PetscViewer viewer);
+PetscErrorCode PSwarmView(PSwarm ps);
 PetscErrorCode PSwarmDestroy(PSwarm *ps);
 PetscErrorCode PSwarmSetUp(PSwarm ps);
 PetscErrorCode PSwarmSetFromOptions(PSwarm ps);

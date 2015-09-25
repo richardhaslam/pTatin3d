@@ -47,7 +47,7 @@ const char PSWARM_COMPOSED_STATE_TEMP[]    = "PSWarmStateVector_T";
 
 PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de);
 
-PetscErrorCode PSwarmView(PSwarm ps,PetscViewer viewer);
+PetscErrorCode PSwarmView(PSwarm ps);
 PetscErrorCode PSwarmDestroy(PSwarm *ps);
 PetscErrorCode _PSwarmFieldUpdate_AdvectEulerian(PSwarm ps,DM dmv,Vec v);
 PetscErrorCode _PSwarmFieldUpdate_AdvectLagrangian(PSwarm ps,DM dmv,Vec v);
@@ -221,90 +221,9 @@ PetscErrorCode PSwarmAttachStateVecTemperature(PSwarm ps,Vec x)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "_PSwarmViewMPntStd"
-PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
-{
-	PetscErrorCode ierr;
-    pTatinCtx ctx;
-	char *name;
-	static int beenhere=0;
-	static char *pvdfilename;
-    const char *prefix;
-	
-	PetscFunctionBegin;
-
-	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
-    ctx = ps->pctx;
-	// PVD
-	if (beenhere == 0) {
-        if (prefix) {
-            asprintf(&pvdfilename,"%s/timeseries_%spswarm_std.pvd",ctx->outputpath,prefix);
-        } else {
-            asprintf(&pvdfilename,"%s/timeseries_pswarm_std.pvd",ctx->outputpath);
-        }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
-	{
-		char *vtkfilename;
-
-		if (prefix) {
-            asprintf(&vtkfilename, "%d_%spswarm_std.pvtu",ctx->step,prefix);
-		} else {
-            asprintf(&vtkfilename, "%d_pswarm_std.pvtu",ctx->step);
-        }
-        
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
-		free(vtkfilename);
-	}
-	
-	// PVTS + VTS
-    if (prefix) {
-        asprintf(&name,"%d_%spswarm_std",ctx->step,prefix);
-    } else {
-        asprintf(&name,"%d_pswarm_std",ctx->step);
-    }
-	
-	ierr = SwarmOutputParaView_MPntStd(ps->db,ctx->outputpath,name);CHKERRQ(ierr);
-  
-	free(name);
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmView"
-PetscErrorCode PSwarmView(PSwarm ps,PetscViewer viewer)
-{
-    PhysCompStokes stokes;
-    DM             dmv,dmstokes;
-    PetscErrorCode ierr;
-
-    ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
-    ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
-
-    /* 
-     We could update the state here to ensure that particles which have left the
-     sub-domain are not plotted. I'm not sure if this is really crucial or not.
-    */
-    /*
-    if (ps->state == PSW_TS_STALE) {
-		ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
-        ps->state = PSW_TS_INSYNC;
-    }
-    */
-    ierr = _PSwarmViewMPntStd(ps);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "PSwarmViewInfo"
 PetscErrorCode PSwarmViewInfo(PSwarm ps)
 {
-  PetscErrorCode ierr;
   int n_points;
   
   DataBucketGetSizes(ps->db,&n_points,0,0);
@@ -1086,3 +1005,311 @@ PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 	ierr = PetscTime(&t1);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
+
+/* depreciated */
+#undef __FUNCT__
+#define __FUNCT__ "_PSwarmViewMPntStd"
+PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
+{
+	PetscErrorCode ierr;
+  pTatinCtx ctx;
+	static int beenhere=0;
+	static char pvdfilename[PETSC_MAX_PATH_LEN];
+  const char *prefix;
+  char vtkfilename[PETSC_MAX_PATH_LEN];
+	char name[PETSC_MAX_PATH_LEN];
+	
+	PetscFunctionBegin;
+  
+	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  ctx = ps->pctx;
+	// PVD
+	if (beenhere == 0) {
+    if (prefix) {
+      sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",ctx->outputpath,prefix);
+    } else {
+      sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",ctx->outputpath);
+    }
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
+	}
+  
+  if (prefix) {
+    sprintf(vtkfilename, "step%d_%spswarm.pvtu",ctx->step,prefix);
+  } else {
+    sprintf(vtkfilename, "step%d_pswarm.pvtu",ctx->step);
+  }
+  
+  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+	
+	// PVTS + VTS
+  if (prefix) {
+    sprintf(name,"step%d_%spswarm",ctx->step,prefix);
+  } else {
+    sprintf(name,"step%d_pswarm",ctx->step);
+  }
+	
+	ierr = SwarmOutputParaView_MPntStd(ps->db,ctx->outputpath,name);CHKERRQ(ierr);
+  
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_PSwarmViewStd"
+PetscErrorCode _PSwarmViewStd(PSwarm ps,const char fileprefix[])
+{
+  PhysCompStokes stokes;
+  DM             dmv,dmstokes;
+  PetscErrorCode ierr;
+  
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  
+  /*
+   We could update the state here to ensure that particles which have left the
+   sub-domain are not plotted. I'm not sure if this is really crucial or not.
+   */
+  /*
+   if (ps->state == PSW_TS_STALE) {
+   ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+   ps->state = PSW_TS_INSYNC;
+   }
+   */
+  ierr = _PSwarmViewMPntStd(ps);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PSwarmViewParaview_VTU"
+PetscErrorCode PSwarmViewParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
+{
+	char *vtkfilename,filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
+  int n_points;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+
+  if (petscprefix) { sprintf(basename, "%s_%spswarm",stepprefix,petscprefix); }
+  else {             sprintf(basename, "%s_pswarm",stepprefix); }
+	
+	ierr = pTatinGenerateParallelVTKName(basename,"vtu",&vtkfilename);CHKERRQ(ierr);
+	if (path) { sprintf(filename,"%s/%s",path,vtkfilename); }
+	else {      sprintf(filename,"./%s",vtkfilename); }
+  
+  DataBucketGetSizes(ps->db,&n_points,0,0);
+  if (n_points > 0) {
+    ierr = PSwarmView_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
+  }
+	free(vtkfilename);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "__PSwarmViewParaview_PVTU"
+PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],const char fileprefix[],PetscMPIInt nplist[])
+{
+	PetscMPIInt nproc;
+	FILE *vtk_fp;
+	PetscInt i;
+	char *sourcename;
+  BTruth found;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	if ((vtk_fp = fopen (filename,"w")) == NULL)  {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename);
+	}
+	
+	/* (VTK) generate pvts header */
+	fprintf(vtk_fp,"<?xml version=\"1.0\"?>\n");
+	
+#ifdef WORDSIZE_BIGENDIAN
+	fprintf(vtk_fp,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	fprintf(vtk_fp,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
+	/* define size of the nodal mesh based on the cell DM */
+	fprintf(vtk_fp,"  <PUnstructuredGrid GhostLevel=\"0\">\n" ); /* note overlap = 0 */
+	
+	/* DUMP THE CELL REFERENCES */
+	fprintf(vtk_fp,"    <PCellData>\n");
+	fprintf(vtk_fp,"    </PCellData>\n");
+	
+	///////////////
+	fprintf(vtk_fp,"    <PPoints>\n");
+	fprintf(vtk_fp,"      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
+	fprintf(vtk_fp,"    </PPoints>\n");
+	///////////////
+	
+	///////////////
+  fprintf(vtk_fp,"    <PPointData>\n");
+
+  fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int32\" Name=\"phase\" NumberOfComponents=\"1\"/>\n");
+
+  DataBucketQueryDataFieldByName(db,"pressure",&found);
+  if (found) {
+    fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"pressure\" NumberOfComponents=\"1\"/>\n");
+  }
+  
+  fprintf(vtk_fp,"    </PPointData>\n");
+	///////////////
+	
+	/* write out the parallel information */
+	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
+	for (i=0; i<nproc; i++) {
+    int i32;
+    
+    if (nplist[i] != 0) {
+      
+      PetscMPIIntCast(i,&i32);
+      asprintf(&sourcename,"%s-subdomain%1.5d.vtu",fileprefix,i32);
+      fprintf(vtk_fp,"    <Piece Source=\"%s\"/>\n",sourcename);
+      free(sourcename);
+    }
+	}
+	
+	/* close the file */
+	fprintf(vtk_fp,"  </PUnstructuredGrid>\n");
+	fprintf(vtk_fp,"</VTKFile>\n");
+	
+	if (vtk_fp != NULL){
+		fclose(vtk_fp);
+		vtk_fp = NULL;
+	}
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PSwarmViewParaview_PVTU"
+PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const char stepprefix[],const char petscprefix[])
+{
+	char *vtufilename,fileprefix[PETSC_MAX_PATH_LEN],fileprefix2[PETSC_MAX_PATH_LEN];
+	PetscMPIInt commsize,rank;
+  int n_points,*nplist;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+  
+  if (petscprefix) {
+    sprintf(fileprefix,"%s_%spswarm",stepprefix,petscprefix);
+  } else {
+    sprintf(fileprefix,"%s_pswarm",stepprefix);
+  }
+  
+  if (path) {
+    sprintf(fileprefix2,"%s/%s",path,fileprefix);
+  } else {
+    sprintf(fileprefix2,"./%s",fileprefix);
+  }
+  
+	ierr = pTatinGenerateVTKName(fileprefix2,"pvtu",&vtufilename);CHKERRQ(ierr);
+	
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  DataBucketGetSizes(db,&n_points,0,0);
+  if (rank == 0) {
+    PetscMalloc(sizeof(int)*commsize,&nplist);
+  }
+  ierr = MPI_Gather(&n_points,1,MPI_INT,nplist,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  if (rank == 0) {
+    ierr = __PSwarmViewParaview_PVTU(db,vtufilename,fileprefix,nplist);CHKERRQ(ierr);
+    PetscFree(nplist);
+	}
+  free(vtufilename);
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PSwarmViewParaview_PVD"
+PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
+{
+	PetscErrorCode ierr;
+  pTatinCtx ctx;
+	static int beenhere=0;
+	static char pvdfilename[PETSC_MAX_PATH_LEN];
+  const char *prefix;
+  char vtkfilename[PETSC_MAX_PATH_LEN];
+	
+	PetscFunctionBegin;
+  
+	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  ctx = ps->pctx;
+  
+	if (beenhere == 0) {
+    if (prefix) { sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
+    else { sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",path); }
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
+	}
+  if (prefix) { sprintf(vtkfilename, "%s_%spswarm.pvtu",stepprefix,petscprefix); }
+  else {        sprintf(vtkfilename, "%s_pswarm.pvtu",stepprefix); }
+  
+  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+/*
+ STEPPREFIX = "step00000"
+ 
+ filename for .pvd
+ OUTPUTPATH/timeseries_PETSCPREFIX_pswarm.pvtu
+ 
+ filenames for pvd file references
+ STEPPREFIX_PETSCPREFIX_pswarm.pvtu
+ 
+ filename for .pvtu
+ OUTPUTPATH/STEPPREFIX_PETSCPREFIX_pswarm.pvtu
+
+ filenames for .pvtu file references
+ STEPPREFIX_PETSCPREFIX_pswarm-subdomainRANK.vtu
+
+ 
+*/
+#undef __FUNCT__
+#define __FUNCT__ "PSwarmView"
+PetscErrorCode PSwarmView(PSwarm ps)
+{
+  PhysCompStokes stokes;
+  DM             dmv,dmstokes;
+  char           stepprefix[PETSC_MAX_PATH_LEN];
+  const char     *petscprefix;
+  PetscErrorCode ierr;
+  
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  
+  /*
+   We could update the state here to ensure that particles which have left the
+   sub-domain are not plotted. I'm not sure if this is really crucial or not.
+   */
+  /*
+   if (ps->state == PSW_TS_STALE) {
+   ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+   ps->state = PSW_TS_INSYNC;
+   }
+   */
+  
+	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
+  sprintf(stepprefix,"step%d",ps->pctx->step);
+  
+  ierr = PSwarmViewParaview_PVD(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
+  ierr = PSwarmViewParaview_VTU(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
+  ierr = PSwarmViewParaview_PVTU(ps->db,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
