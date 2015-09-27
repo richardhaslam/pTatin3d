@@ -72,13 +72,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	EnergyMaterialConstants *matconstants_e;
 	EnergyConductivityThreshold *matconstants_cond;
 	EnergyConductivityConst *matconstants_cond_cst;
-	EnergySourceConst *matconstants_source_cst;
+	EnergySourceDecay *matconstants_source_decay;
 	EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
 	PetscBool      flg;
 	DataBucket     materialconstants;
 	DataField      PField;
 	PetscBool      nondim,use_energy;
-	PetscScalar    dh_vx;
+	//PetscScalar    dh_vx;
 	PetscInt       regionidx;
 	PetscReal      cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal      preexpA,Ascale,entalpy,Vmol,nexp,Tref;
@@ -165,7 +165,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eps1",&data->eps1,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eps2",&data->eps2,&flg);CHKERRQ(ierr);
 	
-	/*Temperature */
+	/* Initial Temperature profile */
 	if(use_energy) {
 		data->thermalparams.nlayers  = 3;
 		data->thermalparams.lscale   = data->length_bar;
@@ -187,15 +187,12 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		data->thermalparams.ytop[2]  = 130.0e3;
 		data->thermalparams.thick[2] = 130.0e3;
 		data->thermalparams.ttop[2]  = 1330.0;
-		data->thermalparams.cond[2]  = 2.25;
+		data->thermalparams.cond[2]  = 48.75; //artificial high conductivity to conserve the flow
 		data->thermalparams.hp[2]    = 0.0;
-		data->thermalparams.qbase[2] = 0.0e-3;
+		data->thermalparams.qbase[2] = 19.5e-3;
 		
-		//nlayers = data->thermalparams.nlayers;
-		//data->Ttop = data->thermalparams.ttop[nlayers-1];
-		//data->Tbottom = data->thermalparams.ttop[nlayers-1] + ( data->thermalparams.hp[nlayers-1]* pow(data->thermalparams.thick[nlayers-1],2) / 2.0 + data->thermalparams.qbase[nlayers-1] * data->thermalparams.thick[nlayers-1] ) / data->thermalparams.cond[nlayers-1];
 		data->Ttop    = 0.0;
-		data->Tbottom = 1330.0;
+		data->Tbottom = 1382.0; //new Tbottom to account for pseudo adiabiat in the asthenosphere
 	}
 	
 	/* rheology parameters */
@@ -231,10 +228,10 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
 	DataFieldGetEntries(PField,(void**)&matconstants_cond_cst);
 
-	// Source constant //
+	// Source Decay //
 	/* Get the Energy source constant data fields, and the field entries */
-	DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField);
-	DataFieldGetEntries(PField,(void**)&matconstants_source_cst);
+	DataBucketGetDataFieldByName(materialconstants,EnergySourceDecay_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_source_decay);
 
 	// Source Adiabatic Advection //
 	/* Get the Source data fields, and the field entries */
@@ -252,11 +249,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
 	conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
-	k0 = 2.5 ; //standard conductivity when T < T_threshold-dT
-	k1 = 20.0 ; //conductivity for pseudo-adiabat, when T > T_threshold
-	T_threshold = 1300.0 ;
+	k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	k1 = 48.75 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	T_threshold = 1380.0 ;
 	dT = 50.0 ;
-	dTdy = 0.004;
+	dTdy = -0.4e-3;
 	
 
 	ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);CHKERRQ(ierr);
@@ -301,7 +298,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-	k0 = 2.5 ; //standard conductivity
+	k0 = 2.25 ; //standard conductivity
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
@@ -345,7 +342,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-	k0 = 2.5 ; //standard conductivity
+	k0 = 2.25 ; //standard conductivity
 
 	
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
@@ -370,17 +367,21 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	//ENERGY//
 	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-	EnergySourceConstSetField_HeatSource(&matconstants_source_cst[regionidx],data->thermalparams.hp[0]);
-	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_CONSTANT
+	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
+	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
+
+	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_CONSTANT);
+	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
 
 
-
+	//-------------------------------------//
 	/* PHASE 3, CRUST / UPPER LITHOSPHERE */
+	//-------------------------------------//
+
 	regionidx = 3;
 	alpha = 2e-5;
 	beta = 0;
@@ -388,7 +389,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-	k0 = 2.5 ; //standard conductivity
+	k0 = 2.25 ; //standard conductivity
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
@@ -413,10 +414,12 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 
 	//ENERGY//
 	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-	EnergySourceConstSetField_HeatSource(&matconstants_source_cst[regionidx],data->thermalparams.hp[0]);
-	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_CONSTANT
+	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
+	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
+
+	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_CONSTANT);
+	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
@@ -444,8 +447,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	}
 	
 	/* compute vxdown */
-	dh_vx = data->hvbx1 - data->hvbx2;
-	data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2.0) / (data->ha - dh_vx/2.0);
+	//dh_vx = data->hvbx1 - data->hvbx2;
+	//data->vx_down = -data->vx_up * (data->hc + data->hm +dh_vx/2.0) / (data->ha - dh_vx/2.0);
 	
 	/* reports before scaling */
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d]  input: -model_Rift_oblique3d_Lx : %+1.4e [SI]\n", data->Lx );
@@ -485,9 +488,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		data->ha = data->ha / data->length_bar;
 		//scale velocity
 		data->vx_up    = data->vx_up  /data->velocity_bar;
-		data->vx_down  = data->vx_down/data->velocity_bar;
-		data->hvbx1    = data->hvbx1/data->length_bar;
-		data->hvbx2    = data->hvbx2/data->length_bar;
+		//data->vx_down  = data->vx_down/data->velocity_bar;
+		//data->hvbx1    = data->hvbx1/data->length_bar;
+		//data->hvbx2    = data->hvbx2/data->length_bar;
 		//scale rho
 		data->rhoc = data->rhoc/data->density_bar;
 		data->rhom = data->rhom/data->density_bar;
@@ -619,24 +622,24 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	//    vbc_type = 1; /* in / out flow condition on the sides */
 	vbc_type = 2; /* outflow condition on the sides, inflow condition on the base */
 	
-	if (vbc_type == 1) {
+	/*if (vbc_type == 1) {
 		
-		/* infilling free slip base */
+		// infilling free slip base
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		
-		/* free surface top*/
+		// free surface top
 		
-		/*extension along face of normal x */
+		//extension along face of normal x
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_rift_oblique3dl,(void*)data);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_rift_oblique3dr,(void*)data);CHKERRQ(ierr);
 		
-		/*free slip base*/
+		//free slip base
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		
-		/* no flow in z*/
+		// no flow in z
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	}
+	}*/
 	
 	if (vbc_type == 2) {
 		vxl = -data->vx_up;
@@ -666,7 +669,7 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
+/*#undef __FUNCT__
 #define __FUNCT__ "BCListEvaluator_rift_oblique3dl"
 PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *value, void *data )
 {
@@ -709,6 +712,7 @@ PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *
 	*value = vx;
 	return impose_dirichlet;
 }
+*/
 
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyBoundaryCondition_Rift_oblique3d"
@@ -1158,7 +1162,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	/* MPOINTS_CELL OUTPUT */
 	Step = c->step;
 	outFre = c->output_frequency;
-	if (Step%(outFre*5) == 0) {
+	if (Step%(outFre*2) == 0) {
 		const int  nf = 2;
 		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_plastic_strain };
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
@@ -1175,7 +1179,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		// commented out the next line to stop creating energy outputs
 		//ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
-		if (Step%(outFre*5) == 0) {
+		if (Step%(outFre*2) == 0) {
 			//ierr = pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(c,temperature,prefix);CHKERRQ(ierr);
 			ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr); //old reader
 		}
