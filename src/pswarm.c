@@ -897,16 +897,15 @@ PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **
     
     PetscFunctionBegin;
     ierr = PetscOptionsGetStringArray(NULL,"-pswarm_list",namelist,&max,&found);CHKERRQ(ierr);
-    if (!found) {
-        *pslist = NULL;
-        PetscFunctionReturn(0);
-    }
-    
     nswarms = max;
     
     PetscMalloc(sizeof(PSwarm)*(nswarms+1),&plist);
     PetscMemzero(plist,sizeof(PSwarm)*(nswarms+1));
-
+    if (!found) {
+      *pslist = plist;
+      PetscFunctionReturn(0);
+    }
+  
     ierr = PetscObjectGetComm((PetscObject)ctx->pack,&comm);CHKERRQ(ierr);
 
     for (k=0; k<nswarms; k++) {
