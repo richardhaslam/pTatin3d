@@ -58,6 +58,7 @@ static const char help[] = "Advection perforamnce / profiling test.\n"
 #include "material_point_popcontrol.h"
 #include "output_paraview.h"
 #include "dmda_iterator.h"
+#include "pswarm.h"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
@@ -752,10 +753,10 @@ PetscBool EvaluateTestVelocityField_1(PetscScalar coor[],PetscScalar *value,void
             *value = vxy[0];
             break;
         case 1:
-            *value = vxy[1] + 0.1*vyz[0];
+            *value = vxy[1];// + 0.1*vyz[0];
             break;
         case 2:
-            *value = 0.0 + 0.1*vyz[1];
+            *value = 0.0;// + 0.1*vyz[1];
             break;
     }
     
@@ -809,6 +810,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     PetscReal       dt_factor = 1.0;
     PetscInt        vfield_idx = 0;
     PetscErrorCode  ierr;
+    PSwarm          pswarm,*pswarm2,*psi;
 	
 	PetscFunctionBegin;
 	
@@ -840,6 +842,22 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     ierr = pTatin3dCreateMaterialPoints(user,dmv);CHKERRQ(ierr); /* Allocate data bucket for material points */
 	ierr = pTatinGetMaterialPoints(user,&materialpoint_db,NULL);CHKERRQ(ierr);
     
+    ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
+    ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
+    ierr = PSwarmSetPtatinCtx(pswarm,user);CHKERRQ(ierr);
+    ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+    
+    ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
+
+  ierr = PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm2);CHKERRQ(ierr);
+  psi = &pswarm2[0];
+  while (*psi && pswarm2) {
+    ierr = PSwarmSetPtatinCtx(*psi,user);CHKERRQ(ierr);
+    ierr = PSwarmSetTransportModeType(*psi,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+    ierr = PSwarmSetFromOptions(*psi);CHKERRQ(ierr);
+    psi++;
+  }
+  
 	//ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr); /* <<<< User call back >>>> */
 	//ierr = DMDASetUniformCoordinates(dmv,-1.0,1.0,-1.0,1.0,-1.0,1.0);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(dmv,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
@@ -885,6 +903,16 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     
 	//ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr); /* <<<< User call back >>>> */
     
+	/* work vector for solution and residual */
+	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+
+    ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
+  psi = &pswarm2[0];
+  while (*psi) {
+    ierr = PSwarmAttachStateVecVelocityPressure(*psi,X);CHKERRQ(ierr);
+    psi++;
+  }
+
 	/* insert boundary conditions into solution vector X */
 	{
         BCList bclist_u;
@@ -895,8 +923,6 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	}
     
-	/* work vector for solution and residual */
-	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 	
 	/* initial condition */
 	//ierr = pTatinModel_ApplyInitialSolution(model,user,X);CHKERRQ(ierr); /* <<<< User call back >>>> */
@@ -946,6 +972,13 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		ierr = MaterialPointStd_UpdateGlobalCoordinates(materialpoint_db,dmv,velocity,user->dt);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
+        ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
+    psi = &pswarm2[0];
+    while (*psi) {
+      ierr = PSwarmFieldUpdateAll(*psi);CHKERRQ(ierr);
+      psi++;
+    }
+    
 		/* update mesh */
 		//ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
 		
@@ -962,6 +995,13 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		if (step%user->output_frequency == 0) {
 			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
             ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
+
+      ierr = PSwarmView(pswarm);CHKERRQ(ierr);
+      psi = &pswarm2[0];
+      while (*psi) {
+        ierr = PSwarmView(*psi);CHKERRQ(ierr);
+        psi++;
+      }
 		}
 		
 		/* compute timestep */
@@ -987,6 +1027,20 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     }
     
     /* clean up */
+    ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
+    ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
+  
+  psi = &pswarm2[0];
+  while (*psi) {
+    PSwarm *next = psi + 1;
+    
+    ierr = PSwarmViewInfo(*psi);CHKERRQ(ierr);
+    printf("PSwarmDestroy - freeing %p \n",*psi);
+    ierr = PSwarmDestroy(psi);CHKERRQ(ierr);
+    psi = next;
+  }
+  PetscFree(pswarm2);
+  
     ierr = VecDestroy(&X);CHKERRQ(ierr);
 	for (f=0; f<nfields; f++) {
         ierr = ISDestroy(&is_up_field[f]);CHKERRQ(ierr);
