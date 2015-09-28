@@ -810,7 +810,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     PetscReal       dt_factor = 1.0;
     PetscInt        vfield_idx = 0;
     PetscErrorCode  ierr;
-    PSwarm          pswarm,*pswarm2;
+    PSwarm          pswarm,*pswarm2,*psi;
 	
 	PetscFunctionBegin;
 	
@@ -850,10 +850,11 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
 
   ierr = PSwarmCreateMultipleInstances(user,NULL,NULL,&pswarm2);CHKERRQ(ierr);
-  for (f=0; f<2; f++) {
-    ierr = PSwarmSetTransportModeType(pswarm2[f],PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
-    ierr = PSwarmSetFromOptions(pswarm2[f]);CHKERRQ(ierr);
-    
+  psi = &pswarm2[0];
+  while (*psi && pswarm2) {
+    ierr = PSwarmSetTransportModeType(*psi,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+    ierr = PSwarmSetFromOptions(*psi);CHKERRQ(ierr);
+    psi++;
   }
   
 	//ierr = pTatinModel_ApplyInitialMeshGeometry(model,user);CHKERRQ(ierr); /* <<<< User call back >>>> */
@@ -905,8 +906,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 	ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
     ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
-  for (f=0; f<2; f++) {
-    ierr = PSwarmAttachStateVecVelocityPressure(pswarm2[f],X);CHKERRQ(ierr);
+  psi = &pswarm2[0];
+  while (*psi) {
+    ierr = PSwarmAttachStateVecVelocityPressure(*psi,X);CHKERRQ(ierr);
+    psi++;
   }
 
 	/* insert boundary conditions into solution vector X */
@@ -969,8 +972,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 		ierr = DMCompositeRestoreAccess(multipys_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		
         ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
-    for (f=0; f<2; f++) {
-      ierr = PSwarmFieldUpdateAll(pswarm2[f]);CHKERRQ(ierr);
+    psi = &pswarm2[0];
+    while (*psi) {
+      ierr = PSwarmFieldUpdateAll(*psi);CHKERRQ(ierr);
+      psi++;
     }
     
 		/* update mesh */
@@ -991,8 +996,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
             ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
 
       ierr = PSwarmView(pswarm);CHKERRQ(ierr);
-      for (f=0; f<2; f++) {
-        ierr = PSwarmView(pswarm2[f]);CHKERRQ(ierr);
+      psi = &pswarm2[0];
+      while (*psi) {
+        ierr = PSwarmView(*psi);CHKERRQ(ierr);
+        psi++;
       }
 		}
 		
@@ -1021,11 +1028,18 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     /* clean up */
     ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
     ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
-  for (f=0; f<2; f++) {
-    ierr = PSwarmViewInfo(pswarm2[f]);CHKERRQ(ierr);
-    ierr = PSwarmDestroy(&pswarm2[f]);CHKERRQ(ierr);
+  
+  psi = &pswarm2[0];
+  while (*psi) {
+    PSwarm *next = psi + 1;
+    
+    ierr = PSwarmViewInfo(*psi);CHKERRQ(ierr);
+    printf("PSwarmDestroy - freeing %p \n",*psi);
+    ierr = PSwarmDestroy(psi);CHKERRQ(ierr);
+    psi = next;
   }
-
+  PetscFree(pswarm2);
+  
     ierr = VecDestroy(&X);CHKERRQ(ierr);
 	for (f=0; f<nfields; f++) {
         ierr = ISDestroy(&is_up_field[f]);CHKERRQ(ierr);
