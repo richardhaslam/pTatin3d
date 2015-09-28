@@ -1600,4 +1600,75 @@ PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pSwarmParaViewMeshDeformationBaseVTS"
+PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscInt nx,PetscInt ny,PetscInt nz,const char name[])
+{
+	PetscInt i,j,k;
+	FILE*	vtk_fp = NULL;
+  float dx,dy,dz,xp,yp,zp;
+	
+	PetscFunctionBegin;
+	if ((vtk_fp = fopen (name,"w")) == NULL)  {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+	}
+	
+	/* VTS HEADER - OPEN */
+#ifdef WORDSIZE_BIGENDIAN
+	fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+#else
+	fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+#endif
+	
+	fprintf(vtk_fp,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0,nx-1, 0,ny-1,0,nz-1);
+	fprintf(vtk_fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n", 0,nx-1, 0,ny-1,0,nz-1);
+	
+  dx = 1.0/((float)(nx-1));
+  dy = 1.0/((float)(ny-1));
+  dz = 1.0/((float)(nz-1));
+  
+	/* VTS COORD DATA */
+	fprintf(vtk_fp,"    <Points>\n");
+	fprintf(vtk_fp,"      <DataArray Name=\"coords\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+	for (k=0; k<nz; k++) {
+		for (j=0; j<ny; j++) {
+			for (i=0; i<nx; i++) {
+        xp = dx * i;
+        yp = dy * j;
+        zp = dz * k;
+				fprintf(vtk_fp,"      %1.6e %1.6e %1.6e\n",xp,yp,zp);
+			}
+		}
+	}
+	fprintf(vtk_fp,"      </DataArray>\n");
+	fprintf(vtk_fp,"    </Points>\n");
+	
+	/* VTS CELL DATA */
+	fprintf(vtk_fp,"    <CellData>\n");
+	
+	fprintf(vtk_fp,"      <DataArray Name=\"index\" type=\"Int32\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+	fprintf(vtk_fp,"      ");
+	for (k=0; k<nz; k++) {
+		for (j=0; j<ny; j++) {
+			for (i=0; i<nx; i++) {
+				fprintf(vtk_fp,"%d ", 0 );
+			}
+		}
+	}
+	fprintf(vtk_fp,"\n");
+	fprintf(vtk_fp,"      </DataArray>\n");
+	
+	fprintf(vtk_fp,"    </CellData>\n");
+	
+	/* VTS NODAL DATA */
+	fprintf(vtk_fp,"    <PointData>\n");
+	fprintf(vtk_fp,"    </PointData>\n");
+	
+	/* VTS HEADER - CLOSE */
+	fprintf(vtk_fp,"    </Piece>\n");
+	fprintf(vtk_fp,"  </StructuredGrid>\n");
+	fprintf(vtk_fp,"</VTKFile>\n");
+	fclose(vtk_fp);
+	PetscFunctionReturn(0);
+}
 
