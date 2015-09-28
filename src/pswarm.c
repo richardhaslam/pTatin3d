@@ -955,7 +955,9 @@ PetscErrorCode PSwarmCoordinatesSetSynchronization(PSwarm ps,PetscBool val)
 
 
 /* ----------------- */
-/* headers writers */
+/* VTU headers writers */
+
+/* defaults for int, float, double */
 void PSWarmArray_VTUWriteBinaryAppendedHeader_int(FILE *vtk_fp,const char name[],int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"%s\" format=\"appended\"  offset=\"%d\" />\n",name,*offset);
@@ -974,11 +976,13 @@ void PSWarmArray_VTUWriteBinaryAppendedHeader_double(FILE *vtk_fp,const char nam
   *offset = *offset + sizeof(int) + N * sizeof(double);
 }
 
+/* MPStd specific for phase, pid */
 void MPntStd_VTUWriteBinaryAppendedHeader_phase(FILE *vtk_fp,int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"phase\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(int);
 }
+
 void MPntStd_VTUWriteBinaryAppendedHeader_pid(FILE *vtk_fp,int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int64\" Name=\"index\" format=\"appended\"  offset=\"%d\" />\n",*offset);
@@ -1012,32 +1016,7 @@ PetscErrorCode PSwarm_VTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBuc
 }
 
 /* data writers */
-void MPntStd_VTUWriteBinaryAppendedData_phase(FILE *vtk_fp,const int N,const MPntStd points[])
-{
-  int p,length;
-  size_t atomic_size;
-  
-  atomic_size = sizeof(int);
-  length = (int)( atomic_size * ((size_t)N) );
-  fwrite( &length,sizeof(int),1,vtk_fp);
-  for(p=0;p<N;p++) {
-    fwrite(&points[p].phase,atomic_size,1,vtk_fp);
-  }
-}
-
-void MPntStd_VTUWriteBinaryAppendedData_pid(FILE *vtk_fp,const int N,const MPntStd points[])
-{
-  int p,length;
-  size_t atomic_size;
-  
-  atomic_size = sizeof(long int);
-  length = (int)( atomic_size * ((size_t)N) );
-  fwrite( &length,sizeof(int),1,vtk_fp);
-  for(p=0;p<N;p++) {
-    fwrite(&points[p].pid,atomic_size,1,vtk_fp);
-  }
-}
-
+/* defaults for int, float, double */
 void PSwarmArray_VTUWriteBinaryAppendedData_int(FILE *vtk_fp,const int N,int data[])
 {
   int length;
@@ -1069,6 +1048,33 @@ void PSwarmArray_VTUWriteBinaryAppendedData_double(FILE *vtk_fp,const int N,doub
   length = (int)( atomic_size * ((size_t)N) );
   fwrite(&length,sizeof(int),1,vtk_fp);
   fwrite(data,atomic_size,N,vtk_fp);
+}
+
+/* MPStd specific for phase, pid */
+void MPntStd_VTUWriteBinaryAppendedData_phase(FILE *vtk_fp,const int N,const MPntStd points[])
+{
+  int p,length;
+  size_t atomic_size;
+  
+  atomic_size = sizeof(int);
+  length = (int)( atomic_size * ((size_t)N) );
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for(p=0;p<N;p++) {
+    fwrite(&points[p].phase,atomic_size,1,vtk_fp);
+  }
+}
+
+void MPntStd_VTUWriteBinaryAppendedData_pid(FILE *vtk_fp,const int N,const MPntStd points[])
+{
+  int p,length;
+  size_t atomic_size;
+  
+  atomic_size = sizeof(long int);
+  length = (int)( atomic_size * ((size_t)N) );
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for(p=0;p<N;p++) {
+    fwrite(&points[p].pid,atomic_size,1,vtk_fp);
+  }
 }
 
 #undef __FUNCT__
