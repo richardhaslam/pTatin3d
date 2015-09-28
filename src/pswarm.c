@@ -956,26 +956,31 @@ PetscErrorCode PSwarmCoordinatesSetSynchronization(PSwarm ps,PetscBool val)
 
 /* ----------------- */
 /* headers writers */
-void PSWarmArray_VTKWriteBinaryAppendedHeader_int(FILE *vtk_fp,const char name[],int *offset,const int N)
+void PSWarmArray_VTUWriteBinaryAppendedHeader_int(FILE *vtk_fp,const char name[],int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"%s\" format=\"appended\"  offset=\"%d\" />\n",name,*offset);
   *offset = *offset + sizeof(int) + N * sizeof(int);
 }
 
-void PSWarmArray_VTKWriteBinaryAppendedHeader_double(FILE *vtk_fp,const char name[],int *offset,const int N)
+void PSWarmArray_VTUWriteBinaryAppendedHeader_double(FILE *vtk_fp,const char name[],int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"%s\" format=\"appended\"  offset=\"%d\" />\n",name,*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
 }
-void MPntStd_VTKWriteBinaryAppendedHeader_Phase(FILE *vtk_fp,int *offset,const int N)
+void MPntStd_VTUWriteBinaryAppendedHeader_phase(FILE *vtk_fp,int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"phase\" format=\"appended\"  offset=\"%d\" />\n",*offset);
   *offset = *offset + sizeof(int) + N * sizeof(int);
 }
+void MPntStd_VTUWriteBinaryAppendedHeader_pid(FILE *vtk_fp,int *offset,const int N)
+{
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int64\" Name=\"index\" format=\"appended\"  offset=\"%d\" />\n",*offset);
+  *offset = *offset + sizeof(int) + N * sizeof(long int);
+}
 
 #undef __FUNCT__
-#define __FUNCT__ "PSwarm_VTKWriteBinaryAppendedHeaderAllFields"
-PetscErrorCode PSwarm_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int *byte_offset)
+#define __FUNCT__ "PSwarm_VTUWriteBinaryAppendedHeaderAllFields"
+PetscErrorCode PSwarm_VTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int *byte_offset)
 {
 	int npoints;
   BTruth found;
@@ -985,13 +990,14 @@ PetscErrorCode PSwarm_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBuc
 	DataBucketGetSizes(db,&npoints,NULL,NULL);
   
   { /* MPStd */
-    MPntStd_VTKWriteBinaryAppendedHeader_Phase(vtk_fp,byte_offset,(const int)npoints);
+    MPntStd_VTUWriteBinaryAppendedHeader_pid(vtk_fp,byte_offset,(const int)npoints);
+    MPntStd_VTUWriteBinaryAppendedHeader_phase(vtk_fp,byte_offset,(const int)npoints);
   }
   
   { /* Pressure */
     DataBucketQueryDataFieldByName(db,"pressure",&found);
     if (found) {
-      PSWarmArray_VTKWriteBinaryAppendedHeader_double(vtk_fp,"pressure",byte_offset,(const int)npoints);
+      PSWarmArray_VTUWriteBinaryAppendedHeader_double(vtk_fp,"pressure",byte_offset,(const int)npoints);
     }
   }
   
@@ -999,7 +1005,7 @@ PetscErrorCode PSwarm_VTKWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBuc
 }
 
 /* data writers */
-void MPntStd_VTKWriteBinaryAppendedData_Phase(FILE *vtk_fp,const int N,const MPntStd points[])
+void MPntStd_VTUWriteBinaryAppendedData_phase(FILE *vtk_fp,const int N,const MPntStd points[])
 {
   int p,length;
   size_t atomic_size;
@@ -1012,7 +1018,20 @@ void MPntStd_VTKWriteBinaryAppendedData_Phase(FILE *vtk_fp,const int N,const MPn
   }
 }
 
-void PSwarmArray_VTKWriteBinaryAppendedData_int(FILE *vtk_fp,const int N,int data[])
+void MPntStd_VTUWriteBinaryAppendedData_pid(FILE *vtk_fp,const int N,const MPntStd points[])
+{
+  int p,length;
+  size_t atomic_size;
+  
+  atomic_size = sizeof(long int);
+  length = (int)( atomic_size * ((size_t)N) );
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for(p=0;p<N;p++) {
+    fwrite( &points[p].pid,atomic_size,1,vtk_fp);
+  }
+}
+
+void PSwarmArray_VTUWriteBinaryAppendedData_int(FILE *vtk_fp,const int N,int data[])
 {
   int length;
   size_t atomic_size;
@@ -1023,7 +1042,7 @@ void PSwarmArray_VTKWriteBinaryAppendedData_int(FILE *vtk_fp,const int N,int dat
   fwrite( data,atomic_size,N,vtk_fp);
 }
 
-void PSwarmArray_VTKWriteBinaryAppendedData_double(FILE *vtk_fp,const int N,double data[])
+void PSwarmArray_VTUWriteBinaryAppendedData_double(FILE *vtk_fp,const int N,double data[])
 {
   int length;
   size_t atomic_size;
@@ -1035,8 +1054,8 @@ void PSwarmArray_VTKWriteBinaryAppendedData_double(FILE *vtk_fp,const int N,doub
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PSwarm_VTKWriteBinaryAppendedDataAllFields"
-PetscErrorCode PSwarm_VTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db)
+#define __FUNCT__ "PSwarm_VTUWriteBinaryAppendedDataAllFields"
+PetscErrorCode PSwarm_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db)
 {
 	int npoints;
   BTruth found;
@@ -1052,7 +1071,8 @@ PetscErrorCode PSwarm_VTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucke
     DataBucketGetDataFieldByName(db,MPntStd_classname,&datafield);
     DataFieldGetEntries(datafield,(void**)&tracer);
 
-    MPntStd_VTKWriteBinaryAppendedData_Phase(vtk_fp,(const int)npoints,tracer);
+    MPntStd_VTUWriteBinaryAppendedData_pid(vtk_fp,(const int)npoints,tracer);
+    MPntStd_VTUWriteBinaryAppendedData_phase(vtk_fp,(const int)npoints,tracer);
   }
   
   { /* Pressure */
@@ -1063,10 +1083,30 @@ PetscErrorCode PSwarm_VTKWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucke
       DataBucketGetDataFieldByName(db,"pressure",&datafield);
       DataFieldGetEntries(datafield,(void**)&data);
 
-      PSwarmArray_VTKWriteBinaryAppendedData_double(vtk_fp,(const int)npoints,data);
+      PSwarmArray_VTUWriteBinaryAppendedData_double(vtk_fp,(const int)npoints,data);
     }
   }
   
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PSwarm_PVTUWriteBinaryAppendedHeaderAllFields"
+PetscErrorCode PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db)
+{
+  BTruth found;
+  
+  /* MPStd */
+  fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int64\" Name=\"index\" NumberOfComponents=\"1\"/>\n");
+  
+  fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int32\" Name=\"phase\" NumberOfComponents=\"1\"/>\n");
+  
+  /* pressure */
+  DataBucketQueryDataFieldByName(db,"pressure",&found);
+  if (found) {
+    fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"pressure\" NumberOfComponents=\"1\"/>\n");
+  }
+
 	PetscFunctionReturn(0);
 }
 
@@ -1143,7 +1183,7 @@ PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 	fprintf( vtk_fp, "\t\t\t<PointData>\n");
 	/* auto generated shit for the header goes here */
 	{
-		ierr = PSwarm_VTKWriteBinaryAppendedHeaderAllFields(vtk_fp,db,&byte_offset);CHKERRQ(ierr);
+		ierr = PSwarm_VTUWriteBinaryAppendedHeaderAllFields(vtk_fp,db,&byte_offset);CHKERRQ(ierr);
 	}
 	fprintf( vtk_fp, "\t\t\t</PointData>\n");
 	fprintf( vtk_fp, "\n");
@@ -1205,7 +1245,7 @@ PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 	
 	/* auto generated shit for the marker data goes here */
 	{
-		ierr = PSwarm_VTKWriteBinaryAppendedDataAllFields(vtk_fp,db);CHKERRQ(ierr);
+		ierr = PSwarm_VTUWriteBinaryAppendedDataAllFields(vtk_fp,db);CHKERRQ(ierr);
 	}
 	
 	fprintf( vtk_fp,"\n\t</AppendedData>\n");
@@ -1332,7 +1372,6 @@ PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],con
 	FILE *vtk_fp;
 	PetscInt i;
 	char *sourcename;
-  BTruth found;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -1366,12 +1405,7 @@ PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],con
 	///////////////
   fprintf(vtk_fp,"    <PPointData>\n");
 
-  fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Int32\" Name=\"phase\" NumberOfComponents=\"1\"/>\n");
-
-  DataBucketQueryDataFieldByName(db,"pressure",&found);
-  if (found) {
-    fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"pressure\" NumberOfComponents=\"1\"/>\n");
-  }
+  ierr = PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(vtk_fp,db);CHKERRQ(ierr);
   
   fprintf(vtk_fp,"    </PPointData>\n");
 	///////////////
