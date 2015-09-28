@@ -849,9 +849,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
     
     ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
 
-  ierr = PSwarmCreateMultipleInstances(user,NULL,NULL,&pswarm2);CHKERRQ(ierr);
+  ierr = PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm2);CHKERRQ(ierr);
   psi = &pswarm2[0];
   while (*psi && pswarm2) {
+    ierr = PSwarmSetPtatinCtx(*psi,user);CHKERRQ(ierr);
     ierr = PSwarmSetTransportModeType(*psi,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
     ierr = PSwarmSetFromOptions(*psi);CHKERRQ(ierr);
     psi++;

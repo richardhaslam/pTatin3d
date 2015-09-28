@@ -58,7 +58,7 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps);
 PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps);
 PetscErrorCode PSwarmCreateFromPtatinCtx(pTatinCtx pctx,PSwarm *ps);
 PetscErrorCode PSwarmDefineCommTopologyFromDMDA(PSwarm ps,DM dm);
-PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **pslist);
+PetscErrorCode PSwarmCreateMultipleInstances(MPI_Comm comm,PSwarm **pslist);
 PetscErrorCode PSwarmViewInfo(PSwarm ps);
 PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx);
 

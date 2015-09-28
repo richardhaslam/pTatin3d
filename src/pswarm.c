@@ -898,12 +898,11 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
 
 #undef __FUNCT__
 #define __FUNCT__ "PSwarmCreateMultipleInstances"
-PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **pslist)
+PetscErrorCode PSwarmCreateMultipleInstances(MPI_Comm comm,PSwarm **pslist)
 {
     PetscErrorCode ierr;
     PSwarm         *plist;
     PetscInt       k,nswarms;
-    MPI_Comm       comm;
     PetscInt       max = 20;
     PetscBool      found;
     char           *namelist[20];
@@ -919,8 +918,6 @@ PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **
       PetscFunctionReturn(0);
     }
   
-    ierr = PetscObjectGetComm((PetscObject)ctx->pack,&comm);CHKERRQ(ierr);
-
     for (k=0; k<nswarms; k++) {
         char prefix[PETSC_MAX_PATH_LEN];
         
@@ -929,9 +926,9 @@ PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **
         PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN,"%s_",namelist[k]);
         ierr = PSwarmSetOptionsPrefix(plist[k],prefix);CHKERRQ(ierr);
         
-        ierr = PSwarmSetPtatinCtx(plist[k],ctx);CHKERRQ(ierr);
-        if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
-        if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
+        //ierr = PSwarmSetPtatinCtx(plist[k],ctx);CHKERRQ(ierr);
+        //if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
+        //if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
         //ierr = PSwarmSetFromOptions(plist[k]);CHKERRQ(ierr);
     }
     
