@@ -962,11 +962,18 @@ void PSWarmArray_VTUWriteBinaryAppendedHeader_int(FILE *vtk_fp,const char name[]
   *offset = *offset + sizeof(int) + N * sizeof(int);
 }
 
+void PSWarmArray_VTUWriteBinaryAppendedHeader_float(FILE *vtk_fp,const char name[],int *offset,const int N)
+{
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float32\" Name=\"%s\" format=\"appended\"  offset=\"%d\" />\n",name,*offset);
+  *offset = *offset + sizeof(int) + N * sizeof(float);
+}
+
 void PSWarmArray_VTUWriteBinaryAppendedHeader_double(FILE *vtk_fp,const char name[],int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"%s\" format=\"appended\"  offset=\"%d\" />\n",name,*offset);
   *offset = *offset + sizeof(int) + N * sizeof(double);
 }
+
 void MPntStd_VTUWriteBinaryAppendedHeader_phase(FILE *vtk_fp,int *offset,const int N)
 {
   fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"phase\" format=\"appended\"  offset=\"%d\" />\n",*offset);
@@ -1014,7 +1021,7 @@ void MPntStd_VTUWriteBinaryAppendedData_phase(FILE *vtk_fp,const int N,const MPn
   length = (int)( atomic_size * ((size_t)N) );
   fwrite( &length,sizeof(int),1,vtk_fp);
   for(p=0;p<N;p++) {
-    fwrite( &points[p].phase,atomic_size,1,vtk_fp);
+    fwrite(&points[p].phase,atomic_size,1,vtk_fp);
   }
 }
 
@@ -1027,7 +1034,7 @@ void MPntStd_VTUWriteBinaryAppendedData_pid(FILE *vtk_fp,const int N,const MPntS
   length = (int)( atomic_size * ((size_t)N) );
   fwrite( &length,sizeof(int),1,vtk_fp);
   for(p=0;p<N;p++) {
-    fwrite( &points[p].pid,atomic_size,1,vtk_fp);
+    fwrite(&points[p].pid,atomic_size,1,vtk_fp);
   }
 }
 
@@ -1038,8 +1045,19 @@ void PSwarmArray_VTUWriteBinaryAppendedData_int(FILE *vtk_fp,const int N,int dat
   
   atomic_size = sizeof(int);
   length = (int)( atomic_size * ((size_t)N) );
-  fwrite( &length,sizeof(int),1,vtk_fp);
-  fwrite( data,atomic_size,N,vtk_fp);
+  fwrite(&length,sizeof(int),1,vtk_fp);
+  fwrite(data,atomic_size,N,vtk_fp);
+}
+
+void PSwarmArray_VTUWriteBinaryAppendedData_float(FILE *vtk_fp,const int N,double data[])
+{
+  int length;
+  size_t atomic_size;
+  
+  atomic_size = sizeof(float);
+  length = (int)( atomic_size * ((size_t)N) );
+  fwrite(&length,sizeof(int),1,vtk_fp);
+  fwrite(data,atomic_size,N,vtk_fp);
 }
 
 void PSwarmArray_VTUWriteBinaryAppendedData_double(FILE *vtk_fp,const int N,double data[])
@@ -1049,8 +1067,8 @@ void PSwarmArray_VTUWriteBinaryAppendedData_double(FILE *vtk_fp,const int N,doub
   
   atomic_size = sizeof(double);
   length = (int)( atomic_size * ((size_t)N) );
-  fwrite( &length,sizeof(int),1,vtk_fp);
-  fwrite( data,atomic_size,N,vtk_fp);
+  fwrite(&length,sizeof(int),1,vtk_fp);
+  fwrite(data,atomic_size,N,vtk_fp);
 }
 
 #undef __FUNCT__
