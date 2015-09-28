@@ -229,7 +229,7 @@ PetscErrorCode PSwarmViewInfo(PSwarm ps)
   int n_points;
   PetscErrorCode ierr;
   
-  DataBucketGetSizes(ps->db,&n_points,0,0);
+  DataBucketGetSizes(ps->db,&n_points,NULL,NULL);
 
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   if (prefix) {
@@ -327,7 +327,7 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   DataBucketGetDataFieldByName(ps->db,"pressure",&datafield);
 	DataFieldGetEntries(datafield,(void**)&tracer_pressure);
   
-	DataBucketGetSizes(ps->db,&n_tracers,0,0);
+	DataBucketGetSizes(ps->db,&n_tracers,NULL,NULL);
   for (p=0; p<n_tracers; p++) {
     tracer_pressure[p] = tracer[p].coor[1];
   }
@@ -843,7 +843,20 @@ PetscErrorCode PSwarmSetUp(PSwarm ps)
     }
 
     ierr = PSwarmSetUpCoords(ps);CHKERRQ(ierr);
-    
+
+    {
+        const char *prefix;
+        PetscInt   ridx;
+        PetscBool  isactive;
+      
+      
+        ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+        ridx = 0;
+        isactive = PETSC_FALSE;
+        ierr = PetscOptionsGetInt(prefix,"-pswarm_region_index",&ridx,&isactive);CHKERRQ(ierr);
+        if (isactive) { ierr = PSwarmSetRegionIndex(ps,ridx);CHKERRQ(ierr); }
+    }
+  
     ps->setup = PETSC_TRUE;
     
     PetscFunctionReturn(0);
@@ -856,7 +869,7 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
 {
     PetscErrorCode ierr;
     PetscBool      isactive;
-    
+  
     PetscFunctionBegin;
     ierr = PetscObjectOptionsBegin((PetscObject)ps);CHKERRQ(ierr);
     ierr = PetscOptionsHead("PSwarm options");CHKERRQ(ierr);
@@ -874,7 +887,7 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
     if (isactive) { ierr = PSwarmSetFieldUpdateType(ps,PSWARM_FU_Pressure);CHKERRQ(ierr); }
 
     isactive = PETSC_FALSE;
-    ierr = PetscOptionsBool("-pswarm_view","View PSwaem info","PSwarmView",isactive,&isactive,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-pswarm_view","View PSwarm info","PSwarmView",isactive,&isactive,0);CHKERRQ(ierr);
     if (isactive) { ierr = PSwarmViewInfo(ps);CHKERRQ(ierr); }
 
     ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -917,8 +930,8 @@ PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **
         ierr = PSwarmSetOptionsPrefix(plist[k],prefix);CHKERRQ(ierr);
         
         ierr = PSwarmSetPtatinCtx(plist[k],ctx);CHKERRQ(ierr);
-      if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
-      if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
+        if (X) ierr = PSwarmAttachStateVecVelocityPressure(plist[k],X);CHKERRQ(ierr);
+        if (T) ierr = PSwarmAttachStateVecTemperature(plist[k],T);CHKERRQ(ierr);
         //ierr = PSwarmSetFromOptions(plist[k]);CHKERRQ(ierr);
     }
     
@@ -1302,7 +1315,7 @@ PetscErrorCode PSwarmViewParaview_VTU(PSwarm ps,const char path[],const char ste
 	if (path) { sprintf(filename,"%s/%s",path,vtkfilename); }
 	else {      sprintf(filename,"./%s",vtkfilename); }
   
-  DataBucketGetSizes(ps->db,&n_points,0,0);
+  DataBucketGetSizes(ps->db,&n_points,NULL,NULL);
   if (n_points > 0) {
     ierr = PSwarmView_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
   }
@@ -1417,7 +1430,7 @@ PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const cha
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
-  DataBucketGetSizes(db,&n_points,0,0);
+  DataBucketGetSizes(db,&n_points,NULL,NULL);
   if (rank == 0) {
     PetscMalloc(sizeof(int)*commsize,&nplist);
   }
@@ -1513,4 +1526,23 @@ PetscErrorCode PSwarmView(PSwarm ps)
   ierr = PSwarmViewParaview_PVTU(ps->db,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PSwarmSetRegionIndex"
+PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx)
+{
+  MPntStd *tracer;
+  DataField datafield;
+  int p,np;
+  
+  DataBucketGetDataFieldByName(ps->db,MPntStd_classname,&datafield);
+  DataFieldGetEntries(datafield,(void**)&tracer);
+  DataBucketGetSizes(ps->db,&np,NULL,NULL);
+  for (p=0; p<np; p++) {
+    tracer[p].phase = ridx;
+  }
+  
+  PetscFunctionReturn(0);
+}
+
 

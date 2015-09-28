@@ -60,6 +60,7 @@ PetscErrorCode PSwarmCreateFromPtatinCtx(pTatinCtx pctx,PSwarm *ps);
 PetscErrorCode PSwarmDefineCommTopologyFromDMDA(PSwarm ps,DM dm);
 PetscErrorCode PSwarmCreateMultipleInstances(pTatinCtx ctx,Vec X,Vec T,PSwarm **pslist);
 PetscErrorCode PSwarmViewInfo(PSwarm ps);
+PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx);
 
 PetscErrorCode PSwarmSetPtatinCtx(PSwarm ps,pTatinCtx pctx);
 PetscErrorCode PSwarmSetDataBucket(PSwarm ps,DataBucket db);
