@@ -8,6 +8,7 @@ libptatin3dmodels-y.c += $(call thisdir, \
             foundation_mpeval.c \
             foundation_user.c \
             foundation_userfunctions_reg.c \
+            foundation_bc.c \
 	)
 
 TATIN_INC += -I$(abspath $(call thisdir,.))
