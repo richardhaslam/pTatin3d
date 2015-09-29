@@ -781,6 +781,98 @@ PetscErrorCode PSwarmSetUpCoords_FillPartialDM(PSwarm ps)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PSwarmSetUpCoords_FillBox"
+PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
+{
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv;
+  PetscInt       lmx,lmy,lmz;
+  PetscInt       nn,nlist,Nxp[] = {2,2,2}; /* change with -lattice_layout_N{x,y,z} */
+  PetscReal      xmin[3],xmax[3],*coorlist;
+  const char     *prefix;
+  PetscBool      found;
+  PetscMPIInt    rank;
+  MPI_Comm       comm;
+  
+  PetscFunctionBegin;
+  
+  ierr = PetscObjectGetComm((PetscObject)ps,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  
+  ierr = DMDAGetLocalSizeElementQ2(dmv,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  
+  xmin[0] = -1.0e32;
+  xmin[1] = -1.0e32;
+  xmin[2] = -1.0e32;
+  
+  xmax[0] = 1.0e32;
+  xmax[1] = 1.0e32;
+  xmax[2] = 1.0e32;
+  
+  nn = 3;
+	PetscOptionsGetIntArray(prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
+  
+  if (Nxp[0] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[0] must be greater than 1");
+  if (Nxp[1] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[1] must be greater than 1");
+  if (Nxp[2] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[2] must be greater than 1");
+  
+  nn = 3;
+  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_min",xmin,&nn,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box min extent via -pswarm_lattice_min");
+  
+  nn = 3;
+  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_max",xmax,&nn,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box max extent via -pswarm_lattice_max");
+
+  nlist = Nxp[0] * Nxp[1] * Nxp[2];
+  PetscMalloc(sizeof(PetscReal)*3*nlist,&coorlist);
+
+  /* Create array of coordinates */
+  {
+    PetscInt ii,jj,kk,c;
+    PetscReal dx[3];
+    
+    dx[0] = (xmax[0]-xmin[0])/((PetscReal)Nxp[0]-1);
+    dx[1] = (xmax[1]-xmin[1])/((PetscReal)Nxp[1]-1);
+    dx[2] = (xmax[2]-xmin[2])/((PetscReal)Nxp[2]-1);
+    
+    c = 0;
+    for (kk=0; kk<Nxp[2]; kk++) {
+      for (jj=0; jj<Nxp[1]; jj++) {
+        for (ii=0; ii<Nxp[0]; ii++) {
+          coorlist[c*3+0] = xmin[0] + ii * dx[0];
+          coorlist[c*3+1] = xmin[1] + jj * dx[1];
+          coorlist[c*3+2] = xmin[2] + kk * dx[2];
+          c++;
+        }
+      }
+    }
+    
+  }
+  
+  ierr = SwarmMPntStd_CoordAssignment_InsertFromList(ps->db,dmv,nlist,coorlist,0,PETSC_TRUE);CHKERRQ(ierr);
+  
+  PetscFree(coorlist);
+  
+  if (rank == 0) {
+    char filename[PETSC_MAX_PATH_LEN];
+    
+    PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/deformation_grid_ref.vts",ps->pctx->outputpath);
+    ierr = pSwarmParaViewMeshDeformationBaseVTS(Nxp[0],Nxp[1],Nxp[2],filename);CHKERRQ(ierr);
+  }
+  
+  
+  ps->state = PSW_TS_INSYNC;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PSwarmSetUpCoords"
 PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
 {
@@ -796,18 +888,22 @@ PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
   
   switch (type) {
     case 0:
+      PetscPrintf(PETSC_COMM_WORLD,"[PSwarmSetUpCoords_FillDM]\n");
       ierr = PSwarmSetUpCoords_FillDM(ps);CHKERRQ(ierr);
       break;
 
     case 1:
+      PetscPrintf(PETSC_COMM_WORLD,"[PSwarmSetUpCoords_FillPartialDM]\n");
       ierr = PSwarmSetUpCoords_FillPartialDM(ps);CHKERRQ(ierr);
       break;
 
     case 2:
-      //ierr = PSwarmSetUpCoords_FillDMWithGeometryObject(ps);CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"[PSwarmSetUpCoords_FillBox]\n");
+      ierr = PSwarmSetUpCoords_FillBox(ps);CHKERRQ(ierr);
       break;
 
     case 3:
+      //ierr = PSwarmSetUpCoords_FillDMWithGeometryObject(ps);CHKERRQ(ierr);
       //ierr = PSwarmSetUpCoords_FromList(ps);CHKERRQ(ierr);
       break;
 
