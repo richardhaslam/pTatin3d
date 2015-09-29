@@ -26,8 +26,8 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 
 
 	indexfield = rawdata_tracer.PointData["index"]
-	indexfield = indexfield -1
-	npoints_tracer = rawdata_tracer.GetNumberOfPoints() 
+	#indexfield = indexfield -1
+	npoints_tracer = rawdata_tracer.GetNumberOfPoints()
 
 	defmesh_ug = simple.XMLStructuredGridReader( FileName= inputbasefile )
 	defmesh_ug.UpdatePipeline()
@@ -50,9 +50,9 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 
 	for ii in range(0, npoints_tracer):
 		tracer_idx = indexfield[ii]
-		coord_dm[ii,0] = coord_t[ tracer_idx,0]
-		coord_dm[ii,1] = coord_t[ tracer_idx,1]
-		coord_dm[ii,2] = coord_t[ tracer_idx,2]
+		coord_dm[tracer_idx,0] = coord_t[ii,0]
+		coord_dm[tracer_idx,1] = coord_t[ii,1]
+		coord_dm[tracer_idx,2] = coord_t[ii,2]
 
 	writer = simple.XMLStructuredGridWriter(Input=defmesh_ug,DataMode=1,FileName=outputfile)
 	writer.UpdatePipeline()
