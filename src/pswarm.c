@@ -720,7 +720,6 @@ PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
     PetscErrorCode ierr;
     PhysCompStokes stokes;
     DM             dmv;
-    PetscInt       lmx,lmy,lmz;
     PetscInt       Nxp[] = {1,1,1}; /* change with -lattice_layout_N{x,y,z} */
     
     PetscFunctionBegin;
@@ -728,8 +727,6 @@ PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
     ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
     ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
     
-    ierr = DMDAGetLocalSizeElementQ2(dmv,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-
     ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dmv,Nxp,0.0,ps->db);CHKERRQ(ierr);
   
     ps->state = PSW_TS_INSYNC;
@@ -738,13 +735,12 @@ PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUpCoords_FillPartialDM"
-PetscErrorCode PSwarmSetUpCoords_FillPartialDM(PSwarm ps)
+#define __FUNCT__ "PSwarmSetUpCoords_FillDMWithinBoundingBox"
+PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
 {
   PetscErrorCode ierr;
   PhysCompStokes stokes;
   DM             dmv;
-  PetscInt       lmx,lmy,lmz;
   PetscInt       nn,Nxp[] = {1,1,1}; /* change with -lattice_layout_N{x,y,z} */
   PetscReal      xmin[3],xmax[3];
   const char     *prefix;
@@ -754,8 +750,6 @@ PetscErrorCode PSwarmSetUpCoords_FillPartialDM(PSwarm ps)
   ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
   
-  ierr = DMDAGetLocalSizeElementQ2(dmv,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
 
   xmin[0] = -1.0e32;
@@ -787,7 +781,6 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   PetscErrorCode ierr;
   PhysCompStokes stokes;
   DM             dmv;
-  PetscInt       lmx,lmy,lmz;
   PetscInt       nn,nlist,Nxp[] = {2,2,2}; /* change with -lattice_layout_N{x,y,z} */
   PetscReal      xmin[3],xmax[3],*coorlist;
   const char     *prefix;
@@ -802,8 +795,6 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
   
-  ierr = DMDAGetLocalSizeElementQ2(dmv,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-  
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   
   xmin[0] = -1.0e32;
@@ -815,19 +806,19 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   xmax[2] = 1.0e32;
   
   nn = 3;
-	PetscOptionsGetIntArray(prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
+	PetscOptionsGetIntArray(prefix,"-pswarm_box_nx",Nxp,&nn,NULL);
   
-  if (Nxp[0] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[0] must be greater than 1");
-  if (Nxp[1] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[1] must be greater than 1");
-  if (Nxp[2] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[2] must be greater than 1");
-  
-  nn = 3;
-  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_min",xmin,&nn,&found);
-  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box min extent via -pswarm_lattice_min");
+  if (Nxp[0] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[0] must be greater than 1, use -pswarm_box_nx");
+  if (Nxp[1] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[1] must be greater than 1, use -pswarm_box_nx");
+  if (Nxp[2] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[2] must be greater than 1, use -pswarm_box_nx");
   
   nn = 3;
-  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_max",xmax,&nn,&found);
-  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box max extent via -pswarm_lattice_max");
+  PetscOptionsGetRealArray(prefix,"-pswarm_box_min",xmin,&nn,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box min extent via -pswarm_box_min");
+  
+  nn = 3;
+  PetscOptionsGetRealArray(prefix,"-pswarm_box_max",xmax,&nn,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box max extent via -pswarm_box_max");
 
   nlist = Nxp[0] * Nxp[1] * Nxp[2];
   PetscMalloc(sizeof(PetscReal)*3*nlist,&coorlist);
@@ -866,6 +857,66 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
     ierr = pSwarmParaViewMeshDeformationBaseVTS(Nxp[0],Nxp[1],Nxp[2],filename);CHKERRQ(ierr);
   }
   
+  ps->state = PSW_TS_INSYNC;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PSwarmSetUpCoords_FromUserList"
+PetscErrorCode PSwarmSetUpCoords_FromUserList(PSwarm ps)
+{
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             dmv;
+  const char     *prefix;
+  PetscBool      found;
+  MPI_Comm       comm;
+  PetscReal      *coorlist,*coorx,*coory,*coorz;
+  PetscInt       i,nlist,nlistsize;
+  
+  PetscFunctionBegin;
+  
+  ierr = PetscObjectGetComm((PetscObject)ps,&comm);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+
+  PetscOptionsGetInt(prefix,"-pswarm_coor_n",&nlistsize,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify number of coordinates via -pswarm_coor_n");
+
+  PetscMalloc(sizeof(PetscReal)*3*nlistsize,&coorlist);
+  PetscMalloc(sizeof(PetscReal)*nlistsize,&coorx);
+  PetscMalloc(sizeof(PetscReal)*nlistsize,&coory);
+  PetscMalloc(sizeof(PetscReal)*nlistsize,&coorz);
+  
+  nlist = nlistsize;
+  PetscOptionsGetRealArray(prefix,"-pswarm_coor_x",coorx,&nlist,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify x coordinates via -pswarm_coor_x");
+  if (nlist != nlistsize) SETERRQ1(comm,PETSC_ERR_USER,"Must specify %D x coordinates",nlistsize);
+  
+  nlist = nlistsize;
+  PetscOptionsGetRealArray(prefix,"-pswarm_coor_y",coory,&nlist,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify y coordinates via -pswarm_coor_y");
+  if (nlist != nlistsize) SETERRQ1(comm,PETSC_ERR_USER,"Must specify %D y coordinates",nlistsize);
+
+  nlist = nlistsize;
+  PetscOptionsGetRealArray(prefix,"-pswarm_coor_z",coorz,&nlist,&found);
+  if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify z coordinates via -pswarm_coor_z");
+  if (nlist != nlistsize) SETERRQ1(comm,PETSC_ERR_USER,"Must specify %D z coordinates",nlistsize);
+
+  for (i=0; i<nlistsize; i++) {
+    coorlist[3*i+0] = coorx[i];
+    coorlist[3*i+1] = coory[i];
+    coorlist[3*i+2] = coorz[i];
+  }
+  
+  ierr = SwarmMPntStd_CoordAssignment_InsertFromList(ps->db,dmv,nlistsize,coorlist,0,PETSC_TRUE);CHKERRQ(ierr);
+
+  PetscFree(coorlist);
+  PetscFree(coorx);
+  PetscFree(coory);
+  PetscFree(coorz);
   
   ps->state = PSW_TS_INSYNC;
   
@@ -893,8 +944,8 @@ PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
       break;
 
     case 1:
-      PetscPrintf(PETSC_COMM_WORLD,"[PSwarmSetUpCoords_FillPartialDM]\n");
-      ierr = PSwarmSetUpCoords_FillPartialDM(ps);CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"[PSwarmSetUpCoords_FillDMWithinBoundingBox]\n");
+      ierr = PSwarmSetUpCoords_FillDMWithinBoundingBox(ps);CHKERRQ(ierr);
       break;
 
     case 2:
@@ -903,8 +954,12 @@ PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
       break;
 
     case 3:
+      PetscPrintf(PETSC_COMM_WORLD,"[PSwarmSetUpCoords_FromUserList]\n");
+      ierr = PSwarmSetUpCoords_FromUserList(ps);CHKERRQ(ierr);
+      break;
+      
+    case 4:
       //ierr = PSwarmSetUpCoords_FillDMWithGeometryObject(ps);CHKERRQ(ierr);
-      //ierr = PSwarmSetUpCoords_FromList(ps);CHKERRQ(ierr);
       break;
 
     default:
