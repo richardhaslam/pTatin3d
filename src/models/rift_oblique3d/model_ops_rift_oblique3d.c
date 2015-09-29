@@ -107,10 +107,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 
 	ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
 
-
-
-
-
+  /* Copy reference into model data for later use in different functions */
+  data->pswarm = pswarm;
+  
 	/* set the default values of the material constant for this particular model */
 	/*scaling */
 	data->length_bar    = 100.0 * 1.0e3;
@@ -555,7 +554,6 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 	DMDAVecTraverse3d_InterpCtx IntpCtx;
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
 	Vec            velocity,pressure;
-	PSwarm			pswarm;
 	PetscReal      MeshMax[3],MeshMin[3],height,length,vxl,vxr,vybottom;
 	PetscBool      use_initial_up_field = PETSC_FALSE;
 	PetscErrorCode ierr;
@@ -615,7 +613,7 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 	}
 
 	/* set swarm velocity and pressure vector once*/
-	ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
+	ierr = PSwarmAttachStateVecVelocityPressure(data->pswarm,X);CHKERRQ(ierr);
 
 
 	PetscFunctionReturn(0);
@@ -1112,12 +1110,11 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 /* DEFINE ALE */
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
-	//ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
+	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
 	PetscReal        step;
 	PhysCompStokes   stokes;
 	DM               stokes_pack,dav,dap;
 	Vec              velocity,pressure;
-	PSwarm 			 pswarm;
 	PetscErrorCode   ierr;
 
 	
@@ -1133,7 +1130,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	
 
 	/* PSwarm update */
-	ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
+	ierr = PSwarmFieldUpdateAll(data->pswarm);CHKERRQ(ierr);
 
 	/* ONLY VERTICAL REMESHING */
 	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
@@ -1153,7 +1150,6 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	PetscBool        active_energy;
 	DataBucket       materialpoint_db;
 	PetscInt         Step,outFre;
-	PSwarm     		 pswarm;
 	PetscErrorCode   ierr;
 
 	PetscFunctionBegin;
@@ -1216,8 +1212,8 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 
 	/* Dump the PSwarm */
 
-	ierr = PSwarmView(pswarm);CHKERRQ(ierr);
-	ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
+	ierr = PSwarmView(data->pswarm);CHKERRQ(ierr);
+	ierr = PSwarmViewInfo(data->pswarm);CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);
 }
@@ -1227,7 +1223,6 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
-	PSwarm					pswarm;
 	PetscErrorCode         ierr;
 	
 	PetscFunctionBegin;
@@ -1235,7 +1230,7 @@ PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	/* Free contents of structure */
 	/* destroy PSwarm*/
-	ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
+	ierr = PSwarmDestroy(&data->pswarm);CHKERRQ(ierr);
 	
 	/* Free structure */
 	ierr = PetscFree(data);CHKERRQ(ierr);

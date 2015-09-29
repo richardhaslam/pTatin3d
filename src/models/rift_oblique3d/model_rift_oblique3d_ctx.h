@@ -56,7 +56,7 @@ typedef struct {
 	PetscBool output_markers;
 	PetscInt  param1,param2,notch_type;
     DMDA_thermalfield_init_params thermalparams;
-
+	PSwarm			pswarm;
 } ModelRift_oblique3dCtx;
 
 #endif
