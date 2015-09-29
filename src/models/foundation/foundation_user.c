@@ -45,11 +45,15 @@ PetscErrorCode FoundationUserVarsCreate(FoundationUserVars *uv)
 #define __FUNCT__ "FoundationUserVarsDestroy"
 PetscErrorCode FoundationUserVarsDestroy(FoundationUserVars *uv)
 {
+  PetscInt           k;
   FoundationUserVars v;
-  PetscErrorCode ierr;
+  PetscErrorCode     ierr;
 
   if (!uv) PetscFunctionReturn(0);
   v = *uv;
+  for (k=0; k<v->vi_space_used; k++) { free(v->var_names_i[k]); }
+  for (k=0; k<v->vf_space_used; k++) { free(v->var_names_f[k]); }
+  for (k=0; k<v->vd_space_used; k++) { free(v->var_names_d[k]); }
   ierr = PetscFunctionListDestroy(&v->flist_evaluator);CHKERRQ(ierr);
   PetscFree(v);
   *uv = NULL;
