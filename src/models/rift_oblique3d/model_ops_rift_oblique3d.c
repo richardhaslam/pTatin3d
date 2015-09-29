@@ -50,6 +50,7 @@
 
 // added includes
 #include "output_material_points.h"
+#include "pswarm.h"
 
 /* add include for energy*/
 #include "material_constants_energy.h"
@@ -1112,7 +1113,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
+
 
 	PetscFunctionReturn(0);
 }
@@ -1125,6 +1126,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	PetscBool        active_energy;
 	DataBucket       materialpoint_db;
 	PetscInt         Step,outFre;
+	PSwarm          pswarm;
 	PetscErrorCode   ierr;
 
 	PetscFunctionBegin;
@@ -1184,6 +1186,23 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 			ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr); //old reader
 		}
 	}
+
+	/* PSwarm */
+	ierr = PSwarmCreate(PETSC_COMM_WORLD,&pswarm);CHKERRQ(ierr);
+	ierr = PSwarmSetOptionsPrefix(pswarm,"passive_");CHKERRQ(ierr);
+	ierr = PSwarmSetPtatinCtx(pswarm,c);CHKERRQ(ierr);
+	ierr = PSwarmSetTransportModeType(pswarm,PSWARM_TM_LAGRANGIAN);CHKERRQ(ierr);
+
+	ierr = PSwarmSetFromOptions(pswarm);CHKERRQ(ierr);
+
+	ierr = PSwarmAttachStateVecVelocityPressure(pswarm,X);CHKERRQ(ierr);
+	ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
+	ierr = PSwarmView(pswarm);CHKERRQ(ierr);
+
+	 /* clean up */
+	ierr = PSwarmViewInfo(pswarm);CHKERRQ(ierr);
+	ierr = PSwarmDestroy(&pswarm);CHKERRQ(ierr);
+
 
 	PetscFunctionReturn(0);
 }
