@@ -204,6 +204,11 @@ PetscErrorCode PSwarmAttachStateVecVelocityPressure(PSwarm ps,Vec x)
     PetscErrorCode ierr;
     PetscFunctionBegin;
     if (x) {
+        Vec Xtmp;
+      
+        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&Xtmp);CHKERRQ(ierr);
+        if (Xtmp) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) already attached to PSwarm");
+
         ierr = PetscObjectCompose((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject)x);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
@@ -216,6 +221,11 @@ PetscErrorCode PSwarmAttachStateVecTemperature(PSwarm ps,Vec x)
     PetscErrorCode ierr;
     PetscFunctionBegin;
     if (x) {
+        Vec Xtmp;
+      
+        ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&Xtmp);CHKERRQ(ierr);
+        if (Xtmp) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector T already attached to PSwarm");
+
         ierr = PetscObjectCompose((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject)x);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
