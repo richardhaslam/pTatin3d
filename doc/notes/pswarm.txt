@@ -1,0 +1,169 @@
+
+______________________________
+______________________________
+
+  Passive Swarm Description
+______________________________
+______________________________
+
+________________________
+[Section 1] Introduction
+
+The PSwarm object provides a convinient way to track deformation and other quantities of interest (e.g. temperature)
+at discrete locations in the model domain. 
+The PSwarm object defines a "passive swarm" -- which is a set of discrete particles with no assumed connectivity to
+any other particle in the swarm. The particles are contained within the model domain and do not influence the flow field, 
+or interact with each other (hence the usage of the word passive).
+
+
+___________________________________
+[Section 2] Defining passive swarms
+
+Any number of passive swarms can be created at run-time via the command line option
+  -pswarm_list xx,yy
+where "xx" and "yy" define the unique names you wish to assign to each passive swarm.
+In this example, since two names are provided, two passive swarms are created.
+
+At the end of each simulation, the following files will have been created in your
+output directory
+
+  timeseries_xx_pswarm.pvd
+  timeseries_yy_pswarm.pvd
+
+  step****_xx_pswarm-subdomain00000.vtu
+  step****_xx_pswarm.pvtu
+
+  step****_yy_pswarm-subdomain00000.vtu
+  step****_yy_pswarm.pvtu
+
+
+___________________________________________________
+[Section 3] Defining coordinates for passive swarms
+
+Several choices are possible to define the initial position of the passive swarm.
+The method used to define the coordinate is controlled via the command line argument
+
+  -###_pswarm_coord_layout
+
+where ### will be the name used to identify each passive swarm (see Section 2)
+
+Valid choices for -###_pswarm_coord_layout are 0, 1, 2, 3
+The default value is 1.
+The methods of defining the coordinates are described below
+
+  [Section 3.1] Filling the velocity mesh ( -###_pswarm_coord_layout 0)
+
+  Needs to be re-factored
+
+  [Section 3.2] Filling a sub-set of the velocity mesh ( -###_pswarm_coord_layout 1)
+
+  Within each Q2 element, the user defines a desired number of points
+    -###_pswarm_lattice_nx 3,4,5
+
+  Then a box shaped clipping mask is applied. Points located within the box are kept
+  whilst all other points are ignored. The dimensions of the box are defined via
+    -###_pswarm_lattice_min 0.0,0.0,0.0
+    -###_pswarm_lattice_max 1.0,2.0,3.0
+  
+  This method does not allow you to precisely control the total number of points which
+  will exists within the passive swarm.
+
+  Options example:
+    -###_pswarm_lattice_nx 3,4,5
+    -###_pswarm_lattice_min 0.0,0.0,0.0
+    -###_pswarm_lattice_max 1.0,2.0,3.0
+
+  [Section 3.2] Defining a fixed number of points within a box ( -###_pswarm_coord_layout 2)
+
+  This method allows you to define a box geometry with a fixed number of points in each i,j,k direction.
+
+  Options example:
+    -###_pswarm_box_nx 3,4,5
+    -###_pswarm_box_min 0.3,0.4,0.5
+    -###_pswarm_box_max 0.6,0.8,1.0
+
+  [Section 3.3] Defining a fixed number of points via a user defined list ( -###_pswarm_coord_layout 3)
+
+  This method allows you to exactly specify the initial location of the passive swarm points by specifying
+  a list of x, y and z coordinates.
+
+  Options example:
+    -###_pswarm_coor_n 4
+    -###_pswarm_coor_x 0.4,0.6,0.4,0.6
+    -###_pswarm_coor_y 0.1,0.1,0.3,0.3
+    -###_pswarm_coor_z 0.5,0.5,0.5,0.5
+  
+  will define 4 particles with the coordinates (0.4,0.1,0.5) , (0.6,0.1,0.5) , (0.4,0.3,0.5) and (0.6,0.3,0.5)
+
+
+_______________________________________
+[Section 4] Defining the transport mode
+
+Passive swarms can be defined to remain stationary over time, or to be advected with the fluid velocity.
+We refer to this choice as a "transport mode". By default, all passive swarms are assumed to utilize a
+Lagrangian transport mode (e.g. they move with the fluid velocity). If you require swarms to be stationary,
+use the command line option
+
+  -pswarm_transport_mode_eulerian
+
+
+_____________________________________________
+[Section 5] Defining the field update methods
+
+A number of quantities can optionally be computed, or updated on each passive swarm. 
+For example we can compute the pressure, temperature or track the finite strain. 
+Such tasks are refered to as "field update" methods. By default, swarms do not have
+any field update methods specified
+
+On any given swarm, the user may request any number of field update methods be applied. 
+For instance, swarm "xx" may have no field updates specified, whilst swarm "yy" may be
+asked to track pressure and finite strain. This would be invoked via the following command
+line arguments:
+
+  -yy_pswarm_field_update_pressure
+  -yy_pswarm_field_update_finite_strain
+
+
+
+NOTE: Field update methods are not implemented
+
+
+________________________________________________________
+[Section 6] Defining the region index of a passive swarm
+
+For convienence, we optionally allow users to set a region index on all points within a passive swarm.
+This is achieved via the command line option
+ 
+  -###_pswarm_region_index 3
+
+which would assign a region index of 3 to each point in the swarm. 
+The default region index is set to 0
+
+
+________________________________________________________________
+[Section X] Post-processing finite strain with a structured mesh
+
+* Use the coordinate layout option
+  -pswarm_coord_layout 2
+
+* Upon exectution, the following file will be created in your output directory
+
+deformation_grid_ref.vts
+
+* To generate a deformation grid, you need to 
+  (i) Convert the pvtu file associated with your passive swarm into a vtu file.
+  To do this, use
+
+    pvpython src/filters/convert_pvtu2vtu.py -i path/to/inputfile.pvtu
+
+  This will create the following file
+    path/to/inputfile.vtu
+
+  (ii) Execute the following script
+
+    pvpython ./src/filters/extract-dgrid-pv4_3_1.py -i path/to/input.vtu
+                                                    -b path/to/deformation_grid_ref.vts
+                                                    -o outfilename.vts
+
+  This will create the file outfilename.vts which can be loaded into ParaView
+
