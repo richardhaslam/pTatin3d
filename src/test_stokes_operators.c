@@ -1022,7 +1022,11 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
   
   PetscLogStagePop();
   
-  //ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
+  PetscFree(time_);
+  PetscFree(timeMIN_);
+  PetscFree(timeMAX_);
   
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
