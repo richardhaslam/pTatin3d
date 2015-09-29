@@ -863,6 +863,180 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "perform_viscous_solve_warmup"
+PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
+{
+  Mat            A,B;
+  Vec            x,y;
+  DM             da;
+  PetscLogDouble t0,t1,t0all,t1all;
+  double         tl,timeMIN,timeMAX,*time_,*timeMIN_,*timeMAX_;
+  PetscInt       its;
+  PetscInt       ii,iterations,iterations_warmup;
+  KSP            ksp;
+  PetscViewer    monviewer;
+  MatStokesMF    StkCtx;
+  MatA11MF       A11Ctx;
+  PetscBool      use_mf_A;
+  PetscLogStage stages[2];
+  PetscErrorCode ierr;
+  
+  
+  PetscFunctionBegin;
+  
+  PetscLogStageRegister("Warmup solve",&stages[0]);
+  PetscLogStageRegister("Profiled solve",&stages[1]);
+
+  
+  PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
+  iterations = 5;
+  iterations_warmup = 5;
+  ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,"-iterations_warmup",&iterations_warmup,0);CHKERRQ(ierr);
+  
+  PetscMalloc(sizeof(double)*iterations,&time_);
+  PetscMalloc(sizeof(double)*iterations,&timeMIN_);
+  PetscMalloc(sizeof(double)*iterations,&timeMAX_);
+  
+  /* create the assembled operator */
+  da = user->dav;
+  
+  /* assembled matrix */
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  ierr = _GenerateTestVector(da,3,0,x);CHKERRQ(ierr);
+  ierr = _GenerateTestVector(da,3,1,x);CHKERRQ(ierr);
+  ierr = _GenerateTestVector(da,3,2,x);CHKERRQ(ierr);
+  
+  /* set matrix type via -stk_velocity_dm_mat_type aij */
+  ierr = DMCreateMatrix(da,&B);CHKERRQ(ierr);
+
+  /* Assemble the preconditioned operator B11 */
+  PetscTime(&t0);
+  ierr = MatAssemble_StokesA_AUU(B,da,user->u_bclist,user->volQ);CHKERRQ(ierr);
+  PetscTime(&t1);
+  tl = (double)(t1 - t0);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyB11(ASM):                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+  
+  use_mf_A = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,"-use_mf_A11",&use_mf_A,NULL);CHKERRQ(ierr);
+  if (use_mf_A) {
+    ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
+    ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
+    ierr = MatCopy_StokesMF_A11MF(StkCtx,&A11Ctx);CHKERRQ(ierr);
+    ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&A);CHKERRQ(ierr);
+  } else {
+    A = B;
+    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  }
+  
+  
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
+  ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  
+  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+  
+  /* Force setup of the Krylov method and preconditioner */
+  PetscTime(&t0);
+  ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+  PetscTime(&t1);
+  tl = (double)(t1 - t0);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSetUpA11:                        time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+  
+  
+  ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),NULL,&monviewer);CHKERRQ(ierr);
+  ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,PETSC_VIEWER_STDOUT_WORLD,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+  
+  /* Warm up solve stage */
+  PetscPrintf(PETSC_COMM_WORLD,"\n------ Warm up stage: Performing %D solves ------\n",iterations_warmup);
+  PetscLogStagePush(stages[0]);
+  
+  PetscTime(&t0);
+  ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+
+  /* Cancel the KSP monitor for all subsequent solves */
+  ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
+
+  /* Assume all solves produce identical iteration counts */
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+
+  /* Perform remaining warm up solves */
+  for (ii=1; ii<iterations_warmup; ii++) {
+    ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+  }
+  PetscTime(&t1);
+  tl = (double)(t1 - t0);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(kspits = %.4D,warmup cycles = %.4D)     time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",its,iterations_warmup,tl,timeMIN,timeMAX,100.0*(timeMIN/timeMAX));
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over all runs - all ranks)   time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",tl/((double)iterations_warmup),timeMIN/((double)iterations_warmup),timeMAX/((double)iterations_warmup),100.0*(timeMIN/timeMAX));
+
+  PetscLogStagePop();
+
+  /* Profiled KSP solve */
+  PetscPrintf(PETSC_COMM_WORLD,"\n------ Profiling stage: Performing %D solves ------\n",iterations);
+  PetscLogStagePush(stages[1]);
+  
+  PetscTime(&t0all);
+  for (ii=0; ii<iterations; ii++) {
+    PetscTime(&t0);
+  
+    ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+    
+    PetscTime(&t1);
+    tl = (double)(t1 - t0);
+    time_[ii] = tl;
+  }
+  PetscTime(&t1all);
+  
+  /* Assume all solves produce identical iteration counts */
+  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+
+  /* Compute profile stats taken over all runs */
+  tl = (double)(t1all - t0all);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(kspits = %.4D,profiled cycles = %.4D)     time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",its,iterations,tl,timeMIN,timeMAX,100.0*(timeMIN/timeMAX));
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over all runs - all ranks)     time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",tl/((double)iterations),timeMIN/((double)iterations),timeMAX/((double)iterations),100.0*(timeMIN/timeMAX));
+
+  /* Compute profile stats taken over individual runs */
+  ierr = MPI_Allreduce(time_,timeMIN_,iterations,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(time_,timeMAX_,iterations,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over each run - all ranks)\n");
+  for (ii=0; ii<iterations; ii++) {
+    PetscPrintf(PETSC_COMM_WORLD,"  [solve %.4D]: min/max %1.4e %1.4e (sec)\n",ii,timeMIN_[ii],timeMAX_[ii]);
+  }
+  
+  PetscLogStagePop();
+  
+  //ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  if (use_mf_A) {
+    ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+    ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3d_assemble_stokes"
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
@@ -971,6 +1145,11 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 		ierr = perform_viscous_solve(user->stokes_ctx);CHKERRQ(ierr);		
 	}
 	
+	found  = PETSC_FALSE;
+	ierr = PetscOptionsGetBool(NULL,"-perform_viscous_solve_A11_warmup",&found,NULL);CHKERRQ(ierr);
+	if (found) {
+		ierr = perform_viscous_solve_warmup(user->stokes_ctx);CHKERRQ(ierr);
+	}
 	
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n\n\n====================================================================\n");
