@@ -39,6 +39,22 @@ typedef enum {
 extern const char *FND_MaterialRegionTypeNames[];
 
 
+typedef enum {
+  FND_BCType_Dirichlet = 0,
+  FND_BCType_Neumann
+} FND_BoundaryConditionType;
+extern const char *FND_BoundaryConditionTypeNames[];
+
+typedef enum {
+  FND_BCMode_Scalar = 0,
+  FND_BCMode_Component,
+  FND_BCMode_Vector,
+  FND_BCMode_Tensor,
+  FND_BCMode_User,
+  FND_BCMode_Lua
+} FND_BoundaryConditionMode;
+extern const char *FND_BoundaryConditionModeNames[];
+
 /* foundation parser helpers */
 PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseJSONGetItemOptional(cJSON *jroot,const char itemname[],cJSON **jitem);
@@ -54,8 +70,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Foundation(pTatinCtx c,Vec X,void *c
 PetscErrorCode ModelOutput_Foundation(pTatinCtx c,Vec X,const char prefix[],void *ctx);
 PetscErrorCode ModelDestroy_Foundation(pTatinCtx c,void *ctx);
 
-PetscErrorCode ModelApplyBoundaryCondition_Foundation(pTatinCtx c,void *ctx);
-PetscErrorCode ModelApplyBoundaryConditionMG_Foundation(PetscInt nl,BCList bclist[],DM dmv[],pTatinCtx c,void *ctx);
+PetscErrorCode ModelApplyBC_Foundation(pTatinCtx c,void *ctx);
+PetscErrorCode ModelApplyBCMG_Foundation(PetscInt nl,BCList bclist[],DM dmv[],pTatinCtx c,void *ctx);
+
+PetscErrorCode ModelOutput_Foundation(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx);
 
 PetscErrorCode FoundationUserRegisterFunctions(Foundation f);
 

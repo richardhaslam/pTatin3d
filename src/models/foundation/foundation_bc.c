@@ -6,6 +6,16 @@
 #include "dmda_bcs.h"
 #include "ptatin3d_energy.h"
 
+struct _p_StokesBCSet {
+  FND_BoundaryConditionType bctype_list[6][3]; /* six faces, 3 equation */
+  FND_BoundaryConditionMode bcmode_list[6][3];
+};
+
+struct _p_EnergyBCSet {
+  FND_BoundaryConditionType bctype_list[6][1]; /* six faces, 1 equation */
+};
+
+
 #undef __FUNCT__
 #define __FUNCT__ "FoundationBC_ApplyNeumann_Stokes"
 PetscErrorCode FoundationBC_ApplyNeumann_Stokes(pTatinCtx c,Foundation f,PetscReal time,DM dmstokes)

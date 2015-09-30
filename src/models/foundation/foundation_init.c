@@ -102,7 +102,17 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
 
   
   ierr = FoundationParseMaterialMetaData(c,data);CHKERRQ(ierr);
+  {
+    RheologyConstants *rheology;
 
+    ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
+    rheology->rheology_type = RHEOLOGY_VP_STD;
+    
+    rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
+    rheology->eta_upper_cutoff_global = 1.0e10;
+    rheology->eta_lower_cutoff_global = 1.0e-10;
+  }
+  
   {
     cJSON *juservarroot;
     ierr = FoundationParseJSONGetItemOptional(jobjectroot,"FoundationUserVariables",&juservarroot);CHKERRQ(ierr);
