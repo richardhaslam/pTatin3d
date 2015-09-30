@@ -56,6 +56,15 @@ typedef enum {
 } FND_BoundaryConditionMode;
 extern const char *FND_BoundaryConditionModeNames[];
 
+typedef enum {
+  FND_OutputType_MeshDefault = 0,
+  FND_OutputType_MeshLiteDefault,
+  FND_OutputType_MaterialPointDefault,
+  FND_OutputType_User,
+} FND_OutputType;
+extern const char *FND_OutputTypeNames[];
+
+
 /* foundation parser helpers */
 PetscErrorCode FoundationGetPtatinCtx(Foundation f,pTatinCtx *ctx);
 PetscErrorCode FoundationGetUserVariables(Foundation f,FoundationUserVars *fv);

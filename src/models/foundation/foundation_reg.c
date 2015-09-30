@@ -2,12 +2,14 @@
 #include "foundation.h"
 #include "foundation_impl.h"
 #include "foundation_user.h"
+#include "foundation_output.h"
 
 const char *FND_MeshGeomTypeNames[] = { "Cartesian", "Hex", "DMDAFile", "Lua", 0 };
 const char *FND_MeshRefinementTypeName[] = { "A", "B", "Lua", 0 };
 const char *FND_MaterialRegionTypeNames[] = { "JSON", "DBFile", "Lua", 0 };
 const char *FND_BoundaryConditionTypeNames[] = { "Dirichlet", "Neumann", 0 };
 const char *FND_BoundaryConditionModeNames[] = { "Scalar", "Component", "Vector", "Tensor", "User", "Lua", 0 };
+const char *FND_OutputTypeNames[] = { "MeshFieldsDefault", "MeshFieldsLiteDefault", "MaterialPointsDefault", "User", 0 };
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegister_Foundation"
@@ -23,6 +25,8 @@ PetscErrorCode pTatinModelRegister_Foundation(void)
   ierr = PetscMemzero(data,sizeof(struct _p_Foundation));CHKERRQ(ierr);
   
   ierr = FoundationUserVarsCreate(&data->user);CHKERRQ(ierr);
+  ierr = FoundationOutputCreate(&data->output);CHKERRQ(ierr);
+
   ierr = FoundationUserRegisterFunctions(data);CHKERRQ(ierr);
   
   /* register user model */

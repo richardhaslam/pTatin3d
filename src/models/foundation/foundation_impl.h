@@ -11,6 +11,7 @@ struct _p_Foundation {
   FND_MeshRefinementType mesh_ref_type;
   FND_MaterialRegionType material_region_type;
   FoundationUserVars     user;
+  FoundationOutput       output;
 };
 
 #endif

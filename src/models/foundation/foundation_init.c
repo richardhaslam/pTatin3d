@@ -133,6 +133,8 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
     rheology->eta_lower_cutoff_global = 1.0e-10;
   }
   
+  ierr = FoundationOutputParse(data,data->root);CHKERRQ(ierr);
+  
   {
     cJSON *juservarroot;
     ierr = FoundationParseJSONGetItemOptional(jobjectroot,"FoundationUserVariables",&juservarroot);CHKERRQ(ierr);
