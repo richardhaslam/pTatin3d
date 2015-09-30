@@ -497,7 +497,15 @@ PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f)
     
     cJSON_Delete(jfile);
   }
-  ierr = FoundationParseMaterialMetaDataContents(c,f,jmetaroot);CHKERRQ(ierr);
+  
+  {
+    cJSON *ji;
+    
+    ierr = FoundationParseJSONGetItemOptional(jmetaroot,"RegionList",&ji);CHKERRQ(ierr);
+    if (ji) {
+      ierr = FoundationParseMaterialMetaDataContents(c,f,jmetaroot);CHKERRQ(ierr);
+    }
+  }
 
   PetscFunctionReturn(0);
 }
