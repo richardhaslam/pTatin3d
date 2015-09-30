@@ -39,8 +39,6 @@ PetscErrorCode MaterialMPEval_Const(pTatinCtx c,Foundation f,MaterialPointType m
     SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_USER,"%s.value: Number regions (%d) must equal number of values (%d)",jitem->string,nr,nv);
   }
   
-  PetscPrintf(PETSC_COMM_WORLD,"|_______\\ Const\n");
-
   DataBucketGetSizes(matpoint,&n_mp_points,0,0);
   MaterialPointGetAccess(matpoint,&helper);
   
@@ -130,8 +128,6 @@ PetscErrorCode MaterialMPEval_Rand(pTatinCtx c,Foundation f,MaterialPointType mp
     }
   }
   
-  PetscPrintf(PETSC_COMM_WORLD,"|_______\\ RandomNumber\n");
-
   DataBucketGetSizes(matpoint,&n_mp_points,0,0);
   MaterialPointGetAccess(matpoint,&helper);
   
@@ -203,7 +199,7 @@ PetscErrorCode ModelInitialMaterialState_Foundation(pTatinCtx c,void *ctx)
   /* look for MeshGeomICType */
   ierr = FoundationParseJSONGetItemEssential(data->root,"MaterialPointStateIC",&jroot);CHKERRQ(ierr);
   nics = cJSON_GetArraySize(jroot);
-  printf("--------- %d \n",nics);
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation] --------- Found %d methods\n",nics);
 
   ierr = pTatinGetMaterialPoints(c,&matpoint,NULL);CHKERRQ(ierr);
 
@@ -227,17 +223,20 @@ PetscErrorCode ModelInitialMaterialState_Foundation(pTatinCtx c,void *ctx)
         PetscPrintf(PETSC_COMM_WORLD,"MaterialPointStateIC.%s: RegionIndex [ ",MaterialPointTypeNames[i]);
         for (k=0; k<nr; k++) PetscPrintf(PETSC_COMM_WORLD,"%d ",regionlist[k]);
         PetscPrintf(PETSC_COMM_WORLD,"]\n");
-        
+
         /* parse function eval type */
         ierr = FoundationParseJSONGetItemOptional(jitem,"Const",&jtype);CHKERRQ(ierr);
         if (jtype) {
+          //PetscPrintf(PETSC_COMM_WORLD,"|_______\\ Const\n");
           ierr = MaterialMPEval_Const(c,data,type,nr,regionlist,jtype,matpoint);CHKERRQ(ierr);
         }
         
         ierr = FoundationParseJSONGetItemOptional(jitem,"RandomNumber",&jtype);CHKERRQ(ierr);
         if (jtype) {
+          //PetscPrintf(PETSC_COMM_WORLD,"|_______\\ RandomNumber\n");
           ierr = MaterialMPEval_Rand(c,data,type,nr,regionlist,jtype,matpoint);CHKERRQ(ierr);
         }
+        
       }
     }
 

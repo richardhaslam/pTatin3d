@@ -4,6 +4,7 @@
 #include "foundation.h"
 #include "foundation_impl.h"
 #include "foundation_user.h"
+#include "foundation_output.h"
 
 
 #undef __FUNCT__
@@ -30,6 +31,7 @@ PetscErrorCode FoundationGetUserVariables(Foundation f,FoundationUserVars *fv)
 #define __FUNCT__ "FoundationParseJSONGetItemEssential"
 PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemname[],cJSON **jitem)
 {
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation] Parsing contents of \"%s\"\n",itemname);
   *jitem = NULL;
   *jitem = cJSON_GetObjectItem(jroot,itemname);
   if (!(*jitem)) {
@@ -42,8 +44,14 @@ PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemn
 #define __FUNCT__ "FoundationParseJSONGetItemOptional"
 PetscErrorCode FoundationParseJSONGetItemOptional(cJSON *jroot,const char itemname[],cJSON **jitem)
 {
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation] Parsing contents of \"%s\" <optional...",itemname);
   *jitem = NULL;
   *jitem = cJSON_GetObjectItem(jroot,itemname);
+  if (!*jitem) {
+    PetscPrintf(PETSC_COMM_WORLD,"not found>\n",itemname);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"found>\n",itemname);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -111,6 +119,7 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
   data->jfile = jfile;
   data->root = jobjectroot;
   
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation] Parsing contents of \"pTatinFoundation\"\n");
   
   cJSON_GetObjectValue_char(jobjectroot,"OutputPath",&found,&pstr);
   if (found) {

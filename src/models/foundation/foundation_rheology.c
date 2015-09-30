@@ -113,7 +113,6 @@ PetscErrorCode FoundationParseViscousFlowLaw(pTatinCtx c,int ridx,cJSON *root)
 
   ierr = FoundationParseJSONGetItemOptional(root,"Const",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Const\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,VISCOUS_CONSTANT,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseViscousFlowLaw_Const(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -121,7 +120,6 @@ PetscErrorCode FoundationParseViscousFlowLaw(pTatinCtx c,int ridx,cJSON *root)
 
   ierr = FoundationParseJSONGetItemOptional(root,"FrankKamentskii",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ FrankKamentskii\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,VISCOUS_FRANKK,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseViscousFlowLaw_FrankKamentskii(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -130,7 +128,6 @@ PetscErrorCode FoundationParseViscousFlowLaw(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"Arrhenius",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Arrhenius\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,VISCOUS_ARRHENIUS,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseViscousFlowLaw_Arrhenius(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -138,7 +135,6 @@ PetscErrorCode FoundationParseViscousFlowLaw(pTatinCtx c,int ridx,cJSON *root)
 
   ierr = FoundationParseJSONGetItemOptional(root,"Arrhenius2",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Arrhenius2\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,VISCOUS_ARRHENIUS_2,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseViscousFlowLaw_Arrhenius(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -146,7 +142,6 @@ PetscErrorCode FoundationParseViscousFlowLaw(pTatinCtx c,int ridx,cJSON *root)
 
   ierr = FoundationParseJSONGetItemOptional(root,"DepthDependent",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DepthDependent\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,VISCOUS_Z,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseViscousFlowLaw_DepthDep(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -221,7 +216,6 @@ PetscErrorCode FoundationParseYieldFunction(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"None",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ None\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PLASTIC_NONE,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParse_None(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -229,7 +223,6 @@ PetscErrorCode FoundationParseYieldFunction(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"Mises",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Mises\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PLASTIC_MISES,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseYieldFunction_Mises(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -237,7 +230,6 @@ PetscErrorCode FoundationParseYieldFunction(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"DruckerPrager",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DruckerPrager\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PLASTIC_DP,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseYieldFunction_DP(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -245,7 +237,6 @@ PetscErrorCode FoundationParseYieldFunction(pTatinCtx c,int ridx,cJSON *root)
 
   ierr = FoundationParseJSONGetItemOptional(root,"MisesH",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ MisesH\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PLASTIC_MISES_H,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseYieldFunction_Mises(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -253,7 +244,6 @@ PetscErrorCode FoundationParseYieldFunction(pTatinCtx c,int ridx,cJSON *root)
 
   ierr = FoundationParseJSONGetItemOptional(root,"DruckerPragerH",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DruckerPragerH\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PLASTIC_DP_H,PETSC_DEFAULT,PETSC_DEFAULT);
     ierr = FoundationParseYieldFunction_DP(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -312,7 +302,6 @@ PetscErrorCode FoundationParseStrainSoftening(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"None",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ None\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PETSC_DEFAULT,SOFTENING_NONE,PETSC_DEFAULT);
     ierr = FoundationParse_None(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -320,7 +309,6 @@ PetscErrorCode FoundationParseStrainSoftening(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"Linear",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Linear\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PETSC_DEFAULT,SOFTENING_LINEAR,PETSC_DEFAULT);
     ierr = FoundationParseStrainSoftening_Linear(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -328,7 +316,6 @@ PetscErrorCode FoundationParseStrainSoftening(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"Exponential",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Exponential\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PETSC_DEFAULT,SOFTENING_EXPONENTIAL,PETSC_DEFAULT);
     ierr = FoundationParseStrainSoftening_Exponential(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -387,7 +374,6 @@ PetscErrorCode FoundationParseDensity(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"Const",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Const\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,DENSITY_CONSTANT);
     ierr = FoundationParseDensity_Constant(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -395,7 +381,6 @@ PetscErrorCode FoundationParseDensity(pTatinCtx c,int ridx,cJSON *root)
   
   ierr = FoundationParseJSONGetItemOptional(root,"Boussinesq",&jobj);CHKERRQ(ierr);
   if (jobj) {
-    PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Boussinesq\n");
     MaterialConstantsSetValues_MaterialType(materialconstants,ridx,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,DENSITY_BOUSSINESQ);
     ierr = FoundationParseDensity_Boussinesq(materialconstants,ridx,jobj);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -405,6 +390,46 @@ PetscErrorCode FoundationParseDensity(pTatinCtx c,int ridx,cJSON *root)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FoundationViewRegionPretty"
+PetscErrorCode FoundationViewRegionPretty(pTatinCtx c,PetscInt ridx)
+{
+  PetscErrorCode ierr;
+  DataBucket materialconstants;
+  DataField datafield;
+	MaterialConst_MaterialType *data;
+
+  ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
+
+  DataBucketGetDataFieldByName(materialconstants,MaterialConst_MaterialType_classname,&datafield);
+  DataFieldGetEntries(datafield,(void**)&data);
+  
+  PetscPrintf(PETSC_COMM_WORLD,"  Region[%d]\n",ridx);
+
+  PetscPrintf(PETSC_COMM_WORLD,"  ViscousFlowLaw\n");
+  if (data[ridx].visc_type == VISCOUS_CONSTANT   ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Const\n");
+  if (data[ridx].visc_type == VISCOUS_FRANKK     ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ FrankKamentskii\n");
+  if (data[ridx].visc_type == VISCOUS_ARRHENIUS  ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Arrhenius\n");
+  if (data[ridx].visc_type == VISCOUS_ARRHENIUS_2) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Arrhenius2\n");
+  if (data[ridx].visc_type == VISCOUS_Z          ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DepthDependent\n");
+
+  PetscPrintf(PETSC_COMM_WORLD,"  YieldFunction\n");
+  if (data[ridx].plastic_type == PLASTIC_NONE   ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ None\n");
+  if (data[ridx].plastic_type == PLASTIC_MISES  ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Mises\n");
+  if (data[ridx].plastic_type == PLASTIC_DP     ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DruckerPrager\n");
+  if (data[ridx].plastic_type == PLASTIC_MISES  ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ MisesH\n");
+  if (data[ridx].plastic_type == PLASTIC_MISES_H) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ DruckerPragerH\n");
+  
+  PetscPrintf(PETSC_COMM_WORLD,"  StrainSoftening\n");
+  if (data[ridx].softening_type == SOFTENING_NONE       ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ None\n");
+  if (data[ridx].softening_type == SOFTENING_LINEAR     ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Linear\n");
+  if (data[ridx].softening_type == SOFTENING_EXPONENTIAL) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Exponential\n");
+  
+  PetscPrintf(PETSC_COMM_WORLD,"  Density\n");
+  if (data[ridx].density_type == DENSITY_CONSTANT  ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Const\n");
+  if (data[ridx].density_type == DENSITY_BOUSSINESQ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Boussinesq\n");
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "FoundationParseRegion"
@@ -415,28 +440,22 @@ PetscErrorCode FoundationParseRegion(pTatinCtx c,Foundation f,cJSON *region)
   int found,ridx;
   DataBucket materialconstants;
   
-  
   ierr = FoundationParseJSONGetItemEssential(region,"index",&jobj);CHKERRQ(ierr);
   cJSON_GetObjectValue_int(region,"index",&found,&ridx);
-  PetscPrintf(PETSC_COMM_WORLD,"  Region[%d]\n",ridx);
 
   ierr = FoundationParseJSONGetItemEssential(region,"ViscousFlowLaw",&jobj);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"  ViscousFlowLaw\n");
   ierr = FoundationParseViscousFlowLaw(c,ridx,jobj);CHKERRQ(ierr);
   
   ierr = FoundationParseJSONGetItemEssential(region,"YieldFunction",&jobj);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"  YieldFunction\n");
   ierr = FoundationParseYieldFunction(c,ridx,jobj);CHKERRQ(ierr);
 
   ierr = FoundationParseJSONGetItemEssential(region,"StrainSoftening",&jobj);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"  StrainSoftening\n");
   ierr = FoundationParseStrainSoftening(c,ridx,jobj);CHKERRQ(ierr);
 
   ierr = FoundationParseJSONGetItemEssential(region,"Density",&jobj);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"  Density\n");
   ierr = FoundationParseDensity(c,ridx,jobj);CHKERRQ(ierr);
   
-  
+  ierr = FoundationViewRegionPretty(c,ridx);CHKERRQ(ierr);
   ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
   MaterialConstantsPrintAll(materialconstants,ridx);
 
@@ -458,7 +477,7 @@ PetscErrorCode FoundationParseMaterialMetaDataContents(pTatinCtx c,Foundation f,
   nregions = cJSON_GetArraySize(jregionlist);
   jobj_k = cJSON_GetArrayItemRoot(jregionlist);
 
-  PetscPrintf(PETSC_COMM_WORLD,"Parsing RegionList [%d members]\n",nregions);
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation] --------- Found %d regions\n",nregions);
   for (k=0; k<nregions; k++) {
     ierr = FoundationParseRegion(c,f,jobj_k);CHKERRQ(ierr);
     jobj_k = cJSON_GetArrayItemNext(jobj_k);
@@ -480,7 +499,6 @@ PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f)
   MaterialConstantsSetDefaults(materialconstants);
 
   ierr = FoundationParseJSONGetItemEssential(f->root,"MaterialModelMetaData",&jmetaroot);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"Parsing MaterialModelMetaData\n");
 
   ierr = FoundationParseJSONGetItemOptional(jmetaroot,"MaterialMetaDataFile",&jitemfile);CHKERRQ(ierr);
   if (jitemfile) {
@@ -488,7 +506,7 @@ PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f)
     char *filename;
     
     cJSON_GetObjectValue_char(jmetaroot,"MaterialMetaDataFile",&found,&filename);
-    PetscPrintf(PETSC_COMM_WORLD,"Parsing MaterialMetaDataFile %s\n",filename);
+
     cJSON_FileView(filename,&jfile);
     if (!jfile) {
       SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Failed to open JSON file: %s",filename);

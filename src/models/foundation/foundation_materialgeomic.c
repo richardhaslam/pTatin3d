@@ -17,6 +17,7 @@ PetscErrorCode MaterialICApply_JSON(pTatinCtx c,Foundation f,cJSON *jitem,DataBu
 	DataField       PField_std;
   PetscErrorCode  ierr;
   
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation] Parsing contents of \"RegionGeomFile\"\n");
   cJSON_GetObjectValue_char(jitem,"RegionGeomFile",&found,&filename);
   if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"JSON.RegionGeomFile missing");
 

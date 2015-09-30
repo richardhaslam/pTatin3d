@@ -147,13 +147,12 @@ PetscErrorCode FoundationOutputParse(Foundation f,cJSON *root)
   PetscErrorCode ierr;
   
   /* look for MeshGeomICType */
-  PetscPrintf(PETSC_COMM_WORLD,"[Foundation] Parsing \"ModelOutput\"\n");
   ierr = FoundationParseJSONGetItemEssential(root,"ModelOutput",&jroot);CHKERRQ(ierr);
 
   ierr = FoundationParseJSONGetItemEssential(jroot,"TypeList",&typelist);CHKERRQ(ierr);
 
   nmodes = cJSON_GetArraySize(typelist);
-  printf("--------- Found %d modes \n",nmodes);
+  PetscPrintf(PETSC_COMM_WORLD,"[foundation]--------- Found %d output types\n",nmodes);
   f->output->n_types = (PetscInt)nmodes;
   
   jobj_k = cJSON_GetArrayItemRoot(typelist);
@@ -181,7 +180,7 @@ PetscErrorCode FoundationOutputParse(Foundation f,cJSON *root)
     ierr = FoundationParseJSONGetItemEssential(jroot,"UserFunctionList",&userlist);CHKERRQ(ierr);
   
     nmodes = cJSON_GetArraySize(userlist);
-    printf("--------- Found %d user functions \n",nmodes);
+    PetscPrintf(PETSC_COMM_WORLD,"[foundation]--------- Found %d user functions\n",nmodes);
     f->output->n_userfuncs = (PetscInt)nmodes;
     
     jobj_k = cJSON_GetArrayItemRoot(userlist);
