@@ -191,15 +191,15 @@ PetscErrorCode UserVariablesGetDoubleFromName(FoundationUserVars uv,const char n
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FoundationUserEvaluate"
-PetscErrorCode FoundationUserEvaluate(Foundation f,FoundationUserVars uv,const char functionname[],PetscReal *coor,PetscReal *value)
+#define __FUNCT__ "FoundationUserApply_Evaluate"
+PetscErrorCode FoundationUserApply_Evaluate(Foundation f,FoundationUserVars uv,const char functionname[],PetscReal *coor,PetscReal *value)
 {
   FoundationUserEvaluator fp;
   pTatinCtx ptatin;
   PetscErrorCode ierr;
   
   ierr = PetscFunctionListFind(uv->flist_evaluator,(const char*)functionname,(void(**)(void))&fp);CHKERRQ(ierr);
-  if (!fp) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Evaluator: Method with name \"%s\" has not been registered",functionname);
+  if (!fp) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"FoundationUserEvaluator: Method with name \"%s\" has not been registered",functionname);
   ptatin = f->ptatin_ctx;
   ierr = fp(ptatin,uv,coor,value);CHKERRQ(ierr);
   
@@ -214,7 +214,7 @@ PetscErrorCode FoundationUserRegisterEvaluator(FoundationUserVars uv,const char 
   void (*eval)(void);
   
   ierr = PetscFunctionListFind(uv->flist_evaluator,(const char*)functionname,&eval);CHKERRQ(ierr);
-  if (eval) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"Evaluator: Method with name \"%s\" already registered",functionname);
+  if (eval) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"FoundationUserEvaluator: Method with name \"%s\" already registered",functionname);
   
   ierr = PetscFunctionListAdd(&uv->flist_evaluator,(const char*)functionname,(void(*)(void))fp);CHKERRQ(ierr);
   
@@ -294,6 +294,31 @@ PetscErrorCode FoundationUserVariablesParse(Foundation f,cJSON *root)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FoundationUserApply_Output"
+PetscErrorCode FoundationUserApply_Output(Foundation f,const char functionname[],Vec X,const char prefix[])
+{
+  FoundationUserOutput fp;
+  PetscErrorCode ierr;
+  
+  ierr = PetscFunctionListFind(f->user->flist_output,(const char*)functionname,(void(**)(void))&fp);CHKERRQ(ierr);
+  if (!fp) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"FoundationUserOutput: Method with name \"%s\" has not been registered",functionname);
+  ierr = fp(f,X,prefix);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
 
-
-
+#undef __FUNCT__
+#define __FUNCT__ "FoundationUserRegisterOutput"
+PetscErrorCode FoundationUserRegisterOutput(Foundation f,const char functionname[],FoundationUserOutput fp)
+{
+  PetscErrorCode ierr;
+  void (*eval)(void);
+  
+  ierr = PetscFunctionListFind(f->user->flist_output,(const char*)functionname,&eval);CHKERRQ(ierr);
+  if (eval) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"FoundationUserOutput: Method with name \"%s\" already registered",functionname);
+  
+  ierr = PetscFunctionListAdd(&f->user->flist_output,(const char*)functionname,(void(*)(void))fp);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}

@@ -19,9 +19,12 @@ struct _p_FoundationUserVars {
   char *var_names_f[FND_MAX_USER_VARS];
   char *var_names_d[FND_MAX_USER_VARS];
   PetscFunctionList flist_evaluator;
+  PetscFunctionList flist_output;
 };
 
 typedef PetscErrorCode (*FoundationUserEvaluator)(pTatinCtx,FoundationUserVars,PetscReal*,PetscReal*);
+typedef PetscErrorCode (*FoundationUserOutput)(Foundation,Vec,const char*);
+
 
 typedef enum { UVDTYPE_INT=0, UVDTYPE_FLOAT, UVDTYPE_DOUBLE, UVDTYPE_UNDEF } UserVarDataTypes;
 
@@ -29,8 +32,12 @@ PetscErrorCode FoundationUserVarsCreate(FoundationUserVars *uv);
 PetscErrorCode FoundationUserVarsDestroy(FoundationUserVars *uv);
 
 PetscErrorCode FoundationUserVariablesParse(Foundation f,cJSON *root);
+
 PetscErrorCode FoundationUserRegisterEvaluator(FoundationUserVars uv,const char functioname[],FoundationUserEvaluator fp);
-PetscErrorCode FoundationUserEvaluate(Foundation f,FoundationUserVars uv,const char functioname[],PetscReal *coor,PetscReal *value);
+PetscErrorCode FoundationUserApply_Evaluate(Foundation f,FoundationUserVars uv,const char functioname[],PetscReal *coor,PetscReal *value);
+
+PetscErrorCode FoundationUserRegisterOutput(Foundation f,const char functionname[],FoundationUserOutput fp);
+PetscErrorCode FoundationUserApply_Output(Foundation f,const char functionname[],Vec X,const char prefix[]);
 
 PetscErrorCode UserVariablesGetIntFromName(FoundationUserVars uv,const char name[],int **value);
 PetscErrorCode UserVariablesGetFloatFromName(FoundationUserVars uv,const char name[],float **value);
