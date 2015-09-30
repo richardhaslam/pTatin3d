@@ -82,8 +82,8 @@ PetscErrorCode ModelOutput_Foundation(pTatinCtx ptatinctx,Vec X,const char prefi
   ierr = FoundationUserApply_Output(f,"MaterialPointStdViewer",X,prefix);CHKERRQ(ierr);
   */
 
-  for (i=0; i<f->output->n_modes; i++) {
-    switch (f->output->typelist[i]) {
+  for (i=0; i<f->output->n_types; i++) {
+    switch (f->output->type[i]) {
       case FND_OutputType_MeshDefault:
         ierr = FoundationOutput_DefaultMeshFields(ptatinctx,f,X,prefix);CHKERRQ(ierr);
         break;
@@ -100,8 +100,8 @@ PetscErrorCode ModelOutput_Foundation(pTatinCtx ptatinctx,Vec X,const char prefi
         break;
     }
   }
-  for (i=0; i<f->output->n_userfunc; i++) {
-    ierr = f->output->userfuncs[i](f,X,prefix);CHKERRQ(ierr);
+  for (i=0; i<f->output->n_userfuncs; i++) {
+    ierr = f->output->userfunc[i](f,X,prefix);CHKERRQ(ierr);
   }
   
   
@@ -116,7 +116,8 @@ PetscErrorCode FoundationOutputCreate(FoundationOutput *fo)
   
   PetscMalloc(sizeof(struct _p_FoundationOutput),&f);
   PetscMemzero(f,sizeof(struct _p_FoundationOutput));
-  f->n_userfunc = 0;
+  f->n_types = 0;
+  f->n_userfuncs = 0;
   *fo = f;
   
   PetscFunctionReturn(0);
@@ -140,9 +141,9 @@ PetscErrorCode FoundationOutputDestroy(FoundationOutput *fo)
 #define __FUNCT__ "FoundationOutputParse"
 PetscErrorCode FoundationOutputParse(Foundation f,cJSON *root)
 {
-  cJSON *jroot,*typelist,*userlist,*jobj_k;
-  int entry,nmodes;
-  PetscBool match,user_found = PETSC_FALSE;
+  cJSON          *jroot,*typelist,*userlist,*jobj_k;
+  int            entry,nmodes;
+  PetscBool      match,user_found = PETSC_FALSE;
   PetscErrorCode ierr;
   
   /* look for MeshGeomICType */
@@ -153,44 +154,26 @@ PetscErrorCode FoundationOutputParse(Foundation f,cJSON *root)
 
   nmodes = cJSON_GetArraySize(typelist);
   printf("--------- Found %d modes \n",nmodes);
-  f->output->n_modes = (PetscInt)nmodes;
+  f->output->n_types = (PetscInt)nmodes;
   
   jobj_k = cJSON_GetArrayItemRoot(typelist);
   for (entry=0; entry<nmodes; entry++) {
 
     PetscStrcmp(jobj_k->valuestring,"MeshFields_Default",&match);
-    if (match) { f->output->typelist[entry] = FND_OutputType_MeshDefault; }
+    if (match) { f->output->type[entry] = FND_OutputType_MeshDefault; }
 
     PetscStrcmp(jobj_k->valuestring,"MeshFieldsLite_Default",&match);
-    if (match) { f->output->typelist[entry] = FND_OutputType_MeshLiteDefault; }
+    if (match) { f->output->type[entry] = FND_OutputType_MeshLiteDefault; }
 
     PetscStrcmp(jobj_k->valuestring,"MaterialPoints_Default",&match);
-    if (match) { f->output->typelist[entry] = FND_OutputType_MaterialPointDefault; }
+    if (match) { f->output->type[entry] = FND_OutputType_MaterialPointDefault; }
 
     PetscStrcmp(jobj_k->valuestring,"User",&match);
     if (match) {
-      f->output->typelist[entry] = FND_OutputType_User;
+      f->output->type[entry] = FND_OutputType_User;
       user_found = PETSC_TRUE;
     }
 
-    
-    /*
-    ierr = FoundationParseJSONGetItemOptional(jobj_k,"MeshFields_Default",&jdummy);CHKERRQ(ierr);
-    if (match) { f->output->typelist[entry] = FND_OutputType_MeshDefault; continue; }
-
-    ierr = FoundationParseJSONGetItemOptional(jobj_k,"MeshFieldsLite_Default",&jdummy);CHKERRQ(ierr);
-    if (match) { f->output->typelist[entry] = FND_OutputType_MeshLiteDefault; continue; }
-    
-    ierr = FoundationParseJSONGetItemOptional(jobj_k,"MaterialPoints_Default",&jdummy);CHKERRQ(ierr);
-    if (match) { f->output->typelist[entry] = FND_OutputType_MaterialPointDefault; continue; }
-
-    ierr = FoundationParseJSONGetItemOptional(jobj_k,"User",&jdummy);CHKERRQ(ierr);
-    if (match) {
-      f->output->typelist[entry] = FND_OutputType_User;
-      user_found = PETSC_TRUE;
-      continue;
-    }
-    */
     jobj_k = cJSON_GetArrayItemNext(jobj_k);
   }
 
@@ -199,7 +182,7 @@ PetscErrorCode FoundationOutputParse(Foundation f,cJSON *root)
   
     nmodes = cJSON_GetArraySize(userlist);
     printf("--------- Found %d user functions \n",nmodes);
-    f->output->n_userfunc = (PetscInt)nmodes;
+    f->output->n_userfuncs = (PetscInt)nmodes;
     
     jobj_k = cJSON_GetArrayItemRoot(userlist);
     for (entry=0; entry<nmodes; entry++) {
@@ -210,7 +193,7 @@ PetscErrorCode FoundationOutputParse(Foundation f,cJSON *root)
       
       ierr = PetscFunctionListFind(f->user->flist_output,(const char*)functionname,(void(**)(void))&fp);CHKERRQ(ierr);
       if (!fp) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"FoundationUserOutput: Method with name \"%s\" has not been registered",functionname);
-      f->output->userfuncs[entry] = fp;
+      f->output->userfunc[entry] = fp;
       
       jobj_k = cJSON_GetArrayItemNext(jobj_k);
     }
