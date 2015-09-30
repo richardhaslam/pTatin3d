@@ -103,16 +103,19 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
   
   ierr = FoundationParseMaterialMetaData(c,data);CHKERRQ(ierr);
 
+  /*
   {
     cJSON *juservarroot;
     PetscReal coord[] = {1.01, 2.02, 3.3},value;
     
     
     ierr = FoundationParseJSONGetItemOptional(jobjectroot,"FoundationUserVariables",&juservarroot);CHKERRQ(ierr);
-    ierr = FoundationUserVariablesParse(data,juservarroot);CHKERRQ(ierr);
-
+    if (juservarroot) {
+      ierr = FoundationUserVariablesParse(data,juservarroot);CHKERRQ(ierr);
+    }
     ierr = FoundationUserEvaluate(data,data->user,"UserEvaluator_Empty",coord,&value);CHKERRQ(ierr);
   }
-  
+  */
+   
   PetscFunctionReturn(0);
 }
