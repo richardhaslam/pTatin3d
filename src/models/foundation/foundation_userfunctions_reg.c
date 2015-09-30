@@ -5,6 +5,7 @@
 
 /* jam methods in here */
 #include "userevaluator_empty.c"
+#include "useroutput_materialpointstd_viewer.c"
 
 
 
@@ -25,5 +26,8 @@ PetscErrorCode FoundationUserRegisterFunctions(Foundation f)
 
   /* vel-pressure ic */
 
+  /* output */
+  ierr = FoundationUserRegisterOutput(f,"MaterialPointStdViewer",MaterialPointStandardViewer);CHKERRQ(ierr);
+  
   PetscFunctionReturn(0);
 }
