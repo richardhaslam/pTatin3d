@@ -257,15 +257,15 @@ PetscErrorCode FoundationUserVariablesParse(Foundation f,cJSON *root)
       } else {
         switch (type) {
           case UVDTYPE_INT:
-            printf("name: %s : val %d\n",field->string,field->valueint);
+            PetscPrintf(PETSC_COMM_WORLD,"name: %s : val %d\n",field->string,field->valueint);
             ierr = UserVariablesAdd_Int(uv,field->string,field->valueint);CHKERRQ(ierr);
             break;
           case UVDTYPE_FLOAT:
-            printf("name: %s : val %f\n",field->string,(float)field->valuedouble);
+            PetscPrintf(PETSC_COMM_WORLD,"name: %s : val %f\n",field->string,(float)field->valuedouble);
             ierr = UserVariablesAdd_Float(uv,field->string,(float)field->valuedouble);CHKERRQ(ierr);
             break;
           case UVDTYPE_DOUBLE:
-            printf("name: %s : val %1.4e\n",field->string,field->valuedouble);
+            PetscPrintf(PETSC_COMM_WORLD,"name: %s : val %1.4e\n",field->string,field->valuedouble);
             ierr = UserVariablesAdd_Double(uv,field->string,field->valuedouble);CHKERRQ(ierr);
             break;
         }
