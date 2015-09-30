@@ -12,6 +12,7 @@
 
 typedef struct _p_Foundation *Foundation;
 typedef struct _p_FoundationUserVars *FoundationUserVars;
+typedef struct _p_FoundationOutput *FoundationOutput;
 
 typedef enum {
   FND_MeshGeomT_Cartesian=0,
@@ -56,6 +57,8 @@ typedef enum {
 extern const char *FND_BoundaryConditionModeNames[];
 
 /* foundation parser helpers */
+PetscErrorCode FoundationGetPtatinCtx(Foundation f,pTatinCtx *ctx);
+PetscErrorCode FoundationGetUserVariables(Foundation f,FoundationUserVars *fv);
 PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseJSONGetItemOptional(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f);

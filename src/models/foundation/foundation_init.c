@@ -7,6 +7,26 @@
 
 
 #undef __FUNCT__
+#define __FUNCT__ "FoundationGetPtatinCtx"
+PetscErrorCode FoundationGetPtatinCtx(Foundation f,pTatinCtx *ctx)
+{
+  if (ctx) {
+    *ctx = f->ptatin_ctx;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FoundationGetUserVariables"
+PetscErrorCode FoundationGetUserVariables(Foundation f,FoundationUserVars *fv)
+{
+  if (fv) {
+    *fv = f->user;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FoundationParseJSONGetItemEssential"
 PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemname[],cJSON **jitem)
 {
@@ -126,7 +146,7 @@ PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
     cJSON *juservarroot;
     PetscReal coord[] = {1.01, 2.02, 3.3},value;
     
-    ierr = FoundationUserEvaluate(data,data->user,"UserEvaluator_Empty",coord,&value);CHKERRQ(ierr);
+    ierr = FoundationUserApply_Evaluate(data,data->user,"UserEvaluator_Empty",coord,&value);CHKERRQ(ierr);
   }
   */
    
