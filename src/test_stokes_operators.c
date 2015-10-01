@@ -961,8 +961,15 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
   PetscPrintf(PETSC_COMM_WORLD,"\n------ Warm up stage: Performing %D solves ------\n",iterations_warmup);
   PetscLogStagePush(stages[0]);
   
+  PetscTime(&t0all);
+
   PetscTime(&t0);
+
   ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+  
+  PetscTime(&t1);
+  tl = (double)(t1 - t0);
+  time_[0] = tl;
 
   /* Cancel the KSP monitor for all subsequent solves */
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
@@ -972,16 +979,30 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
 
   /* Perform remaining warm up solves */
   for (ii=1; ii<iterations_warmup; ii++) {
+    PetscTime(&t0);
+
     ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
+
+    PetscTime(&t1);
+    tl = (double)(t1 - t0);
+    time_[ii] = tl;
   }
-  PetscTime(&t1);
-  tl = (double)(t1 - t0);
+  PetscTime(&t1all);
+  tl = (double)(t1all - t0all);
   ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   
   
   PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(kspits = %.4D,warmup cycles = %.4D)     time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",its,iterations_warmup,tl,timeMIN,timeMAX,100.0*(timeMIN/timeMAX));
   PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over all runs - all ranks)   time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",tl/((double)iterations_warmup),timeMIN/((double)iterations_warmup),timeMAX/((double)iterations_warmup),100.0*(timeMIN/timeMAX));
+
+  /* Compute profile stats taken over individual warmup runs */
+  ierr = MPI_Allreduce(time_,timeMIN_,iterations,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(time_,timeMAX_,iterations,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over each warmup run - all ranks)\n");
+  for (ii=0; ii<iterations; ii++) {
+    PetscPrintf(PETSC_COMM_WORLD,"  [solve %.4D]: min/max %1.4e %1.4e (sec)\n",ii,timeMIN_[ii],timeMAX_[ii]);
+  }
 
   PetscLogStagePop();
 
