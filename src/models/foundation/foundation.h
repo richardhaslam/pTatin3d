@@ -74,18 +74,22 @@ PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f);
 PetscErrorCode ModelInitialMaterialState_Foundation(pTatinCtx c,void *ctx);
 
 PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx);
+
 PetscErrorCode ModelInitialMeshGeometry_Foundation(pTatinCtx c,void *ctx);
 PetscErrorCode ModelInitialMaterialGeometry_Foundation(pTatinCtx c,void *ctx);
-PetscErrorCode ModelApplyBoundaryCondition_Foundation(pTatinCtx c,void *ctx);
-PetscErrorCode ModelApplyBoundaryConditionMG_Foundation(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx);
-PetscErrorCode ModelApplyUpdateMeshGeometry_Foundation(pTatinCtx c,Vec X,void *ctx);
-PetscErrorCode ModelOutput_Foundation(pTatinCtx c,Vec X,const char prefix[],void *ctx);
-PetscErrorCode ModelDestroy_Foundation(pTatinCtx c,void *ctx);
+
+PetscErrorCode ModelInitialConditionMeshFields_Foundation(pTatinCtx c,Vec X,void *ctx);
+PetscErrorCode ModelInitialConditonMarkerFields_Foundation(pTatinCtx c,Vec X,void *ctx);
 
 PetscErrorCode ModelApplyBC_Foundation(pTatinCtx c,void *ctx);
 PetscErrorCode ModelApplyBCMG_Foundation(PetscInt nl,BCList bclist[],DM dmv[],pTatinCtx c,void *ctx);
 
-PetscErrorCode ModelOutput_Foundation(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx);
+//PetscErrorCode ModelUpdateMeshGeometry_Foundation(pTatinCtx c,Vec X,void *ctx);
+
+PetscErrorCode ModelOutput_Foundation(pTatinCtx c,Vec X,const char prefix[],void *ctx);
+PetscErrorCode ModelDestroy_Foundation(pTatinCtx c,void *ctx);
+
+
 
 PetscErrorCode FoundationUserRegisterFunctions(Foundation f);
 

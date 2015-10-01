@@ -7,6 +7,8 @@
 #include "ptatin3d.h"
 #include "material_point_utils.h"
 #include "output_material_points.h"
+#include "energy_output.h"
+#include "ptatin3d_energy.h"
 
 
 #undef __FUNCT__
@@ -14,9 +16,22 @@
 PetscErrorCode FoundationOutput_DefaultMeshFields(pTatinCtx ptatinctx,Foundation f,Vec X,const char prefix[])
 {
   PetscErrorCode   ierr;
+  PetscBool        active_energy;
+  
   PetscFunctionBegin;
   /* v and p are written */
   ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
+
+	/* T written out */
+	ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
+	if (active_energy) {
+    PhysCompEnergy energy;
+    Vec            temperature;
+    
+    ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
+    ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
+    ierr = pTatin3d_ModelOutput_Temperature_Energy(ptatinctx,temperature,prefix);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -25,10 +40,23 @@ PetscErrorCode FoundationOutput_DefaultMeshFields(pTatinCtx ptatinctx,Foundation
 PetscErrorCode FoundationOutput_DefaultMeshFieldsLite(pTatinCtx ptatinctx,Foundation f,Vec X,const char prefix[])
 {
   PetscErrorCode   ierr;
+  PetscBool        active_energy;
+
   PetscFunctionBegin;
 
   /* Light weight viewer: Only v is written. v and coords are expressed as floats */
   ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
+
+	/* T written out */
+	ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
+	if (active_energy) {
+    PhysCompEnergy energy;
+    Vec            temperature;
+    
+    ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
+    ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
+    ierr = pTatin3d_ModelOutput_Temperature_Energy(ptatinctx,temperature,prefix);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -58,7 +86,6 @@ PetscErrorCode FoundationOutput_DefaultMaterialPoints(pTatinCtx ptatinctx,Founda
     
     ierr = pTatin3d_ModelOutput_MarkerCellFields(ptatinctx,nf,mp_prop_list,prefix);CHKERRQ(ierr);
   }
-  
   PetscFunctionReturn(0);
 }
 
