@@ -34,6 +34,10 @@
 #include "rheology.h"
 #include "material_constants.h"
 
+const char *ViscousTypeNames[] = { "Constant", "FrankKamenetskii", "DepthDependent", "Arrhenius", "Arrhenius2", 0 };
+const char *PlasticTypeNames[] = { "None", "Mises", "DruckerPrager", "MisesH", "DruckerPragerH", 0 };
+const char *SofteningTypeNames[] = { "None", "Linear", "Exponential", 0 };
+const char *DensityTypeNames[] = { "Constant", "Boussinesq", 0 };
 
 #undef __FUNCT__
 #define __FUNCT__ "MaterialConstantsInitialize"
@@ -181,19 +185,19 @@ PetscErrorCode MaterialConstantsPrintValues_MaterialType(DataBucket db,const int
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[0],region_id);
 	MaterialConst_MaterialTypeGetField_visc_type(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %d  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %d  \n", opt_name ,value);
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[1],region_id);
 	MaterialConst_MaterialTypeGetField_plastic_type(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %d  \n", opt_name ,value);	
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %d  \n", opt_name ,value);	
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[2],region_id);
 	MaterialConst_MaterialTypeGetField_softening_type(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %d  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %d  \n", opt_name ,value);
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_MaterialType_member_names[3],region_id);
 	MaterialConst_MaterialTypeGetField_density_type(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %d  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %d  \n", opt_name ,value);
 	
 	
 	DataFieldRestoreAccess(PField);
@@ -313,7 +317,7 @@ PetscErrorCode MaterialConstantsPrintValues_DensityConst(DataBucket db,const int
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityConst_member_names[0],region_id);
 	MaterialConst_DensityConstGetField_density(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
   
@@ -459,15 +463,15 @@ PetscErrorCode MaterialConstantsPrintValues_DensityBoussinesq(DataBucket db,cons
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[0],region_id);
 	MaterialConst_DensityBoussinesqGetField_density(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 
 	sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[1],region_id);
 	MaterialConst_DensityBoussinesqGetField_thermalexpension(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
   
   sprintf(opt_name,"-%s_%d",MaterialConst_DensityBoussinesq_member_names[2],region_id);
 	MaterialConst_DensityBoussinesqGetField_compressibility(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
     
 	DataFieldRestoreAccess(PField);
     
@@ -611,7 +615,7 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityConst(DataBucket db,const i
 	/* eta0 */
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityConst_member_names[0],region_id);
 	MaterialConst_ViscosityConstGetField_eta0(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -757,15 +761,15 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityZ(DataBucket db,const int r
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityZ_member_names[0],region_id);
 	MaterialConst_ViscosityZGetField_eta0(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityZ_member_names[1],region_id);
 	MaterialConst_ViscosityZGetField_zeta(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityZ_member_names[2],region_id);
 	MaterialConst_ViscosityZGetField_zref(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -955,35 +959,35 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const in
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[0],region_id);
 	MaterialConst_ViscosityArrhGetField_preexpA(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[1],region_id);
 	MaterialConst_ViscosityArrhGetField_Ascale(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[2],region_id);
 	MaterialConst_ViscosityArrhGetField_entalpy(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[3],region_id);
 	MaterialConst_ViscosityArrhGetField_Vmol(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[4],region_id);
 	MaterialConst_ViscosityArrhGetField_nexp(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[5],region_id);
 	MaterialConst_ViscosityArrhGetField_Tref(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 
   sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[6],region_id);
 	MaterialConst_ViscosityArrhGetField_Eta_scale(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 
     sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityArrh_member_names[7],region_id);
 	MaterialConst_ViscosityArrhGetField_P_scale(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
     
 	DataFieldRestoreAccess(PField);
 	
@@ -1143,11 +1147,11 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityFK(DataBucket db,const int 
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[0],region_id);
 	MaterialConst_ViscosityFKGetField_eta0(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	sprintf(opt_name,"-%s_%d",MaterialConst_ViscosityFK_member_names[1],region_id);
 	MaterialConst_ViscosityFKGetField_theta(data,&value);
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -1298,12 +1302,12 @@ PetscErrorCode MaterialConstantsPrintValues_PlasticMises(DataBucket db,const int
 	field_name = (char*)MaterialConst_PlasticMises_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticMisesGetField_yield_stress(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	field_name = (char*)MaterialConst_PlasticMises_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticMisesGetField_yield_stress_inf(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -1504,36 +1508,36 @@ PetscErrorCode MaterialConstantsPrintValues_PlasticDP(DataBucket db,const int re
 	field_name = (char*)MaterialConst_PlasticDP_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticDPGetField_friction(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	/* friction_inf */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[2];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticDPGetField_friction_inf(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	/* Cohesion */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticDPGetField_cohesion(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	/* cohesion_inf */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[3];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticDPGetField_cohesion_inf(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	
 	/* tension_cutoff */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[4];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticDPGetField_tens_cutoff(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);	
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);	
 	
 	/* high stress cutoff */
 	field_name = (char*)MaterialConst_PlasticDP_member_names[5];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_PlasticDPGetField_hst_cutoff(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	
 	
@@ -1720,13 +1724,13 @@ PetscErrorCode MaterialConstantsPrintValues_SoftLin(DataBucket db,const int regi
 	field_name = (char*)MaterialConst_SoftLin_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_SoftLinGetField_eps_min(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	/* exponential fold */
 	field_name = (char*)MaterialConst_SoftLin_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_SoftLinGetField_eps_max(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -1852,13 +1856,13 @@ PetscErrorCode MaterialConstantsPrintValues_SoftExpo(DataBucket db,const int reg
 	field_name = (char*)MaterialConst_SoftExpo_member_names[0];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_SoftExpoGetField_eps_min(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	/* exponential fold */
 	field_name = (char*)MaterialConst_SoftExpo_member_names[1];
 	sprintf(opt_name,"-%s_%d",field_name,region_id);
 	MaterialConst_SoftExpoGetField_eps_fold(data,&value); /* use setter */
-	PetscPrintf(PETSC_COMM_WORLD,"Current Value %s   :  %1.4e  \n", opt_name ,value);
+	PetscPrintf(PETSC_COMM_WORLD,"Current value %20s  :  %1.4e  \n", opt_name ,value);
 	
 	DataFieldRestoreAccess(PField);
 	
@@ -2141,13 +2145,16 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 	
 	PetscFunctionBegin;
 	
+  ierr = MaterialConstantsPrintValues_MaterialType(db,region_id);CHKERRQ(ierr);
+	
 	DataBucketGetDataFieldByName(db,MaterialConst_MaterialType_classname,&PField);
 	
 	DataFieldGetAccess(PField);
 	DataFieldAccessPoint(PField,region_id,(void**)&data);
 	
-	MaterialConst_MaterialTypeGetField_visc_type(data,&value);
-	switch (value) {
+  MaterialConst_MaterialTypeGetField_visc_type(data,&value);
+
+  switch (value) {
 		case VISCOUS_CONSTANT:
 			ierr = MaterialConstantsPrintValues_ViscosityConst(db,region_id);CHKERRQ(ierr);
 			break;
@@ -2224,3 +2231,40 @@ PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MaterialConstantsHelp"
+PetscErrorCode MaterialConstantsHelp(DataBucket db,const char prefix[],const int region_id)
+{
+  char **name,**list,**fulllist[4];
+  int k,index;
+  
+  fulllist[0] = (char**)ViscousTypeNames;
+  fulllist[1] = (char**)PlasticTypeNames;
+  fulllist[2] = (char**)SofteningTypeNames;
+  fulllist[3] = (char**)DensityTypeNames;
+  
+  for (k=0; k<MaterialConst_MaterialType_nmembers; k++) {
+    char optname[PETSC_MAX_PATH_LEN];
+    
+    
+    if (prefix) PetscSNPrintf(optname,PETSC_MAX_PATH_LEN-1,"-%s%s",prefix,MaterialConst_MaterialType_member_names[k]);
+    else        PetscSNPrintf(optname,PETSC_MAX_PATH_LEN-1,"-%s",MaterialConst_MaterialType_member_names[k]);
+
+    PetscPrintf(PETSC_COMM_WORLD,"%32s_%d",optname,region_id);
+    
+    list = fulllist[k];
+    
+    PetscPrintf(PETSC_COMM_WORLD,"  :  [Valid values] ");
+    index = 0;
+    name = &list[0];
+    while (*name) {
+      PetscPrintf(PETSC_COMM_WORLD,"%d (%s); ",index,*name);
+      index++;
+      name++;
+    }
+    PetscPrintf(PETSC_COMM_WORLD,"\n");
+  
+  }
+  
+	PetscFunctionReturn(0);
+}

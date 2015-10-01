@@ -50,6 +50,7 @@ typedef enum {
 	VISCOUS_ARRHENIUS,
 	VISCOUS_ARRHENIUS_2
 } ViscousType;
+extern const char *ViscousTypeNames[];
 
 typedef enum { 
 	PLASTIC_NONE      =0,
@@ -58,17 +59,20 @@ typedef enum {
 	PLASTIC_MISES_H   =3,
 	PLASTIC_DP_H      =4,
 } PlasticType;
+extern const char *PlasticTypeNames[];
 
 typedef enum { 
 	SOFTENING_NONE=0,
 	SOFTENING_LINEAR,
 	SOFTENING_EXPONENTIAL
 } SofteningType;
+extern const char *SofteningTypeNames[];
 
 typedef enum { 
 	DENSITY_CONSTANT=0,
 	DENSITY_BOUSSINESQ
 } DensityType;
+extern const char *DensityTypeNames[];
 
 PetscErrorCode MaterialConstantsInitialize(DataBucket *_db);
 PetscErrorCode MaterialConstantsSetDefaults(DataBucket db);
@@ -81,7 +85,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityConst(DataBucket db,cons
 PetscErrorCode MaterialConstantsSetValues_ViscosityConst(DataBucket db,const int region_id,PetscReal viscosity);
 PetscErrorCode MaterialConstantsScaleValues_ViscosityConst(DataBucket db,const int region_id,PetscReal eta_star);
 PetscErrorCode MaterialConstantsPrintValues_ViscosityConst(DataBucket db,const int region_id);
-
 
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityFK(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsSetValues_ViscosityFK(DataBucket db,const int region_id,PetscReal eta0, PetscReal theta);
@@ -98,7 +101,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityConst(DataBucket db,const 
 PetscErrorCode MaterialConstantsSetValues_DensityConst(DataBucket db,const int region_id,PetscReal density);
 PetscErrorCode MaterialConstantsScaleValues_DensityConst(DataBucket db,const int region_id,PetscReal rho_star);
 PetscErrorCode MaterialConstantsPrintValues_DensityConst(DataBucket db,const int region_id);
-
 
 PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsSetValues_DensityBoussinesq(DataBucket db,const int region_id,PetscReal density,PetscReal alpha,PetscReal beta);
@@ -125,18 +127,17 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftLin(DataBucket db,const char 
 PetscErrorCode MaterialConstantsPrintValues_SoftLin(DataBucket db,const int region_id);
 PetscErrorCode MaterialConstantsSetValues_SoftLin(DataBucket db,const int region_id,PetscReal emin,PetscReal emax);
 
-
-
 PetscErrorCode MaterialConstantsSetDefault_SoftExpo(DataBucket db);
 PetscErrorCode MaterialConstantsSetFromOptions_SoftExpo(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsPrintValues_SoftExpo(DataBucket db,const int region_id);
 PetscErrorCode MaterialConstantsSetValues_SoftExpo(DataBucket db,const int region_id,PetscReal emin,PetscReal efold);
-
 
 PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);
 
 PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,PetscReal L_star, PetscReal U_star,PetscReal t_star,PetscReal eta_star,PetscReal rho_star,PetscReal P_star);
 PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_name[],const int region_id,PetscBool essential);
 PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id);
+PetscErrorCode MaterialConstantsHelp(DataBucket db,const char prefix[],const int region_id);
+
 #endif
 
