@@ -48,6 +48,12 @@
  gobj_k = cJSON_GetArrayItemNext(gobj_k);
  }
  */
+int cJSON_IsArrayItem(cJSON *jitem)
+{
+  if (jitem->type == 5) return(1);
+  else return(0);
+}
+
 cJSON* cJSON_GetArrayItemRoot(cJSON *gobject)
 {
   if (gobject) {

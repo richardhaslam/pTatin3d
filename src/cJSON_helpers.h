@@ -32,6 +32,7 @@
 
 #include "cJSON.h"
 
+int cJSON_IsArrayItem(cJSON *jitem);
 cJSON* cJSON_GetArrayItemRoot(cJSON *gobject);
 cJSON* cJSON_GetArrayItemNext(cJSON *gobj_k);
 void cJSON_FileView(const char filename[],cJSON **jf);
