@@ -37,6 +37,7 @@ PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load);
 
 PetscErrorCode pTatinPhysCompAttachData_Energy(pTatinCtx user,Vec T,Mat A);
 PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A);
+PetscErrorCode pTatinPhysCompGetDM_Energy(pTatinCtx user,DM *dm);
 
 PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,PhysCompEnergy energy,PetscReal dt);
 PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T);

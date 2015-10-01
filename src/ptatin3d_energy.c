@@ -182,6 +182,21 @@ PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "pTatinPhysCompGetDM_Energy"
+PetscErrorCode pTatinPhysCompGetDM_Energy(pTatinCtx user,DM *dm)
+{
+	PhysCompEnergy e;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	ierr = pTatinGetContext_Energy(user,&e);CHKERRQ(ierr);
+	if (dm) { *dm = e->daT; }
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MaterialPointQuadraturePointProjectionC0_Q2Energy"
 PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q)
 {
