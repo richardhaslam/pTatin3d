@@ -428,6 +428,7 @@ PetscErrorCode FoundationViewRegionPretty(pTatinCtx c,PetscInt ridx)
   PetscPrintf(PETSC_COMM_WORLD,"  Density\n");
   if (data[ridx].density_type == DENSITY_CONSTANT  ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Const\n");
   if (data[ridx].density_type == DENSITY_BOUSSINESQ) PetscPrintf(PETSC_COMM_WORLD,"    |_______\\ Boussinesq\n");
+  DataFieldRestoreEntries(datafield,(void**)&data);
   PetscFunctionReturn(0);
 }
 
