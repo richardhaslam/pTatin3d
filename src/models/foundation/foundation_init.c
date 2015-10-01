@@ -78,6 +78,71 @@ PetscErrorCode FoundationParseJSONReportInfo(cJSON *jroot)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FoundationParseJSONGetItemFromListEssential"
+PetscErrorCode FoundationParseJSONGetItemFromListEssential(cJSON *jroot,const char itemname[],cJSON **jitem)
+{
+  int entry,nlist;
+  cJSON *dummy,*jobj_k;
+  PetscErrorCode ierr;
+  
+  *jitem = NULL;
+
+  if (!cJSON_IsArrayItem(jroot)) {
+    ierr = FoundationParseJSONGetItemEssential(jroot,itemname,jitem);CHKERRQ(ierr);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"[foundation] Parsing list contents within \"%s\"\n",jroot->string);
+
+    nlist = cJSON_GetArraySize(jroot);
+    jobj_k = cJSON_GetArrayItemRoot(jroot);
+    for (entry=0; entry<nlist; entry++) {
+      dummy = cJSON_GetObjectItem(jobj_k,itemname);
+      if (dummy) { break; }
+      jobj_k = cJSON_GetArrayItemNext(jobj_k);
+    }
+    
+    *jitem = dummy;
+
+    if (!(*jitem)) {
+      SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_USER,"Foundation: Failed to locate essential struct \"%s\":[{\"%s\":{}}]",jroot->string,itemname);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FoundationParseJSONGetItemFromListOptional"
+PetscErrorCode FoundationParseJSONGetItemFromListOptional(cJSON *jroot,const char itemname[],cJSON **jitem)
+{
+  int entry,nlist;
+  cJSON *dummy,*jobj_k;
+  PetscErrorCode ierr;
+  
+  *jitem = NULL;
+  
+  if (!cJSON_IsArrayItem(jroot)) {
+    ierr = FoundationParseJSONGetItemOptional(jroot,itemname,jitem);CHKERRQ(ierr);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"[foundation] Parsing list contents within \"%s\" <optional...",jroot->string);
+    
+    nlist = cJSON_GetArraySize(jroot);
+    jobj_k = cJSON_GetArrayItemRoot(jroot);
+    for (entry=0; entry<nlist; entry++) {
+      dummy = cJSON_GetObjectItem(jobj_k,itemname);
+      if (dummy) { break; }
+      jobj_k = cJSON_GetArrayItemNext(jobj_k);
+    }
+    *jitem = dummy;
+
+    if (!*jitem) {
+      PetscPrintf(PETSC_COMM_WORLD,"not found>\n",itemname);
+    } else {
+      PetscPrintf(PETSC_COMM_WORLD,"found>\n",itemname);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Foundation"
 PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
 {

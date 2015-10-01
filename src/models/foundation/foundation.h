@@ -68,9 +68,17 @@ extern const char *FND_OutputTypeNames[];
 /* foundation parser helpers */
 PetscErrorCode FoundationGetPtatinCtx(Foundation f,pTatinCtx *ctx);
 PetscErrorCode FoundationGetUserVariables(Foundation f,FoundationUserVars *fv);
+PetscErrorCode FoundationParseJSONReportInfo(cJSON *jroot);
+
 PetscErrorCode FoundationParseJSONGetItemEssential(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseJSONGetItemOptional(cJSON *jroot,const char itemname[],cJSON **jitem);
+
+PetscErrorCode FoundationParseJSONGetItemFromListEssential(cJSON *jroot,const char itemname[],cJSON **jitem);
+PetscErrorCode FoundationParseJSONGetItemFromListOptional(cJSON *jroot,const char itemname[],cJSON **jitem);
+
+
 PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f);
+
 PetscErrorCode ModelInitialMaterialState_Foundation(pTatinCtx c,void *ctx);
 
 PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx);
