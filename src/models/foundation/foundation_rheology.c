@@ -455,9 +455,13 @@ PetscErrorCode FoundationParseRegion(pTatinCtx c,Foundation f,cJSON *region)
   ierr = FoundationParseJSONGetItemEssential(region,"Density",&jobj);CHKERRQ(ierr);
   ierr = FoundationParseDensity(c,ridx,jobj);CHKERRQ(ierr);
   
-  ierr = FoundationViewRegionPretty(c,ridx);CHKERRQ(ierr);
   ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
-  MaterialConstantsPrintAll(materialconstants,ridx);
+  ierr = MaterialConstantsSetFromOptions(materialconstants,"matconst_",ridx,PETSC_FALSE);CHKERRQ(ierr);
+
+  ierr = MaterialConstantsPrintAll(materialconstants,ridx);CHKERRQ(ierr);
+  ierr = MaterialConstantsHelp(materialconstants,"matconst_",ridx);CHKERRQ(ierr);
+
+  ierr = FoundationViewRegionPretty(c,ridx);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
