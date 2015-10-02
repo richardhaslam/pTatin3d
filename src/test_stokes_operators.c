@@ -870,8 +870,8 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
   Mat            A,B;
   Vec            x,y;
   DM             da;
-  PetscLogDouble t0,t1,t0all,t1all;
-  double         tl,timeMIN,timeMAX,*time_,*timeMIN_,*timeMAX_;
+  PetscLogDouble t0,t1,t0all,t1all,t0all_warmup,t1all_warmup;
+  double         tl,timeMIN,timeMAX,*time_,*time_warmup,*timeMIN_,*timeMAX_;
   PetscInt       its;
   PetscInt       ii,iterations,iterations_warmup;
   KSP            ksp;
@@ -896,6 +896,7 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
   ierr = PetscOptionsGetInt(NULL,"-iterations_warmup",&iterations_warmup,0);CHKERRQ(ierr);
   
   PetscMalloc(sizeof(double)*iterations,&time_);
+  PetscMalloc(sizeof(double)*iterations,&time_warmup);
   PetscMalloc(sizeof(double)*iterations,&timeMIN_);
   PetscMalloc(sizeof(double)*iterations,&timeMAX_);
   
@@ -961,15 +962,15 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
   PetscPrintf(PETSC_COMM_WORLD,"\n------ Warm up stage: Performing %D solves ------\n",iterations_warmup);
   PetscLogStagePush(stages[0]);
   
-  PetscTime(&t0all);
-
+  PetscTime(&t0all_warmup);
   PetscTime(&t0);
-
   ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
-  
   PetscTime(&t1);
   tl = (double)(t1 - t0);
-  time_[0] = tl;
+  time_warmup[0] = tl;
+
+  /* Print the converged reason (once) (don't use -ksp_converged_reason) */
+  ierr = KSPReasonView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Cancel the KSP monitor for all subsequent solves */
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
@@ -985,24 +986,9 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
 
     PetscTime(&t1);
     tl = (double)(t1 - t0);
-    time_[ii] = tl;
+    time_warmup[ii] = tl;
   }
-  PetscTime(&t1all);
-  tl = (double)(t1all - t0all);
-  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  
-  
-  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(kspits = %.4D,warmup cycles = %.4D)     time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",its,iterations_warmup,tl,timeMIN,timeMAX,100.0*(timeMIN/timeMAX));
-  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over all runs - all ranks)   time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",tl/((double)iterations_warmup),timeMIN/((double)iterations_warmup),timeMAX/((double)iterations_warmup),100.0*(timeMIN/timeMAX));
-
-  /* Compute profile stats taken over individual warmup runs */
-  ierr = MPI_Allreduce(time_,timeMIN_,iterations,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(time_,timeMAX_,iterations,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over each warmup run - all ranks)\n");
-  for (ii=0; ii<iterations; ii++) {
-    PetscPrintf(PETSC_COMM_WORLD,"  [solve %.4D]: min/max %1.4e %1.4e (sec)\n",ii,timeMIN_[ii],timeMAX_[ii]);
-  }
+  PetscTime(&t1all_warmup);
 
   PetscLogStagePop();
 
@@ -1025,6 +1011,25 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
   /* Assume all solves produce identical iteration counts */
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
+  PetscLogStagePop();
+
+  /* Outside of the log phases, process the times */
+  PetscPrintf(PETSC_COMM_WORLD,"\n------ Info on %D warmup and %D profiling solves ------\n",iterations_warmup,iterations);
+
+  /* Compute profile stats taken over individual warmup runs */
+  tl = (double)(t1all_warmup - t0all_warmup);
+  ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&tl,&timeMAX,1,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(kspits = %.4D,warmup cycles = %.4D)     time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",its,iterations,tl,timeMIN,timeMAX,100.0*(timeMIN/timeMAX));
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over all warmup runs - all ranks)   time(0) %1.4e (sec) : min/max %1.4e %1.4e (sec) : ratio %1.4e%%\n",tl/((double)iterations),timeMIN/((double)iterations_warmup),timeMAX/((double)iterations_warmup),100.0*(timeMIN/timeMAX));
+
+  ierr = MPI_Allreduce(time_warmup,timeMIN_,iterations,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(time_warmup,timeMAX_,iterations,MPI_DOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: averages (over each warmup run - all ranks)\n");
+  for (ii=0; ii<iterations; ii++) {
+    PetscPrintf(PETSC_COMM_WORLD,"  [solve %.4D]: min/max %1.4e %1.4e (sec)\n",ii,timeMIN_[ii],timeMAX_[ii]);
+  }
   /* Compute profile stats taken over all runs */
   tl = (double)(t1all - t0all);
   ierr = MPI_Allreduce(&tl,&timeMIN,1,MPI_DOUBLE,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -1041,11 +1046,11 @@ PetscErrorCode perform_viscous_solve_warmup(PhysCompStokes user)
     PetscPrintf(PETSC_COMM_WORLD,"  [solve %.4D]: min/max %1.4e %1.4e (sec)\n",ii,timeMIN_[ii],timeMAX_[ii]);
   }
   
-  PetscLogStagePop();
   
   ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   
   PetscFree(time_);
+  PetscFree(time_warmup);
   PetscFree(timeMIN_);
   PetscFree(timeMAX_);
   
