@@ -52,6 +52,8 @@
 #include "output_material_points.h"
 #include "pswarm.h"
 
+#include "dmda_remesh.h"
+
 /* add include for energy*/
 #include "material_constants_energy.h"
 
@@ -824,13 +826,13 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 
 
 	 //remesh vertically and preserve topography
-	/*{
+	{
 		PetscInt npoints,dir;
-		PetscReal xref[3],xnat[3];
+		PetscReal xref[10],xnat[10];
 
 		npoints = 3;
 		xref[0] = 0.0;
-		xref[1] = 0.3;
+		xref[1] = 0.1;
 		xref[2] = 1.0;
 
 		xnat[0] = 0.0;
@@ -839,9 +841,9 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 
 
 		dir = 1;
-		ierr = DMDACoordinateRefinementTransferFunction(c->stokes_ctx->dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
-		ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
-	}*/
+		ierr = DMDACoordinateRefinementTransferFunction(dau,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+		ierr = DMDABilinearizeQ2Elements(dau);CHKERRQ(ierr);
+	}
 
 
 	PetscFunctionReturn(0);
@@ -1178,13 +1180,13 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 
 	/* UPDATE mesh refinement scheme */
 	//remesh vertically and preserve topography
-	/*{
+	{
 		PetscInt npoints,dir;
-		PetscReal xref[3],xnat[3];
+		PetscReal xref[10],xnat[10];
 
 		npoints = 3;
 		xref[0] = 0.0;
-		xref[1] = 0.3;
+		xref[1] = 0.1;
 		xref[2] = 1.0;
 
 		xnat[0] = 0.0;
@@ -1193,9 +1195,9 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 
 
 		dir = 1;
-		ierr = DMDACoordinateRefinementTransferFunction(c->stokes_ctx->dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
-		ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
-	}*/
+		ierr = DMDACoordinateRefinementTransferFunction(dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+		ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
+	}
 
 	PetscFunctionReturn(0);
 }
