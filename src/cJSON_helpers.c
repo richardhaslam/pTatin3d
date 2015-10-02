@@ -72,6 +72,15 @@ cJSON* cJSON_GetArrayItemNext(cJSON *gobj_k)
   }
 }
 
+char* cJSON_GetItemName(cJSON *gobj_k)
+{
+  if (!gobj_k) {
+    return NULL;
+  } else {
+    return gobj_k->string;
+  }
+}
+
 void cJSON_FileView(const char filename[],cJSON **jf)
 {
   FILE  *fp = NULL;
