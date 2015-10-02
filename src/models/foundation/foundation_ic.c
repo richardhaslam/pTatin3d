@@ -110,20 +110,30 @@ PetscErrorCode Foundation_LinearInterpolateParse(Foundation f,cJSON *root,DM dm,
 #define __FUNCT__ "FoundationVelocityICParse"
 PetscErrorCode FoundationVelocityICParse(Foundation f,cJSON *root,DM dmu,Vec Xu)
 {
-  cJSON *jitem,*jitem_execute;
+  const char *methodlist[] = { "None", "LinearInterpolation", "User", 0 };
+  cJSON *jitem;
+  PetscInt type;
+  PetscErrorCode ierr;
   
   /* Look for vx, vy, vz */
   /* Look for LinearInterpolation */
+  ierr = FoundationJSONFindItemFromList(root,methodlist,&type,&jitem);CHKERRQ(ierr);
   
+  switch (type) {
+    case 0:
+      break;
+
+    case 1:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"LinearInterpolation is unsupported");
+      break;
+
+    case 2:
+      break;
+
+    default:
+      break;
+  }
   
-  jitem_execute = NULL;
-
-  jitem = cJSON_GetObjectItem(root,"None");
-  if (jitem) { PetscPrintf(PETSC_COMM_WORLD,"[foundation] VelocityIC: none\n"); jitem_execute = jitem; }
-
-  jitem = cJSON_GetObjectItem(root,"User");
-  if (jitem) { PetscPrintf(PETSC_COMM_WORLD,"[foundation] VelocityIC: user\n");  jitem_execute = jitem; }
-
   PetscFunctionReturn(0);
 }
 
@@ -166,25 +176,27 @@ PetscErrorCode ModelInitialConditionMeshFields_Foundation(pTatinCtx c,Vec X,void
   size = cJSON_GetArraySize(jmeshic);
   PetscPrintf(PETSC_COMM_WORLD,"[foundation]--------- Found %d fields\n",size);
 
-  ierr = FoundationParseJSONGetItemFromListEssential(jmeshic,"Velocity",&jitem[0]);CHKERRQ(ierr);
-  ierr = FoundationParseJSONGetItemFromListEssential(jmeshic,"Pressure",&jitem[1]);CHKERRQ(ierr);
+  jitem[0] = jitem[1] = jitem[2] = NULL;
+  ierr = FoundationParseJSONGetItemFromListOptional(jmeshic,"Velocity",&jitem[0]);CHKERRQ(ierr);
+  ierr = FoundationParseJSONGetItemFromListOptional(jmeshic,"Pressure",&jitem[1]);CHKERRQ(ierr);
 
-  /* Throw errors if required */
+  /* Throw errors if temperature loaded an no intial condition is specified  */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
 	if (active_energy) {
     ierr = FoundationParseJSONGetItemFromListEssential(jmeshic,"Temperature",&jitem[2]);CHKERRQ(ierr);
   }
-
-  /* parse */
   
+  /* parse */
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
   ierr = DMCompositeGetEntries(dmstokes,&dmu,&dmp);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(dmstokes,X,&Xu,&Xp);CHKERRQ(ierr);
 
-  ierr = FoundationVelocityICParse(f,jitem[0],dmu,Xu);CHKERRQ(ierr);
-  ierr = FoundationPressureICParse(f,jitem[1],dmp,Xp);CHKERRQ(ierr);
-	if (active_energy) {
+  /* parse optional u,p */
+  if (jitem[0]) ierr = FoundationVelocityICParse(f,jitem[0],dmu,Xu);CHKERRQ(ierr);
+  if (jitem[1]) ierr = FoundationPressureICParse(f,jitem[1],dmp,Xp);CHKERRQ(ierr);
+	
+  if (active_energy) {
     PhysCompEnergy energy;
     Vec            temperature;
     DM             dmT;
@@ -192,6 +204,7 @@ PetscErrorCode ModelInitialConditionMeshFields_Foundation(pTatinCtx c,Vec X,void
     ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
     ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
     ierr = pTatinPhysCompGetDM_Energy(c,&dmT);CHKERRQ(ierr);
+    
     ierr = FoundationTemperatureICParse(f,jitem[2],dmT,temperature);CHKERRQ(ierr);
   }
   ierr = DMCompositeRestoreAccess(dmstokes,X,&Xu,&Xp);CHKERRQ(ierr);

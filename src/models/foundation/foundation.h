@@ -75,7 +75,8 @@ PetscErrorCode FoundationParseJSONGetItemOptional(cJSON *jroot,const char itemna
 
 PetscErrorCode FoundationParseJSONGetItemFromListEssential(cJSON *jroot,const char itemname[],cJSON **jitem);
 PetscErrorCode FoundationParseJSONGetItemFromListOptional(cJSON *jroot,const char itemname[],cJSON **jitem);
-
+PetscErrorCode FoundationFindStringInList(const char *list[],const char itemname[],PetscInt *index);
+PetscErrorCode FoundationJSONFindItemFromList(cJSON *jroot,const char *methodlist[],PetscInt *_index,cJSON **_jitem);
 
 PetscErrorCode FoundationParseMaterialMetaData(pTatinCtx c,Foundation f);
 

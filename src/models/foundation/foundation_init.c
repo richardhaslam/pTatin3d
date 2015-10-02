@@ -143,6 +143,61 @@ PetscErrorCode FoundationParseJSONGetItemFromListOptional(cJSON *jroot,const cha
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FoundationJSONFindItemFromList"
+PetscErrorCode FoundationJSONFindItemFromList(cJSON *jroot,const char *methodlist[],PetscInt *_index,cJSON **_jitem)
+{
+  cJSON *jitem;
+  PetscInt k,index;
+  char **method;
+  
+  index = 0;
+  method = (char**)&methodlist[0];
+  while (*method) {
+    jitem = cJSON_GetObjectItem(jroot,*method);
+    if (jitem) { break; }
+    index++;
+    method++;
+  }
+
+  if (!jitem) {
+    PetscPrintf(PETSC_COMM_WORLD,"[foundation]:%s A valid constructor was not found. Valid constructors include\n",jroot->string);
+    method = (char**)&methodlist[0];
+    while (*method) {
+      PetscPrintf(PETSC_COMM_WORLD,"  \"%s\"\n",*method);
+      method++;
+    }
+    SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[foundation]:%s no support for method \"%s\"",jroot->string,jroot->child->string);
+  }
+
+  *_index = index;
+  *_jitem = jitem;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FoundationFindStringInList"
+PetscErrorCode FoundationFindStringInList(const char *list[],const char itemname[],PetscInt *index)
+{
+  char **ii;
+  PetscBool match;
+  PetscInt idx;
+
+  *index = -1;
+
+  idx = 0;
+  ii = (char**)&list[0];
+  while (*ii) {
+    PetscStrcmp(itemname,*ii,&match);
+    if (match) break;
+    ii++;
+    idx++;
+  }
+  if (match) *index = idx;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ModelInitialize_Foundation"
 PetscErrorCode ModelInitialize_Foundation(pTatinCtx c,void *ctx)
 {
