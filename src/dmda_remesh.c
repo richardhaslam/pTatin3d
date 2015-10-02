@@ -942,17 +942,17 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
                 switch (dir) {
                     case 0:
                         gmin_col = LA_coords_da_min[k][j][0].x;
-                        ds = (LA_coords_da_max[k][j][0].x - LA_coords_da_min[k][j][0].x)/((PetscReal)M);
+                        ds = (LA_coords_da_max[k][j][0].x - LA_coords_da_min[k][j][0].x)/((PetscReal)(M-1));
                         LA_coords[3*nid + dir] = gmin_col + (i+si)*ds;
                         break;
                     case 1:
                         gmin_col = LA_coords_da_min[k][0][i].y;
-                        ds = (LA_coords_da_max[k][0][i].y - LA_coords_da_min[k][0][i].y)/((PetscReal)N);
+                        ds = (LA_coords_da_max[k][0][i].y - LA_coords_da_min[k][0][i].y)/((PetscReal)(N-1));
                         LA_coords[3*nid + dir] = gmin_col + (j+sj)*ds;
                         break;
                     case 2:
                         gmin_col = LA_coords_da_min[0][j][i].z;
-                        ds = (LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z)/((PetscReal)P);
+                        ds = (LA_coords_da_max[0][j][i].z - LA_coords_da_min[0][j][i].z)/((PetscReal)(P-1));
                         LA_coords[3*nid + dir] = gmin_col + (k+sk)*ds;
                         break;
                     default:
