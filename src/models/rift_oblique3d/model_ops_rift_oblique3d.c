@@ -251,7 +251,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
 	k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
 	k1 = 48.75 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
-	T_threshold = 1380.0 ;
+	T_threshold = 1350.0 ;
 	dT = 50.0 ;
 	dTdy = -0.4e-3;
 	
@@ -576,7 +576,7 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 		HPctx.surface_pressure = 0.0;
 		HPctx.ref_height = height;
 		HPctx.ref_N      = c->stokes_ctx->my-1;
-		HPctx.grav       = 10.0;
+		HPctx.grav       = 9.81;
 		HPctx.rho        = data->rhom;
 		ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
 		ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
@@ -796,7 +796,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] Lx = %1.4e \n", data->Lx );
 	
 	{
-	    PetscReal gvec[] = { 0.0, -10.0, 0.0 };
+	    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
 	    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
 	  }
 
@@ -1130,11 +1130,11 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+	//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	// just plot the velocity field (coords and vel stored in file as floats)
 	//ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
 	// previously used option
-	//ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+	ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	//ierr = ModelOutput_ExecuteXDMFWriter(c,X,prefix);CHKERRQ(ierr);
     //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
 
