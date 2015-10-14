@@ -182,14 +182,14 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
         }
         */
         conductivity_mp = k_threshold[ region_idx ].k0;
-        if (k_threshold[ region_idx ].T_threshold - T_mp < k_threshold[ region_idx ].dT) {
+        if (T_mp >= k_threshold[ region_idx ].T_threshold) {
+          conductivity_mp = k_threshold[ region_idx ].k1;
+        } else if (k_threshold[ region_idx ].T_threshold - T_mp < k_threshold[ region_idx ].dT) {
           double shift_T = T_mp - (k_threshold[ region_idx ].T_threshold - k_threshold[ region_idx ].dT);
           double dk = k_threshold[ region_idx ].k1 - k_threshold[ region_idx ].k0;
           
           conductivity_mp = k_threshold[ region_idx ].k0 + (dk/k_threshold[ region_idx ].dT)*shift_T;
-        } else if (T_mp >= k_threshold[ region_idx ].T_threshold) {
-          conductivity_mp = k_threshold[ region_idx ].k1;
-        }
+        } 
 				break;
 		}
 
