@@ -244,12 +244,11 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 				{
 					double grav_nrm,u_vertical;
 					     
-					//u_vertical = u_mp[1]; /* todo - needs to be generalized to use gravity vector */
 
           grav_nrm = PetscSqrtReal( grav_vec[0]*grav_vec[0] + grav_vec[1]*grav_vec[1] + grav_vec[2]*grav_vec[2] );
           u_vertical = -(u_mp[0]*grav_vec[0] + u_mp[1]*grav_vec[1] + u_mp[2]*grav_vec[2])/grav_nrm;
           
-          H_mp += rho_mp * Cp * u_vertical * ( source_adi_adv[ region_idx ].dTdy );
+          H_mp += rho_mp * Cp * u_vertical * (-source_adi_adv[ region_idx ].dTdy);
 					
 				}
 					break;
