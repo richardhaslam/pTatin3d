@@ -205,12 +205,12 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		data->thermalparams.ytop[2]  = 130.0e3;
 		data->thermalparams.thick[2] = 130.0e3;
 		data->thermalparams.ttop[2]  = 1330.0;
-		data->thermalparams.cond[2]  = 48.75; //artificial high conductivity to conserve the flow
+		data->thermalparams.cond[2]  = 2.25;//48.75; //artificial high conductivity to conserve the flow
 		data->thermalparams.hp[2]    = 0.0;
-		data->thermalparams.qbase[2] = 19.5e-3;
+		data->thermalparams.qbase[2] = 0.0;//19.5e-3;
 		
 		data->Ttop    = 0.0;
-		data->Tbottom = 1382.0; //new Tbottom to account for pseudo adiabiat in the asthenosphere
+		data->Tbottom = 1330.0;//82.0; //new Tbottom to account for pseudo adiabiat in the asthenosphere
 	}
 	
 	/* rheology parameters */
@@ -266,12 +266,15 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	rho_ref = data->rhoa;
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
-	conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
-	k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
-	k1 = 48.75 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
-	T_threshold = 1380.0 ;
-	dT = 50.0 ;
-	dTdy = -0.4e-3;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25;//48.75 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
+	//dTdy = 0.0;// 0.4e-3;
+
+	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+	k0 = 2.25 ; //standard conductivity
 	
 
 	ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);CHKERRQ(ierr);
@@ -296,11 +299,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	// ENERGY //
 	//Conductivity
-	MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
 	//Source method: set all to NONE, then update the first entry of the array to ADIABATIC_ADVECTION
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
-	MaterialConstantsSetValues_SourceAdiabaticAdv(regionidx, matconstants_source_adi_adv, dTdy);
+	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
+	//MaterialConstantsSetValues_SourceAdiabaticAdv(regionidx, matconstants_source_adi_adv, dTdy);
 
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
@@ -315,6 +320,12 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	rho_ref = data->rhom;
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
+
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
 	k0 = 2.25 ; //standard conductivity
 
@@ -341,8 +352,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 
 	//ENERGY//
-	//MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
 	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
 	//Source method: set all energy source to NONE
 	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
 	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
@@ -359,6 +371,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	rho_ref = data->rhoc;
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
 	k0 = 2.25 ; //standard conductivity
 
@@ -384,7 +401,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	//ENERGY//
+	//MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
 	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
+	//Conductivity
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
 	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
 	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
 
@@ -406,6 +427,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	rho_ref = data->rhoc;
 	Cp = 1000;
 	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
 	k0 = 2.25 ; //standard conductivity
 
@@ -432,6 +458,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 
 	//ENERGY//
 	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
+	//Conductivity
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
 	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
 	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
 
@@ -832,11 +861,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 
 		npoints = 3;
 		xref[0] = 0.0;
-		xref[1] = 0.1;
+		xref[1] = 0.5;
 		xref[2] = 1.0;
 
 		xnat[0] = 0.0;
-		xnat[1] = 0.48;
+		xnat[1] = 0.5;
 		xnat[2] = 1.0;
 
 
@@ -915,6 +944,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 		phase = 0;
 		eta=data->etaa;
 		rho=data->rhoa;
+
 		if ((position[1] > data->ha) && (position[1] < (data->ha+data->hm))) {
 			phase = 1;
 			eta=data->etam;
@@ -926,7 +956,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 			rho=data->rhoc;
 		}
 		
-		/* make 25 km (0.25) stripes in the crust  in the x and z direction */
+		// make 25 km (0.25) stripes in the crust  in the x and z direction
 		if (position[1]>data->ha+data->hm ) {
 			int j=0;
 			while(j<100){
@@ -1062,6 +1092,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	DataFieldRestoreAccess(PField_stokes);
 	
 	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
+
 	/*if (use_energy) {
 		ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
 		for (p=0; p<n_mp_points; p++) {
@@ -1186,11 +1217,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 
 		npoints = 3;
 		xref[0] = 0.0;
-		xref[1] = 0.1;
+		xref[1] = 0.5;
 		xref[2] = 1.0;
 
 		xnat[0] = 0.0;
-		xnat[1] = 0.48;
+		xnat[1] = 0.5;
 		xnat[2] = 1.0;
 
 
@@ -1249,8 +1280,8 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	Step = c->step;
 	outFre = c->output_frequency;
 	if (Step%(outFre*2) == 0) {
-		const int  nf = 2;
-		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_plastic_strain };
+		const int  nf = 3;
+		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_plastic_strain, MPV_density };
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}
 
