@@ -55,7 +55,7 @@
 #include "dmda_remesh.h"
 
 /* add include for energy*/
-//#include "material_constants_energy.h"
+#include "material_constants_energy.h"
 
 #include "ptatin_models.h"
 
@@ -72,11 +72,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
 	RheologyConstants       *rheology;
-//	EnergyMaterialConstants *matconstants_e;
-//	EnergyConductivityThreshold *matconstants_cond;
-//	EnergyConductivityConst *matconstants_cond_cst;
-//	EnergySourceDecay *matconstants_source_decay;
-//	EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
+	EnergyMaterialConstants *matconstants_e;
+	EnergyConductivityThreshold *matconstants_cond;
+	EnergyConductivityConst *matconstants_cond_cst;
+	EnergySourceDecay *matconstants_source_decay;
+	EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
 	PetscBool      flg;
 	DataBucket     materialconstants;
 	DataField      PField;
@@ -86,8 +86,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscInt       regionidx;
 	PetscReal      cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal      preexpA,Ascale,entalpy,Vmol,nexp,Tref;
-//	int 		   conductivity_type, density_type;
-	double		   alpha, beta, rho_ref, Cp;//, k0, k1, T_threshold, dT, dTdy;
+	int 		   conductivity_type, density_type;
+	double		   alpha, beta, rho_ref, Cp, k0, k1, T_threshold, dT, dTdy;
 
 	PetscErrorCode ierr;
 	
@@ -229,32 +229,32 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
 
 
-//    // ENERGY //
-//    // get fields entries for the various energy law methods
-//
-//	/* Get the energy data fields, and the field entries */
-//	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
-//	DataFieldGetEntries(PField,(void**)&matconstants_e);
-//
-//	// Conductivity threshold //
-//	/* Get the conductivity threshold data fields, and the field entries */
-//	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityThreshold_classname,&PField);
-//	DataFieldGetEntries(PField,(void**)&matconstants_cond);
-//
-//	// Conductivity constant //
-//	/* Get the conductivity threshold data fields, and the field entries */
-//	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
-//	DataFieldGetEntries(PField,(void**)&matconstants_cond_cst);
-//
-//	// Source Decay //
-//	/* Get the Energy source constant data fields, and the field entries */
-//	DataBucketGetDataFieldByName(materialconstants,EnergySourceDecay_classname,&PField);
-//	DataFieldGetEntries(PField,(void**)&matconstants_source_decay);
-//
-//	// Source Adiabatic Advection //
-//	/* Get the Source data fields, and the field entries */
-//	DataBucketGetDataFieldByName(materialconstants,EnergySourceAdiabaticAdvection_classname,&PField);
-//	DataFieldGetEntries(PField,(void**)&matconstants_source_adi_adv);
+    // ENERGY //
+    // get fields entries for the various energy law methods
+
+	/* Get the energy data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_e);
+
+	// Conductivity threshold //
+	/* Get the conductivity threshold data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityThreshold_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_cond);
+
+	// Conductivity constant //
+	/* Get the conductivity threshold data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_cond_cst);
+
+	// Source Decay //
+	/* Get the Energy source constant data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergySourceDecay_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_source_decay);
+
+	// Source Adiabatic Advection //
+	/* Get the Source data fields, and the field entries */
+	DataBucketGetDataFieldByName(materialconstants,EnergySourceAdiabaticAdvection_classname,&PField);
+	DataFieldGetEntries(PField,(void**)&matconstants_source_adi_adv);
 
 
 	//-------------------------//
@@ -265,16 +265,16 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	beta = 0;
 	rho_ref = data->rhoa;
 	Cp = 1000;
-//	density_type = ENERGYDENSITY_CONSTANT;
-//	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
-//	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
-//	//k1 = 2.25;//48.75 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
-//	//T_threshold = 1350.0 ;
-//	//dT = 50.0 ;
-//	//dTdy = 0.0;// 0.4e-3;
-//
-//	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-//	k0 = 2.25 ; //standard conductivity
+	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25;//48.75 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
+	//dTdy = 0.0;// 0.4e-3;
+
+	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+	k0 = 2.25 ; //standard conductivity
 	
 
 	ierr = MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);CHKERRQ(ierr);
@@ -297,17 +297,17 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
-//	// ENERGY //
-//	//Conductivity
-//	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
-//	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-//	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
-//	//Source method: set all to NONE, then update the first entry of the array to ADIABATIC_ADVECTION
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
-//	//MaterialConstantsSetValues_SourceAdiabaticAdv(regionidx, matconstants_source_adi_adv, dTdy);
-//
-//	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+	// ENERGY //
+	//Conductivity
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	//EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
+	//Source method: set all to NONE, then update the first entry of the array to ADIABATIC_ADVECTION
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
+	//MaterialConstantsSetValues_SourceAdiabaticAdv(regionidx, matconstants_source_adi_adv, dTdy);
+
+	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
 	//------------------------------//
@@ -319,15 +319,15 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	beta = 0;
 	rho_ref = data->rhom;
 	Cp = 1000;
-//	density_type = ENERGYDENSITY_CONSTANT;
-//	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
-//	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
-//	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
-//	//T_threshold = 1350.0 ;
-//	//dT = 50.0 ;
-//
-//	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-//	k0 = 2.25 ; //standard conductivity
+	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
+
+	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+	k0 = 2.25 ; //standard conductivity
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
@@ -351,13 +351,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 
-//	//ENERGY//
-//	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-//	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
-//	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
-//	//Source method: set all energy source to NONE
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+	//ENERGY//
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	//EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
+	//Source method: set all energy source to NONE
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE); //was _NONE
+	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
 
@@ -370,14 +370,14 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	beta = 0;
 	rho_ref = data->rhoc;
 	Cp = 1000;
-//	density_type = ENERGYDENSITY_CONSTANT;
-//	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
-//	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
-//	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
-//	//T_threshold = 1350.0 ;
-//	//dT = 50.0 ;
-//	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-//	k0 = 2.25 ; //standard conductivity
+	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
+ 	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+	k0 = 2.25 ; //standard conductivity
 
 	
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
@@ -400,19 +400,18 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
-//	//ENERGY//
-//	//MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-//	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-//	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
-//	//Conductivity
-//	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
-//	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
-//	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
-//
-//	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
-//	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+	//ENERGY//
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	//EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0); //is this useful?
+
+	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
+	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
+
+	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DEFAULT);
+	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
+	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
 
@@ -426,14 +425,14 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	beta = 0;
 	rho_ref = data->rhoc;
 	Cp = 1000;
-//	density_type = ENERGYDENSITY_CONSTANT;
-//	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
-//	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
-//	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
-//	//T_threshold = 1350.0 ;
-//	//dT = 50.0 ;
-//	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
-//	k0 = 2.25 ; //standard conductivity
+	density_type = ENERGYDENSITY_CONSTANT;
+	//conductivity_type = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+	//k0 = 2.25 ; //standard conductivity when T < T_threshold-dT
+	//k1 = 2.25 ; //conductivity for pseudo-adiabat, when T > T_threshold == Qm*dTdy
+	//T_threshold = 1350.0 ;
+	//dT = 50.0 ;
+	conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+	k0 = 2.25 ; //standard conductivity
 
 	MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
 
@@ -456,18 +455,19 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.e7,2.e7,1.e7,1e20);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 
-//	//ENERGY//
-//	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
-//	EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
-//	//Conductivity
-//	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
-//	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
-//	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
-//
-//	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
-//	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+	//ENERGY//
+	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
+	//EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
+	//Conductivity
+	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
+	EnergySourceDecaySetField_HeatSourceRef(&matconstants_source_decay[regionidx],data->thermalparams.hp[0]);
+	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
+
+	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DEFAULT);
+	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
+	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
 
 	/* Material constant */
@@ -854,25 +854,25 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 
 
 
-	 //remesh vertically and preserve topography
-	{
-		PetscInt npoints,dir;
-		PetscReal xref[10],xnat[10];
-
-		npoints = 3;
-		xref[0] = 0.0;
-		xref[1] = 0.5;
-		xref[2] = 1.0;
-
-		xnat[0] = 0.0;
-		xnat[1] = 0.5;
-		xnat[2] = 1.0;
-
-
-		dir = 1;
-		ierr = DMDACoordinateRefinementTransferFunction(dau,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
-		ierr = DMDABilinearizeQ2Elements(dau);CHKERRQ(ierr);
-	}
+//	 //remesh vertically and preserve topography
+//	{
+//		PetscInt npoints,dir;
+//		PetscReal xref[10],xnat[10];
+//
+//		npoints = 3;
+//		xref[0] = 0.0;
+//		xref[1] = 0.5;
+//		xref[2] = 1.0;
+//
+//		xnat[0] = 0.0;
+//		xnat[1] = 0.5;
+//		xnat[2] = 1.0;
+//
+//
+//		dir = 1;
+//		ierr = DMDACoordinateRefinementTransferFunction(dau,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+//		ierr = DMDABilinearizeQ2Elements(dau);CHKERRQ(ierr);
+//	}
 
 
 	PetscFunctionReturn(0);
@@ -1093,37 +1093,37 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	DataFieldRestoreAccess(PField_pls);
 	DataFieldRestoreAccess(PField_stokes);
 	
-	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
-
-	if (use_energy) {
-		ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
-		for (p=0; p<n_mp_points; p++) {
-			MPntStd *material_point_std;
-			double  kappa,H;
-			double  *position;
-
-			DataFieldAccessPoint(PField_std,p,   (void**)&material_point_std);
-			/* Access using the getter function provided for you (recommended for beginner user) */
-			MPntStdGetField_global_coord(material_point_std,&position);
-
-			ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
-			if (position[1] > (data->ha + data->hm)) {
-					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
-					H     = data->thermalparams.hp[0]/data->pressure_bar*data->time_bar;
-				}
-			if (position[1] < (data->ha + data->hm)) {
-					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
-					H     = 0.0;
-				}
-			if (position[1] < (data->ha)) {
-					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
-                    H     = 0.0;
-				}
-			ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
-			ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
-		}
-		ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
-	}
+//	ierr = pTatinContextValid_Energy(c,&use_energy);CHKERRQ(ierr);
+//
+//	if (use_energy) {
+//		ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
+//		for (p=0; p<n_mp_points; p++) {
+//			MPntStd *material_point_std;
+//			double  kappa,H;
+//			double  *position;
+//
+//			DataFieldAccessPoint(PField_std,p,   (void**)&material_point_std);
+//			/* Access using the getter function provided for you (recommended for beginner user) */
+//			MPntStdGetField_global_coord(material_point_std,&position);
+//
+//			ierr = MaterialPointGet_phase_index(mpX,p,&phase);CHKERRQ(ierr);
+//			if (position[1] > (data->ha + data->hm)) {
+//					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+//					H     = data->thermalparams.hp[0]/data->pressure_bar*data->time_bar;
+//				}
+//			if (position[1] < (data->ha + data->hm)) {
+//					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+//					H     = 0.0;
+//				}
+//			if (position[1] < (data->ha)) {
+//					kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+//                    H     = 0.0;
+//				}
+//			ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
+//			ierr = MaterialPointSet_heat_source(mpX,p,H);CHKERRQ(ierr);
+//		}
+//		ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
+//	}
 	
 	PetscFunctionReturn(0);
 }
@@ -1213,24 +1213,24 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 
 	/* UPDATE mesh refinement scheme */
 	//remesh vertically and preserve topography
-	{
-		PetscInt npoints,dir;
-		PetscReal xref[10],xnat[10];
-
-		npoints = 3;
-		xref[0] = 0.0;
-		xref[1] = 0.5;
-		xref[2] = 1.0;
-
-		xnat[0] = 0.0;
-		xnat[1] = 0.5;
-		xnat[2] = 1.0;
-
-
-		dir = 1;
-		ierr = DMDACoordinateRefinementTransferFunction(dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
-		ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
-	}
+//	{
+//		PetscInt npoints,dir;
+//		PetscReal xref[10],xnat[10];
+//
+//		npoints = 3;
+//		xref[0] = 0.0;
+//		xref[1] = 0.5;
+//		xref[2] = 1.0;
+//
+//		xnat[0] = 0.0;
+//		xnat[1] = 0.5;
+//		xnat[2] = 1.0;
+//
+//
+//		dir = 1;
+//		ierr = DMDACoordinateRefinementTransferFunction(dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+//		ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
+//	}
 
 	PetscFunctionReturn(0);
 }
@@ -1281,7 +1281,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	/* MPOINTS_CELL OUTPUT */
 	Step = c->step;
 	outFre = c->output_frequency;
-	if (Step%(outFre*2) == 0) {
+	if (Step%(outFre*1) == 0) {
 		const int  nf = 3;
 		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_plastic_strain, MPV_density };
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
@@ -1298,7 +1298,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		// commented out the next line to stop creating energy outputs
 		//ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
-		if (Step%(outFre*2) == 0) {
+		if (Step%(outFre*1) == 0) {
 			//ierr = pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(c,temperature,prefix);CHKERRQ(ierr);
 			ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr); //old reader
 		}
