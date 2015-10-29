@@ -56,8 +56,9 @@
 
 #include "model_rift_oblique3d_ctx.h"
 
+#include "material_constants_energy.h"
+
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx);
 PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *value, void *ctx );
 PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *value, void *ctx );
 
@@ -292,6 +293,64 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
 	
+  {
+    DataField      PField;
+    EnergyMaterialConstants        *matconstants_e;
+    EnergyConductivityThreshold    *matconstants_cond;
+    EnergyConductivityConst        *matconstants_cond_cst;
+    EnergySourceDecay              *matconstants_source_decay;
+    EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
+    
+    double alpha,beta,rho_ref,Cp;
+    int 	 conductivity_type, density_type;
+    
+    
+    /* Get the energy data fields, and the field entries */
+    DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
+    DataFieldGetEntries(PField,(void**)&matconstants_e);
+    
+    conductivity_type = ENERGYCONDUCTIVITY_DEFAULT;
+    density_type      = ENERGYDENSITY_NONE;
+
+    alpha   = 2.0e-5;
+    beta    = 0.0;
+    rho_ref = data->rhoa;
+    Cp      = 1000.0;
+    MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+    
+    alpha   = 2.0e-5;
+    beta    = 0.0;
+    rho_ref = data->rhom;
+    Cp      = 1000.0;
+    MaterialConstantsSetValues_EnergyMaterialConstants(1,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+    
+    alpha   = 2.0e-5;
+    beta    = 0.0;
+    rho_ref = data->rhoc;
+    Cp      = 1000.0;
+    MaterialConstantsSetValues_EnergyMaterialConstants(2,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+
+    //phase = 2;
+    //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+    //H     = 0.9e-6/data->pressure_bar*data->time_bar;
+    
+    //phase = 0, 1;
+    //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
+    //H     = 0.0;
+    
+    EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[0],ENERGYSOURCE_NONE);
+    EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[1],ENERGYSOURCE_NONE);
+    EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[2],ENERGYSOURCE_NONE);
+   
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_DEFAULT);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_DEFAULT);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_DEFAULT);
+    
+    
+  }
+  
+  
+  
 	/* Read the options */
 	/* cutoff */
 	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
@@ -360,6 +419,11 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		data->rhom = data->rhom/data->density_bar;
 		data->rhoa = data->rhoa/data->density_bar;
 		
+    
+    printf("[crust phase 2] kappa %1.9e H %1.9e\n",
+           1.0e-6/data->length_bar/data->length_bar*data->time_bar,
+           0.9e-6/data->pressure_bar*data->time_bar);
+    
 		// scale material properties
 		for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
 			MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
@@ -634,82 +698,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList b
 		ierr = ModelRift_oblique3d_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
 	}	
 	
-	PetscFunctionReturn(0);
-}
-
-// adding particles on the lower boundary to accommodate inflow
-// adding particles on the left and right boundary to accommodate inflow
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian"
-PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx)
-{
-#if 0
-	ModelRift_oblique3dCtx     *data = (ModelRift_oblique3dCtx*)ctx;
-	PhysCompStokes     stokes;
-	DM                 stokes_pack,dav,dap;
-	PetscInt           Nxp[2];
-	PetscReal          perturb;
-	DataBucket         material_point_db,material_point_face_db;
-	PetscInt           f, n_face_list=3, face_list[] = { 0, 1, 3 }; // xmin, xmax, ybase //
-	int                p,n_mp_points;
-	MPAccess           mpX;
-	PetscErrorCode     ierr;
-	
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-
-	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
-	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-		
-	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
-		
-	/* create face storage for markers */
-	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
-	
-	for (f=0; f<n_face_list; f++) {
-		
-		/* traverse */
-		/* [0,1/east,west] ; [2,3/north,south] ; [4,5/front,back] */
-		Nxp[0]  = 1;
-		Nxp[1]  = 1;
-		perturb = 0.1;
-		
-		/* reset size */
-		DataBucketSetSizes(material_point_face_db,0,-1);
-		
-		/* assign coords */
-		ierr = SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(dav,Nxp,perturb, face_list[f], material_point_face_db);CHKERRQ(ierr);
-		
-		/* assign values */
-		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
-		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-		for (p=0; p<n_mp_points; p++) {
-			ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
-		}
-		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-		
-		/* insert into volume bucket */
-		DataBucketInsertValues(material_point_db,material_point_face_db);
-	}
-	
-	/* Copy ALL values from nearest markers to newly inserted markers expect (xi,xip,pid) */
-	ierr = MaterialPointRegionAssignment_v1(material_point_db,dav);CHKERRQ(ierr);
-	
-	/* reset any variables */
-	DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
-	ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mp_points; p++) {
-		ierr = MaterialPointSet_plastic_strain(mpX,p,0.0);CHKERRQ(ierr);
-		ierr = MaterialPointSet_yield_indicator(mpX,p,0);CHKERRQ(ierr);
-	}
-	ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
-	
-	/* re-assign pid's for new particles such that they are consistent with the original volume marker set */
-	
-	/* delete */
-	DataBucketDestroy(&material_point_face_db);
-#endif	
 	PetscFunctionReturn(0);
 }
 
@@ -1119,7 +1107,6 @@ PetscErrorCode pTatinModelRegister_Rift_oblique3d(void)
 	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_Rift_oblique3d);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian);CHKERRQ(ierr);
 	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_Rift_oblique3d);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_Rift_oblique3d);CHKERRQ(ierr);
