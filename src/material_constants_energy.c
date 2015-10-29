@@ -240,8 +240,6 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
     }
   }
   
-	DataFieldRestoreAccess(dfield);
-  
   PetscFunctionReturn(0);
 }
 
