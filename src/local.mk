@@ -44,12 +44,14 @@ libptatin3d-y.c += $(call thisdir, \
 			phys_comp_energy.c \
 			energy_assembly.c \
 			energy_output.c \
+			energy_coefficients.c \
 			ptatin3d_stokes_q1macrop1.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \
 			ptatin_models.c \
 			rheology.c \
 			material_constants.c \
+                        material_constants_energy.c \
 			stokes_rheology_viscous.c \
 			stokes_rheology_vp_std.c \
 			stokes_rheology_lava.c \
