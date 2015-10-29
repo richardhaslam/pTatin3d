@@ -309,25 +309,25 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
     DataFieldGetEntries(PField,(void**)&matconstants_e);
     
-    conductivity_type = ENERGYCONDUCTIVITY_DEFAULT;
+    conductivity_type = ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE;
     density_type      = ENERGYDENSITY_NONE;
 
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoa;
-    Cp      = 1000.0;
+    Cp      = 1.0;
     MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
     
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhom;
-    Cp      = 1000.0;
+    Cp      = 1.0;
     MaterialConstantsSetValues_EnergyMaterialConstants(1,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
     
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoc;
-    Cp      = 1000.0;
+    Cp      = 1.0;
     MaterialConstantsSetValues_EnergyMaterialConstants(2,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
     //phase = 2;
@@ -342,9 +342,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[1],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[2],ENERGYSOURCE_NONE);
    
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_DEFAULT);
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_DEFAULT);
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_DEFAULT);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
     
     
   }
