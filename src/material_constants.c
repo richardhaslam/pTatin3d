@@ -90,7 +90,7 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket db)
 	DataBucketView(MPI_COMM_SELF,db,"Material Constants",DATABUCKET_VIEW_STDOUT);
 	
 	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
-	//ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
+	ierr = MaterialConstantsEnergySetDefaults(db);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
