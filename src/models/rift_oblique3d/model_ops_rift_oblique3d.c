@@ -296,11 +296,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
   {
     DataField      PField;
     EnergyMaterialConstants        *matconstants_e;
-    EnergyConductivityThreshold    *matconstants_cond;
-    EnergyConductivityConst        *matconstants_cond_cst;
-    EnergySourceDecay              *matconstants_source_decay;
-    EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
-    
+    EnergyConductivityConst        *matconstants_k_const;
+    EnergySourceConst              *matconstants_h_const;
     double alpha,beta,rho_ref,Cp;
     int 	 conductivity_type, density_type;
     
@@ -308,27 +305,39 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     /* Get the energy data fields, and the field entries */
     DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
     DataFieldGetEntries(PField,(void**)&matconstants_e);
-    
-    conductivity_type = ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE;
-    density_type      = ENERGYDENSITY_NONE;
+
+    DataBucketGetDataFieldByName(materialconstants,EnergyConductivityConst_classname,&PField);
+    DataFieldGetEntries(PField,(void**)&matconstants_k_const);
+
+    DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField);
+    DataFieldGetEntries(PField,(void**)&matconstants_h_const);
+
+    conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
+    density_type      = ENERGYDENSITY_CONSTANT;
 
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoa;
-    Cp      = 1.0;
+    Cp      = 1000.0;
     MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[0],2.25);
+    EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
     
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhom;
-    Cp      = 1.0;
+    Cp      = 1000.0;
     MaterialConstantsSetValues_EnergyMaterialConstants(1,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[1],2.25);
+    EnergySourceConstSetField_HeatSource(&matconstants_h_const[1],0.0);
     
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoc;
-    Cp      = 1.0;
+    Cp      = 1000.0;
     MaterialConstantsSetValues_EnergyMaterialConstants(2,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[2],2.25);
+    EnergySourceConstSetField_HeatSource(&matconstants_h_const[2],0.9e-6*rho_ref*Cp);
 
     //phase = 2;
     //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
@@ -342,9 +351,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[1],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[2],ENERGYSOURCE_NONE);
    
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_USE_MATERIALPOINT_VALUE);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_CONSTANT);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_CONSTANT);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_CONSTANT);
     
     
   }
@@ -427,6 +436,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 		// scale material properties
 		for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
 			MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
+      MaterialConstantsEnergyScaleAll(materialconstants,regionidx,data->length_bar,data->time_bar,data->density_bar,data->pressure_bar);
 		}
 		
 		/* Reports scaled values */		
