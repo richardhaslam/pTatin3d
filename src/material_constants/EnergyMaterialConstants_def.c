@@ -199,7 +199,7 @@ void EnergyMaterialConstantsGetDefault_ReferenceDensity(double *data)
 
 void EnergyMaterialConstantsGetDefault_SpecificHeat(double *data) 
 {
-  *data = (double)0.0;
+  *data = (double)1.0;
 }
 
 void EnergyMaterialConstantsGetDefault_DensityMethod(int *data) 

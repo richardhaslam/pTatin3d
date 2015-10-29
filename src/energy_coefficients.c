@@ -150,23 +150,29 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 		rho_mp = 1.0;
 		switch (density_type) {
       case ENERGYDENSITY_NONE:
-        rho_mp = 1.0;
-        Cp = 1.0;
         break;
 			
+      case ENERGYDENSITY_USE_MATERIALPOINT_VALUE:
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"ENERGYDENSITY_USE_MATERIALPOINT_VALUE is not available");
+        break;
+        
       case ENERGYDENSITY_CONSTANT:
 				rho_mp = mat_consts[ region_idx ].rho_ref;
 			break;
 
 			case ENERGYDENSITY_BOUSSINESQ:
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"BOUSSINESQ is not available - sorry email GD for help");
+				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"ENERGYDENSITY_BOUSSINESQ is not available - sorry email GD for help");
 				break;
 		}
 
 		/* Compute conductivity */
 		conductivity_mp = 1.0;
 		switch (conductivity_type) {
-      case ENERGYCONDUCTIVITY_DEFAULT:
+      case ENERGYCONDUCTIVITY_NONE:
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"A valid conductivity type must be specified");
+        break;
+        
+      case ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE:
 				conductivity_mp = mpp_energy->diffusivity;
         break;
 
@@ -205,7 +211,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 				case ENERGYSOURCE_NONE:
 					break;
 
-				case ENERGYSOURCE_DEFAULT:
+				case ENERGYSOURCE_USE_MATERIALPOINT_VALUE:
 					H_mp += mpp_energy->heat_source;
 					break;
 					
