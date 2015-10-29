@@ -40,8 +40,8 @@
 
 
 typedef enum { 
-	ENERGYSOURCE_DEFAULT = 0,
-  ENERGYSOURCE_NONE,
+  ENERGYSOURCE_NONE = 0,
+	ENERGYSOURCE_USE_MATERIALPOINT_VALUE,
 	ENERGYSOURCE_CONSTANT ,
   ENERGYSOURCE_SHEAR_HEATING,
   ENERGYSOURCE_DECAY,
@@ -50,19 +50,29 @@ typedef enum {
 } EnergySourceType;
 
 typedef enum {
-  ENERGYCONDUCTIVITY_DEFAULT = 0,
+  ENERGYCONDUCTIVITY_NONE = 0,
+  ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE,
   ENERGYCONDUCTIVITY_CONSTANT,
   ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD,
 } EnergyConductivityType;
 
-
 typedef enum {
 	ENERGYDENSITY_NONE = 0,
+	ENERGYDENSITY_USE_MATERIALPOINT_VALUE,
 	ENERGYDENSITY_CONSTANT,
 	ENERGYDENSITY_BOUSSINESQ
 } EnergyDensityType;
 
 PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db);
+PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db);
+
+PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id,
+                                               PetscReal length_scale,
+                                               PetscReal time_scale,
+                                               PetscReal density_scale,
+                                               PetscReal pressure_scale);
+
+PetscErrorCode MaterialConstantsEnergyPrintAll(DataBucket db,const int region_id);
 
 /*
 PetscErrorCode MaterialConstantsSetDefaults(DataBucket db);
