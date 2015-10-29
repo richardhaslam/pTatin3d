@@ -55,7 +55,7 @@
 #include "dmda_remesh.h"
 
 /* add include for energy*/
-//#include "material_constants_energy.h"
+#include "material_constants_energy.h"
 
 #include "ptatin_models.h"
 
@@ -72,7 +72,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
 	RheologyConstants       *rheology;
-//	EnergyMaterialConstants *matconstants_e;
+ 	EnergyMaterialConstants *matconstants_e;
 //	EnergyConductivityThreshold *matconstants_cond;
 //	EnergyConductivityConst *matconstants_cond_cst;
 //	EnergySourceDecay *matconstants_source_decay;
@@ -86,8 +86,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscInt       regionidx;
 	PetscReal      cm_per_yer2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ),phi1_rad,phi2_rad ;
 	PetscReal      preexpA,Ascale,entalpy,Vmol,nexp,Tref;
-//	int 		   conductivity_type, density_type;
-//	double		   alpha, beta, rho_ref, Cp, k0, k1, T_threshold, dT, dTdy;
+	int 		   conductivity_type, density_type;
+	double		   alpha, beta, rho_ref, Cp, k0, k1, T_threshold, dT, dTdy;
 
 	PetscErrorCode ierr;
 	
@@ -232,9 +232,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 //    // ENERGY //
 //    // get fields entries for the various energy law methods
 //
-//	/* Get the energy data fields, and the field entries */
-//	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
-//	DataFieldGetEntries(PField,(void**)&matconstants_e);
+ 	/* Get the energy data fields, and the field entries */
+ 	DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
+ 	DataFieldGetEntries(PField,(void**)&matconstants_e);
 //
 //	// Conductivity threshold //
 //	/* Get the conductivity threshold data fields, and the field entries */
@@ -303,8 +303,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 //	MaterialConstantsSetValues_ConductivityConst(regionidx,matconstants_cond_cst,k0);
 //	//EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
 //	//Source method: set all to NONE, then update the first entry of the array to ADIABATIC_ADVECTION
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_ADIABATIC_ADVECTION);
 //	//MaterialConstantsSetValues_SourceAdiabaticAdv(regionidx, matconstants_source_adi_adv, dTdy);
 //
 //	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
@@ -356,7 +356,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 //	//EnergyConductivityConstSetField_k0(&matconstants_cond_cst[regionidx],k0);
 //	//MaterialConstantsSetValues_ConductivityThreshold(regionidx,matconstants_cond, k0, k1, T_threshold, dT);
 //	//Source method: set all energy source to NONE
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE); //was _NONE
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE); //was _NONE
 //	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 //
 //
@@ -408,8 +408,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 //	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
 //
 //	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DEFAULT);
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DEFAULT);
 //	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
 //	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
@@ -464,8 +464,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 //	EnergySourceDecaySetField_HalfLife(&matconstants_source_decay[regionidx],0.0);
 //
 //	//Source method: set all energy source to NONE, and index 0 to ENERGYSOURCE_DECAY
-//	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
-//	//EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DEFAULT);
+	EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DEFAULT);
 //	EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[regionidx],0,ENERGYSOURCE_DECAY);
 //	MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
 
@@ -658,7 +658,8 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 {
 	PhysCompStokes stokes;
 	DM             stokes_pack,dau,dap;
-	PetscScalar    vxl,vxr,vybottom,zero;
+    PetscScalar    vxl,vxr,vybottom,zero,height,length;
+    PetscReal      MeshMin[3],MeshMax[3];
 	PetscInt       vbc_type;
 	PetscErrorCode ierr;
 	
@@ -695,7 +696,11 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	if (vbc_type == 2) {
 		vxl = -data->vx_up;
 		vxr = data->vx_up;
-		vybottom = data->vybottom;
+		ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
+		height = MeshMax[1] - MeshMin[1];
+		length = MeshMax[0] - MeshMin[0];
+		vybottom = 2.*data->vx_up * height / length;
+		//vybottom = data->vybottom;
 
 		/* infilling free slip base */
 		ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
