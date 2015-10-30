@@ -11,6 +11,8 @@
 #include "EnergyMaterialConstants_def.h"
 
 
+PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);
+
 const char EnergyMaterialConstants_classname[] = "EnergyMaterialConstants";
 
 const int EnergyMaterialConstants_nmembers = 7;
