@@ -11,6 +11,8 @@
 #include "EnergySourceAdiabaticAdvection_def.h"
 
 
+PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);
+
 const char EnergySourceAdiabaticAdvection_classname[] = "EnergySourceAdiabaticAdvection";
 
 const int EnergySourceAdiabaticAdvection_nmembers = 1;

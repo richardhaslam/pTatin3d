@@ -11,6 +11,8 @@
 #include "EnergyConductivityConst_def.h"
 
 
+PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);
+
 const char EnergyConductivityConst_classname[] = "EnergyConductivityConst";
 
 const int EnergyConductivityConst_nmembers = 1;

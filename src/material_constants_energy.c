@@ -113,21 +113,18 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id,
                                                PetscReal length_scale,
                                                PetscReal time_scale,
-                                               PetscReal density_scale,
                                                PetscReal pressure_scale)
 {
   DataField                dfield;
   EnergyMaterialConstants *mdata;
   int st,type;
-  PetscReal k_scale,H_scale,Cp_scale,W_scale,J_scale,mass_scale;
+  PetscReal k_scale,H_scale,Cp_scale,density_scale;
   
-  W_scale = density_scale * (length_scale*length_scale*length_scale*length_scale*length_scale) / (time_scale*time_scale*time_scale); /* W = m^2.kg.s^-3 = (kg/m^3).m^5.s^-3 */
-  J_scale = W_scale * time_scale;
-  mass_scale = density_scale * (length_scale*length_scale*length_scale);
+  density_scale = pressure_scale * (time_scale*time_scale) / (length_scale*length_scale);
   
-  k_scale = W_scale / length_scale;  /* W/(m.K) = kg.m.s^-3.K^-1 = (kg/m^3).m^4.s^-3 */
-  H_scale = W_scale / (length_scale*length_scale*length_scale); /* W/m^3 */
-  Cp_scale = J_scale /(mass_scale); /* J / (kg.K) = m^2.kg.s^-2 = (kg/m^3).m^5.s^-2 . K^-1 */
+  k_scale = pressure_scale * length_scale * length_scale / time_scale;  /* W/(m.K) = kg.m.s^-3.K^-1 = (kg/m^3).m^4.s^-3 */
+  H_scale = pressure_scale / time_scale; /* W/m^3 */
+  Cp_scale = pressure_scale /(density_scale); /* J / (kg.K) = m^2.kg.s^-2.K^-1 = (kg/m^3).m^5.s^-2 . K^-1 */
   
 	DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
   DataFieldGetEntries(dfield,(void**)&mdata);

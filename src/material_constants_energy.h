@@ -69,7 +69,6 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db);
 PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id,
                                                PetscReal length_scale,
                                                PetscReal time_scale,
-                                               PetscReal density_scale,
                                                PetscReal pressure_scale);
 
 PetscErrorCode MaterialConstantsEnergyPrintAll(DataBucket db,const int region_id);
