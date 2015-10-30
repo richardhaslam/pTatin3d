@@ -298,7 +298,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyMaterialConstants        *matconstants_e;
     EnergyConductivityConst        *matconstants_k_const;
     EnergySourceConst              *matconstants_h_const;
-    double alpha,beta,rho_ref,Cp;
+    double alpha,beta,rho_ref,Cp,k;
     int 	 conductivity_type, density_type;
     
     
@@ -319,25 +319,28 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     beta    = 0.0;
     rho_ref = data->rhoa;
     Cp      = 1000.0;
+    k       = 1.0e-6 * rho_ref * Cp;
     MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
-    EnergyConductivityConstSetField_k0(&matconstants_k_const[0],2.25);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[0],k);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
     
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhom;
     Cp      = 1000.0;
+    k       = 1.0e-6 * rho_ref * Cp;
     MaterialConstantsSetValues_EnergyMaterialConstants(1,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
-    EnergyConductivityConstSetField_k0(&matconstants_k_const[1],2.25);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[1],k);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[1],0.0);
     
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoc;
     Cp      = 1000.0;
+    k       = 1.0e-6 * rho_ref * Cp;
     MaterialConstantsSetValues_EnergyMaterialConstants(2,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
-    EnergyConductivityConstSetField_k0(&matconstants_k_const[2],2.25);
-    EnergySourceConstSetField_HeatSource(&matconstants_h_const[2],0.9e-6*rho_ref*Cp);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[2],k);
+    EnergySourceConstSetField_HeatSource(&matconstants_h_const[2],0.9e-6);
 
     //phase = 2;
     //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
@@ -431,7 +434,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     
     printf("[crust phase 2] kappa %1.9e H %1.9e\n",
            1.0e-6/data->length_bar/data->length_bar*data->time_bar,
-           0.9e-6/data->pressure_bar*data->time_bar);
+   //        0.9e-6/data->pressure_bar*data->time_bar);
+    0.9e-6*data->time_bar/data->pressure_bar);
     
 		// scale material properties
 		for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
