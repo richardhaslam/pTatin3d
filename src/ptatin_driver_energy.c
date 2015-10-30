@@ -259,8 +259,10 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			
 			user->time = user->time + user->dt;
 			
-			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%.4D",tk);
-			ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
+      if (tk%user->output_frequency == 0) {
+        PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%.4D",tk);
+        ierr = pTatinModel_Output(model,user,X,stepname);CHKERRQ(ierr);
+      }
 		
 		}
 	}	

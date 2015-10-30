@@ -10,6 +10,7 @@
 
 #include "EnergyConductivityThreshold_def.h"
 
+PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);
 
 const char EnergyConductivityThreshold_classname[] = "EnergyConductivityThreshold";
 
