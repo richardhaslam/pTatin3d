@@ -177,6 +177,12 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
       break;
       
     case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD: {
+    	EnergyConductivityThreshold *data;
+
+    	DataBucketGetDataFieldByName(db,EnergyConductivityThreshold_classname,&dfield);
+    	DataFieldGetEntries(dfield,(void**)&data);
+
+    MaterialConstantsScaleValues_ConductivityThreshold(region_id,data,k_scale,k_scale,1.0,1.0);
     }
       break;
   }
