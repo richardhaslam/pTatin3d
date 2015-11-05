@@ -135,7 +135,7 @@ PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data
 PetscErrorCode iPLUS_InsertPlumeMaterial(DM dav,DataBucket materialpoint_db,iPLUSCtx *data)
 {
     MPAccess         mpX;
-    PetscInt         p,n_mpoints_orig,n_mpoints,new_points_max,new_points;
+    int              p,n_mpoints_orig,n_mpoints,new_points_max,new_points;
     const PetscInt   *elnidx_u;
     PetscInt         nel,nen_u,e,k;
     DM               cda;

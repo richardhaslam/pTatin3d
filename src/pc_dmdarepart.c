@@ -34,6 +34,10 @@
 #include <sub_comm.h>
 #include <dmda_duplicate.h>
 
+
+PetscLogStage _PCDMDARepart_PCApplyStage = -1;
+PetscLogStage _PCDMDARepart_PCSetUpMatrixStage = -1;
+
 /*
  
  Vec x;    = [ a b c ] [ d e f ] [ g h ]          <input>
@@ -56,6 +60,7 @@ typedef struct {
     PetscInt        Mp_re,Np_re,Pp_re;
     PetscInt        *range_i_re,*range_j_re,*range_k_re;
     PetscInt        *start_i_re,*start_j_re,*start_k_re;
+    PetscBool       log;
 } PC_DMDARepart;
 
 #undef __FUNCT__
@@ -226,51 +231,43 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "_DMDARepart_SetupMatrix"
-PetscErrorCode _DMDARepart_SetupMatrix(PC pc,PC_DMDARepart *red)
+#define __FUNCT__ "_DMDARepart_SetupPMatrix"
+PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
 {
     PetscErrorCode ierr;
     DM             dm,dmsc;
-    PetscBool      active;
     MPI_Comm       comm;
-    Mat            Pscalar,P,B,Bperm;
+    Mat            Pscalar,P;
     PetscInt       ndof;
     PetscInt       i,j,k,location,startI[3],endI[3],lenI[3],nx,ny,nz;
-    PetscInt       sr,er,Mc;
+    PetscInt       sr,er,Mr;
     PetscMPIInt    rank;
-    IS             isrow,iscol;
-    Mat            Blocal,*_Blocal;
-    PetscInt       m_repart;
-    Mat            Bsub;
+    Vec            V;
     
     ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-    ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
+    PetscInfo(pc,"Setting up the permutation matrix\n");
     
     ierr = DMDADuplicateLayout(dm,1,0,DMDA_STENCIL_BOX,&dmsc);CHKERRQ(ierr); /* stencil type (box/star) ignored as stencil width = 0 */
-    {
-        Vec      V;
-        PetscInt Mr;
 
-        ierr = DMCreateGlobalVector(dmsc,&V);CHKERRQ(ierr);
-        ierr = VecGetSize(V,&Mr);CHKERRQ(ierr);
-        ierr = VecGetOwnershipRange(V,&sr,&er);CHKERRQ(ierr);
-        ierr = VecDestroy(&V);CHKERRQ(ierr);
-    
-        ierr = MatCreate(comm,&Pscalar);CHKERRQ(ierr);
-        ierr = MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr);CHKERRQ(ierr);
-        ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
-        ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
-        ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
-    }
+    ierr = DMCreateGlobalVector(dmsc,&V);CHKERRQ(ierr);
+    ierr = VecGetSize(V,&Mr);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(V,&sr,&er);CHKERRQ(ierr);
+    ierr = VecDestroy(&V);CHKERRQ(ierr);
+
+    ierr = MatCreate(comm,&Pscalar);CHKERRQ(ierr);
+    ierr = MatSetSizes(Pscalar,(er-sr),(er-sr),Mr,Mr);CHKERRQ(ierr);
+    ierr = MatSetType(Pscalar,MATAIJ);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(Pscalar,2,NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(Pscalar,2,NULL,2,NULL);CHKERRQ(ierr);
     
     ierr = DMDAGetCorners(dm,NULL,NULL,NULL,&lenI[0],&lenI[1],&lenI[2]);CHKERRQ(ierr);
     ierr = DMDAGetCorners(dm,&startI[0],&startI[1],&startI[2],&endI[0],&endI[1],&endI[2]);CHKERRQ(ierr);
     endI[0] += startI[0];
     endI[1] += startI[1];
     endI[2] += startI[2];
-
+    
     ierr = DMDAGetInfo(dm,NULL, &nx,&ny,&nz, NULL,NULL,NULL, &ndof,NULL,NULL,NULL,NULL, NULL);CHKERRQ(ierr);
     
     for (k=startI[2]; k<endI[2]; k++) {
@@ -284,9 +281,9 @@ PetscErrorCode _DMDARepart_SetupMatrix(PC pc,PC_DMDARepart *red)
                 location = (i - startI[0]) + (j - startI[1])*lenI[0] + (k - startI[2])*lenI[0]*lenI[1];
                 
                 ierr = _DMDARepartitionDetermineRankFromGlobalIJK(i,j,k,  red->Mp_re,red->Np_re,red->Pp_re,
-                                                                 red->start_i_re,red->start_j_re,red->start_k_re,
-                                                                 red->range_i_re,red->range_j_re,red->range_k_re,
-                                                                 &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);
+                                                                  red->start_i_re,red->start_j_re,red->start_k_re,
+                                                                  red->range_i_re,red->range_j_re,red->range_k_re,
+                                                                  &rank_reI[0],&rank_reI[1],&rank_reI[2],&rank_ijk_re);
                 
                 ierr = _DMDARepartitionDetermineGlobalS0(rank_ijk_re, red->Mp_re,red->Np_re,red->Pp_re, red->range_i_re,red->range_j_re,red->range_k_re, &s0_re);CHKERRQ(ierr);
                 
@@ -308,17 +305,44 @@ PetscErrorCode _DMDARepart_SetupMatrix(PC pc,PC_DMDARepart *red)
                 natural_ijk = i + j*nx + k*nx*ny;
                 
                 ierr = MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES);CHKERRQ(ierr);
-                
-                //PetscPrintf(PETSC_COMM_SELF,"[%D] (%D,%D,%D) --> local %D [g=%d] [natural %D] --> repart %D \n",rank,i,j,k,location,sr+location,natural_ijk,mapped_ijk);
+                //PetscPrintf(PETSC_COMM_SELF,"[%d] (%D,%D,%D) --> local %D [g=%D] [natural %D] --> repart %D \n",(int)rank,i,j,k,location,sr+location,natural_ijk,mapped_ijk);
             }
         }
     }
     ierr = MatAssemblyBegin(Pscalar,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Pscalar,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
+    
     ierr = MatCreateMAIJ(Pscalar,ndof,&P);CHKERRQ(ierr);
     ierr = MatDestroy(&Pscalar);CHKERRQ(ierr);
+    
+    red->permutation = P;
 
+    ierr = DMDestroy(&dmsc);CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_DMDARepart_UpdateOperator"
+PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
+{
+    PetscErrorCode ierr;
+    DM             dm;
+    PetscBool      active,new_Bsub;
+    MPI_Comm       comm;
+    Mat            P,B,Bperm;
+    PetscInt       ndof,i,j,sr,er,Mc,m_repart;
+    PetscMPIInt    rank;
+    IS             isrow,iscol;
+    Mat            Blocal,*_Blocal,Bsub;
+    
+    ierr = PCGetDM(pc,&dm);CHKERRQ(ierr);
+    ierr = PCGetOperators(pc,NULL,&B);CHKERRQ(ierr);
+    ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    PetscInfo(pc,"Updating the redundant preconditioned operator\n");
+
+    P = red->permutation;
     ierr = MatPtAP(B,P,MAT_INITIAL_MATRIX,1.1,&Bperm);CHKERRQ(ierr);
     
     /* Get submatrices */
@@ -348,53 +372,67 @@ PetscErrorCode _DMDARepart_SetupMatrix(PC pc,PC_DMDARepart *red)
         ierr = VecGetLocalSize(red->xsub,&m_repart);CHKERRQ(ierr);
     }
 
+    new_Bsub = PETSC_FALSE;
     if (active) {
-        ierr = MatCreate(red->subcomm->sub_comm,&Bsub);CHKERRQ(ierr);
-        ierr = MatSetSizes(Bsub,m_repart,m_repart,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-        ierr = MatSetBlockSize(Bsub,ndof);CHKERRQ(ierr);
-        ierr = MatSetFromOptions(Bsub);CHKERRQ(ierr);
-        ierr = MatSetUp(Bsub);CHKERRQ(ierr);
+        /* if it exists, fetch it */
+        if (red->Bsub) {
+            PetscInfo(pc,"Fetching existing redundant matrix\n");
+            Bsub = red->Bsub;
+            ierr = MatZeroEntries(Bsub);CHKERRQ(ierr);
+        } else {
+            PetscInfo(pc,"Creating new redundant matrix\n");
+            ierr = DMDAGetInfo(dm,NULL, NULL,NULL,NULL, NULL,NULL,NULL, &ndof,NULL,NULL,NULL,NULL, NULL);CHKERRQ(ierr);
+
+            ierr = MatCreate(red->subcomm->sub_comm,&Bsub);CHKERRQ(ierr);
+            ierr = MatSetSizes(Bsub,m_repart,m_repart,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+            ierr = MatSetBlockSize(Bsub,ndof);CHKERRQ(ierr);
+            ierr = MatSetFromOptions(Bsub);CHKERRQ(ierr);
+            ierr = MatSetUp(Bsub);CHKERRQ(ierr);
+            /* if I just created it, set the pointer */
+            red->Bsub = Bsub;
+            new_Bsub = PETSC_TRUE;
+        }
     } else {
         Bsub = NULL;
     }
     
     /* insert entries */
     if (active) {
+        PetscInt          start,end;
         PetscInt          ncols,startc,endc,rowidx;
         const PetscInt    *cols;
         const PetscScalar *vals;
-        PetscInt          *nnz,*onnz;
-        PetscInt           start,end;
 
-        /* preallocation */
-        //ierr = MatGetOwnershipRange(red,&start,&end);CHKERRQ(ierr);
-        //ierr = MatGetOwnershipRangeColumn(red,&startc,&endc);CHKERRQ(ierr);
-        ierr = VecGetOwnershipRange(red->xsub,&start,&end);CHKERRQ(ierr);
-        ierr = VecGetOwnershipRange(red->xsub,&startc,&endc);CHKERRQ(ierr);
+        if (new_Bsub) {
+            PetscInt *nnz,*onnz;
 
-        //printf("[%d]: xsub : row %d -> %d \n",rank,start,end);
-        
-        PetscMalloc(sizeof(PetscInt)*(end-start),&nnz);
-        PetscMalloc(sizeof(PetscInt)*(end-start),&onnz);
-        PetscMemzero(nnz,sizeof(PetscInt)*(end-start));
-        PetscMemzero(onnz,sizeof(PetscInt)*(end-start));
-		
-        for (i=0; i<(end-start); i++) {
-            ierr = MatGetRow(Blocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
-            for (j=0; j<ncols; j++) {
-                if ( (cols[j] >= startc) && (cols[j] < endc) ) {
-                    nnz[i]++;
-                } else {
-                    onnz[i]++;
+            PetscInfo(pc,"Defining preallocation for redundant matrix\n");
+            /* preallocation */
+            ierr = VecGetOwnershipRange(red->xsub,&start,&end);CHKERRQ(ierr);
+            ierr = VecGetOwnershipRange(red->xsub,&startc,&endc);CHKERRQ(ierr);
+
+            PetscMalloc(sizeof(PetscInt)*(end-start),&nnz);
+            PetscMalloc(sizeof(PetscInt)*(end-start),&onnz);
+            PetscMemzero(nnz,sizeof(PetscInt)*(end-start));
+            PetscMemzero(onnz,sizeof(PetscInt)*(end-start));
+            
+            for (i=0; i<(end-start); i++) {
+                ierr = MatGetRow(Blocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
+                for (j=0; j<ncols; j++) {
+                    if ( (cols[j] >= startc) && (cols[j] < endc) ) {
+                        nnz[i]++;
+                    } else {
+                        onnz[i]++;
+                    }
                 }
+                ierr = MatRestoreRow(Blocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
             }
-            ierr = MatRestoreRow(Blocal,i,&ncols,&cols,NULL);CHKERRQ(ierr);
-        }
-        ierr = MatSeqAIJSetPreallocation(Bsub,PETSC_DEFAULT,nnz);CHKERRQ(ierr);
-        ierr = MatMPIAIJSetPreallocation(Bsub,PETSC_DEFAULT,nnz,PETSC_DEFAULT,onnz);CHKERRQ(ierr);
+            ierr = MatSeqAIJSetPreallocation(Bsub,PETSC_DEFAULT,nnz);CHKERRQ(ierr);
+            ierr = MatMPIAIJSetPreallocation(Bsub,PETSC_DEFAULT,nnz,PETSC_DEFAULT,onnz);CHKERRQ(ierr);
 
-        PetscFree(nnz);
-        PetscFree(onnz);
+            PetscFree(nnz);
+            PetscFree(onnz);
+        }
 
         /* insert */
         ierr = MatGetOwnershipRange(Bsub,&start,&end);CHKERRQ(ierr);
@@ -410,10 +448,6 @@ PetscErrorCode _DMDARepart_SetupMatrix(PC pc,PC_DMDARepart *red)
         ierr = MatAssemblyEnd(Bsub,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     }
     
-    red->Bsub        = Bsub;
-    red->permutation = P;
-    
-    ierr = DMDestroy(&dmsc);CHKERRQ(ierr);
     ierr = MatDestroy(&Bperm);CHKERRQ(ierr);
     ierr = MatDestroyMatrices(1,&_Blocal);CHKERRQ(ierr);
     
@@ -435,7 +469,7 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         PetscBool       isdmda;
         MPI_Comm        comm;
         PetscMPISubComm subcomm;
-        PetscMPIInt     rank,nsubcomm_size;
+        PetscMPIInt     rank,comm_size,nsubcomm_size;
         PetscInt        sum,k,nx,ny,nz,ndof,nsw,dim;
         const PetscInt  *_range_i_re;
         const PetscInt  *_range_j_re;
@@ -456,8 +490,10 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
         ierr = PetscMPISubCommCreate(comm,red->nsubcomm_factor,&subcomm);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm,&comm_size);CHKERRQ(ierr);
         ierr = MPI_Comm_size(subcomm->sub_comm,&nsubcomm_size);CHKERRQ(ierr);
         
+        PetscInfo2(pc,"Creating PetscMPISubComm. Restricting from %d to %d ranks\n",(int)comm_size,(int)nsubcomm_size);
         red->nsubcomm_size = nsubcomm_size;
         red->subcomm       = subcomm;
         
@@ -554,9 +590,9 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             start_IJK = -1;
             ierr = MPI_Comm_rank(subcomm->sub_comm,&rank_re);CHKERRQ(ierr);
             ierr = _DMDARepartitionDetermineGlobalS0(rank_re,red->Mp_re,red->Np_re,red->Pp_re,red->range_i_re,red->range_j_re,red->range_k_re,&start_IJK);CHKERRQ(ierr);
-            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d]: start idx = %d \n",rank,rank_re,start_IJK);
+            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d]: start idx = %D \n",(int)rank,(int)rank_re,start_IJK);
         } else {
-            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: dmrepart doesn't live on this rank \n",rank);
+            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: dmrepart doesn't live on this rank \n",(int)rank);
         }
         */
         /* Determine (i,j,k) value of subcomm ranks */
@@ -573,7 +609,7 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             pJ_re = rankIJ_re/red->Mp_re;
             pI_re = rankIJ_re - pJ_re*red->Mp_re;
             
-            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d] (%d %d %d)\n",rank,rank_re,pI_re,pJ_re,pK_re);
+            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d] (%D %D %D)\n",(int)rank,(int)rank_re,pI_re,pJ_re,pK_re);
         }
         */
         /* attach dm to ksp on sub communicator */
@@ -583,13 +619,16 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         }
     }
     
-    /* setup scatters */
+    /* setup scatters and permutation matrix */
     if (!pc->setupcalled) {
         ierr = _DMDARepart_SetupScatters(pc,red);CHKERRQ(ierr);
+        ierr = _DMDARepart_SetupPMatrix(pc,red);CHKERRQ(ierr);
     }
 
     /* fetch redundant matrix - PCSetUp_DMDARepart is called we need to update the entires in the matrix */
-    ierr = _DMDARepart_SetupMatrix(pc,red);CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePush(_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
+    ierr = _DMDARepart_UpdateOperator(pc,red);CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePop();CHKERRQ(ierr); }
 
     /* common - no construction */
     if (red->Bsub) {
@@ -612,6 +651,7 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     Vec            xtmp;
     
     PetscFunctionBegin;
+    if (red->log) { ierr = PetscLogStagePush(_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
     ierr = VecDuplicate(x,&xtmp);CHKERRQ(ierr);
     ierr = MatMultTranspose(red->permutation,x,xtmp);CHKERRQ(ierr);
     //ierr = MatMult(red->permutation,x,xtmp);CHKERRQ(ierr);
@@ -661,6 +701,7 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     //ierr = MatMultTranspose(red->permutation,xtmp,y);CHKERRQ(ierr);
     
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
+    if (red->log) { ierr = PetscLogStagePop();CHKERRQ(ierr); }
 
     PetscFunctionReturn(0);
 }
@@ -749,7 +790,7 @@ static PetscErrorCode PCView_DMDARepart(PC pc,PetscViewer viewer)
             ierr = PetscViewerGetSubcomm(viewer,red->subcomm->sub_comm,&subviewer);CHKERRQ(ierr);
             ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
             if (red->subcomm->parent_rank_active_in_subcomm) {
-                ierr = DMView(red->dmrepart,subviewer);CHKERRQ(ierr);
+                /*ierr = DMView(red->dmrepart,subviewer);CHKERRQ(ierr);*/
                 ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
             }
             ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -771,8 +812,22 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
     PetscErrorCode   ierr;
     PC_DMDARepart    *red;
     PetscMPIInt      size;
+    PetscBool        log;
     
     PetscFunctionBegin;
+
+    /* 
+     We cannot provide -XXX_pc_dmdarepart_log as an arg to enable logging of separate pcdmdarepart objects.
+     This is a limitation enforced by petsc logging infrastructure which doesn't accept a communicator as an arguement.
+     As a result all logging objects must be valid on PETSC_COMM_WORLD.
+    */
+    log = PETSC_FALSE;
+    PetscOptionsGetBool(NULL,"-pc_dmdarepart_log",&log,NULL);
+    if (log) {
+        if (_PCDMDARepart_PCSetUpMatrixStage == -1) { ierr = PetscLogStageRegister("PCRprt_SetUpMat",&_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
+        if (_PCDMDARepart_PCApplyStage == -1) { ierr = PetscLogStageRegister("PCRprt_Apply",&_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }
+    }
+    
     ierr = PetscNewLog(pc,&red);CHKERRQ(ierr);
     pc->data            = (void*)red;
 	
@@ -783,6 +838,7 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
         red->nsubcomm_factor = 1;
     }
 
+    red->log         = log;
     red->isin        = NULL;
     red->scatter     = NULL;
     red->xred        = NULL;

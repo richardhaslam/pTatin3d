@@ -821,7 +821,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 
 	ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %d,cycles = %d)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
+	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %D,cycles = %D)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: average                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
 
 	/*

@@ -882,7 +882,8 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 		MPntPStokes *mpprop_stokes;
 		double      *position;
 		PetscInt    phase;
-		PetscInt    layer, jmaxlayer, jminlayer, localeid_p;
+		PetscInt    layer, jmaxlayer, jminlayer;
+		int         localeid_p;
 		PetscInt    nI, nJ, nK, nJmid;
 		PetscScalar elcoords[Q2_NODES_PER_EL_3D*NSD];
 		PetscScalar Ni_p[Q2_NODES_PER_EL_3D], coord_qp[NSD];
@@ -1056,9 +1057,10 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 	
 	for (p=0; p<n_mpoints; p++) {
 		PetscInt    phase;
-		PetscInt    layer,ei,localeid_p;
+		PetscInt    layer,ei;
 		PetscInt    nI,nJ,nK,nJmid;
-		
+		int         localeid_p;	
+	
 		ierr = MaterialPointGet_local_element_index(mpX,p,&localeid_p);CHKERRQ(ierr);
 		ierr = DMDAConvertLocalElementIndex2GlobalnInJnK(dav,localeid_p,&nI,&nJ,&nK);CHKERRQ(ierr);
 

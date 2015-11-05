@@ -769,6 +769,7 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
   ierr = PetscContainerSetPointer(container,(void*)data);CHKERRQ(ierr);
 	
 	ierr = PetscObjectCompose((PetscObject)ctx->model_data,name,(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); /* decrement ref counter */
 	
 	PetscFunctionReturn(0);
 }

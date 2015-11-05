@@ -727,7 +727,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
-	PetscInt               p,n_mp_points;
+	int                    p,n_mp_points;
 	PetscInt               notch_type;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;

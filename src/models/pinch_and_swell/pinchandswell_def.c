@@ -225,7 +225,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
 {
 	ModelCtx         *data = (ModelCtx*)ctx;
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
 	DataBucket       materialconstants;
 	PhysCompStokes   stokes;
@@ -442,6 +442,21 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ModelDestroy_PAS"
+PetscErrorCode ModelDestroy_PAS(pTatinCtx c,void *ctx)
+{
+	ModelCtx *data = (ModelCtx*)ctx;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	/* Free contents of structure */
+	/* Free structure */
+	ierr = PetscFree(data);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegister_PAS"
 PetscErrorCode pTatinModelRegister_PAS(void)
 {
@@ -473,7 +488,7 @@ PetscErrorCode pTatinModelRegister_PAS(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_PAS);CHKERRQ(ierr);
 	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_PAS);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_PAS);CHKERRQ(ierr);
-	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_PAS);CHKERRQ(ierr);
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_PAS);CHKERRQ(ierr);
 	
 	/* Insert model into list */
 	ierr = pTatinModelRegister(m);CHKERRQ(ierr);

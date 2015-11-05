@@ -18,7 +18,7 @@ FC_DEPFLAGS=
 
 # flag to allow GNU AVX/SSE intrinsics: -hgnu
 export TATIN_CFLAGS_DEBUG	= -O0 -g -hgnu
-export TATIN_CFLAGS_OPT_a	= -O2 -hipa3 -hgnu
+export TATIN_CFLAGS_OPT_a	= -O2 -hipa3 -hgnu -h msglevel_4
 export TATIN_CFLAGS_OPT_b	= -O3 -hipa3 -hfp3 -hgnu -h msglevel_4
 
 export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
