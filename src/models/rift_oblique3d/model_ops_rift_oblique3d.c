@@ -194,7 +194,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	/* rheology parameters */
     ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
 	rheology->rheology_type  = RHEOLOGY_VP_STD;
-	rheology->nphases_active = 3;
+	rheology->nphases_active = 4;
 	rheology->apply_viscosity_cutoff_global = PETSC_TRUE;
 	rheology->eta_upper_cutoff_global       = 1.0e+28;
 	rheology->eta_lower_cutoff_global       = 1.0e+19;
@@ -293,7 +293,36 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
+	/* PHASE 3, CRUST MARKERS / UPPER LITHOSPHERE */
+	regionidx = 3;
+	if (use_energy == PETSC_FALSE) {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+	} else {
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+	}
+
+	//VISCOSITY PARAMETERS
+	preexpA = 8.5737e-28;
+	Ascale  = 1.0;
+	entalpy = 223.0e3;
+	Vmol    = 0.0e-6;
+	nexp    = 4.0;
+	Tref    = 273.0;
+	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etac);
+	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
 	
+	//DENSITY PARAMETERS
+	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoc,2.0e-5,0.0);
+	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
+
+	//PLASTICITY PARAMETERS
+	phi1_rad = M_PI * 15.0/180.0;
+	phi2_rad = M_PI * 2.0/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
+	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
+
+  /* ENERGY FLOW LAW DEFS */
   {
     DataField      PField;
     EnergyMaterialConstants        *matconstants_e;
@@ -321,7 +350,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     density_type      = ENERGYDENSITY_CONSTANT;
     conductivity_type_asthen = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
 
-
+    //ASTHENOSPHERE
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoa;
@@ -335,6 +364,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     MaterialConstantsSetValues_ConductivityThreshold(0,matconstants_cond, k0, k1, T_threshold, dT);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
     
+    //LITHOSPHERIC MANTLE
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhom;
@@ -344,6 +374,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyConductivityConstSetField_k0(&matconstants_k_const[1],k);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[1],0.0);
     
+    //CRUST
     alpha   = 2.0e-5;
     beta    = 0.0;
     rho_ref = data->rhoc;
@@ -353,7 +384,12 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyConductivityConstSetField_k0(&matconstants_k_const[2],k);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[2],0.9e-6);
 
-    //phase = 2;
+    //CRUST MARKERS
+    MaterialConstantsSetValues_EnergyMaterialConstants(3,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[3],k);
+    EnergySourceConstSetField_HeatSource(&matconstants_h_const[3],0.9e-6);
+
+    //phase = 2,3;
     //kappa = 1.0e-6/data->length_bar/data->length_bar*data->time_bar;
     //H     = 0.9e-6/data->pressure_bar*data->time_bar;
     
@@ -364,11 +400,13 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[0],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[1],ENERGYSOURCE_NONE);
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[2],ENERGYSOURCE_NONE);
+    EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[3],ENERGYSOURCE_NONE);
    
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_CONSTANT);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_CONSTANT);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_CONSTANT);
-    
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[3],0,ENERGYSOURCE_CONSTANT);
+
     
   }
   
@@ -907,6 +945,25 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 			rho=data->rhoc;
 		}
 		
+		/* make 25 km (0.25) stripes in the crust  in the x and z direction */
+		if (position[1]>data->ha+data->hm ) {
+			int j=0;
+			while(j<100){
+				if ((position[0] > (0.25*j + 0.25)) && (position[0] < (0.25*j + 0.4))){
+					phase = 3;
+					eta=data->etac;
+					rho=data->rhoc;
+				}
+				if ((position[2] > (0.25*j + 0.25)) && (position[2] < (0.25*j + 0.4))){
+					phase = 3;
+					eta=data->etac;
+					rho=data->rhoc;
+				}
+				j++;
+				j++;
+			}
+		}
+
 		xp_dimensional = position[0] * data->length_bar;
 		yp_dimensional = position[1] * data->length_bar;
 		zp_dimensional = position[2] * data->length_bar;
@@ -968,6 +1025,43 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
                     b = (z_center-zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta) + buff/cos(beta));
                     plastic_strain = atan((xp_dimensional-b)/(a-b)*(M_PI/2))*dam*((float)rand()/(float)RAND_MAX);
 				}
+			}
+		}
+
+		if (notch_type == 4 ) {
+			double beta,dam;
+			double convert=M_PI/180.;
+
+			beta = data->beta; //rotation angle in x-z plane, in degree
+			dam = data->damage; //maximum plastic strain for damage zone
+			beta =  convert * beta; // convert deg to rad
+
+			if ((yp_dimensional < (notch_base + notch_height)) && (yp_dimensional >= notch_base)) {
+				/* apply damage noise in the central damage domain */
+				if ((xp_dimensional >=  (z_center - zp_dimensional)*tan(beta) + (x_center - 0.5*notch_width/cos(beta))) &&
+					(xp_dimensional <= (z_center - zp_dimensional)*tan(beta) + (x_center + 0.5*notch_width/cos(beta)))) {
+					plastic_strain = dam*((float)rand()/(float)RAND_MAX);
+				}
+			}
+			/* hardly coded notch width = 16e3 */
+			if ((xp_dimensional >= x_center - data->dxn - 0.5*16e3) && (xp_dimensional <= x_center - data->dxn + 0.5*16e3)) {
+									if ((yp_dimensional <= ha_dimensional + hm_dimensional) && (yp_dimensional > ha_dimensional + hm_dimensional - data->dyn)) {
+										if (zp_dimensional <= 0.1*z_center ) {
+											plastic_strain = 1.0;
+					}
+				}
+			}
+			if ((xp_dimensional >= x_center + data->dxn - 0.5*16e3) && (xp_dimensional <= x_center + data->dxn + 0.5*16e3)) {
+									if ((yp_dimensional <= ha_dimensional + hm_dimensional) && (yp_dimensional > ha_dimensional + hm_dimensional - data->dyn)) {
+										if (zp_dimensional >= 1.9*z_center) {
+											plastic_strain = 1.0;
+					}
+				}
+			}
+			if ((xp_dimensional >= x_center - 0.5*16e3) && (xp_dimensional <= x_center + 0.5*16e3) && (zp_dimensional >= z_center - 0.5*16e3) && (zp_dimensional <= z_center + 0.5*16e3)) {
+																				if ((yp_dimensional <= ha_dimensional + hm_dimensional) && (yp_dimensional > ha_dimensional + hm_dimensional - data->dyn)) {
+																								plastic_strain = 1.0;
+					}
 			}
 		}
 
@@ -1100,7 +1194,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	// previously used option
 	ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	//ierr = ModelOutput_ExecuteXDMFWriter(c,X,prefix);CHKERRQ(ierr);
-        //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
+    //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
 
 	if (data->output_markers) { 
 		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
@@ -1126,7 +1220,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	/* MPOINTS_CELL OUTPUT */
 	Step = c->step;
 	outFre = c->output_frequency;
-	if (Step%(outFre*4) == 0) {
+	if (Step%(outFre*2) == 0) {
 		const int  nf = 4;
 		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
