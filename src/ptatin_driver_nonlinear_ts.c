@@ -2386,7 +2386,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		if (active_energy) {
 			SNES snesT;
 			
-			ierr = VecZeroEntries(T);CHKERRQ(ierr);
+			//ierr = VecZeroEntries(T);CHKERRQ(ierr);
 			
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
