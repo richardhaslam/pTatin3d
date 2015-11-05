@@ -305,6 +305,7 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
                 natural_ijk = i + j*nx + k*nx*ny;
                 
                 ierr = MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES);CHKERRQ(ierr);
+                //PetscPrintf(PETSC_COMM_SELF,"[%d] (%D,%D,%D) --> local %D [g=%D] [natural %D] --> repart %D \n",(int)rank,i,j,k,location,sr+location,natural_ijk,mapped_ijk);
             }
         }
     }
@@ -589,9 +590,9 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             start_IJK = -1;
             ierr = MPI_Comm_rank(subcomm->sub_comm,&rank_re);CHKERRQ(ierr);
             ierr = _DMDARepartitionDetermineGlobalS0(rank_re,red->Mp_re,red->Np_re,red->Pp_re,red->range_i_re,red->range_j_re,red->range_k_re,&start_IJK);CHKERRQ(ierr);
-            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d]: start idx = %d \n",rank,rank_re,start_IJK);
+            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d]: start idx = %D \n",(int)rank,(int)rank_re,start_IJK);
         } else {
-            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: dmrepart doesn't live on this rank \n",rank);
+            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: dmrepart doesn't live on this rank \n",(int)rank);
         }
         */
         /* Determine (i,j,k) value of subcomm ranks */
@@ -608,7 +609,7 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
             pJ_re = rankIJ_re/red->Mp_re;
             pI_re = rankIJ_re - pJ_re*red->Mp_re;
             
-            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d] (%d %d %d)\n",rank,rank_re,pI_re,pJ_re,pK_re);
+            PetscPrintf(PETSC_COMM_SELF,"  [dmdarepart] rank[%d]: subrank[%d] (%D %D %D)\n",(int)rank,(int)rank_re,pI_re,pJ_re,pK_re);
         }
         */
         /* attach dm to ksp on sub communicator */

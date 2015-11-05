@@ -225,7 +225,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
 {
 	ModelCtx         *data = (ModelCtx*)ctx;
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
 	DataBucket       materialconstants;
 	PhysCompStokes   stokes;

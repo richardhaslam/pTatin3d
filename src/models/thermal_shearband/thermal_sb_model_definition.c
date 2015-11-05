@@ -480,7 +480,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 {
 	ThermalSBData    *data = (ThermalSBData*)ctx;
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
 	DataBucket       materialconstants;
 	PhysCompStokes   stokes;

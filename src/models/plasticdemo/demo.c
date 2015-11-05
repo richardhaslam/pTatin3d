@@ -253,7 +253,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
     PetscErrorCode   ierr;
     
@@ -319,7 +319,7 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
 PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
     PetscErrorCode   ierr;
     PetscReal        Ly = 10.0e3;
@@ -385,7 +385,7 @@ PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
 PetscErrorCode PD_MaterialGeometry_ex3(pTatinCtx ptatctx,ModelCtx *mctx)
 {
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
     PetscErrorCode   ierr;
     
@@ -455,7 +455,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
 {
 	ModelCtx         *data = (ModelCtx*)ctx;
 	MPAccess         mpX;
-	PetscInt         p,n_mpoints;
+	int              p,n_mpoints;
 	DataBucket       materialpoint_db;
 	DataBucket       materialconstants;
 	PhysCompStokes   stokes;

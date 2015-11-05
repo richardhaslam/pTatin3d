@@ -303,7 +303,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
     MPAccess         mpX;
-    PetscInt         p,n_mpoints;
+    int              p,n_mpoints;
     DataBucket       materialpoint_db;
     PhysCompStokes   stokes;
     DM               stokes_pack,dav,dap;
@@ -501,7 +501,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_iPLUS(pTatinCtx c,Vec X,void *ctx)
 PetscErrorCode iPLUSOutput_ComputeVerticalRangeOfRegion(DataBucket materialpoint_db,PetscInt region_idx,PetscReal range_yp[])
 {
     MPAccess         mpX;
-    PetscInt         p,n_mpoints;
+    int              p,n_mpoints;
     PetscReal        _range_yp[2];
     double           *pos_p;
     int              region_p;

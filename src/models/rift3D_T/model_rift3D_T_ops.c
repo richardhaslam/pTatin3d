@@ -1467,7 +1467,7 @@ PetscErrorCode ModelApplyInitialMaterialPlasticProperties_Atlantic(pTatinCtx c,v
 		double        *position;
 		float         pls;
 		char          yield;
-		PetscInt     inside;
+		int           inside;
         DataFieldAccessPoint(PField_std,p,(void**)&material_point);
 		DataFieldAccessPoint(PField_pls,p,(void**)&mpprop_pls);
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
