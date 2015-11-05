@@ -54,6 +54,7 @@ typedef enum {
 extern pTatinModel *registered_model_list;
 
 PetscErrorCode pTatinModelCreate(pTatinModel *model);
+PetscErrorCode pTatinModelDestroy(pTatinModel *m);
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[]);
 PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperation type,void(*func)(void));
 PetscErrorCode pTatinModelRegister(pTatinModel model);
@@ -68,7 +69,7 @@ PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *d
 PetscErrorCode pTatinModelGetName(pTatinModel model,char **name);
 
 PetscErrorCode pTatinModelRegisterAll(void);
-
+PetscErrorCode pTatinModelDeRegisterAll(void);
 
 PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx);

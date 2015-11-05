@@ -83,6 +83,25 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "pTatinModelDestroy"
+PetscErrorCode pTatinModelDestroy(pTatinModel *m)
+{
+  pTatinModel    model;
+  PetscErrorCode ierr;
+	
+  PetscFunctionBegin;
+  if (!m) PetscFunctionReturn(0);
+  model = *m;
+
+  if (model->model_name) { free(model->model_name); }
+  ierr = pTatinModel_Destroy(model,NULL);CHKERRQ(ierr);
+  PetscFree(model);
+  *m = NULL;
+	
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModelSetName"
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[])
 {
@@ -149,6 +168,7 @@ PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *d
   ierr = PetscContainerSetPointer(container,(void*)data);CHKERRQ(ierr);
 	
 	ierr = PetscObjectCompose((PetscObject)ctx->data,name,(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); /* decrement ref counter */
 	
 	PetscFunctionReturn(0);
 }
@@ -486,5 +506,25 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 	}
 	ierr = PetscLogEventEnd(PTATIN_ModelApplyMaterialBoundaryCondition,0,0,0,0);CHKERRQ(ierr);
 	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModelDeRegisterAll"
+PetscErrorCode pTatinModelDeRegisterAll(void)
+{
+  PetscErrorCode ierr;
+  PetscInt i;
+  pTatinModel item;
+  
+  i = 0;
+  item = registered_model_list[0];
+  while (item) {
+    ierr = pTatinModelDestroy(&item);CHKERRQ(ierr);
+    i++;
+    item = registered_model_list[i];
+  }
+  free(registered_model_list);
+  
 	PetscFunctionReturn(0);
 }
