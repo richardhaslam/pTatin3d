@@ -57,6 +57,8 @@
 #include "model_rift_oblique3d_ctx.h"
 
 #include "material_constants_energy.h"
+#include "dmda_remesh.h"
+
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx);
@@ -868,6 +870,35 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	ierr = DMDASetUniformCoordinates(dau,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] Lx = %1.4e \n", data->Lx );
+
+        // {
+	//    PetscReal gvec[] = { 0.0, -10.0, 0.0 };
+	//    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+	//  }
+
+
+
+	 //remesh vertically and preserve topography
+	{
+		PetscInt npoints,dir;
+		PetscReal xref[10],xnat[10];
+
+		npoints = 3;
+		xref[0] = 0.0;
+		xref[1] = 0.3;
+		xref[2] = 1.0;
+
+		xnat[0] = 0.0;
+		xnat[1] = 0.6;
+		xnat[2] = 1.0;
+
+
+		dir = 1;
+		ierr = DMDACoordinateRefinementTransferFunction(dau,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+		ierr = DMDABilinearizeQ2Elements(dau);CHKERRQ(ierr);
+	}
+
+
 	
 	PetscFunctionReturn(0);
 }
@@ -1179,6 +1210,26 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
+        /* UPDATE mesh refinement scheme */
+	//remesh vertically and preserve topography
+	{
+		PetscInt npoints,dir;
+		PetscReal xref[10],xnat[10];
+
+		npoints = 3;
+		xref[0] = 0.0;
+		xref[1] = 0.3;
+		xref[2] = 1.0;
+
+		xnat[0] = 0.0;
+		xnat[1] = 0.6;
+		xnat[2] = 1.0;
+
+
+		dir = 1;
+		ierr = DMDACoordinateRefinementTransferFunction(dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+		ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
+	}	
 	
 	PetscFunctionReturn(0);
 }
