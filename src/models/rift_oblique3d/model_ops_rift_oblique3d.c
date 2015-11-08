@@ -329,7 +329,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyConductivityConst        *matconstants_k_const;
     EnergySourceConst              *matconstants_h_const;
     EnergyConductivityThreshold	   *matconstants_cond;
-    double alpha,beta,rho_ref,Cp,k,k0,k1,dT,T_threshold;
+    EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
+    double alpha,beta,rho_ref,Cp,k,k0,k1,dT,T_threshold,dTdy;    
     int 	 conductivity_type, density_type, conductivity_type_asthen;
     
     
@@ -346,6 +347,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     DataBucketGetDataFieldByName(materialconstants,EnergySourceConst_classname,&PField);
     DataFieldGetEntries(PField,(void**)&matconstants_h_const);
 
+    DataBucketGetDataFieldByName(materialconstants,EnergySourceAdiabaticAdvection_classname,&PField);
+    DataFieldGetEntries(PField,(void**)&matconstants_source_adi_adv);    
+
     conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
     density_type      = ENERGYDENSITY_CONSTANT;
     conductivity_type_asthen = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
@@ -359,11 +363,14 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     k1       = 48.75; //artificial conductivity to conserve the heat flow
     T_threshold = 1350.0;
     dT       = 50.0;
+    dTdy     = 0.4e-3;
     MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type_asthen,NULL);
     //EnergyConductivityConstSetField_k0(&matconstants_k_const[0],k);
     MaterialConstantsSetValues_ConductivityThreshold(0,matconstants_cond, k0, k1, T_threshold, dT);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
-    
+    MaterialConstantsSetValues_SourceAdiabaticAdv(0, matconstants_source_adi_adv, dTdy);    
+
+
     //LITHOSPHERIC MANTLE
     alpha   = 2.0e-5;
     beta    = 0.0;
@@ -406,7 +413,8 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[1],0,ENERGYSOURCE_CONSTANT);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[2],0,ENERGYSOURCE_CONSTANT);
     EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[3],0,ENERGYSOURCE_CONSTANT);
-
+    //pseudo adiabat in the asthenosphere
+    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],1,ENERGYSOURCE_ADIABATIC_ADVECTION);
     
   }
   
