@@ -629,6 +629,27 @@ PetscErrorCode MarkerCellFieldsP0Write_PetscVec(DM dmscalar,DM dmp0,Vec scalar,V
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MarkerCellFieldsP0Read_PetscVec"
+PetscErrorCode MarkerCellFieldsP0Read_PetscVec(Vec scalar,const MaterialPointVariable var_name,
+                                                const char basename[])
+{
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+  char           fname[PETSC_MAX_PATH_LEN];
+  
+  PetscFunctionBegin;
+  {
+    /* load cell data */
+    PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s.%s.vec",basename,MaterialPointVariableName[var_name]);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fname,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = VecLoad(scalar,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec"
 PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[])
 {
@@ -666,9 +687,9 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 
   if (dm_velocity_data_required) {
     if (prefix) {
-      PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.viz-dmda",ctx->outputpath,prefix);
+      PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
     } else {
-      PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/viz-dmda",ctx->outputpath);
+      PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
     }
 
     ierr = DMDAPackDataToFile(dau,basename);CHKERRQ(ierr);
