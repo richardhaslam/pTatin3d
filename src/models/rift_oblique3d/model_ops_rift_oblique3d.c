@@ -50,7 +50,7 @@
 
 // added includes
 #include "output_material_points.h"
-
+#include "output_material_points_p0.h"
 
 #include "ptatin_models.h"
 
@@ -1253,7 +1253,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	// previously used option
 	ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	//ierr = ModelOutput_ExecuteXDMFWriter(c,X,prefix);CHKERRQ(ierr);
-    //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
+        //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
 
 	if (data->output_markers) { 
 		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
@@ -1279,12 +1279,17 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	/* MPOINTS_CELL OUTPUT */
 	Step = c->step;
 	outFre = c->output_frequency;
-	if (Step%(outFre*2) == 0) {
+	if (Step%(outFre*2) == 0) 
+	/*{
 		const int  nf = 4;
 		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
+	}*/
+	{
+     	MaterialPointVariable vars[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain, MPV_diffusivity, MPV_heat_source };
+   	//ierr = pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(c,sizeof(vars)/sizeof(MaterialPointVariable),vars,PETSC_TRUE,prefix);CHKERRQ(ierr);
+	ierr = pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(c,PETSC_FALSE,sizeof(vars)/sizeof(MaterialPointVariable),vars,PETSC_TRUE,prefix);CHKERRQ(ierr);
 	}
-
 	 
 	/* ENERGY OUTPUT */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
