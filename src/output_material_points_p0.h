@@ -36,6 +36,6 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
                                                 const char path[],const char prefix[]);
 
 PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[]);
-PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[]);
+PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],const char prefix[]);
 
 #endif

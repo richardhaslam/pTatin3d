@@ -701,7 +701,7 @@ PetscErrorCode MarkerCellFieldsP0Write_PetscVec(DM dmscalar,DM dmp0,Vec scalar,V
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec"
-PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[])
+PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],const char prefix[])
 {
 	PetscErrorCode ierr;
 	char           basename[PETSC_MAX_PATH_LEN];
