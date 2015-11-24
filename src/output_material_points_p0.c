@@ -597,6 +597,7 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
     ierr = VecDestroy(&pointcounts);CHKERRQ(ierr);
   }
   ierr = DMDestroy(&dmp0);CHKERRQ(ierr);
+  ierr = DMDestroyDMDAE(dmscalar);CHKERRQ(ierr);
   ierr = DMDestroy(&dmscalar);CHKERRQ(ierr);
 	free(vtkfilename);
 	
@@ -795,6 +796,7 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
   ierr = VecDestroy(&cellconstant);CHKERRQ(ierr);
   ierr = VecDestroy(&pointcounts);CHKERRQ(ierr);
   ierr = DMDestroy(&dmp0);CHKERRQ(ierr);
+  ierr = DMDestroyDMDAE(dmscalar);CHKERRQ(ierr);
   ierr = DMDestroy(&dmscalar);CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);
