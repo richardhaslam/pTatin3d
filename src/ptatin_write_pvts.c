@@ -740,7 +740,12 @@ int main(int nargs,char *args[])
 	}
   
 	if (write_energy) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Energy writer not implemented");
+    PetscTime(&t0);
+    ierr = pTatinLoadFromCheckpointWriteToVTS_Energy();CHKERRQ(ierr);
+    PetscTime(&t1);
+    lt = t1-t0;
+    ierr = MPI_Allreduce(&lt,&gt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Energy: CPU time %1.4e (sec)\n",gt);
 	}
   
 	if (write_cell_data) {
