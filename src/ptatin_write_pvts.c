@@ -43,12 +43,15 @@
 #include "private/ptatin_impl.h"
 #include "ptatin_init.h"
 
+#include "dmdae.h"
+#include "dmda_element_q1.h"
 #include "dmda_update_coords.h"
 #include "dmda_view_petscvtk.h"
 #include "dmda_checkpoint.h"
 #include "mesh_deformation.h"
 #include "ptatin3d_stokes.h"
 #include "output_paraview.h"
+#include "energy_output.h"
 #include "output_material_points.h"
 #include "output_material_points_p0.h"
 
@@ -549,77 +552,17 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 	PetscFunctionReturn(0);
 }
 
-
-#if 0
-/* minimal loading from checkpoint file for viz of energy field */
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompEnergyLoad_DM"
-PetscErrorCode PhysCompEnergyLoad_DM(const char tname[],PhysCompEnergy *ctx)
-{
-	PhysCompEnergy energy;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = PhysCompCreate_Energy(&energy);CHKERRQ(ierr);	
-	ierr = PhysCompLoadMesh_Energy3d(energy,tname);CHKERRQ(ierr);
-	*ctx = energy;
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompEnergyLoad_X"
-PetscErrorCode PhysCompEnergyLoad_X(PhysCompEnergy ctx,const char tname[],PetscBool zip_file,Vec *_X)
-{
-	Vec            X;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = DMCreateGlobalVector(ctx->daT,&X);CHKERRQ(ierr);
-	/* load from file */
-	ierr = pTatinVecFieldRead(tname,zip_file,X);CHKERRQ(ierr);
-	
-	*_X = X;
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompEnergyWrite_DM_X"
-PetscErrorCode PhysCompEnergyWrite_DM_X(PhysCompEnergy ctx,Vec X,const char outputpath[],char name[])
-{
-	PetscInt       output_type;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	
-	output_type = 0;
-	PetscOptionsGetInt(NULL,"-output_type",&output_type,0);
-	switch (output_type) {
-		case 0:
-			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
-			//ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
-			break;
-		default:
-			ierr = PetscStrncat(name,"_X",PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
-			//ierr = pTatinOutputParaViewMeshVelocityPressure(ctx->stokes_pack,VP,outputpath,name);CHKERRQ(ierr);
-			break;
-	}
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_Energy"
 PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 {
-	PhysCompEnergy ctx;
+	PhysCompStokes ctx;
+  DM             stokes_pack,dmu,dmp,dmT;
 	Vec            X;
-	char           dmdaname[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
+	char           vname[PETSC_MAX_PATH_LEN],pname[PETSC_MAX_PATH_LEN];
 	char           outputpath[PETSC_MAX_PATH_LEN];
-	char           prefix[PETSC_MAX_PATH_LEN];
+	char           prefix[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],tname[PETSC_MAX_PATH_LEN];
 	char           suffix[PETSC_MAX_PATH_LEN];
-	char           outfilename[PETSC_MAX_PATH_LEN];
 	PetscBool      flg;
 	PetscErrorCode ierr;
 	
@@ -637,33 +580,37 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
 	}
 	
-	sprintf(dmdaname,"%s/%s.dmda-energy",outputpath,prefix);
-	sprintf(tname,"%s/%s.dmda-XT",outputpath,prefix);
+	PetscSNPrintf(vname,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",outputpath,prefix);
+	PetscSNPrintf(pname,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",outputpath,prefix);
 	
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg) { 
-		ierr = PetscStrncat(dmdaname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
-		ierr = PetscStrncat(tname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+	if (flg) {
+		ierr = PetscStrncat(vname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+		ierr = PetscStrncat(pname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
 	}
-	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda) %s : (vec) %s\n", dmdaname,tname);
+	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n                 (dmda-p) %s\n", vname,pname);
 	
-	ierr = PhysCompEnergyLoad_DM(dmdaname,&ctx);CHKERRQ(ierr);
-	ierr = PhysCompEnergyLoad_X(ctx,tname,PETSC_FALSE,&X);CHKERRQ(ierr);
+	ierr = PhysCompStokesLoad_DM(vname,pname,&ctx);CHKERRQ(ierr);
+
+	stokes_pack = ctx->stokes_pack;
+	ierr = DMCompositeGetEntries(stokes_pack,&dmu,&dmp);CHKERRQ(ierr);
+  ierr = DMDACreateOverlappingQ1FromQ2(dmu,1,&dmT);CHKERRQ(ierr);
 	
-	sprintf(outfilename,"%s",prefix);
-	if (flg) { 
-		ierr = PetscStrncat(outfilename,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"Writing file: %s/%s \n", outputpath,outfilename);
-	ierr = PhysCompEnergyWrite_DM_X(ctx,X,outputpath,outfilename);CHKERRQ(ierr);
-	
-	ierr = PhysCompDestroy_Energy(&ctx);CHKERRQ(ierr);
-	ierr = VecDestroy(&X);CHKERRQ(ierr);
-	
+  ierr = DMCreateGlobalVector(dmT,&X);CHKERRQ(ierr);
+	sprintf(tname,"%s/%s.dmda-energy.temperature.vec",outputpath,prefix);
+	ierr = pTatinVecFieldRead(tname,PETSC_FALSE,X);CHKERRQ(ierr);
+
+  PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_energy",prefix);
+  ierr = pTatinOutputParaViewMeshEnergy(dmT,NULL,X,outputpath,vtkfilename);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = DMDestroyDMDAE(dmT);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmT);CHKERRQ(ierr);
+	ierr = PhysCompDestroy_Stokes(&ctx);CHKERRQ(ierr);
+  
 	PetscFunctionReturn(0);
 }
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0"
@@ -742,9 +689,9 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
   }
   
   if (prefix) {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.viz-dmda",outputpath,prefix);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",outputpath,prefix);
 	} else {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/viz-dmda",outputpath);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",outputpath);
 	}
   
   PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell",prefix);
@@ -793,7 +740,12 @@ int main(int nargs,char *args[])
 	}
   
 	if (write_energy) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Energy writer not implemented");
+    PetscTime(&t0);
+    ierr = pTatinLoadFromCheckpointWriteToVTS_Energy();CHKERRQ(ierr);
+    PetscTime(&t1);
+    lt = t1-t0;
+    ierr = MPI_Allreduce(&lt,&gt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Energy: CPU time %1.4e (sec)\n",gt);
 	}
   
 	if (write_cell_data) {

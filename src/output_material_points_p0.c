@@ -781,14 +781,26 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 
   /* barf out dmscalar, dmp0, and the vectors */
   if (prefix) {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.viz-dmda",ctx->outputpath,prefix);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",ctx->outputpath,prefix);
 	} else {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/viz-dmda",ctx->outputpath);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",ctx->outputpath);
 	}
   
   ierr = MarkerCellFieldsP0Write_PetscVec(dmscalar,dmp0,cellconstant,pointcounts,
                                            material_points,nvars,vars,
                                            basename);CHKERRQ(ierr);
+
+  {
+    PetscViewer viewer;
+    char coorname[PETSC_MAX_PATH_LEN];
+    Vec coor;
+    
+    PetscSNPrintf(coorname,PETSC_MAX_PATH_LEN-1,"%s.coords.vec",basename);
+    ierr = DMGetCoordinates(dmscalar,&coor);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,coorname,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(coor,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
   
   PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(vec): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);
