@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   output_material_points.h
+ **    filename:   output_material_points_p0.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,24 +27,15 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#ifndef __ptatin_output_material_points_h__
-#define __ptatin_output_material_points_h__
+#ifndef __ptatin_output_material_points_p0_h__
+#define __ptatin_output_material_points_p0_h__
 
-typedef enum { 
-	MPV_region=0, 
-	MPV_viscosity, 
-	MPV_density, 
-	MPV_plastic_strain, 
-	MPV_yield_indicator, 
-	MPV_diffusivity, 
-	MPV_heat_source 
-} MaterialPointVariable;
+PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_points,const char basename[],
+                                                const int nvars,const MaterialPointVariable vars[],
+                                                PetscBool low_precision,
+                                                const char path[],const char prefix[]);
 
-extern const char *MaterialPointVariableName[];
-
-PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_points,const int nvars,const MaterialPointVariable vars[],const char name[]);
-PetscErrorCode pTatinOutputParaViewMarkerFields_PVTS(DM dau,const int nvars,const MaterialPointVariable vars[],const char prefix[],const char name[]);
-PetscErrorCode pTatinOutputParaViewMarkerFields(DM pack,DataBucket material_points,const int nvars,const MaterialPointVariable vars[],const char path[],const char prefix[]);
-PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nvars,const MaterialPointVariable vars[],const char prefix[]);
+PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[]);
+PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[]);
 
 #endif

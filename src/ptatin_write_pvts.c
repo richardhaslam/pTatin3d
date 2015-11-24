@@ -49,6 +49,8 @@
 #include "mesh_deformation.h"
 #include "ptatin3d_stokes.h"
 #include "output_paraview.h"
+#include "output_material_points.h"
+#include "output_material_points_p0.h"
 
 //#define HAVE_STRLCAT
 
@@ -373,7 +375,7 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
 	}
 	
 	sprintf(vname,"%s/%s.dmda-velocity",outputpath,prefix);
@@ -504,7 +506,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
 	}
 	
 	sprintf(vname,"%s/%s.dmda-velocity",outputpath,prefix);
@@ -632,7 +634,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	flg = PETSC_FALSE;
 	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files");
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
 	}
 	
 	sprintf(dmdaname,"%s/%s.dmda-energy",outputpath,prefix);
@@ -663,7 +665,95 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 }
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0"
+PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
+{
+	PhysCompStokes ctx;
+	char           vname[PETSC_MAX_PATH_LEN],pname[PETSC_MAX_PATH_LEN];
+ 	char           outputpath[PETSC_MAX_PATH_LEN],prefix[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
+	char           suffix[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN];
+  int                   nvars;
+  MaterialPointVariable varlist[10];
+	PetscBool      flg,hasfield;
+	PetscErrorCode ierr;
+	
+	PetscFunctionBegin;
+	
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) {
+		sprintf(outputpath,".");
+	}
+	
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg == PETSC_FALSE) {
+		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
+	}
+	
+	PetscSNPrintf(vname,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",outputpath,prefix);
+	PetscSNPrintf(pname,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",outputpath,prefix);
+	
+	flg = PETSC_FALSE;
+	ierr = PetscOptionsGetString(NULL,"-file_suffix",suffix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	if (flg) {
+		ierr = PetscStrncat(vname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+		ierr = PetscStrncat(pname,suffix,PETSC_MAX_PATH_LEN-1);CHKERRQ(ierr);
+	}
+	PetscPrintf(PETSC_COMM_WORLD,"Reading files: (dmda-vel) %s\n                 (dmda-p) %s\n", vname,pname);
+	
+	ierr = PhysCompStokesLoad_DM(vname,pname,&ctx);CHKERRQ(ierr);
+	
+  nvars = 0;
 
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_region",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_region; nvars++; }
+
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_viscosity",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_viscosity; nvars++; }
+
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_density",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_density; nvars++; }
+
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_plastic_strain",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_plastic_strain; nvars++; }
+
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_yield_indicator",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_yield_indicator; nvars++; }
+
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_diffusivity",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_diffusivity; nvars++; }
+
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_heat_source",&hasfield,NULL);
+  if (hasfield) { varlist[nvars] = MPV_heat_source; nvars++; }
+
+  if (nvars == 0) {
+    PetscPrintf(PETSC_COMM_WORLD,"No marker fields to project were specified. Use one (or several) of the following command line arguments:"
+                "  -markercellp0_region\n"
+                "  -markercellp0_viscosity\n"
+                "  -markercellp0_density\n"
+                "  -markercellp0_plastic_strain\n"
+                "  -markercellp0_yield_indicator\n"
+                "  -markercellp0_diffusivity\n"
+                "  -markercellp0_heat_source\n");
+                
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify at least one marker field to project");
+  }
+  
+  if (prefix) {
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.viz-dmda",outputpath,prefix);
+	} else {
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/viz-dmda",outputpath);
+	}
+  
+  PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell",prefix);
+  ierr = MarkerCellFieldsP0Write_ParaView(ctx->stokes_pack,NULL,basename,nvars,varlist,PETSC_TRUE,outputpath,vtkfilename);CHKERRQ(ierr);
+	
+	ierr = PhysCompDestroy_Stokes(&ctx);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
 
 int main(int nargs,char *args[])
 {
@@ -676,26 +766,41 @@ int main(int nargs,char *args[])
 	
 	ierr = pTatinInitialize(&nargs,&args,0,ptatin_driver_help);CHKERRQ(ierr);
 	
-	PetscTime(&t0);
 
+  PetscOptionsGetBool(NULL,"-write_stokes",&write_stokes,NULL);
+  PetscOptionsGetBool(NULL,"-write_energy",&write_energy,NULL);
+  PetscOptionsGetBool(NULL,"-write_markercellp0",&write_cell_data,NULL);
+  PetscOptionsGetBool(NULL,"-write_mpdata",&write_mp_data,NULL);
+  
 	if (write_stokes) {
+    PetscTime(&t0);
+
 		ierr = pTatinLoadFromCheckpointWriteToVTS_Stokes();CHKERRQ(ierr);
+    
+    PetscTime(&t1);
+    lt = t1-t0;
+    ierr = MPI_Allreduce(&lt,&gt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Stokes: CPU time %1.4e (sec)\n",gt);
 	}
+  
 	if (write_energy) {
-		
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Energy writer not implemented");
 	}
+  
 	if (write_cell_data) {
-		
+    PetscTime(&t0);
+
+		ierr = pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0();CHKERRQ(ierr);
+    
+    PetscTime(&t1);
+    lt = t1-t0;
+    ierr = MPI_Allreduce(&lt,&gt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0: CPU time %1.4e (sec)\n",gt);
 	}
+  
 	if (write_mp_data) {
-		
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"MaterialPoint writer not implemented");
 	}
-	
-	
-	PetscTime(&t1);
-	lt = t1-t0;
-	ierr = MPI_Allreduce(&lt,&gt,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"pTatinLoadFromCheckpointWriteToVTS_Stokes: CPU time %1.4e (sec)\n", gt);
 	
 	ierr = pTatinFinalize();CHKERRQ(ierr);
 	return 0;

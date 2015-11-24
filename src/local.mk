@@ -30,6 +30,7 @@ libptatin3d-y.c += $(call thisdir, \
 			output_paraview.c \
 			xdmf_writer.c \
 			output_material_points.c \
+            output_material_points_p0.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
 			material_point_point_location.c \
