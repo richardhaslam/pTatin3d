@@ -46,8 +46,9 @@
 #include "dmda_element_q2p1.h"
 #include "material_point_std_utils.h"
 #include "material_point_popcontrol.h"
+#include "output_material_points.h"
 #include "xdmf_writer.h"
-
+#include "output_material_points_p0.h"
 #include "private/quadrature_impl.h"
 #include "quadrature.h"
 #include "QPntSurfCoefStokes_def.h"
@@ -1078,8 +1079,13 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 	// tests for alternate (output/load)ing of "single file marker" formats
 	//ierr = SwarmDataWriteToPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
 	//ierr = SwarmDataLoadFromPetscVec(c->materialpoint_db,prefix);CHKERRQ(ierr);
-	
-	
+	/*
+	{
+    MaterialPointVariable vars[] = { MPV_viscosity, MPV_density, MPV_region };
+    //ierr = pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(c,sizeof(vars)/sizeof(MaterialPointVariable),vars,PETSC_TRUE,prefix);CHKERRQ(ierr);
+    ierr = pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(c,PETSC_TRUE,sizeof(vars)/sizeof(MaterialPointVariable),vars,PETSC_TRUE,prefix);CHKERRQ(ierr);
+  }
+  */
 	PetscFunctionReturn(0);
 }
 
