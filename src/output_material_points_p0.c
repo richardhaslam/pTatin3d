@@ -198,11 +198,35 @@ PetscErrorCode MarkerCellFieldsP0_CountPointsPerCell(DM dmp0,DataBucket db,Vec p
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MarkerCellFieldsP0Read_PetscVec"
+PetscErrorCode MarkerCellFieldsP0Read_PetscVec(Vec scalar,const MaterialPointVariable var_name,
+                                               const char basename[])
+{
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+  char           fname[PETSC_MAX_PATH_LEN];
+  
+  PetscFunctionBegin;
+  {
+    /* load cell data */
+    PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s.%s.vec",basename,MaterialPointVariableName[var_name]);
+    PetscPrintf(PETSC_COMM_WORLD,"  Loading MarkerCellField file: %s\n",fname);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fname,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = VecLoad(scalar,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+  
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MarkerCellFieldsP0Write_ParaViewVTS"
 PetscErrorCode MarkerCellFieldsP0Write_ParaViewVTS(DM dmscalar,DM dmp0,Vec scalar,Vec pointcounts,
-                                                      DataBucket material_points,const int nvars,const MaterialPointVariable vars[],
+                                                      DataBucket material_points,
+                                                      const char basename[],
+                                                      const int nvars,const MaterialPointVariable vars[],
                                                       PetscBool low_precision,
-                                                      const char name[])
+                                                      const char vtkfilename[])
 {
 	PetscErrorCode ierr;
   PetscScalar    *LA_scalar;
@@ -217,8 +241,16 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaViewVTS(DM dmscalar,DM dmp0,Vec scala
 	int            offset,bytes;
 	
 	PetscFunctionBegin;
-	if ((vtk_fp = fopen (name,"w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name);
+  
+  if (material_points && basename) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify one of either material points or basename of petsc vec file to load");
+  }
+  if (!material_points && !basename) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify one of either material points or basename of petsc vec file to load");
+  }
+  
+	if ((vtk_fp = fopen (vtkfilename,"w")) == NULL)  {
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",vtkfilename);
 	}
 	
 	ierr = DMDAGetGhostCorners(dmscalar,&gsi,&gsj,&gsk,&gm,&gn,&gp);CHKERRQ(ierr);
@@ -361,13 +393,18 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaViewVTS(DM dmscalar,DM dmp0,Vec scala
   for (t=0; t<nvars; t++) {
     MaterialPointVariable idx = vars[t];
     
-    
-    if ( (idx == MPV_region) || (idx == MPV_yield_indicator) ){
-      /* perform closest point projection */
-      ierr = MarkerCellFieldsP0_ProjectIntegerField(material_points,idx,scalar);CHKERRQ(ierr);
+    if (material_points) {
+      /* compute average from material points */
+      if ( (idx == MPV_region) || (idx == MPV_yield_indicator) ){
+        /* perform closest point projection */
+        ierr = MarkerCellFieldsP0_ProjectIntegerField(material_points,idx,scalar);CHKERRQ(ierr);
+      } else {
+        /* perform P0 projection */
+        ierr = MarkerCellFieldsP0_ProjectScalarField(material_points,idx,pointcounts,scalar);CHKERRQ(ierr);
+      }
     } else {
-      /* perform P0 projection */
-      ierr = MarkerCellFieldsP0_ProjectScalarField(material_points,idx,pointcounts,scalar);CHKERRQ(ierr);
+      /* load average from petscvec */
+      ierr = MarkerCellFieldsP0Read_PetscVec(scalar,idx,basename);CHKERRQ(ierr);
     }
     
     ierr = VecGetArray(scalar,&LA_scalar);CHKERRQ(ierr);
@@ -422,7 +459,7 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaViewPVTS(DM dascalar,const int nvars,
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen (name,"w")) == NULL)  {
-			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name);
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Cannot open file %s",name);
 		}
 	}
 	
@@ -479,7 +516,7 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaViewPVTS(DM dascalar,const int nvars,
 
 #undef __FUNCT__
 #define __FUNCT__ "MarkerCellFieldsP0Write_ParaView"
-PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_points,
+PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_points,const char basename[],
                                                   const int nvars,const MaterialPointVariable vars[],
                                                   PetscBool low_precision,
                                                   const char path[],const char prefix[])
@@ -490,7 +527,7 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
 	DM          dau,dap;
   DM          dmscalar,dmp0;
 	PetscInt    MX,MY,MZ,Mp,Np,Pp,*lxv,*lyv,*lzv;
-  Vec         cellconstant,pointcounts;
+  Vec         cellconstant,pointcounts = NULL;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -514,12 +551,13 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
 	ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,MX,MY,MZ,Mp,Np,Pp,1,0,lxv,lyv,lzv,&dmp0);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dmp0,&cellconstant);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dmp0,&pointcounts);CHKERRQ(ierr);
   
   /* count points per cell */
-  ierr = MarkerCellFieldsP0_CountPointsPerCell(dmp0,material_points,pointcounts);CHKERRQ(ierr);
-  
-	ierr = MarkerCellFieldsP0Write_ParaViewVTS(dmscalar,dmp0,cellconstant,pointcounts,material_points,nvars,vars,low_precision,filename);CHKERRQ(ierr);
+  if (material_points) {
+    ierr = DMCreateGlobalVector(dmp0,&pointcounts);CHKERRQ(ierr);
+    ierr = MarkerCellFieldsP0_CountPointsPerCell(dmp0,material_points,pointcounts);CHKERRQ(ierr);
+  }
+	ierr = MarkerCellFieldsP0Write_ParaViewVTS(dmscalar,dmp0,cellconstant,pointcounts,material_points,basename,nvars,vars,low_precision,filename);CHKERRQ(ierr);
   
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename);
@@ -528,7 +566,9 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
 	ierr = MarkerCellFieldsP0Write_ParaViewPVTS(dmscalar,nvars,vars,low_precision,prefix,filename);CHKERRQ(ierr);
 	
   ierr = VecDestroy(&cellconstant);CHKERRQ(ierr);
-  ierr = VecDestroy(&pointcounts);CHKERRQ(ierr);
+  if (material_points) {
+    ierr = VecDestroy(&pointcounts);CHKERRQ(ierr);
+  }
   ierr = DMDestroy(&dmp0);CHKERRQ(ierr);
   ierr = DMDestroy(&dmscalar);CHKERRQ(ierr);
 	free(vtkfilename);
@@ -548,9 +588,11 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,con
 	static int     beenhere=0;
 	static char    pvdfilename[PETSC_MAX_PATH_LEN];
 	DataBucket     material_points;
+
 	PetscFunctionBegin;
-	
 	PetscTime(&t0);
+  if (nvars == 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify at least one marker field to project");
+  
 	// PVD
 	if (beenhere == 0) {
 		
@@ -587,7 +629,7 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,con
 	
 	ierr = pTatinGetMaterialPoints(ctx,&material_points,NULL);CHKERRQ(ierr);
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
-	ierr = MarkerCellFieldsP0Write_ParaView(stokes_pack,material_points,nvars,vars,low_precision,ctx->outputpath,name);CHKERRQ(ierr);
+	ierr = MarkerCellFieldsP0Write_ParaView(stokes_pack,material_points,NULL,nvars,vars,low_precision,ctx->outputpath,name);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
 	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);
@@ -620,30 +662,10 @@ PetscErrorCode MarkerCellFieldsP0Write_PetscVec(DM dmscalar,DM dmp0,Vec scalar,V
 
     /* write cell data */
     PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s.%s.vec",basename,MaterialPointVariableName[idx]);
+    PetscPrintf(PETSC_COMM_WORLD,"  Writing MarkerCellField file: %s\n",fname);
 		ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fname,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 		ierr = VecView(scalar,viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0Read_PetscVec"
-PetscErrorCode MarkerCellFieldsP0Read_PetscVec(Vec scalar,const MaterialPointVariable var_name,
-                                                const char basename[])
-{
-  PetscViewer    viewer;
-  PetscErrorCode ierr;
-  char           fname[PETSC_MAX_PATH_LEN];
-  
-  PetscFunctionBegin;
-  {
-    /* load cell data */
-    PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s.%s.vec",basename,MaterialPointVariableName[var_name]);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,fname,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = VecLoad(scalar,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   
 	PetscFunctionReturn(0);
@@ -667,6 +689,8 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
   MPI_Comm       comm;
 
 	PetscFunctionBegin;
+  if (nvars == 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify at least one marker field to project");
+
 	PetscTime(&t0);
 	// PVD
 	if (beenhere == 0) {
@@ -681,18 +705,33 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		beenhere = 1;
 	}
+	{
+		char vtkfilename[PETSC_MAX_PATH_LEN];
+		
+		if (prefix) {
+			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell.pvts",prefix);
+		} else {
+			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"mpoints_cell.pvts");
+		}
+		
+		ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+	}
 
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 
   if (dm_velocity_data_required) {
-    if (prefix) {
-      PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
-    } else {
-      PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
-    }
+    char f1[PETSC_MAX_PATH_LEN];
+    char f2[PETSC_MAX_PATH_LEN];
 
-    ierr = DMDAPackDataToFile(dau,basename);CHKERRQ(ierr);
+    if (prefix) {
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
+    } else {
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
+    }
+    ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
   }
   
   /* setup dm's */
@@ -710,6 +749,7 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
   ierr = DMCreateGlobalVector(dmp0,&pointcounts);CHKERRQ(ierr);
 	
   ierr = pTatinGetMaterialPoints(ctx,&material_points,NULL);CHKERRQ(ierr);
+  ierr = MarkerCellFieldsP0_CountPointsPerCell(dmp0,material_points,pointcounts);CHKERRQ(ierr);
 
   /* barf out dmscalar, dmp0, and the vectors */
   if (prefix) {
