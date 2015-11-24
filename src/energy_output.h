@@ -34,5 +34,6 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Quadrature Q,Vec X,const char path[],const char prefix[]);
 PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,Quadrature Q,const char prefix[],const char name[]);
 PetscErrorCode DAQ1PieceExtendForGhostLevelZero(FILE *vtk_fp,int indent_level,DM da,const char local_file_prefix[]);
+PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,Vec X,const char prefix[]);
 
 #endif

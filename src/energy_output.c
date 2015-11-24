@@ -646,3 +646,66 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3dModelOutput_Energy_PetscVec"
+PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,Vec X,const char prefix[])
+{
+	PetscErrorCode ierr;
+	char           name[PETSC_MAX_PATH_LEN];
+	PhysCompEnergy energy;
+	DM             daT;
+	PetscLogDouble t0,t1;
+	static int     beenhere = 0;
+	static char    pvdfilename[PETSC_MAX_PATH_LEN];
+  PetscViewer    viewer;
+  
+	PetscFunctionBegin;
+	
+	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+	daT  = energy->daT;
+	
+	PetscTime(&t0);
+	// PVD
+	if (beenhere == 0) {
+		PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_energy.pvd",ctx->outputpath);
+		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename );
+		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+		
+		beenhere = 1;
+	}
+	{
+		char vtkfilename[PETSC_MAX_PATH_LEN];
+		
+		if (prefix) { PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_energy.pvts",prefix);
+		} else {      PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"energy.pvts"); }
+		
+		ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+	}
+	
+  if (dm_velocity_data_required) {
+    char f1[PETSC_MAX_PATH_LEN];
+    char f2[PETSC_MAX_PATH_LEN];
+    
+    if (prefix) {
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
+    } else {
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
+    }
+    ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
+  }
+
+	if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.energy-dmda.temperature.vec",ctx->outputpath,prefix);
+	} else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/energy-dmda.temperature.vec",ctx->outputpath); }
+	
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+  ierr = VecView(X,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+
+	PetscTime(&t1);
+	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(vec): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	
+	PetscFunctionReturn(0);
+}
