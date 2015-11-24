@@ -598,7 +598,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
   ierr = DMDACreateOverlappingQ1FromQ2(dmu,1,&dmT);CHKERRQ(ierr);
 	
   ierr = DMCreateGlobalVector(dmT,&X);CHKERRQ(ierr);
-	sprintf(tname,"%s/%s.energy-dmda.temperature.vec",outputpath,prefix);
+	sprintf(tname,"%s/%s.dmda-energy.temperature.vec",outputpath,prefix);
 	ierr = pTatinVecFieldRead(tname,PETSC_FALSE,X);CHKERRQ(ierr);
 
   PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_energy",prefix);
@@ -689,9 +689,9 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
   }
   
   if (prefix) {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.viz-dmda",outputpath,prefix);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",outputpath,prefix);
 	} else {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/viz-dmda",outputpath);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",outputpath);
 	}
   
   PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell",prefix);

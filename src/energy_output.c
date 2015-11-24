@@ -697,8 +697,8 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
     ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
   }
 
-	if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.energy-dmda.temperature.vec",ctx->outputpath,prefix);
-	} else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/energy-dmda.temperature.vec",ctx->outputpath); }
+	if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-energy.temperature.vec",ctx->outputpath,prefix);
+	} else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda-energy.temperature.vec",ctx->outputpath); }
 	
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);

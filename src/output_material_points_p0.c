@@ -781,9 +781,9 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 
   /* barf out dmscalar, dmp0, and the vectors */
   if (prefix) {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.viz-dmda",ctx->outputpath,prefix);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",ctx->outputpath,prefix);
 	} else {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/viz-dmda",ctx->outputpath);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",ctx->outputpath);
 	}
   
   ierr = MarkerCellFieldsP0Write_PetscVec(dmscalar,dmp0,cellconstant,pointcounts,
