@@ -759,7 +759,7 @@ int main(int nargs,char *args[])
 {
 	PetscErrorCode ierr;
 	PetscLogDouble t0,t1,gt,lt;
-	PetscBool write_stokes = PETSC_TRUE;
+	PetscBool write_stokes = PETSC_FALSE;
 	PetscBool write_energy = PETSC_FALSE;
 	PetscBool write_cell_data = PETSC_FALSE;
 	PetscBool write_mp_data = PETSC_FALSE;
@@ -771,6 +771,15 @@ int main(int nargs,char *args[])
   PetscOptionsGetBool(NULL,"-write_energy",&write_energy,NULL);
   PetscOptionsGetBool(NULL,"-write_markercellp0",&write_cell_data,NULL);
   PetscOptionsGetBool(NULL,"-write_mpdata",&write_mp_data,NULL);
+  
+  if (!write_stokes && !write_cell_data && !write_energy && !write_mp_data) {
+    PetscPrintf(PETSC_COMM_WORLD,"No writer specified. Use one (or several) of the following command line arguments"
+                "  -write_stokes\n"
+                "  -write_energy\n"
+                "  -write_markercellp0\n"
+                "  -write_mpdata\n");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specifiy at least one writer");
+  }
   
 	if (write_stokes) {
     PetscTime(&t0);
