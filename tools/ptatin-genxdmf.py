@@ -323,17 +323,17 @@ def pTatinXDMF_WriteIndividualTemporalCollection(timeseries, gridname_list,suffi
 		f.write('<Xdmf xmlns:xi="http://www.w3.org/2003/XInclude" Version="2.2">\n')
 		f.write('  <Domain>\n')
 
-		timeseries_name = 'TimeSeries-' + gridname 
-		f.write('<!--\n')		
+		timeseries_name = 'TimeSeries-' + gridname
+		#f.write('<!--\n')
 		f.write('    <Grid Name="' + timeseries_name + '" GridType="Collection" CollectionType="Temporal">\n')
-		f.write('-->\n')
+		#f.write('-->\n')
 
 		for time_entry in timeseries:
 			f.write('      <xi:include href="step'+ time_entry[0] + '-' + gridname + '.xmf"/>\n')
 
-		f.write('<!--\n')
+		#f.write('<!--\n')
 		f.write('    </Grid>\n')
-		f.write('-->\n')
+		#f.write('-->\n')
 
 		f.write('  </Domain>\n')
 		f.write('</Xdmf>\n')
