@@ -128,7 +128,7 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	f.write('</Grid>\n')
 	f.close()
 
-def pTatinDMDAEnergy_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale):
+def pTatinDMDAEnergy_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, temp_scale):
 
 	nx = mx + 1
 	ny = my + 1
@@ -155,7 +155,9 @@ def pTatinDMDAEnergy_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale):
 	f.write('        </DataItem>\n')
 	f.write('      </Geometry>\n')
 	f.write('\n')
-	f.write('      <Attribute Name="temperature" AttributeType="Scalar" Center="Node">\n')
+
+	fieldname = 'temperature' + ' [' + temp_scale['Unit'] + ']'
+	f.write('      <Attribute Name="'+ fieldname + '" AttributeType="Scalar" Center="Node">\n')
 	f.write('        <DataItem ItemType="Function" Function="1.0 * $0" Dimensions="' + nodesize + ' 1">\n')
 	f.write('          <DataItem Format="Binary" DataType="Float" Precision="8" Endian="Big" Seek="8" Dimensions="' + nodesize + ' 1">\n')
 	f.write('            ' + prefix + '.dmda-energy.temperature.vec\n')
@@ -194,8 +196,22 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, vis
 	f.write('        </DataItem>\n')
 	f.write('      </Geometry>\n')
 
-	list  = [ "region" , "viscosity"           , "density"              , "plastic_strain" , "yield_indicator" , "diffusivity"            ,"energy_source" ]
-	scale = [ 1.0      , visc_scale['Scale']   , density_scale['Scale'] , 1.0              , 1.0               , diffusion_scale['Scale'] , esource_scale['Scale'] ]
+	list  = [ "region" ,
+                  'viscosity' + ' [' + visc_scale['Unit'] + ']',
+                  'density' + ' [' + density_scale['Unit'] + ']',
+                  "plastic_strain" ,
+                  "yield_indicator" ,
+                  'diffusivity' + ' [' + diffusion_scale['Unit'] + ']',
+                  'energy_source'  + ' [' + esource_scale['Unit'] + ']'
+                ]
+	scale = [ 1.0 , 
+                  visc_scale['Scale'] ,
+                  density_scale['Scale'] , 
+                  1.0 ,
+                  1.0 ,
+                  diffusion_scale['Scale'] ,
+                  esource_scale['Scale']
+                ]
 
 	index = 0
 	for member in list:
@@ -274,6 +290,7 @@ def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
 	denss = units['density']
 	diffs = units['diffusivity']
 	ess = units['energy-source']
+	temps = units['temperature']
 
 	for time_entry in timeseries:
 		pTatinDMDAStokes_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,vs,ss)
@@ -283,7 +300,7 @@ def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
 
 	# length_scale, time_scale
 	for time_entry in timeseries:
-		pTatinDMDAEnergy_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts)
+		pTatinDMDAEnergy_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,temps)
 
 	# length_scale, time_scale, visc_scale, density_scale, diffusion_scale, tflux_scale
 	for time_entry in timeseries:
@@ -323,17 +340,17 @@ def pTatinXDMF_WriteIndividualTemporalCollection(timeseries, gridname_list,suffi
 		f.write('<Xdmf xmlns:xi="http://www.w3.org/2003/XInclude" Version="2.2">\n')
 		f.write('  <Domain>\n')
 
-		timeseries_name = 'TimeSeries-' + gridname 
-		f.write('<!--\n')		
+		timeseries_name = 'TimeSeries-' + gridname
+		#f.write('<!--\n')
 		f.write('    <Grid Name="' + timeseries_name + '" GridType="Collection" CollectionType="Temporal">\n')
-		f.write('-->\n')
+		#f.write('-->\n')
 
 		for time_entry in timeseries:
 			f.write('      <xi:include href="step'+ time_entry[0] + '-' + gridname + '.xmf"/>\n')
 
-		f.write('<!--\n')
+		#f.write('<!--\n')
 		f.write('    </Grid>\n')
-		f.write('-->\n')
+		#f.write('-->\n')
 
 		f.write('  </Domain>\n')
 		f.write('</Xdmf>\n')
@@ -382,11 +399,11 @@ def pTatinCreateUnitDictionary():
 	              'Scale':    RHO },
 	# ------------------------------------
 	            { 'Quantity': 'strain-rate',
-        	      'Unit':     's^-1',
+        	      'Unit':     '1/s',
         	      'Scale':    STR },
 	# ------------------------------------
         	    { 'Quantity': 'diffusivity',
-        	      'Unit':     'm^2.s^-1',
+        	      'Unit':     'm^2/s',
         	      'Scale':    D },
 	# ------------------------------------
 	            { 'Quantity': 'temperature',
