@@ -278,7 +278,7 @@ def pTatinXDMF_FilterPVDContents(filename):
 	return(timeseries)
 
 
-def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
+def pTatinXDMF_WritePerStepFiles(timeseries,timeseries_energy,timeseries_mptCell,mx,my,mz,units):
 	print('Writing per-step xdmf meta')
 
 	# length_scale, time_scale, velocity_scale, stress_scale)
@@ -299,11 +299,11 @@ def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
 		pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,ss)
 
 	# length_scale, time_scale
-	for time_entry in timeseries:
+	for time_entry in timeseries_energy:
 		pTatinDMDAEnergy_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,temps)
 
 	# length_scale, time_scale, visc_scale, density_scale, diffusion_scale, tflux_scale
-	for time_entry in timeseries:
+	for time_entry in timeseries_mptCell:
 		pTatinDMDACell_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,viscs,denss,diffs,ess)
 
 
@@ -482,13 +482,20 @@ units = pTatinCreateUnitDictionary()
 geounits = pTatinCreateGeodynamicUnitDictionary(units)
 
 
-timeseries = pTatinXDMF_FilterPVDContents( 'timeseries_X.pvd' )
+timeseries_X = pTatinXDMF_FilterPVDContents( 'timeseries_X.pvd' )
+timeseries_mptCell = pTatinXDMF_FilterPVDContents('timeseries_mpoints_cell.pvd')
+timeseries_energy = pTatinXDMF_FilterPVDContents('timeseries_energy.pvd')
 
-gridname_list = [ 'StokesGrid', 'StokesP0Grid', 'EnergyGrid', 'MPCellGrid' ]
+gridname_list_X = [ 'StokesGrid', 'StokesP0Grid' ]
+gridname_list_energy = [ 'EnergyGrid' ]
+gridname_list_mptCell = [ 'MPCellGrid' ]
 
-pTatinXDMF_WritePerStepFiles( timeseries, mx,my,mz, geounits )
+pTatinXDMF_WritePerStepFiles( timeseries_X, timeseries_energy, timeseries_mptCell, mx,my,mz, geounits )
 
-pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, '_geoSI' )
+pTatinXDMF_WriteIndividualTemporalCollection( timeseries_X, gridname_list_X, '_geoSI' )
+pTatinXDMF_WriteIndividualTemporalCollection( timeseries_energy, gridname_list_energy, '_geoSI' )
+pTatinXDMF_WriteIndividualTemporalCollection( timeseries_mptCell, gridname_list_mptCell, '_geoSI' )
+
 #pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, None )
 
 
