@@ -80,7 +80,7 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	scale = length_scale['Scale']
 	f.write('    <DataItem ItemType="Function" Function="' + str(scale) + ' * $0" Dimensions="' + nodesize + ' 3">\n')
 	f.write('      <DataItem Reference="XML">\n')
-	f.write('      /Xdmf/Domain/Grid[@Name="StokesP0"]/DataItem[@Name="subset_coor"]\n')
+	f.write('      /Xdmf/Domain/Grid[@Name="TimeSeries-StokesP0Grid"]/Grid[@Name="StokesP0"]/DataItem[@Name="subset_coor"]\n')
 	f.write('      </DataItem>\n')
 	f.write('    </DataItem>\n')
 
@@ -93,7 +93,7 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	f.write('  <Attribute Name="' + fieldname + '" AttributeType="Scalar" Center="Cell">\n')
 	f.write('    <DataItem ItemType="Function" Function="' + str(scale) + ' * $0" Dimensions="' + cellsize + '">\n')
 	f.write('      <DataItem Reference="XML">\n')
-	f.write('      /Xdmf/Domain/Grid[@Name="StokesP0"]/DataItem[@Name="subset_pressure"]\n')
+	f.write('      /Xdmf/Domain/Grid[@Name="TimeSeries-StokesP0Grid"]/Grid[@Name="StokesP0"]/DataItem[@Name="subset_pressure"]\n')
 	f.write('      </DataItem>\n')
 	f.write('    </DataItem>\n')
 	f.write('  </Attribute>\n')
@@ -168,7 +168,7 @@ def pTatinDMDAEnergy_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, t
 	f.close()
 
 
-def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, visc_scale, density_scale, diffusion_scale, esource_scale):
+def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, visc_scale, density_scale, diffusion_scale, hsource_scale):
 
 	nx = mx + 1
 	ny = my + 1
@@ -200,27 +200,26 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, vis
                   'viscosity' + ' [' + visc_scale['Unit'] + ']',
                   'density' + ' [' + density_scale['Unit'] + ']',
                   "plastic_strain" ,
-                  "yield_indicator" ,
+                  #"yield_indicator" ,
                   'diffusivity' + ' [' + diffusion_scale['Unit'] + ']',
-                  'energy_source'  + ' [' + esource_scale['Unit'] + ']'
+                  'heat_source'  + ' [' + hsource_scale['Unit'] + ']'
                 ]
 	scale = [ 1.0 , 
                   visc_scale['Scale'] ,
                   density_scale['Scale'] , 
                   1.0 ,
-                  1.0 ,
+                  #1.0 ,
                   diffusion_scale['Scale'] ,
-                  esource_scale['Scale']
+                  hsource_scale['Scale']
                 ]
-
 	index = 0
 	for member in list:
-		scale_member = scale[index] 
+		scale_member = scale[index]
 		f.write('\n')
 		f.write('      <Attribute Name="' + member + '" AttributeType="Scalar" Center="Cell">\n')
 		f.write('        <DataItem ItemType="Function" Function="' + str(scale_member) +' * $0" Dimensions="' + cellsize + ' 1">\n')
 		f.write('          <DataItem Format="Binary" DataType="Float" Precision="8" Endian="Big" Seek="8" Dimensions="' + cellsize + ' 1">\n')
-		f.write('            ' + prefix + '.dmda-cell.' + member + '.vec\n')
+		f.write('            ' + prefix + '.dmda-cell.' + member.split()[0]+ '.vec\n')
 		f.write('          </DataItem>\n')
 		f.write('        </DataItem>\n')
 		f.write('      </Attribute>\n')
@@ -278,7 +277,7 @@ def pTatinXDMF_FilterPVDContents(filename):
 	return(timeseries)
 
 
-def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
+def pTatinXDMF_WritePerStepFiles(timeseries,timeseries_energy,timeseries_mptCell,mx,my,mz,units):
 	print('Writing per-step xdmf meta')
 
 	# length_scale, time_scale, velocity_scale, stress_scale)
@@ -289,7 +288,7 @@ def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
 	viscs = units['viscosity']
 	denss = units['density']
 	diffs = units['diffusivity']
-	ess = units['energy-source']
+	hss = units['heat-source']
 	temps = units['temperature']
 
 	for time_entry in timeseries:
@@ -299,13 +298,12 @@ def pTatinXDMF_WritePerStepFiles(timeseries,mx,my,mz,units):
 		pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,ss)
 
 	# length_scale, time_scale
-	for time_entry in timeseries:
+	for time_entry in timeseries_energy:
 		pTatinDMDAEnergy_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,temps)
 
 	# length_scale, time_scale, visc_scale, density_scale, diffusion_scale, tflux_scale
-	for time_entry in timeseries:
-		pTatinDMDACell_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,viscs,denss,diffs,ess)
-
+	for time_entry in timeseries_mptCell:
+		pTatinDMDACell_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,viscs,denss,diffs,hss)
 
 
 def pTatinXDMF_WriteInclude(timeseries, gridname_list):
@@ -370,49 +368,49 @@ def pTatinCreateUnitDictionary():
 	STR = V/L
 	P = E/T
 	D = L*L/T
-	RHO = P * T*T/L
+	RHO = -100000.0 #P * T*T/L
 	
 	quantities = [
 	# ------------------------------------
 	            { 'Quantity': 'length',
 	              'Unit':     'm',
-	              'Scale':    L },
+	              'Scale':    '%e'%L },
 	# ------------------------------------
 	            { 'Quantity': 'velocity',
 	              'Unit':     'm/s',
-	              'Scale':    V },
+	              'Scale':    '%e'%V },
 	# ------------------------------------
 	            { 'Quantity': 'viscosity',
 	              'Unit':     'Pa.s',
-	              'Scale':    E },
+	              'Scale':    '%e'%E },
 	# ------------------------------------
 	            { 'Quantity': 'time',
 	              'Unit':     's',
-	              'Scale':    T },
+	              'Scale':    '%e'%T },
 	# ------------------------------------
 	            { 'Quantity': 'stress',
 	              'Unit':     'Pa',
-	              'Scale':    P },
+	              'Scale':    '%e'%P },
 	# ------------------------------------
 	            { 'Quantity': 'density',
 	              'Unit':     'kg/m^3',
-	              'Scale':    RHO },
+	              'Scale':    '%e'%RHO },
 	# ------------------------------------
 	            { 'Quantity': 'strain-rate',
         	      'Unit':     '1/s',
-        	      'Scale':    STR },
+        	      'Scale':    '%e'%STR },
 	# ------------------------------------
         	    { 'Quantity': 'diffusivity',
         	      'Unit':     'm^2/s',
-        	      'Scale':    D },
+        	      'Scale':    '%e'%D },
 	# ------------------------------------
 	            { 'Quantity': 'temperature',
-	              'Unit':     'K',
+	              'Unit':     'degC',
 	              'Scale':    1.0 },
 	# ------------------------------------
-	            { 'Quantity': 'energy-source',
+	            { 'Quantity': 'heat-source',
 	              'Unit':     'K/s',
-	              'Scale':    1.0/T },
+	              'Scale':    '%e'%(1.0/T) },
 	# ------------------------------------
 	            { 'Quantity': 'heat-flux',
 	              'Unit':     'W/m^2',
@@ -424,7 +422,7 @@ def pTatinCreateUnitDictionary():
 	# for explaination
 
 	units = {x['Quantity']: x for x in quantities}
-
+	
 	#X = units['velocity']
 	#print(units['length'])
 	print(units)
@@ -443,23 +441,23 @@ def pTatinCreateGeodynamicUnitDictionary(unit):
 	units_geo = units
 
 	X = units_geo['length']
-	X['Scale'] = X['Scale'] / 1.0e3
+	X['Scale'] = float(X['Scale']) / 1.0e3
 	X['Unit'] = 'km'
 
 	X = units_geo['time']
 	sec_p_yr = 60.0 * 60.0 * 24.0 * 365.0
 	sec_p_kyr = sec_p_yr * 1000.0 	
-	X['Scale'] = X['Scale'] / sec_p_kyr
+	X['Scale'] = float(X['Scale']) / sec_p_kyr
 	X['Unit'] = 'kyr'
 
 	X = units_geo['velocity']
 	factor = 1.0e-2 / sec_p_yr
-	X['Scale'] = X['Scale'] / factor
+	X['Scale'] = float(X['Scale']) / factor
 	X['Unit'] = 'cm/yr'
 
 	X = units_geo['stress']
 	factor = 1.0e6
-	X['Scale'] = X['Scale'] / factor
+	X['Scale'] = float(X['Scale']) / factor
 	X['Unit'] = 'MPa'
 
 	#print( '"' + X['Quantity'] + '"' , 'reference value =', X['Scale'] , '[' + X['Unit'] + ']')
@@ -483,12 +481,19 @@ geounits = pTatinCreateGeodynamicUnitDictionary(units)
 
 
 timeseries = pTatinXDMF_FilterPVDContents( 'timeseries_X.pvd' )
+timeseries_mptCell = pTatinXDMF_FilterPVDContents('timeseries_mpoints_cell.pvd')
+timeseries_energy = pTatinXDMF_FilterPVDContents('timeseries_energy.pvd')
 
-gridname_list = [ 'StokesGrid', 'StokesP0Grid', 'EnergyGrid', 'MPCellGrid' ]
+gridname_list = [ 'StokesGrid', 'StokesP0Grid' ]
+gridname_list_energy = [ 'EnergyGrid' ]
+gridname_list_mptCell = [ 'MPCellGrid' ]
 
-pTatinXDMF_WritePerStepFiles( timeseries, mx,my,mz, geounits )
+pTatinXDMF_WritePerStepFiles( timeseries, timeseries_energy, timeseries_mptCell, mx,my,mz, geounits )
 
 pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, '_geoSI' )
+pTatinXDMF_WriteIndividualTemporalCollection( timeseries_energy, gridname_list_energy, '_geoSI' )
+pTatinXDMF_WriteIndividualTemporalCollection( timeseries_mptCell, gridname_list_mptCell, '_geoSI' )
+
 #pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, None )
 
 
