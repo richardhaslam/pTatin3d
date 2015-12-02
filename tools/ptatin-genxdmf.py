@@ -68,7 +68,7 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	print('  Writing',fname)
 	f = open(fname,'w')
 
-	f.write('<Grid Name="StokesP0" GridType="Uniform">\n')
+	f.write('<Grid Name="StokesP0_' + prefix + '" GridType="Uniform">\n')
 
 	time_value = float(time) * float(time_scale['Scale'])
 	f.write('  <Time Value="' + str(time_value) + '"/>\n')
@@ -80,7 +80,7 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	scale = length_scale['Scale']
 	f.write('    <DataItem ItemType="Function" Function="' + str(scale) + ' * $0" Dimensions="' + nodesize + ' 3">\n')
 	f.write('      <DataItem Reference="XML">\n')
-	f.write('      /Xdmf/Domain/Grid[@Name="TimeSeries-StokesP0Grid"]/Grid[@Name="StokesP0"]/DataItem[@Name="subset_coor"]\n')
+	f.write('      /Xdmf/Domain/Grid[@Name="TimeSeries-StokesP0Grid"]/Grid[@Name="StokesP0_' + prefix + '"]/DataItem[@Name="subset_coor"]\n')
 	f.write('      </DataItem>\n')
 	f.write('    </DataItem>\n')
 
@@ -93,7 +93,7 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	f.write('  <Attribute Name="' + fieldname + '" AttributeType="Scalar" Center="Cell">\n')
 	f.write('    <DataItem ItemType="Function" Function="' + str(scale) + ' * $0" Dimensions="' + cellsize + '">\n')
 	f.write('      <DataItem Reference="XML">\n')
-	f.write('      /Xdmf/Domain/Grid[@Name="TimeSeries-StokesP0Grid"]/Grid[@Name="StokesP0"]/DataItem[@Name="subset_pressure"]\n')
+	f.write('      /Xdmf/Domain/Grid[@Name="TimeSeries-StokesP0Grid"]/Grid[@Name="StokesP0_' + prefix + '"]/DataItem[@Name="subset_pressure"]\n')
 	f.write('      </DataItem>\n')
 	f.write('    </DataItem>\n')
 	f.write('  </Attribute>\n')
@@ -472,9 +472,9 @@ def pTatinCreateGeodynamicUnitDictionary(unit):
 #
 
 # Specify Q2 mesh sizes
-mx = 8
-my = 4
-mz = 8
+mx = 512
+my = 128
+mz = 512
 
 units = pTatinCreateUnitDictionary()
 geounits = pTatinCreateGeodynamicUnitDictionary(units)
