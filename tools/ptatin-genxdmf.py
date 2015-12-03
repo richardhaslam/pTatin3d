@@ -168,7 +168,7 @@ def pTatinDMDAEnergy_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, t
 	f.close()
 
 
-def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, visc_scale, density_scale, diffusion_scale, hsource_scale):
+def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, active_variables):
 
 	nx = mx + 1
 	ny = my + 1
@@ -196,22 +196,14 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, vis
 	f.write('        </DataItem>\n')
 	f.write('      </Geometry>\n')
 
-	list  = [ "region" ,
-                  'viscosity' + ' [' + visc_scale['Unit'] + ']',
-                  'density' + ' [' + density_scale['Unit'] + ']',
-                  "plastic_strain" ,
-                  #"yield_indicator" ,
-                  'diffusivity' + ' [' + diffusion_scale['Unit'] + ']',
-                  'heat_source'  + ' [' + hsource_scale['Unit'] + ']'
-                ]
-	scale = [ 1.0 , 
-                  visc_scale['Scale'] ,
-                  density_scale['Scale'] , 
-                  1.0 ,
-                  #1.0 ,
-                  diffusion_scale['Scale'] ,
-                  hsource_scale['Scale']
-                ]
+	list, scale = [],[]
+
+	for var in active_variables:
+		if var in ['region','viscosity','density','plastic_strain','yield_indicator','diffusivity','heat_source']:
+			if active_variables[var]['Active'] is True:
+				list.append('%s [%s]'%(var,active_variables[var]['Unit']))
+				scale.append(active_variables[var]['Scale'])
+		
 	index = 0
 	for member in list:
 		scale_member = scale[index]
@@ -285,10 +277,6 @@ def pTatinXDMF_WritePerStepFiles(timeseries,timeseries_energy,timeseries_mptCell
 	ts = units['time']
 	vs = units['velocity']
 	ss = units['stress']
-	viscs = units['viscosity']
-	denss = units['density']
-	diffs = units['diffusivity']
-	hss = units['heat-source']
 	temps = units['temperature']
 
 	for time_entry in timeseries:
@@ -301,9 +289,9 @@ def pTatinXDMF_WritePerStepFiles(timeseries,timeseries_energy,timeseries_mptCell
 	for time_entry in timeseries_energy:
 		pTatinDMDAEnergy_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,temps)
 
-	# length_scale, time_scale, visc_scale, density_scale, diffusion_scale, tflux_scale
+	# length_scale, time_scale, units dict
 	for time_entry in timeseries_mptCell:
-		pTatinDMDACell_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,viscs,denss,diffs,hss)
+		pTatinDMDACell_WriteXDMF(mx,my,mz,'step'+ time_entry[0], time_entry[1], ls,ts,units)
 
 
 def pTatinXDMF_WriteInclude(timeseries, gridname_list):
@@ -374,47 +362,73 @@ def pTatinCreateUnitDictionary():
 	# ------------------------------------
 	            { 'Quantity': 'length',
 	              'Unit':     'm',
-	              'Scale':    '%e'%L },
+	              'Scale':    '%e'%L, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'velocity',
 	              'Unit':     'm/s',
-	              'Scale':    '%e'%V },
+	              'Scale':    '%e'%V, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'viscosity',
 	              'Unit':     'Pa.s',
-	              'Scale':    '%e'%E },
+	              'Scale':    '%e'%E, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'time',
 	              'Unit':     's',
-	              'Scale':    '%e'%T },
+	              'Scale':    '%e'%T, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'stress',
 	              'Unit':     'Pa',
-	              'Scale':    '%e'%P },
+	              'Scale':    '%e'%P, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'density',
 	              'Unit':     'kg/m^3',
-	              'Scale':    '%e'%RHO },
+	              'Scale':    '%e'%RHO, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'strain-rate',
         	      'Unit':     '1/s',
-        	      'Scale':    '%e'%STR },
+        	      'Scale':    '%e'%STR, 
+	              'Active':	   True },
 	# ------------------------------------
         	    { 'Quantity': 'diffusivity',
         	      'Unit':     'm^2/s',
-        	      'Scale':    '%e'%D },
+        	      'Scale':    '%e'%D, 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'temperature',
 	              'Unit':     'degC',
-	              'Scale':    1.0 },
+	              'Scale':    1.0, 
+	              'Active':	   True },
 	# ------------------------------------
-	            { 'Quantity': 'heat-source',
+	            { 'Quantity': 'heat_source',
 	              'Unit':     'K/s',
-	              'Scale':    '%e'%(1.0/T) },
+	              'Scale':    '%e'%(1.0/T), 
+	              'Active':	   True },
 	# ------------------------------------
 	            { 'Quantity': 'heat-flux',
 	              'Unit':     'W/m^2',
-	              'Scale':    1.0 },
+	              'Scale':    1.0, 
+	              'Active':	   True },
+	# ------------------------------------
+	            { 'Quantity': 'region',
+	              'Unit':     '-',
+	              'Scale':    1.0, 
+	              'Active':	   True },	
+	# ------------------------------------
+	            { 'Quantity': 'plastic_strain',
+	              'Unit':     '-',
+	              'Scale':    1.0, 
+	              'Active':	   True },
+	# ------------------------------------
+				{ 'Quantity': 'yield_indicator',
+	              'Unit':     '-',
+	              'Scale':    1.0, 
+	              'Active':	   True },
 	]
 
 	# See URL
@@ -476,23 +490,55 @@ mx = 512
 my = 128
 mz = 512
 
+# Specify which xdmf output to generate from the dmda
+Stokes = True
+Energy = True
+MptCell = True
+
+# Specify which of the following MptCell quantities are available
+region = True
+viscosity = True
+density = True
+plastic_strain = True
+yield_indicator  = False
+diffusivity = True
+heat_source = True
+
+
+
 units = pTatinCreateUnitDictionary()
 geounits = pTatinCreateGeodynamicUnitDictionary(units)
 
 
-timeseries = pTatinXDMF_FilterPVDContents( 'timeseries_X.pvd' )
-timeseries_mptCell = pTatinXDMF_FilterPVDContents('timeseries_mpoints_cell.pvd')
-timeseries_energy = pTatinXDMF_FilterPVDContents('timeseries_energy.pvd')
+if Stokes is True:
+	print '\n\tProcessing Velocity and Pressure'
+	timeseries = pTatinXDMF_FilterPVDContents( 'timeseries_X.pvd' )
+	gridname_list = [ 'StokesGrid', 'StokesP0Grid' ]
+	pTatinXDMF_WritePerStepFiles( timeseries, [], [], mx,my,mz, geounits )
+	pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, '_geoSI' )
 
-gridname_list = [ 'StokesGrid', 'StokesP0Grid' ]
-gridname_list_energy = [ 'EnergyGrid' ]
-gridname_list_mptCell = [ 'MPCellGrid' ]
+if Energy is True:
+	print '\n\tProcessing Temperature'
+	timeseries_energy = pTatinXDMF_FilterPVDContents('timeseries_energy.pvd')
+	gridname_list_energy = [ 'EnergyGrid' ]
+	pTatinXDMF_WritePerStepFiles( [], timeseries_energy, [], mx,my,mz, geounits )
+	pTatinXDMF_WriteIndividualTemporalCollection( timeseries_energy, gridname_list_energy, '_geoSI' )
 
-pTatinXDMF_WritePerStepFiles( timeseries, timeseries_energy, timeseries_mptCell, mx,my,mz, geounits )
+if MptCell is True:
+	print '\n\tProcessing Material Point Cell data'
+	timeseries_mptCell = pTatinXDMF_FilterPVDContents('timeseries_mpoints_cell.pvd')
+	gridname_list_mptCell = [ 'MPCellGrid' ]
+	#update the units dictionary to discard undesired variables
+	geounits['region']['Active'] = region
+	geounits['viscosity']['Active'] = viscosity
+	geounits['density']['Active'] = density
+	geounits['plastic_strain']['Active'] = plastic_strain
+	geounits['yield_indicator']['Active'] = yield_indicator
+	geounits['diffusivity']['Active'] = diffusivity
+	geounits['heat_source']['Active'] = heat_source
+	pTatinXDMF_WritePerStepFiles( [], [], timeseries_mptCell, mx,my,mz, geounits )
+	pTatinXDMF_WriteIndividualTemporalCollection( timeseries_mptCell, gridname_list_mptCell, '_geoSI' )
 
-pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, '_geoSI' )
-pTatinXDMF_WriteIndividualTemporalCollection( timeseries_energy, gridname_list_energy, '_geoSI' )
-pTatinXDMF_WriteIndividualTemporalCollection( timeseries_mptCell, gridname_list_mptCell, '_geoSI' )
 
 #pTatinXDMF_WriteIndividualTemporalCollection( timeseries, gridname_list, None )
 
