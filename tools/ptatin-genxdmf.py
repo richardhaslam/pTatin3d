@@ -199,7 +199,7 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, act
 	list, scale = [],[]
 
 	for var in active_variables:
-		if var in ['region','viscosity','density','plastic_strain','yield_indicator','diffusivity','heat_source']:
+		if var in ['region','viscosity','density','plastic_strain','yield_indicator','diffusivity','energy_source']:
 			if active_variables[var]['Active'] is True:
 				list.append('%s [%s]'%(var,active_variables[var]['Unit']))
 				scale.append(active_variables[var]['Scale'])
@@ -405,7 +405,7 @@ def pTatinCreateUnitDictionary():
 	              'Scale':    1.0, 
 	              'Active':	   True },
 	# ------------------------------------
-	            { 'Quantity': 'heat_source',
+	            { 'Quantity': 'energy_source',
 	              'Unit':     'K/s',
 	              'Scale':    '%e'%(1.0/T), 
 	              'Active':	   True },
@@ -486,9 +486,9 @@ def pTatinCreateGeodynamicUnitDictionary(unit):
 #
 
 # Specify Q2 mesh sizes
-mx = 512
-my = 128
-mz = 512
+mx = 8
+my = 4
+mz = 8
 
 # Specify which xdmf output to generate from the dmda
 Stokes = True
@@ -502,7 +502,7 @@ density = True
 plastic_strain = True
 yield_indicator  = False
 diffusivity = True
-heat_source = True
+energy_source = True
 
 
 
@@ -535,7 +535,7 @@ if MptCell is True:
 	geounits['plastic_strain']['Active'] = plastic_strain
 	geounits['yield_indicator']['Active'] = yield_indicator
 	geounits['diffusivity']['Active'] = diffusivity
-	geounits['heat_source']['Active'] = heat_source
+	geounits['energy_source']['Active'] = energy_source
 	pTatinXDMF_WritePerStepFiles( [], [], timeseries_mptCell, mx,my,mz, geounits )
 	pTatinXDMF_WriteIndividualTemporalCollection( timeseries_mptCell, gridname_list_mptCell, '_geoSI' )
 
