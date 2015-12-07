@@ -32,7 +32,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "slepceps.h"
 
-#include "private/daimpl.h" 
+#include "petsc-private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -88,14 +88,14 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	/* Jacobian */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 	
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATMFFD, &is_mffd);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATNEST, &is_nest);CHKERRQ(ierr);
-	ierr = PetscObjectTypeCompare((PetscObject)(*A),MATSHELL,&is_shell);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(A),MATMFFD, &is_mffd);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(A),MATNEST, &is_nest);CHKERRQ(ierr);
+	ierr = PetscObjectTypeCompare((PetscObject)(A),MATSHELL,&is_shell);CHKERRQ(ierr);
 	
 	if (is_nest) {
 		Mat Auu;
 		
-		ierr = MatGetSubMatrix(*A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -109,15 +109,15 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	/* If shell, do nothing */
 	/* If mffd,  do nothing */
 	
-	ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd  (*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatAssemblyEnd  (A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* preconditioner for Jacobian */
 	{
 		Mat Buu,Bpp;
 		
-		ierr = MatGetSubMatrix(*B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(*B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -136,8 +136,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		ierr = MatDestroy(&Buu);CHKERRQ(ierr);
 		ierr = MatDestroy(&Bpp);CHKERRQ(ierr);		
   }
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
 	/* clean up */
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
@@ -271,7 +271,9 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		ierr = MatShellGetMatStokesMF(A,&StkCtx);CHKERRQ(ierr);
 		
 		/* Schur complement */
-		ierr = DMGetMatrix(dap,MATSBAIJ,&Spp);CHKERRQ(ierr);
+   
+    ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+		ierr = DMCreateMatrix(dap,&Spp);CHKERRQ(ierr);
 		ierr = MatSetOptionsPrefix(Spp,"S*_");CHKERRQ(ierr);
 		ierr = MatSetOption(Spp,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 		ierr = MatSetFromOptions(Spp);CHKERRQ(ierr);
@@ -320,7 +322,8 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				
 				/* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
 				if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%d]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
-				ierr = DMGetMatrix(dav_hierarchy[k],MATSBAIJ,&Auu);CHKERRQ(ierr);
+        ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
+				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
 				ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
 				ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
 				ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSBAIJ,&same1);CHKERRQ(ierr);
@@ -466,7 +469,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char description[])
 {
 	EPS            eps;         /* eigenproblem solver context */
-	const EPSType  type;
+	EPSType  type;
 	PetscReal      error,tol,re,im;
 	PetscScalar    kr,ki;
 	Vec            xr,xi;
@@ -496,7 +499,7 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
 	ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
 	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
 	ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4G, maxit=%D\n",tol,maxit);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",tol,maxit);CHKERRQ(ierr);
 	
 	ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
 	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
@@ -981,7 +984,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscFunctionBegin;
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dParseOptions(user);CHKERRQ(ierr);
+	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> new simulation");CHKERRQ(ierr);
 	
 	/* Register all models */
@@ -1053,7 +1056,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	/* Define interpolation operators for velocity space */
 	interpolation_v[0] = NULL;
 	for (k=0; k<nlevels-1; k++) {
-		ierr = DMGetInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],NULL);CHKERRQ(ierr);
+		ierr = DMCreateInterpolation(dav_hierarchy[k],dav_hierarchy[k+1],&interpolation_v[k+1],NULL);CHKERRQ(ierr);
 	}
 	
 	/* Define interpolation operators for scalar space */
