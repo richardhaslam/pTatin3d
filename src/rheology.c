@@ -62,7 +62,7 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
   
   
   flg = PETSC_FALSE;
-  ierr = PetscOptionsGetReal(NULL,"-eta_lower_cutoff_global",&vis,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-eta_lower_cutoff_global",&vis,&flg);CHKERRQ(ierr);
   
   if (flg == PETSC_TRUE) { 
     R->apply_viscosity_cutoff_global = PETSC_TRUE;
@@ -70,7 +70,7 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
   }
   
 	flg = PETSC_FALSE;
-  ierr = PetscOptionsGetReal(NULL,"-eta_upper_cutoff_global",&vis,&flg);CHKERRQ(ierr);  
+  ierr = PetscOptionsGetReal(NULL,NULL,"-eta_upper_cutoff_global",&vis,&flg);CHKERRQ(ierr);  
   
   if (flg == PETSC_TRUE) { 
     R->apply_viscosity_cutoff_global = PETSC_TRUE;

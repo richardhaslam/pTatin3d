@@ -112,14 +112,14 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
+		PetscOptionsGetBool(NULL,NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 
-		ierr = PetscOptionsGetBool(NULL,"-use_jfnk_energy",&use_JFNK_T,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,NULL,"-use_jfnk_energy",&use_JFNK_T,NULL);CHKERRQ(ierr);
 		
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);

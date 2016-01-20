@@ -1021,14 +1021,14 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     
     {
         PetscBool view = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-pc_wsmp_debug",&view,NULL);
         if (view) {
             ierr = PCWSMP_CSRView(B,wsmp->IA,wsmp->JA,wsmp->AVALS);CHKERRQ(ierr);
         }
     }
     {
         PetscBool check = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-pc_wsmp_check_csr",&check,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-pc_wsmp_check_csr",&check,NULL);
         if (check) {
             ierr = PCWSMP_CheckCSR(B,wsmp);CHKERRQ(ierr);
         }
@@ -1061,7 +1061,7 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
     MPI_Comm       comm;
     
     PetscFunctionBegin;
-    PetscOptionsGetBool(NULL,"-pc_wsmp_debug",&view,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-pc_wsmp_debug",&view,NULL);
     
     ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
     MPI_Comm_rank(comm,&rank);
@@ -1173,37 +1173,37 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp)
     }
     
     index = 10;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm10",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm10",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 15;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm15",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm15",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 16;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm16",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm16",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 17;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm17",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm17",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 18;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm18",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm18",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 19;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm19",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm19",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 20;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm20",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm20",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 27;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm27",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm27",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 31;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm31",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm31",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 10;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm10",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm10",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     index = 11;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm11",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm11",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     PetscFunctionReturn(0);
 }
@@ -1220,7 +1220,7 @@ PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp)
     PetscFunctionBegin;
     prefix = ((PetscObject)pc)->prefix;
     index = 35;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm35",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm35",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     PetscFunctionReturn(0);
 }
@@ -1237,7 +1237,7 @@ PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp)
     PetscFunctionBegin;
     prefix = ((PetscObject)pc)->prefix;
     index = 30;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm30",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm30",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     PetscFunctionReturn(0);
 }
@@ -1255,16 +1255,16 @@ PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp)
     PetscFunctionBegin;
     prefix = ((PetscObject)pc)->prefix;
     index = 6;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm6",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm6",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 7;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm7",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm7",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 36;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm36",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm36",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 6;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm6",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm6",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     PetscFunctionReturn(0);
 }
@@ -1282,52 +1282,52 @@ PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsmp)
     PetscFunctionBegin;
     prefix = ((PetscObject)pc)->prefix;
     index = 8;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm8",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm8",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 11;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm11",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm11",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 12;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm12",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm12",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 13;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm13",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm13",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 14;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm14",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm14",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 25;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm25",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm25",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 26;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm26",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm26",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 34;  ival = (PetscInt)wsmp->IPARM[index-1];
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm34",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm34",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
-    ierr = PetscOptionsGetInt(prefix,"-pc_wsmp_iparm12",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+    ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm12",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
     
     index = 6;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm6",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm6",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     index = 12;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm12",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm12",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     index = 15;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm15",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm15",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     index = 21;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm21",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm21",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     index = 22;  dval = (PetscInt)wsmp->DPARM[index-1];
-    ierr = PetscOptionsGetReal(prefix,"-pc_wsmp_dparm22",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
+    ierr = PetscOptionsGetReal(NULL,prefix,"-pc_wsmp_dparm22",&dval,&found);CHKERRQ(ierr); if (found) { wsmp->DPARM[index-1] = (double)dval; }
     
     PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_WSMP"
-static PetscErrorCode PCSetFromOptions_WSMP(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_WSMP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
     PetscErrorCode ierr;
     PC_WSMP        *wsmp = (PC_WSMP*)pc->data;

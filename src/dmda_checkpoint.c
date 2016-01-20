@@ -183,7 +183,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 	 putain - VecLoadIntoVector inserts the option below into the command line.
 	 This will screw shit up if you load in vectors with different block sizes.
 	 */
-	ierr = PetscOptionsClearValue("-vecload_block_size");CHKERRQ(ierr);
+	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
 	
 	ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);
 	
@@ -276,7 +276,7 @@ PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *
 		 putain - VecLoadIntoVector inserts the option below into the command line.
 		 This will screw shit up if you load in vectors with different block sizes.
 		 */
-		ierr = PetscOptionsClearValue("-vecload_block_size"); CHKERRQ(ierr);
+		ierr = PetscOptionsClearValue(NULL,"-vecload_block_size"); CHKERRQ(ierr);
 		
 		ierr = PetscViewerDestroy(&v);CHKERRQ(ierr);		
 		ierr = DMDAUpdateGhostedCoordinates(*da);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 	 putain - VecLoadIntoVector inserts the option below into the command line.
 	 This will screw shit up if you load in vectors with different block sizes.
 	 */
-	ierr = PetscOptionsClearValue("-vecload_block_size");CHKERRQ(ierr);
+	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
 	
 	*da_x = xn;
 	
@@ -406,7 +406,7 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 	 putain - VecLoadIntoVector inserts the option below into the command line.
 	 This will screw shit up if you load in vectors with different block sizes.
 	 */
-	ierr = PetscOptionsClearValue("-vecload_block_size");CHKERRQ(ierr);
+	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);	
 }

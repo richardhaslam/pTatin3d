@@ -1109,21 +1109,21 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
     /* options for control number of points per cell */
     np_lower = 0;
     np_upper = 60;
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_lower",&np_lower,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_np_upper",&np_upper,&flg);CHKERRQ(ierr);
     
     /* options for injection of markers */
     nxp = 2;
     nyp = 2;
     nzp = 2;
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nxp",&nxp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nyp",&nyp,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_nzp",&nzp,&flg);CHKERRQ(ierr);
     
     perturb = 0.1;
-    ierr = PetscOptionsGetReal(NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-mp_popctrl_perturb",&perturb,&flg);CHKERRQ(ierr);
     patch_extent = 1;
-    ierr = PetscOptionsGetInt(NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-mp_popctrl_patch_extent",&patch_extent,&flg);CHKERRQ(ierr);
     
     ierr = pTatinGetMaterialPoints(ctx,&db,NULL);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)ctx->stokes_ctx->dav,&comm);CHKERRQ(ierr);

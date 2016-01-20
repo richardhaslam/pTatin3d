@@ -419,18 +419,18 @@ PetscErrorCode GeometryObjectSetFromOptions_Box(GeometryObject go)
 	ierr = GeometryObjectGetContext_Box(go,&box);CHKERRQ(ierr);
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-Lx0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-Lx0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { box->Lx[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-Lx1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-Lx1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { box->Lx[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-Lx2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-Lx2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { box->Lx[2] = val; }
 	
 	PetscFunctionReturn(0);
@@ -527,14 +527,14 @@ PetscErrorCode GeometryObjectSetFromOptions_Sphere(GeometryObject go)
 	ctx = (GeomTypeSphere)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-rad",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-rad",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radius = val; }
 	
 	PetscFunctionReturn(0);
@@ -618,18 +618,18 @@ PetscErrorCode GeometryObjectSetFromOptions_Ellipsoid(GeometryObject go)
 	ctx = (GeomTypeEllipsoid)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-ra",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-ra",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radia = val; }
-	ierr = PetscOptionsGetReal(name,"-rb",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-rb",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radib = val; }
-	ierr = PetscOptionsGetReal(name,"-rc",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-rc",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radic = val; }
 	
 	PetscFunctionReturn(0);
@@ -718,20 +718,20 @@ PetscErrorCode GeometryObjectSetFromOptions_Cylinder(GeometryObject go)
 	ctx = (GeomTypeCylinder)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-rad",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-rad",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radius = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-len",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-len",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->length = val; }
 	
-	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,name,"-axis",&ival,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
 	
 	PetscFunctionReturn(0);
@@ -837,23 +837,23 @@ PetscErrorCode GeometryObjectSetFromOptions_EllipticCylinder(GeometryObject go)
 	ctx = (GeomTypeEllipticCylinder)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-ra",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-ra",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radia = val; }
 
-	ierr = PetscOptionsGetReal(name,"-rb",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-rb",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->radib = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-len",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-len",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->length = val; }
 	
-	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,name,"-axis",&ival,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
 	
 	PetscFunctionReturn(0);
@@ -965,17 +965,17 @@ PetscErrorCode GeometryObjectSetFromOptions_InfLayer(GeometryObject go)
 	ctx = (GeomTypeInfLayer)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetReal(name,"-thick",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-thick",&val,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->thickness = val; }
 	
-	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,name,"-axis",&ival,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
 	
 	PetscFunctionReturn(0);
@@ -1071,17 +1071,17 @@ PetscErrorCode GeometryObjectSetFromOptions_HalfSpace(GeometryObject go)
 	ctx = (GeomTypeHalfSpace)go->ctx;
 	
 	sprintf(name,"%s_",go->name);
-	ierr = PetscOptionsGetReal(name,"-xc0",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc0",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[0] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc1",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc1",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[1] = val; }
-	ierr = PetscOptionsGetReal(name,"-xc2",&val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,name,"-xc2",&val,&flg);CHKERRQ(ierr);
 	if (flg) { go->centroid[2] = val; }
 	
-	ierr = PetscOptionsGetInt(name,"-axis",&ival,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,name,"-axis",&ival,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->axis = (GeomRotateAxis)ival; }
 
-	ierr = PetscOptionsGetInt(name,"-sign",&ival,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,name,"-sign",&ival,&flg);CHKERRQ(ierr);
 	if (flg) { ctx->sign = (GeomSign)ival; }
 	
 	PetscFunctionReturn(0);

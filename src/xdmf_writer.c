@@ -694,7 +694,7 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     ierr = XDMFMetaWriteInformationReal(viewer,"timestep",ctx->dt);CHKERRQ(ierr);
     ierr = XDMFMetaWriteInformationInt(viewer,"step",ctx->step);CHKERRQ(ierr);
 
-    PetscOptionsGetBool(NULL,"-xdmf_use_hdf",&useH5,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-xdmf_use_hdf",&useH5,NULL);
     PetscTime(&t0);
     if (!useH5) {
         ierr = XDMFGridOpen_DMDA(viewer,dmv,ctx->outputpath,suffix,"stokes",XDMFBinary);CHKERRQ(ierr);

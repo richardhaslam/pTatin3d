@@ -622,7 +622,7 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	iterations = 5;
-	ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the mf operators */
 	da = user->dav;
@@ -681,7 +681,7 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	iterations = 5;
-	ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the assembled operator */
 	da = user->dav;
@@ -748,7 +748,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
 	iterations = 5;
-	ierr = PetscOptionsGetInt(NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-iterations",&iterations,0);CHKERRQ(ierr);
 	
 	/* create the assembled operator */
 	da = user->dav;
@@ -774,7 +774,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"MatAssemblyA11(ASM):                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	use_mf_A = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-use_mf_A11",&use_mf_A,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-use_mf_A11",&use_mf_A,NULL);CHKERRQ(ierr);
 	if (use_mf_A) {
 		ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
 		ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
@@ -941,7 +941,7 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-compare_operators",&found,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-compare_operators",&found,0);CHKERRQ(ierr);
 	if (found) {
 		ierr = compare_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 
@@ -954,19 +954,19 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	}
 	
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-apply_A11mf_operator",&found,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-apply_A11mf_operator",&found,NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = apply_mf_A11(user->stokes_ctx);CHKERRQ(ierr);
 	}
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-apply_A11asm_operator",&found,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-apply_A11asm_operator",&found,NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = apply_asm_A11(user->stokes_ctx);CHKERRQ(ierr);		
 	}
 
 	found  = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-perform_viscous_solve_A11asm_operator",&found,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-perform_viscous_solve_A11asm_operator",&found,NULL);CHKERRQ(ierr);
 	if (found) {
 		ierr = perform_viscous_solve(user->stokes_ctx);CHKERRQ(ierr);		
 	}

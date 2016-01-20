@@ -120,7 +120,7 @@ PetscErrorCode pTatinWriteOptionsFile(const char filename[])
 	ierr = PetscViewerASCIIPrintf(viewer,"## =================================================================================== \n");CHKERRQ(ierr);
 	
 	/* write options */
-	ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
+	ierr = PetscOptionsView(NULL,viewer);CHKERRQ(ierr);
 	
 	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 	PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created options file: %s \n",filename);

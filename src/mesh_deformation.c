@@ -64,18 +64,18 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 	{
 		PetscReal tmp;
 		
-		ierr = PetscOptionsGetReal(NULL,"-gbump_amp",&tmp,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-gbump_amp",&tmp,&flg);CHKERRQ(ierr);
 		if (flg) {
 			gbump_amp    = tmp;
 		}
 
-		ierr = PetscOptionsGetReal(NULL,"-gbump_lambda",&tmp,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-gbump_lambda",&tmp,&flg);CHKERRQ(ierr);
 		if (flg) {
 			gbump_lambda = tmp;
 		}
 	}
-	ierr = PetscOptionsGetReal(NULL,"-gbump_xorigin",&xshift,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-gbump_zorigin",&zshift,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-gbump_xorigin",&xshift,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-gbump_zorigin",&zshift,&flg);CHKERRQ(ierr);
 	
 	
 	ierr = DMDAGetBoundingBox(da,Gmin,Gmax);CHKERRQ(ierr);
@@ -150,10 +150,10 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 	theta  = 0.7;
 	phi    = 1.2;
 	offset = 0.1;
-	ierr = PetscOptionsGetReal(NULL,"-offset",&offset,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-amp",&amp,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-theta",&theta,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-phi",&phi,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-offset",&offset,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-amp",&amp,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-theta",&theta,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-phi",&phi,NULL);CHKERRQ(ierr);
 	
 	ierr = DMDAGetBoundingBox(da,MeshMin,MeshMax);CHKERRQ(ierr);
 
@@ -200,7 +200,7 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	
 	PetscFunctionBegin;
 	y_displacement = 0.5;
-	ierr = PetscOptionsGetReal(NULL,"-y_displacement",&y_displacement,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-y_displacement",&y_displacement,NULL);CHKERRQ(ierr);
 	
 	
 	//ierr = DMDASetUniformCoordinates(da,-1.0,1.0, -1.0,1.0, -1.0,1.0);CHKERRQ(ierr);

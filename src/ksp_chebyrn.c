@@ -255,7 +255,7 @@ PetscErrorCode KSPChebychevRNSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_ChebychevRN"
-PetscErrorCode KSPSetFromOptions_ChebychevRN(PetscOptions *PetscOptionsObject,KSP ksp)
+PetscErrorCode KSPSetFromOptions_ChebychevRN(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
     PetscErrorCode   ierr;
@@ -825,7 +825,7 @@ PetscErrorCode KSPSolve_ChebychevRN(KSP ksp)
 	
     PetscFunctionBegin;
 	
-	PetscOptionsGetInt(NULL,"-cheby_type",&cheby_type,NULL);
+	PetscOptionsGetInt(NULL,NULL,"-cheby_type",&cheby_type,NULL);
 	switch (cheby_type) {
 		case 0:
 			ierr = KSPSolve_ChebychevRN_red_norm(ksp);CHKERRQ(ierr);

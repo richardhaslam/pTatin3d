@@ -636,7 +636,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,NULL,"-A11_operator_type",level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		
 		switch ((OperatorType)level_type[k]) {
@@ -692,7 +692,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
 					
-					ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
@@ -840,7 +840,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 		ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
 		
 		// use A for smoother, B for residual
-		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 		if (use_low_order_geometry==PETSC_TRUE) {
 			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
             //ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
@@ -886,8 +886,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
     
 	ierr = pTatinLogNote(user,"[ptatin_driver_linear_ts] -> new simulation");CHKERRQ(ierr);
 	
@@ -947,7 +947,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     
 	/* setup mg */
 	nlevels = 1;
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1381,7 +1381,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver_RESTART(int argc,cha
 	
 	/* setup mg */
 	nlevels = 1;
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1627,7 +1627,7 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	restart = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-restart",&restart,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-restart",&restart,&flg);CHKERRQ(ierr);
 	if (!restart) {
 		ierr = pTatin3d_linear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
 	} else {

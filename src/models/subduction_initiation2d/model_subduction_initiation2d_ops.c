@@ -118,33 +118,33 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	rheology->eta_upper_cutoff_global = 1.e+26;
 	rheology->eta_lower_cutoff_global = 1.e+20;
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Lx",&data->Lx,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Ox",&data->Ox,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Ly",&data->Ly,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Oy",&data->Oy,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Lz",&data->Lz,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Oz",&data->Oz,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Lx",&data->Lx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Ox",&data->Ox,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Ly",&data->Ly,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Oy",&data->Oy,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Lz",&data->Lz,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Oz",&data->Oz,NULL);CHKERRQ(ierr);
 	
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_velocity",&data->velocity,NULL);CHKERRQ(ierr); 	
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_velocity",&data->velocity,NULL);CHKERRQ(ierr); 	
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_density_bar",&data->density_bar,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_viscosity_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_velocity_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_density_bar",&data->density_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_viscosity_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_velocity_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Ttop",&data->Ttop,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Tbot",&data->Tbot,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_Thermal_age",&data->Thermal_age,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Ttop",&data->Ttop,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Tbot",&data->Tbot,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_Thermal_age",&data->Thermal_age,NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_eta0",&data->eta[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_rho0",&data->rho[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_diffusivity0",&data->diffusivity[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_alpha0",&data->alpha[0],NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_H0",&data->H[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_eta0",&data->eta[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_rho0",&data->rho[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_diffusivity0",&data->diffusivity[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_alpha0",&data->alpha[0],NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_H0",&data->H[0],NULL);CHKERRQ(ierr);
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_eta_upper_cutoff",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_SI_eta_lower_cutoff",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
 	
 	data->velocity = data->velocity*cm_yr2m_s;
 
@@ -240,7 +240,7 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 		MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
 	}
 	
-	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 #endif	
 	
 	PetscFunctionReturn(0);

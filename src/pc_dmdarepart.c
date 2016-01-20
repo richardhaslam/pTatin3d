@@ -756,7 +756,7 @@ static PetscErrorCode PCDestroy_DMDARepart(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_DMDARepart"
-static PetscErrorCode PCSetFromOptions_DMDARepart(PetscOptions *PetscOptionsObject,PC pc)
+static PetscErrorCode PCSetFromOptions_DMDARepart(PetscOptionItems *PetscOptionsObject,PC pc)
 {
     PetscErrorCode ierr;
     PC_DMDARepart  *red = (PC_DMDARepart*)pc->data;
@@ -822,7 +822,7 @@ PetscErrorCode PCCreate_DMDARepart(PC pc)
      As a result all logging objects must be valid on PETSC_COMM_WORLD.
     */
     log = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-pc_dmdarepart_log",&log,NULL);
+    PetscOptionsGetBool(NULL,NULL,"-pc_dmdarepart_log",&log,NULL);
     if (log) {
         if (_PCDMDARepart_PCSetUpMatrixStage == -1) { ierr = PetscLogStageRegister("PCRprt_SetUpMat",&_PCDMDARepart_PCSetUpMatrixStage);CHKERRQ(ierr); }
         if (_PCDMDARepart_PCApplyStage == -1) { ierr = PetscLogStageRegister("PCRprt_Apply",&_PCDMDARepart_PCApplyStage);CHKERRQ(ierr); }

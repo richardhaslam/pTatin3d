@@ -96,7 +96,7 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #ifdef __AVX__
 	ierr = PetscFunctionListAdd(&flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
 #endif
-	ierr = PetscOptionsGetString(NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
 	ierr = PetscFunctionListFind(flist,optype,&A11->Wrapper_A11);CHKERRQ(ierr);
 	if (!A11->Wrapper_A11) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
 	ierr = PetscFunctionListDestroy(&flist);CHKERRQ(ierr);
@@ -538,7 +538,7 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		
 		// [1]
 		is_Auu_mf = PETSC_FALSE;
-		ierr = PetscOptionsGetBool(prefix,"-A11_mf",&is_Auu_mf,0);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,prefix,"-A11_mf",&is_Auu_mf,0);CHKERRQ(ierr);
 		
 		f1 = f2 = PETSC_FALSE;
 		ierr = ISEqual(isr,ctx->isUVW,&f1);CHKERRQ(ierr);
@@ -569,8 +569,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 		
 		// [2]
 		is_Auu_ii_mf = PETSC_FALSE;
-		//ierr = PetscOptionsGetBool(prefix,"-A11iimf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
-		//ierr = PetscOptionsGetBool(NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+		//ierr = PetscOptionsGetBool(NULL,prefix,"-A11iimf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+		//ierr = PetscOptionsGetBool(NULL,NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 		
 		is_list[0] = ctx->isU;
 		is_list[1] = ctx->isV;
@@ -584,13 +584,13 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 			is_Auu_ii_mf = PETSC_FALSE;
 			switch (d) {
 				case 0:
-					ierr = PetscOptionsGetBool(prefix,"-A11_Auu_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,prefix,"-A11_Auu_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 					break;
 				case 1:
-					ierr = PetscOptionsGetBool(prefix,"-A11_Avv_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,prefix,"-A11_Avv_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 					break;
 				case 2:
-					ierr = PetscOptionsGetBool(prefix,"-A11_Aww_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,prefix,"-A11_Aww_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 					break;
 			}			
 			
@@ -751,8 +751,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 		
 		// [2]
 		is_Auu_ii_mf = PETSC_FALSE;
-		//ierr = PetscOptionsGetBool(prefix,"-A11iimf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
-		//ierr = PetscOptionsGetBool(NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+		//ierr = PetscOptionsGetBool(NULL,prefix,"-A11iimf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+		//ierr = PetscOptionsGetBool(NULL,NULL,"-Auu_ii_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 		
 		is_list[0] = ctx->isU;
 		is_list[1] = ctx->isV;
@@ -766,13 +766,13 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat
 			is_Auu_ii_mf = PETSC_FALSE;
 			switch (d) {
 				case 0:
-					ierr = PetscOptionsGetBool(prefix,"-Auu_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,prefix,"-Auu_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 					break;
 				case 1:
-					ierr = PetscOptionsGetBool(prefix,"-Avv_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,prefix,"-Avv_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 					break;
 				case 2:
-					ierr = PetscOptionsGetBool(prefix,"-Aww_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,prefix,"-Aww_mf",&is_Auu_ii_mf,0);CHKERRQ(ierr);
 					break;
 			}			
 			
@@ -1127,7 +1127,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   PetscFunctionBegin;
   
 	ierr = PetscLogEventBegin(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
-//	ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+//	ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1194,7 +1194,7 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	
   PetscFunctionBegin;
   
-	//ierr = PetscOptionsGetInt(NULL,"-low_order_geometry_type",&low_order_geometry_type,NULL);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetInt(NULL,NULL,"-low_order_geometry_type",&low_order_geometry_type,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -2135,7 +2135,7 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	
 	/* n_pressure_basis * neighbour_cells = 4 x 8 */
 	nnz = 32;
-	ierr = PetscOptionsGetInt(NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-A12_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 
         /*
         I've tuned this parameter for speed, not memory usage
@@ -2151,7 +2151,7 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	                   onnz = 24 assembly = 5.3824e+00 sec
         */
 	onnz = 16;
-	ierr = PetscOptionsGetInt(NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-A12_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PetscObjectComm((PetscObject)mat),"StokesA12Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
 	
@@ -2173,7 +2173,7 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 
 	/* Each pressure dof is connected to all vel dofs in a single cell, 27 * 3 */
 	nnz = 27 * 3;
-	ierr = PetscOptionsGetInt(NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-A21_preallocation_nnz",&nnz,&flg);CHKERRQ(ierr);
 
         /*
         I've tuned this parameter for speed, not memory usage
@@ -2192,7 +2192,7 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 	                   onnz = 60 assembly = 2.9067e+00 sec
         */
 	onnz = 30;
-	ierr = PetscOptionsGetInt(NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-A21_preallocation_onnz",&onnz,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PetscObjectComm((PetscObject)mat),"StokesA21Preallocation_basic: using nnz = %D and onnz = %D \n", nnz,onnz );
 	

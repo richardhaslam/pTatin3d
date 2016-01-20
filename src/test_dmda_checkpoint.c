@@ -61,9 +61,9 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 
 	/* create the da */
 	nx = ny = nz = 10;
-	PetscOptionsGetInt( NULL, "-mx", &nx, 0 );
-	PetscOptionsGetInt( NULL, "-my", &ny, 0 );
-	PetscOptionsGetInt( NULL, "-mz", &nz, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-mx", &nx, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-my", &ny, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-mz", &nz, 0 );
 	
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
 	
@@ -155,13 +155,13 @@ PetscErrorCode test_DMDACheckPoint(void)
 	
 	PetscFunctionBegin;
 	checkpoint = PETSC_FALSE;
-	PetscOptionsGetBool( NULL, "-checkpoint", &checkpoint, &flg );
+	PetscOptionsGetBool(NULL, NULL, "-checkpoint", &checkpoint, &flg );
 	if( checkpoint == PETSC_TRUE ) {
 		ierr = test_dmda_checkpoint_pack();CHKERRQ(ierr);
 	}
 	
 	restart = PETSC_FALSE;
-	PetscOptionsGetBool( NULL, "-restart", &restart, &flg );
+	PetscOptionsGetBool(NULL, NULL, "-restart", &restart, &flg );
 	if( restart == PETSC_TRUE ) {
 		ierr = test_dmda_checkpoint_load();CHKERRQ(ierr);
 	}

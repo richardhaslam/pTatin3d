@@ -123,7 +123,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	grav[2] = 0.0;
 	ncomponents = 3;
 	flg = PETSC_FALSE;
-	PetscOptionsGetRealArray(NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
+	PetscOptionsGetRealArray(NULL,NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
 	ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
@@ -408,7 +408,7 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 	
 	/* Choose type of projection (for eta and rho) */
 	ctx->coefficient_projection_type = 1;
-	ierr = PetscOptionsGetInt(NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&flg);CHKERRQ(ierr);
 	switch (ctx->coefficient_projection_type) {
 		case -1:
 			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using null projection\n");
@@ -468,7 +468,7 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 		
 		PetscInt mplayout = 0;
 		
-		PetscOptionsGetInt(NULL,"-mp_layout",&mplayout,NULL);
+		PetscOptionsGetInt(NULL,NULL,"-mp_layout",&mplayout,NULL);
         switch (mplayout) {
             case 0:
                 ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
@@ -673,7 +673,7 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	
 	/* create output directory */
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(user->outputpath,"./output");
 	}
@@ -783,42 +783,42 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 	PetscErrorCode ierr;
 	
 	/* parse options */
-	ierr = PetscOptionsGetInt(NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
-	flg = PETSC_FALSE; ierr = PetscOptionsGetInt(NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
+	flg = PETSC_FALSE; ierr = PetscOptionsGetInt(NULL,NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
 	if (flg) {
 		ctx->mx = mx3;
 		ctx->my = mx3;
 		ctx->mz = mx3;
 	}
 	
-	ierr = PetscOptionsGetBool(NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(ctx->outputpath,"./output");
 	}
 	ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
 	
 	/* checkpointing */
-	ierr = PetscOptionsGetInt(NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
 	
 	/* time stepping */
-	ierr = PetscOptionsGetInt(NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
 	{
 		PetscReal constant_dt;
 		
-		ierr = PetscOptionsGetReal(NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
 		if (flg) {
 			ctx->use_constant_dt = PETSC_TRUE; 
 			ctx->constant_dt     = constant_dt;
@@ -847,7 +847,7 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 	PetscFunctionBegin;
 	
 	flgname = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
 	if (flgname) {
 		ierr = pTatinModelGetByName(modelname,&model);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: -ptatin_model \"%s\" was detected\n",model->model_name);
@@ -1297,9 +1297,9 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 	
 	PetscFunctionBegin;
 	
-	ierr = PetscOptionsGetBool(NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_TRUE) {
 		ctx->restart_from_file = PETSC_TRUE;
 	}	
@@ -1311,7 +1311,7 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 
 	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatin3dRestart: Requires you specify a directory where the checkpoint files are locaated (-restart_directory)");
 	}
@@ -1332,9 +1332,9 @@ PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
 
 	/* force these again */
 	ctx->restart_from_file = PETSC_TRUE;
-	ierr = PetscOptionsGetString(NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
-	ierr = PetscOptionsGetString(NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	
 	ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
 	ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
@@ -1372,11 +1372,11 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
     ierr = DMDAGetRefinementFactor(da,&refx[i],&refy[i],&refz[i]);CHKERRQ(ierr);
   }
   n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,((PetscObject)da)->prefix,"-da_refine_hierarchy_x",refx,&n,NULL);CHKERRQ(ierr);
   n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,((PetscObject)da)->prefix,"-da_refine_hierarchy_y",refy,&n,NULL);CHKERRQ(ierr);
   n = nlevels;
-  ierr = PetscOptionsGetIntArray(((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,((PetscObject)da)->prefix,"-da_refine_hierarchy_z",refz,&n,NULL);CHKERRQ(ierr);
 	
 	
   ierr = DMDASetCoarseningFactor(da,refx[nlevels-1],refy[nlevels-1],refz[nlevels-1]);CHKERRQ(ierr);
@@ -1390,7 +1390,7 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
 
 	view = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(((PetscObject)da)->prefix,"-da_view_hierarchy",&view,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,((PetscObject)da)->prefix,"-da_view_hierarchy",&view,NULL);CHKERRQ(ierr);
   if (view) {
 		char levelname[PETSC_MAX_PATH_LEN];
 		

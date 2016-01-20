@@ -887,7 +887,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(const 
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		PetscViewer viewer;
 		
@@ -1422,7 +1422,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
     
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,&flg);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,&flg);
 	if (view) {
 		PetscViewer viewer;
 		
@@ -1435,7 +1435,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	}
 
 	ptype = 0;
-	ierr = PetscOptionsGetInt(NULL,"-mp_hierarchy_projection_type",&ptype,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-mp_hierarchy_projection_type",&ptype,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=1; k--) {
 		
 		switch (ptype) {
@@ -1814,7 +1814,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Stokes(DM da,DataBucke
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[256];
 		PetscViewer viewer;
@@ -2635,7 +2635,7 @@ PetscErrorCode MProjection_Q1Projection_onto_Q2_MPntPStokes_Level(const int npoi
 
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[PETSC_MAX_PATH_LEN];
 		PetscViewer viewer;

@@ -100,11 +100,11 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	rheology->const_rho0[1] = 1.0;
 	
 	rheology->nphases_active = 2;
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
 
 	/* set initial values for model parameters */
 	/* material properties */
@@ -114,23 +114,23 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	data->rho0 = rheology->const_rho0[0];
 	data->rho1 = rheology->const_rho0[1];
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_viscous_sinker_cube",&data->is_sphere,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_viscous_sinker_cube",&data->is_sphere,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_TRUE) { data->is_sphere = PETSC_FALSE; }
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_Ox",&data->origin[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_Oy",&data->origin[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_Oz",&data->origin[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_Ox",&data->origin[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_Oy",&data->origin[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_Oz",&data->origin[2],&flg);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_dx",&data->length[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_dy",&data->length[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_dz",&data->length[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_dx",&data->length[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_dy",&data->length[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_dz",&data->length[2],&flg);CHKERRQ(ierr);
 
-	ierr = PetscOptionsGetInt(NULL,"-model_viscous_sinker_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-model_viscous_sinker_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
 	
 	
 	PetscFunctionReturn(0);
@@ -802,7 +802,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	PetscOptionsGetBool(NULL,"-model_viscous_sinker_inclusion_view",&inclusion_view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-model_viscous_sinker_inclusion_view",&inclusion_view,NULL);
 	
 	/* define properties on material points */
 	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
@@ -917,7 +917,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 	PetscInt              ninclusions = 1;
 	PetscErrorCode        ierr;
 
-	PetscOptionsGetInt(NULL,"-model_viscous_sinker_ninclusions",&ninclusions,0);
+	PetscOptionsGetInt(NULL,NULL,"-model_viscous_sinker_ninclusions",&ninclusions,0);
 	if (ninclusions == 1) {
 		ierr = ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(c,data);CHKERRQ(ierr);
 	} else {
@@ -1111,7 +1111,7 @@ PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
 /*
-	ierr = PetscOptionsGetReal(NULL,"-model_viscous_sinker_rho0",&rho0,0);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_viscous_sinker_rho0",&rho0,0);CHKERRQ(ierr);
 
 	HPctx.surface_pressure = 0.0;
 	HPctx.ref_height = data->Ly;

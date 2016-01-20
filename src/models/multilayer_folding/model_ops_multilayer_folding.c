@@ -70,19 +70,19 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	data->max_layers = 100;
 	
 	data->quasi2d = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_folding_quasi2d",&data->quasi2d,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_folding_quasi2d",&data->quasi2d,&flg);CHKERRQ(ierr);
 	
-	PetscOptionsGetInt(NULL,"-model_multilayer_folding_n_interfaces",&data->n_interfaces,&flg);
+	PetscOptionsGetInt(NULL,NULL,"-model_multilayer_folding_n_interfaces",&data->n_interfaces,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the number of interfaces including the top and bottom boundaries (-model_multilayer_folding_n_interfaces)");
 	}
 	
-	PetscOptionsGetReal(NULL,"-model_multilayer_folding_Lx",&data->Lx,&flg);
+	PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_Lx",&data->Lx,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the x direction (-model_multilayer_folding_Lx)");
 	}
 	
-	PetscOptionsGetReal(NULL,"-model_multilayer_folding_Lz",&data->Lz,&flg);
+	PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_Lz",&data->Lz,&flg);
 	if (!data->quasi2d) {
 		if (!flg) {
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide the length along the z direction (-model_multilayer_folding_Lz)");
@@ -92,7 +92,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->n_interfaces;
-	PetscOptionsGetRealArray(NULL,"-model_multilayer_folding_interface_heights",data->interface_heights,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,NULL,"-model_multilayer_folding_interface_heights",data->interface_heights,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide back interface heights relative from the base of the model including the top and bottom boundaries.");
 	}
@@ -101,7 +101,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d back interface heights relative from the base of the model including the top and bottom boundaries (-model_multilayer_folding_interface_heights)",data->n_interfaces);
 	}
 	
-	PetscOptionsGetIntArray(NULL,"-model_multilayer_folding_layer_res_j",data->layer_res_j,&n_int,&flg);
+	PetscOptionsGetIntArray(NULL,NULL,"-model_multilayer_folding_layer_res_j",data->layer_res_j,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer resolution list (-model_multilayer_folding_layer_res_j)");
 	}
@@ -109,7 +109,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide %d layer resolutions (-model_multilayer_folding_layer_res_j)",data->n_interfaces-1);
 	}
     n_int = data->max_layers;
-	PetscOptionsGetRealArray(NULL,"-model_multilayer_folding_layer_eta",data->eta,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,NULL,"-model_multilayer_folding_layer_eta",data->eta,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list.(-model_multilayer_folding_layer_eta)");
 	}
@@ -118,13 +118,13 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	}
     
     n_int=data->n_interfaces-1;
-    ierr = PetscOptionsGetReal(NULL,"-model_multilayer_seed_eta",&data->eta[n_int],&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_seed_eta",&data->eta[n_int],&flg); CHKERRQ(ierr);
 
 	data->visco_plastic = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_folding_visco_plastic",&data->visco_plastic,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_folding_visco_plastic",&data->visco_plastic,&flg);CHKERRQ(ierr);
 	if (data->visco_plastic) {
 		n_int = data->max_layers;
-		PetscOptionsGetRealArray(NULL,"-model_multilayer_folding_layer_cohesion",data->cohesion,&n_int,&flg);
+		PetscOptionsGetRealArray(NULL,NULL,"-model_multilayer_folding_layer_cohesion",data->cohesion,&n_int,&flg);
 		if (!flg) {
 			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer viscosity list.(-model_multilayer_folding_layer_cohesion)");
 		}
@@ -134,7 +134,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	}
 	
 	n_int = data->max_layers;
-	PetscOptionsGetRealArray(NULL,"-model_multilayer_folding_layer_rho",data->rho,&n_int,&flg);
+	PetscOptionsGetRealArray(NULL,NULL,"-model_multilayer_folding_layer_rho",data->rho,&n_int,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"User must provide layer density list. (-model_multilayer_folding_layer_rho)");
 	}
@@ -143,7 +143,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	}
 	
     n_int=data->n_interfaces-1;
-    ierr = PetscOptionsGetReal(NULL,"-model_multilayer_seed_rho",&data->rho[n_int],&flg); CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_seed_rho",&data->rho[n_int],&flg); CHKERRQ(ierr);
     
     
 	/* define the mesh size the y-direction for the global problem  (gravity in y direction) */
@@ -166,20 +166,20 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	data->A0                = 1.0e-2;
 	
 	/* parse from command line or input file */
-	ierr = PetscOptionsGetInt(NULL,"-model_multilayer_folding_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,"-model_multilayer_folding_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_kx",&data->kx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_kz",&data->kz,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_A0",&data->A0,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-model_multilayer_folding_bc_type",&data->bc_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-model_multilayer_folding_perturbation_type",&data->perturbation_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_kx",&data->kx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_kz",&data->kz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_A0",&data->A0,&flg);CHKERRQ(ierr);
 	data->L_char = 1.0;
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_L_char",&data->L_char,&flg); CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_L_char",&data->L_char,&flg); CHKERRQ(ierr); 
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_exx",&data->exx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_ezz",&data->ezz,&flg); CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_vx",&data->vx_compression,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_vz",&data->vz_compression,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_exx",&data->exx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_ezz",&data->ezz,&flg); CHKERRQ(ierr); 
   data->seed_layer_1 = -1;
-  ierr = PetscOptionsGetInt(NULL,"-model_multilayer_seed_layer_1",&data->seed_layer_1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-model_multilayer_seed_layer_1",&data->seed_layer_1,&flg);CHKERRQ(ierr);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"ModelReport: \"Multilayer Folding\"\n");
 	PetscPrintf(PETSC_COMM_WORLD," Domain: [0 , %1.4e] x [0 , %1.4e] x [0 , %1.4e]\n", data->Lx,data->Ly,data->Lz );
@@ -727,15 +727,15 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
     
     dmin = 0.0;
     dmax = 0.0;
-    PetscOptionsGetReal(NULL,"-model_multilayer_folding_damage_init_min",&dmin,0);
-    PetscOptionsGetReal(NULL,"-model_multilayer_folding_damage_init_max",&dmax,0);
+    PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_damage_init_min",&dmin,0);
+    PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_damage_init_max",&dmax,0);
     drange = dmax - dmin;
 
     for (p=0; p<100; p++) {
         damagelist[p] = -1;
         layer2damge[p] = PETSC_FALSE;
     }
-    PetscOptionsGetIntArray(NULL,"-model_multilayer_folding_damage_layer",damagelist,&maxlayers,0);
+    PetscOptionsGetIntArray(NULL,NULL,"-model_multilayer_folding_damage_layer",damagelist,&maxlayers,0);
     for (p=0; p<maxlayers; p++) {
         /* check indices are valid */
         if (damagelist[p] < 0) {
@@ -1111,7 +1111,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_MultilayerFolding(pTatinCtx c,v
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
     mp_geom = 0;
-    PetscOptionsGetInt(NULL,"-model_multilayer_folding_mp_geom",&mp_geom,0);
+    PetscOptionsGetInt(NULL,NULL,"-model_multilayer_folding_mp_geom",&mp_geom,0);
     
     if (mp_geom == 0) {
         ierr = InitialMaterialGeometryMaterialPoints_MultilayerFolding(c,ctx);CHKERRQ(ierr);
@@ -1143,7 +1143,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,Lx, data->interface_heights[0],Ly, 0.0,Lz);CHKERRQ(ierr);
 	factor = 0.1;
-	ierr = PetscOptionsGetReal(NULL,"-model_multilayer_folding_amp_factor",&factor,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_amp_factor",&factor,NULL);CHKERRQ(ierr);
 	amp = factor * 1.0; /* this is internal scaled by dy inside MultilayerFoldingSetPerturbedInterfaces() */
 	/*if ( (amp < 0.0) || (amp >1.0) ) {
 	 SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"-model_multilayer_folding_amp_factor must be 0 < amp < 1");
@@ -1260,7 +1260,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_FACE_AREA_RATIO\" %1.4e \n", value[4]);
 	
 
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_basal_remesh",&basal_remesh,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_basal_remesh",&basal_remesh,NULL);CHKERRQ(ierr);
 	if (basal_remesh && (value[0] > 20.0)) {
 		/* Remesh only the first layer if the aspect ratio is > 20 */
 		PetscInt   res_j;
@@ -1285,7 +1285,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"after");CHKERRQ(ierr);
 	}
 	
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_marker_remesh",&marker_remesh,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_marker_remesh",&marker_remesh,NULL);CHKERRQ(ierr);
 	if (marker_remesh) {
 		PetscInt   JMAX;
 		DMDACoor3d span_xz[4];
@@ -1627,17 +1627,17 @@ PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_VERTEX_ANGLE\"    %1.4e \n", value[3]);
 	PetscPrintf(PETSC_COMM_WORLD,"  Mesh metrics \"MESH_QUALITY_FACE_AREA_RATIO\" %1.4e \n", value[4]);
 	
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_basal_remesh",&basal_remesh,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_basal_remesh",&basal_remesh,NULL);CHKERRQ(ierr);
 	if (basal_remesh) {
 		ierr = MultilayerFoldingUpdate_RemeshBasalLayer(value[0],dav,data);CHKERRQ(ierr);
 	}
 	
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_marker_remesh",&marker_remesh_v1,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_marker_remesh",&marker_remesh_v1,NULL);CHKERRQ(ierr);
 	if (marker_remesh_v1) {
 		ierr = MultilayerFoldingUpdate_RemeshMarkerProjection_v1(value[0],dav,c);CHKERRQ(ierr);
 	}
 
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_marker_remesh_v2",&marker_remesh_v2,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_marker_remesh_v2",&marker_remesh_v2,NULL);CHKERRQ(ierr);
 	if (marker_remesh_v2) {
 		/* 
 		 Reset position of mesh 
@@ -1651,7 +1651,7 @@ PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X
 		ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	}
 	
-	ierr = PetscOptionsGetBool(NULL,"-model_multilayer_surface_remesh",&surface_remesh,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_multilayer_surface_remesh",&surface_remesh,NULL);CHKERRQ(ierr);
 	if (surface_remesh) {
 		/* 
 		 Reset position of mesh 
@@ -2044,7 +2044,7 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 
 	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
 
-	PetscOptionsGetBool(NULL,"-model_multilayer_folding_output_markers",&output_markers,0);
+	PetscOptionsGetBool(NULL,NULL,"-model_multilayer_folding_output_markers",&output_markers,0);
 	/* output raw marker fields */
 	if (output_markers) {
 		const int                 nf = 3;
@@ -2063,7 +2063,7 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
 	}
 	
-	PetscOptionsGetBool(NULL,"-verify_with_analytics",&verify_with_analytics,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-verify_with_analytics",&verify_with_analytics,NULL);
 	if (verify_with_analytics) {
 		//ierr = MultilayerFoldingOutputAmplitudeMax(c,data);CHKERRQ(ierr);
 		//ierr = MultilayerFoldingOutputAmplitude(c,data);CHKERRQ(ierr);

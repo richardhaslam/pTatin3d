@@ -105,11 +105,11 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
     
     
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-model_thermal_sb_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,NULL,"-model_thermal_sb_output_si",&modeldata->output_si,0);
     
     
     /* force energy equation to be introduced */
-	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 
     /*
         Current Value -preexpA_0   :  3.2000e-20

@@ -50,7 +50,7 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 	pTatinGenerateFormattedTimestamp(date_time);
 	sprintf(name,"%s/ptatin.log-%s",ctx->outputpath,date_time);
 	
-	ierr = PetscOptionsGetBool(NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,name,&ctx->log);CHKERRQ(ierr);
 		PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Created log file: %s \n",name);
@@ -69,7 +69,7 @@ PetscErrorCode pTatinLogCloseFile(pTatinCtx ctx)
 	PetscBool      stdout = PETSC_FALSE;
 	PetscErrorCode ierr;
 
-	ierr = PetscOptionsGetBool(NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_log_stdout",&stdout,NULL);CHKERRQ(ierr);
 	if (!stdout) {
 		ierr = PetscViewerDestroy(&ctx->log);CHKERRQ(ierr);
 	}

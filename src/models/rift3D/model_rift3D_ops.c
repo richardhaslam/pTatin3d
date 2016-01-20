@@ -135,34 +135,34 @@ PetscErrorCode ModelInitialize_Rift3D(pTatinCtx c,void *ctx)
  
 	/* Read the options */
 	/*cutoff */
-	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
 	/*scaling */     
 	nondim = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_rift3D_nondimensional",&nondim,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_nondimensional",&nondim,NULL);CHKERRQ(ierr);
 	if (nondim){
 		data->dimensional = PETSC_FALSE;
 	} else {
-    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr); 
-    ierr = PetscOptionsGetReal(NULL,"-model_rift3D_length_bar",&data->length_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr); 
+    ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_length_bar",&data->length_bar,NULL);CHKERRQ(ierr); 
 	}
 	/* box geometry, m */	
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Lx",&data->Lx,NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Ly",&data->Ly,NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Lz",&data->Lz,NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Ox",&data->Ox,NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Oy",&data->Oy,NULL);CHKERRQ(ierr); 
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_Oz",&data->Oz,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_Lx",&data->Lx,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_Ly",&data->Ly,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_Lz",&data->Lz,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_Ox",&data->Ox,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_Oy",&data->Oy,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_Oz",&data->Oz,NULL);CHKERRQ(ierr); 
 	
 	/* velocity cm/y */    
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vx",&vx,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_vz",&vz,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_vx",&vx,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_vz",&vz,NULL);CHKERRQ(ierr); 
 	
 	/* rho0 for initial pressure */
-	ierr = PetscOptionsGetReal(NULL,"-model_rift3D_rho0",&data->rho0,NULL);CHKERRQ(ierr); 
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_rift3D_rho0",&data->rho0,NULL);CHKERRQ(ierr); 
 	
 	/* Material constant */
 	for (regionidx=0; regionidx<rheology->nphases_active;regionidx++) {

@@ -60,7 +60,7 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
 	
 	PetscFunctionBegin;
 	perturb = perturbA;
-	ierr = PetscOptionsGetScalar(NULL,"-perturb",&perturb,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetScalar(NULL,NULL,"-perturb",&perturb,&flg);CHKERRQ(ierr);
 	
 	/* get average cell sizes */
 	ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
@@ -182,9 +182,9 @@ int main( int argc,char **argv )
 	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	mx = my = mz = 10;
-	PetscOptionsGetInt( NULL, "-mx", &mx, 0 );
-	PetscOptionsGetInt( NULL, "-my", &my, 0 );
-	PetscOptionsGetInt( NULL, "-mz", &mz, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-mx", &mx, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-my", &my, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-mz", &mz, 0 );
 	
 	ierr = test_DMDACreate3dRedundant(mx,my,mz);CHKERRQ(ierr);
 

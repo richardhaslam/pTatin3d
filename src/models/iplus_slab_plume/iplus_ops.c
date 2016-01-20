@@ -75,7 +75,7 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
     
     PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
     
-    PetscOptionsGetInt(NULL,"-iplus_modeltype",&modeltype,&flg);
+    PetscOptionsGetInt(NULL,NULL,"-iplus_modeltype",&modeltype,&flg);
     if (flg) {
         data->modeltype = (iPLUSModelType)modeltype;
     }
@@ -85,14 +85,14 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
     data->plume_eta  = 5.0;     data->plume_rho  = 1373.0;
     data->slab_eta   = 64000.0; data->slab_rho   = 1495.0;
     
-    PetscOptionsGetReal(NULL,"-iplus_slab_eta",&data->slab_eta,&flg);
-    PetscOptionsGetReal(NULL,"-iplus_slab_rho",&data->slab_rho,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_slab_eta",&data->slab_eta,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_slab_rho",&data->slab_rho,&flg);
     
-    PetscOptionsGetReal(NULL,"-iplus_mantle_eta",&data->mantle_eta,&flg);
-    PetscOptionsGetReal(NULL,"-iplus_mantle_rho",&data->mantle_rho,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_mantle_eta",&data->mantle_eta,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_mantle_rho",&data->mantle_rho,&flg);
     
-    PetscOptionsGetReal(NULL,"-iplus_plume_eta",&data->plume_eta,&flg);
-    PetscOptionsGetReal(NULL,"-iplus_plume_rho",&data->plume_rho,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_plume_eta",&data->plume_eta,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_plume_rho",&data->plume_rho,&flg);
     
     data->length_scale = 1.0;
     data->vel_scale    = 1.0;
@@ -101,8 +101,8 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
     if (data->modeltype == iPLUsModelPlume) {
         data->eta_scale = 1.0;
     }
-    PetscOptionsGetReal(NULL,"-iplus_eta_scale",&data->eta_scale,&flg);
-    PetscOptionsGetReal(NULL,"-iplus_velocity_scale",&data->vel_scale,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_eta_scale",&data->eta_scale,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_velocity_scale",&data->vel_scale,&flg);
     data->time_scale   = data->length_scale / data->vel_scale;
     
     PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: Using viscosity scale, eta* = %1.4e Pa s \n", data->eta_scale);
@@ -133,24 +133,24 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
         data->plume_pos[0] = 0.15;
         data->plume_pos[2] = 0.15;
         
-        PetscOptionsGetReal(NULL,"-iplus_plume_x",&data->plume_pos[0],&flg);
-        PetscOptionsGetReal(NULL,"-iplus_plume_z",&data->plume_pos[2],&flg);
+        PetscOptionsGetReal(NULL,NULL,"-iplus_plume_x",&data->plume_pos[0],&flg);
+        PetscOptionsGetReal(NULL,NULL,"-iplus_plume_z",&data->plume_pos[2],&flg);
         
         data->plume_pos[1] = 0.0;
     }
     
     data->plume_radius = 0.015625;
     data->plume_A0     = 1.0681;
-    PetscOptionsGetReal(NULL,"-iplus_plume_r",&data->plume_radius,&flg);
-    PetscOptionsGetReal(NULL,"-iplus_plume_A0",&data->plume_A0,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_plume_r",&data->plume_radius,&flg);
+    PetscOptionsGetReal(NULL,NULL,"-iplus_plume_A0",&data->plume_A0,&flg);
     
     data->refinement_type = 0;
-    PetscOptionsGetInt(NULL,"-iplus_mesh_refinement_type",&data->refinement_type,&flg);
+    PetscOptionsGetInt(NULL,NULL,"-iplus_mesh_refinement_type",&data->refinement_type,&flg);
     
     data->np_plume_x = 10;
     data->np_plume_z = 10;
-    PetscOptionsGetInt(NULL,"-iplus_plume_npx",&data->np_plume_x,&flg);
-    PetscOptionsGetInt(NULL,"-iplus_plume_npz",&data->np_plume_z,&flg);
+    PetscOptionsGetInt(NULL,NULL,"-iplus_plume_npx",&data->np_plume_x,&flg);
+    PetscOptionsGetInt(NULL,NULL,"-iplus_plume_npz",&data->np_plume_z,&flg);
     
     if ( (data->modeltype == iPLUsModelPlume) || (data->modeltype == iPLUsModelSlabPlume) ) {
         PetscPrintf(PETSC_COMM_WORLD, "  iPLUS: [plume origin] %1.4e m ; %1.4e m ; %1.4e m\n",data->plume_pos[0],data->plume_pos[1],data->plume_pos[2]);
@@ -166,16 +166,16 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&data->logviewer);CHKERRQ(ierr);
     
     data->iplus_output_frequency = 1;
-    PetscOptionsGetInt(NULL,"-iplus_output_frequency",&data->iplus_output_frequency,&flg);
+    PetscOptionsGetInt(NULL,NULL,"-iplus_output_frequency",&data->iplus_output_frequency,&flg);
     
     /* Two dimensional mode - force mz = 1 */
     {
         PetscBool dim2_mode = PETSC_FALSE;
         
-        PetscOptionsGetBool(NULL,"-iplus_2d_mode",&dim2_mode,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-iplus_2d_mode",&dim2_mode,NULL);
         if (dim2_mode) {
             ierr = pTatin3d_DefineVelocityMeshQuasi2D(c);CHKERRQ(ierr);
-            ierr = PetscOptionsInsertString("-da_refine_z 1");CHKERRQ(ierr);
+            ierr = PetscOptionsInsertString(NULL,"-da_refine_z 1");CHKERRQ(ierr);
         }
     }
     PetscFunctionReturn(0);
@@ -206,16 +206,16 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
     } else {
         /* bigger tank */
         wouter_slab = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-iplus_slab_type_schellart_g3_2008",&wouter_slab,NULL);
         
         ribe_slab = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-iplus_slab_type_liribe_jgr_2012",&ribe_slab,NULL);
         
         G3_slab = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-iplus_slab_type_g3_2014",&G3_slab,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-iplus_slab_type_g3_2014",&G3_slab,NULL);
         
         shallow_mantle = PETSC_FALSE;
-        PetscOptionsGetBool(NULL,"-iplus_slab_domain_shallow_mantle",&shallow_mantle,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-iplus_slab_domain_shallow_mantle",&shallow_mantle,NULL);
         
         if (wouter_slab || ribe_slab) {
             
@@ -282,7 +282,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
     {
         PetscBool dim2_mode = PETSC_FALSE;
         
-        PetscOptionsGetBool(NULL,"-iplus_2d_mode",&dim2_mode,NULL);
+        PetscOptionsGetBool(NULL,NULL,"-iplus_2d_mode",&dim2_mode,NULL);
         if (dim2_mode) {
             ierr = DMDASetUniformCoordinates1D(dav,2,0.3,0.31);CHKERRQ(ierr);
         }

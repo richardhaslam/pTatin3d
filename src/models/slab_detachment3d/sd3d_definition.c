@@ -108,12 +108,12 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     modeldata->rhs_scale = 1.0 / modeldata->rhs_scale;
 
     modeldata->output_si = PETSC_FALSE;
-    PetscOptionsGetBool(NULL,"-model_output_si",&modeldata->output_si,0);
+    PetscOptionsGetBool(NULL,NULL,"-model_output_si",&modeldata->output_si,0);
     
     modeldata->model_type = CASE_1A;
     modeldata->slab_length = 250.0;
     
-    PetscOptionsGetInt(NULL,"-model_sd3d_mtype",&mtype,0);
+    PetscOptionsGetInt(NULL,NULL,"-model_sd3d_mtype",&mtype,0);
     switch (mtype) {
         case 0:
             modeldata->model_type = CASE_1A;
@@ -134,7 +134,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         case 4:
             modeldata->model_type = CASE_2C;
             PetscPrintf(PETSC_COMM_WORLD,"  [model sd3d]: CASE 2C\n");
-            PetscOptionsGetReal(NULL,"-model_sd3d_case2c_slab_ly",&modeldata->slab_length,0);
+            PetscOptionsGetReal(NULL,NULL,"-model_sd3d_case2c_slab_ly",&modeldata->slab_length,0);
             PetscPrintf(PETSC_COMM_WORLD,"  [model sd3d]: slab length = %1.4e (km)\n",modeldata->slab_length);
             break;
     }

@@ -149,7 +149,7 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	
 	ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
 
-  ierr = PetscLogBegin();CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
 
 	ierr = KSPRegister("chebychevrn",KSPCreate_ChebychevRN);CHKERRQ(ierr);
 	ierr = PCRegister("semiredundant",PCCreate_SemiRedundant);CHKERRQ(ierr);

@@ -112,7 +112,7 @@ PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 		PetscInt energy_mesh_type;
 		
 		energy_mesh_type = 1; /* default is Q1 overlapping Q2 */
-		ierr = PetscOptionsGetInt(NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
+		ierr = PetscOptionsGetInt(NULL,NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
 		ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
 	}	
 	
@@ -310,7 +310,7 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	
 	/* view */
 	view = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-view_projected_marker_fields",&view,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-view_projected_marker_fields",&view,NULL);
 	if (view) {
 		char filename[256];
 		PetscViewer viewer;

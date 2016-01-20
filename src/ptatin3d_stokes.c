@@ -1093,10 +1093,10 @@ PetscErrorCode PetscOptionsInsertPrefixString(const char prefix[],const char opt
 	}
 	
 	if (!prefix) {
-		ierr = PetscOptionsInsertString(option);CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,option);CHKERRQ(ierr);
 	} else {
 		sprintf(opt,"-%s%s",prefix,&option[1]);
-		ierr = PetscOptionsInsertString(opt);CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,opt);CHKERRQ(ierr);
 	}
 		
 	PetscFunctionReturn(0);

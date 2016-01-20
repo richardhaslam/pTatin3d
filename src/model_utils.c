@@ -211,7 +211,7 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
-	ierr = PetscOptionsGetReal(NULL,option,val,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,option,val,&flg);CHKERRQ(ierr);
 	if (essential) {
 		if (!flg) {
 			if (!default_opt) {
@@ -407,7 +407,7 @@ PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 	Lz = PetscMin(Lz,min_dl[0]);
 	Lz = PetscMin(Lz,min_dl[1]);
 
-	PetscOptionsGetBool(NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,NULL);
 	if (geom_max) {
 		Lz = 1.0e-32;
 		Lz = PetscMax(Lz,max_dl[0]);

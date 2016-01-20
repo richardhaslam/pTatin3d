@@ -434,7 +434,7 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	restart = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-test_restart",&restart,0);
+	PetscOptionsGetBool(NULL,NULL,"-test_restart",&restart,0);
 	if (restart) {
 		ierr = pTatin3d_material_points_restart(argc,argv);CHKERRQ(ierr);
 	} else {

@@ -94,9 +94,9 @@ int main( int argc,char **argv )
 	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 	
 	mx = my = mz = 10;
-	PetscOptionsGetInt( NULL, "-mx", &mx, 0 );
-	PetscOptionsGetInt( NULL, "-my", &my, 0 );
-	PetscOptionsGetInt( NULL, "-mz", &mz, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-mx", &mx, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-my", &my, 0 );
+	PetscOptionsGetInt(NULL, NULL, "-mz", &mz, 0 );
 	
 	ierr = test_DMDAUpdateGhostedCoordinates(mx,my,mz);CHKERRQ(ierr);
 	/* todo */

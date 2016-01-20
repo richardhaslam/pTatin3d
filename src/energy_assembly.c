@@ -1106,7 +1106,7 @@ PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscSc
     
 	if (been_here==0) {
 		flg = PETSC_FALSE;
-		ierr = PetscOptionsGetReal(NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-adv_diff_stab_tau",&user_tau,&flg);CHKERRQ(ierr);
 		been_here = 1;
 	}
 	

@@ -182,7 +182,7 @@ PetscErrorCode PetscMPISubCommCreate(MPI_Comm parent_comm,PetscInt parent_reduct
     PetscErrorCode ierr;
 
     creation_type = 1;
-    PetscOptionsGetInt(NULL,"-petsc_mpi_subcomm_creation_type",&creation_type,NULL);
+    PetscOptionsGetInt(NULL,NULL,"-petsc_mpi_subcomm_creation_type",&creation_type,NULL);
     if (creation_type == 1) {
         ierr = PetscMPISubCommCreate_Stride(parent_comm,parent_reduction_factor,scomm);CHKERRQ(ierr);
     } else {

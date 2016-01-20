@@ -245,7 +245,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -425,7 +425,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,NULL,"-A11_operator_type",level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 
 		switch ((OperatorType)level_type[k]) {
@@ -812,7 +812,7 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 	
 	PetscFunctionBegin;
 	
-    ierr = PetscOptionsGetInt(NULL,"-flow_field",&vfield_idx,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-flow_field",&vfield_idx,NULL);CHKERRQ(ierr);
     
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -1007,7 +1007,7 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 
-    ierr = PetscOptionsGetBool(NULL,"-use_model_vel_field",&model_vel_field,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-use_model_vel_field",&model_vel_field,NULL);CHKERRQ(ierr);
     
     /* 
      This requires a model to be specified.

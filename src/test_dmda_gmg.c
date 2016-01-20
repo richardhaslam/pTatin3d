@@ -128,7 +128,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);
@@ -360,7 +360,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	user->stokes_ctx->dav->ops->coarsenhierarchy = DMCoarsenHierarchy2_DA;
 	
 	nlevels = 1;
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	ierr = PetscMalloc(sizeof(DM)*nlevels,&dav_hierarchy);CHKERRQ(ierr);
 	dav_hierarchy[ nlevels-1 ] = dav;
 	ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr);

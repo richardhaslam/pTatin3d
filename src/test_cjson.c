@@ -102,7 +102,7 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
     PetscPrintf(PETSC_COMM_WORLD,"** test_GeometryObjectParse2_cJSON **\n");
 
     ngo = 100;
-    PetscOptionsGetInt(NULL,"-ngo",&ngo,NULL);
+    PetscOptionsGetInt(NULL,NULL,"-ngo",&ngo,NULL);
     fp = fopen("fat_test_geom.json","w");
     fprintf(fp,"{\n");
     
@@ -152,13 +152,13 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 
     test_id = 1;
-    PetscOptionsGetInt(NULL,"-test_id",&test_id,NULL);
+    PetscOptionsGetInt(NULL,NULL,"-test_id",&test_id,NULL);
 
     switch (test_id) {
 
         case 1:
             nloops = 1;
-            PetscOptionsGetInt(NULL,"-nloops",&nloops,NULL);
+            PetscOptionsGetInt(NULL,NULL,"-nloops",&nloops,NULL);
             for (i=0; i<nloops; i++) {
                 ierr = test_GeometryObjectParse_cJSON();CHKERRQ(ierr);
             }

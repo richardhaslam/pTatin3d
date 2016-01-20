@@ -624,7 +624,7 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
   
   PetscFunctionBegin;
 
-	ierr = PetscOptionsGetBool(NULL,"-slepc_compute_errors",&compute_errors,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-slepc_compute_errors",&compute_errors,NULL);CHKERRQ(ierr);
 	
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysis: \"%s\" ===== \n",description);
   ierr = MatCreateVecs(A,NULL,&xr);CHKERRQ(ierr);

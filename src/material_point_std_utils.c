@@ -121,10 +121,10 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	
 	PetscFunctionBegin;
 	
-	PetscOptionsGetReal(NULL,"-lattice_layout_perturb", &perturb, NULL );
-	PetscOptionsGetInt(NULL,"-lattice_layout_Nx", &Nxp[0], NULL );
-	PetscOptionsGetInt(NULL,"-lattice_layout_Ny", &Nxp[1], NULL );
-	PetscOptionsGetInt(NULL,"-lattice_layout_Nz", &Nxp[2], NULL );
+	PetscOptionsGetReal(NULL,NULL,"-lattice_layout_perturb", &perturb, NULL );
+	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nx", &Nxp[0], NULL );
+	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Ny", &Nxp[1], NULL );
+	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nz", &Nxp[2], NULL );
 	
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 	
@@ -328,7 +328,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 	
 	PetscFunctionBegin;
 	
-	PetscOptionsGetInt(NULL,"-random_layout_Np", &nPerCell, NULL );
+	PetscOptionsGetInt(NULL,NULL,"-random_layout_Np", &nPerCell, NULL );
 	
 	// re-size //
 	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);

@@ -50,7 +50,7 @@ int main(int argc,char **argv)
 	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 	
 	flg = PETSC_FALSE;
-	PetscOptionsGetString(NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,&flg);
+	PetscOptionsGetString(NULL,NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,&flg);
 	if (!flg) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must provide a filename for the matrix to read using -matrix");
 	}

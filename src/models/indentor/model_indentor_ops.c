@@ -65,10 +65,10 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 
 	/* bc type */
 	data->boundary_conditon_type = VSBC_FreeSlip;
-	ierr = PetscOptionsGetInt(NULL,"-model_indentor_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-model_indentor_bc_type",(PetscInt*)&data->boundary_conditon_type,&flg);CHKERRQ(ierr);
 	
 	data->dimensional   = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_indentor_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_indentor_dimensional",&data->dimensional,&flg);CHKERRQ(ierr);
 
 	/* default scales for non-dimensionalisation */
 	km2m                 = 1.0e3;
@@ -97,9 +97,9 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	data->Ly = 120.0;
 	data->Lz = 500.0;
 
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 
 	/* convert input to meters */
 	data->Lx = data->Lx * 1.0e3;
@@ -116,10 +116,10 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	rheology->const_eta0[2] = 5.0*1.0e23; /* mantle */
 	rheology->const_eta0[3] = 5.0*1.0e21; /* mantle - lower */
 
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_eta0",&rheology->const_eta0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_eta1",&rheology->const_eta0[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_eta2",&rheology->const_eta0[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_eta3",&rheology->const_eta0[3],&flg);CHKERRQ(ierr);
 	
 	/* density */
 	rheology->const_rho0[0] = 2700.0; /* crust */
@@ -127,16 +127,16 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 	rheology->const_rho0[2] = 3200.0; /* mantle */
 	rheology->const_rho0[3] = 3200.0; /* mantle */
 
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_rho0",&rheology->const_rho0[0],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_rho1",&rheology->const_rho0[1],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_rho2",&rheology->const_rho0[2],&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_rho3",&rheology->const_rho0[3],&flg);CHKERRQ(ierr);
 	
 	data->cutoff_time = 1.0;
 	data->indentation_velocity = 1.5;
 	
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_cutofftime",&data->cutoff_time,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_indentor_indentation_velocity",&data->indentation_velocity,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_cutofftime",&data->cutoff_time,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_indentor_indentation_velocity",&data->indentation_velocity,&flg);CHKERRQ(ierr);
 
 	/* convert input time Ma => sec */
 	data->cutoff_time = data->cutoff_time * Ma2sec;

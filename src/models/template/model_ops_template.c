@@ -50,8 +50,8 @@ PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
 
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
   data = (ModelTemplateCtx*)ctx;
-  ierr = PetscOptionsGetReal(NULL,"-model_template_param1",&data->param1,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(NULL, "-model_template_param2",&data->param2,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-model_template_param1",&data->param1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL, "-model_template_param2",&data->param2,&flg);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }

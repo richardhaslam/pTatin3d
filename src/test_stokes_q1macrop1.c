@@ -56,9 +56,9 @@ PetscErrorCode test_q1macrop1_a(void)
 	PetscFunctionBegin;
 
 	mx = my = mz = 4;
-	PetscOptionsGetInt(NULL,"-mx",&mx,0);
-	PetscOptionsGetInt(NULL,"-my",&my,0);
-	PetscOptionsGetInt(NULL,"-mz",&mz,0);
+	PetscOptionsGetInt(NULL,NULL,"-mx",&mx,0);
+	PetscOptionsGetInt(NULL,NULL,"-my",&my,0);
+	PetscOptionsGetInt(NULL,NULL,"-mz",&mz,0);
 	
 	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
 	ierr = PhysCompCreateMesh_Stokes3d_Q1MacroP1(mx,my,mz,stokes);CHKERRQ(ierr);

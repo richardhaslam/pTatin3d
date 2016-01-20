@@ -55,9 +55,9 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	PetscOptionsGetInt(NULL,"-advdiff_setup",&model_setup,0);
-	PetscOptionsGetReal(NULL,"-advdiff_vel_scale",&vel_scale,0);
-	PetscOptionsGetReal(NULL,"-advdiff_diff_scale",&diffusion_scale,0);
+	PetscOptionsGetInt(NULL,NULL,"-advdiff_setup",&model_setup,0);
+	PetscOptionsGetReal(NULL,NULL,"-advdiff_vel_scale",&vel_scale,0);
+	PetscOptionsGetReal(NULL,NULL,"-advdiff_diff_scale",&diffusion_scale,0);
 
 	switch (model_setup) {
 		case 0:
@@ -478,7 +478,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 #endif
 	
 	/* stokes + energy material points */
-	ierr = PetscOptionsGetBool(NULL,"-advdiff_output_markers_once",&output_markers_once,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-advdiff_output_markers_once",&output_markers_once,NULL);CHKERRQ(ierr);
 	write_markers = PETSC_TRUE;
 	if ((output_markers_once) && (been_here != 0)) {
 		write_markers = PETSC_FALSE;

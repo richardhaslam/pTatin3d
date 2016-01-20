@@ -85,7 +85,7 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 
 	
 	data->model_conf = MT_HORIZ;
-	PetscOptionsGetInt(NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
+	PetscOptionsGetInt(NULL,NULL,"-submarine_model",(PetscInt*)&data->model_conf,&flg);
 	
 	
 	ierr = pTatinGetRheology(c,&rheology);CHKERRQ(ierr);
@@ -96,10 +96,10 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	rheology->eta_lower_cutoff_global = 1.0e-5/ETA_SCALE;
 
 	/* set flag for thermal solver to be switched on */
-	ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 	
 	
-	//ierr = PetscOptionsGetReal(NULL,"-model_submarinelavaflow_param1",&data->param1,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,NULL,"-model_submarinelavaflow_param1",&data->param1,&flg);CHKERRQ(ierr);
 
 	/* define geometry here so everyone can use it */
 	ierr = GeometryObjectCreate("domain",&domain);CHKERRQ(ierr);
@@ -608,7 +608,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscErrorCode ierr;
 
 	apply_inflow = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-submarine_inflow_bc",&apply_inflow,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-submarine_inflow_bc",&apply_inflow,NULL);
 	if (apply_inflow) {
 		ierr = SubmarineLavaFlow_ApplyInflow(c,data);CHKERRQ(ierr);
 	}
@@ -700,7 +700,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 		PetscInt Nmax,indexN;
 
 		factor = 1.0;		
-		PetscOptionsGetScalar(NULL,"-subdmarine_roughness_factor",&factor,NULL);
+		PetscOptionsGetScalar(NULL,NULL,"-subdmarine_roughness_factor",&factor,NULL);
 		if (factor < 0.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
 		if (factor > 1.0) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"0 <= factor <= 1.0"); }
 		indexN = 0;

@@ -99,7 +99,7 @@ PetscErrorCode ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VP_STD(DataBucke
 	
 	/* viscous type */
 	sprintf(option_name,"-viscous_%d",region_id);
-    ierr = PetscOptionsGetInt(model_name,option_name,&visc_type,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,model_name,option_name,&visc_type,&found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		//SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for viscous type for region %D; via -viscous_%D\n",region_id,region_id);
 		ierr = ReportOptionMissing(model_name,"Viscous type for region",option_name,"0 = CONSTANT, 1 = FRANKK, 2 = ARRHENIUS");CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VP_STD(DataBucke
 	
 	/* plastic type */
 	sprintf(option_name,"-plastic_%d",region_id);
-    ierr = PetscOptionsGetInt(model_name,option_name,&plastic_type,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,model_name,option_name,&plastic_type,&found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		//SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for plastic type for region %D; via -plastic_%D\n",region_id,region_id);
 		ierr = ReportOptionMissing(model_name,"Plastic type for region",option_name,"0 = NONE, 1 = MISES, 2 = DP");CHKERRQ(ierr);
@@ -119,7 +119,7 @@ PetscErrorCode ModelGene3DNueve_ParseMaterialConstants_RHEOLOGY_VP_STD(DataBucke
 	
     /* softening  type */
 	sprintf(option_name,"-softening_%d",region_id);
-    ierr = PetscOptionsGetInt(model_name,option_name,&softening_type,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,model_name,option_name,&softening_type,&found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		//SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_USER,"Expected user to provide value for softening type for region %D; via -softening_%D\n",region_id,region_id);
 		ierr = ReportOptionMissing(model_name,"Softening type for region",option_name,"0 = NONE, 1 = LINEAR, 2 = EXPONENTIAL");CHKERRQ(ierr);
@@ -195,7 +195,7 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 	
     /* model geometry */
     PetscPrintf(PETSC_COMM_WORLD,"reading model initial geometry from options\n");
-    ierr = PetscOptionsGetInt(NULL,"-initial_region_geom_type",(PetscInt*)&data->initial_geom,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-initial_region_geom_type",(PetscInt*)&data->initial_geom,&found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Type of region index initialisation","-initial_region_geom_type","1=pmap, 2=CAD");CHKERRQ(ierr);
 	}
@@ -203,33 +203,33 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
     /* box geometry */
     PetscPrintf(PETSC_COMM_WORLD, "reading box geometry from options\n");
 	
-    ierr = PetscOptionsGetReal(NULL, "-Lx", &data->Lx, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL, "-Lx", &data->Lx, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE) {
 		ierr = ReportOptionMissing(0,"Model length in x","-Lx",0);CHKERRQ(ierr);
 	}
 	
-    ierr = PetscOptionsGetReal(NULL, "-Ly", &data->Ly, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL, "-Ly", &data->Ly, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE) {
 		ierr = ReportOptionMissing(0,"Model length in y","-Ly",0);CHKERRQ(ierr);
 	}
 	
-    ierr = PetscOptionsGetReal(NULL, "-Lz", &data->Lz, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL, "-Lz", &data->Lz, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE) {
 		ierr = ReportOptionMissing(0,"Model length in z","-Lz",0);CHKERRQ(ierr);
 	}
 	
 	
-    ierr = PetscOptionsGetReal(NULL, "-Ox", &data->Ox, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL, "-Ox", &data->Ox, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Model origin in x","-Ox",0);CHKERRQ(ierr);
 	}
 	
-    ierr = PetscOptionsGetReal(NULL, "-Oy", &data->Oy, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL, "-Oy", &data->Oy, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Model origin in y","-Oy",0);CHKERRQ(ierr);
 	}
 	
-    ierr = PetscOptionsGetReal(NULL, "-Oz", &data->Oz, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL, "-Oz", &data->Oz, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Model origin in z","-Oz",0);CHKERRQ(ierr);
 	}
@@ -237,7 +237,7 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 	
     /* bc type */
 	opts_bcs = GENEBC_FreeSlip;
-	ierr = PetscOptionsGetInt(NULL,"-bc_type",&opts_bcs,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-bc_type",&opts_bcs,&found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(0,"Boundary condition type","-bc_type",0);CHKERRQ(ierr);
 	}
@@ -246,7 +246,7 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
     
     /* material properties */
     PetscPrintf(PETSC_COMM_WORLD,"reading material properties from options\n");
-    ierr = PetscOptionsGetInt(MODEL_NAME, "-nphase", &nregions, &found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,MODEL_NAME, "-nphase", &nregions, &found);CHKERRQ(ierr);
     if (found == PETSC_FALSE)	{
 		ierr = ReportOptionMissing(MODEL_NAME,"Maximum number of material regions","-nphase",0);CHKERRQ(ierr);
 	}
@@ -254,7 +254,7 @@ PetscErrorCode ModelInitialize_Gene3DNueve(pTatinCtx c,void *ctx)
 	/* set the active phases on the rheo structure */
 	DataBucketSetSizes(c->material_constants,nregions,-1);
 	
-	ierr = PetscOptionsGetInt(MODEL_NAME,"-rheol",&rheol_type,&found);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,MODEL_NAME,"-rheol",&rheol_type,&found);CHKERRQ(ierr);
 	if (found == PETSC_FALSE){
 		ierr = ReportOptionMissing(MODEL_NAME,"Rheology type","-rheol","0=viscous , 4=visco_plastic");CHKERRQ(ierr);
 	}
@@ -358,14 +358,14 @@ PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,Mo
 			ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_JMIN_LOC, 1,BCListEvaluator_constant, (void *) &zero);CHKERRQ(ierr);
             
 			
-			ierr = PetscOptionsGetReal(NULL,"-extension_x",&ext_value,&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal(NULL,NULL,"-extension_x",&ext_value,&flg);CHKERRQ(ierr);
 			if (flg) {
 				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMAX_LOC, 0,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
 				ext_value = -1.0 * ext_value;
 				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_IMIN_LOC, 0,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
 			}
 			
-			ierr = PetscOptionsGetReal(NULL,"-extension_z",&ext_value,&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal(NULL,NULL,"-extension_z",&ext_value,&flg);CHKERRQ(ierr);
 			if (flg) {
 				ierr = DMDABCListTraverse3d(u_bclist,dav, DMDABCList_KMAX_LOC, 2,BCListEvaluator_constant, (void *) &ext_value);CHKERRQ(ierr);
 				ext_value = -1.0 * ext_value;
@@ -397,7 +397,7 @@ PetscErrorCode ModelGene3DNueve_ApplyBoundaryCondition(DM dav,BCList u_bclist,Mo
 			PetscReal exz_value,zero;
 			
 			exz_value = 0.25;
-			ierr = PetscOptionsGetReal(NULL,"-shear_exz",&exz_value,&flg);CHKERRQ(ierr);
+			ierr = PetscOptionsGetReal(NULL,NULL,"-shear_exz",&exz_value,&flg);CHKERRQ(ierr);
             /*
              // all sides //
              ierr = DirichletBC_ApplyStrainRateExz_b(u_bclist,dav,exz_value);CHKERRQ(ierr);
@@ -572,10 +572,10 @@ PetscErrorCode MaterialPointSetRegion_MyFunction(pTatinCtx c,void *ctx)
 	gamma = 1.0/6.0;
 	delta = 0.0;
     
-	PetscOptionsGetReal(NULL,"-int_alpha",&alpha,0);
-	PetscOptionsGetReal(NULL,"-int_beta",&beta,0);
-	PetscOptionsGetReal(NULL,"-int_gamma",&gamma,0);
-	PetscOptionsGetReal(NULL,"-int_delta",&delta,0);
+	PetscOptionsGetReal(NULL,NULL,"-int_alpha",&alpha,0);
+	PetscOptionsGetReal(NULL,NULL,"-int_beta",&beta,0);
+	PetscOptionsGetReal(NULL,NULL,"-int_gamma",&gamma,0);
+	PetscOptionsGetReal(NULL,NULL,"-int_delta",&delta,0);
 	
     for (p=0; p<n_mp_points; p++) {
 		MPntStd *material_point;
@@ -625,11 +625,11 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 	PetscFunctionBegin;
     PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
 	
-    ierr = PetscOptionsGetString(MODEL_NAME,"-map_file",map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(NULL,MODEL_NAME,"-map_file",map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
     if (flg == PETSC_FALSE) {
 		ierr = ReportOptionMissing(MODEL_NAME,"Name of pmap file","-map_file","HINT: Don't include the extension .pmap in the file name");CHKERRQ(ierr);
 	}
-    ierr = PetscOptionsGetInt(MODEL_NAME,"-extrude_dir",&direction,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,MODEL_NAME,"-extrude_dir",&direction,&flg);CHKERRQ(ierr);
     if (flg == PETSC_FALSE) {
         ierr = ReportOptionMissing(MODEL_NAME,"Direction to extrude the pmap","-extrude_dir","0=x, 1=y, 2=z");CHKERRQ(ierr);
 	}
@@ -801,13 +801,13 @@ PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedM
     db = c->materialpoint_db;
 	
 	
-    ierr = PetscOptionsGetInt(MODEL_NAME,"-num_map_files",&nmaps,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,MODEL_NAME,"-num_map_files",&nmaps,&flg);CHKERRQ(ierr);
     if (flg == PETSC_FALSE) {
 		ierr = ReportOptionMissing(MODEL_NAME,"Number of pmap files to read","-num_map_files",0);CHKERRQ(ierr);
 	}
     
 	direction = 0;
-    ierr = PetscOptionsGetInt(MODEL_NAME,"-extrude_dir",&direction,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,MODEL_NAME,"-extrude_dir",&direction,&flg);CHKERRQ(ierr);
 	if ( (flg == PETSC_FALSE) || (direction>2) || (direction<0)) {
 		ierr = ReportOptionMissing(MODEL_NAME,"Direction to extrude the pmaps","-extrude_dir","0=x, 1=y, 2=z");CHKERRQ(ierr);
 	}
@@ -815,7 +815,7 @@ PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedM
 	for (n=0; n<nmaps; n++) {
 		/* Get file name */
 		sprintf(opt_name,"-map_file_%d",n);
-		ierr = PetscOptionsGetString(MODEL_NAME,opt_name,map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetString(NULL,MODEL_NAME,opt_name,map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 		if (flg == PETSC_FALSE) {
 			ierr = ReportOptionMissing(MODEL_NAME,"Name of pmap file",opt_name,"HINT: Don't include the extension .pmap in the file name");CHKERRQ(ierr);
 		}
@@ -825,7 +825,7 @@ PetscErrorCode ModelGene3DNueve_MaterialPointSetRegionIndexFromMultipleExtrudedM
 		/* Get extent of map */
 		sprintf(opt_name,"-map_range_%d",n);
 		nfetched = 2;
-		ierr = PetscOptionsGetRealArray(MODEL_NAME,opt_name,range,&nfetched,&flg);CHKERRQ(ierr);
+		ierr = PetscOptionsGetRealArray(NULL,MODEL_NAME,opt_name,range,&nfetched,&flg);CHKERRQ(ierr);
 		if (!flg) {
 			ierr = ReportOptionMissing(MODEL_NAME,"Range of pmap file in the normal direction",opt_name,"e.g. 0.0,1.0");CHKERRQ(ierr);
 		}

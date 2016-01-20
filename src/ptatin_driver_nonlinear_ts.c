@@ -169,7 +169,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 		ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
 		
 		// use A for smoother, B for residual
-		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 		if (use_low_order_geometry==PETSC_TRUE) {
 			ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
 			//ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",_level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,NULL,"-A11_operator_type",_level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		level_type[k] = (OperatorType)_level_type[k];
 	}
@@ -438,7 +438,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
 					
-					ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
@@ -630,7 +630,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 	}
 	
 	max = nlevels;
-	ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",_level_type,&max,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetIntArray(NULL,NULL,"-A11_operator_type",_level_type,&max,&flg);CHKERRQ(ierr);
 	for (k=nlevels-1; k>=0; k--) {
 		level_type[k] = (OperatorType)_level_type[k];
 	}
@@ -685,7 +685,7 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 				{
 					PetscBool use_low_order_geometry = PETSC_FALSE;
 					
-					ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+					ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 					if (use_low_order_geometry==PETSC_TRUE) {
 						Mat Buu;
 						
@@ -865,7 +865,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		PetscInt  nsplits;
 		
 		use_low_order_geometry = PETSC_FALSE;
-		ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 
         ierr = SNESGetKSP_(snes,&this_snes,&ksp);CHKERRQ(ierr);
 		ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -1020,7 +1020,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		PetscInt snes_it;
 		PetscViewer viewer;
 		
-		PetscOptionsGetBool(NULL,"-ptatin_mg_dump_coarse_operator",&mg_dump_coarse,0);
+		PetscOptionsGetBool(NULL,NULL,"-ptatin_mg_dump_coarse_operator",&mg_dump_coarse,0);
 		SNESGetIterationNumber(snes,&snes_it);
 		
 		if (mg_dump_coarse) {
@@ -1089,10 +1089,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1148,7 +1148,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
+		PetscOptionsGetBool(NULL,NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -1182,7 +1182,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1362,7 +1362,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 	/* do a picard solve */
 	picard_its = snes_its;
-	PetscOptionsGetInt(NULL,"-picard_its",&picard_its,NULL);
+	PetscOptionsGetInt(NULL,NULL,"-picard_its",&picard_its,NULL);
 	SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
@@ -1383,7 +1383,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	pTatinGetRangeCurrentMemoryUsage(NULL);
 
 	newton_its = 0;
-	PetscOptionsGetInt(NULL,"-newton_its",&newton_its,NULL);
+	PetscOptionsGetInt(NULL,NULL,"-newton_its",&newton_its,NULL);
 	if (newton_its>0) {
 		SNES snes_newton;
 		
@@ -1643,7 +1643,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 			PetscBool cvg_test_set;
 			
 			cvg_test_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(NULL,"-stokes_snes_converged_upstol",&cvg_test_set,NULL);CHKERRQ(ierr);
+			ierr = PetscOptionsGetBool(NULL,NULL,"-stokes_snes_converged_upstol",&cvg_test_set,NULL);CHKERRQ(ierr);
 			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,user);CHKERRQ(ierr); }
 		}
 		
@@ -1790,10 +1790,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -1848,7 +1848,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
+		PetscOptionsGetBool(NULL,NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -1882,7 +1882,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -2166,7 +2166,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		/* --------------------------------------------------------- */
 		
 		picard_its = snes_its;
-		PetscOptionsGetInt(NULL,"-picard_its",&picard_its,NULL);
+		PetscOptionsGetInt(NULL,NULL,"-picard_its",&picard_its,NULL);
 		SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,picard_its,PETSC_DEFAULT);
 		
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- PICARD STAGE ---------\n");
@@ -2198,7 +2198,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 #endif
 	
 	newton_its = 0;
-	PetscOptionsGetInt(NULL,"-newton_its",&newton_its,NULL);
+	PetscOptionsGetInt(NULL,NULL,"-newton_its",&newton_its,NULL);
 	if (newton_its>0) {
 		SNES snes_newton;
 		
@@ -2445,7 +2445,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 			PetscBool cvg_test_set;
 			
 			cvg_test_set = PETSC_FALSE;
-			ierr = PetscOptionsGetBool(NULL,"-stokes_snes_converged_upstol",&cvg_test_set,NULL);CHKERRQ(ierr);
+			ierr = PetscOptionsGetBool(NULL,NULL,"-stokes_snes_converged_upstol",&cvg_test_set,NULL);CHKERRQ(ierr);
 			if (cvg_test_set) { ierr = SNESStokes_SetConvergenceTest_UPstol(snes,user);CHKERRQ(ierr); }
 		}
 		
@@ -2583,10 +2583,10 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	
 	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
 	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-monitor_stages",&monitor_stages,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-use_quasi_newton_coordinate_update",&activate_quasi_newton_coord_update,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_driver_write_icbc",&write_icbc,NULL);CHKERRQ(ierr);
 	
 	/* Register all models */
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
@@ -2642,7 +2642,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	{
 		PetscBool load_energy = PETSC_FALSE;
 		
-		PetscOptionsGetBool(NULL,"-activate_energy",&load_energy,NULL);
+		PetscOptionsGetBool(NULL,NULL,"-activate_energy",&load_energy,NULL);
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
@@ -2676,7 +2676,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
-	PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
 	ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -3254,10 +3254,10 @@ int main(int argc,char **argv)
 	ierr = PetscMemorySetGetMaximumUsage();CHKERRQ(ierr);
 
 	experimental_driver = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-experimental",&experimental_driver,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-experimental",&experimental_driver,NULL);
 
 	experimental_driver1 = PETSC_FALSE;
-	PetscOptionsGetBool(NULL,"-nonlinear_driver_v1",&experimental_driver1,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-nonlinear_driver_v1",&experimental_driver1,NULL);
 	
 	if (experimental_driver) {
 		PetscPrintf(PETSC_COMM_WORLD,"[[Using \"experimental_pTatin3d_nonlinear_viscous_forward_model_driver\"]]\n");
