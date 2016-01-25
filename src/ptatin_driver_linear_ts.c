@@ -193,7 +193,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 							
 							/* get global indices */
 							for (n=0; n<NPE; n++) {
-								int NID;
+								PetscInt NID;
 								
 								/* global indices of FE problem */
 								NID = elnidx_v[NPE*cidx + n];
@@ -301,7 +301,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 							cidx_cell = (iif-refi*ic) + (jjf-refj*jc)*refi + (kkf-refk*kc)*refi*refj;
 							
 							for (n=0; n<NPE; n++) {
-								int NID;
+								PetscInt NID;
 								
 								NID = elnidx_v[NPE*cidx + n];
 								ge_eqnums[3*n  ] = GINDICES[ 3*NID   ];
@@ -340,7 +340,7 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 				/* get global indices */
 				t0 = t1;
 				for (n=0; n<NPE; n++) {
-					int NID;
+					PetscInt NID;
 					
 					NID = elnidx_v_coarse[NPE*cidx_coarse + n];
 					ge_eqnums_coarse[3*n  ] = GINDICES_coarse[ 3*NID   ];

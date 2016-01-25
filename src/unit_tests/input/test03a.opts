@@ -9,7 +9,7 @@
 ##
 ## =============================================================== 
 #PETSc Option Table entries:
--stokes_ksp_monitor 0
+-stokes_ksp_monitor_up 0
 -ptatin_driver_write_icbc
 -A11_operator_type 2,2,0
 -dau_nlevels 3

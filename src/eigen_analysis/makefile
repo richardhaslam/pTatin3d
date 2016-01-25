@@ -10,11 +10,8 @@ TATIN_MODELS		=
 TATIN_DRIVERS		= \
 			ptatin_eigen_analysis
 
-# ptatin
-export TATIN_DIR	=	${PWD}/..
-
-export EXT_TATIN_INC	=	-I${TATIN_DIR}
-export EXT_TATIN_LIB	=	-L${TATIN_DIR} -L${TATIN_DIR}/models -lptatin3d -lptatin3dmodels -lptatin3d
+export EXT_TATIN_INC	=	-I${PTATIN_DIR}/src
+export EXT_TATIN_LIB	=	-L${PTATIN_DIR}/${PETSC_ARCH}/lib -lptatin3d -lptatin3dmodels -lptatin3d
 
 # slepc
 include ${SLEPC_DIR}/conf/slepc_variables

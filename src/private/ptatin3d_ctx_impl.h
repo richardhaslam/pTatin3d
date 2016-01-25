@@ -69,7 +69,7 @@ struct _p_pTatinCtx {
 	DataEx     materialpoint_ex;	
 	/* options */
 	PetscBool solverstatistics;
-	/* snes continuation paramter */
+	/* snes continuation parameter */
 	PetscInt continuation_m, continuation_M;
 	/* time stepping */
 	PetscInt  nsteps,step;

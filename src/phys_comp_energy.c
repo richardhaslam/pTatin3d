@@ -96,7 +96,10 @@ PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
 	//	}
 	if (ctx->volQ) { ierr = QuadratureDestroy(&ctx->volQ);CHKERRQ(ierr); }
 	if (ctx->T_bclist) { ierr = BCListDestroy(&ctx->T_bclist);CHKERRQ(ierr); }
-  if (ctx->daT) { ierr = DMDestroy(&ctx->daT);CHKERRQ(ierr); }
+  if (ctx->daT) {
+    ierr = DMDestroyDMDAE(ctx->daT);CHKERRQ(ierr);
+    ierr = DMDestroy(&ctx->daT);CHKERRQ(ierr);
+  }
   if (ctx->u_minus_V) { ierr = VecDestroy(&ctx->u_minus_V);CHKERRQ(ierr); }
   if (ctx->Told) {      ierr = VecDestroy(&ctx->Told);CHKERRQ(ierr); }
   if (ctx->Xold) {      ierr = VecDestroy(&ctx->Xold);CHKERRQ(ierr); }

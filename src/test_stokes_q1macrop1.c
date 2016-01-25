@@ -67,16 +67,16 @@ PetscErrorCode test_q1macrop1_a(void)
 	MPI_Comm_rank(PetscObjectComm((PetscObject)dav),&rank);
 
 	ierr = DMDAEQ1Macro_MixedSpace_GetSizeElement(dav,&m,&n,&p);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"MixedSpace size: %d x %d x %d \n", m,n,p);
+	PetscPrintf(PETSC_COMM_WORLD,"MixedSpace size: %D x %D x %D \n", m,n,p);
 
 	ierr = DMDAEQ1Macro_MixedSpace_GetLocalSizeElement(dav,&m,&n,&p);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_SELF,"[%d] MixedSpace local size: %d x %d x %d \n", rank,m,n,p);
+	PetscPrintf(PETSC_COMM_SELF,"[%d] MixedSpace local size: %D x %D x %D \n", (int)rank,m,n,p);
 
 	ierr = DMDAEQ1Macro_NaturalSpace_GetSizeElement(dav,&m,&n,&p);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_WORLD,"NaturalSpace size: %d x %d x %d \n", m,n,p);
+	PetscPrintf(PETSC_COMM_WORLD,"NaturalSpace size: %D x %D x %D \n", m,n,p);
 	
 	ierr = DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dav,&m,&n,&p);CHKERRQ(ierr);
-	PetscPrintf(PETSC_COMM_SELF,"[%d] NaturalSpace local size: %d x %d x %d \n", rank,m,n,p);
+	PetscPrintf(PETSC_COMM_SELF,"[%d] NaturalSpace local size: %D x %D x %D \n", (int)rank,m,n,p);
 	
 	
 	ierr = DMDAEGetElementMap_Q1MacroNaturalToMixedSpace(dav,&nels,&map);CHKERRQ(ierr);

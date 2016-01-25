@@ -742,26 +742,35 @@ If $X = 3$, this will imply that the mesh specified via \unix{-mx 16 -my 16 -mz 
 %%	
 Meshes can be coarsened by a constant factor on each level, or one can control the coarsening factor level-by level.
 In both cases, the coarsening applied is dependent on the coordinate direction $(i,j,k)$. 
-To define constant coarsening on every level, but varying in each direction, use the options
+To define constant coarsening on every level, but varying in each direction, use the options 
+\unix{-da\_refine\_x}, \unix{-da\_refine\_y}, and \unix{-da\_refine\_z}, for example
 \shellcmd{-da\_refine\_x 4\\
 \indent\indent\texttt{\hspace{5mm}}-da\_refine\_y 2 \\
 \indent\indent\texttt{\hspace{5mm}}-da\_refine\_z 1}
-Note that different coarsening can be specified in each direction - here denoted via $x,y,z$ in the refinement command line option.
-Also note, that a refinement factor of 1 implies that mesh will not be coarsened in that direction. 
+Note that different coarsening can be specified in each direction - here denoted via \unix{x},\unix{y},\unix{z} in the refinement command line option.
+Also note that a refinement factor of 1 implies that mesh will not be coarsened in that direction. 
 \\[8pt]
 %%	
-To define level specific coarsening, use the options
+To define level specific coarsening, use the options 
+\unix{-stk\_velocity\_da\_refine\_hierarchy\_x}, 
+\unix{-stk\_velocity\_da\_refine\_hierarchy\_y}, and
+\unix{-stk\_velocity\_da\_refine\_hierarchy\_z}, for example
 \shellcmd{-stk\_velocity\_da\_refine\_hierarchy\_x 4,1}
-The integer parameters are listed from coarse to fine levels (left to right). The above options will result result in the following hierarchy in the $x$ direction (from coarse to fine), $M_x = \{ 4, 16, 16 \}$.
+The integer parameters are listed from coarse to fine levels (left to right). 
+The above options will result result in the following hierarchy in the $x$ direction (from coarse to fine), $M_x = \{ 4, 16, 16 \}$.
 Note that if you have $X$ levels, you are only required to specify $X-1$ values to define the coarsening hierarchy. 
 \\[8pt]
 %%	
 Note that when using geometric multi-grid, all levels are spatial decomposed across all cores. Furthermore, it is required that every core contains at least one element. Thus, the total number of cores used to run a {\ptat} job must not exceed the number of elements within the coarse grid. If you require additional levels in your multi-grid hierarchy, we recommend you use an algebraic multi-grid preconditioner as your coarse grid preconditioner.
 
 \subsection{Coarse grid operators}
-Within {\ptat}, the style of coarse grid operator can be configured at run time. We provide support to enable three types of coarse grid operator; $\{$ assembled re-discretised = 0, matrix-free re-discretised = 1, Galerkin = 2 $\}$. Re-discretised operators imply that the viscosity is projected through the mesh hierarchy and the finite element operators are re-evaluated using the standard FE weak form defined on the fine level. Galerkin coarsening implies that the coarse grid operator at level $k$ $A_k$ is defined via $A_k = R^T A_{k+1} R$, where $R$ is the restriction operator for level $k+1$ to $k$. To define the triple matrix product required by the a Galerkin operator definition on level $k$, it is require that the operator on level $k+1$ be assembled, i.e. be of either type $\{$ assembled re-discretised = 0, Galerkin = 2 $\}$. Configuration of the coarse grid operator type is define via the option;
+Within {\ptat}, the style of coarse grid operator can be configured at run time. 
+We provide support to enable four types of coarse grid operator; $\{$ assembled re-discretised = 0, matrix-free re-discretised = 1, Galerkin = 2, matrix-free Galerkin = 3 $\}$. 
+Re-discretised operators imply that the viscosity is projected through the mesh hierarchy and the finite element operators are re-evaluated using the standard FE weak form defined on the fine level. 
+Galerkin coarsening implies that the coarse grid operator at level $k$ $A_k$ is defined via $A_k = R^T A_{k+1} R$, where $R$ is the restriction operator for level $k+1$ to $k$. 
+To define the triple matrix product required by the a Galerkin operator definition on level $k$, it is require that the operator on level $k+1$ be assembled, i.e. be of either type $\{$ assembled re-discretised = 0, Galerkin = 2 $\}$. Configuration of the coarse grid operator type is define via the option \shellcmd{-A11\_operator\_type}, for example
 \shellcmd{-A11\_operator\_type 2,2,0,1}
-where valid indices are $\{ 0, 1, 2 \}$ and operators on each level are specified from coarse to fine (left to right).
+where valid indices are $\{ 0, 1, 2, 3 \}$ and operators on each level are specified from coarse to fine (left to right).
 
 \subsection{Multi-grid performance profiling}
 To activate monitors which report CPU times on each multi-grid level, one must specify the following options

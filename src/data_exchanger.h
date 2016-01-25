@@ -96,7 +96,7 @@ PetscErrorCode DataExBegin(DataEx de);
 PetscErrorCode DataExEnd(DataEx de);
 PetscErrorCode DataExGetSendData(DataEx de,PetscInt *length,void **send);
 PetscErrorCode DataExGetRecvData(DataEx de,PetscInt *length,void **recv);
-PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscInt *neigh[]);
+PetscErrorCode DataExTopologyGetNeighbours(DataEx de,PetscMPIInt *n,PetscMPIInt *neigh[]);
 
 
 #endif

@@ -52,9 +52,10 @@
 #define __FUNCT__ "SwarmMPntStd_AssignUniquePointIdentifiers"
 PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucket db,int start_pid,int end_pid)
 {
-	DataField    PField;
-	long int     np_local, np_global, max_local, max;
-	int          rank,p,L;
+	DataField      PField;
+	long int       np_local, np_global, max_local, max;
+	PetscMPIInt    rank;
+    int            p,L;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -84,13 +85,13 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 	np_local = (end_pid-start_pid);
 
 	ierr = MPI_Scan( &np_local, &np_global, 1, MPI_LONG, MPI_SUM, comm );CHKERRQ(ierr);
-	//printf("rank %d : np_local = %ld, np_global = %ld \n",rank,np_local,np_global);
+	//printf("rank %d : np_local = %ld, np_global = %ld \n",(int)rank,np_local,np_global);
 	for (p=start_pid; p<end_pid; p++) {
 		MPntStd *marker;
 		DataFieldAccessPoint(PField,p,(void**)&marker);
 		
 		//marker->pid = max + (np_global-1) - (np_local-1-p);
-		marker->pid = max + (np_global-np_local) + (p-start_pid);
+		marker->pid = max + (np_global-np_local) + (long int)(p-start_pid);
 		//printf("assigning %d -> pid = %ld \n", p, marker->pid );
 	}
 	
@@ -1283,7 +1284,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
             InverseMappingDomain_3dQ2(tolerance,max_its,
                                       use_nonzero_guess,
                                       monitor,
-                                      (const double*)LA_gcoords, (const int)lmx,(const int)lmy,(const int)lmz, (const int*)elnidx_u,
+                                      (const PetscReal*)LA_gcoords, (const PetscInt)lmx,(const PetscInt)lmy,(const PetscInt)lmz, (const PetscInt*)elnidx_u,
                                       1, &mp_std );
             
             point_on_edge = PETSC_FALSE;

@@ -579,6 +579,32 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
     ierr = UpdateMeshGeometry_ApplyDiffusionJMAX(c->stokes_ctx->dav,1.0e-2,0.44,
                                                  PETSC_TRUE,PETSC_TRUE,PETSC_FALSE,PETSC_FALSE, PETSC_FALSE);CHKERRQ(ierr);
     */
+	// [test d] remesh vertically and preserve topography
+/*
+    {
+        PetscInt npoints,dir;
+        PetscReal xref[10],xnat[10];
+
+        npoints = 6;
+        xref[0] = 0.0;
+        xref[1] = 0.2;
+        xref[2] = 0.4;
+        xref[3] = 0.6;
+        xref[4] = 0.8;
+        xref[5] = 1.0;
+
+        xnat[0] = 0.0;
+        xnat[1] = 0.67;
+        xnat[2] = 0.92;
+        xnat[3] = 0.97;
+        xnat[4] = 0.985;
+        xnat[5] = 1.0;
+        
+        dir = 1;
+        ierr = DMDACoordinateRefinementTransferFunction(c->stokes_ctx->dav,dir,PETSC_TRUE,npoints,xref,xnat);CHKERRQ(ierr);
+        ierr = DMDABilinearizeQ2Elements(c->stokes_ctx->dav);CHKERRQ(ierr);
+    }
+*/
     
 	PetscFunctionReturn(0);
 }

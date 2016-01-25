@@ -257,13 +257,13 @@ PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
 
     PetscFunctionBegin;
     moniter_set = PETSC_FALSE;
-    ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor",&moniter_set,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-stokes_snes_monitor_up",&moniter_set,NULL);CHKERRQ(ierr);
     if (moniter_set) { ierr = SNESMonitorSet(snes,pTatin_SNESMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
 
     moniter_set = PETSC_TRUE;
-    ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor",&moniter_set,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-stokes_ksp_monitor_up",&moniter_set,NULL);CHKERRQ(ierr);
     if (moniter_set) { ierr = KSPMonitorSet(ksp,pTatin_KSPMonitor_StdoutStokesResiduals3d,(void*)user,NULL);CHKERRQ(ierr); }
 
     moniter_set = PETSC_FALSE;

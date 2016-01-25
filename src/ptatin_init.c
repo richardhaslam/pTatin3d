@@ -34,6 +34,7 @@
 
 #include "ptatin_version_info.h"
 #include "ptatin3d.h"
+#include "ptatin_models.h"
 
 #define STR_VALUE(arg)      #arg
 #define STRINGIFY_ARG(name) STR_VALUE(name)
@@ -192,6 +193,7 @@ PetscErrorCode pTatinFinalize(void)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
+  ierr = pTatinModelDeRegisterAll();CHKERRQ(ierr);
 	ierr = PetscFinalize();CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);

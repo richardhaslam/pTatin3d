@@ -333,7 +333,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Delamination(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
-	PetscInt               p,n_mp_points;
+	int                   p,n_mp_points;
 	DataBucket             db;
 	DataField              PField_std,PField_stokes;
 	int                    phase;
