@@ -9,8 +9,13 @@
 
 include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
+all : info tests drivers
+
 # Compilation options are to be placed in makefile.arch
-include src/makefile.arch
+# if that (untracked) file does not exist, defaults are copied there
+src/makefile.arch :
+	cp src/makefile.arch.default $@
+-include src/makefile.arch
 
 OBJDIR ?= $(PETSC_ARCH)/obj
 LIBDIR ?= $(PETSC_ARCH)/lib
@@ -49,7 +54,6 @@ else				# Show the full command line
 endif
 
 .PHONY: libptatin3d libptatin3dmodels externals tests drivers
-all : info tests drivers
 
 libptatin3d = $(LIBDIR)/libptatin3d.$(AR_LIB_SUFFIX)
 libptatin3d : $(libptatin3d)
