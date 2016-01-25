@@ -10,3 +10,4 @@ pt3d-manual.pdf
 *.toc
 run/
 output/
+*.DS_Store
