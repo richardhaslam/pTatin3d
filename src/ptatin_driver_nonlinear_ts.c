@@ -1585,8 +1585,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			
@@ -2387,12 +2387,12 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		if (active_energy) {
 			SNES snesT;
 			
-			ierr = VecZeroEntries(T);CHKERRQ(ierr);
+			//ierr = VecZeroEntries(T);CHKERRQ(ierr);
 			
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			
@@ -3049,8 +3049,8 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 			
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			

@@ -662,7 +662,8 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	user->use_constant_dt  = PETSC_FALSE;
   
 	ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
-	ierr = MaterialConstantsInitialize(&user->material_constants);CHKERRQ(ierr);
+	ierr = MaterialConstantsCreate(&user->material_constants);CHKERRQ(ierr);
+	ierr = MaterialConstantsInitialize(user->material_constants);CHKERRQ(ierr);
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -859,6 +860,14 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 	model->ptat_ctx = ctx;
 	ctx->model = model;
 	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinGetTime"
+PetscErrorCode pTatinGetTime(pTatinCtx ctx,PetscReal *time)
+{
+	if (time) { *time = ctx->time; }
 	PetscFunctionReturn(0);
 }
 
