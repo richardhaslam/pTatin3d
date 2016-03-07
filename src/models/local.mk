@@ -10,6 +10,7 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			sierra/model_ops_Sierra.c \
 			advdiff_example/model_ops_advdiff_example.c \
 			delamination/model_delamination_ops.c \
+			rift_oblique3d/model_ops_rift_oblique3d.c \
 			riftrh/model_ops_riftrh.c \
 			geomod2008/model_geomod2008.c \
 			multilayer_folding/model_ops_multilayer_folding.c \
@@ -22,8 +23,9 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			iplus_slab_plume/iplus_slab_description.c \
 			subduction_initiation2d/model_subduction_initiation2d_ops.c \
 			convection2d/model_convection2d_ops.c \
-            thermal_shearband/thermal_sb_model_definition.c \
-            slab_detachment3d/sd3d_definition.c \
-            pinch_and_swell/pinchandswell_def.c \
+                        thermal_shearband/thermal_sb_model_definition.c \
+            		slab_detachment3d/sd3d_definition.c \
+           		pinch_and_swell/pinchandswell_def.c \
 			plasticdemo/demo.c \
+			toyViscous/model_toy_viscous.c \
 	)
