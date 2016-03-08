@@ -53,6 +53,8 @@ extern PetscErrorCode pTatinModelRegister_SD3D(void);
 extern PetscErrorCode pTatinModelRegister_PAS(void);
 extern PetscErrorCode pTatinModelRegister_PD(void);
 extern PetscErrorCode pTatinModelRegister_ToyViscous(void);
+extern PetscErrorCode pTatinModelRegister_Ridge_Transform(void);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -86,6 +88,6 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	ierr = pTatinModelRegister_PAS();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_PD();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ToyViscous();CHKERRQ(ierr);
- 
+ 	ierr = pTatinModelRegister_Ridge_Transform();CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }

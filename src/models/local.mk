@@ -28,4 +28,5 @@ libptatin3dmodels-y.c += $(call thisdir, \
            		pinch_and_swell/pinchandswell_def.c \
 			plasticdemo/demo.c \
 			toyViscous/model_toy_viscous.c \
+			ridge_transform/model_ops_ridge_transform.c \
 	)

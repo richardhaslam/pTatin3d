@@ -24,7 +24,8 @@ TATIN_MODEL_DIR = \
 	slab_detachment3d \
 	pinch_and_swell \
 	plasticdemo \
-	toyViscous
+	toyViscous \
+	ridge_transform
 
 TATIN_MODEL_SRC = \
 	ptatin_models_reg.c
