@@ -235,7 +235,7 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
     T_threshold = 1350.0;
     dT       = 50.0;
     dTdy     = 0.4e-3;
-    MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type_asthen,NULL);
+    MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type,NULL);
     EnergyConductivityConstSetField_k0(&matconstants_k_const[0],k0);
     //MaterialConstantsSetValues_ConductivityThreshold(0,matconstants_cond, k0, k1, T_threshold, dT);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
