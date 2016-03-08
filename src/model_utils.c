@@ -302,10 +302,11 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
 {
     DMDA_thermalfield_init_params *thermalparams;
     PetscInt i,klay,nlt;
-    PetscReal y,yldep,dtemp;
+    PetscReal x,y,yldep,dtemp, eta, tau;
 
 		thermalparams = (DMDA_thermalfield_init_params*)ctx;
 		y   = pos[1] * thermalparams->lscale;
+		x   = pos[0] * thermalparams->lscale;
     nlt = thermalparams->nlayers;
 //  Which layer contains the current node?
     klay = 0;
@@ -319,7 +320,15 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
     yldep = thermalparams->ytop[klay] - y;
     dtemp = thermalparams->hp[klay] * yldep * (thermalparams->thick[klay]-yldep/2.0e0) + thermalparams->qbase[klay]*yldep;
     dtemp = dtemp / thermalparams->cond[klay];
-    *val  = thermalparams->ttop[klay] + dtemp;
+     *val  = thermalparams->ttop[klay] + dtemp;
+
+    if (thermalparams->cooling[klay] = 1) {
+    	tau = abs(thermalparams->xridge[klay] - x)*thermalparams->vexp[klay];
+    	eta = (48e3 - y) / (2.0*sqrt(1e-6 * tau));
+    	*val  = thermalparams->tbot[klay] + (thermalparams->ttop[klay]-thermalparams->tbot[klay])*(1-erf(eta));
+    }
+
+
 /*    if (pos[0]==0&&pos[2]==0) {
         printf("y=%1.4e, T=%1.4e \n",y,*val);
         printf("ytop0=%1.4e\n",thermalparams->ytop[0]);

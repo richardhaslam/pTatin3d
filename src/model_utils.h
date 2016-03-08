@@ -49,6 +49,11 @@ typedef struct {
         PetscReal ytop[20];
         PetscReal ttop[20];
         PetscReal thick[20];
+        PetscReal cooling[20];
+        PetscReal tbot[20];
+        PetscReal xridge[20];
+        PetscReal vexp[20];
+
 } DMDA_thermalfield_init_params;
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx);
