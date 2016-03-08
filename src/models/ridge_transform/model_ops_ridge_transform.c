@@ -104,7 +104,7 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,"-model_Ridge_transform_Ly",&data->Ly,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Ridge_transform_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 	
-	data->ha = 40.0e3;
+	data->ha = 48.0e3;
 	ierr = PetscOptionsGetReal(NULL,"-model_Ridge_transform_ha",&data->ha,&flg);CHKERRQ(ierr);
 	
 
@@ -128,8 +128,8 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 		data->thermalparams.nlayers  = 1;
 		data->thermalparams.lscale   = data->length_bar;
 		
-		data->thermalparams.ytop[0]  = 40.0e3;
-		data->thermalparams.thick[0] = 40.0e3;
+		data->thermalparams.ytop[0]  = 48.0e3;
+		data->thermalparams.thick[0] = 48.0e3;
 		data->thermalparams.ttop[0]  = 0.0;
 		data->thermalparams.cond[0]  = 2.25;
 		data->thermalparams.hp[0]    = 0.0;
@@ -138,7 +138,7 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 		data->thermalparams.cooling[0]  = 1;
 		data->thermalparams.tbot[0]  = 1300.0;
 		data->thermalparams.xridge[0]  = data->Lx / 2.0;
-		data->thermalparams.vexp[0]  = data->vx_up; //expension velocity in cm/yr
+		data->thermalparams.vexp[0]  = 0.5 * cm_per_yer2m_per_sec; //expension velocity in cm/yr
 
 		nlayers = data->thermalparams.nlayers;
 		data->Ttop    = 0.0;
