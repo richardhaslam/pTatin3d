@@ -166,8 +166,8 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 	if (use_energy == PETSC_FALSE) {
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	} else {
-		//MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+		//MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 
 	}
 	
@@ -202,7 +202,7 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
     EnergyConductivityThreshold	   *matconstants_cond;
     EnergySourceAdiabaticAdvection *matconstants_source_adi_adv;
     double alpha,beta,rho_ref,Cp,k,k0,k1,dT,T_threshold,dTdy;    
-    int 	 conductivity_type, density_type, conductivity_type_asthen;
+    int 	 conductivity_type, density_type;//, conductivity_type_asthen;
     
     
     /* Get the energy data fields, and the field entries */
@@ -223,7 +223,7 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 
     conductivity_type = ENERGYCONDUCTIVITY_CONSTANT;
     density_type      = ENERGYDENSITY_CONSTANT;
-    conductivity_type_asthen = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
+    //conductivity_type_asthen = ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD;
 
     //ASTHENOSPHERE
     alpha   = 2.0e-5;
@@ -236,16 +236,16 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
     dT       = 50.0;
     dTdy     = 0.4e-3;
     MaterialConstantsSetValues_EnergyMaterialConstants(0,matconstants_e,alpha,beta,rho_ref,Cp,density_type,conductivity_type_asthen,NULL);
-    //EnergyConductivityConstSetField_k0(&matconstants_k_const[0],k);
-    MaterialConstantsSetValues_ConductivityThreshold(0,matconstants_cond, k0, k1, T_threshold, dT);
+    EnergyConductivityConstSetField_k0(&matconstants_k_const[0],k0);
+    //MaterialConstantsSetValues_ConductivityThreshold(0,matconstants_cond, k0, k1, T_threshold, dT);
     EnergySourceConstSetField_HeatSource(&matconstants_h_const[0],0.0);
-    MaterialConstantsSetValues_SourceAdiabaticAdv(0, matconstants_source_adi_adv, dTdy);    
+    //MaterialConstantsSetValues_SourceAdiabaticAdv(0, matconstants_source_adi_adv, dTdy);
     
     
     EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[0],ENERGYSOURCE_NONE);
 
    
-    EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_CONSTANT);
+    //EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],0,ENERGYSOURCE_CONSTANT);
 
     //pseudo adiabat in the asthenosphere
     //EnergyMaterialConstantsSetFieldByIndex_SourceMethod(&matconstants_e[0],1,ENERGYSOURCE_ADIABATIC_ADVECTION);
