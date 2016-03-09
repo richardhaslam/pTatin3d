@@ -321,7 +321,7 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
     yldep = thermalparams->ytop[klay] - y;
 
     if (thermalparams->cooling[klay] = 1) {
-    	tau = abs(thermalparams->xridge[klay] - x)/thermalparams->vexp[klay];//is the age in seconds of the plates
+    	tau = abs(thermalparams->xridge[klay] - x)/thermalparams->vexp[klay] + 0.1*1e6*(365*24*60*60);//is the age in seconds of the plates + 0.1Ma
     	eta = yldep / (2.*sqrt(1e-6 * tau));//is the dimensionless similarity variable as the function of depth d in meters below the plate surface
     	*val  = thermalparams->tbot[klay] + (thermalparams->ttop[klay]-thermalparams->tbot[klay])*(1-erf(eta));
     } else {
