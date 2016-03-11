@@ -167,7 +167,8 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
 	} else {
 		MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_ARRHENIUS_2,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
-		//MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_CONSTANT,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_CONSTANT);
+		//MaterialConstantsSetValues_MaterialType(materialconstants,regionidx,VISCOUS_FRANKK,PLASTIC_DP,SOFTENING_LINEAR,DENSITY_BOUSSINESQ);
+
 
 	}
 	
@@ -180,6 +181,8 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 	Tref     = 273.0;
 	MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,data->etaa);
 	MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexpA,Ascale,entalpy,Vmol,nexp,Tref);
+	MaterialConstantsSetValues_ViscosityFK(materialconstants,regionidx,1.0e24,0.0135);
+
 	
 	//DENSITY PARAMETERS
 	MaterialConstantsSetValues_DensityBoussinesq(materialconstants,regionidx,data->rhoa,2.0e-5,0.0);
@@ -188,7 +191,8 @@ PetscErrorCode ModelInitialize_Ridge_transform(pTatinCtx c,void *ctx)
 	//PLASTICITY PARAMETERS
 	phi1_rad = M_PI * 0.0/180.0;
 	phi2_rad = M_PI * 0.0/180.0;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,5.0e7,1.0e6,1.0e7,1.0e20);
+	//MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,5.0e7,1.0e6,1.0e7,1.0e20);
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,5.0e7,1.0e6,-0.9e6,1.0e20);//negative tension cutoff
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
@@ -906,7 +910,7 @@ PetscErrorCode ModelOutput_Ridge_transform(pTatinCtx c,Vec X,const char prefix[]
 		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
 		if (Step%(outFre*1) == 0) {
-			ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
+			//ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 			ierr = pTatin3dModelOutput_Energy_PetscVec(c,PETSC_FALSE,temperature,prefix);
 
 		}

@@ -13,19 +13,19 @@
 ## =================================================================================== 
 #PETSc Option Table entries:
 -A11_operator_type 0,1,1,1
-#-T_ksp_atol 1.0e-4
 -T_ksp_monitor
 -T_ksp_rtol 1.0e-10
 -T_ksp_type fgmres
 -T_pc_type bjacobi
 -T_snes_type ksponly
+-T_ksp_converged_reason
 #-a11_op avx
 -checkpoint_disable
 -dau_nlevels 2
 -dt_max 1e-3
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
--fieldsplit_u_ksp_max_it 2
+-fieldsplit_u_ksp_max_it 3
 -fieldsplit_u_ksp_monitor
 -fieldsplit_u_ksp_rtol 1.0e-3
 -fieldsplit_u_ksp_type fgmres
@@ -63,8 +63,8 @@
 -ksp_rtol 1.0e-3
 -ksp_type fgmres
 -log_summary
--model_Ridge_transform_eps1 0.1
--model_Ridge_transform_eps2 0.5
+-model_Ridge_transform_eps1 0.2
+-model_Ridge_transform_eps2 1.2
 -model_Ridge_transform_eta_lower_cutoff_global 1.e18
 -model_Ridge_transform_eta_upper_cutoff_global 1.e23
 -mx 8
