@@ -96,7 +96,7 @@ void P3D_ConstructNi_Q2_3D(PetscReal _xi[],PetscReal Ni[])
 	PetscReal basis_NI[3][3];
 	
 	for( d=0; d<3; d++ ) {
-		double xi = _xi[d];
+		PetscReal xi = _xi[d];
 		
 		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
 		basis_NI[d][1] = (1.0+xi) * (1.0-xi); // 1 - xi^2
@@ -116,13 +116,13 @@ void P3D_ConstructNi_Q2_3D(PetscReal _xi[],PetscReal Ni[])
 
 void P3D_ConstructGNi_Q2_3D(PetscReal _xi[],PetscReal GNi[3][Q2_NODES_PER_EL_3D])
 {
-	double basis_NI[3][3];
-	double basis_GNI[3][3];
-	int i,j,k,d,cnt;
+	PetscReal basis_NI[3][3];
+	PetscReal basis_GNI[3][3];
+	PetscInt i,j,k,d,cnt;
 	
 	
 	for( d=0; d<3; d++ ) {
-		double xi = _xi[d];
+		PetscReal xi = _xi[d];
 		
 		basis_NI[d][0] = 0.5 * xi * (xi-1.0); // 0.5 * ( xi^2 - xi )
 		basis_NI[d][1] = (1.0+xi) * (1.0-xi); // 1 - xi^2
