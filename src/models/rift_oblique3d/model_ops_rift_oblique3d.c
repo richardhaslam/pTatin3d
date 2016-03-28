@@ -150,6 +150,10 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->etaa = 1.0e19;
 	data->eps1 = 0.1; // initiation threshold of strain softening
 	data->eps2 = 0.5; // threshold for full strain softening
+	data->phi1 = 15.0; // friction angle before weakening
+	data->phi2 = 2.0;
+	data->coe1 = 2e7; // cohesion before weakening
+	data->coe2 = 2e7;
 	/* MATERIAL PARAMETERS */
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_rhom",&data->rhom,&flg);CHKERRQ(ierr);
@@ -159,6 +163,10 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_etaa",&data->etaa,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eps1",&data->eps1,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eps2",&data->eps2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_phi1",&data->phi1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_phi2",&data->phi2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_coe1",&data->coe1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_coe2",&data->coe2,&flg);CHKERRQ(ierr);
 	
 	/*Temperature */
 	if(use_energy) {
@@ -231,9 +239,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoa);
 	
 	//PLASTICITY PARAMETERS
-	phi1_rad = M_PI * 15.0/180.0;
-	phi2_rad = M_PI * 2.0/180.0;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	phi1_rad = M_PI * data->phi1/180.0;
+	phi2_rad = M_PI * data->phi2/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
@@ -260,9 +268,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhom);
 	
 	//PLASTICITY PARAMETERS
-	phi1_rad = M_PI * 15.0/180.0;
-	phi2_rad = M_PI * 2.0/180.0;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	phi1_rad = M_PI * data->phi1/180.0;
+	phi2_rad = M_PI * data->phi2/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
@@ -289,9 +297,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
 	
 	//PLASTICITY PARAMETERS
-	phi1_rad = M_PI * 15.0/180.0;
-	phi2_rad = M_PI * 2.0/180.0;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	phi1_rad = M_PI * data->phi1/180.0;
+	phi2_rad = M_PI * data->phi2/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 	
@@ -318,9 +326,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,data->rhoc);
 
 	//PLASTICITY PARAMETERS
-	phi1_rad = M_PI * 15.0/180.0;
-	phi2_rad = M_PI * 2.0/180.0;
-	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,2.0e7,2.0e7,1.0e7,1.0e20);
+	phi1_rad = M_PI * data->phi1/180.0;
+	phi2_rad = M_PI * data->phi2/180.0;
+	MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,phi1_rad,phi2_rad,data->coe1,data->coe2,1.0e7,1.0e20);
 	MaterialConstantsSetValues_PlasticMises(materialconstants,regionidx,1.0e8,1.0e8);
 	MaterialConstantsSetValues_SoftLin(materialconstants,regionidx,data->eps1,data->eps2);
 
