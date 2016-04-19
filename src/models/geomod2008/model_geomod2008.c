@@ -512,6 +512,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(stokes->dav,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -564,8 +568,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 			}
 		}
 		
-		density = -9.81 * density;
-
 		viscosity = viscosity / 1.0e10;
 		density   = density / 1.0e10;
 		
@@ -657,8 +659,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 			viscosity    = data->quartz_eta;
 			density      = data->quartz_rho;
 		}
-		
-		density = -9.81 * density;
 		
 		viscosity = viscosity / 1.0e10;
 		density   = density / 1.0e10;

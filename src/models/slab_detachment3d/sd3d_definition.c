@@ -169,7 +169,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         n_exp    = 3.0;
     }
     
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3150.0 * 9.81 / 10.0);
+    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3150.0);
     /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nRT) */
     MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0);
     MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
@@ -186,7 +186,7 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
         preexp_A = 1.0;
         n_exp    = 4.0;
         
-        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3300.0 * 9.81 / 10.0);
+        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,modeldata->rhs_scale * 3300.0);
         /* eta = F . pow(preexp_A,-1/n) . pow(e,1/n-1) . exp(E/nR(T+T0)) */
         MaterialConstantsSetValues_ViscosityArrh(materialconstants,regionidx,preexp_A, F, 0.0, 0.0, n_exp, 1.0); /* set T0 = 1 to ensure I can calc E/nR(T-T0) */
         MaterialConstantsScaleValues_ViscosityArrh(materialconstants,regionidx, modeldata->eta_bar, modeldata->p_bar );
@@ -275,6 +275,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *mode
     Ly = 660.0 * 1.0e3; /* km */
     Lz = 500.0 * 1.0e3; /* km */
 	ierr = DMDASetUniformCoordinates(dav,0.0,Lx/modeldata->x_bar, 0.0,Ly/modeldata->x_bar, 0.0,Lz/modeldata->x_bar);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -568,11 +572,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
         if (ridx == MANTLE_IDX) {
             /* mantle - background */
             ierr = MaterialPointSet_viscosity(mpX,  p, 1.0e21/data->eta_bar);CHKERRQ(ierr);
-            ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3150.0 * 9.81);CHKERRQ(ierr);
+            ierr = MaterialPointSet_density(mpX,    p, data->rhs_scale * 3150.0);CHKERRQ(ierr);
         } else {
             /* slab */
             ierr = MaterialPointSet_viscosity(mpX,  p, 1.0e22/data->eta_bar);CHKERRQ(ierr);
-            ierr = MaterialPointSet_density(mpX,    p, -data->rhs_scale * 3300.0 * 9.81);CHKERRQ(ierr);
+            ierr = MaterialPointSet_density(mpX,    p, data->rhs_scale * 3300.0);CHKERRQ(ierr);
         }
     }
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
