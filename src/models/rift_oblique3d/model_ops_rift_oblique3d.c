@@ -1219,6 +1219,84 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 	PetscFunctionReturn(0);
 }
 
+// adding particles on the lower boundary to accommodate inflow
+// adding particles on the left and right boundary to accommodate inflow
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian"
+PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx)
+{
+#if 0
+	ModelRift_oblique3dCtx     *data = (ModelRift_oblique3dCtx*)ctx;
+	PhysCompStokes     stokes;
+	DM                 stokes_pack,dav,dap;
+	PetscInt           Nxp[2];
+	PetscReal          perturb;
+	DataBucket         material_point_db,material_point_face_db;
+	PetscInt           f, n_face_list=3, face_list[] = { 0, 1, 3 }; // xmin, xmax, ybase //
+	int                p,n_mp_points;
+	MPAccess           mpX;
+	PetscErrorCode     ierr;
+	
+	PetscFunctionBegin;
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+		
+	ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
+		
+	/* create face storage for markers */
+	DataBucketDuplicateFields(material_point_db,&material_point_face_db);
+	
+	for (f=0; f<n_face_list; f++) {
+		
+		/* traverse */
+		/* [0,1/east,west] ; [2,3/north,south] ; [4,5/front,back] */
+		Nxp[0]  = 1;
+		Nxp[1]  = 1;
+		perturb = 0.1;
+		
+		/* reset size */
+		DataBucketSetSizes(material_point_face_db,0,-1);
+		
+		/* assign coords */
+		ierr = SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(dav,Nxp,perturb, face_list[f], material_point_face_db);CHKERRQ(ierr);
+		
+		/* assign values */
+		DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
+		ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		for (p=0; p<n_mp_points; p++) {
+			ierr = MaterialPointSet_phase_index(mpX,p,MATERIAL_POINT_PHASE_UNASSIGNED);CHKERRQ(ierr);
+		}
+		ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+		
+		/* insert into volume bucket */
+		DataBucketInsertValues(material_point_db,material_point_face_db);
+	}
+	
+	/* Copy ALL values from nearest markers to newly inserted markers expect (xi,xip,pid) */
+	ierr = MaterialPointRegionAssignment_v1(material_point_db,dav);CHKERRQ(ierr);
+	
+	/* reset any variables */
+	DataBucketGetSizes(material_point_face_db,&n_mp_points,0,0);
+	ierr = MaterialPointGetAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+	for (p=0; p<n_mp_points; p++) {
+		ierr = MaterialPointSet_plastic_strain(mpX,p,0.0);CHKERRQ(ierr);
+		ierr = MaterialPointSet_yield_indicator(mpX,p,0);CHKERRQ(ierr);
+	}
+	ierr = MaterialPointRestoreAccess(material_point_face_db,&mpX);CHKERRQ(ierr);
+	
+	/* re-assign pid's for new particles such that they are consistent with the original volume marker set */
+	
+	/* delete */
+	DataBucketDestroy(&material_point_face_db);
+#endif	
+	PetscFunctionReturn(0);
+}
+
+
+
 #undef __FUNCT__
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian"
 /* DEFINE ALE */
@@ -1248,8 +1326,10 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	ierr = PSwarmFieldUpdateAll(data->pswarm);CHKERRQ(ierr);
 
 	/* ONLY VERTICAL REMESHING */
-	ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
+	//ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
 	
+	/* SURFACE REMESHING */
+	ierr = UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(dav,velocity,NULL,step);
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
         /* UPDATE mesh refinement scheme */
