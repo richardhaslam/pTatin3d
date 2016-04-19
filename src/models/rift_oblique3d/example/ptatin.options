@@ -108,4 +108,30 @@
 -stk_velocity_da_refine_hierarchy_y 2,1
 -stk_velocity_da_refine_hierarchy_z 2,2
 -stk_velocity_dm_mat_type aij
+
+##define swarms
+-flow_field 1
+-lattice_layout_perturb 0.0 
+-mp_popctrl_np_lower -1
+
+-pswarm_list p3,p4
+
+-p3_pswarm_region_index 1
+-p3_pswarm_lattice_min 0.0,1.25,0
+-p3_pswarm_lattice_max 12.0,2.5,12.0
+-p3_pswarm_lattice_nx 600,72,600
+-p3_pswarm_transport_mode_eulerian
+
+-p4_pswarm_region_index 2
+-p4_pswarm_lattice_min 0.0,1.25,0
+-p4_pswarm_lattice_max 12.0,2.5,12.0
+-p4_pswarm_lattice_nx 1200,125,1200
+-p4_pswarm_transport_mode_eulerian
+
+-passive_pswarm_region_index 0
+-passive_pswarm_lattice_max 0.0,1.25,0
+-passive_pswarm_lattice_min 12.0,2.5,12.0
+-passive_pswarm_lattice_nx 1200,125,1200
+-passive_pswarm_pressure
+
 #End of PETSc Option Table entries
