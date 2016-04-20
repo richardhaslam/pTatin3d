@@ -1016,6 +1016,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
 	  }
 
+	ierr = PSwarmSetUp(data->pswarm);CHKERRQ(ierr);
+
 	PetscFunctionReturn(0);
 }
 
@@ -1417,8 +1419,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
 
-	/* PSwarm update */
-	ierr = PSwarmFieldUpdateAll(data->pswarm);CHKERRQ(ierr);
+
 
 	/* ONLY VERTICAL REMESHING */
 	//ierr = UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(dav,velocity,step);CHKERRQ(ierr);
@@ -1448,6 +1449,9 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 		ierr = DMDABilinearizeQ2Elements(dav);CHKERRQ(ierr);
 	}	
 	
+	/* PSwarm update */
+	ierr = PSwarmFieldUpdateAll(data->pswarm);CHKERRQ(ierr);
+
 	PetscFunctionReturn(0);
 }
 
