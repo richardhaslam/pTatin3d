@@ -797,6 +797,8 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   PetscBool      found;
   PetscMPIInt    rank;
   MPI_Comm       comm;
+  PetscInt       ii,jj,kk,c;
+  PetscReal      dx[3],damin[3],damax[3],coor[3];
   
   PetscFunctionBegin;
   
@@ -830,32 +832,55 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   PetscOptionsGetRealArray(prefix,"-pswarm_box_max",xmax,&nn,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box max extent via -pswarm_box_max");
 
-  nlist = Nxp[0] * Nxp[1] * Nxp[2];
-  PetscMalloc(sizeof(PetscReal)*3*nlist,&coorlist);
-
   /* Create array of coordinates */
-  {
-    PetscInt ii,jj,kk,c;
-    PetscReal dx[3];
-    
-    dx[0] = (xmax[0]-xmin[0])/((PetscReal)Nxp[0]-1);
-    dx[1] = (xmax[1]-xmin[1])/((PetscReal)Nxp[1]-1);
-    dx[2] = (xmax[2]-xmin[2])/((PetscReal)Nxp[2]-1);
-    
-    c = 0;
-    for (kk=0; kk<Nxp[2]; kk++) {
-      for (jj=0; jj<Nxp[1]; jj++) {
-        for (ii=0; ii<Nxp[0]; ii++) {
-          coorlist[c*3+0] = xmin[0] + ii * dx[0];
-          coorlist[c*3+1] = xmin[1] + jj * dx[1];
-          coorlist[c*3+2] = xmin[2] + kk * dx[2];
-          c++;
-        }
+  /* Two pass: first count, then allocate and fill */
+  dx[0] = (xmax[0]-xmin[0])/((PetscReal)Nxp[0]-1);
+  dx[1] = (xmax[1]-xmin[1])/((PetscReal)Nxp[1]-1);
+  dx[2] = (xmax[2]-xmin[2])/((PetscReal)Nxp[2]-1);
+
+  ierr = DMDAGetLocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
+
+  c = 0;
+  for (kk=0; kk<Nxp[2]; kk++) {
+    for (jj=0; jj<Nxp[1]; jj++) {
+      for (ii=0; ii<Nxp[0]; ii++) {
+        coor[0] = xmin[0] + ii * dx[0];
+        coor[1] = xmin[1] + jj * dx[1];
+        coor[2] = xmin[2] + kk * dx[2];
+        
+        if ( (coor[2] < damin[2]) || (coor[2] > damax[2]) ) continue;
+        if ( (coor[1] < damin[1]) || (coor[1] > damax[1]) ) continue;
+        if ( (coor[0] < damin[0]) || (coor[0] > damax[0]) ) continue;
+        
+        c++;
       }
     }
-    
   }
-  
+
+  nlist = c;
+  PetscMalloc(sizeof(PetscReal)*3*nlist,&coorlist);
+
+  c = 0;
+  for (kk=0; kk<Nxp[2]; kk++) {
+    for (jj=0; jj<Nxp[1]; jj++) {
+      for (ii=0; ii<Nxp[0]; ii++) {
+
+        coor[0] = xmin[0] + ii * dx[0];
+        coor[1] = xmin[1] + jj * dx[1];
+        coor[2] = xmin[2] + kk * dx[2];
+        
+        if ( (coor[2] < damin[2]) || (coor[2] > damax[2]) ) continue;
+        if ( (coor[1] < damin[1]) || (coor[1] > damax[1]) ) continue;
+        if ( (coor[0] < damin[0]) || (coor[0] > damax[0]) ) continue;
+
+        coorlist[c*3+0] = coor[0];
+        coorlist[c*3+1] = coor[1];
+        coorlist[c*3+2] = coor[2];
+        c++;
+      }
+    }
+  }
+
   ierr = SwarmMPntStd_CoordAssignment_InsertFromList(ps->db,dmv,nlist,coorlist,0,PETSC_TRUE);CHKERRQ(ierr);
   
   PetscFree(coorlist);
