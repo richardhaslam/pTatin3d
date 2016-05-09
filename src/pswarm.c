@@ -889,7 +889,7 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
     char filename[PETSC_MAX_PATH_LEN];
     
     PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/deformation_grid_ref.vts",ps->pctx->outputpath);
-    ierr = pSwarmParaViewMeshDeformationBaseVTS(Nxp[0],Nxp[1],Nxp[2],filename);CHKERRQ(ierr);
+    ierr = pSwarmParaViewMeshDeformationBaseVTS(xmin,dx,Nxp,filename);CHKERRQ(ierr);
   }
   
   ps->state = PSW_TS_INSYNC;
@@ -1788,11 +1788,11 @@ PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx)
 
 #undef __FUNCT__
 #define __FUNCT__ "pSwarmParaViewMeshDeformationBaseVTS"
-PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscInt nx,PetscInt ny,PetscInt nz,const char name[])
+PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscReal xmin[],PetscReal dx[],PetscInt nx[],const char name[])
 {
 	PetscInt i,j,k;
 	FILE*	vtk_fp = NULL;
-  float dx,dy,dz,xp,yp,zp;
+  float xp,yp,zp;
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen (name,"w")) == NULL)  {
@@ -1806,22 +1806,18 @@ PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscInt nx,PetscInt ny,Pets
 	fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 	
-	fprintf(vtk_fp,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0,nx-1, 0,ny-1,0,nz-1);
-	fprintf(vtk_fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n", 0,nx-1, 0,ny-1,0,nz-1);
+	fprintf(vtk_fp,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
+	fprintf(vtk_fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
 	
-  dx = 1.0/((float)(nx-1));
-  dy = 1.0/((float)(ny-1));
-  dz = 1.0/((float)(nz-1));
-  
 	/* VTS COORD DATA */
 	fprintf(vtk_fp,"    <Points>\n");
 	fprintf(vtk_fp,"      <DataArray Name=\"coords\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
-	for (k=0; k<nz; k++) {
-		for (j=0; j<ny; j++) {
-			for (i=0; i<nx; i++) {
-        xp = dx * i;
-        yp = dy * j;
-        zp = dz * k;
+	for (k=0; k<nx[2]; k++) {
+		for (j=0; j<nx[1]; j++) {
+			for (i=0; i<nx[0]; i++) {
+        xp = xmin[0] + dx[0] * i;
+        yp = xmin[1] + dx[1] * j;
+        zp = xmin[2] + dx[2] * k;
 				fprintf(vtk_fp,"      %1.6e %1.6e %1.6e\n",xp,yp,zp);
 			}
 		}
@@ -1834,9 +1830,9 @@ PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscInt nx,PetscInt ny,Pets
 	
 	fprintf(vtk_fp,"      <DataArray Name=\"index\" type=\"Int32\" NumberOfComponents=\"1\" format=\"ascii\">\n");
 	fprintf(vtk_fp,"      ");
-	for (k=0; k<nz; k++) {
-		for (j=0; j<ny; j++) {
-			for (i=0; i<nx; i++) {
+	for (k=0; k<nx[2]; k++) {
+		for (j=0; j<nx[1]; j++) {
+			for (i=0; i<nx[0]; i++) {
 				fprintf(vtk_fp,"%d ", 0 );
 			}
 		}

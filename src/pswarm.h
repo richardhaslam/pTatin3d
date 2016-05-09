@@ -81,6 +81,6 @@ PetscErrorCode PSwarmFieldUpdate_Advect(PSwarm ps);
 PetscErrorCode PSwarmFieldUpdate_FiniteStrain(PSwarm ps);
 PetscErrorCode PSwarmFieldUpdate_PressTempTime(PSwarm ps);
 
-PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscInt nx,PetscInt ny,PetscInt nz,const char name[]);
+PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscReal xmin[],PetscReal dx[],PetscInt nx[],const char name[]);
 
 #endif
