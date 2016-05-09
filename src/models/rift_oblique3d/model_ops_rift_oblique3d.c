@@ -1410,7 +1410,8 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
+
+	//if (c->step%(50) == 0) {	
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -1418,7 +1419,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-
 
 
 	/* ONLY VERTICAL REMESHING */
@@ -1451,7 +1451,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 	
 	/* PSwarm update */
 	ierr = PSwarmFieldUpdateAll(data->pswarm);CHKERRQ(ierr);
-
+	
 	PetscFunctionReturn(0);
 }
 
@@ -1469,13 +1469,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	// just plot the velocity field (coords and vel stored in file as floats)
-	//ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
-	// previously used option
-	//ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
-	//ierr = ModelOutput_ExecuteXDMFWriter(c,X,prefix);CHKERRQ(ierr);
-        //ierr = pTatin3d_ModelOutput_StokesVelocity_PetscVTS(c,X,prefix);CHKERRQ(ierr);
+	ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
 	if (data->output_markers) { 
 		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
