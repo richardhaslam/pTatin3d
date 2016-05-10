@@ -13,9 +13,10 @@ all : info tests drivers
 
 # Compilation options are to be placed in makefile.arch
 # if that (untracked) file does not exist, defaults are copied there
-src/makefile.arch :
-	cp src/makefile.arch.default $@
--include src/makefile.arch
+makefile.arch:
+	-@echo "[pTatin config] using config/makefile.arch.default as makefile.arch"
+	-@cp config/makefile.arch.default $@
+-include makefile.arch
 
 OBJDIR ?= $(PETSC_ARCH)/obj
 LIBDIR ?= $(PETSC_ARCH)/lib

@@ -11,4 +11,4 @@ pt3d-manual.pdf
 run/
 output/
 *.DS_Store
-src/makefile.arch
+makefile.arch
