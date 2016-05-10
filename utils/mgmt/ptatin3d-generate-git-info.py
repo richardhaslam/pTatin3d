@@ -44,7 +44,18 @@ def pTatin3d_GitFound_WriteInfoHeader():
     for line in gitf:
         gitrev = line.rstrip('\n')
     gitf.close();
-    gitrev = '"%s"' % ("commit hash: " + gitrev)
+
+    gitbranch = []
+    os.system("git branch > tmpgit.txt")
+    gitf = open("tmpgit.txt",'r')
+    for line in gitf:
+      if line[0] == "*":
+        gitbranch = line.replace('*',' ')
+        gitbranch = gitbranch.lstrip()
+        gitbranch = gitbranch.rstrip('\n')
+    gitf.close();
+
+    gitrev = '"%s"' % ("commit hash: " + gitrev + " (" + gitbranch + ")")
     gitstr = spacer.join( ["#define PTATIN_VERSION_CNTR_REVISION" , gitrev ])
     hf.write(gitstr + "\n")
 
