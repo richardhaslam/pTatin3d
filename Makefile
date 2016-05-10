@@ -76,7 +76,7 @@ releaseinfo:
 	-@echo "  Updating the contents of src/ptatin_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
 	-@echo "  pTatin3D version info appears in: stdout; ptat3d log; generated PETSc summary/options files"
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
-	$(shell python tools/ptatin3d-generate-git-info.py)
+	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
 	$(shell mv ptatin_version_info.h src/ptatin_version_info.h)
 	$(shell git update-index --assume-unchanged src/ptatin_version_info.h)
 
