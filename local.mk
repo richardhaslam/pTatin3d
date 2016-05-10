@@ -1,1 +1,1 @@
-include $(addsuffix /local.mk,src)
+include $(addsuffix /local.mk,src tests)

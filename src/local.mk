@@ -108,7 +108,6 @@ ptatin-tests-y.c += $(call thisdir, \
 			test_stokes_q1macrop1.c \
 			ptatin_read_matrix.c \
 			test_petsc_wsmp.c \
-			test_cjson.c \
 			ptatin_driver_nostokessolve.c \
 			ptatin_driver_asmsolve.c \
 			ptatin_driver_asmsolve_approx.c \
