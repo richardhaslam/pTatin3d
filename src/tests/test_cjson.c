@@ -43,7 +43,7 @@ PetscErrorCode test_GeometryObjectParse_cJSON(void)
     GeometryObject *golist;
     
     PetscPrintf(PETSC_COMM_WORLD,"** test_GeometryObjectParse_cJSON **\n");
-    ierr = GeometryObjectLoadJSON("src/test_option_files/test_geom.json",&ngo,&golist);CHKERRQ(ierr);
+    ierr = GeometryObjectLoadJSON("src/tests/test_geom.json",&ngo,&golist);CHKERRQ(ierr);
 
     for (k=0; k<ngo; k++) {
         ierr = GeometryObjectView(golist[k]);CHKERRQ(ierr);
