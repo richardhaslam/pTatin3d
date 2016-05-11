@@ -253,9 +253,10 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 
 		/* Get A11 */
 		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+		ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
 		ierr = MatView(subA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		
+		ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    
 		/* Get Auu,Avv,Aww */	
 		ierr = MatGetSubMatrix(subA,isU,isU,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
 		ierr = MatDestroy(&Aii);CHKERRQ(ierr);

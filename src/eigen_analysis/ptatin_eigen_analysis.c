@@ -808,9 +808,9 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
   PetscTime(&t1);
   PetscPrintf(PETSC_COMM_WORLD,"PCComputeExplicitOperator(time) %1.4e (sec)\n",t1-t0);
   
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   ierr = MatView(Ae,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  
+  ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   {
     PC mm;
     Mat A11,Aii;
@@ -825,9 +825,10 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
     PetscTime(&t1);
     
     PetscPrintf(PETSC_COMM_WORLD,"A11PCComputeExplicitOperator(time) %1.4e (sec)\n",t1-t0);
-    ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
     ierr = MatView(Aii,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    
     ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 }
   
@@ -928,12 +929,13 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
 
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_coarse.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_coarse.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   ierr = MatView(Ae,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   
   for( k=1; k<nlevels; k++ ){
@@ -947,12 +949,13 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
  
     if (ascii_view) {
       ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),name,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     }
     ierr = MatView(Ae,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   
@@ -988,13 +991,14 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
 
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_coarse.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_coarse.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   
   ierr = MatView(Ae,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   
   for( k=1; k<nlevels; k++ ){
@@ -1006,12 +1010,13 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
     ierr = KSPComputeExplicitOperator(ksp_level,&Ae);CHKERRQ(ierr);
     if (ascii_view) {
       ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),name,&viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     }
     ierr = MatView(Ae,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+    if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
@@ -1019,7 +1024,7 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
   ierr = KSPComputeExplicitOperator(ksp_A11,&Ae);CHKERRQ(ierr);
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_mg.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_ksp_mg.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
@@ -1033,17 +1038,19 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
   */
    
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PCComputeExplicitOperator(pc_A11,&Ae);CHKERRQ(ierr);
   if (ascii_view) {
     ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)Ae),"A_pc_mg.mat",&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_DENSE);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerBinaryOpen(PetscObjectComm((PetscObject)Ae),"A_pc_mg.mat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   }
   ierr = MatView(Ae,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&Ae);CHKERRQ(ierr);
+  if (ascii_view) { ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr); }
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   
   

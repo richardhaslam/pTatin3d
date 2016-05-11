@@ -72,13 +72,14 @@ PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscIn
 	
 	/* output */
 	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test1.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+	ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
 	ierr = VecView(x, vv);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(vv);CHKERRQ(ierr);
 	ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
-	ierr  = VecDestroy(&x);CHKERRQ(ierr);
+	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	
