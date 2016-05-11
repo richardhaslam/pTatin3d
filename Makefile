@@ -126,7 +126,7 @@ $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 $(BINDIR)/%.app : $(OBJDIR)/%.o | $$(@D)/.DIR
 	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
 #@mv $@ $(BINDIR)
-	@ln -sF $@ $(BINDIR)
+	ln -sF $(abspath $@) $(BINDIR)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
