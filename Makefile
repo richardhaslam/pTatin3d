@@ -108,19 +108,25 @@ TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(
 
 
 # Tests
-ptatin-tests-y = $(notdir $(ptatin-tests-y.c))
-tests: $(ptatin-tests-y:%.c=$(BINDIR)/%.app)
-$(ptatin-tests-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
+tests: $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app)
+$(ptatin-tests-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-tests-y.c:%.c=$(OBJDIR)/%.o) # don't delete the intermediate files
 
+
 # Drivers
-ptatin-drivers-y = $(notdir $(ptatin-drivers-y.c))
-drivers: $(ptatin-drivers-y:%.c=$(BINDIR)/%.app)
-$(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
+#ptatin-drivers-y = $(notdir $(ptatin-drivers-y.c))
+#drivers: $(ptatin-drivers-y:%.c=$(BINDIR)/%.app)
+#$(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
+#.SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
+
+drivers: $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app)
+$(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
-$(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
+$(BINDIR)/%.app : $(OBJDIR)/%.o | $$(@D)/.DIR
 	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
+#@mv $@ $(BINDIR)
+	@ln -sF $@ $(BINDIR)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
