@@ -20,7 +20,7 @@ def pTatin3d_GitFound_WriteInfoHeader():
     hf.write("#define __ptatin_version_info_h__\n")
 
     hf.write("\n")
-    hf.write("#define PTATIN_VERSION_INFO 1\n")
+    hf.write("#define PTATIN_DEVELOPMENT_VERSION\n")
     hf.write("\n")
     hf.write("\n")
 
@@ -79,7 +79,7 @@ def pTatin3d_GitFound_WriteInfoHeader():
     os.system("rm -f tmpgit.txt")
 
 
-def pTatin3d_GitFoundDefault_WriteInfoHeader():
+def pTatin3d_Default_WriteInfoHeader():
     
     spacer = " "
     
@@ -89,7 +89,7 @@ def pTatin3d_GitFoundDefault_WriteInfoHeader():
     hf.write("#define __ptatin_version_info_h__\n")
     
     hf.write("\n")
-    hf.write("#define PTATIN_VERSION_INFO 1\n")
+    hf.write("#define PTATIN_DEVELOPMENT_VERSION\n")
     hf.write("\n")
     hf.write("\n")
     
@@ -121,15 +121,20 @@ def pTatin3d_WriteVersionInfoHeader(hash,major,minor,patch):
     hf.write("#define __ptatin_version_info_h__\n")
     
     hf.write("\n")
-    hf.write("#define PTATIN_VERSION_INFO 2\n")
+    hf.write("#define PTATIN_RELEASE\n")
     hf.write("\n")
     hf.write("\n")
     
     # ---------------------------------------------------------------------
-    gitstr = "#define PTATIN_VERSION_CNTR_REPO \"https://bitbucket.org/jedbrown/ptatin3d.git\""
+    gitstr = "#define PTATIN_VERSION_CNTR_REPO \"git url: https://bitbucket.org/jedbrown/ptatin3d.git\""
     hf.write(gitstr + "\n")
-    gitstr = "#define PTATIN_VERSION_CNTR_REVISION \"" + str(hash) + "\""
+    
+#    gitstr = "#define PTATIN_VERSION_CNTR_REVISION \"" + str(hash) + "\""
+#    hf.write(gitstr + "\n")
+    gitrev = '"%s"' % ("commit hash: " + hash )
+    gitstr = spacer.join( ["#define PTATIN_VERSION_CNTR_REVISION" , gitrev ])
     hf.write(gitstr + "\n")
+
     # ---------------------------------------------------------------------
     gitstr = "#define PTATIN_VERSION_MAJOR " + str(major)
     hf.write(gitstr + "\n")
@@ -147,8 +152,9 @@ def pTatin3d_WriteVersionInfoHeader(hash,major,minor,patch):
 
 def main():
     # Default file which lives in the repo
-    #pTatin3d_GitFoundDefault_WriteInfoHeader()
-    
+    #pTatin3d_Default_WriteInfoHeader()
+    #return	    
+
     gitrepo_detected = False
     
     root = os.curdir
@@ -156,11 +162,11 @@ def main():
         if entry == ".git":
             gitrepo_detected = True
     
-    if gitrepo_detected == True:
+    if gitrepo_detected == False:
         pTatin3d_GitFound_WriteInfoHeader()
     else:
         # Hard coded revision key and release tags
-        git_commit_hash_key = "e2f359bd996cbb1b2b45937087647665dcd2badd"
+        git_commit_hash_key = "abcd01234"
         ptat_rev_major = 1
         ptat_rev_minor = 0
         ptat_rev_patch = 0
