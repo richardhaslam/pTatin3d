@@ -517,6 +517,7 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
   PetscInt i;
   pTatinModel item;
   
+  if (!registered_model_list) PetscFunctionReturn(0);
   i = 0;
   item = registered_model_list[0];
   while (item) {
