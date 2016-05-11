@@ -103,7 +103,7 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
 
     ngo = 100;
     PetscOptionsGetInt(NULL,NULL,"-ngo",&ngo,NULL);
-    fp = fopen("fat_test_geom.json","w");
+    fp = fopen("src/tests/fat_test_geom.json","w");
     fprintf(fp,"{\n");
     
     fprintf(fp,"\"GeometryObjectList\": [\n");
@@ -130,7 +130,7 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
     fclose(fp);
     
     PetscTime(&t0);
-    ierr = GeometryObjectLoadJSON("fat_test_geom.json",&ngo,&golist);CHKERRQ(ierr);
+    ierr = GeometryObjectLoadJSON("src/tests/fat_test_geom.json",&ngo,&golist);CHKERRQ(ierr);
     PetscTime(&t1);
     PetscPrintf(PETSC_COMM_WORLD,"Time to parse %D geom objects: %1.4e (sec)\n",ngo,t1-t0);
     
