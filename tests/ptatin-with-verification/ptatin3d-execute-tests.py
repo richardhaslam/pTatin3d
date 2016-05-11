@@ -64,110 +64,111 @@ def determinempilaunchcommand():
 #
 
 # 1/ Check mf operators are matching assembled operators
-def test01():
+def test01(this_dir):
 	test_name = 'test01'
-	ofile     = './output/'   + test_name + '.output'
-	efile     = './expected/' + test_name + '.expected'
-	optsfile  = './input/'    + test_name + '.opts'
+	ofile     = os.path.join(this_dir, 'output'   , test_name + '.output')
+	efile     = os.path.join(this_dir, 'expected' , test_name + '.expected')
+	optsfile  = os.path.join(this_dir, 'input'    , test_name + '.opts')
 	print('--------------------------------------------------------')
 	print('-- Performing test:',test_name)
-	os.system('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ' > ' + ofile)
+	print('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ptatin_std_output_path + ' > ' + ofile)
+	os.system('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ptatin_std_output_path + ' > ' + ofile)
 	# Filter 
 	strip_keywords(ofile,ofile+'.strip')
-	strip_keywords(efile,'expected/expected.strip')
+	strip_keywords(efile,this_dir + '/expected/expected.strip')
 	# DIFFERENCES
 	print('---- Unix diff with expected file:',efile)
-	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+	os.system('diff ' + ofile+'.strip ' + this_dir + '/expected/expected.strip')
 
 
 # 2/ Check viscous block solve 
-def test02():
+def test02(this_dir):
 	test_name = 'test02'
-	ofile     = './output/'   + test_name + '.output'
-	efile     = './expected/' + test_name + '.expected'
-	optsfile  = './input/'    + test_name + '.opts'
+	ofile     = os.path.join(this_dir, 'output'   , test_name + '.output')
+	efile     = os.path.join(this_dir, 'expected' , test_name + '.expected')
+	optsfile  = os.path.join(this_dir, 'input'    , test_name + '.opts')
 	print('--------------------------------------------------------')
 	print('-- Performing test:',test_name)
-	os.system('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ' > ' + ofile)
-	# Filter 
+	os.system('${PTATIN3D_DIR}/test_stokes_operators.app -options_file ' + optsfile + ptatin_std_output_path + ' > ' + ofile)
+	# Filter
 	strip_keywords(ofile,ofile+'.strip')
-	strip_keywords(efile,'expected/expected.strip')
+	strip_keywords(efile,this_dir + '/expected/expected.strip')
 	# DIFFERENCES
 	print('---- Unix diff with expected file:',efile)
-	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+	os.system('diff ' + ofile+'.strip ' + this_dir + '/expected/expected.strip')
 
 
 # 3a/ Linear solve GalerkinMG
-def test03a():
+def test03a(this_dir):
 	test_name = 'test03a'
-	ofile     = './output/'   + test_name + '.output'
-	efile     = './expected/' + test_name + '.expected'
-	optsfile  = './input/'    + test_name + '.opts'
+	ofile     = os.path.join(this_dir, 'output'   , test_name + '.output')
+	efile     = os.path.join(this_dir, 'expected' , test_name + '.expected')
+	optsfile  = os.path.join(this_dir, 'input'    , test_name + '.opts')
 	print('--------------------------------------------------------')
 	print('-- Performing test:',test_name)
-	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ' > ' + ofile)
-	# Filter 
+	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ptatin_std_output_path + ' > ' + ofile)
+	# Filter
 	strip_keywords(ofile,ofile+'.strip')
-	strip_keywords(efile,'expected/expected.strip')
+	strip_keywords(efile,this_dir + '/expected/expected.strip')
 	# DIFFERENCES
 	print('---- Unix diff with expected file:',efile)
-	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+	os.system('diff ' + ofile+'.strip ' + this_dir + '/expected/expected.strip')
 
 
 # 3b/ Linear solve MFMG
-def test03b():
+def test03b(this_dir):
 	test_name = 'test03b'
-	ofile     = './output/'   + test_name + '.output'
-	efile     = './expected/' + test_name + '.expected'
-	optsfile  = './input/'    + test_name + '.opts'
+	ofile     = os.path.join(this_dir, 'output'   , test_name + '.output')
+	efile     = os.path.join(this_dir, 'expected' , test_name + '.expected')
+	optsfile  = os.path.join(this_dir, 'input'    , test_name + '.opts')
 	print('--------------------------------------------------------')
 	print('-- Performing test:',test_name)
-	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ' > ' + ofile)
-	# Filter 
+	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ptatin_std_output_path + ' > ' + ofile)
+	# Filter
 	strip_keywords(ofile,ofile+'.strip')
-	strip_keywords(efile,'expected/expected.strip')
+	strip_keywords(efile,this_dir + '/expected/expected.strip')
 	# DIFFERENCES
 	print('---- Unix diff with expected file:',efile)
-	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+	os.system('diff ' + ofile+'.strip ' + this_dir + '/expected/expected.strip')
 
 # 3c/ Linear solve using MF,ASM,Galerkin and user specified level and direction dependent coarsening 
-def test03c():
+def test03c(this_dir):
 	test_name = 'test03c'
-	ofile     = './output/'   + test_name + '.output'
-	efile     = './expected/' + test_name + '.expected'
-	optsfile  = './input/'    + test_name + '.opts'
+	ofile     = os.path.join(this_dir, 'output'   , test_name + '.output')
+	efile     = os.path.join(this_dir, 'expected' , test_name + '.expected')
+	optsfile  = os.path.join(this_dir, 'input'    , test_name + '.opts')
 	print('--------------------------------------------------------')
 	print('-- Performing test:',test_name)
-	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ' > ' + ofile)
-	# Filter 
+	os.system('${PTATIN3D_DIR}/ptatin_driver_linear_ts.app -options_file ' + optsfile + ptatin_std_output_path + ' > ' + ofile)
+	# Filter
 	strip_keywords(ofile,ofile+'.strip')
-	strip_keywords(efile,'expected/expected.strip')
+	strip_keywords(efile,this_dir + '/expected/expected.strip')
 	# DIFFERENCES
 	print('---- Unix diff with expected file:',efile)
-	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+	os.system('diff ' + ofile+'.strip ' + this_dir + '/expected/expected.strip')
 
 # 3c-parallel/ Linear solve using MF,ASM,Galerkin and user specified level and direction dependent coarsening 
-def test03cp(launcher):
+def test03cp(this_dir,launcher):
 	test_name = 'test03cp'
-	ofile     = './output/'   + test_name + '.output'
-	efile     = './expected/' + test_name + '.expected'
-	optsfile  = './input/'    + test_name + '.opts'
+	ofile     = os.path.join(this_dir, 'output'   , test_name + '.output')
+	efile     = os.path.join(this_dir, 'expected' , test_name + '.expected')
+	optsfile  = os.path.join(this_dir, 'input'    , test_name + '.opts')
 	ranks     = 8
 	print('--------------------------------------------------------')
 	print('-- Performing test:' , test_name , '[ processors = ', ranks ,']')
 
 	space = ' '
 	joblauncher = space.join( [launcher , '-np' , str(ranks)] )
-	execcmd     = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , '>' , ofile] )
+	execcmd     = space.join( ['${PTATIN3D_DIR}/ptatin_driver_linear_ts.app' , '-options_file' ,  optsfile , ptatin_std_output_path, '>' , ofile] )
 	run         = space.join( [joblauncher , execcmd] )
 	os.system(run)
 
-	# Filter 
+	# Filter
 	strip_keywords(ofile,ofile+'.strip')
-	strip_keywords(efile,'expected/expected.strip')
+	strip_keywords(efile,this_dir + '/expected/expected.strip')
 	# DIFFERENCES
 	print('---- Unix diff with expected file:',efile)
-	os.system('diff ' + ofile+'.strip expected/expected.strip') 
+	os.system('diff ' + ofile+'.strip ' + this_dir + '/expected/expected.strip')
 
 
 
@@ -191,11 +192,28 @@ def main():
 		print('**')
 
 
-	# set environment variable for bin directory
+	if os.environ.get('PETSC_DIR') == None:
+		raise Exception('Environment variable PETSC_DIR must be set to run unit tests')
 	if os.environ.get('PETSC_ARCH') == None:
 		raise Exception('Environment variable PETSC_ARCH must be set to run unit tests')
-	ptatin_bin_dir = os.path.join('..', '..', os.environ['PETSC_ARCH'], 'bin')
+
+  # set environment variable for bin directory
+#	ptatin_bin_dir = os.path.join('..', '..', os.environ['PETSC_ARCH'], 'bin')
+#	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
+#	print('ptatin_bin_dir',ptatin_bin_dir)
+
+	path_to_this_file = os.path.realpath(__file__)
+	#print(os.path.dirname(os.path.abspath(path_to_this_file)))
+	this_dir = os.path.dirname(os.path.abspath(path_to_this_file))
+	ptatin_bin_dir = os.path.join(this_dir,'..', '..', os.environ['PETSC_ARCH'], 'bin')
 	os.environ['PTATIN3D_DIR'] = ptatin_bin_dir
+	#print('[correct] ptatin_bin_dir',ptatin_bin_dir)
+
+	os.environ['PTATIN3D_TEST_DIR'] = this_dir
+
+	global ptatin_std_output_path
+	ptatin_std_output_path = ' -output_path ' + os.path.join(this_dir,'pt3dout ')
+	print(ptatin_std_output_path)
 
 	# determine path to mpiexec/mpirun
 	launcher = determinempilaunchcommand()
@@ -206,40 +224,42 @@ def main():
 
 
 	# create output directories
-	makedir('pt3dout')
-	makedir('output')
+	o1_dir = os.path.join(this_dir,'pt3dout')
+	o2_dir = os.path.join(this_dir,'output')
+	makedir(o1_dir)
+	makedir(o2_dir)
 
 	# remove contents of directory where all ptatin output is sent
-	os.system('rm -f pt3dout/*')
-	os.system('rm -f output/*')
+	os.system('rm -f ' + o1_dir + '/*')
+	os.system('rm -f ' + o2_dir + '/*')
 
 	if test_name_target == 'all':
-		test01()
-		test02()
-		test03a()
-		test03b()
-		test03c()
+		test01(this_dir)
+		test02(this_dir)
+		test03a(this_dir)
+		test03b(this_dir)
+		test03c(this_dir)
 		if has_mpi == True:
-			test03cp(launcher)
+			test03cp(this_dir,launcher)
 
 	elif test_name_target == 'test01':
-		test01()
+		test01(this_dir)
 
 	elif test_name_target == 'test02':
-		test02()
+		test02(this_dir)
 
 	elif test_name_target == 'test03a':
-		test03a()
+		test03a(this_dir)
 
 	elif test_name_target == 'test03b':
-		test03b()
+		test03b(this_dir)
 
 	elif test_name_target == 'test03c':
-		test03c()
+		test03c(this_dir)
 
 	elif test_name_target == 'test03cp':
 		if has_mpi == True:
-			test03cp(launcher)
+			test03cp(this_dir,launcher)
 	else:
 		exit('-- Error: Unit test with name = "'+ test_name_target +'" was not found --')
 	

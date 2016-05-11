@@ -1,7 +1,12 @@
 pTatin3d unit tests:
 
 Usage:
+[option 1]
+  make all
+  cd tests/ptatin-with-verification
   python ptatin3d-execute-tests.py
+[option 2]
+  make legacyunittests
 
 Caveats:
   - Currently all tests are executed in sequence (this can be quite slow)
