@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_PlasticDP_def.h"
+#include "material_constants/MaterialConst_PlasticDP_def.h"
 
 
 const char MaterialConst_PlasticDP_classname[] = "MaterialConst_PlasticDP";

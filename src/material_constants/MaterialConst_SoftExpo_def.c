@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_SoftExpo_def.h"
+#include "material_constants/MaterialConst_SoftExpo_def.h"
 
 
 const char MaterialConst_SoftExpo_classname[] = "MaterialConst_SoftExpo";

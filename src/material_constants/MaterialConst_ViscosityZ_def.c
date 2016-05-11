@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_ViscosityZ_def.h"
+#include "material_constants/MaterialConst_ViscosityZ_def.h"
 
 
 const char MaterialConst_ViscosityZ_classname[] = "MaterialConst_ViscosityZ";

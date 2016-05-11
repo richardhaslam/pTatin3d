@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_ViscosityArrh_def.h"
+#include "material_constants/MaterialConst_ViscosityArrh_def.h"
 
 
 const char MaterialConst_ViscosityArrh_classname[] = "MaterialConst_ViscosityArrh";
