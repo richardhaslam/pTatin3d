@@ -78,8 +78,8 @@ releaseinfo:
 	-@echo "  pTatin3D version info appears in: stdout; ptat3d log; generated PETSc summary/options files"
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
 	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
-	$(shell mv ptatin_version_info.h src/ptatin_version_info.h)
-	$(shell git update-index --assume-unchanged src/ptatin_version_info.h)
+	$(shell mv ptatin_version_info.h include/ptatin_version_info.h)
+	$(shell git update-index --assume-unchanged include/ptatin_version_info.h)
 
 externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT FILES ———————
