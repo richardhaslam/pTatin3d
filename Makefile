@@ -39,7 +39,7 @@ libptatin3dmodels-y.f :=
 ptatin-tests-y.c :=
 ptatin-drivers-y.c :=
 ptatin-externals-y.o :=
-TATIN_INC := $(PETSC_CC_INCLUDES)
+TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
 
 # Recursively include files for all targets
 include local.mk
@@ -67,7 +67,7 @@ $(libptatin3dmodels) : $(libptatin3dmodels-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3dm
 
 info:
 	-@echo "—————————————————————————————————————————————————————————————————"
-	-@echo " pTatin3d"
+	-@echo " pTatin3D"
 	-@echo "    git url: https://bitbucket.org/jedbrown/ptatin3d.git"
 	-@echo "    update version information by running \"make releaseinfo\""
 	-@echo "—————————————————————————————————————————————————————————————————"
