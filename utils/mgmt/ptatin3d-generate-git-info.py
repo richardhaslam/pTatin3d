@@ -161,7 +161,7 @@ def main():
         if entry == ".git":
             gitrepo_detected = True
     
-    if gitrepo_detected == False:
+    if gitrepo_detected == True:
         pTatin3d_GitFound_WriteInfoHeader()
     else:
         # Hard coded revision key and release tags
