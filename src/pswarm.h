@@ -45,13 +45,14 @@ typedef enum { PSWARM_FU_NULL=0,
 
 typedef enum { PSWARM_TM_EULERIAN=0, PSWARM_TM_LAGRANGIAN } PSwarmTransportModeType;
 typedef enum { PSWARM_ADV_RK1=0, PSWARM_ADV_RK2, PSWARM_ADV_RK4 } PSwarmAdvectopmRKType;
+typedef enum { PSW_VT_PERRANK=0, PSW_VT_SINGLETON } PSwarmViewType;
 
 
 PetscErrorCode PSwarmInitializePackage(void);
 
 PetscErrorCode PSwarmSetOptionsPrefix(PSwarm ps,const char prefix[]);
 PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps);
-PetscErrorCode PSwarmView(PSwarm ps);
+PetscErrorCode PSwarmView(PSwarm ps,PSwarmViewType type);
 PetscErrorCode PSwarmDestroy(PSwarm *ps);
 PetscErrorCode PSwarmSetUp(PSwarm ps);
 PetscErrorCode PSwarmSetFromOptions(PSwarm ps);
