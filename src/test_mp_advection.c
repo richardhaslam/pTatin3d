@@ -996,10 +996,10 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 			PetscSNPrintf(stepname,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
             ierr = pTatin3d_ModelOutput_MPntStd(user,stepname);CHKERRQ(ierr);
 
-      ierr = PSwarmView(pswarm);CHKERRQ(ierr);
+      ierr = PSwarmView(pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
       psi = &pswarm2[0];
       while (*psi) {
-        ierr = PSwarmView(*psi);CHKERRQ(ierr);
+        ierr = PSwarmView(*psi,PSW_VT_SINGLETON);CHKERRQ(ierr);
         psi++;
       }
 		}
