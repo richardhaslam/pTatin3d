@@ -1,4 +1,5 @@
 libptatin3d-y.c += $(call thisdir, \
+            pswarm.c \
 			dmda_update_coords.c \
 			dmda_project_coords.c \
 			dmda_compare.c \
@@ -78,6 +79,7 @@ libptatin3d-y.c += $(call thisdir, \
 			geometry_object_parse.c \
 			spm_utils.c \
 			petsc_utils.c \
+            mpiio_blocking.c \
 	)
 
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
