@@ -108,6 +108,7 @@ PetscErrorCode QPntVolCoefEnergyComputeMemberOffsets(size_t property_offsets[]);
 PetscErrorCode MaterialPointGetAccess(DataBucket materialpoint_db,MPAccess *helper);
 PetscErrorCode MaterialPointRestoreAccess(DataBucket matpoint_db,MPAccess *helper);
 
+PetscErrorCode MaterialPointGet_point_index(MPAccess X,const int p,long int *var);
 PetscErrorCode MaterialPointGet_global_coord(MPAccess X,const int p,double *var[]);
 PetscErrorCode MaterialPointGet_local_coord(MPAccess X,const int p,double *var[]);
 PetscErrorCode MaterialPointGet_local_element_index(MPAccess X,const int p,int *var);
@@ -120,6 +121,7 @@ PetscErrorCode MaterialPointGet_yield_indicator(MPAccess X,const int p,short *va
 PetscErrorCode MaterialPointGet_diffusivity(MPAccess X,const int p,double *var);
 PetscErrorCode MaterialPointGet_heat_source(MPAccess X,const int p,double *var);
 
+PetscErrorCode MaterialPointSet_point_index(MPAccess X,const int p,long int var);
 PetscErrorCode MaterialPointSet_global_coord(MPAccess X,const int p,double var[]);
 PetscErrorCode MaterialPointSet_local_coord(MPAccess X,const int p,double var[]);
 PetscErrorCode MaterialPointSet_local_element_index(MPAccess X,const int p,int var);
