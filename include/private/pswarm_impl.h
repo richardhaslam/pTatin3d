@@ -33,7 +33,7 @@
 #include <petsc.h>
 #include <petscviewer.h>
 #include <petscdm.h>
-#include <petsc-private/petscimpl.h>
+#include <petsc/private/petscimpl.h>
 
 #include <pswarm.h>
 #include <data_bucket.h>
