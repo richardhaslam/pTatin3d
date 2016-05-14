@@ -31,6 +31,8 @@
    * The implementation does not require O(p) storage
  
 */
+#undef __FUNCT__
+#define __FUNCT__ "MPIWrite_Blocking"
 PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,int root,PetscBool skip_header,MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -132,9 +134,9 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
  Collective over comm
  
  Input:
-   fp   - file pointer
+   fp   - file pointer [only required to be non-NULL on root]
    len  - the number of entries to be read from the file
-   size - the size in bytes of each entry
+   size - the size in bytes of each entry [must be defined on all ranks]
    root - the rank responsible for reading data from disk and broadcasting the data
    comm - the MPI communicator
    data - where the bytes read from disk will be stored
@@ -149,6 +151,8 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
    * The implementation does not require O(p) storage
 
 */
+#undef __FUNCT__
+#define __FUNCT__ "MPIRead_Blocking"
 PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,int root,PetscBool skip_header,MPI_Comm comm)
 {
   PetscErrorCode ierr;
@@ -200,6 +204,8 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   if (!skip_header) {
     ierr = MPI_Bcast(&len_total_bytes,1,MPI_LONG,root,comm);CHKERRQ(ierr);
     if (len_total_bytes != len_total_bytes_est) {
+      printf("[%d] len = %ld : sum(len) = %ld\n",rank,len,len_total);
+      printf("[%d] size = %ld\n",rank,size);
       if (!rank) printf("[MPIRead_Blocking] File error: Sizes don't match. File contains %ld bytes, your lengths sum to %ld bytes\n",len_total_bytes,len_total_bytes_est);
       PetscFunctionReturn(0);
     }
