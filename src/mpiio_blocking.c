@@ -71,7 +71,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
     if (!skip_header) {
       fwrite(&len_total_bytes,sizeof(long int),1,fp);
     }
-    printf("[write] total bytes %ld \n",len_total_bytes);
+    printf("[write] total bytes %ld (%1.2e MB)\n",len_total_bytes,1.0e-6*((double)len_total_bytes));
 
     bytes = 0;
     for (r=0; r<commsize; r++) {
@@ -196,7 +196,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
     if (!skip_header) {
       /* read header */
       fread(&len_total_bytes,sizeof(long int),1,fp);
-      printf("[read] total bytes = %ld\n",len_total_bytes);
+      printf("[read] total bytes = %ld (%1.2e MB)\n",len_total_bytes,1.0e-6*((double)len_total_bytes));
     }
     //printf("[read] total len = %ld\n",len_total_bytes/size);
   }
