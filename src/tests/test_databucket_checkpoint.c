@@ -1,5 +1,9 @@
 
-static const char help[] = "Test checkpointing functionality of DataBucket.\n";
+static const char help[] = "Test checkpointing (save/load) functionality of DataBucket.\n"
+"Options:\n"
+"  -nqp <n> : number of quadrature points\n"
+"  -view_data : boolean indicating quadrature data will be written to stdout\n"
+"  -load_db : boolean indicating a data bucket will be loaded from a file\n";
 
 #include <ptatin3d.h>
 #include <ptatin_init.h>
