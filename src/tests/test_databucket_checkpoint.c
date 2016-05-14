@@ -1,8 +1,10 @@
 
 static const char help[] = "Test checkpointing functionality of DataBucket.\n";
 
-#include "ptatin3d.h"
-#include "ptatin_init.h"
+#include <ptatin3d.h>
+#include <ptatin_init.h>
+#include <data_bucket.h>
+#include <data_bucket_view.h>
 
 typedef struct {
 	long int  pid;
@@ -64,6 +66,7 @@ PetscErrorCode DataBucketCheckpoint(void)
 	DataField  dbField_a,dbField_b;
   long int Lg,Ag;
   PetscReal qval;
+  PetscLogDouble t0,t1;
   
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -110,7 +113,10 @@ PetscErrorCode DataBucketCheckpoint(void)
   DataBucketGetGlobalSizes(PETSC_COMM_WORLD,db,&Lg,NULL,&Ag);
   PetscPrintf(PETSC_COMM_WORLD,"sum = %1.12e : npoints %ld : allocated %ld\n",qval,Lg,Ag);
   
+  PetscTime(&t0);
   ierr = DataBucketView_Native(db,"test_",PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscTime(&t1);
+  PetscPrintf(PETSC_COMM_WORLD,"DataBucketView_Native: %1.4e (sec)\n",t1-t0);
   
   DataBucketDestroy(&db);
   
@@ -125,13 +131,17 @@ PetscErrorCode DataBucketRestart(void)
   PetscErrorCode ierr;
   long int Lg,Ag;
   PetscReal qval;
+  PetscLogDouble t0,t1;
 
   DataBucketCreate(&db);
+  PetscTime(&t0);
   ierr = DataBucketLoad_Native(db,"db.meta",PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscTime(&t1);
   
   ierr = QuadratureEvaluate(db,&qval);CHKERRQ(ierr);
   DataBucketGetGlobalSizes(PETSC_COMM_WORLD,db,&Lg,NULL,&Ag);
   PetscPrintf(PETSC_COMM_WORLD,"sum = %1.12e : npoints %ld : allocated %ld\n",qval,Lg,Ag);
+  PetscPrintf(PETSC_COMM_WORLD,"DataBucketLoad_Native: %1.4e (sec)\n",t1-t0);
 
   DataBucketDestroy(&db);
  
