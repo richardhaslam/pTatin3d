@@ -19,6 +19,7 @@ libptatin3d-y.c += $(call thisdir, \
 			element_type_Q2.c \
 			dmda_element_q1macrop1.c \
 			data_bucket.c \
+            data_bucket_view.c \
 			data_exchanger.c \
 			sub_comm.c \
 			MPntStd_def.c \
