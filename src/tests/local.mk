@@ -25,4 +25,5 @@ ptatin-tests-y.c += $(call thisdir, \
 			ptatin_driver_ic_spm.c \
             test_databucket_checkpoint.c \
             test_ptatin_quantity.c \
+            test_dafe_q2.c \
     )
