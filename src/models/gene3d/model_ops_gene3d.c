@@ -491,7 +491,7 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
     DataBucket db;
     int p,n_mp_points;
     DataField PField_std;
-    int phase_init, phase, phase_index, is_valid;
+    int phase_init, phase, phase_index;
     char map_file[PETSC_MAX_PATH_LEN], *name;
     PetscBool flg,phasefound;
     
