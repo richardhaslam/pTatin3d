@@ -2164,7 +2164,6 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
 PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	char vtkfilename[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
-  int n_points;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -2176,10 +2175,7 @@ PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const
 	if (path) { sprintf(filename,"%s/%s",path,vtkfilename); }
 	else {      sprintf(filename,"./%s",vtkfilename); }
   
-  DataBucketGetSizes(ps->db,&n_points,NULL,NULL);
-  if (n_points > 0) {
-    ierr = PSwarmViewSingleton_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
-  }
+  ierr = PSwarmViewSingleton_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
