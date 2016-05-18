@@ -475,6 +475,62 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAComputeQ2LocalBoundingBox"
+PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
+{
+	DM              cda;
+	Vec             gcoords;
+	PetscReal       *LA_gcoords;
+	PetscInt        nel,nen,e,k;
+	const PetscInt  *el_nidx;
+	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+	PetscReal       xp,yp,zp,min[3],max[3];
+	PetscErrorCode  ierr;
+	
+	PetscFunctionBegin;
+	
+	/* setup for coords */
+	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
+	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+	
+	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+	
+	min[0] = min[1] = min[2] = PETSC_MAX_REAL;
+	max[0] = max[1] = max[2] = PETSC_MIN_REAL;
+	
+	for (e=0;e<nel;e++) {
+		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+
+		for (k=0; k<nen; k++) {
+      xp = el_coords[3*k];
+      yp = el_coords[3*k+1];
+      zp = el_coords[3*k+2];
+      
+      if (xp < min[0]) { min[0] = xp; }
+      if (yp < min[1]) { min[1] = yp; }
+      if (zp < min[2]) { min[2] = zp; }
+      
+      if (xp > max[0]) { max[0] = xp; }
+      if (yp > max[1]) { max[1] = yp; }
+      if (zp > max[2]) { max[2] = zp; }
+    }
+		
+	}
+	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+  gmin[0] = min[0];
+  gmin[1] = min[1];
+  gmin[2] = min[2];
+  
+	gmax[0] = max[0];
+	gmax[1] = max[1];
+	gmax[2] = max[2];
+
+	PetscFunctionReturn(0);
+}
+
 /*
  This should only ever be used for debugging.
  We scatter the vector created from a DMDA into the natural i+j*nx+k*nx*ny ordering,
