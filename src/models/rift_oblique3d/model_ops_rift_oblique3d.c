@@ -1525,7 +1525,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
 
 	/* Dump the PSwarm */
 
-	ierr = PSwarmView(data->pswarm);CHKERRQ(ierr);
+	ierr = PSwarmView(data->pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
 	ierr = PSwarmViewInfo(data->pswarm);CHKERRQ(ierr);
 
 	PetscFunctionReturn(0);

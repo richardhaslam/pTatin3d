@@ -12,14 +12,13 @@
 ##
 ## =================================================================================== 
 #PETSc Option Table entries:
--A11_operator_type 0,1,1,1
--T_ksp_atol 1.0e-4
+-A11_operator_type 0,1
 -T_ksp_monitor
 -T_ksp_rtol 1.0e-10
 -T_ksp_type fgmres
 -T_pc_type bjacobi
 -T_snes_type ksponly
-#-a11_op avx
+-a11_op avx
 -checkpoint_disable
 -data_storage_type perstep
 -dau_nlevels 2
@@ -64,13 +63,13 @@
 -ksp_rtol 1.0e-3
 -ksp_type fgmres
 -log_summary
--model_Rift_oblique3d_beta -45.0
+-model_Rift_oblique3d_beta 45.0
 -model_Rift_oblique3d_buffer 50.0e3
 -model_Rift_oblique3d_damage 0.50
 -model_Rift_oblique3d_eps1 0.1
 -model_Rift_oblique3d_eps2 0.5
 -model_Rift_oblique3d_eta_lower_cutoff_global 1.e18
--model_Rift_oblique3d_eta_upper_cutoff_global 1.e27
+-model_Rift_oblique3d_eta_upper_cutoff_global 1.e24
 -model_Rift_oblique3d_etaa 1.0e20
 -model_Rift_oblique3d_etac 1.0e28
 -model_Rift_oblique3d_etam 1.0e21
@@ -79,12 +78,12 @@
 -model_Rift_oblique3d_notch_type 3
 -model_Rift_oblique3d_notch_width 300.0e3
 -model_Rift_oblique3d_vis_bar 1.0e26
--mx 8
--my 4
--mz 8
+-mx 16
+-my 8
+-mz 16
 -newton_its 0
 -nonlinear_driver_v1
--nsteps 10
+-nsteps 100
 -options_left 1
 -output_frequency 2
 -output_path output
@@ -108,4 +107,13 @@
 -stk_velocity_da_refine_hierarchy_y 1
 -stk_velocity_da_refine_hierarchy_z 2
 -stk_velocity_dm_mat_type aij
+
+#SWARM
+-lattice_layout_perturb 0.0
+-passive_pswarm_coord_layout 2
+-passive_pswarm_region_index 1
+-passive_pswarm_box_min 0.0,1.25,0.0
+-passive_pswarm_box_max 5,2.5,5.0
+-passive_pswarm_box_nx 10,5,10
+-passive_pswarm_pressure
 #End of PETSc Option Table entries
