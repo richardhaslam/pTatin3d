@@ -802,7 +802,7 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   PetscMPIInt    rank;
   MPI_Comm       comm;
   PetscInt       ii,jj,kk,c;
-  PetscReal      dx[3],damin[3],damax[3],coor[3];
+  PetscReal      dx[3],damin[3],damax[3],elmin[3],elmax[3],coor[3];
   
   PetscFunctionBegin;
   
@@ -842,15 +842,16 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   dx[1] = (xmax[1]-xmin[1])/((PetscReal)Nxp[1]-1);
   dx[2] = (xmax[2]-xmin[2])/((PetscReal)Nxp[2]-1);
 
-  ierr = DMDAGetLocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
-  ierr = DMDAComputeQ2ElementBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
-  damin[0] -= 1.0e-32;
-  damin[1] -= 1.0e-32;
-  damin[2] -= 1.0e-32;
+  /*ierr = DMDAGetLocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);*/
+  ierr = DMDAComputeQ2ElementBoundingBox(dmv,elmin,elmax);CHKERRQ(ierr);
+  ierr = DMDAComputeQ2LocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
+  damin[0] -= elmin[0] * 1.0e-6;
+  damin[1] -= elmin[1] * 1.0e-6;
+  damin[2] -= elmin[2] * 1.0e-6;
 
-  damax[0] += 1.0e-32;
-  damax[1] += 1.0e-32;
-  damax[2] += 1.0e-32;
+  damax[0] += elmax[0] * 1.0e-6;
+  damax[1] += elmax[1] * 1.0e-6;
+  damax[2] += elmax[2] * 1.0e-6;
 
   c = 0;
   for (kk=0; kk<Nxp[2]; kk++) {
