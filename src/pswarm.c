@@ -39,6 +39,7 @@
 #include <pswarm.h>
 #include <pswarm_impl.h>
 #include <mpiio_blocking.h>
+#include <model_utils.h>
 
 
 PetscClassId PSWARM_CLASSID;
@@ -842,6 +843,14 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   dx[2] = (xmax[2]-xmin[2])/((PetscReal)Nxp[2]-1);
 
   ierr = DMDAGetLocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
+  ierr = DMDAComputeQ2ElementBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
+  damin[0] -= 1.0e-32;
+  damin[1] -= 1.0e-32;
+  damin[2] -= 1.0e-32;
+
+  damax[0] += 1.0e-32;
+  damax[1] += 1.0e-32;
+  damax[2] += 1.0e-32;
 
   c = 0;
   for (kk=0; kk<Nxp[2]; kk++) {
