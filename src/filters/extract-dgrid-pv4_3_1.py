@@ -42,8 +42,14 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 	print('# mesh nodes from base vts file: ' + str(npoints_defmesh))
 
 	if npoints_tracer != npoints_defmesh:
-		print('ERROR: Particle dataset does not contain the same number of points as the base VTS file')
-		sys.exit(1)
+		print('-----------------------------------------------------------------------------------------------')
+		print('WARNING: Particle dataset does not contain the same number of points as the base mesh VTS file')
+		print('WARNING: This likely implies that multiple instances of the same particle have been assigned to multiple MPI-ranks')
+		if npoints_tracer < npoints_defmesh:
+			print('ERROR: The number of particles is less than the number of grid points in your VTS file')
+			print('ERROR: This is an unexplained error - possibly you need to deactivate population control on your passive swarm')
+			print('ERROR: This is an unexplained error - possibly points have left the domain and been deleted <this behaviour is currently the default>')
+			sys.exit(1)
 
 	coord_t = rawdata_tracer.GetPoints()
 	coord_dm = rawdata_defmesh.GetPoints()
