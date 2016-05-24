@@ -919,9 +919,9 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
     for (p=0; p<npoints; p++) {
       long int ii,jj,kk;
       
-      ii = (long int)( (points[p].coor[0] - xmin[0])/ dx[0]);
-      jj = (long int)( (points[p].coor[1] - xmin[1])/ dx[1]);
-      kk = (long int)( (points[p].coor[2] - xmin[2])/ dx[2]);
+      ii = (long int)( (1.0e-12*elmin[0] + points[p].coor[0] - xmin[0])/ dx[0]);
+      jj = (long int)( (1.0e-12*elmin[1] + points[p].coor[1] - xmin[1])/ dx[1]);
+      kk = (long int)( (1.0e-12*elmin[2] + points[p].coor[2] - xmin[2])/ dx[2]);
       
       points[p].pid = ii + jj * Nxp[0] + kk * Nxp[0] * Nxp[1];
     }

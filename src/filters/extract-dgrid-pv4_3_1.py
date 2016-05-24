@@ -107,21 +107,21 @@ def main():
 	if os.path.splitext(infilename)[1] not in ('.vtu','.pvtu'):
 		print('Warning: Input file specified is not a valid VTU or PVTU file')
 		print('Warning: A valid VTU or PVTU file must have the extension .vtu or .pvtu')
-		print('Warning: Found input file: ' + infilename)
+		print('Warning: Found input filename: ' + infilename)
 		optparser.print_help()
 		sys.exit(1)
 
 	if os.path.splitext(inbasefilename)[1] != '.vts':
 		print('Warning: Input base file specified is not a valid VTS file')
 		print('Warning: A valid VTS file must have the extension .vts')
-		print('Warning: Found input file: ' + inbasefilename)
+		print('Warning: Found base filename: ' + inbasefilename)
 		optparser.print_help()
 		sys.exit(1)
 
 	if os.path.splitext(outputfilename)[1] != '.vts':
 		print('Warning: Output file specified is not valid')
 		print('Warning: A valid VTS file must have the extension .vts')
-		print('Warning: Found input file: ' + outputfilename)
+		print('Warning: Found output filename: ' + outputfilename)
 		optparser.print_help()
 		sys.exit(1)
 	
