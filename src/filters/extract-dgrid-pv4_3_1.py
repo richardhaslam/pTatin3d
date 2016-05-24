@@ -14,8 +14,12 @@ import vtk.numpy_interface.dataset_adapter as dsa
 
 
 def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
-	
-	tracer_ug = simple.XMLUnstructuredGridReader( FileName=inputfile )
+
+	if os.path.splitext(inputfile)[1] in ('.vtu'):
+		tracer_ug = simple.XMLUnstructuredGridReader( FileName=inputfile )
+	else:
+		tracer_ug = simple.XMLPartitionedUnstructuredGridReader( FileName=inputfile )
+  
 	tracer_ug.UpdatePipeline()
 	tracer_ug.UpdatePipelineInformation()
 
@@ -38,7 +42,7 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 
 	npoints_defmesh = rawdata_defmesh.GetNumberOfPoints() 
 
-	print('# tracers from input vtu file: ' + str(npoints_tracer))
+	print('# points from input vtu file: ' + str(npoints_tracer))
 	print('# mesh nodes from base vts file: ' + str(npoints_defmesh))
 
 	if npoints_tracer != npoints_defmesh:
@@ -100,9 +104,9 @@ def main():
 	inbasefilename = options.opt_inputbasefile
 	outputfilename = options.opt_outputfile
 
-	if os.path.splitext(infilename)[1] != '.vtu':
-		print('Warning: Input file specified is not a valid VTU file')
-		print('Warning: A valid VTU file must have the extension .vtu')
+	if os.path.splitext(infilename)[1] not in ('.vtu','.pvtu'):
+		print('Warning: Input file specified is not a valid VTU or PVTU file')
+		print('Warning: A valid VTU or PVTU file must have the extension .vtu or .pvtu')
 		print('Warning: Found input file: ' + infilename)
 		optparser.print_help()
 		sys.exit(1)
