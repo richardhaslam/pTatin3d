@@ -80,6 +80,10 @@ libptatin3d-y.c += $(call thisdir, \
 			petsc_utils.c \
 	)
 
+libptatin3d-y.cu += $(call thisdir, \
+			stokes_operators_cuda.cu \
+	)
+
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
 			stokes_operators_avx.c \
 	)
