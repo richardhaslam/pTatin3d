@@ -48,6 +48,14 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[],PetscScalar Yp[]);
 PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,DM dax,PetscScalar xfield[],PetscScalar Yp[]);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+PetscErrorCode MFStokesWrapper_A11_CUDA(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+#ifdef __cplusplus
+}
+#endif
+
 /* MatGetDiagonal wrappers */
 PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScalar Yu[]);
