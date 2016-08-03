@@ -97,6 +97,7 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	ierr = PetscFunctionListAdd(&flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
 #endif
 	ierr = PetscFunctionListAdd(&flist,"cuda",MFStokesWrapper_A11_CUDA);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&flist,"opencl",MFStokesWrapper_A11_OpenCL);CHKERRQ(ierr);
 	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
 	ierr = PetscFunctionListFind(flist,optype,&A11->Wrapper_A11);CHKERRQ(ierr);
 	if (!A11->Wrapper_A11) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
