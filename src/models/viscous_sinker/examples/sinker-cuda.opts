@@ -26,9 +26,9 @@
 -model_viscous_sinker_dz 0.2
 -gbump_amp 0.0
 
--mx 8
--my 8
--mz 8
+-mx 16
+-my 16
+-mz 16
 -nsteps 1
 
 -A11_operator_type 2,0,1
@@ -40,7 +40,7 @@
 -snes_view_once
 # GCR provides true residual vectors at no-cost
 -ksp_type gcr
--ksp_gcr_restart 300
+-ksp_gcr_restart 50
 -ksp_norm_type unpreconditioned
 -pc_type fieldsplit
 -pc_fieldsplit_schur_fact_type lower
