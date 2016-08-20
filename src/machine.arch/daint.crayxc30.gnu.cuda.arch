@@ -1,0 +1,40 @@
+#  -- pTatin Optimization flags --
+#    Operating system: OSX operating system (musashi,tora)
+#    Compiler: gcc,gfortran
+#
+
+export TATIN_CFLAGS_DEBUG       = -std=gnu99 -O0 -g -Wall
+export TATIN_CFLAGS_OPT_a       = -std=gnu99 -O2 -Wstrict-aliasing -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_OPT_b       = -std=gnu99 -O3 -fast -ftree-vectorize -ftree-vectorizer-verbose=4  -Wstrict-aliasing  -fstrict-aliasing -funroll-loops
+
+export TATIN_FFLAGS_DEBUG       = -O0 -ffree-line-length-4000
+export TATIN_FFLAGS_OPT_a       = -O2 -ffree-line-length-4000
+
+export CUDA_NVCC = /opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/bin/nvcc  -I/opt/cray/mpt/7.2.2/gni/mpich2-gnu/48/include
+
+TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety)
+
+#
+#  Select optimized or debug compilation flags
+#
+export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG)
+export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
+
+export LIBZ_LIB = -lz
+export CUDA_LIB = -L/opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/lib64/ -lcudart
+export OPENCL_LIB = -L/opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/lib64/ -lOpenCL
+# export LIBZ_INC = -I/usr/include
+CONFIG_AVX=y
+
+#
+#
+#  -- pTatin external packages --
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+#
+#
+PTATIN_CONTAINS_SPMA = 0
+PTATIN_CONTAINS_FASTSCAPE_V3 = 0
+
+
