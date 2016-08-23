@@ -32,6 +32,7 @@
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
+#include <stokes_operators.h>
 #include <immintrin.h>
 
 #ifndef __FMA__
@@ -214,7 +215,7 @@ static PetscErrorCode QuadratureAction_AVX(const QPntVolCoefStokes *gausspt[],
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_AVX"
-PetscErrorCode MFStokesWrapper_A11_AVX(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;
 	DM cda;

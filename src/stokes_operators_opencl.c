@@ -33,6 +33,7 @@
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
+#include <stokes_operators.h>
 
 #ifdef __APPLE__
 #include <OpenCL/cl.h>
@@ -319,7 +320,7 @@ static const char * opencl_spmv_kernel_sources =
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_OpenCL"
-PetscErrorCode MFStokesWrapper_A11_OpenCL(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;
 	DM cda;

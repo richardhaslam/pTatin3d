@@ -32,6 +32,8 @@
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
+#include <stokes_operators.h>
+
 
 #define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
 #define NEV 4			/* Number of elements over which to vectorize */
@@ -192,7 +194,7 @@ static PetscErrorCode QuadratureAction(const QPntVolCoefStokes *gausspt[],
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_Tensor"
-PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;
 	DM cda;

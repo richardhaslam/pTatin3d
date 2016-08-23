@@ -53,7 +53,7 @@ struct _p_MatA11MF {
 	IS          isUVW; /* Needed for full column space */
 	IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
-	PetscErrorCode (*Wrapper_A11)(Quadrature,DM,PetscScalar[],PetscScalar[]);
+	PetscErrorCode (*Wrapper_A11)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
 };
 
 
