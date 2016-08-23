@@ -1152,7 +1152,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* momentum */
-	ierr = (*ctx->Wrapper_A11)(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	ierr = (*ctx->Wrapper_A11)(ctx,ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
@@ -1221,7 +1221,7 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	/* momentum */
 	switch (low_order_geometry_type) {
 		case 0:
-			ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+			ierr = MFStokesWrapper_A11(ctx,ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 			break;
 
 		case 1:

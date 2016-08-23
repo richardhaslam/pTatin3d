@@ -32,7 +32,7 @@
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
-
+#include <stokes_operators.h>
 
 template< typename T >
 void check(T result, char const *const func, const char *const file, int const line)
@@ -262,7 +262,7 @@ extern "C" {
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_CUDA"
-PetscErrorCode MFStokesWrapper_A11_CUDA(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;
 	DM cda;

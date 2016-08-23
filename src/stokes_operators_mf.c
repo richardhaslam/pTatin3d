@@ -244,7 +244,7 @@ extern void f_matmultmf_stokes_mixedfem3d_b11_(double*,double*, double*,double*,
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11"
-PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
 	PetscInt p,ngp;
