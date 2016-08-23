@@ -57,7 +57,6 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_operators_mf.c \
 			stokes_operators.c \
 			stokes_operators_tensor.c \
-			stokes_operators_opencl.c \
 			quadrature.c \
 			phase_map.c \
 			cartgrid.c \
@@ -81,13 +80,18 @@ libptatin3d-y.c += $(call thisdir, \
 			petsc_utils.c \
 	)
 
-libptatin3d-y.cu += $(call thisdir, \
+libptatin3d-$(CONFIG_CUDA).cu += $(call thisdir, \
 			stokes_operators_cuda.cu \
 	)
 
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
 			stokes_operators_avx.c \
 	)
+
+libptatin3d-$(CONFIG_OPENCL).c += $(call thisdir, \
+			stokes_operators_opencl.c \
+	)
+
 # One file needs special flags.
 $(OBJDIR)/$(call thisdir,ptatin_init.o) : CFLAGS += -DCOMPFLAGS='$(TATIN_CFLAGS)'
 

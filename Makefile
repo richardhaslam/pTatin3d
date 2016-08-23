@@ -26,6 +26,8 @@ CONFIG_FASTSCAPE ?= n
 
 CONFIG_FORTRAN = y
 CONFIG_AVX ?= n
+CONFIG_CUDA ?= n
+CONFIG_OPENCL ?= n
 
 # directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
@@ -100,8 +102,8 @@ else
 endif
 
 # gcc/gfortran style dependency flags; these are set in petscvariables starting with petsc-3.5
-C_DEPFLAGS ?= -MMD -MP
-FC_DEPFLAGS ?= -MMD -MP
+C_DEPFLAGS ?=
+FC_DEPFLAGS ?=
 
 TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)

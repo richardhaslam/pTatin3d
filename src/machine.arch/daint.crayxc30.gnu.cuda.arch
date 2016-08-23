@@ -17,7 +17,7 @@ TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-inc
 #
 #  Select optimized or debug compilation flags
 #
-export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG)
+export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG) -D__CUDA__ -D__OPENCL__
 export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 
 export LIBZ_LIB = -lz
@@ -25,6 +25,8 @@ export CUDA_LIB = -L/opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/lib64/ -lc
 export OPENCL_LIB = -L/opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/lib64/ -lOpenCL
 # export LIBZ_INC = -I/usr/include
 CONFIG_AVX=y
+CONFIG_CUDA=y
+CONFIG_OPENCL=y
 
 #
 #
