@@ -373,8 +373,6 @@ PetscErrorCode MatStokesMFCopy(MatStokesMF A,MatStokesMF *B)
 	Stk->mp    = A->mp;
 	Stk->Mu    = A->Mu;
 	Stk->Mp    = A->Mp;
-	Stk->level = A->level;
-	Stk->ii    = A->ii;
 
 	Stk->u_bclist = A->u_bclist;
 	Stk->p_bclist = A->p_bclist;
@@ -411,8 +409,6 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 	
 	A11->mu    = A->mu;
 	A11->Mu    = A->Mu;
-	A11->level = A->level;
-	A11->ii    = A->ii;
 	
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
@@ -443,8 +439,6 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 	
 	A11->mu    = A->mu;
 	A11->Mu    = A->Mu;
-	A11->level = A->level;
-	A11->ii    = A->ii;
 	
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
