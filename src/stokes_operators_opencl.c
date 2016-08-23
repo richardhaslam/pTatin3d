@@ -29,6 +29,7 @@
 // -*- indent-tabs-mode:t c-basic-offset:8 -*-
 
 #include <assert.h>
+#include <petscsys.h>
 #include <petscfe.h>
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
@@ -40,6 +41,12 @@
 #else
 #include <CL/cl.h>
 #endif
+
+typedef struct _p_MFA11OpenCL *MFA11OpenCL;
+
+struct _p_MFA11OpenCL {
+  PetscObjectState state;
+};
 
 /* OpenCL error checking */
 #define ERROR_CHECKER_CASE(ERRORCODE)  case ERRORCODE: assert("#ERRORCODE");
@@ -317,6 +324,42 @@ static const char * opencl_spmv_kernel_sources =
 "		} \n"
 "	} \n"
 "} \n";
+
+
+#undef __FUNCT__
+#define __FUNCT__ "MFA11SetUp_OpenCL"
+PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf)
+{
+  PetscErrorCode ierr;
+  MFA11OpenCL    ctx;
+
+	PetscFunctionBegin;
+  
+  if (mf->ctx) PetscFunctionReturn(0);
+  
+  ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
+  ctx->state = 0;
+	mf->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MFA11Destroy_OpenCL"
+PetscErrorCode MFA11Destroy_OpenCL(MatA11MF mf)
+{
+  PetscErrorCode ierr;
+  MFA11OpenCL    ctx;
+  
+  PetscFunctionBegin;
+  ctx = mf->ctx;
+  if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"OpenCL MF-SpMV implementation should have a valid context");
+  /* Free internal members */
+  /* Free context */
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  mf->ctx = NULL;
+  
+	PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_OpenCL"

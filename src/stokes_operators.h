@@ -53,6 +53,8 @@ struct _p_MatA11MF {
 	IS          isUVW; /* Needed for full column space */
 	IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
+	PetscObjectState state;
+	PetscBool   is_setup;
 	void        *ctx; /* special context for cuda, opencl, openmp spmv implementations */
 	PetscErrorCode (*SpMVOp_MatMult)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
 	PetscErrorCode (*SpMVOp_SetUp)(MatA11MF);

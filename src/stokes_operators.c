@@ -48,7 +48,9 @@
 */
 
 
+#include "petsc/private/petscimpl.h"
 #include "petsc.h" /*I   "petscmat.h"   I*/
+#include "petscsys.h"
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -82,7 +84,9 @@ PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 #define __FUNCT__ "MatA11MFCreate"
 PetscErrorCode MatA11MFCreate(MatA11MF *B)
 {
-	PetscFunctionList flist = NULL;
+	PetscFunctionList MatMult_flist = NULL;
+	PetscFunctionList SetUp_flist = NULL;
+	PetscFunctionList Destroy_flist = NULL;
 	PetscErrorCode ierr;
 	MatA11MF A11;
 	char optype[64] = "ref";
@@ -91,26 +95,33 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	ierr = PetscMalloc(sizeof(struct _p_MatA11MF),&A11);CHKERRQ(ierr);
 	ierr = PetscMemzero(A11,sizeof(struct _p_MatA11MF));CHKERRQ(ierr);
 
-  A11->ctx = NULL;
+  A11->is_setup       = PETSC_FALSE;
+  A11->ctx            = NULL;
   A11->SpMVOp_MatMult = NULL;
   A11->SpMVOp_SetUp   = NULL;
   A11->SpMVOp_Destroy = NULL;
   
-	ierr = PetscFunctionListAdd(&flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
-	ierr = PetscFunctionListAdd(&flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
 #ifdef __AVX__
-	ierr = PetscFunctionListAdd(&flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
 #endif
 #ifdef __CUDA__
-	ierr = PetscFunctionListAdd(&flist,"cuda",MFStokesWrapper_A11_CUDA);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"cuda",MFStokesWrapper_A11_CUDA);CHKERRQ(ierr);
 #endif
 #ifdef __OPENCL__
-	ierr = PetscFunctionListAdd(&flist,"opencl",MFStokesWrapper_A11_OpenCL);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"opencl",MFStokesWrapper_A11_OpenCL);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&SetUp_flist,"opencl",MFA11SetUp_OpenCL);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&Destroy_flist,"opencl",MFA11Destroy_OpenCL);CHKERRQ(ierr);
 #endif
 	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
-	ierr = PetscFunctionListFind(flist,optype,&A11->SpMVOp_MatMult);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(MatMult_flist,optype,&A11->SpMVOp_MatMult);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(SetUp_flist,optype,&A11->SpMVOp_SetUp);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(Destroy_flist,optype,&A11->SpMVOp_Destroy);CHKERRQ(ierr);
 	if (!A11->SpMVOp_MatMult) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
-	ierr = PetscFunctionListDestroy(&flist);CHKERRQ(ierr);
+	ierr = PetscFunctionListDestroy(&MatMult_flist);CHKERRQ(ierr);
+	ierr = PetscFunctionListDestroy(&SetUp_flist);CHKERRQ(ierr);
+	ierr = PetscFunctionListDestroy(&Destroy_flist);CHKERRQ(ierr);
 	*B = A11;
 	PetscFunctionReturn(0);
 }
@@ -196,6 +207,8 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	
 	PetscFunctionBegin;
 	
+  if (!A11Ctx->is_setup) PetscFunctionReturn(0);
+  
 	A11Ctx->daUVW       = dav;           ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr); 
 	A11Ctx->volQ        = volQ;
 	A11Ctx->u_bclist    = u_bclist;
@@ -228,7 +241,8 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
   }
   
 	A11Ctx->refcnt = 1;
-	
+	A11Ctx->is_setup = PETSC_TRUE;
+  
 	PetscFunctionReturn(0);
 }
 
@@ -439,7 +453,8 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
   }
 
 	A11->refcnt = 1;
-	
+  A11->is_setup = PETSC_TRUE;
+
 	*B = A11;
 	PetscFunctionReturn(0);
 }
@@ -473,6 +488,7 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
   }
 
 	A11->refcnt = 1;
+	A11->is_setup = PETSC_TRUE;
 	
 	*B = A11;
 	PetscFunctionReturn(0);
@@ -1145,6 +1161,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
 //	PetscBool         use_low_order_geometry = PETSC_FALSE;
+	PetscObjectState  state;
 	
   PetscFunctionBegin;
   
@@ -1152,6 +1169,12 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 //	ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  
+  if (!ctx->is_setup) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"MF operator not setup");
+  
+	ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
+	ctx->state = state;
+  
 	dau = ctx->daUVW;
 	
   ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
