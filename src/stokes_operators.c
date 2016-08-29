@@ -207,7 +207,7 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	
 	PetscFunctionBegin;
 	
-  if (!A11Ctx->is_setup) PetscFunctionReturn(0);
+  if (A11Ctx->is_setup) PetscFunctionReturn(0);
   
 	A11Ctx->daUVW       = dav;           ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr); 
 	A11Ctx->volQ        = volQ;
@@ -1749,10 +1749,10 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	
 	PetscFunctionBegin;
 
-	A11->refcnt++;
   if ((A11->refcnt > 1) && (A11->ctx)) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not clear how to safely share MF-SpMV context");
   }
+
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
@@ -1760,7 +1760,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
-	
+	A11->refcnt++;	
 	*A = B;
 	
 	PetscFunctionReturn(0);
@@ -1777,7 +1777,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	
 	PetscFunctionBegin;
 	
-	A11->refcnt++;
   if ((A11->refcnt > 1) && (A11->ctx)) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not clear how to safely share MF-SpMV context");
   }
@@ -1792,8 +1791,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	ierr = DMGetCoordinateDM(A11->daUVW,&dax);CHKERRQ(ierr);
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA11_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
-	
-	
+	A11->refcnt++;	
 	*A = B;
 	
 	PetscFunctionReturn(0);
@@ -1808,10 +1806,10 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 	
 	PetscFunctionBegin;
 	
-	A11->refcnt++;
   if ((A11->refcnt > 1) && (A11->ctx)) {
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not clear how to safely share MF-SpMV context");
   }
+
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
@@ -1821,7 +1819,8 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11);CHKERRQ(ierr);
 	//ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
-	
+
+	 A11->refcnt++;	
 	*A = B;
 	
 	PetscFunctionReturn(0);
