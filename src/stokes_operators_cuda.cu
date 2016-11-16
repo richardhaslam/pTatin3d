@@ -275,6 +275,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 	PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
 
 	PetscFunctionBegin;
+	ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
 	ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
 	for (i=0; i<3; i++) {
 		B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
@@ -298,8 +299,10 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 	ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
 
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
 
     /* Set up CUDA data */
+	ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
     PetscInt *elnidx_u_cuda;
     ierr = cudaMalloc(&elnidx_u_cuda,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
     ierr = cudaMemcpy(elnidx_u_cuda,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
@@ -336,20 +339,28 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
     PetscReal *w_cuda;
     ierr = cudaMalloc(&w_cuda,  3 * 3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
     ierr = cudaMemcpy(w_cuda,w, 3 * 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+    ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
 
     /* CUDA entry point
      *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata
      *  - output: Yu
      */
+	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
     MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/128 + 1, 128>>>(nel,nen_u,elnidx_u_cuda,LA_gcoords_cuda,ufield_cuda,gaussdata_cuda,Yu_premerge_cuda, D_cuda, B_cuda, w_cuda);
+    ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
 
     PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
     PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
     PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 1 quadrature action per element */
 
     /* Read back CUDA data */
+	ierr = PetscLogEventBegin(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
     ierr = cudaMemcpy(Yu_premerge,Yu_premerge_cuda, 3 * nel * NQP * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
 
+	ierr = PetscLogEventBegin(MAT_MultMFA11_merge,0,0,0,0);CHKERRQ(ierr);
     for (e=0; e<nel; e++) {
       for (i=0; i<NQP; i++) {
 		PetscInt E = elnidx_u[nen_u*e+i];
@@ -358,6 +369,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 		}
       }
 	}
+    ierr = PetscLogEventEnd(MAT_MultMFA11_merge,0,0,0,0);CHKERRQ(ierr);
 
 	ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
