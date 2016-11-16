@@ -65,6 +65,11 @@
 #include "stokes_assembly.h"
 
 PetscLogEvent MAT_MultMFA11;
+PetscLogEvent MAT_MultMFA11_setup;
+PetscLogEvent MAT_MultMFA11_copyto;
+PetscLogEvent MAT_MultMFA11_kernel;
+PetscLogEvent MAT_MultMFA11_copyfrom;
+PetscLogEvent MAT_MultMFA11_merge;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatStokesMFCreate"
