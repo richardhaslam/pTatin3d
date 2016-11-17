@@ -113,6 +113,8 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 #endif
 #ifdef __CUDA__
 	ierr = PetscFunctionListAdd(&MatMult_flist,"cuda",MFStokesWrapper_A11_CUDA);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&SetUp_flist,"cuda",MFA11SetUp_CUDA);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&Destroy_flist,"cuda",MFA11Destroy_CUDA);CHKERRQ(ierr);
 #endif
 #ifdef __OPENCL__
 	ierr = PetscFunctionListAdd(&MatMult_flist,"opencl",MFStokesWrapper_A11_OpenCL);CHKERRQ(ierr);
