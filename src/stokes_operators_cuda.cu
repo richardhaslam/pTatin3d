@@ -284,6 +284,12 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
     }
 }
 
+static __global__ void set_zero_CUDA_kernel(PetscScalar *Yu, PetscInt localsize)
+{
+   for (PetscInt i = blockDim.x * blockIdx.x + threadIdx.x; i<localsize; i += blockDim.x * gridDim.x)
+     Yu[i] = 0;
+}
+
 extern "C" {
 
 #undef __FUNCT__
@@ -352,7 +358,6 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     PetscScalar *Yu_cuda;
     ierr = cudaMalloc(&Yu_cuda, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
-    ierr = cudaMemcpy(Yu_cuda,Yu, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
     PetscReal *D_cuda;
     ierr = cudaMalloc(&D_cuda,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
@@ -373,6 +378,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
      *  - output: Yu
      */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+    set_zero_CUDA_kernel<<<256,256>>>(Yu_cuda, localsize);
     MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/128 + 1, 128>>>(nel,nen_u,elnidx_u_cuda,LA_gcoords_cuda,ufield_cuda,gaussdata_cuda,Yu_cuda, D_cuda, B_cuda, w_cuda);
     ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
