@@ -40,6 +40,22 @@ extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;
 extern PetscLogEvent MAT_MultMFA11_merge;
 
+typedef struct _p_MFA11CUDA *MFA11CUDA;
+
+struct _p_MFA11CUDA {
+  PetscObjectState state;
+
+  PetscScalar *ufield;
+  PetscReal   *LA_gcoords;
+  PetscReal   *gaussdata;
+  PetscInt    *elnidx_u;
+  PetscScalar *Yu;
+  PetscReal   *D;
+  PetscReal   *B;
+  PetscReal   *w;
+};
+
+
 template< typename T >
 void check(T result, char const *const func, const char *const file, int const line)
 {
@@ -293,6 +309,79 @@ static __global__ void set_zero_CUDA_kernel(PetscScalar *Yu, PetscInt localsize)
 extern "C" {
 
 #undef __FUNCT__
+#define __FUNCT__ "MFA11SetUp_CUDA"
+PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
+{
+  PetscErrorCode ierr;
+  MFA11CUDA      ctx;
+  PetscReal      x1[3],w1[3],B[3][3],D[3][3],w[NQP];
+  PetscInt       i,j,k;
+
+  PetscFunctionBegin;
+  if (mf->ctx) PetscFunctionReturn(0);
+  ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
+  ctx->state = 0;
+
+  ctx->ufield     = NULL;
+  ctx->LA_gcoords = NULL;
+  ctx->gaussdata  = NULL;
+  ctx->elnidx_u   = NULL;
+  ctx->Yu         = NULL;
+
+  ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
+  for (i=0; i<3; i++) {
+    B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
+    B[i][1] = 1 - PetscSqr(x1[i]);
+    B[i][2] = .5*(PetscSqr(x1[i]) + x1[i]);
+    D[i][0] = x1[i] - .5;
+    D[i][1] = -2*x1[i];
+    D[i][2] = x1[i] + .5;
+  }
+  for (i=0; i<3; i++)
+    for (j=0; j<3; j++)
+      for (k=0; k<3; k++)
+        w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
+
+  ierr = cudaMalloc(&ctx->D,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+  ierr = cudaMemcpy(ctx->D,D, 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+  ierr = cudaMalloc(&ctx->B,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+  ierr = cudaMemcpy(ctx->B,B, 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+  ierr = cudaMalloc(&ctx->w,  3 * 3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+  ierr = cudaMemcpy(ctx->w,w, 3 * 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+  mf->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MFA11Destroy_CUDA"
+PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
+{
+  PetscErrorCode ierr;
+  MFA11CUDA      ctx;
+
+  PetscFunctionBegin;
+  ctx = (MFA11CUDA)mf->ctx;
+  if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"CUDA MF-SpMV implementation should have a valid context");
+  /* Free internal members */
+  ierr = cudaFree(ctx->ufield);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->LA_gcoords);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->gaussdata);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->elnidx_u);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->Yu);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->D);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->B);CUDACHECK(ierr);
+  ierr = cudaFree(ctx->w);CUDACHECK(ierr);
+  /* Free context */
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  mf->ctx = NULL;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_CUDA"
 PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
@@ -300,27 +389,14 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 	DM cda;
 	Vec gcoords;
 	const PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,e,i,j,k,localsize;
+	PetscInt nel,nen_u,e,i,localsize;
 	const PetscInt *elnidx_u;
 	QPntVolCoefStokes *all_gausspoints;
 	const QPntVolCoefStokes *cell_gausspoints;
-	PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
+    MFA11CUDA      cudactx = (MFA11CUDA)mf->ctx;
 
 	PetscFunctionBegin;
 	ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
-	ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
-	for (i=0; i<3; i++) {
-		B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
-		B[i][1] = 1 - PetscSqr(x1[i]);
-		B[i][2] = .5*(PetscSqr(x1[i]) + x1[i]);
-		D[i][0] = x1[i] - .5;
-		D[i][1] = -2*x1[i];
-		D[i][2] = x1[i] + .5;
-	}
-	for (i=0; i<3; i++) {
-		for (j=0; j<3; j++) {
-			for (k=0; k<3; k++) {
-				w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];}}}
 
 	/* setup for coords */
 	ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
@@ -335,41 +411,46 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     /* Set up CUDA data */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
-    PetscInt *elnidx_u_cuda;
-    ierr = cudaMalloc(&elnidx_u_cuda,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
-    ierr = cudaMemcpy(elnidx_u_cuda,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
-    PetscScalar *ufield_cuda;
-    ierr = cudaMalloc(&ufield_cuda,       localsize * sizeof(PetscScalar));CUDACHECK(ierr);
-    ierr = cudaMemcpy(ufield_cuda,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
-
-    PetscReal *LA_gcoords_cuda;
-    ierr = cudaMalloc(&LA_gcoords_cuda,           localsize * sizeof(PetscReal));CUDACHECK(ierr);
-    ierr = cudaMemcpy(LA_gcoords_cuda,LA_gcoords, localsize * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
-    
-    PetscReal *gaussdata_cuda,*gaussdata_host;
-    ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
-    ierr = cudaMalloc(&gaussdata_cuda,nel * NQP * sizeof(PetscReal));CUDACHECK(ierr);
-    for (e=0; e<nel; e++) {
-      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-      for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta;
+    if (!cudactx->elnidx_u) {
+      ierr = cudaMalloc(&cudactx->elnidx_u,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
+      ierr = cudaMemcpy(cudactx->elnidx_u,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
     }
-    ierr = cudaMemcpy(gaussdata_cuda,gaussdata_host, nel * NQP * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
-    PetscScalar *Yu_cuda;
-    ierr = cudaMalloc(&Yu_cuda, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
+    if (!cudactx->ufield) {
+      ierr = cudaMalloc(&cudactx->ufield, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
+    }
+    /* ufield always needs to be copied */
+    ierr = cudaMemcpy(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
-    PetscReal *D_cuda;
-    ierr = cudaMalloc(&D_cuda,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-    ierr = cudaMemcpy(D_cuda,D, 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+    if (!cudactx->LA_gcoords) {
+      ierr = cudaMalloc(&cudactx->LA_gcoords, localsize * sizeof(PetscReal));CUDACHECK(ierr);
+    }
+    
+    if (!cudactx->gaussdata) {
+      ierr = cudaMalloc(&cudactx->gaussdata,nel * NQP * sizeof(PetscReal));CUDACHECK(ierr);
+    }
 
-    PetscReal *B_cuda;
-    ierr = cudaMalloc(&B_cuda,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-    ierr = cudaMemcpy(B_cuda,B, 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+    if (mf->state != cudactx->state) {
+      ierr = cudaMemcpy(cudactx->LA_gcoords,LA_gcoords, localsize * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
-    PetscReal *w_cuda;
-    ierr = cudaMalloc(&w_cuda,  3 * 3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-    ierr = cudaMemcpy(w_cuda,w, 3 * 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+      PetscReal *gaussdata_host;
+      ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
+      for (e=0; e<nel; e++) {
+        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
+        for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta;
+      }
+      ierr = cudaMemcpy(cudactx->gaussdata,gaussdata_host, nel * NQP * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+      ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
+
+      /* Save new state to avoid unnecessary subsequent copies */
+      cudactx->state = mf->state;
+    }
+
+    if (!cudactx->Yu) {
+      ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
+    }
+
     ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
 
@@ -378,8 +459,8 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
      *  - output: Yu
      */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
-    set_zero_CUDA_kernel<<<256,256>>>(Yu_cuda, localsize);
-    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/128 + 1, 128>>>(nel,nen_u,elnidx_u_cuda,LA_gcoords_cuda,ufield_cuda,gaussdata_cuda,Yu_cuda, D_cuda, B_cuda, w_cuda);
+    set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
+    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/128 + 1, 128>>>(nel,nen_u,cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata,cudactx->Yu,cudactx->D,cudactx->B,cudactx->w);
     ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
 
@@ -389,22 +470,10 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     /* Read back CUDA data */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
-    //ierr = cudaMemcpy(Yu_premerge,Yu_premerge_cuda, 3 * nel * NQP * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
-    ierr = cudaMemcpy(Yu,Yu_cuda, localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+    ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
 
 	ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
-    /* clean up */
-    ierr = cudaFree(elnidx_u_cuda);CUDACHECK(ierr);
-    ierr = cudaFree(ufield_cuda);CUDACHECK(ierr);
-    ierr = cudaFree(LA_gcoords_cuda);CUDACHECK(ierr);
-    ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
-    ierr = cudaFree(gaussdata_cuda);CUDACHECK(ierr);
-    ierr = cudaFree(Yu_cuda);CUDACHECK(ierr);
-    ierr = cudaFree(D_cuda);CUDACHECK(ierr);
-    ierr = cudaFree(B_cuda);CUDACHECK(ierr);
-    ierr = cudaFree(w_cuda);CUDACHECK(ierr);
 
 	PetscFunctionReturn(0);
 }
