@@ -154,8 +154,8 @@ static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,Pe
 	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
     a = id_in_warp / 9;
     ji = id_in_warp % 9;
-	for (k=0; k<3; k++) {
-		for (l=0; l<3; l++) {
+	for (l=0; l<3; l++) {
+		for (k=0; k<3; k++) {
 			//for (a=0; a<3; a++) {
 				//for (ji=0; ji<9; ji++) {
 					y[l] += T[a][k] * v[warp_in_block][l][k*9+ji];
@@ -193,15 +193,14 @@ static __device__ void JacobianInvert(PetscScalar dx[3][3],PetscScalar &dxdet)
 		dxdet = det;
 }
 
-static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
+static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
 				       PetscScalar const dx[3][3],
-				       PetscScalar const & dxdet,
-				       PetscReal const w[Q2_NODES_PER_EL_3D],
+				       PetscScalar dxdet,
+				       PetscReal w,
 				       PetscScalar const du[3][3],
 				       PetscScalar dv[3][3])
 {
 	PetscInt l,k;
-    PetscInt id_in_warp = threadIdx.x % 32;
 
 		PetscScalar Du[6],Dv[6]; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
 
@@ -219,7 +218,7 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 		Du[5] = 0.5*(dux[1][2] + dux[2][1]);
 
 		for (k=0; k<6; k++) { /* Stress is coefficient of test function */
-			Dv[k] = 2 * gaussdata_eta[id_in_warp] * Du[k];
+			Dv[k] = 2 * gaussdata_eta * Du[k];
 		}
 
 		PetscScalar dvx[3][3];
@@ -235,7 +234,7 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 
 		for (l=0; l<3; l++) { // fields
 			for (k=0; k<3; k++) { // directions
-				dv[k][l] = w[id_in_warp] * dxdet * (dvx[0][l] * dx[0][k] + dvx[1][l] * dx[1][k] + dvx[2][l] * dx[2][k]);
+				dv[k][l] = w * dxdet * (dvx[0][l] * dx[0][k] + dvx[1][l] * dx[1][k] + dvx[2][l] * dx[2][k]);
 			}
 		}
 }
@@ -243,33 +242,15 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata,PetscScalar *Yu,
                                                           PetscReal const *D_global,PetscReal const *B_global,PetscReal const *w_global)
 {
-	PetscScalar elu[3],elx[3],elv[3];
-	PetscScalar dx[3][3],du[3][3],dv[3][3];
+	PetscScalar el_uxv[3]; // unifies elu, elx, elv
+	PetscScalar dx[3][3]={0},du[3][3]={0},dv[3][3]={0};
     PetscScalar dxdet = 0;
 	PetscInt i,j,l;
     PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
-    PetscInt warp_in_block = threadIdx.x / 32;
     PetscInt id_in_warp = threadIdx.x % 32;
-    __shared__ PetscReal D[3*3], B[3*3], w[NQP];
+    PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
+    __shared__ PetscReal D[3*3], B[3*3];
 
-	if (id_in_warp < Q2_NODES_PER_EL_3D) {
-		PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
-		for (l=0; l<3; l++) {
-			elx[l] = LA_gcoords[3*E+l];
-			elu[l] = ufield[3*E+l];
-            elv[l] = 0;
-		}
-        for (i=0; i<3; i++) {
-          for (j=0; j<3; j++) {
-            dx[i][j] = 0;
-            du[i][j] = 0;
-            dv[i][j] = 0;
-          }
-        }
-	}
-
-
-    if (threadIdx.x < 27) w[threadIdx.x] = w_global[threadIdx.x];
     if (threadIdx.x <  9) B[threadIdx.x] = B_global[threadIdx.x];
     if (threadIdx.x <  9) D[threadIdx.x] = D_global[threadIdx.x];
 
@@ -280,25 +261,27 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 
 	if (id_in_warp < Q2_NODES_PER_EL_3D) {
 
-	  TensorContract(D,B,B,GRAD,elx,dx[0]);
-	  TensorContract(B,D,B,GRAD,elx,dx[1]);
-	  TensorContract(B,B,D,GRAD,elx,dx[2]);
+      for (l=0; l<3; l++) el_uxv[l] = LA_gcoords[3*E+l];
+	  TensorContract(D,B,B,GRAD,el_uxv,dx[0]);
+	  TensorContract(B,D,B,GRAD,el_uxv,dx[1]);
+	  TensorContract(B,B,D,GRAD,el_uxv,dx[2]);
 
 	  JacobianInvert(dx,dxdet);
 
-	  TensorContract(D,B,B,GRAD,elu,du[0]);
-	  TensorContract(B,D,B,GRAD,elu,du[1]);
-	  TensorContract(B,B,D,GRAD,elu,du[2]);
+      for (l=0; l<3; l++) el_uxv[l] = ufield[3*E+l];
+	  TensorContract(D,B,B,GRAD,el_uxv,du[0]);
+	  TensorContract(B,D,B,GRAD,el_uxv,du[1]);
+	  TensorContract(B,B,D,GRAD,el_uxv,du[2]);
 
-	  QuadratureAction(gaussdata + elidx*NQP,dx,dxdet,w,du,dv);
+	  QuadratureAction(gaussdata[elidx*NQP + id_in_warp],dx,dxdet,w_global[id_in_warp],du,dv);
 
-	  TensorContract(D,B,B,GRAD_TRANSPOSE,dv[0],elv);
-	  TensorContract(B,D,B,GRAD_TRANSPOSE,dv[1],elv);
-	  TensorContract(B,B,D,GRAD_TRANSPOSE,dv[2],elv);
+      for (l=0; l<3; l++) el_uxv[l] = 0;
+	  TensorContract(D,B,B,GRAD_TRANSPOSE,dv[0],el_uxv);
+	  TensorContract(B,D,B,GRAD_TRANSPOSE,dv[1],el_uxv);
+	  TensorContract(B,B,D,GRAD_TRANSPOSE,dv[2],el_uxv);
 
-      PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
       for (l=0; l<3; l++) {
-        atomicAdd_double(Yu + 3*E+l, elv[l]);
+        atomicAdd_double(Yu + 3*E+l, el_uxv[l]);
       }
     }
 }
