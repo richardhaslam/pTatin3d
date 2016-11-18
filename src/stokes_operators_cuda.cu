@@ -100,69 +100,46 @@ __device__ double atomicAdd_double(double* address, double val)
  */
 static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,PetscReal const *Tf,GradMode gmode,PetscReal const x[],PetscReal y[])
 {
-  PetscReal R[3][3],S[3][3],T[3][3];
-  __shared__ PetscReal u[WARPS_PER_BLOCK][3][NQP],v[WARPS_PER_BLOCK][3][NQP];
-  PetscInt i,j,k,l,kj,ji,a,b,c;
+  PetscReal R[3],S[3],T[3];
+  __shared__ PetscReal u[WARPS_PER_BLOCK][NQP],v[WARPS_PER_BLOCK][NQP];
+
+  PetscInt k3,kj,ji,a,b,c;
   PetscInt warp_in_block = threadIdx.x / 32;
   PetscInt id_in_warp = threadIdx.x % 32;
+  PetscReal result;
 
-  for (j=0; j<3; j++) {
-    for (i=0; i<3; i++) {
-      R[i][j] = (gmode == GRAD ? Rf[3*i+j] : Rf[3*j + i]);
-      S[i][j] = (gmode == GRAD ? Sf[3*i+j] : Sf[3*j + i]);
-      T[i][j] = (gmode == GRAD ? Tf[3*i+j] : Tf[3*j + i]);
-    }
+  c = id_in_warp % 3;
+  b = (id_in_warp % 9) / 3;
+  a = id_in_warp / 9;
+  for (PetscInt j=0; j<3; j++) {
+      R[j] = (gmode == GRAD ? Rf[3*c+j] : Rf[3*j + c]);
+      S[j] = (gmode == GRAD ? Sf[3*b+j] : Sf[3*j + b]);
+      T[j] = (gmode == GRAD ? Tf[3*a+j] : Tf[3*j + a]);
   }
 
-	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
-    for (i=0; i<3; ++i) {
-      u[warp_in_block][i][id_in_warp] = 0;
-      v[warp_in_block][i][id_in_warp] = x[i];
-    }
+  kj = id_in_warp / 3;
+  k3 = (id_in_warp / 9) * 3;
+  ji = id_in_warp % 9;
 
-    kj = id_in_warp / 3;
-    c = id_in_warp % 3;
-	for (l=0; l<3; l++) {
-		//for (kj=0; kj<9; kj++) {
-			for (i=0; i<3; i++) {
-				//for (c=0; c<3; c++) {
-					u[warp_in_block][l][id_in_warp] += R[c][i] * v[warp_in_block][l][kj*3+i];
-				//}
-			}
-		//}
-	}
+  for (PetscInt l=0; l<3; l++) {
+
+	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
+    result = 0;
+    v[warp_in_block][id_in_warp] = x[l];
+    for (PetscInt i=0; i<3; i++) result += R[i] * v[warp_in_block][kj*3+i];
+    u[warp_in_block][id_in_warp] = result;
 
 	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
-    for (i=0; i<3; ++i) {
-      v[warp_in_block][i][id_in_warp] = 0;
-    }
-    k = id_in_warp / 9;
-    b = (id_in_warp % 9) / 3;
-    c = id_in_warp % 3;
-	for (l=0; l<3; l++) {
-		//for (k=0; k<3; k++) {
-			for (j=0; j<3; j++) {
-				//for (c=0; c<3; c++) {
-					//for (b=0; b<3; b++) {
-						v[warp_in_block][l][id_in_warp] += S[b][j] * u[warp_in_block][l][(k*3+j)*3+c];
-					//}
-				//}
-			}
-		//}
-	}
+    result = 0;
+    for (PetscInt j=0; j<3; j++) result += S[j] * u[warp_in_block][(k3+j)*3+c];
+    v[warp_in_block][id_in_warp] = result;
 
 	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
-    a = id_in_warp / 9;
-    ji = id_in_warp % 9;
-	for (l=0; l<3; l++) {
-		for (k=0; k<3; k++) {
-			//for (a=0; a<3; a++) {
-				//for (ji=0; ji<9; ji++) {
-					y[l] += T[a][k] * v[warp_in_block][l][k*9+ji];
-				//}
-			//}
-		}
-	}
+    result = 0;
+	for (PetscInt k=0; k<3; k++) result += T[k] * v[warp_in_block][k*9+ji];
+    y[l] += result;
+
+  } // for l
 }
 
 static __device__ void JacobianInvert(PetscScalar dx[3][3],PetscScalar &dxdet)
@@ -245,7 +222,7 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 	PetscScalar el_uxv[3]; // unifies elu, elx, elv
 	PetscScalar dx[3][3]={0},du[3][3]={0},dv[3][3]={0};
     PetscScalar dxdet = 0;
-	PetscInt i,j,l;
+	PetscInt l;
     PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
     PetscInt id_in_warp = threadIdx.x % 32;
     PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
