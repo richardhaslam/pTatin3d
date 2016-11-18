@@ -98,7 +98,7 @@ __device__ double atomicAdd_double(double* address, double val)
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
-static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,PetscReal const *Tf,GradMode gmode,PetscReal const x[][NQP],PetscReal y[][NQP])
+static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,PetscReal const *Tf,GradMode gmode,PetscReal const x[],PetscReal y[])
 {
   PetscReal R[3][3],S[3][3],T[3][3];
   __shared__ PetscReal u[WARPS_PER_BLOCK][3][NQP],v[WARPS_PER_BLOCK][3][NQP];
@@ -115,8 +115,10 @@ static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,Pe
   }
 
 	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
-    for (i=0; i<3; ++i)
+    for (i=0; i<3; ++i) {
       u[warp_in_block][i][id_in_warp] = 0;
+      v[warp_in_block][i][id_in_warp] = x[i];
+    }
 
     kj = id_in_warp / 3;
     c = id_in_warp % 3;
@@ -124,7 +126,7 @@ static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,Pe
 		//for (kj=0; kj<9; kj++) {
 			for (i=0; i<3; i++) {
 				//for (c=0; c<3; c++) {
-					u[warp_in_block][l][id_in_warp] += R[c][i] * x[l][kj*3+i];
+					u[warp_in_block][l][id_in_warp] += R[c][i] * v[warp_in_block][l][kj*3+i];
 				//}
 			}
 		//}
@@ -156,23 +158,22 @@ static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,Pe
 		for (l=0; l<3; l++) {
 			//for (a=0; a<3; a++) {
 				//for (ji=0; ji<9; ji++) {
-					y[l][id_in_warp] += T[a][k] * v[warp_in_block][l][k*9+ji];
+					y[l] += T[a][k] * v[warp_in_block][l][k*9+ji];
 				//}
 			//}
 		}
 	}
 }
 
-static __device__ void JacobianInvert(PetscScalar dx[3][3][NQP],PetscScalar dxdet[NQP])
+static __device__ void JacobianInvert(PetscScalar dx[3][3],PetscScalar &dxdet)
 {
 	PetscInt j,k;
-    PetscInt id_in_warp = threadIdx.x % 32;
 
 		PetscScalar a[3][3];
 		PetscScalar b0,b3,b6,det,idet;
 		for (j=0; j<3; j++) {
 			for (k=0; k<3; k++) {
-				a[j][k] = dx[j][k][id_in_warp];
+				a[j][k] = dx[j][k];
 			}
 		}
 		b0 =  (a[1][1]*a[2][2] - a[2][1]*a[1][2]);
@@ -180,24 +181,24 @@ static __device__ void JacobianInvert(PetscScalar dx[3][3][NQP],PetscScalar dxde
 		b6 =  (a[1][0]*a[2][1] - a[2][0]*a[1][1]);
 		det = a[0][0]*b0 + a[0][1]*b3 + a[0][2]*b6;
 		idet = 1.0 / det;
-		dx[0][0][id_in_warp] =  idet*b0;
-		dx[0][1][id_in_warp] = -idet*(a[0][1]*a[2][2] - a[2][1]*a[0][2]);
-		dx[0][2][id_in_warp] =  idet*(a[0][1]*a[1][2] - a[1][1]*a[0][2]);
-		dx[1][0][id_in_warp] =  idet*b3;
-		dx[1][1][id_in_warp] =  idet*(a[0][0]*a[2][2] - a[2][0]*a[0][2]);
-		dx[1][2][id_in_warp] = -idet*(a[0][0]*a[1][2] - a[1][0]*a[0][2]);
-		dx[2][0][id_in_warp] =  idet*b6;
-		dx[2][1][id_in_warp] = -idet*(a[0][0]*a[2][1] - a[2][0]*a[0][1]);
-		dx[2][2][id_in_warp] =  idet*(a[0][0]*a[1][1] - a[1][0]*a[0][1]);
-		dxdet[id_in_warp] =  det;
+		dx[0][0] =  idet*b0;
+		dx[0][1] = -idet*(a[0][1]*a[2][2] - a[2][1]*a[0][2]);
+		dx[0][2] =  idet*(a[0][1]*a[1][2] - a[1][1]*a[0][2]);
+		dx[1][0] =  idet*b3;
+		dx[1][1] =  idet*(a[0][0]*a[2][2] - a[2][0]*a[0][2]);
+		dx[1][2] = -idet*(a[0][0]*a[1][2] - a[1][0]*a[0][2]);
+		dx[2][0] =  idet*b6;
+		dx[2][1] = -idet*(a[0][0]*a[2][1] - a[2][0]*a[0][1]);
+		dx[2][2] =  idet*(a[0][0]*a[1][1] - a[1][0]*a[0][1]);
+		dxdet = det;
 }
 
 static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
-				       PetscScalar const dx[3][3][Q2_NODES_PER_EL_3D],
-				       PetscScalar const dxdet[Q2_NODES_PER_EL_3D],
+				       PetscScalar const dx[3][3],
+				       PetscScalar const & dxdet,
 				       PetscReal const w[Q2_NODES_PER_EL_3D],
-				       PetscScalar const du[3][3][Q2_NODES_PER_EL_3D],
-				       PetscScalar dv[3][3][Q2_NODES_PER_EL_3D])
+				       PetscScalar const du[3][3],
+				       PetscScalar dv[3][3])
 {
 	PetscInt l,k;
     PetscInt id_in_warp = threadIdx.x % 32;
@@ -207,7 +208,7 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 		PetscScalar dux[3][3];
 		for (l=0; l<3; l++) { // fields
 			for (k=0; k<3; k++) { // directions
-				dux[k][l] = du[0][l][id_in_warp] * dx[k][0][id_in_warp] + du[1][l][id_in_warp] * dx[k][1][id_in_warp] + du[2][l][id_in_warp] * dx[k][2][id_in_warp];
+				dux[k][l] = du[0][l] * dx[k][0] + du[1][l] * dx[k][1] + du[2][l] * dx[k][2];
 			}
 		}
 		Du[0] = dux[0][0];
@@ -234,7 +235,7 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 
 		for (l=0; l<3; l++) { // fields
 			for (k=0; k<3; k++) { // directions
-				dv[k][l][id_in_warp] = w[id_in_warp] * dxdet[id_in_warp] * (dvx[0][l] * dx[0][k][id_in_warp] + dvx[1][l] * dx[1][k][id_in_warp] + dvx[2][l] * dx[2][k][id_in_warp]);
+				dv[k][l] = w[id_in_warp] * dxdet * (dvx[0][l] * dx[0][k] + dvx[1][l] * dx[1][k] + dvx[2][l] * dx[2][k]);
 			}
 		}
 }
@@ -242,8 +243,9 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata,PetscScalar *Yu,
                                                           PetscReal const *D_global,PetscReal const *B_global,PetscReal const *w_global)
 {
-	__shared__ PetscScalar elu[WARPS_PER_BLOCK][3][Q2_NODES_PER_EL_3D],elx[WARPS_PER_BLOCK][3][Q2_NODES_PER_EL_3D],elv[WARPS_PER_BLOCK][3][Q2_NODES_PER_EL_3D];
-	__shared__ PetscScalar dx[WARPS_PER_BLOCK][3][3][NQP],dxdet[WARPS_PER_BLOCK][NQP],du[WARPS_PER_BLOCK][3][3][NQP],dv[WARPS_PER_BLOCK][3][3][NQP];
+	PetscScalar elu[3],elx[3],elv[3];
+	PetscScalar dx[3][3],du[3][3],dv[3][3];
+    PetscScalar dxdet = 0;
 	PetscInt i,j,l;
     PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
     PetscInt warp_in_block = threadIdx.x / 32;
@@ -253,15 +255,15 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 	if (id_in_warp < Q2_NODES_PER_EL_3D) {
 		PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
 		for (l=0; l<3; l++) {
-			elx[warp_in_block][l][id_in_warp] = LA_gcoords[3*E+l];
-			elu[warp_in_block][l][id_in_warp] = ufield[3*E+l];
-            elv[warp_in_block][l][id_in_warp] = 0;
+			elx[l] = LA_gcoords[3*E+l];
+			elu[l] = ufield[3*E+l];
+            elv[l] = 0;
 		}
         for (i=0; i<3; i++) {
           for (j=0; j<3; j++) {
-            dx[warp_in_block][i][j][id_in_warp] = 0;
-            du[warp_in_block][i][j][id_in_warp] = 0;
-            dv[warp_in_block][i][j][id_in_warp] = 0;
+            dx[i][j] = 0;
+            du[i][j] = 0;
+            dv[i][j] = 0;
           }
         }
 	}
@@ -278,25 +280,25 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 
 	if (id_in_warp < Q2_NODES_PER_EL_3D) {
 
-	  TensorContract(D,B,B,GRAD,elx[warp_in_block],dx[warp_in_block][0]);
-	  TensorContract(B,D,B,GRAD,elx[warp_in_block],dx[warp_in_block][1]);
-	  TensorContract(B,B,D,GRAD,elx[warp_in_block],dx[warp_in_block][2]);
+	  TensorContract(D,B,B,GRAD,elx,dx[0]);
+	  TensorContract(B,D,B,GRAD,elx,dx[1]);
+	  TensorContract(B,B,D,GRAD,elx,dx[2]);
 
-	  JacobianInvert(dx[warp_in_block],dxdet[warp_in_block]);
+	  JacobianInvert(dx,dxdet);
 
-	  TensorContract(D,B,B,GRAD,elu[warp_in_block],du[warp_in_block][0]);
-	  TensorContract(B,D,B,GRAD,elu[warp_in_block],du[warp_in_block][1]);
-	  TensorContract(B,B,D,GRAD,elu[warp_in_block],du[warp_in_block][2]);
+	  TensorContract(D,B,B,GRAD,elu,du[0]);
+	  TensorContract(B,D,B,GRAD,elu,du[1]);
+	  TensorContract(B,B,D,GRAD,elu,du[2]);
 
-	  QuadratureAction(gaussdata + elidx*NQP,dx[warp_in_block],dxdet[warp_in_block],w,du[warp_in_block],dv[warp_in_block]);
+	  QuadratureAction(gaussdata + elidx*NQP,dx,dxdet,w,du,dv);
 
-	  TensorContract(D,B,B,GRAD_TRANSPOSE,dv[warp_in_block][0],elv[warp_in_block]);
-	  TensorContract(B,D,B,GRAD_TRANSPOSE,dv[warp_in_block][1],elv[warp_in_block]);
-	  TensorContract(B,B,D,GRAD_TRANSPOSE,dv[warp_in_block][2],elv[warp_in_block]);
+	  TensorContract(D,B,B,GRAD_TRANSPOSE,dv[0],elv);
+	  TensorContract(B,D,B,GRAD_TRANSPOSE,dv[1],elv);
+	  TensorContract(B,B,D,GRAD_TRANSPOSE,dv[2],elv);
 
       PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
       for (l=0; l<3; l++) {
-        atomicAdd_double(Yu + 3*E+l, elv[warp_in_block][l][id_in_warp]);
+        atomicAdd_double(Yu + 3*E+l, elv[l]);
       }
     }
 }
