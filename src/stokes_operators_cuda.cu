@@ -72,6 +72,9 @@ void check(T result, char const *const func, const char *const file, int const l
 
 #define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
 
+#define WARPS_PER_BLOCK    4
+
+
 typedef enum {
 	GRAD,
 	GRAD_TRANSPOSE
@@ -97,76 +100,79 @@ __device__ double atomicAdd_double(double* address, double val)
  */
 static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,PetscReal const *Tf,GradMode gmode,PetscReal const x[][NQP],PetscReal y[][NQP])
 {
-	PetscReal R[3][3],S[3][3],T[3][3];
-	PetscReal u[3][NQP],v[3][NQP];
-    PetscInt i,j,k,l,kj,ji,a,b,c;
+  PetscReal R[3][3],S[3][3],T[3][3];
+  __shared__ PetscReal u[WARPS_PER_BLOCK][3][NQP],v[WARPS_PER_BLOCK][3][NQP];
+  PetscInt i,j,k,l,kj,ji,a,b,c;
+  PetscInt warp_in_block = threadIdx.x / 32;
+  PetscInt id_in_warp = threadIdx.x % 32;
 
-	for (j=0; j<3; j++) {
-		for (i=0; i<3; i++) {
-			R[i][j] = i<3 ? (gmode == GRAD ? Rf[3*i+j] : Rf[3*j + i]) : 0.;
-			S[i][j] = i<3 ? (gmode == GRAD ? Sf[3*i+j] : Sf[3*j + i]) : 0.;
-			T[i][j] = i<3 ? (gmode == GRAD ? Tf[3*i+j] : Tf[3*j + i]) : 0.;
-		}
-	}
+  for (j=0; j<3; j++) {
+    for (i=0; i<3; i++) {
+      R[i][j] = (gmode == GRAD ? Rf[3*i+j] : Rf[3*j + i]);
+      S[i][j] = (gmode == GRAD ? Sf[3*i+j] : Sf[3*j + i]);
+      T[i][j] = (gmode == GRAD ? Tf[3*i+j] : Tf[3*j + i]);
+    }
+  }
 
 	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
-    for (i=0; i<3; ++i) {
-      for (j=0; j<NQP; ++j) {
-          u[i][j] = 0;
-      }
-    }
+    for (i=0; i<3; ++i)
+      u[warp_in_block][i][id_in_warp] = 0;
+
+    kj = id_in_warp / 3;
+    c = id_in_warp % 3;
 	for (l=0; l<3; l++) {
-		for (kj=0; kj<9; kj++) {
+		//for (kj=0; kj<9; kj++) {
 			for (i=0; i<3; i++) {
-				for (c=0; c<3; c++) {
-					u[l][kj*3+c] += R[c][i] * x[l][kj*3+i];
-				}
+				//for (c=0; c<3; c++) {
+					u[warp_in_block][l][id_in_warp] += R[c][i] * x[l][kj*3+i];
+				//}
 			}
-		}
+		//}
 	}
 
 	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
     for (i=0; i<3; ++i) {
-      for (j=0; j<NQP; ++j) {
-        v[i][j] = 0;
-      }
+      v[warp_in_block][i][id_in_warp] = 0;
     }
+    k = id_in_warp / 9;
+    b = (id_in_warp % 9) / 3;
+    c = id_in_warp % 3;
 	for (l=0; l<3; l++) {
-		for (k=0; k<3; k++) {
+		//for (k=0; k<3; k++) {
 			for (j=0; j<3; j++) {
-				for (c=0; c<3; c++) {
-					for (b=0; b<3; b++) {
-						v[l][(k*3+b)*3+c] += S[b][j] * u[l][(k*3+j)*3+c];
-					}
-				}
+				//for (c=0; c<3; c++) {
+					//for (b=0; b<3; b++) {
+						v[warp_in_block][l][id_in_warp] += S[b][j] * u[warp_in_block][l][(k*3+j)*3+c];
+					//}
+				//}
 			}
-		}
+		//}
 	}
 
 	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
+    a = id_in_warp / 9;
+    ji = id_in_warp % 9;
 	for (k=0; k<3; k++) {
 		for (l=0; l<3; l++) {
-			for (a=0; a<3; a++) {
-				for (ji=0; ji<9; ji++) {
-					y[l][a*9+ji] += T[a][k] * v[l][k*9+ji];
-				}
-			}
+			//for (a=0; a<3; a++) {
+				//for (ji=0; ji<9; ji++) {
+					y[l][id_in_warp] += T[a][k] * v[warp_in_block][l][k*9+ji];
+				//}
+			//}
 		}
 	}
-	//PetscLogFlops(3*NQP*(6+6+6));
-	//PetscFunctionReturn(0);
 }
 
 static __device__ void JacobianInvert(PetscScalar dx[3][3][NQP],PetscScalar dxdet[NQP])
 {
-	PetscInt i,j,k;
+	PetscInt j,k;
+    PetscInt id_in_warp = threadIdx.x % 32;
 
-	for (i=0; i<NQP; i++) {
 		PetscScalar a[3][3];
 		PetscScalar b0,b3,b6,det,idet;
 		for (j=0; j<3; j++) {
 			for (k=0; k<3; k++) {
-				a[j][k] = dx[j][k][i];
+				a[j][k] = dx[j][k][id_in_warp];
 			}
 		}
 		b0 =  (a[1][1]*a[2][2] - a[2][1]*a[1][2]);
@@ -174,19 +180,16 @@ static __device__ void JacobianInvert(PetscScalar dx[3][3][NQP],PetscScalar dxde
 		b6 =  (a[1][0]*a[2][1] - a[2][0]*a[1][1]);
 		det = a[0][0]*b0 + a[0][1]*b3 + a[0][2]*b6;
 		idet = 1.0 / det;
-		dx[0][0][i] =  idet*b0;
-		dx[0][1][i] = -idet*(a[0][1]*a[2][2] - a[2][1]*a[0][2]);
-		dx[0][2][i] =  idet*(a[0][1]*a[1][2] - a[1][1]*a[0][2]);
-		dx[1][0][i] =  idet*b3;
-		dx[1][1][i] =  idet*(a[0][0]*a[2][2] - a[2][0]*a[0][2]);
-		dx[1][2][i] = -idet*(a[0][0]*a[1][2] - a[1][0]*a[0][2]);
-		dx[2][0][i] =  idet*b6;
-		dx[2][1][i] = -idet*(a[0][0]*a[2][1] - a[2][0]*a[0][1]);
-		dx[2][2][i] =  idet*(a[0][0]*a[1][1] - a[1][0]*a[0][1]);
-		dxdet[i] =  det;
-	}
-	//PetscLogFlops(NQP*NEV*(14 + 1/* division */ + 27));
-	//return 0;
+		dx[0][0][id_in_warp] =  idet*b0;
+		dx[0][1][id_in_warp] = -idet*(a[0][1]*a[2][2] - a[2][1]*a[0][2]);
+		dx[0][2][id_in_warp] =  idet*(a[0][1]*a[1][2] - a[1][1]*a[0][2]);
+		dx[1][0][id_in_warp] =  idet*b3;
+		dx[1][1][id_in_warp] =  idet*(a[0][0]*a[2][2] - a[2][0]*a[0][2]);
+		dx[1][2][id_in_warp] = -idet*(a[0][0]*a[1][2] - a[1][0]*a[0][2]);
+		dx[2][0][id_in_warp] =  idet*b6;
+		dx[2][1][id_in_warp] = -idet*(a[0][0]*a[2][1] - a[2][0]*a[0][1]);
+		dx[2][2][id_in_warp] =  idet*(a[0][0]*a[1][1] - a[1][0]*a[0][1]);
+		dxdet[id_in_warp] =  det;
 }
 
 static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
@@ -196,15 +199,15 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 				       PetscScalar const du[3][3][Q2_NODES_PER_EL_3D],
 				       PetscScalar dv[3][3][Q2_NODES_PER_EL_3D])
 {
-	PetscInt i,l,k;
+	PetscInt l,k;
+    PetscInt id_in_warp = threadIdx.x % 32;
 
-	for (i=0; i<NQP; i++) {
 		PetscScalar Du[6],Dv[6]; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
 
 		PetscScalar dux[3][3];
 		for (l=0; l<3; l++) { // fields
 			for (k=0; k<3; k++) { // directions
-				dux[k][l] = du[0][l][i] * dx[k][0][i] + du[1][l][i] * dx[k][1][i] + du[2][l][i] * dx[k][2][i];
+				dux[k][l] = du[0][l][id_in_warp] * dx[k][0][id_in_warp] + du[1][l][id_in_warp] * dx[k][1][id_in_warp] + du[2][l][id_in_warp] * dx[k][2][id_in_warp];
 			}
 		}
 		Du[0] = dux[0][0];
@@ -215,7 +218,7 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 		Du[5] = 0.5*(dux[1][2] + dux[2][1]);
 
 		for (k=0; k<6; k++) { /* Stress is coefficient of test function */
-			Dv[k] = 2 * gaussdata_eta[i] * Du[k];
+			Dv[k] = 2 * gaussdata_eta[id_in_warp] * Du[k];
 		}
 
 		PetscScalar dvx[3][3];
@@ -231,22 +234,38 @@ static __device__ void QuadratureAction(const PetscScalar *gaussdata_eta,
 
 		for (l=0; l<3; l++) { // fields
 			for (k=0; k<3; k++) { // directions
-				dv[k][l][i] = w[i] * dxdet[i] * (dvx[0][l] * dx[0][k][i] + dvx[1][l] * dx[1][k][i] + dvx[2][l] * dx[2][k][i]);
+				dv[k][l][id_in_warp] = w[id_in_warp] * dxdet[id_in_warp] * (dvx[0][l] * dx[0][k][id_in_warp] + dvx[1][l] * dx[1][k][id_in_warp] + dvx[2][l] * dx[2][k][id_in_warp]);
 			}
 		}
-	}
-	//PetscLogFlops(NQP*(5*9+6+6+6*9));
-	//return 0;
 }
 
 static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata,PetscScalar *Yu,
                                                           PetscReal const *D_global,PetscReal const *B_global,PetscReal const *w_global)
 {
-	PetscScalar elu[3][Q2_NODES_PER_EL_3D]={},elx[3][Q2_NODES_PER_EL_3D]={},elv[3][Q2_NODES_PER_EL_3D];
-	PetscScalar dx[3][3][NQP],dxdet[NQP],du[3][3][NQP],dv[3][3][NQP];
-	PetscInt i,j,k,l;
-    PetscInt elidx = blockDim.x * blockIdx.x + threadIdx.x;
+	__shared__ PetscScalar elu[WARPS_PER_BLOCK][3][Q2_NODES_PER_EL_3D],elx[WARPS_PER_BLOCK][3][Q2_NODES_PER_EL_3D],elv[WARPS_PER_BLOCK][3][Q2_NODES_PER_EL_3D];
+	__shared__ PetscScalar dx[WARPS_PER_BLOCK][3][3][NQP],dxdet[WARPS_PER_BLOCK][NQP],du[WARPS_PER_BLOCK][3][3][NQP],dv[WARPS_PER_BLOCK][3][3][NQP];
+	PetscInt i,j,l;
+    PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
+    PetscInt warp_in_block = threadIdx.x / 32;
+    PetscInt id_in_warp = threadIdx.x % 32;
     __shared__ PetscReal D[3*3], B[3*3], w[NQP];
+
+	if (id_in_warp < Q2_NODES_PER_EL_3D) {
+		PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
+		for (l=0; l<3; l++) {
+			elx[warp_in_block][l][id_in_warp] = LA_gcoords[3*E+l];
+			elu[warp_in_block][l][id_in_warp] = ufield[3*E+l];
+            elv[warp_in_block][l][id_in_warp] = 0;
+		}
+        for (i=0; i<3; i++) {
+          for (j=0; j<3; j++) {
+            dx[warp_in_block][i][j][id_in_warp] = 0;
+            du[warp_in_block][i][j][id_in_warp] = 0;
+            dv[warp_in_block][i][j][id_in_warp] = 0;
+          }
+        }
+	}
+
 
     if (threadIdx.x < 27) w[threadIdx.x] = w_global[threadIdx.x];
     if (threadIdx.x <  9) B[threadIdx.x] = B_global[threadIdx.x];
@@ -257,45 +276,27 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
     if (elidx >= nel)
       return;
 
-	for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-		PetscInt E = elnidx_u[nen_u*elidx+i];
-		for (l=0; l<3; l++) {
-			elx[l][i] = LA_gcoords[3*E+l];
-			elu[l][i] = ufield[3*E+l];
-            elv[l][i] = 0;
-		}
-	}
+	if (id_in_warp < Q2_NODES_PER_EL_3D) {
 
-	for (i=0; i<3; i++) {
-      for (j=0; j<3; j++) {
-        for (k=0; k<NQP; k++) {
-          dx[i][j][k] = 0;
-          du[i][j][k] = 0;
-          dv[i][j][k] = 0;
-        }
-      }
-    }
+	  TensorContract(D,B,B,GRAD,elx[warp_in_block],dx[warp_in_block][0]);
+	  TensorContract(B,D,B,GRAD,elx[warp_in_block],dx[warp_in_block][1]);
+	  TensorContract(B,B,D,GRAD,elx[warp_in_block],dx[warp_in_block][2]);
 
-	TensorContract(D,B,B,GRAD,elx,dx[0]);
-	TensorContract(B,D,B,GRAD,elx,dx[1]);
-	TensorContract(B,B,D,GRAD,elx,dx[2]);
+	  JacobianInvert(dx[warp_in_block],dxdet[warp_in_block]);
 
-	JacobianInvert(dx,dxdet);
+	  TensorContract(D,B,B,GRAD,elu[warp_in_block],du[warp_in_block][0]);
+	  TensorContract(B,D,B,GRAD,elu[warp_in_block],du[warp_in_block][1]);
+	  TensorContract(B,B,D,GRAD,elu[warp_in_block],du[warp_in_block][2]);
 
-	TensorContract(D,B,B,GRAD,elu,du[0]);
-	TensorContract(B,D,B,GRAD,elu,du[1]);
-	TensorContract(B,B,D,GRAD,elu,du[2]);
+	  QuadratureAction(gaussdata + elidx*NQP,dx[warp_in_block],dxdet[warp_in_block],w,du[warp_in_block],dv[warp_in_block]);
 
-	QuadratureAction(gaussdata + elidx*NQP,dx,dxdet,w,du,dv);
+	  TensorContract(D,B,B,GRAD_TRANSPOSE,dv[warp_in_block][0],elv[warp_in_block]);
+	  TensorContract(B,D,B,GRAD_TRANSPOSE,dv[warp_in_block][1],elv[warp_in_block]);
+	  TensorContract(B,B,D,GRAD_TRANSPOSE,dv[warp_in_block][2],elv[warp_in_block]);
 
-	TensorContract(D,B,B,GRAD_TRANSPOSE,dv[0],elv);
-	TensorContract(B,D,B,GRAD_TRANSPOSE,dv[1],elv);
-	TensorContract(B,B,D,GRAD_TRANSPOSE,dv[2],elv);
-
-    for (i=0; i<NQP; i++) {
-      PetscInt E = elnidx_u[nen_u*elidx+i];
+      PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
       for (l=0; l<3; l++) {
-        atomicAdd_double(Yu + 3*E+l, elv[l][i]);
+        atomicAdd_double(Yu + 3*E+l, elv[warp_in_block][l][id_in_warp]);
       }
     }
 }
@@ -460,7 +461,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
      */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
     set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
-    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/128 + 1, 128>>>(nel,nen_u,cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata,cudactx->Yu,cudactx->D,cudactx->B,cudactx->w);
+    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(nel,nen_u,cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata,cudactx->Yu,cudactx->D,cudactx->B,cudactx->w);
     ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
 
