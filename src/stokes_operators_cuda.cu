@@ -75,6 +75,20 @@ void check(T result, char const *const func, const char *const file, int const l
 #define WARPS_PER_BLOCK    4
 
 
+/*for shuffle of double-precision point */
+__device__ __inline__ double shfl_double(double x, int lane)
+{
+    // Split the double number into 2 32b registers.
+    int lo, hi;
+    asm volatile("mov.b64 {%0,%1}, %2;":"=r"(lo),"=r"(hi):"d"(x));
+    // Shuffle the two 32b registers.
+    lo = __shfl(lo,lane,32);
+    hi = __shfl(hi,lane,32);
+    // Recreate the 64b number.
+    asm volatile("mov.b64 %0,{%1,%2};":"=d"(x):"r"(lo),"r"(hi));
+    return x;
+}
+
 __device__ double atomicAdd_double(double* address, double val)
 {
     unsigned long long int* address_as_ull = (unsigned long long int*)address;
@@ -94,9 +108,6 @@ __device__ double atomicAdd_double(double* address, double val)
  */
 static __device__ void TensorContract(PetscReal const *R,PetscReal const *S,PetscReal const *T,PetscReal const x[],PetscReal y[])
 {
-  __shared__ PetscReal u[WARPS_PER_BLOCK][NQP],v[WARPS_PER_BLOCK][NQP];
-
-  PetscInt warp_in_block = threadIdx.x / 32;
   PetscInt id_in_warp = threadIdx.x % 32;
 
   PetscInt c = id_in_warp % 3;
@@ -108,19 +119,14 @@ static __device__ void TensorContract(PetscReal const *R,PetscReal const *S,Pets
 
 	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
     PetscReal result = 0;
-    v[warp_in_block][id_in_warp] = x[l];
-    for (PetscInt i=0; i<3; i++) result += R[i] * v[warp_in_block][kj*3+i];
-    u[warp_in_block][id_in_warp] = result;
+    for (PetscInt i=0; i<3; i++) result += R[i] * shfl_double(x[l], kj*3+i);
 
 	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
-    result = 0;
-    for (PetscInt j=0; j<3; j++) result += S[j] * u[warp_in_block][(k3+j)*3+c];
-    v[warp_in_block][id_in_warp] = result;
+    PetscReal result2 = 0;
+    for (PetscInt j=0; j<3; j++) result2 += S[j] * shfl_double(result, (k3+j)*3+c);
 
 	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
-    result = 0;
-	for (PetscInt k=0; k<3; k++) result += T[k] * v[warp_in_block][k*9+ji];
-    y[l] += result;
+	for (PetscInt k=0; k<3; k++) y[l] += T[k] * shfl_double(result2, k*9+ji);
 
   } // for l
 }
