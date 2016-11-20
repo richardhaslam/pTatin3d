@@ -144,20 +144,18 @@ static __device__ void TensorContract(PetscReal const *Rf,PetscReal const *Sf,Pe
 
 static __device__ void JacobianInvert(PetscScalar dx[3][3],PetscScalar &dxdet)
 {
-	PetscInt j,k;
-
 		PetscScalar a[3][3];
-		PetscScalar b0,b3,b6,det,idet;
-		for (j=0; j<3; j++) {
-			for (k=0; k<3; k++) {
+		PetscScalar b0,b3,b6,idet;
+		for (PetscInt j=0; j<3; j++) {
+			for (PetscInt k=0; k<3; k++) {
 				a[j][k] = dx[j][k];
 			}
 		}
 		b0 =  (a[1][1]*a[2][2] - a[2][1]*a[1][2]);
 		b3 = -(a[1][0]*a[2][2] - a[2][0]*a[1][2]);
 		b6 =  (a[1][0]*a[2][1] - a[2][0]*a[1][1]);
-		det = a[0][0]*b0 + a[0][1]*b3 + a[0][2]*b6;
-		idet = 1.0 / det;
+		dxdet = a[0][0]*b0 + a[0][1]*b3 + a[0][2]*b6;
+		idet = 1.0 / dxdet;
 		dx[0][0] =  idet*b0;
 		dx[0][1] = -idet*(a[0][1]*a[2][2] - a[2][1]*a[0][2]);
 		dx[0][2] =  idet*(a[0][1]*a[1][2] - a[1][1]*a[0][2]);
@@ -167,7 +165,6 @@ static __device__ void JacobianInvert(PetscScalar dx[3][3],PetscScalar &dxdet)
 		dx[2][0] =  idet*b6;
 		dx[2][1] = -idet*(a[0][0]*a[2][1] - a[2][0]*a[0][1]);
 		dx[2][2] =  idet*(a[0][0]*a[1][1] - a[1][0]*a[0][1]);
-		dxdet = det;
 }
 
 static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
@@ -177,13 +174,11 @@ static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
 				       PetscScalar const du[3][3],
 				       PetscScalar dv[3][3])
 {
-	PetscInt l,k;
-
 		/* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
 
 		PetscScalar dux[3][3];
-		for (l=0; l<3; l++) { // fields
-			for (k=0; k<3; k++) { // directions
+		for (PetscInt l=0; l<3; l++) { // fields
+			for (PetscInt k=0; k<3; k++) { // directions
 				dux[k][l] = du[0][l] * dx[k][0] + du[1][l] * dx[k][1] + du[2][l] * dx[k][2];
 			}
 		}
@@ -199,8 +194,8 @@ static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
 		dvx[2][1] =     gaussdata_eta * (dux[1][2] + dux[2][1]);
 		dvx[2][2] = 2 * gaussdata_eta * dux[2][2];
 
-		for (l=0; l<3; l++) { // fields
-			for (k=0; k<3; k++) { // directions
+		for (PetscInt l=0; l<3; l++) { // fields
+			for (PetscInt k=0; k<3; k++) { // directions
 				dv[k][l] = w * dxdet * (dvx[0][l] * dx[0][k] + dvx[1][l] * dx[1][k] + dvx[2][l] * dx[2][k]);
 			}
 		}
