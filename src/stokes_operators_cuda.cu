@@ -179,7 +179,7 @@ static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
 {
 	PetscInt l,k;
 
-		PetscScalar Du[6],Dv[6]; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
+		/* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
 
 		PetscScalar dux[3][3];
 		for (l=0; l<3; l++) { // fields
@@ -187,27 +187,17 @@ static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
 				dux[k][l] = du[0][l] * dx[k][0] + du[1][l] * dx[k][1] + du[2][l] * dx[k][2];
 			}
 		}
-		Du[0] = dux[0][0];
-		Du[1] = dux[1][1];
-		Du[2] = dux[2][2];
-		Du[3] = 0.5*(dux[0][1] + dux[1][0]);
-		Du[4] = 0.5*(dux[0][2] + dux[2][0]);
-		Du[5] = 0.5*(dux[1][2] + dux[2][1]);
-
-		for (k=0; k<6; k++) { /* Stress is coefficient of test function */
-			Dv[k] = 2 * gaussdata_eta * Du[k];
-		}
 
 		PetscScalar dvx[3][3];
-		dvx[0][0] = Dv[0];
-		dvx[0][1] = Dv[3];
-		dvx[0][2] = Dv[4];
-		dvx[1][0] = Dv[3];
-		dvx[1][1] = Dv[1];
-		dvx[1][2] = Dv[5];
-		dvx[2][0] = Dv[4];
-		dvx[2][1] = Dv[5];
-		dvx[2][2] = Dv[2];
+		dvx[0][0] = 2 * gaussdata_eta * dux[0][0];
+		dvx[0][1] =     gaussdata_eta * (dux[0][1] + dux[1][0]);
+		dvx[0][2] =     gaussdata_eta * (dux[0][2] + dux[2][0]);
+		dvx[1][0] =     gaussdata_eta * (dux[0][1] + dux[1][0]);
+		dvx[1][1] = 2 * gaussdata_eta * dux[1][1];
+		dvx[1][2] =     gaussdata_eta * (dux[1][2] + dux[2][1]);
+		dvx[2][0] =     gaussdata_eta * (dux[0][2] + dux[2][0]);
+		dvx[2][1] =     gaussdata_eta * (dux[1][2] + dux[2][1]);
+		dvx[2][2] = 2 * gaussdata_eta * dux[2][2];
 
 		for (l=0; l<3; l++) { // fields
 			for (k=0; k<3; k++) { // directions
