@@ -50,10 +50,10 @@ struct _p_MFA11CUDA {
   PetscReal   *gaussdata;
   PetscInt    *elnidx_u;
   PetscScalar *Yu;
-  PetscReal   *D;
-  PetscReal   *B;
-  PetscReal   *w;
 };
+
+/* Constant memory for D and B matrices */
+__constant__ PetscReal CUDA_D[3*3], CUDA_B[3*3], CUDA_w[3*3*3];
 
 
 template< typename T >
@@ -206,8 +206,7 @@ static __device__ void QuadratureAction(PetscScalar gaussdata_eta,
 		}
 }
 
-static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata,PetscScalar *Yu,
-                                                          PetscReal const *D_global,PetscReal const *B_global,PetscReal const *w_global)
+static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata,PetscScalar *Yu)
 {
 	PetscScalar el_uxv[3]; // unifies elu, elx, elv
 	PetscScalar dx[3][3]={0},du[3][3]={0},dv[3][3]={0};
@@ -216,12 +215,6 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
     PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
     PetscInt id_in_warp = threadIdx.x % 32;
     PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
-    __shared__ PetscReal D[3*3], B[3*3];
-
-    if (threadIdx.x <  9) B[threadIdx.x] = B_global[threadIdx.x];
-    if (threadIdx.x <  9) D[threadIdx.x] = D_global[threadIdx.x];
-
-    __syncthreads();
 
     if (elidx >= nel)
       return;
@@ -229,23 +222,23 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 	if (id_in_warp < Q2_NODES_PER_EL_3D) {
 
       for (l=0; l<3; l++) el_uxv[l] = LA_gcoords[3*E+l];
-	  TensorContract(D,B,B,GRAD,el_uxv,dx[0]);
-	  TensorContract(B,D,B,GRAD,el_uxv,dx[1]);
-	  TensorContract(B,B,D,GRAD,el_uxv,dx[2]);
+	  TensorContract(CUDA_D,CUDA_B,CUDA_B,GRAD,el_uxv,dx[0]);
+	  TensorContract(CUDA_B,CUDA_D,CUDA_B,GRAD,el_uxv,dx[1]);
+	  TensorContract(CUDA_B,CUDA_B,CUDA_D,GRAD,el_uxv,dx[2]);
 
 	  JacobianInvert(dx,dxdet);
 
       for (l=0; l<3; l++) el_uxv[l] = ufield[3*E+l];
-	  TensorContract(D,B,B,GRAD,el_uxv,du[0]);
-	  TensorContract(B,D,B,GRAD,el_uxv,du[1]);
-	  TensorContract(B,B,D,GRAD,el_uxv,du[2]);
+	  TensorContract(CUDA_D,CUDA_B,CUDA_B,GRAD,el_uxv,du[0]);
+	  TensorContract(CUDA_B,CUDA_D,CUDA_B,GRAD,el_uxv,du[1]);
+	  TensorContract(CUDA_B,CUDA_B,CUDA_D,GRAD,el_uxv,du[2]);
 
-	  QuadratureAction(gaussdata[elidx*NQP + id_in_warp],dx,dxdet,w_global[id_in_warp],du,dv);
+	  QuadratureAction(gaussdata[elidx*NQP + id_in_warp],dx,dxdet,CUDA_w[id_in_warp],du,dv);
 
       for (l=0; l<3; l++) el_uxv[l] = 0;
-	  TensorContract(D,B,B,GRAD_TRANSPOSE,dv[0],el_uxv);
-	  TensorContract(B,D,B,GRAD_TRANSPOSE,dv[1],el_uxv);
-	  TensorContract(B,B,D,GRAD_TRANSPOSE,dv[2],el_uxv);
+	  TensorContract(CUDA_D,CUDA_B,CUDA_B,GRAD_TRANSPOSE,dv[0],el_uxv);
+	  TensorContract(CUDA_B,CUDA_D,CUDA_B,GRAD_TRANSPOSE,dv[1],el_uxv);
+	  TensorContract(CUDA_B,CUDA_B,CUDA_D,GRAD_TRANSPOSE,dv[2],el_uxv);
 
       for (l=0; l<3; l++) {
         atomicAdd_double(Yu + 3*E+l, el_uxv[l]);
@@ -295,14 +288,9 @@ PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
       for (k=0; k<3; k++)
         w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
 
-  ierr = cudaMalloc(&ctx->D,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-  ierr = cudaMemcpy(ctx->D,D, 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
-
-  ierr = cudaMalloc(&ctx->B,  3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-  ierr = cudaMemcpy(ctx->B,B, 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
-
-  ierr = cudaMalloc(&ctx->w,  3 * 3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-  ierr = cudaMemcpy(ctx->w,w, 3 * 3 * 3 * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+  ierr = cudaMemcpyToSymbol(CUDA_D,D,     3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+  ierr = cudaMemcpyToSymbol(CUDA_B,B,     3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+  ierr = cudaMemcpyToSymbol(CUDA_w,w, 3 * 3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
 
   mf->ctx = ctx;
   PetscFunctionReturn(0);
@@ -324,9 +312,6 @@ PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
   ierr = cudaFree(ctx->gaussdata);CUDACHECK(ierr);
   ierr = cudaFree(ctx->elnidx_u);CUDACHECK(ierr);
   ierr = cudaFree(ctx->Yu);CUDACHECK(ierr);
-  ierr = cudaFree(ctx->D);CUDACHECK(ierr);
-  ierr = cudaFree(ctx->B);CUDACHECK(ierr);
-  ierr = cudaFree(ctx->w);CUDACHECK(ierr);
   /* Free context */
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   mf->ctx = NULL;
@@ -413,7 +398,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
      */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
     set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
-    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(nel,nen_u,cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata,cudactx->Yu,cudactx->D,cudactx->B,cudactx->w);
+    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(nel,nen_u,cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata,cudactx->Yu);
     ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
 
