@@ -198,7 +198,7 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
     PetscScalar dxdet = 0;
     PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
     PetscInt id_in_warp = threadIdx.x % 32;
-    PetscInt E = elnidx_u[nen_u*elidx+id_in_warp];
+    PetscInt E_times_3 = 3 * elnidx_u[nen_u*elidx+id_in_warp];
     PetscReal R[3],S[3],T[3];
     PetscInt c = id_in_warp % 3;
     PetscInt b = (id_in_warp % 9) / 3;
@@ -210,8 +210,8 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 	if (id_in_warp < Q2_NODES_PER_EL_3D) {
 
       for (PetscInt l=0; l<3; l++) {
-        el_x[l] = LA_gcoords[3*E+l];
-        el_uv[l] = ufield[3*E+l];
+        el_x[l] = LA_gcoords[E_times_3+l];
+        el_uv[l] = ufield[E_times_3+l];
         R[l] = CUDA_D[3*c+l];
         S[l] = CUDA_B[3*b+l];
         T[l] = CUDA_B[3*a+l];
@@ -256,7 +256,7 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 	  TensorContract(R,S,T,dv[2],el_uv); //TensorContract(CUDA_B,CUDA_B,CUDA_D,GRAD_TRANSPOSE,dv[2],el_uxv);
 
       for (PetscInt l=0; l<3; l++) {
-        atomicAdd_double(Yu + 3*E+l, el_uv[l]);
+        atomicAdd_double(Yu + E_times_3+l, el_uv[l]);
       }
     }
 }
