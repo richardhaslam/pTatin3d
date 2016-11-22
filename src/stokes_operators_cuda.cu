@@ -48,6 +48,9 @@ struct _p_MFA11CUDA {
   PetscScalar *ufield;
   PetscReal   *LA_gcoords;
   PetscReal   *gaussdata_w;  // Data at Gauss points multiplied by respective quadrature weight
+  PetscInt    element_colors;
+  PetscInt    *elements_per_color;
+  PetscInt    **el_ids_colored;
   PetscInt    *elnidx_u;
   PetscScalar *Yu;
 };
@@ -88,20 +91,6 @@ __device__ __inline__ double shfl_double(double x, int lane)
     asm volatile("mov.b64 %0,{%1,%2};":"=d"(x):"r"(lo),"r"(hi));
     return x;
 }
-
-__device__ double atomicAdd_double(double* address, double val)
-{
-    unsigned long long int* address_as_ull = (unsigned long long int*)address;
-    unsigned long long int old = *address_as_ull, assumed;
-    do {
-        assumed = old;
-        old = atomicCAS(address_as_ull, assumed, 
-                        __double_as_longlong(val + 
-                        __longlong_as_double(assumed)));
-    } while (assumed != old);
-    return __longlong_as_double(old);
-}
-
 
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
@@ -188,15 +177,15 @@ static __device__ void QuadratureAction(PetscScalar gaussdata_eta_w_dxdet,  // g
 		}
 }
 
-static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata_w,PetscScalar *Yu)
+static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen_u,PetscInt const *el_ids_colored,PetscInt const *elnidx_u,PetscReal const *LA_gcoords,PetscScalar const *ufield,PetscReal const *gaussdata_w,PetscScalar *Yu)
 {
 	PetscScalar el_x[3];
 	PetscScalar el_uv[3]; // unifies elu, elv
 	PetscScalar dx[3][3]={0},du[3][3]={0},dv[3][3]={0};
     PetscScalar dxdet = 0;
-    PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per element
+    PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per colored element. elidx is here the index within the same color.
     PetscInt id_in_warp = threadIdx.x % 32;
-    PetscInt E_times_3 = 3 * elnidx_u[nen_u*elidx+id_in_warp];
+    PetscInt E_times_3;
     PetscReal R[3],S[3],T[3];
     PetscInt c = id_in_warp % 3;
     PetscInt b = (id_in_warp % 9) / 3;
@@ -206,6 +195,9 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
       return;
 
 	if (id_in_warp < Q2_NODES_PER_EL_3D) {
+
+      elidx = el_ids_colored[elidx]; // get global element index
+      E_times_3 = 3 * elnidx_u[nen_u*elidx+id_in_warp];
 
       for (PetscInt l=0; l<3; l++) {
         el_x[l] = LA_gcoords[E_times_3+l];
@@ -254,7 +246,7 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
 	  TensorContract(R,S,T,dv[2],el_uv); //TensorContract(CUDA_B,CUDA_B,CUDA_D,GRAD_TRANSPOSE,dv[2],el_uxv);
 
       for (PetscInt l=0; l<3; l++) {
-        atomicAdd_double(Yu + E_times_3+l, el_uv[l]);
+        Yu[E_times_3+l] += el_uv[l];   // Note: Coloring ensures that there are no races here!
       }
     }
 }
@@ -284,8 +276,10 @@ PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
   ctx->ufield      = NULL;
   ctx->LA_gcoords  = NULL;
   ctx->gaussdata_w = NULL;
-  ctx->elnidx_u    = NULL;
   ctx->Yu          = NULL;
+  ctx->elements_per_color = NULL;
+  ctx->el_ids_colored     = NULL;
+  ctx->elnidx_u    = NULL;
 
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
@@ -309,6 +303,7 @@ PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
 PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
   MFA11CUDA      ctx;
 
   PetscFunctionBegin;
@@ -318,6 +313,11 @@ PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
   ierr = cudaFree(ctx->ufield);CUDACHECK(ierr);
   ierr = cudaFree(ctx->LA_gcoords);CUDACHECK(ierr);
   ierr = cudaFree(ctx->gaussdata_w);CUDACHECK(ierr);
+  for (i=0; i<ctx->element_colors; ++i) {
+    ierr = cudaFree(ctx->el_ids_colored[i]);CUDACHECK(ierr);
+  }
+  ierr = PetscFree(ctx->elements_per_color);CUDACHECK(ierr);
+  ierr = PetscFree(ctx->el_ids_colored);CUDACHECK(ierr);
   ierr = cudaFree(ctx->elnidx_u);CUDACHECK(ierr);
   ierr = cudaFree(ctx->Yu);CUDACHECK(ierr);
   /* Free context */
@@ -357,10 +357,70 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
 
     /* Set up CUDA data */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
-
     if (!cudactx->elnidx_u) {
       ierr = cudaMalloc(&cudactx->elnidx_u,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
       ierr = cudaMemcpy(cudactx->elnidx_u,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+      /* Assign colors to elements such that there is no overlap in writes to Yu if elements are processed concurrently */
+      PetscInt elements_colored = 0;
+      PetscInt *element_color;
+      PetscInt *Yu_color; // scratchpad
+
+      ierr = PetscMalloc(nel * sizeof(PetscInt), &element_color);CHKERRQ(ierr);
+      for (i=0; i<nel; ++i) element_color[i] = -1;
+      ierr = PetscMalloc(nel * NQP * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
+      for (i=0; i<nel * NQP; ++i) Yu_color[i] = -1;
+
+      cudactx->element_colors = 0;
+      while (elements_colored < nel) {
+
+        for (i=0; i<nel; ++i) {
+
+          if (element_color[i] >= 0) continue;  /* element already has a color */
+
+          /* Check if element can be colored: No element in Yu has current color */
+          PetscInt can_be_colored = 1;
+          for (j=0; j<nen_u; ++j) {
+            if (Yu_color[elnidx_u[i*nen_u + j]] == cudactx->element_colors) {
+              can_be_colored = 0;
+              break;
+            }
+          }
+
+          /* Color element if possible, update Yu indices to current color */
+          if (can_be_colored) {
+            element_color[i] = cudactx->element_colors;
+            for (j=0; j<nen_u; ++j)
+              Yu_color[elnidx_u[i*nen_u + j]] = cudactx->element_colors;
+
+            ++elements_colored;
+          }
+        }
+
+        ++cudactx->element_colors;
+      }
+
+      /* Generate CUDA arrays with coloring information */
+      ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt), &cudactx->elements_per_color);CHKERRQ(ierr);
+      ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt*), &cudactx->el_ids_colored);CHKERRQ(ierr);
+
+      for (i=0; i<cudactx->element_colors; ++i) {
+        /* count elements, collect element indices for this color and copy over to GPU: */
+        cudactx->elements_per_color[i] = 0;
+        for (j=0; j<nel; ++j) {
+          if (element_color[j] == i) {
+            Yu_color[cudactx->elements_per_color[i]] = j; /* Reusing Yu_color array here */
+            cudactx->elements_per_color[i] += 1;
+          }
+        }
+
+        ierr = cudaMalloc(&cudactx->el_ids_colored[i],        cudactx->elements_per_color[i] * sizeof(PetscInt));CUDACHECK(ierr);
+        ierr = cudaMemcpy(cudactx->el_ids_colored[i],Yu_color,cudactx->elements_per_color[i] * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+      }
+
+      /* clean up */
+      ierr = PetscFree(element_color);CHKERRQ(ierr);
+      ierr = PetscFree(Yu_color);CHKERRQ(ierr);
     }
 
     if (!cudactx->ufield) {
@@ -413,7 +473,9 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
      */
 	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
     set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
-    MFStokesWrapper_A11_CUDA_kernel<<<(nel-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(nel,nen_u,cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
+    for (i=0; i<cudactx->element_colors; ++i) {
+      MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
+    }
     ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
 
