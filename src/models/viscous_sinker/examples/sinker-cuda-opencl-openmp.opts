@@ -9,7 +9,7 @@
 #   Launch job using ./ptatin_driver_linear_ts.app
 # ---------------------------------------------------------------------
 #PETSc Option Table entries:
--output_path sinker-cuda
+-output_path sinker-cuda-opencl-openmp
 -ptatin_model viscous_sinker
 #-ptatin_model_output_disable
 -checkpoint_disable
@@ -33,7 +33,9 @@
 
 -A11_operator_type 2,0,1
 -a11_op cuda
+#-a11_op opencl
 #-a11_op tensor
+#-a11_op avx
 -stk_velocity_dm_mat_type aij
 -dau_nlevels 3
 -snes_type ksponly
@@ -42,6 +44,7 @@
 -ksp_type gcr
 -ksp_gcr_restart 50
 -ksp_norm_type unpreconditioned
+-ksp_rtol 5e-4
 -pc_type fieldsplit
 -pc_fieldsplit_schur_fact_type lower
 -pc_fieldsplit_type schur
