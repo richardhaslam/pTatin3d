@@ -272,13 +272,13 @@ PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,Pet
 		ierr = TensorContractNEV(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
 		ierr = TensorContractNEV(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
+#if defined(_OPENMP)
+		#pragma omp critical
+#endif
 		for (PetscInt ee=0; ee<PetscMin(NEV,nel-e); ee++) {
 			for (PetscInt i=0; i<NQP; i++) {
 				PetscInt E = elnidx_u[nen_u*(e+ee)+i];
 				for (PetscInt l=0; l<3; l++) {
-#if defined(_OPENMP)
-					#pragma omp atomic
-#endif
 					Yu[3*E+l] += elv[l][i][ee];
 				}
 			}
