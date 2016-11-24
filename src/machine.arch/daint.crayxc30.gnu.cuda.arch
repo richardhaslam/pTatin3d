@@ -17,7 +17,7 @@ TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-inc
 #
 #  Select optimized or debug compilation flags
 #
-export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG) -D__CUDA__ -D__OPENCL__
+export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG)
 export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 
 export LIBZ_LIB = -lz

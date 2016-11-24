@@ -29,6 +29,14 @@ CONFIG_AVX ?= n
 CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
+ifeq ($(CONFIG_CUDA),y)
+TATIN_CFLAGS += -DTATIN_HAVE_CUDA
+endif
+
+ifeq ($(CONFIG_OPENCL),y)
+TATIN_CFLAGS += -DTATIN_HAVE_OPENCL
+endif
+
 # directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
 incsubdirs = $(addsuffix /local.mk,$(call thisdir,$(1)))
