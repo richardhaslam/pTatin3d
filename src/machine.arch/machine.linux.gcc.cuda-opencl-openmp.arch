@@ -20,6 +20,9 @@ TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-inc
 export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_b} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG) -march=native -fopenmp
 export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 
+#export CUDA_INC = -I/usr/local/cuda/include
+#export OPENCL_INC = -I/usr/local/cuda/include
+
 export LIBZ_LIB = -lz
 export CUDA_LIB = -lcudart
 export OPENCL_LIB = -lOpenCL

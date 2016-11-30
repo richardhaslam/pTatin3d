@@ -29,12 +29,18 @@ CONFIG_AVX ?= n
 CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
+TATIN_LIB +=  $(LIBZ_LIB)
+
 ifeq ($(CONFIG_CUDA),y)
 TATIN_CFLAGS += -DTATIN_HAVE_CUDA
+TATIN_LIB += $(CUDA_LIB)
+TATIN_INC += $(CUDA_INC)     #Note: This is usually set by NVCC automatically
 endif
 
 ifeq ($(CONFIG_OPENCL),y)
 TATIN_CFLAGS += -DTATIN_HAVE_OPENCL
+TATIN_LIB += $(OPENCL_LIB)
+TATIN_INC += $(OPENCL_INC)
 endif
 
 # directory that contains most recently-parsed makefile (current)
@@ -131,7 +137,7 @@ $(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/src/%.o | $$(@D)/.DIR
-	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB) $(CUDA_LIB) $(OPENCL_LIB)
+	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(TATIN_LIB)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
