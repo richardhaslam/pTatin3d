@@ -221,10 +221,11 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
 	const PetscInt *elnidx_u;
 	QPntVolCoefStokes *all_gausspoints;
 	PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
+	PetscInt i,j,k,e;
 
 	PetscFunctionBegin;
 	ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
-	for (PetscInt i=0; i<3; i++) {
+	for (i=0; i<3; i++) {
 		B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
 		B[i][1] = 1 - PetscSqr(x1[i]);
 		B[i][2] = .5*(PetscSqr(x1[i]) + x1[i]);
@@ -232,9 +233,9 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
 		D[i][1] = -2*x1[i];
 		D[i][2] = x1[i] + .5;
 	}
-	for (PetscInt i=0; i<3; i++) {
-		for (PetscInt j=0; j<3; j++) {
-			for (PetscInt k=0; k<3; k++) {
+	for (i=0; i<3; i++) {
+		for (j=0; j<3; j++) {
+			for (k=0; k<3; k++) {
 				w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];}}}
 
 	/* setup for coords */
@@ -253,23 +254,24 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
 #endif
 
 #if defined(_OPENMP)
-    #pragma omp parallel for
+    #pragma omp parallel for private(i)
 #endif
-	for (PetscInt e=0;e<nel;e+=NEV) {
+	for (e=0;e<nel;e+=NEV) {
 		PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
 		PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
 		const QPntVolCoefStokes *cell_gausspoints[NEV];
+		PetscInt ee,l;
 
-		for (PetscInt i=0; i<Q2_NODES_PER_EL_3D; i++) {
-			for (PetscInt ee=0; ee<NEV; ee++) {
+		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+			for (ee=0; ee<NEV; ee++) {
 				PetscInt E = elnidx_u[nen_u*PetscMin(e+ee,nel-1)+i]; // Pad up to length NEV by duplicating last element
-				for (PetscInt l=0; l<3; l++) {
+				for (l=0; l<3; l++) {
 					elx[l][i][ee] = LA_gcoords[3*E+l];
 					elu[l][i][ee] = ufield[3*E+l];
 				}
 			}
 		}
-		for (PetscInt ee=0; ee<NEV; ee++) {
+		for (ee=0; ee<NEV; ee++) {
 			ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
 		}
 
@@ -295,10 +297,10 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
 #if defined(_OPENMP)
 		#pragma omp critical
 #endif
-		for (PetscInt ee=0; ee<PetscMin(NEV,nel-e); ee++) {
-			for (PetscInt i=0; i<NQP; i++) {
+		for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
+			for (i=0; i<NQP; i++) {
 				PetscInt E = elnidx_u[nen_u*(e+ee)+i];
-				for (PetscInt l=0; l<3; l++) {
+				for (l=0; l<3; l++) {
 					Yu[3*E+l] += elv[l][i][ee];
 				}
 			}
