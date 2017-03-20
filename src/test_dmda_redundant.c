@@ -142,7 +142,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	
 	/* output */
 	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_redundant_in.vtk", &vv);CHKERRQ(ierr);
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+	ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da, vv);CHKERRQ(ierr);
@@ -158,7 +158,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da_red), name, &vv);CHKERRQ(ierr);
 		free(name);
 	}
-	ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+	ierr = PetscViewerPushFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	ierr = DMCreateGlobalVector(da_red,&x);CHKERRQ(ierr);
 	ierr = PetscObjectSetName( (PetscObject)x, "phi" );CHKERRQ(ierr);
 	ierr = DMView(da_red, vv);CHKERRQ(ierr);
