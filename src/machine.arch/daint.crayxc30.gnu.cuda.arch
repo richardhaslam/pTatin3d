@@ -1,7 +1,17 @@
 #  -- pTatin Optimization flags --
-#    Operating system: OSX operating system (musashi,tora)
-#    Compiler: gcc,gfortran
+#    Operating system: Cray (XC50, Piz Daint, GPU partition, as of 2017.03)
+#    Compiler: gcc (Cray PrgEnv-gnu)
 #
+# requires
+#   module unload PrgEnv-cray; module load PrgEnv-gnu; module load cudatoolkit;
+#
+# PETSc should be configured with PrgEnv-gnu as well
+#
+# For reproducibility, the values of these variables are as follows
+# at the time of this writing (2017.03)
+#
+# CUDATOOLKIT_HOME = /opt/nvidia/cudatoolkit8.0/8.0.54_2.2.8_ga620558-2.1
+# CRAY_MPICH_DIR   = /opt/cray/pe/mpt/7.5.0/gni/mpich-gnu/5.1
 
 export TATIN_CFLAGS_DEBUG       = -std=gnu99 -O0 -g -Wall
 export TATIN_CFLAGS_OPT_a       = -std=gnu99 -O2 -Wstrict-aliasing -fstrict-aliasing -funroll-loops
@@ -10,19 +20,19 @@ export TATIN_CFLAGS_OPT_b       = -std=gnu99 -O3 -fast -ftree-vectorize -ftree-v
 export TATIN_FFLAGS_DEBUG       = -O0 -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_a       = -O2 -ffree-line-length-4000
 
-export CUDA_NVCC = /opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/bin/nvcc  -I/opt/cray/mpt/7.2.2/gni/mpich2-gnu/48/include
+export CUDA_NVCC = $(CUDATOOLKIT_HOME)/bin/nvcc  -I$(CRAY_MPICH_DIR)/include -arch=sm_60 -D_FORCE_INLINES
 
 TATIN_CFLAGS_CLANG := $(if $(findstring clang,$(shell $(CC) --version)),-Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety)
 
 #
 #  Select optimized or debug compilation flags
 #
-export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG)
+export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -Wno-switch -Wno-unused-function $(TATIN_CFLAGS_CLANG) march=native -fopenmp
 export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 
 export LIBZ_LIB = -lz
-export CUDA_LIB = -L/opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/lib64/ -lcudart
-export OPENCL_LIB = -L/opt/nvidia/cudatoolkit6.5/6.5.14-1.0502.9836.8.1/lib64/ -lOpenCL
+export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
+export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL
 # export LIBZ_INC = -I/usr/include
 CONFIG_AVX=y
 CONFIG_CUDA=y
