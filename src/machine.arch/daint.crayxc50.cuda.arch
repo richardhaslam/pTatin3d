@@ -1,0 +1,37 @@
+# Requires the PrgEnv-cray and cudatoolkit modules
+
+export TATIN_CFLAGS_DEBUG       = -std=gnu99 -O0 -g -Wall
+export TATIN_CFLAGS_OPT_a       = 
+export TATIN_CFLAGS_OPT_b       = 
+
+export TATIN_FFLAGS_DEBUG       = -O0 
+export TATIN_FFLAGS_OPT_a       = 
+
+export CUDA_NVCC = $(CUDATOOLKIT_HOME)/bin/nvcc  -I$(CRAY_MPICH_DIR)/include -arch=sm_60
+
+#
+#  Select optimized or debug compilation flags
+#
+export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_b}
+export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
+
+export LIBZ_LIB = -lz
+export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
+export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL
+# export LIBZ_INC = -I/usr/include
+CONFIG_AVX=y
+CONFIG_CUDA=y
+CONFIG_OPENCL=y
+
+#
+#
+#  -- pTatin external packages --
+#  User should select which packages are present
+#    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
+#    ** please compile external packages using the PETSc compiler          **
+#
+#
+PTATIN_CONTAINS_SPMA = 0
+PTATIN_CONTAINS_FASTSCAPE_V3 = 0
+
+
