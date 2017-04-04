@@ -9,4 +9,4 @@ for example
 For files aimed at specific machines, use
   <machine name>.<os>.<compiler>.[<modifier>.]arch
 for example
-  daint.crayxc30.craycc.arch
+  daint.crayxc50.craycc.arch

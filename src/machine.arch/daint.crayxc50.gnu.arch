@@ -1,7 +1,6 @@
 #  -- pTatin Optimization flags --
 
 # Set your own PETSC_DIR and PETSC_ARCH 
-# PETSC_ARCH was arch-cray-xc30-gnu at the time of this writing (but you will have picked the name)
 ifndef PETSC_DIR
   $(error PETSC_DIR must be defined as an environment variable)
 endif
