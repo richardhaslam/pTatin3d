@@ -737,6 +737,7 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscInt       its;
 	PetscInt       ii,iterations;
 	KSP            ksp;
+	PetscViewer    monviewer;
 	MatStokesMF    StkCtx;
 	MatA11MF       A11Ctx;
 	PetscBool      use_mf_A;
