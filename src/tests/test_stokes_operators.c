@@ -789,11 +789,11 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(ksp,A,B);CHKERRQ(ierr);
 	ierr = KSPSetTolerances(ksp,1.0e-20,PETSC_DEFAULT,PETSC_DEFAULT,30);CHKERRQ(ierr);
-  ierr = PetscOptionsInsertString(NULL,"-ksp_monitor_short");CHKERRQ(ierr);
+	ierr = PetscOptionsInsertString(NULL,"-ksp_monitor_short");CHKERRQ(ierr);
 	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-    ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-    ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+	ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+	ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
     
 	PetscTime(&t0);
 	ierr = KSPSetUp(ksp);CHKERRQ(ierr);
@@ -805,16 +805,16 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUpA11:                        time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
 	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),NULL,&monviewer);CHKERRQ(ierr);
-  {
-    PetscViewerAndFormat *vf;
-    ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
-	ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorDefaultShort,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
-  }
+	{
+		PetscViewerAndFormat *vf;
+		ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+		ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorDefaultShort,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+	}
 
 	PetscTime(&t0);
 	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
-  ierr = PetscOptionsClearValue(NULL,"-ksp_monitor_short");CHKERRQ(ierr);
+	ierr = PetscOptionsClearValue(NULL,"-ksp_monitor_short");CHKERRQ(ierr);
   
 	for (ii=1; ii<iterations; ii++) {
 		ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
