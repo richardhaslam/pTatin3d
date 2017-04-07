@@ -803,8 +803,13 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSetUpA11:                        time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 
-  //ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,PETSC_VIEWER_STDOUT_WORLD,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
-  
+	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)ksp),NULL,&monviewer);CHKERRQ(ierr);
+  {
+    PetscViewerAndFormat *vf;
+    ierr = PetscViewerAndFormatCreate(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_DEFAULT,&vf);CHKERRQ(ierr);
+	ierr = KSPMonitorSet(ksp,(PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorDefaultShort,vf,(PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy);CHKERRQ(ierr);
+  }
+
 	PetscTime(&t0);
 	ierr = KSPSolve(ksp,x,y);CHKERRQ(ierr);
 	ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);

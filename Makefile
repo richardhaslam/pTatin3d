@@ -27,12 +27,29 @@ CONFIG_FASTSCAPE ?= n
 
 CONFIG_FORTRAN = y
 CONFIG_AVX ?= n
+CONFIG_CUDA ?= n
+CONFIG_OPENCL ?= n
+
+TATIN_LIB +=  $(LIBZ_LIB)
+
+ifeq ($(CONFIG_CUDA),y)
+TATIN_CFLAGS += -DTATIN_HAVE_CUDA
+TATIN_LIB += $(CUDA_LIB)
+TATIN_INC += $(CUDA_INC)     #Note: This is usually set by NVCC automatically
+endif
+
+ifeq ($(CONFIG_OPENCL),y)
+TATIN_CFLAGS += -DTATIN_HAVE_OPENCL
+TATIN_LIB += $(OPENCL_LIB)
+TATIN_INC += $(OPENCL_INC)
+endif
 
 # directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
 incsubdirs = $(addsuffix /local.mk,$(call thisdir,$(1)))
 
 libptatin3d-y.c :=
+libptatin3d-y.cu :=
 libptatin3d-y.f :=
 libptatin3dmodels-y.c :=
 libptatin3dmodels-y.f :=
@@ -59,7 +76,7 @@ endif
 libptatin3d = $(LIBDIR)/libptatin3d.$(AR_LIB_SUFFIX)
 libptatin3d : $(libptatin3d)
 
-$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
+$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.cu:%.cu=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 
 libptatin3dmodels = $(LIBDIR)/libptatin3dmodels.$(AR_LIB_SUFFIX)
 libptatin3dmodels : $(libptatin3dmodels)
@@ -103,11 +120,12 @@ else
 endif
 
 # gcc/gfortran style dependency flags; these are set in petscvariables starting with petsc-3.5
-C_DEPFLAGS ?= -MMD -MP
-FC_DEPFLAGS ?= -MMD -MP
+C_DEPFLAGS ?=
+FC_DEPFLAGS ?=
 
-TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
+TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_CFLAGS_OPENMP) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
+TATIN_COMPILE.cu = $(CUDA_NVCC) -c -Xcompiler "$(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)"
 
 
 # Tests
@@ -127,7 +145,7 @@ $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/%.o | $$(@D)/.DIR
-	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
+	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(TATIN_LIB)
 #@mv $@ $(BINDIR)
 	@ln -sF $(abspath $@) $(BINDIR)
 
@@ -136,6 +154,9 @@ $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 
 $(OBJDIR)/%.o: %.f90 | $$(@D)/.DIR
 	$(TATIN_COMPILE.f90) $(abspath $<) -o $@
+
+$(OBJDIR)/%.o: %.cu | $$(@D)/.DIR
+	$(TATIN_COMPILE.cu) $(abspath $<) -o $@
 
 %/.DIR :
 	@mkdir -p $(@D)
@@ -155,9 +176,10 @@ print:
 	@echo $($(VAR))
 
 srcs.c := $(libptatin3d-y.c) $(libptatin3dmodels-y.c) $(ptatin-tests-y.c) $(ptatin-drivers-y.c)
+srcs.cu := $(libptatin3d-y.cu)
 # Bundle in objects from external packages
-%srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o)
-srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
+%srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(srcs.cu:%.cu=$(OBJDIR)/%.o)
+srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(srcs.cu:%.cu=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 srcs.d := $(srcs.o:%.o=%.d)
 # Tell make that srcs.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a

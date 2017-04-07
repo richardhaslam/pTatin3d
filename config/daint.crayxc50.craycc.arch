@@ -20,6 +20,7 @@ FC_DEPFLAGS=
 export LIBZ_LIB=-lz
 
 # Opt flags here..
+export TATIN_CFLAGS_OPENMP=-openmp
 
 # flag to allow GNU AVX/SSE intrinsics
 export TATIN_CFLAGS=-hgnu

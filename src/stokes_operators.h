@@ -36,15 +36,12 @@ typedef struct _p_MatA11MF *MatA11MF;
 
 struct _p_MatStokesMF {
 	PetscInt    mu,mp,Mu,Mp;
-	PetscInt    level;
-	PetscInt    ii;
 	DM          stokes_pack,daUVW,dap;
 	BCList      u_bclist,p_bclist;
 	Quadrature  volQ;
 	DM          daU;
 	IS          isUVW,isU,isV,isW,isP; /* Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
-	Vec         nodal_viscosity;
 };
 
 struct _p_MatA11MF {
@@ -56,11 +53,12 @@ struct _p_MatA11MF {
 	IS          isUVW; /* Needed for full column space */
 	IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
-	/* Not sure I need this at all */
-	PetscInt    level;
-	PetscInt    ii;
-	Vec         nodal_viscosity;
-	PetscErrorCode (*Wrapper_A11)(Quadrature,DM,PetscScalar[],PetscScalar[]);
+	PetscObjectState state;
+	PetscBool   is_setup;
+	void        *ctx; /* special context for cuda, opencl, openmp spmv implementations */
+	PetscErrorCode (*SpMVOp_MatMult)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
+	PetscErrorCode (*SpMVOp_SetUp)(MatA11MF);
+	PetscErrorCode (*SpMVOp_Destroy)(MatA11MF);
 };
 
 

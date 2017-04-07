@@ -48,7 +48,9 @@
 */
 
 
+#include "petsc/private/petscimpl.h"
 #include "petsc.h" /*I   "petscmat.h"   I*/
+#include "petscsys.h"
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -63,6 +65,11 @@
 #include "stokes_assembly.h"
 
 PetscLogEvent MAT_MultMFA11;
+PetscLogEvent MAT_MultMFA11_setup;
+PetscLogEvent MAT_MultMFA11_copyto;
+PetscLogEvent MAT_MultMFA11_kernel;
+PetscLogEvent MAT_MultMFA11_copyfrom;
+PetscLogEvent MAT_MultMFA11_merge;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatStokesMFCreate"
@@ -82,7 +89,9 @@ PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 #define __FUNCT__ "MatA11MFCreate"
 PetscErrorCode MatA11MFCreate(MatA11MF *B)
 {
-	PetscFunctionList flist = NULL;
+	PetscFunctionList MatMult_flist = NULL;
+	PetscFunctionList SetUp_flist = NULL;
+	PetscFunctionList Destroy_flist = NULL;
 	PetscErrorCode ierr;
 	MatA11MF A11;
 	char optype[64] = "ref";
@@ -91,15 +100,35 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	ierr = PetscMalloc(sizeof(struct _p_MatA11MF),&A11);CHKERRQ(ierr);
 	ierr = PetscMemzero(A11,sizeof(struct _p_MatA11MF));CHKERRQ(ierr);
 
-	ierr = PetscFunctionListAdd(&flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
-	ierr = PetscFunctionListAdd(&flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
+  A11->is_setup       = PETSC_FALSE;
+  A11->ctx            = NULL;
+  A11->SpMVOp_MatMult = NULL;
+  A11->SpMVOp_SetUp   = NULL;
+  A11->SpMVOp_Destroy = NULL;
+  
+	ierr = PetscFunctionListAdd(&MatMult_flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
 #ifdef __AVX__
-	ierr = PetscFunctionListAdd(&flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&MatMult_flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
+#endif
+#ifdef TATIN_HAVE_CUDA
+	ierr = PetscFunctionListAdd(&MatMult_flist,"cuda",MFStokesWrapper_A11_CUDA);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&SetUp_flist,"cuda",MFA11SetUp_CUDA);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&Destroy_flist,"cuda",MFA11Destroy_CUDA);CHKERRQ(ierr);
+#endif
+#ifdef TATIN_HAVE_OPENCL
+	ierr = PetscFunctionListAdd(&MatMult_flist,"opencl",MFStokesWrapper_A11_OpenCL);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&SetUp_flist,"opencl",MFA11SetUp_OpenCL);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&Destroy_flist,"opencl",MFA11Destroy_OpenCL);CHKERRQ(ierr);
 #endif
 	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
-	ierr = PetscFunctionListFind(flist,optype,&A11->Wrapper_A11);CHKERRQ(ierr);
-	if (!A11->Wrapper_A11) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
-	ierr = PetscFunctionListDestroy(&flist);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(MatMult_flist,optype,&A11->SpMVOp_MatMult);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(SetUp_flist,optype,&A11->SpMVOp_SetUp);CHKERRQ(ierr);
+	ierr = PetscFunctionListFind(Destroy_flist,optype,&A11->SpMVOp_Destroy);CHKERRQ(ierr);
+	if (!A11->SpMVOp_MatMult) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No -a11_op %s",optype);
+	ierr = PetscFunctionListDestroy(&MatMult_flist);CHKERRQ(ierr);
+	ierr = PetscFunctionListDestroy(&SetUp_flist);CHKERRQ(ierr);
+	ierr = PetscFunctionListDestroy(&Destroy_flist);CHKERRQ(ierr);
 	*B = A11;
 	PetscFunctionReturn(0);
 }
@@ -185,6 +214,8 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	
 	PetscFunctionBegin;
 	
+  if (A11Ctx->is_setup) PetscFunctionReturn(0);
+  
 	A11Ctx->daUVW       = dav;           ierr = PetscObjectReference((PetscObject)dav);CHKERRQ(ierr); 
 	A11Ctx->volQ        = volQ;
 	A11Ctx->u_bclist    = u_bclist;
@@ -212,8 +243,13 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	
 	ierr = DMDADuplicateLayout(dau,1,2,DMDA_STENCIL_BOX,&A11Ctx->daU);CHKERRQ(ierr);
 	
+  if (A11Ctx->SpMVOp_SetUp) {
+    ierr = A11Ctx->SpMVOp_SetUp(A11Ctx);CHKERRQ(ierr);
+  }
+  
 	A11Ctx->refcnt = 1;
-	
+	A11Ctx->is_setup = PETSC_TRUE;
+  
 	PetscFunctionReturn(0);
 }
 
@@ -268,6 +304,11 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
 		if (A->isV) { ierr = ISDestroy(&A->isV);CHKERRQ(ierr); }
 		if (A->isW) { ierr = ISDestroy(&A->isW);CHKERRQ(ierr); }
 		if (A->daU) { ierr = DMDestroy(&A->daU);CHKERRQ(ierr); }
+    
+    if (A->SpMVOp_Destroy) {
+      ierr = A->SpMVOp_Destroy(A);CHKERRQ(ierr);
+    }
+    
 		ierr = PetscFree(A);CHKERRQ(ierr);
 
 		*B = NULL;
@@ -367,8 +408,6 @@ PetscErrorCode MatStokesMFCopy(MatStokesMF A,MatStokesMF *B)
 	Stk->mp    = A->mp;
 	Stk->Mu    = A->Mu;
 	Stk->Mp    = A->Mp;
-	Stk->level = A->level;
-	Stk->ii    = A->ii;
 
 	Stk->u_bclist = A->u_bclist;
 	Stk->p_bclist = A->p_bclist;
@@ -405,8 +444,6 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 	
 	A11->mu    = A->mu;
 	A11->Mu    = A->Mu;
-	A11->level = A->level;
-	A11->ii    = A->ii;
 	
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
@@ -418,8 +455,13 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 	A11->daUVW = A->daUVW;        if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
 	A11->daU   = A->daU;          if (A->daU) { ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr); }
 	
+  if (A11->SpMVOp_SetUp) {
+    ierr = A11->SpMVOp_SetUp(A11);CHKERRQ(ierr);
+  }
+
 	A11->refcnt = 1;
-	
+  A11->is_setup = PETSC_TRUE;
+
 	*B = A11;
 	PetscFunctionReturn(0);
 }
@@ -437,8 +479,6 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 	
 	A11->mu    = A->mu;
 	A11->Mu    = A->Mu;
-	A11->level = A->level;
-	A11->ii    = A->ii;
 	
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
@@ -450,7 +490,12 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 	A11->daUVW = A->daUVW;        if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
 	A11->daU   = A->daU;          if (A->daU) { ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr); }
 	
+  if (A11->SpMVOp_SetUp) {
+    ierr = A11->SpMVOp_SetUp(A11);CHKERRQ(ierr);
+  }
+
 	A11->refcnt = 1;
+	A11->is_setup = PETSC_TRUE;
 	
 	*B = A11;
 	PetscFunctionReturn(0);
@@ -1123,6 +1168,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
 //	PetscBool         use_low_order_geometry = PETSC_FALSE;
+	PetscObjectState  state;
 	
   PetscFunctionBegin;
   
@@ -1130,6 +1176,12 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 //	ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
+  
+  if (!ctx->is_setup) SETERRQ(PetscObjectComm((PetscObject)A),PETSC_ERR_USER,"MF operator not setup");
+  
+	ierr = PetscObjectStateGet((PetscObject)A,&state);CHKERRQ(ierr);
+	ctx->state = state;
+  
 	dau = ctx->daUVW;
 	
   ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
@@ -1152,7 +1204,7 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* momentum */
-	ierr = (*ctx->Wrapper_A11)(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+	ierr = (*ctx->SpMVOp_MatMult)(ctx,ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
@@ -1221,7 +1273,7 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	/* momentum */
 	switch (low_order_geometry_type) {
 		case 0:
-			ierr = MFStokesWrapper_A11(ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
+			ierr = MFStokesWrapper_A11(ctx,ctx->volQ,dau,LA_XUloc,LA_YUloc);CHKERRQ(ierr);
 			break;
 
 		case 1:
@@ -1704,7 +1756,10 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	
 	PetscFunctionBegin;
 
-	A11->refcnt++;
+  if ((A11->refcnt > 1) && (A11->ctx)) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not clear how to safely share MF-SpMV context");
+  }
+
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
@@ -1712,7 +1767,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
-	
+	A11->refcnt++;	
 	*A = B;
 	
 	PetscFunctionReturn(0);
@@ -1729,7 +1784,9 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	
 	PetscFunctionBegin;
 	
-	A11->refcnt++;
+  if ((A11->refcnt > 1) && (A11->ctx)) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not clear how to safely share MF-SpMV context");
+  }
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
@@ -1741,8 +1798,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	ierr = DMGetCoordinateDM(A11->daUVW,&dax);CHKERRQ(ierr);
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA11_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
-	
-	
+	A11->refcnt++;	
 	*A = B;
 	
 	PetscFunctionReturn(0);
@@ -1757,7 +1813,10 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 	
 	PetscFunctionBegin;
 	
-	A11->refcnt++;
+  if ((A11->refcnt > 1) && (A11->ctx)) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not clear how to safely share MF-SpMV context");
+  }
+
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
@@ -1767,7 +1826,8 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11);CHKERRQ(ierr);
 	//ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagaonl_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
-	
+
+	 A11->refcnt++;	
 	*A = B;
 	
 	PetscFunctionReturn(0);

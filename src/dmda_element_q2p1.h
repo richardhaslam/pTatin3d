@@ -33,6 +33,10 @@
 #include <petsc.h>
 #include <petscdm.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz);
 PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ);
 PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz);
@@ -58,6 +62,10 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,Pet
 PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[]);
 PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[]);
 PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
