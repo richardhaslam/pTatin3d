@@ -880,6 +880,8 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
         ierr = KSPSetDM(ksp_smoother,dav_hierarchy[k]);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_smoother,PETSC_FALSE);CHKERRQ(ierr);
 	}
+
+	ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
