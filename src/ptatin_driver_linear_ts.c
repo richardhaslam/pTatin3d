@@ -620,7 +620,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		
 		/* nest */
 		bA[0][0] = NULL; bA[0][1] = Aup;
-		bA[1][0] = Apu;        bA[1][1] = Spp;
+		bA[1][0] = Apu;  bA[1][1] = Spp;
 		
 		ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&B);CHKERRQ(ierr);
 		ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -713,7 +713,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 					}
 				}
 				
-				
 				ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 			}
 				break;
@@ -756,7 +755,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 					ierr = MatAssemble_StokesA_AUU(A_kp1,dav_hierarchy[k+1],u_bclist[k+1],volQ[k+1]);CHKERRQ(ierr);
 
 					ierr = MatPtAP(A_kp1,interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
-					ierr = MatDestroy(& A_kp1);CHKERRQ(ierr);
+					ierr = MatDestroy(&A_kp1);CHKERRQ(ierr);
 				}
 				
 				operatorA11[k] = Auu;
@@ -783,7 +782,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				if (level_type[k+1] != OP_TYPE_REDISC_MF) {
 					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin. Next finest level[%D] must be of type OP_TYPE_REDISC_MF",k+1);
 				}
-				
 				
 				ierr = DMSetMatType(dav_hierarchy[k],MATAIJ);CHKERRQ(ierr);
 				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
