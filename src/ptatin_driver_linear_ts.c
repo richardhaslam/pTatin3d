@@ -574,11 +574,15 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	PetscInt       k,max;
 	PetscBool      flg;
 	static int     been_here = 0;
+	PetscBool      allow_galerkin = PETSC_FALSE;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
+
+	ierr = PetscOptionsGetBool(NULL,NULL,"-A11_allow_galerkin_from_mf",&allow_galerkin,&flg);CHKERRQ(ierr);
 	
 	dap = stokes_ctx->dap;
+
 	
 	/* A operator */
 	ierr = StokesQ2P1CreateMatrix_Operator(stokes_ctx,&A);CHKERRQ(ierr);
@@ -616,7 +620,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 		
 		/* nest */
 		bA[0][0] = NULL; bA[0][1] = Aup;
-		bA[1][0] = Apu;        bA[1][1] = Spp;
+		bA[1][0] = Apu;  bA[1][1] = Spp;
 		
 		ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&B);CHKERRQ(ierr);
 		ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -709,7 +713,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 					}
 				}
 				
-				
 				ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 			}
 				break;
@@ -724,12 +727,36 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				if (k==nlevels-1) {
 					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
 				}
-				if (level_type[k+1] == OP_TYPE_REDISC_MF) {
-					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid. Finest level above must be of type OP_TYPE_REDISC_ASM, OP_TYPE_GALERKIN or OP_TYPE_MFGALERKIN",k+1);
+				if (!allow_galerkin){
+					if (level_type[k+1] == OP_TYPE_REDISC_MF) {
+						SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid. Finest level above must be of type OP_TYPE_REDISC_ASM, OP_TYPE_GALERKIN or OP_TYPE_MFGALERKIN, or provide the flag -A11_allow_galerkin_from_mf",k+1);
+					}
+				} else {
+					if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembling operator A_%D to construct A_%D = Pt.A_%D.P \n", k,k+1,k,k+1);
 				}
 				
 				/* should move coarse grid assembly into jacobian */
-				ierr = MatPtAP(operatorA11[k+1],interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+				if (!allow_galerkin) {
+					ierr = MatPtAP(operatorA11[k+1],interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+				} else {
+					Mat A_kp1;
+					PetscBool same1 = PETSC_FALSE,same2 = PETSC_FALSE,same3 = PETSC_FALSE;
+
+					ierr = DMCreateMatrix(dav_hierarchy[k+1],& A_kp1);CHKERRQ(ierr);
+					ierr = MatSetOptionsPrefix(A_kp1,"Buu_");CHKERRQ(ierr);
+					ierr = MatSetFromOptions(A_kp1);CHKERRQ(ierr);
+					ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATSBAIJ,&same1);CHKERRQ(ierr);
+					ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATSEQSBAIJ,&same2);CHKERRQ(ierr);
+					ierr = PetscObjectTypeCompare((PetscObject) A_kp1,MATMPISBAIJ,&same3);CHKERRQ(ierr);
+					if (same1 || same2 || same3) {
+						ierr = MatSetOption(A_kp1,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
+					}
+					ierr = MatZeroEntries(A_kp1);CHKERRQ(ierr);
+					ierr = MatAssemble_StokesA_AUU(A_kp1,dav_hierarchy[k+1],u_bclist[k+1],volQ[k+1]);CHKERRQ(ierr);
+
+					ierr = MatPtAP(A_kp1,interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
+					ierr = MatDestroy(&A_kp1);CHKERRQ(ierr);
+				}
 				
 				operatorA11[k] = Auu;
 				operatorB11[k] = Auu;
@@ -755,7 +782,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 				if (level_type[k+1] != OP_TYPE_REDISC_MF) {
 					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use mf-galerkin. Next finest level[%D] must be of type OP_TYPE_REDISC_MF",k+1);
 				}
-				
 				
 				ierr = DMSetMatType(dav_hierarchy[k],MATAIJ);CHKERRQ(ierr);
 				ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
@@ -852,6 +878,8 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
         ierr = KSPSetDM(ksp_smoother,dav_hierarchy[k]);CHKERRQ(ierr);
         ierr = KSPSetDMActive(ksp_smoother,PETSC_FALSE);CHKERRQ(ierr);
 	}
+
+	ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 
