@@ -116,8 +116,8 @@ extern PetscLogEvent MAT_MultMFA11_copyfrom;
 extern PetscLogEvent MAT_MultMFA11_merge;
 
 extern PetscLogEvent MAT_MultMFA; /* stokes operator */
-extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient opertor */
-extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence opertor */
+extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient operator */
+extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence operator */
 
 PetscClassId PTATIN_CLASSID;
 extern PetscLogEvent PTATIN_DataExchangerTopologySetup;
@@ -167,6 +167,10 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MatMultMFA11_kernel",MAT_CLASSID,&MAT_MultMFA11_kernel);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_copy_from",MAT_CLASSID,&MAT_MultMFA11_copyfrom);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_merge",MAT_CLASSID,&MAT_MultMFA11_merge);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("MatMultMFA",  MAT_CLASSID,&MAT_MultMFA  );CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA12",MAT_CLASSID,&MAT_MultMFA12);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA21",MAT_CLASSID,&MAT_MultMFA21);CHKERRQ(ierr);
 
 	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);
