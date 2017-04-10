@@ -829,30 +829,6 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11(its = %D,cycles = %D)   time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",its,iterations,tl,100.0*(timeMIN/timeMAX),timeMIN,timeMAX);
 	PetscPrintf(PETSC_COMM_WORLD,"KSPSolveA11: average                time %1.4e (sec): ratio %1.4e%%: min/max %1.4e %1.4e (sec)\n",tl/((double)iterations),100.0*(timeMIN/timeMAX),timeMIN/((double)iterations),timeMAX/((double)iterations));
 
-	/*
-	{
-		PetscScalar min,max;
-		PetscReal ydy,resnorm;
-		Vec res;
-		
-		ierr = VecDot(y,y,&ydy);CHKERRQ(ierr);
-		PetscPrintf(PETSC_COMM_WORLD,"  y.y     = %+1.8e \n", ydy );
-		
-		ierr = VecMin(y,NULL,&min);CHKERRQ(ierr);
-		ierr = VecMax(y,NULL,&max);CHKERRQ(ierr);
-		PetscPrintf(PETSC_COMM_WORLD,"  min[y]  = %+1.8e \n", min );
-		PetscPrintf(PETSC_COMM_WORLD,"  max[y]  = %+1.8e \n", max );
-		
-		ierr = VecDuplicate(x,&res);CHKERRQ(ierr);
-		ierr = MatMult(A,y,res);CHKERRQ(ierr);
-		ierr = VecAXPY(res,-1.0,x);CHKERRQ(ierr);
-		ierr = VecNorm(res,NORM_2,&resnorm);CHKERRQ(ierr);
-		PetscPrintf(PETSC_COMM_WORLD,"  |res|     = %+1.8e \n", resnorm );
-		
-		ierr = VecDestroy(&res);CHKERRQ(ierr);
-	}
-	*/
-	
 	ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 	
 	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
