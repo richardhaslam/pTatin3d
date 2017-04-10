@@ -119,6 +119,11 @@ extern PetscLogEvent MAT_MultMFA; /* stokes operator */
 extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient operator */
 extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence operator */
 
+extern PetscLogEvent MAT_MultMFA_QuasiNewtonX; 
+extern PetscLogEvent MAT_MultMFA11_QuasiNewtonX;
+extern PetscLogEvent MAT_MultMFA12_QuasiNewtonX;
+extern PetscLogEvent MAT_MultMFA21_QuasiNewtonX;
+
 PetscClassId PTATIN_CLASSID;
 extern PetscLogEvent PTATIN_DataExchangerTopologySetup;
 extern PetscLogEvent PTATIN_DataExchangerBegin;
@@ -171,6 +176,11 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MatMultMFA",  MAT_CLASSID,&MAT_MultMFA  );CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA12",MAT_CLASSID,&MAT_MultMFA12);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA21",MAT_CLASSID,&MAT_MultMFA21);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("MatMultMFA_QuasiNewtonX",  MAT_CLASSID,&MAT_MultMFA_QuasiNewtonX  );CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA11_QuasiNewtonX);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA12_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA12_QuasiNewtonX);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA21_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA21_QuasiNewtonX);CHKERRQ(ierr);
 
 	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);
