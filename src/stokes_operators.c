@@ -76,6 +76,11 @@ PetscLogEvent MAT_MultMFA;
 PetscLogEvent MAT_MultMFA12; 
 PetscLogEvent MAT_MultMFA21; 
 
+PetscLogEvent MAT_MultMFA_QuasiNewtonX; 
+PetscLogEvent MAT_MultMFA11_QuasiNewtonX; 
+PetscLogEvent MAT_MultMFA12_QuasiNewtonX; 
+PetscLogEvent MAT_MultMFA21_QuasiNewtonX; 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatStokesMFCreate"
 PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
@@ -1000,7 +1005,7 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	PetscScalar       *LA_Xloc;
   PetscFunctionBegin;
   
-	
+	ierr = PetscLogEventBegin(MAT_MultMFA_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	stokes_pack = ctx->stokes_pack;
@@ -1074,6 +1079,7 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	//		ierr = VecCopy(X,Y);CHKERRQ(ierr);
 	//	}
 	
+	ierr = PetscLogEventEnd(MAT_MultMFA_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1403,6 +1409,8 @@ PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscScalar       *LA_Xloc;
 	
   PetscFunctionBegin;
+
+	ierr = PetscLogEventBegin(MAT_MultMFA12_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
   
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1454,6 +1462,7 @@ PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	/* This has the affect of zeroing out rows when the mat-mult is performed */
 	ierr = BCListInsertZero(ctx->u_bclist,Y);CHKERRQ(ierr);
 	
+	ierr = PetscLogEventEnd(MAT_MultMFA12_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1545,6 +1554,8 @@ PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	
   PetscFunctionBegin;
   
+	ierr = PetscLogEventBegin(MAT_MultMFA21_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
+
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
 	dap = ctx->dap;
@@ -1595,6 +1606,7 @@ PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	 ierr = BCListInsertZero(ctx->p_bclist,Y);CHKERRQ(ierr);
 	 */
 	
+	ierr = PetscLogEventEnd(MAT_MultMFA21_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1610,7 +1622,8 @@ PetscErrorCode MatMult_MFStokes_A11_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscScalar       *LA_YUloc;
 	
   PetscFunctionBegin;
-  
+
+	ierr = PetscLogEventBegin(MAT_MultMFA11_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
@@ -1658,6 +1671,7 @@ PetscErrorCode MatMult_MFStokes_A11_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	/* This has the affect of zeroing out rows when the mat-mult is performed */
 	ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
 	
+	ierr = PetscLogEventEnd(MAT_MultMFA11_QuasiNewtonX,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
