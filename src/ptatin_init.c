@@ -61,9 +61,9 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 	}
 
 #if defined(__AVX__) && !defined(TATIN_HAVE_AVX)
-		PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. \n");
-		PetscPrintf(PETSC_COMM_WORLD,"** For significant performance gains, set CONFIG_AVX=y in makefile.arch\n");
-		PetscPrintf(PETSC_COMM_WORLD,"**                                                                     \n");
+	PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. \n");
+	PetscPrintf(PETSC_COMM_WORLD,"** For significant performance gains, set CONFIG_AVX=y in makefile.arch\n");
+	PetscPrintf(PETSC_COMM_WORLD,"**                                                                     \n");
 #endif
 	
 	PetscFunctionReturn(0);
