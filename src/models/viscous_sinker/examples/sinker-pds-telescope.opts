@@ -1,0 +1,125 @@
+# PDS Test Setup (telescope version)
+#
+# This is intended for use as a test case for solver which will
+# be used with @gduclaux's rifting models, abstracted to the
+# extent possible to use with our standard viscous sinker test.
+#
+# As such it is defined as a fairly large problem,
+#  but of course options can be overridden by placing them after
+#  this options file, e.g. -options_file xyz -mx 16 -my 16 -mz 16 
+#
+# This is set up with two telescoping operations, so to run
+#  smaller test cases, options must be adjusted to the communicator size
+#  For example, to run a small problem on a single rank to test,
+# ./$PETSC_ARCH/bin/ptatin_driver_linear_ts.app -options_file src/models/viscous_sinker/examples/sinker-pds-telescope.opts -mx 16 -my 16 -mz 16 -tel1 1 -tel2 1
+#
+# This uses aliases -tel1 and -tel2 as defined below in this file
+
+#############################################################################
+# Problem Setup
+#############################################################################
+-ptatin_model viscous_sinker
+-gbump_amp 0.0
+-lattice_layout_perturb 0.0
+-model_viscous_sinker_eta0 1.0e-2
+-model_viscous_sinker_eta1 1.0e2
+-model_viscous_sinker_rho0 1.0
+-model_viscous_sinker_rho1 1.2
+-mx 96
+-my 96
+-mz 96
+-nsteps 0
+
+#############################################################################
+# Monitoring and Logging
+#############################################################################
+-ksp_converged_reason
+-ksp_monitor
+-log_view
+-options_left
+-ptatin_model_output_disable
+-checkpoint_disable
+-output_path sinker-pds-mfscaling
+-snes_view
+
+# --------------------------------------------------------------------------
+# Subsolver monitors and logging
+# --------------------------------------------------------------------------
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_pc_mg_log
+
+#############################################################################
+# Solver Setup
+#############################################################################
+
+# --------------------------------------------------------------------------
+# Outer Krylov method
+# --------------------------------------------------------------------------
+-snes_type ksponly
+-ksp_type fgmres
+
+# --------------------------------------------------------------------------
+# ABF (fieldsplit) solver
+# --------------------------------------------------------------------------
+-pc_type fieldsplit
+-pc_fieldsplit_type schur
+-pc_fieldsplit_schur_fact_type upper
+
+# --------------------------------------------------------------------------
+# Viscous block subsolver
+# --------------------------------------------------------------------------
+-stk_velocity_dm_mat_type aij
+-A11_operator_type 0,1,1 # coarse-->fine  assm,mf,mf (all redisc.)
+-a11_op avx
+-dau_nlevels 3 
+
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_ksp_rtol 1.0e-2 # gduclaux has 1e-3
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 3
+
+-fieldsplit_u_mg_levels_ksp_type chebyshev # gduclaux has gmres
+-fieldsplit_u_mg_levels_esteig_ksp_norm_type none
+-fieldsplit_u_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_norm_type none
+-fieldsplit_u_mg_levels_pc_type jacobi
+
+-fieldsplit_u_mg_coarse_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type telescope
+-fieldsplit_u_mg_coarse_pc_telescope_reduction_factor 8
+alias -tel1 -fieldsplit_u_mg_coarse_pc_telescope_reduction_factor
+-fieldsplit_u_mg_coarse_telescope_pc_type mg
+-fieldsplit_u_mg_coarse_telescope_pc_mg_galerkin
+-fieldsplit_u_mg_coarse_telescope_pc_mg_levels 2
+
+-fieldsplit_u_mg_coarse_telescope_mg_levels_ksp_type chebyshev # gduclaux has gmres
+-fieldsplit_u_mg_coarse_telescope_mg_levels_esteig_ksp_norm_type none
+-fieldsplit_u_mg_coarse_telescope_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
+-fieldsplit_u_mg_coarse_telescope_mg_levels_ksp_max_it 6
+-fieldsplit_u_mg_coarse_telescope_mg_levels_ksp_norm_type none
+-fieldsplit_u_mg_coarse_telescope_mg_levels_pc_type jacobi
+
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_ksp_type preonly
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_pc_type telescope
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_pc_telescope_reduction_factor 64
+alias -tel2 -fieldsplit_u_mg_coarse_telescope_mg_coarse_pc_telescope_reduction_factor
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_pc_type mg
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_pc_mg_galerkin
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_pc_mg_levels 2
+
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_levels_ksp_type chebyshev # gduclaux has gmres
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_levels_esteig_ksp_norm_type none
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_levels_ksp_chebyshev_esteig 0,0.2,0,1.1
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_levels_ksp_max_it 6
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_levels_ksp_norm_type none
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_levels_pc_type jacobi # gduclaux has bjacobi
+
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_coarse_ksp_type preonly
+-fieldsplit_u_mg_coarse_telescope_mg_coarse_telescope_mg_coarse_pc_factor_mat_solver_package umfpack # gduclaux doesn't specify this
+
+# --------------------------------------------------------------------------
+# Pressure / Schur Complement block subsolver
+# --------------------------------------------------------------------------
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
