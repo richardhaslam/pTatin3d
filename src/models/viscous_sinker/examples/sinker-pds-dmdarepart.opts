@@ -34,7 +34,6 @@
 # Monitoring and Logging
 #############################################################################
 -ksp_converged_reason
--ksp_monitor
 -log_view
 -options_left
 -ptatin_model_output_disable
