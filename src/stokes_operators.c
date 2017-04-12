@@ -951,8 +951,12 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	
 	/* momentum + continuity */
+#ifdef TATIN_HAVE_AVX
+  ierr = MFStokesWrapper_A_AVX(ctx->volQ,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
+#else
 	ierr = MFStokesWrapper_A(ctx->volQ,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
-	
+#endif
+  
 	ierr = VecRestoreArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XPloc,&LA_XPloc);CHKERRQ(ierr);
@@ -1370,8 +1374,12 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* grad */
-	ierr = MFStokesWrapper_A12(ctx->volQ,dau,dap,LA_XPloc,LA_YUloc);CHKERRQ(ierr);
-	
+#ifdef TATIN_HAVE_AVX
+  ierr = MFStokesWrapper_A12_AVX(ctx->volQ,dau,dap,LA_XPloc,LA_YUloc);CHKERRQ(ierr);
+#else
+  ierr = MFStokesWrapper_A12(ctx->volQ,dau,dap,LA_XPloc,LA_YUloc);CHKERRQ(ierr);
+#endif
+  
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XPloc,&LA_XPloc);CHKERRQ(ierr);
 	

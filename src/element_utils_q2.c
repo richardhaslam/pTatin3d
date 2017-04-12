@@ -27,6 +27,7 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
+#include "element_utils_q1.h"
 #include "element_utils_q2.h"
 
 #define ELEMENT_OPERATION_STANDARD
@@ -217,6 +218,56 @@ void P3D_ConstructNi_P1GRel_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]
 	 _xg[1] = 2.0*( _xg[1] - avg_y ) / Ly ;
 	 */
 	P3D_ConstructNi_P1L_3D( _xg, coords, Ni );
+}
+
+void P3D_ConstructNi_P1GRel_VertexBased_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[])
+{
+  PetscReal _xg[3];
+  PetscInt i,d;
+  PetscReal Ni_geom[8],centroid[3],elvert[3*8],Lx[3];
+  
+  P3D_ConstructNi_Q1_3D(_xi,Ni_geom);
+  for (d=0; d<3; d++) {
+    elvert[3*0+d] = coords[3*0+d];
+    elvert[3*1+d] = coords[3*2+d];
+    elvert[3*2+d] = coords[3*6+d];
+    elvert[3*3+d] = coords[3*8+d];
+    
+    elvert[3*4+d] = coords[3*18+d];
+    elvert[3*5+d] = coords[3*20+d];
+    elvert[3*6+d] = coords[3*24+d];
+    elvert[3*7+d] = coords[3*26+d];
+    
+    centroid[d] = coords[3*13+d];
+  }
+  Lx[0] = coords[3*14  ] - coords[3*12  ];
+  Lx[1] = coords[3*16+1] - coords[3*10+1];
+  Lx[2] = coords[3*22+2] - coords[3*4 +2];
+  
+  {
+    // init
+    for (d=0; d<3; d++) {
+      _xg[d] = 0.0;
+    }
+    
+    // interpolate coords
+    for (i=0; i<Q1_NODES_PER_EL_3D; i++) {
+      for (d=0; d<3; d++) {
+        _xg[d] += Ni_geom[i] * elvert[3*i+d];
+      }
+    }
+    
+    // compute relative position
+    for (d=0; d<3; d++) {
+      _xg[d] = ( _xg[d] - centroid[d] ) / Lx[d] ;
+    }
+    
+    // define basis
+    Ni[0] = 1.0;
+    for (d=0; d<3; d++) {
+      Ni[1+d] = _xg[d];
+    }
+  }
 }
 
 void P3D_prepare_elementQ2_3x3(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE])

@@ -46,6 +46,7 @@ void P3D_ConstructNi_P0_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]);
 void P3D_ConstructNi_P1L_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]);
 void P3D_ConstructNi_P1G_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]);
 void P3D_ConstructNi_P1GRel_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]);
+void P3D_ConstructNi_P1GRel_VertexBased_3D(PetscReal _xi[],PetscReal coords[],PetscReal Ni[]);
 
 void P3D_prepare_elementQ2_3x3(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE]);
 void P3D_prepare_elementQ2_2x2(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE]);
