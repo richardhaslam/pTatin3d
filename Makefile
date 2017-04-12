@@ -44,6 +44,10 @@ TATIN_LIB += $(OPENCL_LIB)
 TATIN_INC += $(OPENCL_INC)
 endif
 
+ifeq ($(CONFIG_AVX),y)
+TATIN_CFLAGS += -DTATIN_HAVE_AVX
+endif
+
 # directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
 incsubdirs = $(addsuffix /local.mk,$(call thisdir,$(1)))
