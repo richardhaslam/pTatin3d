@@ -93,7 +93,7 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 
 	ierr = PetscFunctionListAdd(&flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
-#ifdef __AVX__
+#ifdef TATIN_HAVE_AVX
 	ierr = PetscFunctionListAdd(&flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
 #endif
 	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
