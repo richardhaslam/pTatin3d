@@ -324,7 +324,7 @@ PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscS
 /* SpMV for Stokes operator : A */
 /*
   _ConstructNi_P1() defines an alternative local basis function for pressure.
-  The basis is defined in x, y, z, is normalized by the cell diamter.
+  The basis is defined in x, y, z, is normalized by the cell diameter.
   The optimizations made here cf. P3D_ConstructNi_P1GRel_3D() are
     ( i) It uses the central Q2 basis to define the centroid
     (ii) It uses the vertices (Q1 basis) to convert xi[] (local) to x[] (global).
