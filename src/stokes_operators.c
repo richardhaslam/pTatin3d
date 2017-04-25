@@ -72,6 +72,8 @@ PetscLogEvent MAT_MultMFA11_kernel;
 PetscLogEvent MAT_MultMFA11_copyfrom;
 PetscLogEvent MAT_MultMFA11_merge;
 
+PetscLogEvent MAT_MultMFA11_sub;
+
 PetscLogEvent MAT_MultMFA; 
 PetscLogEvent MAT_MultMFA12; 
 PetscLogEvent MAT_MultMFA21; 
@@ -131,6 +133,9 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	ierr = PetscFunctionListAdd(&SetUp_flist,"opencl",MFA11SetUp_OpenCL);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&Destroy_flist,"opencl",MFA11Destroy_OpenCL);CHKERRQ(ierr);
 #endif
+	ierr = PetscFunctionListAdd(&MatMult_flist,"subrepart",MFStokesWrapper_A11_SubRepart);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&SetUp_flist,"subrepart",MFA11SetUp_SubRepart);CHKERRQ(ierr);
+	ierr = PetscFunctionListAdd(&Destroy_flist,"subrepart",MFA11Destroy_SubRepart);CHKERRQ(ierr);
 	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
 	ierr = PetscFunctionListFind(MatMult_flist,optype,&A11->SpMVOp_MatMult);CHKERRQ(ierr);
 	ierr = PetscFunctionListFind(SetUp_flist,optype,&A11->SpMVOp_SetUp);CHKERRQ(ierr);
@@ -1225,7 +1230,6 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	
 	ierr = VecRestoreArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
-//	printf("yin\n");VecView(YUloc,PETSC_VIEWER_STDOUT_SELF);
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
@@ -1240,10 +1244,6 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	/* This has the affect of zeroing out rows when the mat-mult is performed */
 	ierr = BCListInsertDirichlet_MatMult(ctx->u_bclist,X,Y);CHKERRQ(ierr);
 	
-//	{
-//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
-//		ierr = VecCopy(X,Y);CHKERRQ(ierr);
-//	}
 	ierr = PetscLogEventEnd(MAT_MultMFA11,A,X,Y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

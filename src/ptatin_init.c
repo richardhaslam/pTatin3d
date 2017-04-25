@@ -121,6 +121,8 @@ extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;
 extern PetscLogEvent MAT_MultMFA11_merge;
 
+extern PetscLogEvent MAT_MultMFA11_sub;
+
 extern PetscLogEvent MAT_MultMFA; /* stokes operator */
 extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient operator */
 extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence operator */
@@ -178,6 +180,8 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MatMultMFA11_kernel",MAT_CLASSID,&MAT_MultMFA11_kernel);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_copy_from",MAT_CLASSID,&MAT_MultMFA11_copyfrom);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_merge",MAT_CLASSID,&MAT_MultMFA11_merge);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("MatMultMFA11_sub",MAT_CLASSID,&MAT_MultMFA11_sub);CHKERRQ(ierr);
 
 	ierr = PetscLogEventRegister("MatMultMFA",  MAT_CLASSID,&MAT_MultMFA  );CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA12",MAT_CLASSID,&MAT_MultMFA12);CHKERRQ(ierr);
