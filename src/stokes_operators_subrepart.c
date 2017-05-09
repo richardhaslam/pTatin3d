@@ -38,8 +38,15 @@ shared set elements to be processed per shared memory domain.
 #include <stokes_operators.h>
 #include <element_utils_q2.h>
 #include <element_utils_q1.h>
+#include <immintrin.h>
 
 extern PetscLogEvent MAT_MultMFA11_sub;
+
+#ifndef __FMA__
+#  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
+#endif
+
+#define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
 #define NEV 4			/* Number of elements over which to vectorize */
 
@@ -49,17 +56,16 @@ typedef enum {
 } GradMode;
 
 #undef __FUNCT__
-#define __FUNCT__ "TensorContractNEV"
+#define __FUNCT__ "TensorContractNEV_AVX"
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
-static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
+static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
 {
 	PetscReal R[3][3],S[3][3],T[3][3];
-	PetscReal u[3][NQP][NEV],v[3][NQP][NEV];
-    PetscInt i,j,k,l,kj,ji,a,b,c,e;
+	PetscReal u[3][NQP][NEV] ALIGN32,v[3][NQP][NEV] ALIGN32;
+  PetscInt i,j,k,l,kj,ji,a,b,c;
 
-	PetscFunctionBegin;
 	for (j=0; j<3; j++) {
 		for (i=0; i<3; i++) {
 			R[i][j] = i<3 ? (gmode == GRAD ? Rf[i][j] : Rf[j][i]) : 0.;
@@ -68,51 +74,62 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 		}
 	}
 
-	/* u[l,k,j,c] = R[c,i] x[l,k,j,i] */
-	PetscMemzero(u,sizeof u);
+	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
 	for (l=0; l<3; l++) {
-		for (kj=0; kj<9; kj++) {
-			for (i=0; i<3; i++) {
-				for (c=0; c<3; c++) {
-					for (e=0; e<NEV; e++) u[l][kj*3+c][e] += R[c][i] * x[l][kj*3+i][e];
+		for (c=0; c<3; c++) {
+			__m256d r[3] = {_mm256_set1_pd(R[c][0]),_mm256_set1_pd(R[c][1]),_mm256_set1_pd(R[c][2])};
+			for (kj=0; kj<9; kj++) {
+				__m256d u_lkjc = _mm256_setzero_pd();
+				for (i=0; i<3; i++) {
+					__m256d x_lkji = _mm256_load_pd(x[l][kj*3+i]);
+					u_lkjc = _mm256_fmadd_pd(r[i],x_lkji,u_lkjc);
 				}
+				_mm256_store_pd(u[l][kj*3+c],u_lkjc);
 			}
 		}
 	}
 
-	/* v[l,k,b,c] = S[b,j] u[l,k,j,c] */
-	PetscMemzero(v,sizeof v);
+	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
 	for (l=0; l<3; l++) {
 		for (k=0; k<3; k++) {
-			for (j=0; j<3; j++) {
+			for (b=0; b<3; b++) {
+				__m256d s[3] = {_mm256_set1_pd(S[b][0]),_mm256_set1_pd(S[b][1]),_mm256_set1_pd(S[b][2])};
 				for (c=0; c<3; c++) {
-					for (b=0; b<3; b++) {
-						for (e=0; e<NEV; e++) v[l][(k*3+b)*3+c][e] += S[b][j] * u[l][(k*3+j)*3+c][e];
+					__m256d v_lkbc = _mm256_setzero_pd();
+					for (j=0; j<3; j++) {
+						__m256d u_lkjc = _mm256_load_pd(u[l][(k*3+j)*3+c]);
+						v_lkbc = _mm256_fmadd_pd(s[j],u_lkjc,v_lkbc);
 					}
+					_mm256_store_pd(v[l][(k*3+b)*3+c],v_lkbc);
 				}
 			}
 		}
 	}
 
-	/* y[l,a,b,c] = T[a,k] v[l,k,b,c] */
-	for (k=0; k<3; k++) {
-		for (l=0; l<3; l++) {
-			for (a=0; a<3; a++) {
-				for (ji=0; ji<9; ji++) {
-					for (e=0; e<NEV; e++) y[l][a*9+ji][e] += T[a][k] * v[l][k*9+ji][e];
+	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
+	for (a=0; a<3; a++) {
+		__m256d t[3] = {_mm256_set1_pd(T[a][0]),_mm256_set1_pd(T[a][1]),_mm256_set1_pd(T[a][2])};
+		for (ji=0; ji<9; ji++) {
+			for (l=0; l<3; l++) {
+				__m256d y_laji = _mm256_load_pd(y[l][a*9+ji]);
+				for (k=0; k<3; k++) {
+					__m256d v_lkji = _mm256_load_pd(v[l][k*9+ji]);
+					y_laji = _mm256_fmadd_pd(v_lkji,t[k],y_laji);
 				}
+				_mm256_store_pd(y[l][a*9+ji],y_laji);
 			}
 		}
 	}
-	PetscFunctionReturn(0);
+	return 0;
 }
 
-static PetscErrorCode JacobianInvertNEV(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
+__attribute__((noinline))
+static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
 {
 	PetscInt i,j,k,e;
 
 	for (i=0; i<NQP; i++) {
-		PetscScalar a[3][3][NEV];
+		PetscScalar a[3][3][NEV] ALIGN32;
 		for (e=0; e<NEV; e++) {
 			PetscScalar b0,b3,b6,det,idet;
 			for (j=0; j<3; j++) {
@@ -140,53 +157,62 @@ static PetscErrorCode JacobianInvertNEV(PetscScalar dx[3][3][NQP][NEV],PetscScal
 	return 0;
 }
 
-static PetscErrorCode QuadratureAction(const PetscReal *gaussdata_w,
-				       PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
-				       PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
-				       PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
-				       PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV])
+__attribute__((noinline))
+static PetscErrorCode QuadratureAction_A11_AVX(const PetscReal *gaussdata_w,
+					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV])
 {
 	PetscInt i,l,k,e;
 
 	for (i=0; i<NQP; i++) {
-		PetscScalar Du[6][NEV]; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
-		for (e=0; e<NEV; e++) {
-			PetscScalar dux[3][3];
-			for (l=0; l<3; l++) { /* fields */
-				for (k=0; k<3; k++) { /* directions */
-					dux[k][l] = du[0][l][i][e] * dx[k][0][i][e] + du[1][l][i][e] * dx[k][1][i][e] + du[2][l][i][e] * dx[k][2][i][e];
-				}
+		PetscScalar Du[6][NEV] ALIGN32,Dv[6][NEV] ALIGN32; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
+		__m256d dux[3][3],mhalf = _mm256_set1_pd(0.5),dvx[3][3];
+		__m256d mdxdet = _mm256_load_pd(dxdet[i]);
+
+		for (k=0; k<3; k++) { // directions
+			__m256d dxk[3] = {_mm256_load_pd(dx[k][0][i]),_mm256_load_pd(dx[k][1][i]),_mm256_load_pd(dx[k][2][i])};
+			for (l=0; l<3; l++) { // fields
+				dux[k][l] = _mm256_mul_pd(_mm256_load_pd(du[0][l][i]),dxk[0]);
+				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[1][l][i]),dxk[1],dux[k][l]);
+				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[2][l][i]),dxk[2],dux[k][l]);
 			}
-			Du[0][e] = dux[0][0];
-			Du[1][e] = dux[1][1];
-			Du[2][e] = dux[2][2];
-			Du[3][e] = 0.5*(dux[0][1] + dux[1][0]);
-			Du[4][e] = 0.5*(dux[0][2] + dux[2][0]);
-			Du[5][e] = 0.5*(dux[1][2] + dux[2][1]);
+		}
+		_mm256_store_pd(Du[0],dux[0][0]);
+		_mm256_store_pd(Du[1],dux[1][1]);
+		_mm256_store_pd(Du[2],dux[2][2]);
+		_mm256_store_pd(Du[3],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][1],dux[1][0])));
+		_mm256_store_pd(Du[4],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][2],dux[2][0])));
+		_mm256_store_pd(Du[5],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[1][2],dux[2][1])));
+
+		for (e=0; e<NEV; e++) {
+			for (k=0; k<6; k++) { /* Stress is coefficient of test function */
+				Dv[k][e] = 2 * gaussdata_w[NQP*e+i]* Du[k][e];  // TODO: think about if there's a more efficient way to do this
+			}
 		}
 
-		for (e=0; e<NEV; e++) {
-			PetscScalar dvx[3][3];
-			dvx[0][0] = 2 * gaussdata_w[e*NQP+i] * Du[0][e];
-			dvx[0][1] = 2 * gaussdata_w[e*NQP+i] * Du[3][e];
-			dvx[0][2] = 2 * gaussdata_w[e*NQP+i] * Du[4][e];
-			dvx[1][0] = 2 * gaussdata_w[e*NQP+i] * Du[3][e];
-			dvx[1][1] = 2 * gaussdata_w[e*NQP+i] * Du[1][e];
-			dvx[1][2] = 2 * gaussdata_w[e*NQP+i] * Du[5][e];
-			dvx[2][0] = 2 * gaussdata_w[e*NQP+i] * Du[4][e];
-			dvx[2][1] = 2 * gaussdata_w[e*NQP+i] * Du[5][e];
-			dvx[2][2] = 2 * gaussdata_w[e*NQP+i] * Du[2][e];
+		dvx[0][0] = _mm256_load_pd(Dv[0]);
+		dvx[0][1] = _mm256_load_pd(Dv[3]);
+		dvx[0][2] = _mm256_load_pd(Dv[4]);
+		dvx[1][0] = _mm256_load_pd(Dv[3]);
+		dvx[1][1] = _mm256_load_pd(Dv[1]);
+		dvx[1][2] = _mm256_load_pd(Dv[5]);
+		dvx[2][0] = _mm256_load_pd(Dv[4]);
+		dvx[2][1] = _mm256_load_pd(Dv[5]);
+		dvx[2][2] = _mm256_load_pd(Dv[2]);
 
-			for (l=0; l<3; l++) { /* fields */
-				for (k=0; k<3; k++) { /* directions */
-					dv[k][l][i][e] = dxdet[i][e] * (dvx[0][l] * dx[0][k][i][e] + dvx[1][l] * dx[1][k][i][e] + dvx[2][l] * dx[2][k][i][e]);
-				}
+		for (l=0; l<3; l++) { // fields
+			for (k=0; k<3; k++) { // directions
+				__m256d sum = _mm256_mul_pd(dvx[0][l],_mm256_load_pd(dx[0][k][i]));
+				sum = _mm256_fmadd_pd(dvx[1][l],_mm256_load_pd(dx[1][k][i]),sum);
+				sum = _mm256_fmadd_pd(dvx[2][l],_mm256_load_pd(dx[2][k][i]),sum);
+				_mm256_store_pd(dv[k][l][i],_mm256_mul_pd(mdxdet,sum));
 			}
 		}
 	}
 	return 0;
 }
-
 typedef struct _p_MFA11SubRepart *MFA11SubRepart;
 
 struct _p_MFA11SubRepart {
@@ -610,25 +636,24 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
           gaussdata_w_local[ee*NQP+i] = gaussdata_w_repart[el*NQP+i];
         }
       }
-
       ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = JacobianInvertNEV(dx,dxdet);OPENMP_CHKERRQ(ierr);
+      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
       ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = QuadratureAction(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
+      ierr = QuadratureAction_A11_AVX(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
 
       ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #pragma omp critical
