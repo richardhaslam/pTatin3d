@@ -56,11 +56,11 @@ typedef enum {
 } GradMode;
 
 #undef __FUNCT__
-#define __FUNCT__ "TensorContractNEV_AVX"
+#define __FUNCT__ "TensorContractNEVAVX_mod"
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
-static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
+static PetscErrorCode TensorContractNEVAVX_mod(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
 {
 	PetscReal R[3][3],S[3][3],T[3][3];
 	PetscReal u[3][NQP][NEV] ALIGN32,v[3][NQP][NEV] ALIGN32;
@@ -124,7 +124,7 @@ static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],
 }
 
 __attribute__((noinline))
-static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
+static PetscErrorCode JacobianInvertNEVAVX_mod(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
 {
 	PetscInt i,j,k,e;
 
@@ -158,7 +158,7 @@ static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],Petsc
 }
 
 __attribute__((noinline))
-static PetscErrorCode QuadratureAction_A11_AVX(const PetscReal *gaussdata_w,
+static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
 					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
 					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
@@ -637,23 +637,23 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
         }
       }
       ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
+      ierr = JacobianInvertNEVAVX_mod(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
       ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = QuadratureAction_A11_AVX(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
+      ierr = QuadratureAction_A11AVX_mod(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
 
       ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEVAVX_mod(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #pragma omp critical
