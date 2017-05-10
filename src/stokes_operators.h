@@ -61,8 +61,6 @@ struct _p_MatA11MF {
 	PetscErrorCode (*SpMVOp_Destroy)(MatA11MF);
 };
 
-
-
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes user,Mat *B);
 
@@ -99,6 +97,26 @@ PetscErrorCode MatShellGetMatA11MF(Mat A,MatA11MF *mf);
 
 PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3);
 PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3);
+
+/* Implementation-specific routines shared amongst multiple implementations */
+#define NQP 27		/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
+#define NEV 4			/* Number of elements over which to vectorize */
+
+typedef enum {
+	GRAD,
+	GRAD_TRANSPOSE
+} GradMode;
+
+PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV]);
+__attribute__((noinline))
+PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV]);
+__attribute__((noinline))
+PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
+					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
+					   PetscReal w[Q2_NODES_PER_EL_3D],
+					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV]);
 
 #endif
 

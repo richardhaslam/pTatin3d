@@ -48,13 +48,6 @@ extern PetscLogEvent MAT_MultMFA11_sub;
 
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
-#define NEV 4			/* Number of elements over which to vectorize */
-
-typedef enum {
-	GRAD,
-	GRAD_TRANSPOSE
-} GradMode;
-
 #undef __FUNCT__
 #define __FUNCT__ "TensorContractNEVAVX_mod"
 /*
