@@ -603,6 +603,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
       }
     }
 
+    ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
 #else
@@ -613,7 +615,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #pragma omp parallel for private(i)
 #endif
 
-    ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
     for (e=0;e<ctx->nel_repart;e+=NEV) {
       PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
       PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
