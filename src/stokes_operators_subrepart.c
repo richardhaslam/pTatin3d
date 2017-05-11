@@ -17,10 +17,9 @@ is a heterogeneous compute node with a single coprocessor
 and several CPU cores, when we would like to use a flat MPI
 paradigm.
 
-This current prototype simply redistributes the "tensor" 
-application (thus introducing load imbalance). The next steps are
-- To replace the "tensor" logic with the (similar) "AVX" logic
-- To replace the logic on rank_sub 0 with the "CUDA" logic
+This current prototype is intended to allow you to choose
+to use a modified AVX implementation, or the CUDA implementation,
+on rank_sub 0, and the usual AVX implementation on other ranks.
 
 Farther into the future, it would be natural to investigate
 shared-memory abstractions (such as those supported by MPI 3)
@@ -48,108 +47,6 @@ extern PetscLogEvent MAT_MultMFA11_sub;
 
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
-#undef __FUNCT__
-#define __FUNCT__ "TensorContractNEVAVX_mod"
-/*
- * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
- */
-static PetscErrorCode TensorContractNEVAVX_mod(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
-{
-	PetscReal R[3][3],S[3][3],T[3][3];
-	PetscReal u[3][NQP][NEV] ALIGN32,v[3][NQP][NEV] ALIGN32;
-  PetscInt i,j,k,l,kj,ji,a,b,c;
-
-	for (j=0; j<3; j++) {
-		for (i=0; i<3; i++) {
-			R[i][j] = i<3 ? (gmode == GRAD ? Rf[i][j] : Rf[j][i]) : 0.;
-			S[i][j] = i<3 ? (gmode == GRAD ? Sf[i][j] : Sf[j][i]) : 0.;
-			T[i][j] = i<3 ? (gmode == GRAD ? Tf[i][j] : Tf[j][i]) : 0.;
-		}
-	}
-
-	// u[l,k,j,c] = R[c,i] x[l,k,j,i]
-	for (l=0; l<3; l++) {
-		for (c=0; c<3; c++) {
-			__m256d r[3] = {_mm256_set1_pd(R[c][0]),_mm256_set1_pd(R[c][1]),_mm256_set1_pd(R[c][2])};
-			for (kj=0; kj<9; kj++) {
-				__m256d u_lkjc = _mm256_setzero_pd();
-				for (i=0; i<3; i++) {
-					__m256d x_lkji = _mm256_load_pd(x[l][kj*3+i]);
-					u_lkjc = _mm256_fmadd_pd(r[i],x_lkji,u_lkjc);
-				}
-				_mm256_store_pd(u[l][kj*3+c],u_lkjc);
-			}
-		}
-	}
-
-	// v[l,k,b,c] = S[b,j] u[l,k,j,c]
-	for (l=0; l<3; l++) {
-		for (k=0; k<3; k++) {
-			for (b=0; b<3; b++) {
-				__m256d s[3] = {_mm256_set1_pd(S[b][0]),_mm256_set1_pd(S[b][1]),_mm256_set1_pd(S[b][2])};
-				for (c=0; c<3; c++) {
-					__m256d v_lkbc = _mm256_setzero_pd();
-					for (j=0; j<3; j++) {
-						__m256d u_lkjc = _mm256_load_pd(u[l][(k*3+j)*3+c]);
-						v_lkbc = _mm256_fmadd_pd(s[j],u_lkjc,v_lkbc);
-					}
-					_mm256_store_pd(v[l][(k*3+b)*3+c],v_lkbc);
-				}
-			}
-		}
-	}
-
-	// y[l,a,b,c] = T[a,k] v[l,k,b,c]
-	for (a=0; a<3; a++) {
-		__m256d t[3] = {_mm256_set1_pd(T[a][0]),_mm256_set1_pd(T[a][1]),_mm256_set1_pd(T[a][2])};
-		for (ji=0; ji<9; ji++) {
-			for (l=0; l<3; l++) {
-				__m256d y_laji = _mm256_load_pd(y[l][a*9+ji]);
-				for (k=0; k<3; k++) {
-					__m256d v_lkji = _mm256_load_pd(v[l][k*9+ji]);
-					y_laji = _mm256_fmadd_pd(v_lkji,t[k],y_laji);
-				}
-				_mm256_store_pd(y[l][a*9+ji],y_laji);
-			}
-		}
-	}
-	return 0;
-}
-
-__attribute__((noinline))
-static PetscErrorCode JacobianInvertNEVAVX_mod(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
-{
-	PetscInt i,j,k,e;
-
-	for (i=0; i<NQP; i++) {
-		PetscScalar a[3][3][NEV] ALIGN32;
-		for (e=0; e<NEV; e++) {
-			PetscScalar b0,b3,b6,det,idet;
-			for (j=0; j<3; j++) {
-				for (k=0; k<3; k++) {
-					a[j][k][e] = dx[j][k][i][e];
-				}
-			}
-			b0 =  (a[1][1][e]*a[2][2][e] - a[2][1][e]*a[1][2][e]);
-			b3 = -(a[1][0][e]*a[2][2][e] - a[2][0][e]*a[1][2][e]);
-			b6 =  (a[1][0][e]*a[2][1][e] - a[2][0][e]*a[1][1][e]);
-			det = a[0][0][e]*b0 + a[0][1][e]*b3 + a[0][2][e]*b6;
-			idet = 1.0 / det;
-			dx[0][0][i][e] =  idet*b0;
-			dx[0][1][i][e] = -idet*(a[0][1][e]*a[2][2][e] - a[2][1][e]*a[0][2][e]);
-			dx[0][2][i][e] =  idet*(a[0][1][e]*a[1][2][e] - a[1][1][e]*a[0][2][e]);
-			dx[1][0][i][e] =  idet*b3;
-			dx[1][1][i][e] =  idet*(a[0][0][e]*a[2][2][e] - a[2][0][e]*a[0][2][e]);
-			dx[1][2][i][e] = -idet*(a[0][0][e]*a[1][2][e] - a[1][0][e]*a[0][2][e]);
-			dx[2][0][i][e] =  idet*b6;
-			dx[2][1][i][e] = -idet*(a[0][0][e]*a[2][1][e] - a[2][0][e]*a[0][1][e]);
-			dx[2][2][i][e] =  idet*(a[0][0][e]*a[1][1][e] - a[1][0][e]*a[0][1][e]);
-			dxdet[i][e] =  det;
-		}
-	}
-	return 0;
-}
-
 __attribute__((noinline))
 static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
@@ -164,9 +61,9 @@ static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 		__m256d dux[3][3],mhalf = _mm256_set1_pd(0.5),dvx[3][3];
 		__m256d mdxdet = _mm256_load_pd(dxdet[i]);
 
-		for (k=0; k<3; k++) { // directions
+		for (k=0; k<3; k++) { /* directions */
 			__m256d dxk[3] = {_mm256_load_pd(dx[k][0][i]),_mm256_load_pd(dx[k][1][i]),_mm256_load_pd(dx[k][2][i])};
-			for (l=0; l<3; l++) { // fields
+			for (l=0; l<3; l++) { /* fields */
 				dux[k][l] = _mm256_mul_pd(_mm256_load_pd(du[0][l][i]),dxk[0]);
 				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[1][l][i]),dxk[1],dux[k][l]);
 				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[2][l][i]),dxk[2],dux[k][l]);
@@ -181,7 +78,7 @@ static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 
 		for (e=0; e<NEV; e++) {
 			for (k=0; k<6; k++) { /* Stress is coefficient of test function */
-				Dv[k][e] = 2 * gaussdata_w[NQP*e+i]* Du[k][e];  // TODO: think about if there's a more efficient way to do this
+				Dv[k][e] = 2 * gaussdata_w[NQP*e+i]* Du[k][e]; 
 			}
 		}
 
@@ -195,8 +92,8 @@ static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 		dvx[2][1] = _mm256_load_pd(Dv[5]);
 		dvx[2][2] = _mm256_load_pd(Dv[2]);
 
-		for (l=0; l<3; l++) { // fields
-			for (k=0; k<3; k++) { // directions
+		for (l=0; l<3; l++) { /* fields  */
+			for (k=0; k<3; k++) { /* directions */
 				__m256d sum = _mm256_mul_pd(dvx[0][l],_mm256_load_pd(dx[0][k][i]));
 				sum = _mm256_fmadd_pd(dvx[1][l],_mm256_load_pd(dx[1][k][i]),sum);
 				sum = _mm256_fmadd_pd(dvx[2][l],_mm256_load_pd(dx[2][k][i]),sum);
@@ -206,6 +103,7 @@ static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 	}
 	return 0;
 }
+
 typedef struct _p_MFA11SubRepart *MFA11SubRepart;
 
 struct _p_MFA11SubRepart {
@@ -227,9 +125,170 @@ struct _p_MFA11SubRepart {
   PetscInt       nel_sub,nen_u;
   PetscInt       nel,nel_remote,nel_repart;
   PetscInt       nnodes,nnodes_remote,nnodes_repart;
-  PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*elnidx_u_concatenated,*nel_remote_in;
-  const PetscInt *elnidx_u_repart;
+  PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
+  PetscInt       *elnidx_u_repart;
 };
+
+#undef __FUNCT__
+#define __FUNCT__ "TransferQPData_A11_SubRepart"
+static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal (*wp)[NQP],Quadrature volQ,QPntVolCoefStokes *all_gausspoints,PetscReal *gaussdata_w_remote, PetscReal *gaussdata_w_repart)
+{
+  PetscErrorCode          ierr;
+  PetscInt                i,e;
+  PetscMPIInt             rank_sub;
+  const QPntVolCoefStokes *cell_gausspoints;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+
+  /* Create and populate gaussdata_w_remote and _repart. This is the quadrature-point-wise
+     information needed to apply the operator. On rank_sub 0, this
+     has information for all the elements which will be processed. On  other 
+     ranks it has information on the elements which will be offloaded 
+     to rank_sub 0. */
+  if (rank_sub ) {
+    for (e=ctx->nel_repart; e<ctx->nel; e++) {
+      PetscInt e_remote = e - ctx->nel_repart; /* element number in set to send */
+      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
+      for (i=0; i<NQP; i++) gaussdata_w_remote[e_remote*NQP + i] = cell_gausspoints[i].eta * (*wp)[i];
+    }
+  } else {
+    for (e=0;               e<ctx->nel; e++) {
+      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
+      for (i=0; i<NQP; i++) gaussdata_w_repart[e       *NQP + i] = cell_gausspoints[i].eta * (*wp)[i];
+    }
+  }
+
+  /* Send required quadrature-pointwise data to rank_sub 0 */
+  if (rank_sub) {
+    ierr = MPI_Send(gaussdata_w_remote,NQP*ctx->nel_remote,MPIU_REAL,0,0,ctx->comm_sub);CHKERRQ(ierr);
+  } else {
+    PetscInt el_offset=ctx->nel;
+    for(i=1; i<ctx->size_sub; ++i) {
+      ierr = MPI_Recv(&gaussdata_w_repart[NQP * el_offset],NQP * ctx->nel_remote_in[i],MPIU_REAL,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      el_offset += ctx->nel_remote_in[i];
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TransferCoordinates_A11_SubRepart"
+static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const PetscReal *LA_gcoords,PetscReal *LA_gcoords_remote,PetscReal *LA_gcoords_repart)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscMPIInt    rank_sub;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+
+  /* Copy to arrays to send, or to receive */
+  if (rank_sub) {
+    for (i=0;i<ctx->nnodes_remote;++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        LA_gcoords_remote[NSD*i+d] = LA_gcoords[NSD*ctx->nodes_remote[i]+d];
+      }
+    }
+  } else {
+    /* Rank 0  - populate local contributions to arrays we'll receive with */
+    ierr = PetscMemcpy(LA_gcoords_repart ,LA_gcoords ,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  if (rank_sub) {
+    ierr = MPI_Send(LA_gcoords_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
+  } else {
+    PetscInt nodes_offset = ctx->nnodes;
+    for(i=1;i<ctx->size_sub;++i){
+      ierr = MPI_Recv(&LA_gcoords_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      nodes_offset += ctx->nnodes_remote_in[i];
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TransferUfield_A11_SubRepart"
+static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield,PetscScalar *ufield_remote,PetscScalar *ufield_repart)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscMPIInt    rank_sub;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+
+  /* Copy to arrays to send, or to receive */
+  if (rank_sub) {
+    /* Ranks 1,2,..  - move data to arrays to be sent */
+    for (i=0;i<ctx->nnodes_remote;++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        ufield_remote[NSD*i+d] = ufield[NSD*ctx->nodes_remote[i]+d];
+      }
+    }
+  } else {
+    /* Rank 0  - populate local contributions to arrays we'll receive with */
+    ierr = PetscMemcpy(ufield_repart,ufield,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+
+  /* Send data to rank_sub 0 */
+    if (rank_sub) {
+      ierr = MPI_Send(ufield_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
+    } else {
+      PetscInt nodes_offset = ctx->nnodes;
+      for(i=1;i<ctx->size_sub;++i){
+        ierr = MPI_Recv(&ufield_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+        nodes_offset += ctx->nnodes_remote_in[i];
+      }
+    }
+
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TransferYu_A11_SubRepart"
+static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu,PetscScalar *Yu_remote,PetscScalar *Yu_repart)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscMPIInt    rank_sub;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+
+  if (rank_sub) {
+    ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  } else {
+    PetscInt nodes_offset = ctx->nnodes;
+    for (i=1; i<ctx->size_sub; ++i) {
+      ierr = MPI_Send(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub);CHKERRQ(ierr);
+      nodes_offset += ctx->nnodes_remote_in[i];
+    }
+  }
+
+  /* Accumulate into Yu */
+  if (rank_sub) {
+    for (i=0; i<ctx->nnodes_remote; ++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
+      }
+    }
+  } else {
+    for (i=0; i<ctx->nnodes; ++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        Yu[NSD*i+d] += Yu_repart[NSD*i+d];
+      }
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MFA11SetUp_SubRepart"
@@ -362,45 +421,39 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ierr = PetscMalloc1(ctx->size_sub,&ctx->nel_remote_in);CHKERRQ(ierr);
   ierr = MPI_Gather(&ctx->nel_remote,1,MPIU_INT,ctx->nel_remote_in,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
 
-  /* Send and receive elements being offloaded to rank 0, defining element-->node maps for
-     the repartition */
+  /* Send and receive elements being offloaded to rank 0, defining element-->node 
+     maps for the repartition.  On rank_sub > 0, this involves computing the 
+     element indices to send to rank 0 by mapping them into the local ordering 
+     for the nodes which are used there, and then offsetting.  */
   if (rank_sub) {
     PetscInt *elnidx_u_remote;
     PetscInt i;
     ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&elnidx_u_remote);CHKERRQ(ierr); 
-
-    /* Populate the element indices to send to rank 0 by mapping them into 
-       the local ordering for the nodes which are used there, and then
-       offsetting */
     for (i=0;i<ctx->nen_u*ctx->nel_remote;++i){
-      PetscInt  ind = ctx->elnidx_u[ctx->nen_u*ctx->nel_repart + i]; /* the local nodes for the elements to be send */
+      PetscInt ind = ctx->elnidx_u[ctx->nen_u*ctx->nel_repart + i];
       {
         PetscInt val ;
-        PetscHashIMap(nodes_remote_inv,ind,val); /* convert the local index to an index in ctx->nodes_remote */
-        elnidx_u_remote[i] = val + ctx->nodes_offset; /* convert the index in ctx->nodes_remote to an index for the concatenated array on rank 0 */
+        PetscHashIMap(nodes_remote_inv,ind,val); /* local index --> index in ctx->nodes_remote */
+        elnidx_u_remote[i] = val + ctx->nodes_offset; /* index in ctx->nodes_remote --> index for ctx->elnidx_u_repart on rank 0 */
       }
     }
 
     PetscHashIDestroy(nodes_remote_inv);
-
     ierr = MPI_Send(elnidx_u_remote,ctx->nen_u*ctx->nel_remote,MPIU_INT,0,0,ctx->comm_sub);CHKERRQ(ierr);
     ierr = PetscFree(elnidx_u_remote);CHKERRQ(ierr);
 
   } else {
     PetscMPIInt i;
     PetscInt    el_offset=ctx->nel;
-    ierr = PetscMalloc1(ctx->nel_repart*ctx->nen_u,&ctx->elnidx_u_concatenated);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ctx->elnidx_u_concatenated,ctx->elnidx_u,ctx->nel*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr); 
+    ierr = PetscMalloc1(ctx->nel_repart*ctx->nen_u,&ctx->elnidx_u_repart);CHKERRQ(ierr);
+    ierr = PetscMemcpy(ctx->elnidx_u_repart,ctx->elnidx_u,ctx->nel*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr); 
 
     /* Receive a chunk of elements (sets of 27 nodes for Q2 elements) from each other rank */
     for(i=1;i<ctx->size_sub;++i)  {
-      ierr = MPI_Recv(&ctx->elnidx_u_concatenated[ctx->nen_u*el_offset],ctx->nen_u*ctx->nel_remote_in[i],MPIU_INT,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+      ierr = MPI_Recv(&ctx->elnidx_u_repart[ctx->nen_u*el_offset],ctx->nen_u*ctx->nel_remote_in[i],MPIU_INT,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       el_offset += ctx->nel_remote_in[i];
     }
   }
- 
-  /* Assign to the pointer to be used later */
-  ctx->elnidx_u_repart = rank_sub? ctx->elnidx_u : ctx->elnidx_u_concatenated;
 
 #if 1
   { /* Print stats on nodes and el for normal, remote, and repart */
@@ -456,7 +509,7 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
   if (rank_sub) {
     ierr = PetscFree(ctx->nodes_remote);CHKERRQ(ierr);
   }else {
-    ierr = PetscFree(ctx->elnidx_u_concatenated);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->elnidx_u_repart);CHKERRQ(ierr);
     ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr); 
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
   }
@@ -476,13 +529,11 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   PetscReal               x1[3],w1[3],B[3][3],D[3][3],w[NQP];
   PetscInt                i,j,k,e;
   QPntVolCoefStokes       *all_gausspoints;
-  const QPntVolCoefStokes *cell_gausspoints;
   PetscMPIInt             rank_sub;
-  PetscScalar             *ufield_r;
-  PetscScalar             *Yu_r,*Yu_repart;  /* r = remote or repart, depending on rank */
-  const PetscScalar       *ufield_repart;
-  PetscReal               *gaussdata_w,*gaussdata_w_r,*LA_gcoords_r,*gaussdata_w_repart;
-  const PetscReal         *LA_gcoords_repart;
+  PetscScalar             *ufield_remote,     *ufield_repart;
+  PetscScalar             *Yu_remote,         *Yu_repart; 
+  PetscReal               *gaussdata_w_remote,*gaussdata_w_repart;
+  PetscReal               *LA_gcoords_remote, *LA_gcoords_repart;
 
   PetscFunctionBeginUser;
   ctx = (MFA11SubRepart)mf->ctx;
@@ -502,112 +553,112 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
       for (k=0; k<3; k++) {
         w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];}}}
 
+  /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
+  if (rank_sub) {
+    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ufield_remote     );CHKERRQ(ierr);
+    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&Yu_remote         );CHKERRQ(ierr); 
+    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
+    ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&ufield_repart     );CHKERRQ(ierr);
+    ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&Yu_repart         );CHKERRQ(ierr); /* Note Calloc (zeroed) */
+    ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
+    ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
+  }
+
+  ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
+
+  /* Send required quadrature-pointwise data to rank_sub 0 */
+  ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
+
   /* setup for coords */
   ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-  /* Create and populate gaussdata_w. This is the quadrature-point-wise
-     information needed to apply the operator. */
-  ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
-  ierr = PetscMalloc(ctx->nel * NQP * sizeof(PetscReal), &gaussdata_w);CHKERRQ(ierr);
-  for (e=0; e<ctx->nel; e++) {
-    ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-    for (i=0; i<NQP; i++) gaussdata_w[e*NQP + i] = cell_gausspoints[i].eta * w[i];
-  }
+  /* Send required coordinate data to rank_sub 0 */
+  ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
 
-  /* Allocate space */
+  /* Send required ufield data to rank_sub 0 */
+  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ufield_remote,ufield_repart);CHKERRQ(ierr);
+
   if (rank_sub) {
-    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ufield_r);CHKERRQ(ierr);
-    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&Yu_r);CHKERRQ(ierr); 
-    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_r);CHKERRQ(ierr);
-  } else {
-    ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&ufield_r);CHKERRQ(ierr);
-    ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&Yu_r);CHKERRQ(ierr); /* Note Calloc (so this is zeroed) */
-    ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_r);CHKERRQ(ierr);
-    ierr = PetscMalloc1(NQP*ctx->nel_repart,&gaussdata_w_r);CHKERRQ(ierr);
+    ierr = PetscFree(ufield_remote);CHKERRQ(ierr);
+    ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
+    ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
   }
 
-  /*                              rank_sub > 0      rank_sub 0
-                                  --------------------------- */
-  ufield_repart      = rank_sub ? ufield      :      ufield_r;
-  Yu_repart          = rank_sub ? Yu          :          Yu_r;
-  LA_gcoords_repart  = rank_sub ? LA_gcoords  :  LA_gcoords_r;
-  gaussdata_w_repart = rank_sub ? gaussdata_w : gaussdata_w_r;
-
-  /* Copy to arrays to send, or to receive 
-     (gaussdata_w is elementwise, so no copy is needed on ranks 1,2,..) 
-     */
-  if (rank_sub) {
-    /* Ranks 1,2,..  - move data to arrays to be sent */
-    for (i=0;i<ctx->nnodes_remote;++i) {
-      PetscInt d;
-      for(d=0;d<NSD;++d){
-        ufield_r[NSD*i+d] = ufield[NSD*ctx->nodes_remote[i]+d];
-      }
-    }
-    for (i=0;i<ctx->nnodes_remote;++i) {
-      PetscInt d;
-      for(d=0;d<NSD;++d){
-        LA_gcoords_r[NSD*i+d] = LA_gcoords[NSD*ctx->nodes_remote[i]+d];
-      }
-    }
-  } else {
-    /* Rank 0  - populate local contributions to arrays we'll receive with */
-    ierr = PetscMemcpy(ufield_r     ,ufield     ,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMemcpy(LA_gcoords_r ,LA_gcoords ,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscMemcpy(gaussdata_w_r,gaussdata_w,NQP*ctx->nel   *sizeof(PetscReal)  );CHKERRQ(ierr);
-  }
-
-  /* Send data to rank 0 (the other ranks just operate on subsets of their 
-     pre-repartitioned data) 
-     - u
-     - coords
-     - gaussdata_w (elementwise, so we can send from the existing array)
-     */
-    if (rank_sub) {
-      ierr = MPI_Send(ufield_r,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
-    } else {
-      PetscInt nodes_offset = ctx->nnodes;
-      for(i=1;i<ctx->size_sub;++i){
-        ierr = MPI_Recv(&ufield_r[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-        nodes_offset += ctx->nnodes_remote_in[i];
-      }
-    }
-
-    if (rank_sub) {
-      ierr = MPI_Send(LA_gcoords_r,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
-    } else {
-      PetscInt nodes_offset = ctx->nnodes;
-      for(i=1;i<ctx->size_sub;++i){
-        ierr = MPI_Recv(&LA_gcoords_r[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-        nodes_offset += ctx->nnodes_remote_in[i];
-      }
-    }
-
-    if (rank_sub) {
-      gaussdata_w_r = &gaussdata_w[NQP*ctx->nel_repart];
-      ierr = MPI_Send(gaussdata_w_r,NQP*ctx->nel_remote,MPIU_REAL,0,0,ctx->comm_sub);CHKERRQ(ierr);
-    } else {
-      PetscInt el_offset=ctx->nel;
-      for(i=1; i<ctx->size_sub; ++i) {
-        ierr = MPI_Recv(&gaussdata_w_r[NQP * el_offset],NQP * ctx->nel_remote_in[i],MPIU_REAL,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-        el_offset += ctx->nel_remote_in[i];
-      }
-    }
-
-    ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
 #else
 #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
-
+  if (rank_sub) {
+    /* Rank_sub > 0 implementation. This is the same as the AVX implementation,
+       over a smaller set of elements (ctx->nel_repart) */
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
 #endif
+    for (e=0;e<ctx->nel_repart;e+=NEV) {
+      PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
+      PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
+      const QPntVolCoefStokes *cell_gausspoints[NEV];
+      PetscInt ee,l;
 
+      for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+        for (ee=0; ee<NEV; ee++) {
+          PetscInt E = ctx->elnidx_u[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
+          for (l=0; l<3; l++) {
+            elx[l][i][ee] = LA_gcoords[3*E+l];
+            elu[l][i][ee] = ufield[3*E+l];
+          }
+        }
+      }
+      for (ee=0; ee<NEV; ee++) {
+        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,ctx->nel_repart-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
+      }
+
+      ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+
+      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
+
+      ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+
+      ierr = QuadratureAction_A11_AVX(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
+
+      ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+
+#if defined(_OPENMP)
+#pragma omp critical
+#endif
+      for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
+        for (i=0; i<NQP; i++) {
+          PetscInt E = ctx->elnidx_u[ctx->nen_u*(e+ee)+i];
+          for (l=0; l<3; l++) {
+            Yu[3*E+l] += elv[l][i][ee];
+          }
+        }
+      }
+
+    }
+
+  } else {
+    /* Rank_sub 0 Implementation */
+    // TODO: for now, this is just a modified AVX impl. CUDA needs to be added.
+#if defined(_OPENMP)
+#pragma omp parallel for private(i)
+#endif
     for (e=0;e<ctx->nel_repart;e+=NEV) {
       PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
       PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
@@ -616,7 +667,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
       for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
         for (ee=0; ee<NEV; ee++) {
-          PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; // Pad up to length NEV by duplicating last element
+          PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
           for (l=0; l<3; l++) {
             elx[l][i][ee] = LA_gcoords_repart[3*E+l];
             elu[l][i][ee] = ufield_repart[3*E+l];
@@ -631,23 +682,23 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
         }
       }
       ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = JacobianInvertNEVAVX_mod(dx,dxdet);OPENMP_CHKERRQ(ierr);
+      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
       ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
       ierr = QuadratureAction_A11AVX_mod(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
 
       ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEVAVX_mod(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #pragma omp critical
@@ -661,53 +712,31 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
         }
       }
     }
-    ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
-    /* Send remote entries of Yu */
-    if (rank_sub) {
-      ierr = MPI_Recv(Yu_r,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-    } else {
-      PetscInt nodes_offset = ctx->nnodes;
-      for (i=1; i<ctx->size_sub; ++i) {
-        ierr = MPI_Send(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub);CHKERRQ(ierr);
-        nodes_offset += ctx->nnodes_remote_in[i];
-      }
-    }
-
-    /* Accumulate into Yu */
-    if (rank_sub) {
-      for (i=0; i<ctx->nnodes_remote; ++i) {
-        PetscInt d;
-        for(d=0;d<NSD;++d){
-          Yu[NSD*ctx->nodes_remote[i]+d] += Yu_r[NSD*i+d];
-        }
-      }
-    } else {
-      for (i=0; i<ctx->nnodes; ++i) {
-        PetscInt d;
-        for(d=0;d<NSD;++d){
-          Yu[NSD*i+d] += Yu_repart[NSD*i+d];
-        }
-      }
-    }
-
+  }
 #undef OPENMP_CHKERRQ
+  ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
+  ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
+
+  /* Transfer and accumulate contributions to Yu from rank_sub 0 */
+  ierr = TransferYu_A11_SubRepart(ctx,Yu,Yu_remote,Yu_repart);CHKERRQ(ierr);
+
+  // Outdated. TODO update once AVX and CUDA guts are in
 #if 0
-    // Outdated. TODO update once AVX and CUDA guts are in
-    PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-    PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-    PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+  PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+  PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 #endif
 
-    ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  if (rank_sub) {
+    ierr = PetscFree(Yu_remote);CHKERRQ(ierr);
+  } else {
+    ierr = PetscFree(ufield_repart);CHKERRQ(ierr);
+    ierr = PetscFree(Yu_repart);CHKERRQ(ierr);
+    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr); // TODO: store in context and move to destroy?
+    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr); // TODO: store in context and move to destroy? 
+  }
 
-    ierr = PetscFree(ufield_r);CHKERRQ(ierr);
-    ierr = PetscFree(Yu_r);CHKERRQ(ierr);
-    ierr = PetscFree(LA_gcoords_r);CHKERRQ(ierr);
-    if (!rank_sub) {
-      ierr = PetscFree(gaussdata_w_r);CHKERRQ(ierr);
-    }
-
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
