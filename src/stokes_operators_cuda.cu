@@ -183,13 +183,13 @@ static __global__ void MFStokesWrapper_A11_CUDA_kernel(PetscInt nel,PetscInt nen
   PetscScalar el_uv[3]; // unifies elu, elv
   PetscScalar dx[3][3]={0},du[3][3]={0},dv[3][3]={0};
   PetscScalar dxdet = 0;
-  PetscInt elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per colored element. elidx is here the index within the same color.
-  PetscInt id_in_warp = threadIdx.x % 32;
-  PetscInt E_times_3;
-  PetscReal R[3],S[3],T[3];
-  PetscInt c = id_in_warp % 3;
-  PetscInt b = (id_in_warp % 9) / 3;
-  PetscInt a = id_in_warp / 9;
+  PetscInt    elidx = (blockDim.x * blockIdx.x + threadIdx.x) / 32;  // one warp per colored element. elidx is here the index within the same color.
+  PetscInt    id_in_warp = threadIdx.x % 32;
+  PetscInt    E_times_3;
+  PetscReal   R[3],S[3],T[3];
+  PetscInt    c = id_in_warp % 3;
+  PetscInt    b = (id_in_warp % 9) / 3;
+  PetscInt    a = id_in_warp / 9;
 
   if (elidx >= nel)
     return;
@@ -331,15 +331,15 @@ extern "C" {
 #define __FUNCT__ "MFStokesWrapper_A11_CUDA"
   PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
   {
-    PetscErrorCode ierr;
-    DM cda;
-    Vec gcoords;
-    const PetscReal *LA_gcoords;
-    PetscInt nel,nen_u,e,i,j,k,localsize;
-    const PetscInt *elnidx_u;
-    QPntVolCoefStokes *all_gausspoints;
+    PetscErrorCode          ierr;
+    DM                      cda;
+    Vec                     gcoords;
+    const PetscReal         *LA_gcoords;
+    PetscInt                nel,nen_u,e,i,j,k,localsize;
+    const PetscInt          *elnidx_u;
+    QPntVolCoefStokes       *all_gausspoints;
     const QPntVolCoefStokes *cell_gausspoints;
-    MFA11CUDA      cudactx = (MFA11CUDA)mf->ctx;
+    MFA11CUDA               cudactx = (MFA11CUDA)mf->ctx;
 
     PetscFunctionBegin;
     ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
