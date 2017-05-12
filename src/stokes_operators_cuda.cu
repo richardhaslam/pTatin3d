@@ -331,169 +331,218 @@ PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA cudactx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_CUDA"
-  PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
-  {
-    PetscErrorCode          ierr;
-    DM                      cda;
-    Vec                     gcoords;
-    const PetscReal         *LA_gcoords;
-    PetscInt                nel,nen_u,e,i,j,k,localsize;
-    const PetscInt          *elnidx_u;
-    QPntVolCoefStokes       *all_gausspoints;
-    const QPntVolCoefStokes *cell_gausspoints;
-    MFA11CUDA               cudactx = (MFA11CUDA)mf->ctx;
+#define __FUNCT__ "CopyTo_A11_CUDA"
+PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *ufield,const PetscReal *LA_gcoords,const PetscReal *gaussdata_host,PetscInt nel,PetscInt nen_u,const PetscInt *elnidx_u,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j;
 
-    PetscFunctionBegin;
-    ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionBeginUser;
+  if (!cudactx->elnidx_u) {
+    ierr = cudaMalloc(&cudactx->elnidx_u,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
+    ierr = cudaMemcpy(cudactx->elnidx_u,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
 
-    /* setup for coords */
-    ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
-    ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
-    ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(gcoords,&localsize);CHKERRQ(ierr);
+    /* Assign colors to elements such that there is no overlap in writes to Yu if elements are processed concurrently */
+    PetscInt elements_colored = 0;
+    PetscInt *element_color;
+    PetscInt *Yu_color; // scratchpad
 
-    ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+    ierr = PetscMalloc(nel * sizeof(PetscInt), &element_color);CHKERRQ(ierr);
+    for (i=0; i<nel; ++i) element_color[i] = -1;
+    ierr = PetscMalloc(nel * NQP * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
+    for (i=0; i<nel * NQP; ++i) Yu_color[i] = -1;
 
-    ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+    cudactx->element_colors = 0;
+    while (elements_colored < nel) {
 
-    /* Set up CUDA data */
-    ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
-    if (!cudactx->elnidx_u) {
-      ierr = cudaMalloc(&cudactx->elnidx_u,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
-      ierr = cudaMemcpy(cudactx->elnidx_u,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+      for (i=0; i<nel; ++i) {
 
-      /* Assign colors to elements such that there is no overlap in writes to Yu if elements are processed concurrently */
-      PetscInt elements_colored = 0;
-      PetscInt *element_color;
-      PetscInt *Yu_color; // scratchpad
+        if (element_color[i] >= 0) continue;  /* element already has a color */
 
-      ierr = PetscMalloc(nel * sizeof(PetscInt), &element_color);CHKERRQ(ierr);
-      for (i=0; i<nel; ++i) element_color[i] = -1;
-      ierr = PetscMalloc(nel * NQP * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
-      for (i=0; i<nel * NQP; ++i) Yu_color[i] = -1;
-
-      cudactx->element_colors = 0;
-      while (elements_colored < nel) {
-
-        for (i=0; i<nel; ++i) {
-
-          if (element_color[i] >= 0) continue;  /* element already has a color */
-
-          /* Check if element can be colored: No element in Yu has current color */
-          PetscInt can_be_colored = 1;
-          for (j=0; j<nen_u; ++j) {
-            if (Yu_color[elnidx_u[i*nen_u + j]] == cudactx->element_colors) {
-              can_be_colored = 0;
-              break;
-            }
-          }
-
-          /* Color element if possible, update Yu indices to current color */
-          if (can_be_colored) {
-            element_color[i] = cudactx->element_colors;
-            for (j=0; j<nen_u; ++j)
-              Yu_color[elnidx_u[i*nen_u + j]] = cudactx->element_colors;
-
-            ++elements_colored;
+        /* Check if element can be colored: No element in Yu has current color */
+        PetscInt can_be_colored = 1;
+        for (j=0; j<nen_u; ++j) {
+          if (Yu_color[elnidx_u[i*nen_u + j]] == cudactx->element_colors) {
+            can_be_colored = 0;
+            break;
           }
         }
 
-        ++cudactx->element_colors;
-      }
+        /* Color element if possible, update Yu indices to current color */
+        if (can_be_colored) {
+          element_color[i] = cudactx->element_colors;
+          for (j=0; j<nen_u; ++j)
+            Yu_color[elnidx_u[i*nen_u + j]] = cudactx->element_colors;
 
-      /* Generate CUDA arrays with coloring information */
-      ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt), &cudactx->elements_per_color);CHKERRQ(ierr);
-      ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt*), &cudactx->el_ids_colored);CHKERRQ(ierr);
-
-      for (i=0; i<cudactx->element_colors; ++i) {
-        /* count elements, collect element indices for this color and copy over to GPU: */
-        cudactx->elements_per_color[i] = 0;
-        for (j=0; j<nel; ++j) {
-          if (element_color[j] == i) {
-            Yu_color[cudactx->elements_per_color[i]] = j; /* Reusing Yu_color array here */
-            cudactx->elements_per_color[i] += 1;
-          }
+          ++elements_colored;
         }
-
-        ierr = cudaMalloc(&cudactx->el_ids_colored[i],        cudactx->elements_per_color[i] * sizeof(PetscInt));CUDACHECK(ierr);
-        ierr = cudaMemcpy(cudactx->el_ids_colored[i],Yu_color,cudactx->elements_per_color[i] * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
       }
 
-      /* clean up */
-      ierr = PetscFree(element_color);CHKERRQ(ierr);
-      ierr = PetscFree(Yu_color);CHKERRQ(ierr);
+      ++cudactx->element_colors;
     }
 
-    if (!cudactx->ufield) {
-      ierr = cudaMalloc(&cudactx->ufield, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
-    }
-    /* ufield always needs to be copied */
-    ierr = cudaMemcpy(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+    /* Generate CUDA arrays with coloring information */
+    ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt), &cudactx->elements_per_color);CHKERRQ(ierr);
+    ierr = PetscMalloc(cudactx->element_colors * sizeof(PetscInt*), &cudactx->el_ids_colored);CHKERRQ(ierr);
 
-    if (!cudactx->LA_gcoords) {
-      ierr = cudaMalloc(&cudactx->LA_gcoords, localsize * sizeof(PetscReal));CUDACHECK(ierr);
-    }
-
-    if (!cudactx->gaussdata_w) {
-      ierr = cudaMalloc(&cudactx->gaussdata_w,nel * NQP * sizeof(PetscReal));CUDACHECK(ierr);
-    }
-
-    if (mf->state != cudactx->state) {
-      ierr = cudaMemcpy(cudactx->LA_gcoords,LA_gcoords, localsize * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
-
-      PetscReal x1[3],w1[3],w[NQP];
-      ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
-      for (i=0; i<3; i++)
-        for (j=0; j<3; j++)
-          for (k=0; k<3; k++)
-            w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
-
-      PetscReal *gaussdata_host;
-      ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
-      for (e=0; e<nel; e++) {
-        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-        for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
+    for (i=0; i<cudactx->element_colors; ++i) {
+      /* count elements, collect element indices for this color and copy over to GPU: */
+      cudactx->elements_per_color[i] = 0;
+      for (j=0; j<nel; ++j) {
+        if (element_color[j] == i) {
+          Yu_color[cudactx->elements_per_color[i]] = j; /* Reusing Yu_color array here */
+          cudactx->elements_per_color[i] += 1;
+        }
       }
-      ierr = cudaMemcpy(cudactx->gaussdata_w,gaussdata_host, nel * NQP * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
-      ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
 
-      /* Save new state to avoid unnecessary subsequent copies */
-      cudactx->state = mf->state;
+      ierr = cudaMalloc(&cudactx->el_ids_colored[i],        cudactx->elements_per_color[i] * sizeof(PetscInt));CUDACHECK(ierr);
+      ierr = cudaMemcpy(cudactx->el_ids_colored[i],Yu_color,cudactx->elements_per_color[i] * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
     }
 
-    if (!cudactx->Yu) {
-      ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
-    }
-
-    ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
-
-    /* CUDA entry point
-     *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata_w
-     *  - output: Yu
-     */
-      ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
-      set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
-      for (i=0; i<cudactx->element_colors; ++i) {
-        MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
-      }
-      ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
-      ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
-
-      PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-      PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-      PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
-
-      /* Read back CUDA data */
-      ierr = PetscLogEventBegin(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
-      ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
-      ierr = PetscLogEventEnd(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
-
-      ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
-      PetscFunctionReturn(0);
+    /* clean up */
+    ierr = PetscFree(element_color);CHKERRQ(ierr);
+    ierr = PetscFree(Yu_color);CHKERRQ(ierr);
   }
+
+  if (!cudactx->ufield) {
+    ierr = cudaMalloc(&cudactx->ufield, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
+  }
+  /* ufield always needs to be copied */
+  ierr = cudaMemcpy(cudactx->ufield,ufield, localsize * sizeof(PetscScalar),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+  if (!cudactx->LA_gcoords) {
+    ierr = cudaMalloc(&cudactx->LA_gcoords, localsize * sizeof(PetscReal));CUDACHECK(ierr);
+  }
+
+  if (!cudactx->gaussdata_w) {
+    ierr = cudaMalloc(&cudactx->gaussdata_w,nel * NQP * sizeof(PetscReal));CUDACHECK(ierr);
+  }
+
+  if (mf->state != cudactx->state) {
+    ierr = cudaMemcpy(cudactx->LA_gcoords,LA_gcoords, localsize * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+    /* Note that we populate and free gaussdata_host outside this function,
+       since this data may have come from another rank with SubRepart */
+    ierr = cudaMemcpy(cudactx->gaussdata_w,gaussdata_host, nel * NQP * sizeof(PetscReal),cudaMemcpyHostToDevice);CUDACHECK(ierr);
+
+    /* Save new state to avoid unnecessary subsequent copies */
+    cudactx->state = mf->state;
+  }
+
+  if (!cudactx->Yu) {
+    ierr = cudaMalloc(&cudactx->Yu, localsize * sizeof(PetscScalar));CUDACHECK(ierr);
+  }
+
+  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessElements_A11_CUDA"
+PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  set_zero_CUDA_kernel<<<256,256>>>(cudactx->Yu, localsize);
+  for (i=0; i<cudactx->element_colors; ++i) {
+    MFStokesWrapper_A11_CUDA_kernel<<<(cudactx->elements_per_color[i]-1)/WARPS_PER_BLOCK + 1, WARPS_PER_BLOCK*32>>>(cudactx->elements_per_color[i],nen_u,cudactx->el_ids_colored[i],cudactx->elnidx_u,cudactx->LA_gcoords,cudactx->ufield,cudactx->gaussdata_w,cudactx->Yu);
+  }
+  ierr = cudaDeviceSynchronize();CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CopyFrom_A11_CUDA"
+PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt localsize)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+    ierr = cudaMemcpy(Yu,cudactx->Yu,localsize * sizeof(PetscScalar),cudaMemcpyDeviceToHost);CUDACHECK(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MFStokesWrapper_A11_CUDA"
+PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+{
+  PetscErrorCode          ierr;
+  DM                      cda;
+  Vec                     gcoords;
+  const PetscReal         *LA_gcoords;
+  PetscInt                nel,nen_u,e,i,j,k,localsize;
+  const PetscInt          *elnidx_u;
+  QPntVolCoefStokes       *all_gausspoints;
+  const QPntVolCoefStokes *cell_gausspoints;
+  MFA11CUDA               cudactx = (MFA11CUDA)mf->ctx;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+
+  /* setup for coords */
+  ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
+  ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gcoords,&localsize);CHKERRQ(ierr);
+
+  ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+
+  ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+
+  /* Set up CUDA data */
+  {
+  ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
+    PetscReal *gaussdata_host;
+  if(!cudactx->state) {
+    PetscReal x1[3],w1[3],w[NQP];
+
+    ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
+    for (i=0; i<3; i++)
+      for (j=0; j<3; j++)
+        for (k=0; k<3; k++)
+          w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
+
+    ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
+    for (e=0; e<nel; e++) {
+      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
+      for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
+    }
+
+  }
+  ierr = CopyTo_A11_CUDA(mf,cudactx,ufield,LA_gcoords,gaussdata_host,nel,nen_u,elnidx_u,localsize);CHKERRQ(ierr); 
+
+  if(gaussdata_host) {
+    ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
+  }
+
+  /* CUDA entry point
+   *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata_w
+   *  - output: Yu
+   */
+
+    ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+    ierr = ProcessElements_A11_CUDA(cudactx,nen_u,localsize);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+
+    PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+    PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+    PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+
+    /* Read back CUDA data */
+    ierr = PetscLogEventBegin(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
+    ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
+
+    ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
 
 } /* extern C */
