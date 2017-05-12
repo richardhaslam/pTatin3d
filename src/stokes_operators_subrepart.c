@@ -654,8 +654,13 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
     }
 
   } else {
-    /* Rank_sub 0 Implementation */
-    // TODO: for now, this is just a modified AVX impl. CUDA needs to be added.
+#if TATIN_HAVE_CUDA
+    /* Rank_sub 0 AVX Implementation */
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"no cuda impl yet for SubRepart!");
+// TODO..
+#else
+    /* Rank_sub 0 AVX Implementation */
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
 #endif

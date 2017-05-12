@@ -57,7 +57,6 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_operators_mf.c \
 			stokes_operators.c \
 			stokes_operators_tensor.c \
-			stokes_operators_subrepart.c \
 			quadrature.c \
 			phase_map.c \
 			cartgrid.c \
@@ -87,6 +86,7 @@ libptatin3d-$(CONFIG_CUDA).cu += $(call thisdir, \
 
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
 			stokes_operators_avx.c \
+			stokes_operators_subrepart.c \
 	)
 
 libptatin3d-$(CONFIG_OPENCL).c += $(call thisdir, \
