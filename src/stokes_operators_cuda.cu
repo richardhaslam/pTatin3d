@@ -40,21 +40,6 @@ extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;
 extern PetscLogEvent MAT_MultMFA11_merge;
 
-typedef struct _p_MFA11CUDA *MFA11CUDA;
-
-struct _p_MFA11CUDA {
-  PetscObjectState state;
-
-  PetscScalar *ufield;
-  PetscReal   *LA_gcoords;
-  PetscReal   *gaussdata_w;  // Data at Gauss points multiplied by respective quadrature weight
-  PetscInt    element_colors;
-  PetscInt    *elements_per_color;
-  PetscInt    **el_ids_colored;
-  PetscInt    *elnidx_u;
-  PetscScalar *Yu;
-};
-
 /* Constant memory for D and B matrices */
 __constant__ PetscReal CUDA_D[3*3], CUDA_B[3*3];
 
@@ -71,9 +56,6 @@ void check(T result, char const *const func, const char *const file, int const l
   }
 }
 #define CUDACHECK(val)       check( (val), #val, __FILE__, __LINE__ )
-
-
-#define NQP 27      /* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
 
 #define WARPS_PER_BLOCK    4
 
@@ -261,25 +243,37 @@ extern "C" {
 
 #undef __FUNCT__
 #define __FUNCT__ "MFA11SetUp_CUDA"
-  PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
-  {
+PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
+{
+  PetscErrorCode ierr;
+  MFA11CUDA      cudactx;
+
+  PetscFunctionBeginUser;
+  if (mf->ctx) PetscFunctionReturn(0);
+  ierr = PetscMalloc1(1,&cudactx);CHKERRQ(ierr);
+  ierr = MFA11CUDA_SetUp(cudactx);CHKERRQ(ierr);
+  mf->ctx = cudactx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MFA11CUDA_SetUp"
+PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA cudactx)
+{
     PetscErrorCode ierr;
-    MFA11CUDA      ctx;
     PetscReal      x1[3],w1[3],B[3][3],D[3][3];
     PetscInt       i;
 
-    PetscFunctionBegin;
-    if (mf->ctx) PetscFunctionReturn(0);
-    ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
-    ctx->state = 0;
+    PetscFunctionBeginUser;
+    cudactx->state = 0;
 
-    ctx->ufield      = NULL;
-    ctx->LA_gcoords  = NULL;
-    ctx->gaussdata_w = NULL;
-    ctx->Yu          = NULL;
-    ctx->elements_per_color = NULL;
-    ctx->el_ids_colored     = NULL;
-    ctx->elnidx_u    = NULL;
+    cudactx->ufield             = NULL;
+    cudactx->LA_gcoords         = NULL;
+    cudactx->gaussdata_w        = NULL;
+    cudactx->Yu                 = NULL;
+    cudactx->elements_per_color = NULL;
+    cudactx->el_ids_colored     = NULL;
+    cudactx->elnidx_u           = NULL;
 
     ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
     for (i=0; i<3; i++) {
@@ -291,41 +285,50 @@ extern "C" {
       D[i][2] = x1[i] + .5;
     }
 
-    ierr = cudaMemcpyToSymbol(CUDA_D,D,     3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
-    ierr = cudaMemcpyToSymbol(CUDA_B,B,     3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+    ierr = cudaMemcpyToSymbol(CUDA_D,D,3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
+    ierr = cudaMemcpyToSymbol(CUDA_B,B,3 * 3 * sizeof(PetscReal));CUDACHECK(ierr);
 
-    mf->ctx = ctx;
     PetscFunctionReturn(0);
-  }
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MFA11Destroy_CUDA"
-  PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
-  {
+PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
+{
+  PetscErrorCode ierr;
+  MFA11CUDA      cudactx;
+
+  PetscFunctionBeginUser;
+  cudactx = (MFA11CUDA)mf->ctx;
+  if (!cudactx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"CUDA MF-SpMV implementation should have a valid context");
+  ierr = MFA11CUDA_CleanUp(cudactx);CHKERRQ(ierr);
+  ierr = PetscFree(cudactx);CHKERRQ(ierr);
+  mf->ctx = NULL;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MFA11CUDA_CleanUp"
+PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA cudactx)
+{
     PetscErrorCode ierr;
     PetscInt       i;
-    MFA11CUDA      ctx;
 
-    PetscFunctionBegin;
-    ctx = (MFA11CUDA)mf->ctx;
-    if (!ctx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"CUDA MF-SpMV implementation should have a valid context");
+    PetscFunctionBeginUser;
     /* Free internal members */
-    ierr = cudaFree(ctx->ufield);CUDACHECK(ierr);
-    ierr = cudaFree(ctx->LA_gcoords);CUDACHECK(ierr);
-    ierr = cudaFree(ctx->gaussdata_w);CUDACHECK(ierr);
-    for (i=0; i<ctx->element_colors; ++i) {
-      ierr = cudaFree(ctx->el_ids_colored[i]);CUDACHECK(ierr);
+    ierr = cudaFree(cudactx->ufield);CUDACHECK(ierr);
+    ierr = cudaFree(cudactx->LA_gcoords);CUDACHECK(ierr);
+    ierr = cudaFree(cudactx->gaussdata_w);CUDACHECK(ierr);
+    for (i=0; i<cudactx->element_colors; ++i) {
+      ierr = cudaFree(cudactx->el_ids_colored[i]);CUDACHECK(ierr);
     }
-    ierr = PetscFree(ctx->elements_per_color);CUDACHECK(ierr);
-    ierr = PetscFree(ctx->el_ids_colored);CUDACHECK(ierr);
-    ierr = cudaFree(ctx->elnidx_u);CUDACHECK(ierr);
-    ierr = cudaFree(ctx->Yu);CUDACHECK(ierr);
-    /* Free context */
-    ierr = PetscFree(ctx);CHKERRQ(ierr);
-    mf->ctx = NULL;
+    ierr = PetscFree(cudactx->elements_per_color);CUDACHECK(ierr);
+    ierr = PetscFree(cudactx->el_ids_colored);CUDACHECK(ierr);
+    ierr = cudaFree(cudactx->elnidx_u);CUDACHECK(ierr);
+    ierr = cudaFree(cudactx->Yu);CUDACHECK(ierr);
 
     PetscFunctionReturn(0);
-  }
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_CUDA"

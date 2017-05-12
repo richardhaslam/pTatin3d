@@ -98,7 +98,7 @@ PetscErrorCode MatShellGetMatA11MF(Mat A,MatA11MF *mf);
 PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3);
 PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3);
 
-/* Implementation-specific routines shared amongst multiple implementations */
+/* Implementation-specific structures and routines shared amongst multiple implementations */
 #define NQP 27		/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
 #define NEV 4			/* Number of elements over which to vectorize */
 
@@ -117,6 +117,27 @@ PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
 					   PetscReal w[Q2_NODES_PER_EL_3D],
 					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
 					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV]);
+
+
+typedef struct _p_MFA11CUDA *MFA11CUDA;
+
+struct _p_MFA11CUDA {
+  PetscObjectState state;
+
+  PetscScalar *ufield;
+  PetscReal   *LA_gcoords;
+  PetscReal   *gaussdata_w;  // Data at Gauss points multiplied by respective quadrature weight
+  PetscInt    element_colors;
+  PetscInt    *elements_per_color;
+  PetscInt    **el_ids_colored;
+  PetscInt    *elnidx_u;
+  PetscScalar *Yu;
+};
+
+extern "C" {
+PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA);
+PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA);
+}
 
 #endif
 
