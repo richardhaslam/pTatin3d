@@ -271,6 +271,7 @@ PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA cudactx)
     cudactx->LA_gcoords         = NULL;
     cudactx->gaussdata_w        = NULL;
     cudactx->Yu                 = NULL;
+    cudactx->element_colors     = 0;
     cudactx->elements_per_color = NULL;
     cudactx->el_ids_colored     = NULL;
     cudactx->elnidx_u           = NULL;
