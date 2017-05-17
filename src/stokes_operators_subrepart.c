@@ -22,7 +22,7 @@ to use a modified AVX implementation, or the CUDA implementation,
 on rank_sub 0, and the usual AVX implementation on other ranks.
 
 Farther into the future, it would be natural to investigate
-shared-memory abstractions (such as those supported by MPI 3)
+shared-memory abstractions (such as those supported by MPI-3)
 which would allow for a more natural set of operations on a single
 shared set elements to be processed per shared memory domain.
 */
@@ -39,7 +39,10 @@ shared set elements to be processed per shared memory domain.
 #include <element_utils_q1.h>
 #include <immintrin.h>
 
+extern PetscLogEvent MAT_MultMFA11_setup;
 extern PetscLogEvent MAT_MultMFA11_sub;
+extern PetscLogEvent MAT_MultMFA11_rto;
+extern PetscLogEvent MAT_MultMFA11_rfr;
 
 #ifndef __FMA__
 #  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
@@ -311,7 +314,9 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
   // TODO: set up state
-  // TODO: ask Dave whether the grid topological information should be assumed constant over the life of the ctx. If so, this setup should stay here, but otherwise it should go into the apply function (meaning we do extra work when the coefficients and coordinates change, hence changing the state)
+
+  // TODO: as with CUDA, put this in the apply function but guard it 
+  //       with checks on the state. This should make profiling easier, as this stuff is not included in the "setup" log stage!
 
   /* Define a subcomm. We would hope that this would
      work with MPI_Comm_split_type to split by shared-memory
@@ -563,6 +568,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ctx = (MFA11SubRepart)mf->ctx;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);
 
+  ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
@@ -577,6 +583,15 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
       for (k=0; k<3; k++) {
         w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];}}}
 
+  /* setup for coords */
+  ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
+  ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+  ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   // TODO: only do this for the coords and gauss data if the state has changed,
   //       or if we don't have CUDA (since aren't storing the repart arrays)
   /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
@@ -592,15 +607,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
     ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
   }
 
-  ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
-
   /* Send required quadrature-pointwise data to rank_sub 0 */
   ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
-
-  /* setup for coords */
-  ierr = DMGetCoordinateDM( dau, &cda);CHKERRQ(ierr);
-  ierr = DMGetCoordinatesLocal( dau,&gcoords );CHKERRQ(ierr);
-  ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   /* Send required coordinate data to rank_sub 0 */
   // TODO: only do this if state has changed
@@ -616,6 +624,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
     ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
   }
 
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
@@ -760,7 +769,9 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
 
   /* Transfer and accumulate contributions to Yu from rank_sub 0 */
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
   ierr = TransferYu_A11_SubRepart(ctx,Yu,Yu_remote,Yu_repart);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
   // Outdated. TODO update once AVX and CUDA guts are in
 #if 0
