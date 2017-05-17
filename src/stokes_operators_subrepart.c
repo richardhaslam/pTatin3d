@@ -1,17 +1,17 @@
 /*
 A prototype of a matrix-free method
-designed to operate on heterogeneous compute nodes. 
+designed to operate on heterogeneous compute nodes.
 
-That is, it is assumed that moving data is cheap (or even free if 
+That is, it is assumed that moving data is cheap (or even free if
 we are on a shared-memory/UMA domain with the appropriate tools),
 but that we would like to process arbitrary subsets of elements
 on each rank, utilizing different kernels (in particular,
 we're interested in using AVX on some ranks and CUDA on others).
 
 This prototype does not implement general redistribution of work.
-Instead, it assumes that the MPI communicator on which the 
+Instead, it assumes that the MPI communicator on which the
 velocity DA lives (comm_u) can be decomposed into sub-communicators,
-where different computational resources are available on 
+where different computational resources are available on
 rank_sub 0 than on the remaining ranks. The use case in mind
 is a heterogeneous compute node with a single coprocessor
 and several CPU cores, when we would like to use a flat MPI
@@ -28,8 +28,8 @@ shared set elements to be processed per shared memory domain.
 */
 
 #include <petscfe.h>
-#include <../src/sys/utils/hash.h> /* not portable to prefix installs.        
-                                     In master (PETSc 3.8), this header is 
+#include <../src/sys/utils/hash.h> /* not portable to prefix installs
+                                     In master (PETSc 3.8), this header is
                                      moved to $PETSC_DIR/include/petsc/private) */
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
@@ -127,6 +127,10 @@ struct _p_MFA11SubRepart {
   PetscInt       nnodes,nnodes_remote,nnodes_repart;
   PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
   PetscInt       *elnidx_u_repart;
+
+#ifdef TATIN_HAVE_CUDA
+  MFA11CUDA     cudactx;
+#endif
 };
 
 #undef __FUNCT__
@@ -306,6 +310,9 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   if (mf->ctx) PetscFunctionReturn(0);
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
+  // TODO: set up state
+  // TODO: ask Dave whether the grid topological information should be assumed constant over the life of the ctx. If so, this setup should stay here, but otherwise it should go into the apply function (meaning we do extra work when the coefficients and coordinates change, hence changing the state)
+
   /* Define a subcomm. We would hope that this would
      work with MPI_Comm_split_type to split by shared-memory
      domains, but for now we hard-code picking every Nth rank */
@@ -462,7 +469,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[32m= SubRepart A11 Info ===\033[0m\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[32m= SubRepart A11 SetUp Info ===\033[0m\n");CHKERRQ(ierr);
     for(r=0;r<size;++r) {
       if(r==rank) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"\033[32m[%d/%d]\033[0m ",rank,size);CHKERRQ(ierr);
@@ -486,6 +493,14 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[32m========================\033[0m\n");CHKERRQ(ierr);
+  }
+#endif
+
+#ifdef TATIN_HAVE_CUDA
+  /* Set up CUDA context */
+  if (!rank_sub) { 
+    ierr = PetscMalloc1(1,&ctx->cudactx);CHKERRQ(ierr);
+    ierr = MFA11CUDA_SetUp(ctx->cudactx);CHKERRQ(ierr);
   }
 #endif
 
@@ -513,6 +528,15 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
     ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr); 
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
   }
+
+#ifdef TATIN_HAVE_CUDA
+  /* Destroy CUDA ctx */
+  if (!rank_sub) {
+    ierr = MFA11CUDA_CleanUp(ctx->cudactx);CHKERRQ(ierr);
+    ierr = PetscFree(ctx->cudactx);CHKERRQ(ierr);
+  }
+#endif
+  mf->ctx = NULL;
 
   PetscFunctionReturn(0);
 }
@@ -553,6 +577,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
       for (k=0; k<3; k++) {
         w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];}}}
 
+  // TODO: only do this for the coords and gauss data if the state has changed,
+  //       or if we don't have CUDA (since aren't storing the repart arrays)
   /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
   if (rank_sub) {
     ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ufield_remote     );CHKERRQ(ierr);
@@ -577,6 +603,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   /* Send required coordinate data to rank_sub 0 */
+  // TODO: only do this if state has changed
   ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
 
   /* Send required ufield data to rank_sub 0 */
@@ -584,6 +611,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   if (rank_sub) {
     ierr = PetscFree(ufield_remote);CHKERRQ(ierr);
+    // TODO: only if state has changed (hence we used these)
     ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
     ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
   }
@@ -655,9 +683,16 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   } else {
 #if TATIN_HAVE_CUDA
-    /* Rank_sub 0 AVX Implementation */
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"no cuda impl yet for SubRepart!");
-// TODO..
+    /* Rank_sub 0 CUDA Implementation */
+
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,NSD*ctx->nnodes_repart);CHKERRQ(ierr); 
+
+    // TODO: at this point it'd be safe to free gaussdata_w_repart and LA_gcoords_repart, as they wouldn't be needed until the state changed
+
+    ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+
+    ierr = CopyFrom_A11_CUDA(ctx->cudactx,Yu_repart,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+
 #else
     /* Rank_sub 0 AVX Implementation */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
@@ -717,7 +752,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
         }
       }
     }
-
+#endif
   }
 #undef OPENMP_CHKERRQ
   ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
@@ -739,8 +774,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   } else {
     ierr = PetscFree(ufield_repart);CHKERRQ(ierr);
     ierr = PetscFree(Yu_repart);CHKERRQ(ierr);
-    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr); // TODO: store in context and move to destroy?
-    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr); // TODO: store in context and move to destroy? 
+    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr); // TODO: only destroy if state changed
+    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr); // TODO: only destroy if state changed
   }
 
   PetscFunctionReturn(0);
