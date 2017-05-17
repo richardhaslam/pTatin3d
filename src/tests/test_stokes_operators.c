@@ -333,7 +333,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 PetscErrorCode compare_mf_A21(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
-	MatA11MF       A11Ctx;
 	Mat            A21,B;
 	Vec            x,y,y2;
 	DM             dav,dap;
@@ -351,7 +350,6 @@ PetscErrorCode compare_mf_A21(PhysCompStokes user)
 	dap = user->dap;
 	ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
 	ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
-	ierr = MatCopy_StokesMF_A11MF(StkCtx,&A11Ctx);CHKERRQ(ierr);
 	
 	ierr = StokesQ2P1CreateMatrix_MFOperator_A21(StkCtx,&A21);CHKERRQ(ierr);
 	
@@ -393,7 +391,6 @@ PetscErrorCode compare_mf_A21(PhysCompStokes user)
 	ierr = VecDestroy(&y);CHKERRQ(ierr);
 	ierr = VecDestroy(&y2);CHKERRQ(ierr);
 	
-	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	ierr = MatDestroy(&A21);CHKERRQ(ierr);
 	ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -406,7 +403,6 @@ PetscErrorCode compare_mf_A21(PhysCompStokes user)
 PetscErrorCode compare_mf_A12(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
-	MatA11MF       A11Ctx;
 	Mat            A12,B;
 	Vec            x,y,y2;
 	DM             dav,dap;
@@ -424,7 +420,6 @@ PetscErrorCode compare_mf_A12(PhysCompStokes user)
 	dap = user->dap;
 	ierr = MatStokesMFCreate(&StkCtx);CHKERRQ(ierr);
 	ierr = MatStokesMFSetup(StkCtx,user);CHKERRQ(ierr);
-	ierr = MatCopy_StokesMF_A11MF(StkCtx,&A11Ctx);CHKERRQ(ierr);
 	
 	ierr = StokesQ2P1CreateMatrix_MFOperator_A12(StkCtx,&A12);CHKERRQ(ierr);
 	
@@ -465,7 +460,6 @@ PetscErrorCode compare_mf_A12(PhysCompStokes user)
 	ierr = VecDestroy(&y);CHKERRQ(ierr);
 	ierr = VecDestroy(&y2);CHKERRQ(ierr);
 	
-	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	ierr = MatDestroy(&A12);CHKERRQ(ierr);
 	ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -495,8 +489,8 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 	/* matrix free */
 	ierr = DMCreateGlobalVector(pack,&x);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
-		ierr = VecSetRandom(xu,NULL);CHKERRQ(ierr);
-		ierr = VecSetRandom(xp,NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(xu,NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(xp,NULL);CHKERRQ(ierr);
 //		ierr = VecZeroEntries(xp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(pack,x,&xu,&xp);CHKERRQ(ierr);
 	

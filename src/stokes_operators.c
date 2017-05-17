@@ -337,15 +337,15 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
 #define __FUNCT__ "MatDestroy_MatStokesMF"
 PetscErrorCode MatDestroy_MatStokesMF(Mat A)
 {
-	MatStokesMF       ctx;
+	MatStokesMF     ctx;
 	PetscErrorCode  ierr;
 	
-  PetscFunctionBegin;
+	PetscFunctionBegin;
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	ierr = MatStokesMFDestroy(&ctx);CHKERRQ(ierr);
 	
-  PetscFunctionReturn(0);
+	PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MatA11MF"
@@ -1736,7 +1736,7 @@ PetscErrorCode MatGetDiagonal_MFStokes_A11_QuasiNewtonX(Mat A,Vec X)
 
 #undef __FUNCT__  
 #define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A"
-PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A11)
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A)
 {
 	Mat B;
 	PetscErrorCode ierr;
@@ -1750,14 +1750,14 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A11)
 	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatStokesMF);CHKERRQ(ierr);
 	
-	*A11 = B;
+	*A = B;
 	
 	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX"
-PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,Mat *A11)
+PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,Mat *A)
 {
 	DM  dax;
 	Vec Xloc;
@@ -1777,7 +1777,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,
 	ierr = DMCreateLocalVector(dax,&Xloc);CHKERRQ(ierr);
 	ierr = PetscObjectCompose((PetscObject)B,"MatA_QuasiNewtonX",(PetscObject)Xloc);CHKERRQ(ierr);
 	
-	*A11 = B;
+	*A = B;
 	
 	PetscFunctionReturn(0);
 }
@@ -1966,7 +1966,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX(MatStokesMF St
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 {
 	PetscBool      same;
-    DM             pack;
+	DM             pack;
 	Mat            A;
 	MatStokesMF    StkCtx;
 	PetscErrorCode ierr;
@@ -2034,7 +2034,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes use
 PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt tA11,PetscInt tA12,PetscInt tA21,Mat *B)
 {
 	PetscBool      same;
-    DM             dau,dap,pack;
+	DM             dau,dap,pack;
 	Mat            A,Auu,Aup,Apu,bA[2][2];
 	IS             *is;
 	PetscInt       i,j;
@@ -2056,8 +2056,8 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	ierr = PetscObjectTypeCompare((PetscObject)pack,DMCOMPOSITE,&same);CHKERRQ(ierr);
 	if (!same) PetscFunctionReturn(0);
 	
-  /* Fetch the DA's */
-  ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
+	/* Fetch the DA's */
+	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
 	/* Create submatrices */
 	//comm = PetscObjectComm((PetscObject)pack);
@@ -2098,7 +2098,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	
 	bA[0][0] = Auu; bA[0][1] = Aup;
 	bA[1][0] = Apu; bA[1][1] = NULL;
-  ierr = MatCreateNest(PetscObjectComm((PetscObject)dau),2,is,2,is,&bA[0][0],&A);CHKERRQ(ierr);
+	ierr = MatCreateNest(PetscObjectComm((PetscObject)dau),2,is,2,is,&bA[0][0],&A);CHKERRQ(ierr);
 	ierr = MatSetOptionsPrefix(A,"stokes_A_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
