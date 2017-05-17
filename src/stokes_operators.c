@@ -2078,7 +2078,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 		SETERRQ(PetscObjectComm((PetscObject)dau),PETSC_ERR_SUP,"Stokes->A12 doesn't support assembled operator");
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A12(StkCtx,&Aup);CHKERRQ(ierr);
-		ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	}
 	ierr = MatSetOptionsPrefix(Aup,"stokes_A_A12_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Aup);CHKERRQ(ierr);
@@ -2088,7 +2087,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 		SETERRQ(PetscObjectComm((PetscObject)dau),PETSC_ERR_SUP,"Stokes->A21 doesn't support assembled operator");
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A21(StkCtx,&Apu);CHKERRQ(ierr); 
-		ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	}
 	ierr = MatSetOptionsPrefix(Apu,"stokes_A_A21_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Apu);CHKERRQ(ierr);
@@ -2107,6 +2105,7 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	*B = A;
 	
 	/* tidy up */
+	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	for (i=0; i<2; i++) {
 		for (j=0; j<2; j++) {
 			if (bA[i][j]) { ierr = MatDestroy(&bA[i][j]);CHKERRQ(ierr); }
