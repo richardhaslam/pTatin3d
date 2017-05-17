@@ -44,13 +44,13 @@ extern PetscLogEvent MAT_MultMFA11_merge;
 __constant__ PetscReal CUDA_D[3*3], CUDA_B[3*3];
 
 
-  template< typename T >
+template< typename T >
 void check(T result, char const *const func, const char *const file, int const line)
 {
   if (result)
   {
-    fprintf(stderr, "CUDA error at %s:%d code=%d \n",
-        file, line, result);
+    fprintf(stderr, "CUDA error at %s:%d code=%d (%s)\n",
+        file, line, result, cudaGetErrorString((cudaError_t)result));
     cudaDeviceReset();
     exit(EXIT_FAILURE);
   }
