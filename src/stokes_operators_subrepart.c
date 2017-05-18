@@ -694,7 +694,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #if TATIN_HAVE_CUDA
     /* Rank_sub 0 CUDA Implementation */
 
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,NSD*ctx->nnodes_repart);CHKERRQ(ierr); 
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
 
     // TODO: at this point it'd be safe to free gaussdata_w_repart and LA_gcoords_repart, as they wouldn't be needed until the state changed
 

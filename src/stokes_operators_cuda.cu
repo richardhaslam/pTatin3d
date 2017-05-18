@@ -332,12 +332,14 @@ PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA cudactx)
 
 #undef __FUNCT__
 #define __FUNCT__ "CopyTo_A11_CUDA"
-PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *ufield,const PetscReal *LA_gcoords,const PetscReal *gaussdata_host,PetscInt nel,PetscInt nen_u,const PetscInt *elnidx_u,PetscInt localsize)
+PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *ufield,const PetscReal *LA_gcoords,const PetscReal *gaussdata_host,PetscInt nel,PetscInt nen_u,const PetscInt *elnidx_u,PetscInt nnodes_local)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
+  PetscInt       localsize = NSD*nnodes_local;
 
   PetscFunctionBeginUser;
+
   if (!cudactx->elnidx_u) {
     ierr = cudaMalloc(&cudactx->elnidx_u,        nel * nen_u * sizeof(PetscInt));CUDACHECK(ierr);
     ierr = cudaMemcpy(cudactx->elnidx_u,elnidx_u,nel * nen_u * sizeof(PetscInt),cudaMemcpyHostToDevice);CUDACHECK(ierr);
@@ -349,8 +351,8 @@ PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *
 
     ierr = PetscMalloc(nel * sizeof(PetscInt), &element_color);CHKERRQ(ierr);
     for (i=0; i<nel; ++i) element_color[i] = -1;
-    ierr = PetscMalloc(nel * NQP * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
-    for (i=0; i<nel * NQP; ++i) Yu_color[i] = -1;
+    ierr = PetscMalloc(nnodes_local * sizeof(PetscInt), &Yu_color);CHKERRQ(ierr);
+    for (i=0; i<nnodes_local; ++i) Yu_color[i] = -1;
 
     cudactx->element_colors = 0;
     while (elements_colored < nel) {
@@ -514,7 +516,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
     }
 
   }
-  ierr = CopyTo_A11_CUDA(mf,cudactx,ufield,LA_gcoords,gaussdata_host,nel,nen_u,elnidx_u,localsize);CHKERRQ(ierr); 
+  ierr = CopyTo_A11_CUDA(mf,cudactx,ufield,LA_gcoords,gaussdata_host,nel,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); 
 
   if(gaussdata_host) {
     ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
