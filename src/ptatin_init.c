@@ -119,7 +119,6 @@ extern PetscLogEvent MAT_MultMFA11_setup;
 extern PetscLogEvent MAT_MultMFA11_copyto;
 extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;
-extern PetscLogEvent MAT_MultMFA11_merge;
 
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
@@ -181,7 +180,6 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MatMultMFA11_copyto",MAT_CLASSID,&MAT_MultMFA11_copyto);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_kernel",MAT_CLASSID,&MAT_MultMFA11_kernel);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_copy_from",MAT_CLASSID,&MAT_MultMFA11_copyfrom);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_merge",MAT_CLASSID,&MAT_MultMFA11_merge);CHKERRQ(ierr);
 
 	ierr = PetscLogEventRegister("MatMultMFA11_sub",MAT_CLASSID,&MAT_MultMFA11_sub);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_rto",MAT_CLASSID,&MAT_MultMFA11_rto);CHKERRQ(ierr);

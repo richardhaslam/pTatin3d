@@ -38,7 +38,6 @@ extern PetscLogEvent MAT_MultMFA11_setup;
 extern PetscLogEvent MAT_MultMFA11_copyto;
 extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;
-extern PetscLogEvent MAT_MultMFA11_merge;
 
 /* Constant memory for D and B matrices */
 __constant__ PetscReal CUDA_D[3*3], CUDA_B[3*3];

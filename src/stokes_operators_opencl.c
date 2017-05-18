@@ -46,7 +46,6 @@ extern PetscLogEvent MAT_MultMFA11_setup;
 extern PetscLogEvent MAT_MultMFA11_copyto;
 extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;
-extern PetscLogEvent MAT_MultMFA11_merge;
 
 typedef struct _p_MFA11OpenCL *MFA11OpenCL;
 
