@@ -110,8 +110,8 @@ static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 typedef struct _p_MFA11SubRepart *MFA11SubRepart;
 
 struct _p_MFA11SubRepart {
-  PetscObjectState state;
 
+  PetscObjectState  state;
   PetscScalar       *ufield;
   PetscReal         *LA_gcoords;
   const PetscInt    *elnidx_u;
@@ -313,7 +313,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   if (mf->ctx) PetscFunctionReturn(0);
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
-  // TODO: set up state
+  ctx->state = 0;
 
   // TODO: as with CUDA, put this in the apply function but guard it 
   //       with checks on the state. This should make profiling easier, as this stuff is not included in the "setup" log stage!
@@ -598,30 +598,51 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   if (rank_sub) {
     ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ufield_remote     );CHKERRQ(ierr);
     ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&Yu_remote         );CHKERRQ(ierr); 
-    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
-    ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
   } else {
     ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&ufield_repart     );CHKERRQ(ierr);
     ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&Yu_repart         );CHKERRQ(ierr); /* Note Calloc (zeroed) */
-    ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
-    ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
   }
-
-  /* Send required quadrature-pointwise data to rank_sub 0 */
-  ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
-
-  /* Send required coordinate data to rank_sub 0 */
-  // TODO: only do this if state has changed
-  ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
 
   /* Send required ufield data to rank_sub 0 */
   ierr = TransferUfield_A11_SubRepart(ctx,ufield,ufield_remote,ufield_repart);CHKERRQ(ierr);
 
   if (rank_sub) {
     ierr = PetscFree(ufield_remote);CHKERRQ(ierr);
-    // TODO: only if state has changed (hence we used these)
-    ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
-    ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
+  }
+
+#if !defined(TATIN_HAVE_CUDA)
+   ctx->state = 0; /* always invalidate the state when using the debug routine (inefficient) */
+#endif
+  if(ctx->state != mf->state){
+    { /* Debug */
+#if 1
+      PetscErrorCode ierr;
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[32m=== Debug ==============\033[0m\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[36m%s:%d\033[0m\n\033[0;34m%s\033[0m\n",__FILE__,__LINE__,__FUNCT__);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"states different: state from mf is %d and state from ctx is %d\n",(PetscInt)mf->state,(PetscInt)ctx->state);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[0;32m========================\033[0m\n");CHKERRQ(ierr);
+#endif
+    }
+    if (rank_sub) {
+      ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
+      ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
+    } else {
+      ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
+      ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
+    }
+
+    /* Send required quadrature-pointwise data to rank_sub 0 */
+    ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
+
+    /* Send required coordinate data to rank_sub 0 */
+    ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
+
+
+    if (rank_sub) {
+      ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
+      ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
+    }
+    ctx->state = mf->state;
   }
 
   ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
@@ -705,7 +726,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
 #else
     /* Rank_sub 0 AVX Implementation */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using testing AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
 #endif
