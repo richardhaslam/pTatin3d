@@ -696,7 +696,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
     ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
 
-    // TODO: at this point it'd be safe to free gaussdata_w_repart and LA_gcoords_repart, as they wouldn't be needed until the state changed
+    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
+    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
 
     ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
@@ -761,6 +762,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
         }
       }
     }
+    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
+    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
 #endif
   }
 #undef OPENMP_CHKERRQ
@@ -785,8 +788,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   } else {
     ierr = PetscFree(ufield_repart);CHKERRQ(ierr);
     ierr = PetscFree(Yu_repart);CHKERRQ(ierr);
-    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr); // TODO: only destroy if state changed
-    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr); // TODO: only destroy if state changed
   }
 
   PetscFunctionReturn(0);
