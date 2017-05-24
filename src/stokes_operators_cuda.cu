@@ -34,7 +34,7 @@
 #include <dmda_element_q2p1.h>
 #include <stokes_operators.h>
 
-extern PetscLogEvent MAT_MultMFA11_setup;
+extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_copyto;
 extern PetscLogEvent MAT_MultMFA11_kernel;
 extern PetscLogEvent MAT_MultMFA11_copyfrom;

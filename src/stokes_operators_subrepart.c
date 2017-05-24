@@ -39,10 +39,11 @@ shared set elements to be processed per shared memory domain.
 #include <element_utils_q1.h>
 #include <immintrin.h>
 
-extern PetscLogEvent MAT_MultMFA11_setup;
+extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
 extern PetscLogEvent MAT_MultMFA11_rfr;
+extern PetscLogEvent MAT_MultMFA11_rf2;
 
 #ifndef __FMA__
 #  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
@@ -263,20 +264,23 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscErrorCode ierr;
   PetscInt       i;
   PetscMPIInt    rank_sub;
+  MPI_Request    *req;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->size_sub,&req);CHKERRQ(ierr);
 
   if (rank_sub) {
     ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   } else {
     PetscInt nodes_offset = ctx->nnodes;
     for (i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Send(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub);CHKERRQ(ierr);
+      ierr = MPI_Isend(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,&req[i]);CHKERRQ(ierr);
       nodes_offset += ctx->nnodes_remote_in[i];
     }
   }
 
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
   /* Accumulate into Yu */
   if (rank_sub) {
     for (i=0; i<ctx->nnodes_remote; ++i) {
@@ -293,6 +297,14 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       }
     }
   }
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
+
+  if(!rank_sub) {
+    for (i=1; i<ctx->size_sub; ++i) {
+      ierr = MPI_Wait(&req[i],MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    }
+  }
+  PetscFree(req);
 
   PetscFunctionReturn(0);
 }
@@ -568,7 +580,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ctx = (MFA11SubRepart)mf->ctx;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);
 
-  ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
@@ -589,9 +601,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
-
-  ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   // TODO: only do this for the coords and gauss data if the state has changed,
   //       or if we don't have CUDA (since aren't storing the repart arrays)
   /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
