@@ -66,7 +66,7 @@
 #include "stokes_assembly.h"
 
 PetscLogEvent MAT_MultMFA11;
-PetscLogEvent MAT_MultMFA11_setup;
+PetscLogEvent MAT_MultMFA11_stp;
 PetscLogEvent MAT_MultMFA11_copyto;
 PetscLogEvent MAT_MultMFA11_kernel;
 PetscLogEvent MAT_MultMFA11_copyfrom;

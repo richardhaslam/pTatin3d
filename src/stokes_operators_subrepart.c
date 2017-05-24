@@ -39,7 +39,7 @@ shared set elements to be processed per shared memory domain.
 #include <element_utils_q1.h>
 #include <immintrin.h>
 
-extern PetscLogEvent MAT_MultMFA11_setup;
+extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
 extern PetscLogEvent MAT_MultMFA11_rfr;
@@ -542,7 +542,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ctx = (MFA11SubRepart)mf->ctx;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);
 
-  ierr = PetscLogEventBegin(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
   for (i=0; i<3; i++) {
     B[i][0] = .5*(PetscSqr(x1[i]) - x1[i]);
@@ -563,7 +563,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MultMFA11_setup,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   
