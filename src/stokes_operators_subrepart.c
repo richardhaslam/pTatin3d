@@ -43,6 +43,7 @@ extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
 extern PetscLogEvent MAT_MultMFA11_rfr;
+extern PetscLogEvent MAT_MultMFA11_rf2;
 
 #ifndef __FMA__
 #  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
@@ -275,6 +276,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
     }
   }
 
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
   /* Accumulate into Yu */
   if (rank_sub) {
     for (i=0; i<ctx->nnodes_remote; ++i) {
@@ -291,6 +293,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       }
     }
   }
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
 
   if(!rank_sub) {
     for (i=1; i<ctx->size_sub; ++i) {
