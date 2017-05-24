@@ -259,16 +259,18 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscErrorCode ierr;
   PetscInt       i;
   PetscMPIInt    rank_sub;
+  MPI_Request    *req;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->size_sub,&req);CHKERRQ(ierr);
 
   if (rank_sub) {
     ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   } else {
     PetscInt nodes_offset = ctx->nnodes;
     for (i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Send(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub);CHKERRQ(ierr);
+      ierr = MPI_Isend(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,&req[i]);CHKERRQ(ierr);
       nodes_offset += ctx->nnodes_remote_in[i];
     }
   }
@@ -289,6 +291,13 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       }
     }
   }
+
+  if(!rank_sub) {
+    for (i=1; i<ctx->size_sub; ++i) {
+      ierr = MPI_Wait(&req[i],MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    }
+  }
+  PetscFree(req);
 
   PetscFunctionReturn(0);
 }
