@@ -601,6 +601,9 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
+
+  ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   // TODO: only do this for the coords and gauss data if the state has changed,
   //       or if we don't have CUDA (since aren't storing the repart arrays)
   /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
