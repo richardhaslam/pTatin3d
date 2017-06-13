@@ -276,6 +276,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferYu_A11_SubRepart"
+#if 1
 static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu,PetscScalar *Yu_remote,PetscScalar *Yu_repart)
 {
   PetscErrorCode ierr;
@@ -329,10 +330,11 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 
   PetscFunctionReturn(0);
 }
-
-#if 0
+#else
 /* This old version, which implements what MPI_Scatterv should (at least!) be
-   doing, actually seemed to run marginally faster */
+   doing, actually seemed to run marginally faster. However, it seems
+   that using scatterv/gatherv everywhere is making better use of MPI,
+   and overall seems to give a minor speed benefit*/
 static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu,PetscScalar *Yu_remote,PetscScalar *Yu_repart)
 {
   PetscErrorCode ierr;
