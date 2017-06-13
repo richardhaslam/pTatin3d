@@ -231,7 +231,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
-  /* Copy to arrays to send, or to receive */
+  /* Copy to arrays to be gathered */
   if (rank_sub) {
     /* Ranks 1,2,..  - move data to arrays to be sent */
     for (i=0;i<ctx->nnodes_remote;++i) {
@@ -240,24 +240,38 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
         ufield_remote[NSD*i+d] = ufield[NSD*ctx->nodes_remote[i]+d];
       }
     }
-  } else {
-    /* Rank 0  - populate local contributions to arrays we'll receive with */
-    ierr = PetscMemcpy(ufield_repart,ufield,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
+  } 
 
-  // TODO: replace with MPI_Igatherv
-  /* Send data to rank_sub 0 */
-    if (rank_sub) {
-      ierr = MPI_Send(ufield_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
-    } else {
-      PetscInt nodes_offset = ctx->nnodes;
+  /* Gather velocity field entries from all ranks in ufield_repart on rank_sub 0.
+     rank_sub 0 sends ctx->nnodes worth of data to itself from ufield, 
+     and the other ranks send ctx->nnodes_remote worth of data from ufield_remote*/
+  {
+    PetscMPIInt *displs,*recvcounts;
+    PetscMPIInt sendcount = rank_sub ? NSD*ctx->nnodes_remote : NSD*ctx->nnodes;
+    PetscScalar *sendbuf = rank_sub ? ufield_remote : ufield;
+    if(!rank_sub) {
+      ierr = PetscMalloc1(ctx->size_sub,&displs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ctx->size_sub,&recvcounts);CHKERRQ(ierr);
+      recvcounts[0] = NSD*ctx->nnodes;
       for(i=1;i<ctx->size_sub;++i){
-        ierr = MPI_Recv(&ufield_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-        nodes_offset += ctx->nnodes_remote_in[i];
+        recvcounts[i] = NSD*ctx->nnodes_remote_in[i];
+      }
+      displs[0] = 0;
+      displs[1] = NSD*ctx->nnodes;
+      for(i=2;i<ctx->size_sub;++i){
+        displs[i] = displs[i-1] + NSD*ctx->nnodes_remote_in[i-1];
       }
     }
 
-    PetscFunctionReturn(0);
+    ierr = MPI_Gatherv(sendbuf,sendcount,MPIU_SCALAR,ufield_repart,recvcounts,displs,MPIU_SCALAR,0,ctx->comm_sub);CHKERRQ(ierr);
+
+    if(!rank_sub) {
+      ierr = PetscFree(displs);
+      ierr = PetscFree(recvcounts);
+    }
+  }
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
