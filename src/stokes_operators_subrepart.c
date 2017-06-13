@@ -330,6 +330,60 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscFunctionReturn(0);
 }
 
+#if 0
+/* This old version, which implements what MPI_Scatterv should (at least!) be
+   doing, actually seemed to run marginally faster */
+static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu,PetscScalar *Yu_remote,PetscScalar *Yu_repart)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+  PetscMPIInt    rank_sub;
+  MPI_Request    *req;
+
+  PetscFunctionBeginUser;
+  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+  ierr = PetscMalloc1(ctx->size_sub,&req);CHKERRQ(ierr);
+
+  if (rank_sub) {
+    ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  } else {
+    PetscInt nodes_offset = ctx->nnodes;
+    for (i=1; i<ctx->size_sub; ++i) {
+      ierr = MPI_Isend(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,&req[i]);CHKERRQ(ierr);
+      nodes_offset += ctx->nnodes_remote_in[i];
+    }
+  }
+
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
+  /* Accumulate into Yu */
+  if (rank_sub) {
+    for (i=0; i<ctx->nnodes_remote; ++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
+      }
+    }
+  } else {
+    for (i=0; i<ctx->nnodes; ++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        Yu[NSD*i+d] += Yu_repart[NSD*i+d];
+      }
+    }
+  }
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
+
+  if(!rank_sub) {
+    for (i=1; i<ctx->size_sub; ++i) {
+      ierr = MPI_Wait(&req[i],MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    }
+  }
+  PetscFree(req);
+
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MFA11SetUp_SubRepart"
 PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
