@@ -131,6 +131,7 @@ struct _p_MFA11SubRepart {
   PetscInt       nnodes,nnodes_remote,nnodes_repart;
   PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
   PetscInt       *elnidx_u_repart;
+  PetscScalar    *ufield_remote,*ufield_repart,*Yu_remote,*Yu_repart;
 
 #ifdef TATIN_HAVE_CUDA
   MFA11CUDA     cudactx;
@@ -403,6 +404,10 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
   ctx->state = 0;
+  ctx->ufield_repart = NULL;
+  ctx->ufield_remote = NULL;
+  ctx->Yu_repart = NULL;
+  ctx->Yu_remote = NULL;
 
   // TODO: as with CUDA, put this in the apply function but guard it 
   //       with checks on the state. This should make profiling easier, as this stuff is not included in the "setup" log stage!
@@ -618,7 +623,19 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
 
   if (rank_sub) {
     ierr = PetscFree(ctx->nodes_remote);CHKERRQ(ierr);
+    if (ctx->ufield_remote) {
+      ierr = PetscFree(ctx->ufield_remote);CHKERRQ(ierr);
+    }
+    if (ctx->Yu_remote) {
+      ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
+    }
   }else {
+    if (ctx->ufield_repart) {
+       ierr = PetscFree(ctx->ufield_repart);CHKERRQ(ierr);
+    }
+    if (ctx->Yu_repart) {
+       ierr = PetscFree(ctx->Yu_repart);CHKERRQ(ierr);
+    }
     ierr = PetscFree(ctx->elnidx_u_repart);CHKERRQ(ierr);
     ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr); 
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
@@ -649,8 +666,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   PetscInt                i,j,k,e;
   QPntVolCoefStokes       *all_gausspoints;
   PetscMPIInt             rank_sub;
-  PetscScalar             *ufield_remote,     *ufield_repart;
-  PetscScalar             *Yu_remote,         *Yu_repart; 
   PetscReal               *gaussdata_w_remote,*gaussdata_w_repart;
   PetscReal               *LA_gcoords_remote, *LA_gcoords_repart;
 
@@ -682,214 +697,221 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
-  // TODO: don't reallocate this space for each solve (takes a substantial amount of time!)
-  /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
-  if (rank_sub) {
-    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ufield_remote     );CHKERRQ(ierr);
-    ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&Yu_remote         );CHKERRQ(ierr); 
-  } else {
-    ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&ufield_repart     );CHKERRQ(ierr);
-    ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&Yu_repart         );CHKERRQ(ierr); /* Note Calloc (zeroed) */
-  }
 
-  /* Send required ufield data to rank_sub 0 */
-  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ufield_remote,ufield_repart);CHKERRQ(ierr);
-
-  if (rank_sub) {
-    ierr = PetscFree(ufield_remote);CHKERRQ(ierr);
-  }
 
 #if !defined(TATIN_HAVE_CUDA)
    ctx->state = 0; /* always invalidate the state when using the debug routine (inefficient) */
 #endif
-  if(ctx->state != mf->state){
-    if (rank_sub) {
-      ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
-      ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
-    } else {
-      ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
-      ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
-    }
+   if(ctx->state != mf->state) {
+     /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
+     if (rank_sub) {
+       if (ctx->ufield_remote) {
+         ierr = PetscFree(ctx->ufield_remote);CHKERRQ(ierr);
+       }
+       if (ctx->Yu_remote) {
+         ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
+       }
+       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->ufield_remote);CHKERRQ(ierr);
+       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->Yu_remote    );CHKERRQ(ierr);
+     } else {
+       if (ctx->ufield_repart) {
+         ierr = PetscFree(ctx->ufield_remote);CHKERRQ(ierr);
+       }
+       if (ctx->Yu_repart) {
+         ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
+       }
+       ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&ctx->ufield_repart);CHKERRQ(ierr);
+       ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&ctx->Yu_repart    );CHKERRQ(ierr);
+     }
 
-    /* Send required quadrature-pointwise data to rank_sub 0 */
-    ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
+     if (rank_sub) {
+       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
+       ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
+     } else {
+       ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
+       ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
+     }
 
-    /* Send required coordinate data to rank_sub 0 */
-    ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
+     /* Send required quadrature-pointwise data to rank_sub 0 */
+     ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
+
+     /* Send required coordinate data to rank_sub 0 */
+     ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
 
 
-    if (rank_sub) {
-      ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
-      ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
-    }
-    ctx->state = mf->state;
-  }
+     if (rank_sub) {
+       ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
+       ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
+     }
+     ctx->state = mf->state;
+   }
 
-  ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+  /* Send required ufield data to rank_sub 0 */
+  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_remote,ctx->ufield_repart);CHKERRQ(ierr);
+
+  // TODO: not completely sure that this is required in all cases (it might be tat we can change a += to an = somewhere and not do this, but be aware of the debug all-AVX mode..)
+     if(!rank_sub) {
+       ierr = PetscMemzero(ctx->Yu_repart,NSD*ctx->nnodes_repart*sizeof(PetscScalar));CHKERRQ(ierr);
+     }
+
+     ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
+     ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
 #else
 #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
-  if (rank_sub) {
-    /* Rank_sub > 0 implementation. This is the same as the AVX implementation,
-       over a smaller set of elements (ctx->nel_repart) */
+     if (rank_sub) {
+       /* Rank_sub > 0 implementation. This is the same as the AVX implementation,
+          over a smaller set of elements (ctx->nel_repart) */
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
 #endif
-    for (e=0;e<ctx->nel_repart;e+=NEV) {
-      PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
-      PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
-      const QPntVolCoefStokes *cell_gausspoints[NEV];
-      PetscInt ee,l;
+       for (e=0;e<ctx->nel_repart;e+=NEV) {
+         PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
+         PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
+         const QPntVolCoefStokes *cell_gausspoints[NEV];
+         PetscInt ee,l;
 
-      for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-        for (ee=0; ee<NEV; ee++) {
-          PetscInt E = ctx->elnidx_u[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
-          for (l=0; l<3; l++) {
-            elx[l][i][ee] = LA_gcoords[3*E+l];
-            elu[l][i][ee] = ufield[3*E+l];
-          }
-        }
-      }
-      for (ee=0; ee<NEV; ee++) {
-        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,ctx->nel_repart-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
-      }
+         for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+           for (ee=0; ee<NEV; ee++) {
+             PetscInt E = ctx->elnidx_u[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
+             for (l=0; l<3; l++) {
+               elx[l][i][ee] = LA_gcoords[3*E+l];
+               elu[l][i][ee] = ufield[3*E+l];
+             }
+           }
+         }
+         for (ee=0; ee<NEV; ee++) {
+           ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,ctx->nel_repart-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
+         }
 
-      ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+         ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
+         ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
-      ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+         ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = QuadratureAction_A11_AVX(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
+         ierr = QuadratureAction_A11_AVX(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
 
-      ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+         ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #pragma omp critical
 #endif
-      for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
-        for (i=0; i<NQP; i++) {
-          PetscInt E = ctx->elnidx_u[ctx->nen_u*(e+ee)+i];
-          for (l=0; l<3; l++) {
-            Yu[3*E+l] += elv[l][i][ee];
-          }
-        }
-      }
+         for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
+           for (i=0; i<NQP; i++) {
+             PetscInt E = ctx->elnidx_u[ctx->nen_u*(e+ee)+i];
+             for (l=0; l<3; l++) {
+               Yu[3*E+l] += elv[l][i][ee];
+             }
+           }
+         }
 
-    }
+       }
 
-  } else {
+     } else {
 #if TATIN_HAVE_CUDA
-    /* Rank_sub 0 CUDA Implementation */
+       /* Rank_sub 0 CUDA Implementation */
 
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
+       ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
 
-    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
-    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
+       ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
+       ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
 
-    ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+       ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
-    ierr = CopyFrom_A11_CUDA(ctx->cudactx,Yu_repart,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+       ierr = CopyFrom_A11_CUDA(ctx->cudactx,ctx->Yu_repart,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
 #else
-    /* Rank_sub 0 AVX Implementation */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using testing AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
+       /* Rank_sub 0 AVX Implementation */
+       ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using testing AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
 #endif
-    for (e=0;e<ctx->nel_repart;e+=NEV) {
-      PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
-      PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
-      PetscInt    ee,l;
-      PetscReal   gaussdata_w_local[NQP*NEV];
+       for (e=0;e<ctx->nel_repart;e+=NEV) {
+         PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
+         PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
+         PetscInt    ee,l;
+         PetscReal   gaussdata_w_local[NQP*NEV];
 
-      for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-        for (ee=0; ee<NEV; ee++) {
-          PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
-          for (l=0; l<3; l++) {
-            elx[l][i][ee] = LA_gcoords_repart[3*E+l];
-            elu[l][i][ee] = ufield_repart[3*E+l];
-          }
-        }
-      }
+         for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+           for (ee=0; ee<NEV; ee++) {
+             PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
+             for (l=0; l<3; l++) {
+               elx[l][i][ee] = LA_gcoords_repart[3*E+l];
+               elu[l][i][ee] = ufield_repart[3*E+l];
+             }
+           }
+         }
 
-      for (ee=0; ee<NEV; ++ee){
-        const PetscInt el = PetscMin(e + ee,ctx->nel_repart-1);
-        for (i=0;i<NQP;++i){
-          gaussdata_w_local[ee*NQP+i] = gaussdata_w_repart[el*NQP+i];
-        }
-      }
-      ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+         for (ee=0; ee<NEV; ++ee){
+           const PetscInt el = PetscMin(e + ee,ctx->nel_repart-1);
+           for (i=0;i<NQP;++i){
+             gaussdata_w_local[ee*NQP+i] = gaussdata_w_repart[el*NQP+i];
+           }
+         }
+         ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
+         ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
-      ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+         ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
-      ierr = QuadratureAction_A11AVX_mod(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
+         ierr = QuadratureAction_A11AVX_mod(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
 
-      ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+         ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+         ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #pragma omp critical
 #endif
-      for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
-        for (i=0; i<NQP; i++) {
-          PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*(e+ee)+i];
-          for (l=0; l<3; l++) {
-            Yu_repart[3*E+l] += elv[l][i][ee];
-          }
-        }
-      }
-    }
-    ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
-    ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
+         for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
+           for (i=0; i<NQP; i++) {
+             PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*(e+ee)+i];
+             for (l=0; l<3; l++) {
+               Yu_repart[3*E+l] += elv[l][i][ee];
+             }
+           }
+         }
+       }
+       ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
+       ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
 #endif
-  }
+     }
 #undef OPENMP_CHKERRQ
-  ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+     ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
+     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
 
-  /* Transfer and accumulate contributions to Yu from rank_sub 0 */
-  ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
-  ierr = TransferYu_A11_SubRepart(ctx,Yu,Yu_remote,Yu_repart);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
+     /* Transfer and accumulate contributions to Yu from rank_sub 0 */
+     ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
+     ierr = TransferYu_A11_SubRepart(ctx,Yu,ctx->Yu_remote,ctx->Yu_repart);CHKERRQ(ierr);
+     ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
-  // Outdated. TODO update once AVX and CUDA guts are in
+     // Outdated. TODO update once AVX and CUDA guts are in
 #if 0
-  PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-  PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-  PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+     PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+     PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+     PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 #endif
 
-  if (rank_sub) {
-    ierr = PetscFree(Yu_remote);CHKERRQ(ierr);
-  } else {
-    ierr = PetscFree(ufield_repart);CHKERRQ(ierr);
-    ierr = PetscFree(Yu_repart);CHKERRQ(ierr);
-  }
-
-  PetscFunctionReturn(0);
-}
+     PetscFunctionReturn(0);
+   }
