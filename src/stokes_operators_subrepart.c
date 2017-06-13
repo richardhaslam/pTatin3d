@@ -281,24 +281,41 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscErrorCode ierr;
   PetscInt       i;
   PetscMPIInt    rank_sub;
-  MPI_Request    *req;
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ctx->size_sub,&req);CHKERRQ(ierr);
 
-  // TODO: replace this with MPI_Igatherv
-  if (rank_sub) {
-    ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-  } else {
-    PetscInt nodes_offset = ctx->nnodes;
-    for (i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Isend(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,&req[i]);CHKERRQ(ierr);
-      nodes_offset += ctx->nnodes_remote_in[i];
+  /* Scatter from rank_sub 0 to all ranks. Rank_sub 0 sends
+     directly to its Yu array, and the other ranks receive in
+     Yu_repart, which is then used to popoulate Yu */
+  {
+    PetscMPIInt *displs,*sendcounts;
+    PetscMPIInt recvcount = rank_sub ? NSD*ctx->nnodes_remote : NSD*ctx->nnodes;
+    PetscScalar *recvbuf = rank_sub ? Yu_remote : Yu;
+    if(!rank_sub) {
+      ierr = PetscMalloc1(ctx->size_sub,&displs);CHKERRQ(ierr);
+      ierr = PetscMalloc1(ctx->size_sub,&sendcounts);CHKERRQ(ierr);
+      sendcounts[0] = NSD*ctx->nnodes;
+      for(i=1;i<ctx->size_sub;++i){
+        sendcounts[i] = NSD*ctx->nnodes_remote_in[i];
+      }
+      displs[0] = 0;
+      displs[1] = NSD*ctx->nnodes;
+      for(i=2;i<ctx->size_sub;++i){
+        displs[i] = displs[i-1] + NSD*ctx->nnodes_remote_in[i-1];
+      }
+    }
+
+    ierr = MPI_Scatterv(Yu_repart,sendcounts,displs,MPIU_SCALAR,recvbuf,recvcount,MPIU_SCALAR,0,ctx->comm_sub);CHKERRQ(ierr);
+
+    if(!rank_sub) {
+      ierr = PetscFree(displs);
+      ierr = PetscFree(sendcounts);
     }
   }
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
+
   /* Accumulate into Yu */
   if (rank_sub) {
     for (i=0; i<ctx->nnodes_remote; ++i) {
@@ -307,22 +324,8 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
         Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
       }
     }
-  } else {
-    for (i=0; i<ctx->nnodes; ++i) {
-      PetscInt d;
-      for(d=0;d<NSD;++d){
-        Yu[NSD*i+d] += Yu_repart[NSD*i+d];
-      }
-    }
-  }
+  } 
   ierr = PetscLogEventEnd(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
-
-  if(!rank_sub) {
-    for (i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Wait(&req[i],MPI_STATUS_IGNORE);CHKERRQ(ierr);
-    }
-  }
-  PetscFree(req);
 
   PetscFunctionReturn(0);
 }
