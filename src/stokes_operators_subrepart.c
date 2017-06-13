@@ -168,6 +168,7 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   }
 
   /* Send required quadrature-pointwise data to rank_sub 0 */
+  // TODO: replace with MPI_Iscatterv
   if (rank_sub) {
     ierr = MPI_Send(gaussdata_w_remote,NQP*ctx->nel_remote,MPIU_REAL,0,0,ctx->comm_sub);CHKERRQ(ierr);
   } else {
@@ -205,6 +206,7 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
     ierr = PetscMemcpy(LA_gcoords_repart ,LA_gcoords ,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
+  // TODO: replace with MPI_Igatherv
   if (rank_sub) {
     ierr = MPI_Send(LA_gcoords_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
   } else {
@@ -243,6 +245,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
     ierr = PetscMemcpy(ufield_repart,ufield,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
+  // TODO: replace with MPI_Igatherv
   /* Send data to rank_sub 0 */
     if (rank_sub) {
       ierr = MPI_Send(ufield_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
@@ -270,6 +273,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
   ierr = PetscMalloc1(ctx->size_sub,&req);CHKERRQ(ierr);
 
+  // TODO: replace this with MPI_Igatherv
   if (rank_sub) {
     ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   } else {
@@ -473,6 +477,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     ierr = PetscMemcpy(ctx->elnidx_u_repart,ctx->elnidx_u,ctx->nel*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr); 
 
     /* Receive a chunk of elements (sets of 27 nodes for Q2 elements) from each other rank */
+    // TODO: replace with MPI_Igatherv
     for(i=1;i<ctx->size_sub;++i)  {
       ierr = MPI_Recv(&ctx->elnidx_u_repart[ctx->nen_u*el_offset],ctx->nen_u*ctx->nel_remote_in[i],MPIU_INT,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       el_offset += ctx->nel_remote_in[i];
@@ -604,8 +609,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
-  // TODO: only do this for the coords and gauss data if the state has changed,
-  //       or if we don't have CUDA (since aren't storing the repart arrays)
+  // TODO: don't reallocate this space for each solve (takes a substantial amount of time!)
   /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
   if (rank_sub) {
     ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ufield_remote     );CHKERRQ(ierr);
@@ -626,15 +630,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
    ctx->state = 0; /* always invalidate the state when using the debug routine (inefficient) */
 #endif
   if(ctx->state != mf->state){
-    { /* Debug */
-#if 1
-      PetscErrorCode ierr;
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[32m=== Debug ==============\033[0m\n");CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[36m%s:%d\033[0m\n\033[0;34m%s\033[0m\n",__FILE__,__LINE__,__FUNCT__);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"states different: state from mf is %d and state from ctx is %d\n",(PetscInt)mf->state,(PetscInt)ctx->state);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[0;32m========================\033[0m\n");CHKERRQ(ierr);
-#endif
-    }
     if (rank_sub) {
       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
       ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
