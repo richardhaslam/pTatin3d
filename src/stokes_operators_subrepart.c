@@ -41,6 +41,7 @@ shared set elements to be processed per shared memory domain.
 #include <element_utils_q1.h>
 #include <immintrin.h>
 
+extern PetscLogEvent MAT_MultMFA11_SUP;
 extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
@@ -412,12 +413,10 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   PetscHashI      nodes_remote_inv;
 
   PetscFunctionBeginUser;
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   if (mf->ctx) PetscFunctionReturn(0);
+
+  ierr = PetscLogEventBegin(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
+
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
   ctx->state = 0;
@@ -622,11 +621,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 #endif
 
   mf->ctx=ctx;
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m SetUp %gs\n",t_debug);
-}
-#endif
+  ierr = PetscLogEventEnd(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
