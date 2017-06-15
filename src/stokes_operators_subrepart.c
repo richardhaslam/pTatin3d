@@ -587,7 +587,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     }
   }
 
-#if 1
+#if 0
   { /* Print stats on nodes and el for normal, remote, and repart */
     PetscErrorCode ierr;
     PetscMPIInt    rank,size,r;
