@@ -172,7 +172,7 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   }
 
   /* Send required quadrature-pointwise data to rank_sub 0 */
-  // TODO: replace with MPI_Iscatterv
+  // TODO: replace with MPI_Igatherv
   if (rank_sub) {
     ierr = MPI_Send(gaussdata_w_remote,NQP*ctx->nel_remote,MPIU_REAL,0,0,ctx->comm_sub);CHKERRQ(ierr);
   } else {
@@ -434,7 +434,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ctx->Yu_repart = NULL;
   ctx->Yu_remote = NULL;
 
-  // TODO: as with CUDA, put this in the apply function but guard it 
+  // TODO: as with CUDA, put any non-twiddling stuff (element-based stuff) in the apply function but guard it 
   //       with checks on the state. This should make profiling easier, as this stuff is not included in the "setup" log stage!
 
   /* Define a subcomm. We would hope that this would
