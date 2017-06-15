@@ -235,6 +235,11 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
   /* Copy to arrays to be gathered */
   if (rank_sub) {
     /* Ranks 1,2,..  - move data to arrays to be sent */
@@ -245,7 +250,17 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
       }
     }
   } 
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u poke %gs\n",t_debug);
+}
 
+#endif
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
   /* Gather velocity field entries from all ranks in ufield_repart on rank_sub 0.
      rank_sub 0 sends ctx->nnodes worth of data to itself from ufield, 
      and the other ranks send ctx->nnodes_remote worth of data from ufield_remote*/
@@ -274,6 +289,11 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
       ierr = PetscFree(recvcounts);
     }
   }
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u gatherv %gs\n",t_debug);
+}
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -290,11 +310,6 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Scatter from rank_sub 0 to all ranks. Rank_sub 0 sends
      directly to its Yu array, and the other ranks receive in
      Yu_repart, which is then used to popoulate Yu */
@@ -323,14 +338,8 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       ierr = PetscFree(sendcounts);
     }
   }
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu scatterv %gs\n",t_debug);
-}
-#endif
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
-
   /* Accumulate into Yu */
   if (rank_sub) {
     for (i=0; i<ctx->nnodes_remote; ++i) {
@@ -720,6 +729,11 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
    ctx->state = 0; /* always invalidate the state when using the debug routine (inefficient) */
 #endif
    if(ctx->state != mf->state) {
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
      /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
      if (rank_sub) {
        if (ctx->ufield_remote) {
@@ -748,6 +762,11 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
        ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
      }
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m mallocs %gs\n",t_debug);
+}
+#endif
 
      /* Send required quadrature-pointwise data to rank_sub 0 */
 #if defined(DEBUG_TIMING)
@@ -796,10 +815,21 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 }
 #endif
 
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
   // TODO: not completely sure that this is required in all cases (it might be tat we can change a += to an = somewhere and not do this, but be aware of the debug all-AVX mode..)
      if(!rank_sub) {
        ierr = PetscMemzero(ctx->Yu_repart,NSD*ctx->nnodes_repart*sizeof(PetscScalar));CHKERRQ(ierr);
      }
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m memzero %gs\n",t_debug);
+}
+#endif
+
 
      ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
      ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
@@ -944,23 +974,14 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #endif
      }
 #undef OPENMP_CHKERRQ
-     ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
      ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
 
+     ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+
      /* Transfer and accumulate contributions to Yu from rank_sub 0 */
      ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
      ierr = TransferYu_A11_SubRepart(ctx,Yu,ctx->Yu_remote,ctx->Yu_repart);CHKERRQ(ierr);
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer Yu %gs\n",t_debug);
-}
-#endif
      ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
      // Outdated. TODO update once AVX and CUDA guts are in
