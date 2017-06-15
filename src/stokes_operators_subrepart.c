@@ -27,7 +27,7 @@ which would allow for a more natural set of operations on a single
 shared set elements to be processed per shared memory domain.
 */
 
-#define DEBUG_TIMING
+//#define DEBUG_TIMING
 
 #include <petscfe.h>
 #include <../src/sys/utils/hash.h> /* not portable to prefix installs
