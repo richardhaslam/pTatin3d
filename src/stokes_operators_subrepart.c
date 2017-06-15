@@ -27,6 +27,8 @@ which would allow for a more natural set of operations on a single
 shared set elements to be processed per shared memory domain.
 */
 
+#define DEBUG_TIMING
+
 #include <petscfe.h>
 #include <../src/sys/utils/hash.h> /* not portable to prefix installs
                                      In master (PETSc 3.8), this header is
@@ -287,6 +289,11 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
   /* Scatter from rank_sub 0 to all ranks. Rank_sub 0 sends
      directly to its Yu array, and the other ranks receive in
      Yu_repart, which is then used to popoulate Yu */
@@ -315,6 +322,11 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       ierr = PetscFree(sendcounts);
     }
   }
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu scatterv %gs\n",t_debug);
+}
+#endif
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
 
@@ -400,6 +412,11 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   PetscHashI      nodes_remote_inv;
 
   PetscFunctionBeginUser;
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
   if (mf->ctx) PetscFunctionReturn(0);
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
@@ -605,6 +622,11 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 #endif
 
   mf->ctx=ctx;
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m SetUp %gs\n",t_debug);
+}
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -733,10 +755,30 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
      }
 
      /* Send required quadrature-pointwise data to rank_sub 0 */
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
      ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
 
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer qp %gs\n",t_debug);
+}
+#endif
      /* Send required coordinate data to rank_sub 0 */
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
      ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer coord %gs\n",t_debug);
+}
+#endif
 
 
      if (rank_sub) {
@@ -747,7 +789,17 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
    }
 
   /* Send required ufield data to rank_sub 0 */
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
   ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_remote,ctx->ufield_repart);CHKERRQ(ierr);
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer ufield %gs\n",t_debug);
+}
+#endif
 
   // TODO: not completely sure that this is required in all cases (it might be tat we can change a += to an = somewhere and not do this, but be aware of the debug all-AVX mode..)
      if(!rank_sub) {
@@ -903,7 +955,17 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
      /* Transfer and accumulate contributions to Yu from rank_sub 0 */
      ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
      ierr = TransferYu_A11_SubRepart(ctx,Yu,ctx->Yu_remote,ctx->Yu_repart);CHKERRQ(ierr);
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer Yu %gs\n",t_debug);
+}
+#endif
      ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
      // Outdated. TODO update once AVX and CUDA guts are in
