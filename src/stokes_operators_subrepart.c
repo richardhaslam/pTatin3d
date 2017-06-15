@@ -820,10 +820,14 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  // TODO: not completely sure that this is required in all cases (it might be tat we can change a += to an = somewhere and not do this, but be aware of the debug all-AVX mode..)
+
+#if !defined(TATIN_HAVE_CUDA)
+  /* For the debug AVX impl (not performant), zero this */
      if(!rank_sub) {
        ierr = PetscMemzero(ctx->Yu_repart,NSD*ctx->nnodes_repart*sizeof(PetscScalar));CHKERRQ(ierr);
      }
+#endif
+
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m memzero %gs\n",t_debug);
