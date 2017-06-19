@@ -134,7 +134,9 @@ struct _p_MFA11SubRepart {
   PetscInt       nnodes,nnodes_remote,nnodes_repart;
   PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
   PetscInt       *elnidx_u_repart;
-  PetscScalar    *ufield_remote,*ufield_repart,*Yu_remote,*Yu_repart;
+  PetscScalar    *mem_ufield_repart,*ufield_repart_base,*ufield_remote,*Yu_remote,*Yu_repart;
+  PetscBool      win_ufield_repart_allocated;
+  MPI_Win        win_ufield_repart;
 
 #ifdef TATIN_HAVE_CUDA
   MFA11CUDA     cudactx;
@@ -226,7 +228,7 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferUfield_A11_SubRepart"
-static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield,PetscScalar *ufield_remote,PetscScalar *ufield_repart)
+static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield,PetscScalar *ufield_remote,PetscScalar *ufield_repart_base)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -241,6 +243,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   t_debug = MPI_Wtime();
 #endif
   /* Copy to arrays to be gathered */
+  // TODO: !!! don't need to do this! Just write into the shared array!
   if (rank_sub) {
     /* Ranks 1,2,..  - move data to arrays to be sent */
     for (i=0;i<ctx->nnodes_remote;++i) {
@@ -261,9 +264,42 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  /* Gather velocity field entries from all ranks in ufield_repart on rank_sub 0.
-     rank_sub 0 sends ctx->nnodes worth of data to itself from ufield, 
-     and the other ranks send ctx->nnodes_remote worth of data from ufield_remote*/
+  /* Gather velocity field entries from all ranks in shared mem array
+     starting at ufield_repart_base.
+     rank_sub 0 copies ctx->nnodes worth of data to itself from ufield, 
+     and the other ranks copy ctx->nnodes_remote worth of data from ufield_remote*/
+
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  if (rank_sub) {
+    ierr = PetscMemcpy(&ctx->ufield_repart_base[NSD*ctx->nodes_offset],ufield_remote,NSD*ctx->nnodes_remote*sizeof(PetscScalar));CHKERRQ(ierr);
+  } else {
+    ierr = PetscMemcpy(ctx->ufield_repart_base,ufield,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u memcpy %gs\n",t_debug);
+}
+#endif
+
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  // TODO: is this necessary in general? Is it necessary here?
+  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
+  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u sync %gs\n",t_debug);
+}
+#endif
+#if 0
   {
     PetscMPIInt *displs,*recvcounts;
     PetscMPIInt sendcount = rank_sub ? NSD*ctx->nnodes_remote : NSD*ctx->nnodes;
@@ -289,9 +325,10 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
       ierr = PetscFree(recvcounts);
     }
   }
+#endif
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u gatherv %gs\n",t_debug);
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u shmem transfer %gs\n",t_debug);
 }
 #endif
 
@@ -417,7 +454,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   DM              dau = mf->daUVW;
   PetscInt        i;
   MFA11SubRepart  ctx;
-  PetscMPIInt     rank,rank_sub;
+  PetscMPIInt     rank,size,rank_sub;
   MPI_Comm        comm_u = PetscObjectComm((PetscObject)dau);
   PetscHashI      nodes_remote_inv;
 
@@ -429,8 +466,12 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ierr = PetscMalloc1(1,&ctx);CHKERRQ(ierr);
 
   ctx->state = 0;
-  ctx->ufield_repart = NULL;
+
+  ctx->win_ufield_repart_allocated = PETSC_FALSE;
+  ctx->ufield_repart_base = NULL;
   ctx->ufield_remote = NULL;
+  ctx->mem_ufield_repart = NULL;
+
   ctx->Yu_repart = NULL;
   ctx->Yu_remote = NULL;
 
@@ -444,9 +485,13 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     PetscMPIInt size_sub_nominal = 12;
     ierr = PetscOptionsGetInt(NULL,NULL,"-subrepart_size",&size_sub_nominal,NULL);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm_u,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_split(comm_u,rank/size_sub_nominal,0,&ctx->comm_sub);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(comm_u,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_split(comm_u,rank/size_sub_nominal,0,&ctx->comm_sub);CHKERRQ(ierr); // TODO: somehow check that this actually is a shared-memory subdomain
     ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
     ierr = MPI_Comm_size(ctx->comm_sub,&ctx->size_sub);CHKERRQ(ierr);
+    if(size > size_sub_nominal && size % ctx->size_sub != 0) {
+      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The current shared memory implementation (which doesn't use MPI_Comm_split_type yet) assumes that, if you have multiple nodes, you have a exactly %d ranks on each, continguously numbered, and that these live in the same shared-memory domain",size_sub_nominal);
+    }
   }
 
   ierr = DMDAGetElements_pTatinQ2P1(dau,&ctx->nel,&ctx->nen_u,&ctx->elnidx_u);CHKERRQ(ierr);
@@ -647,18 +692,21 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
   ctx = (MFA11SubRepart)mf->ctx;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
+  /* Free shared memory window */
+  if (ctx->win_ufield_repart_allocated) {
+    ierr = MPI_Win_unlock_all(ctx->win_ufield_repart);CHKERRQ(ierr);
+    ierr = MPI_Win_free(&ctx->win_ufield_repart);CHKERRQ(ierr);
+    ctx->win_ufield_repart_allocated = PETSC_FALSE;
+    ctx->ufield_repart_base = NULL;
+    ctx->mem_ufield_repart = NULL;
+  }
+
   if (rank_sub) {
     ierr = PetscFree(ctx->nodes_remote);CHKERRQ(ierr);
-    if (ctx->ufield_remote) {
-      ierr = PetscFree(ctx->ufield_remote);CHKERRQ(ierr);
-    }
     if (ctx->Yu_remote) {
       ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
     }
   }else {
-    if (ctx->ufield_repart) {
-       ierr = PetscFree(ctx->ufield_repart);CHKERRQ(ierr);
-    }
     if (ctx->Yu_repart) {
        ierr = PetscFree(ctx->Yu_repart);CHKERRQ(ierr);
     }
@@ -745,14 +793,28 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->ufield_remote);CHKERRQ(ierr);
        ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->Yu_remote    );CHKERRQ(ierr);
      } else {
-       if (ctx->ufield_repart) {
-         ierr = PetscFree(ctx->ufield_remote);CHKERRQ(ierr);
-       }
        if (ctx->Yu_repart) {
-         ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
+         ierr = PetscFree(ctx->Yu_repart);CHKERRQ(ierr);
        }
-       ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&ctx->ufield_repart);CHKERRQ(ierr);
        ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&ctx->Yu_repart    );CHKERRQ(ierr);
+     }
+
+     /* (re)Allocate shared memory windows */
+     if(ctx->win_ufield_repart_allocated){
+       ctx->ufield_repart_base = NULL;
+       ctx->mem_ufield_repart = NULL;
+       ierr = MPI_Win_unlock_all(ctx->win_ufield_repart);CHKERRQ(ierr);
+       ierr = MPI_Win_free(&ctx->win_ufield_repart);CHKERRQ(ierr);
+       ctx->win_ufield_repart_allocated = PETSC_FALSE;
+     }
+     { 
+       MPI_Aint          sz;
+       PetscMPIInt       du;
+       const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_ufield_repart,&ctx->win_ufield_repart);CHKERRQ(ierr);
+       ctx->win_ufield_repart_allocated = PETSC_TRUE;
+       ierr = MPI_Win_shared_query(ctx->win_ufield_repart,MPI_PROC_NULL,&sz,&du,&ctx->ufield_repart_base);CHKERRQ(ierr);
+       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_ufield_repart);CHKERRQ(ierr);
      }
 
      if (rank_sub) {
@@ -808,7 +870,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_remote,ctx->ufield_repart);CHKERRQ(ierr);
+  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_remote,ctx->ufield_repart_base);CHKERRQ(ierr);
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer ufield %gs\n",t_debug);
@@ -905,7 +967,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #if TATIN_HAVE_CUDA
        /* Rank_sub 0 CUDA Implementation */
 
-       ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
+       ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
 
        ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
        ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
@@ -931,7 +993,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
              PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
              for (l=0; l<3; l++) {
                elx[l][i][ee] = LA_gcoords_repart[3*E+l];
-               elu[l][i][ee] = ufield_repart[3*E+l];
+               elu[l][i][ee] = ufield_repart_base[3*E+l];
              }
            }
          }
