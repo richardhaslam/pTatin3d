@@ -708,8 +708,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   PetscInt                i,j,k,e;
   QPntVolCoefStokes       *all_gausspoints;
   PetscMPIInt             rank_sub;
-  PetscReal               *gaussdata_w_remote,*gaussdata_w_repart;
-  PetscReal               *LA_gcoords_remote, *LA_gcoords_repart;
+  PetscReal               *gaussdata_w_remote,*gaussdata_w_repart=NULL;
+  PetscReal               *LA_gcoords_remote, *LA_gcoords_repart=NULL;
 
   PetscFunctionBeginUser;
   ctx = (MFA11SubRepart)mf->ctx;
@@ -938,8 +938,14 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
        ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
 
-       ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
-       ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
+       if(!rank_sub) {
+         if (LA_gcoords_repart) {
+           ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
+         }
+         if (gaussdata_w_repart) {
+           ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
+         }
+       }
 
        ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
