@@ -268,7 +268,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  // TODO: is this necessary in general? Is it necessary here?
+  /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
@@ -320,6 +320,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
+  //TODO: remove (would be nice to have, but don't want to maintain all this)
 #if 0
   /* Scatter from rank_sub 0 to all ranks. Rank_sub 0 sends
      directly to its Yu array, and the other ranks receive in
@@ -401,7 +402,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  // TODO: is this necessary in general? Is it necessary here?
+  /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
