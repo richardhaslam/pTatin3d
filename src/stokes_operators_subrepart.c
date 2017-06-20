@@ -134,7 +134,7 @@ struct _p_MFA11SubRepart {
   PetscInt       nnodes,nnodes_remote,nnodes_repart;
   PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
   PetscInt       *elnidx_u_repart;
-  PetscScalar    *mem_ufield_repart,*ufield_repart_base,*ufield_remote,*Yu_remote,*Yu_repart;
+  PetscScalar    *mem_ufield_repart,*ufield_repart_base,*Yu_remote,*Yu_repart;
   PetscBool      win_ufield_repart_allocated;
   MPI_Win        win_ufield_repart;
 
@@ -228,7 +228,7 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferUfield_A11_SubRepart"
-static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield,PetscScalar *ufield_remote,PetscScalar *ufield_repart_base)
+static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield,PetscScalar *ufield_repart_base)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -237,51 +237,29 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
+  /* Gather velocity field entries from all ranks in shared mem array
+     starting at ufield_repart_base. */
+
 #if defined(DEBUG_TIMING)
 {
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  /* Copy to arrays to be gathered */
-  // TODO: !!! don't need to do this! Just write into the shared array!
   if (rank_sub) {
-    /* Ranks 1,2,..  - move data to arrays to be sent */
+    PetscScalar * const ufield_remote = &ufield_repart_base[NSD*ctx->nodes_offset];
+    /* Ranks 1,2,.. poke data directly into the shared array */
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
       for(d=0;d<NSD;++d){
         ufield_remote[NSD*i+d] = ufield[NSD*ctx->nodes_remote[i]+d];
       }
     }
-  } 
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u poke %gs\n",t_debug);
-}
-
-#endif
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
-  /* Gather velocity field entries from all ranks in shared mem array
-     starting at ufield_repart_base.
-     rank_sub 0 copies ctx->nnodes worth of data to itself from ufield, 
-     and the other ranks copy ctx->nnodes_remote worth of data from ufield_remote*/
-
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
-  if (rank_sub) {
-    ierr = PetscMemcpy(&ctx->ufield_repart_base[NSD*ctx->nodes_offset],ufield_remote,NSD*ctx->nnodes_remote*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     ierr = PetscMemcpy(ctx->ufield_repart_base,ufield,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u memcpy %gs\n",t_debug);
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u poke and copy %gs\n",t_debug);
 }
 #endif
 
@@ -326,12 +304,6 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
     }
   }
 #endif
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u shmem transfer %gs\n",t_debug);
-}
-#endif
-
   PetscFunctionReturn(0);
 }
 
@@ -469,7 +441,6 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 
   ctx->win_ufield_repart_allocated = PETSC_FALSE;
   ctx->ufield_repart_base = NULL;
-  ctx->ufield_remote = NULL;
   ctx->mem_ufield_repart = NULL;
 
   ctx->Yu_repart = NULL;
@@ -784,13 +755,9 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #endif
      /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
      if (rank_sub) {
-       if (ctx->ufield_remote) {
-         ierr = PetscFree(ctx->ufield_remote);CHKERRQ(ierr);
-       }
        if (ctx->Yu_remote) {
          ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
        }
-       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->ufield_remote);CHKERRQ(ierr);
        ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->Yu_remote    );CHKERRQ(ierr);
      } else {
        if (ctx->Yu_repart) {
@@ -870,7 +837,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_remote,ctx->ufield_repart_base);CHKERRQ(ierr);
+  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_repart_base);CHKERRQ(ierr);
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer ufield %gs\n",t_debug);
