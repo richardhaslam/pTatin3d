@@ -113,29 +113,24 @@ static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
 typedef struct _p_MFA11SubRepart *MFA11SubRepart;
 
 struct _p_MFA11SubRepart {
-
-  PetscObjectState  state;
-  PetscScalar       *ufield;
-  PetscReal         *LA_gcoords;
-  const PetscInt    *elnidx_u;
-  PetscScalar       *Yu;
-
   /* 
    <no postfix> : refers to quantities used in the "normal" case without repartitioning
    _repart      : refers to quantities which are used after repartitioning (these can 
                     be the same as the unrepartitioned values, say if we use the same array)
    _remote      : refers to quantities which are used to communicate with rank 0
    */
-  MPI_Comm       comm_sub;
-  PetscMPIInt    size_sub;
-  PetscInt       nel_sub,nen_u;
-  PetscInt       nel,nel_remote,nel_repart;
-  PetscInt       nnodes,nnodes_remote,nnodes_repart;
-  PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
-  PetscInt       *elnidx_u_repart;
-  PetscScalar    *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
-  PetscBool      win_ufield_repart_allocated,win_Yu_repart_allocated;
-  MPI_Win        win_ufield_repart,win_Yu_repart;
+  PetscObjectState  state;
+  const PetscInt    *elnidx_u;
+  MPI_Comm          comm_sub;
+  PetscMPIInt       size_sub;
+  PetscInt          nel_sub,nen_u;
+  PetscInt          nel,nel_remote,nel_repart;
+  PetscInt          nnodes,nnodes_remote,nnodes_repart;
+  PetscInt          *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
+  PetscInt          *elnidx_u_repart;
+  PetscScalar       *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
+  PetscBool         win_ufield_repart_allocated,win_Yu_repart_allocated;
+  MPI_Win           win_ufield_repart,win_Yu_repart;
 
 #ifdef TATIN_HAVE_CUDA
   MFA11CUDA     cudactx;
@@ -396,7 +391,6 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 }
 #endif
 
-  // TODO: do we need BOTH these routines to sync? Probably not! Can move this outside of this routine, I imagine..
 #if defined(DEBUG_TIMING)
 {
   double t_debug;
