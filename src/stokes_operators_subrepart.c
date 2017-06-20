@@ -46,7 +46,6 @@ extern PetscLogEvent MAT_MultMFA11_stp;
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
 extern PetscLogEvent MAT_MultMFA11_rfr;
-extern PetscLogEvent MAT_MultMFA11_rf2;
 
 #ifndef __FMA__
 #  define _mm256_fmadd_pd(a,b,c) _mm256_add_pd(_mm256_mul_pd(a,b),c)
@@ -134,9 +133,9 @@ struct _p_MFA11SubRepart {
   PetscInt       nnodes,nnodes_remote,nnodes_repart;
   PetscInt       *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
   PetscInt       *elnidx_u_repart;
-  PetscScalar    *mem_ufield_repart,*ufield_repart_base,*Yu_remote,*Yu_repart;
-  PetscBool      win_ufield_repart_allocated;
-  MPI_Win        win_ufield_repart;
+  PetscScalar    *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
+  PetscBool      win_ufield_repart_allocated,win_Yu_repart_allocated;
+  MPI_Win        win_ufield_repart,win_Yu_repart;
 
 #ifdef TATIN_HAVE_CUDA
   MFA11CUDA     cudactx;
@@ -228,7 +227,7 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferUfield_A11_SubRepart"
-static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield,PetscScalar *ufield_repart_base)
+static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -245,9 +244,10 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
+  /* Rank_sub 1,2,.. poke data directly into the shared array, and rank_sub 0
+     simply copies */
   if (rank_sub) {
-    PetscScalar * const ufield_remote = &ufield_repart_base[NSD*ctx->nodes_offset];
-    /* Ranks 1,2,.. poke data directly into the shared array */
+    PetscScalar * const ufield_remote = &ctx->ufield_repart_base[NSD*ctx->nodes_offset];
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
       for(d=0;d<NSD;++d){
@@ -277,6 +277,8 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u sync %gs\n",t_debug);
 }
 #endif
+
+// TODO: introducing a debugging mode where you can still use this when you don't have a working shared memory subcommunicator
 #if 0
   {
     PetscMPIInt *displs,*recvcounts;
@@ -309,8 +311,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferYu_A11_SubRepart"
-#if 1
-static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu,PetscScalar *Yu_remote,PetscScalar *Yu_repart)
+static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -319,6 +320,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
+#if 0
   /* Scatter from rank_sub 0 to all ranks. Rank_sub 0 sends
      directly to its Yu array, and the other ranks receive in
      Yu_repart, which is then used to popoulate Yu */
@@ -347,76 +349,70 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       ierr = PetscFree(sendcounts);
     }
   }
+#endif
 
-  ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
-  /* Accumulate into Yu */
-  if (rank_sub) {
-    for (i=0; i<ctx->nnodes_remote; ++i) {
-      PetscInt d;
-      for(d=0;d<NSD;++d){
-        Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
-      }
-    }
-  } 
-  ierr = PetscLogEventEnd(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-#else
-/* This old version, which implements what MPI_Scatterv should (at least!) be
-   doing, actually seemed to run marginally faster. However, it seems
-   that using scatterv/gatherv everywhere is making better use of MPI,
-   and overall seems to give a minor speed benefit*/
-static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu,PetscScalar *Yu_remote,PetscScalar *Yu_repart)
+#if defined(DEBUG_TIMING)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PetscMPIInt    rank_sub;
-  MPI_Request    *req;
-
-  PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
-  ierr = PetscMalloc1(ctx->size_sub,&req);CHKERRQ(ierr);
-
-  if (rank_sub) {
-    ierr = MPI_Recv(Yu_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-  } else {
-    PetscInt nodes_offset = ctx->nnodes;
-    for (i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Isend(&Yu_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,&req[i]);CHKERRQ(ierr);
-      nodes_offset += ctx->nnodes_remote_in[i];
-    }
-  }
-
-  ierr = PetscLogEventBegin(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
-  /* Accumulate into Yu */
-  if (rank_sub) {
-    for (i=0; i<ctx->nnodes_remote; ++i) {
-      PetscInt d;
-      for(d=0;d<NSD;++d){
-        Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
-      }
-    }
-  } else {
-    for (i=0; i<ctx->nnodes; ++i) {
-      PetscInt d;
-      for(d=0;d<NSD;++d){
-        Yu[NSD*i+d] += Yu_repart[NSD*i+d];
-      }
-    }
-  }
-  ierr = PetscLogEventEnd(MAT_MultMFA11_rf2,0,0,0,0);CHKERRQ(ierr);
-
-  if(!rank_sub) {
-    for (i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Wait(&req[i],MPI_STATUS_IGNORE);CHKERRQ(ierr);
-    }
-  }
-  PetscFree(req);
-
-  PetscFunctionReturn(0);
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  /* Synchronize (not sure if this is the optimal set of commands) */
+  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
+  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu sync %gs\n",t_debug);
 }
 #endif
+
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  /* Accumulate into Yu on rank_sub 1,2,.. just copy on rank_sub 0*/
+  if (rank_sub) {
+    PetscScalar * const Yu_remote = &ctx->Yu_repart_base[NSD*ctx->nodes_offset];
+    for (i=0; i<ctx->nnodes_remote; ++i) {
+      PetscInt d;
+      for(d=0;d<NSD;++d){
+        Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
+      }
+    }
+  } else {
+#if 1
+    for (i=0;i<NSD*ctx->nnodes;++i){
+      Yu[i] += ctx->Yu_repart_base[i];
+    }
+#else
+    ierr = PetscMemcpy(Yu,ctx->Yu_repart_base,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
+#endif
+  }
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu poke and copy %gs\n",t_debug);
+}
+#endif
+
+  // TODO: do we need BOTH these routines to sync? Probably not! Can move this outside of this routine, I imagine..
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  // TODO: is this necessary in general? Is it necessary here?
+  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
+  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu sync %gs\n",t_debug);
+}
+#endif
+
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "MFA11SetUp_SubRepart"
@@ -442,9 +438,9 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ctx->win_ufield_repart_allocated = PETSC_FALSE;
   ctx->ufield_repart_base = NULL;
   ctx->mem_ufield_repart = NULL;
-
-  ctx->Yu_repart = NULL;
-  ctx->Yu_remote = NULL;
+  ctx->win_Yu_repart_allocated = PETSC_FALSE;
+  ctx->Yu_repart_base = NULL;
+  ctx->mem_Yu_repart = NULL;
 
   // TODO: as with CUDA, put any non-twiddling stuff (element-based stuff) in the apply function but guard it 
   //       with checks on the state. This should make profiling easier, as this stuff is not included in the "setup" log stage!
@@ -663,7 +659,7 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
   ctx = (MFA11SubRepart)mf->ctx;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
-  /* Free shared memory window */
+  /* Free shared memory windows */
   if (ctx->win_ufield_repart_allocated) {
     ierr = MPI_Win_unlock_all(ctx->win_ufield_repart);CHKERRQ(ierr);
     ierr = MPI_Win_free(&ctx->win_ufield_repart);CHKERRQ(ierr);
@@ -671,16 +667,17 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
     ctx->ufield_repart_base = NULL;
     ctx->mem_ufield_repart = NULL;
   }
+  if (ctx->win_Yu_repart_allocated) {
+    ierr = MPI_Win_unlock_all(ctx->win_Yu_repart);CHKERRQ(ierr);
+    ierr = MPI_Win_free(&ctx->win_Yu_repart);CHKERRQ(ierr);
+    ctx->win_Yu_repart_allocated = PETSC_FALSE;
+    ctx->Yu_repart_base = NULL;
+    ctx->mem_Yu_repart = NULL;
+  }
 
   if (rank_sub) {
     ierr = PetscFree(ctx->nodes_remote);CHKERRQ(ierr);
-    if (ctx->Yu_remote) {
-      ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
-    }
   }else {
-    if (ctx->Yu_repart) {
-       ierr = PetscFree(ctx->Yu_repart);CHKERRQ(ierr);
-    }
     ierr = PetscFree(ctx->elnidx_u_repart);CHKERRQ(ierr);
     ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr); 
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
@@ -754,17 +751,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   t_debug = MPI_Wtime();
 #endif
      /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
-     if (rank_sub) {
-       if (ctx->Yu_remote) {
-         ierr = PetscFree(ctx->Yu_remote);CHKERRQ(ierr);
-       }
-       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&ctx->Yu_remote    );CHKERRQ(ierr);
-     } else {
-       if (ctx->Yu_repart) {
-         ierr = PetscFree(ctx->Yu_repart);CHKERRQ(ierr);
-       }
-       ierr = PetscCalloc1(NSD*ctx->nnodes_repart,&ctx->Yu_repart    );CHKERRQ(ierr);
-     }
 
      /* (re)Allocate shared memory windows */
      if(ctx->win_ufield_repart_allocated){
@@ -783,6 +769,24 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = MPI_Win_shared_query(ctx->win_ufield_repart,MPI_PROC_NULL,&sz,&du,&ctx->ufield_repart_base);CHKERRQ(ierr);
        ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_ufield_repart);CHKERRQ(ierr);
      }
+     if(ctx->win_Yu_repart_allocated){
+       ctx->Yu_repart_base = NULL;
+       ctx->mem_Yu_repart = NULL;
+       ierr = MPI_Win_unlock_all(ctx->win_Yu_repart);CHKERRQ(ierr);
+       ierr = MPI_Win_free(&ctx->win_Yu_repart);CHKERRQ(ierr);
+       ctx->win_Yu_repart_allocated = PETSC_FALSE;
+     }
+     { 
+       MPI_Aint          sz;
+       PetscMPIInt       du;
+       const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_Yu_repart,&ctx->win_Yu_repart);CHKERRQ(ierr);
+       ctx->win_Yu_repart_allocated = PETSC_TRUE;
+       ierr = MPI_Win_shared_query(ctx->win_Yu_repart,MPI_PROC_NULL,&sz,&du,&ctx->Yu_repart_base);CHKERRQ(ierr);
+       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_Yu_repart);CHKERRQ(ierr);
+     }
+
+     // !! TODO : do we need to zero this Yu_repart_base array?
 
      if (rank_sub) {
        ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
@@ -837,7 +841,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-  ierr = TransferUfield_A11_SubRepart(ctx,ufield,ctx->ufield_repart_base);CHKERRQ(ierr);
+  ierr = TransferUfield_A11_SubRepart(ctx,ufield);CHKERRQ(ierr);
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer ufield %gs\n",t_debug);
@@ -851,10 +855,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #endif
 
 #if !defined(TATIN_HAVE_CUDA)
-  /* For the debug AVX impl (not performant), zero this */
-     if(!rank_sub) {
-       ierr = PetscMemzero(ctx->Yu_repart,NSD*ctx->nnodes_repart*sizeof(PetscScalar));CHKERRQ(ierr);
-     }
+  /* For the debug AVX impl (not performant), zero the shared array */
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"debug AVX impl not implemented for shared memory version.");
 #endif
 
 #if defined(DEBUG_TIMING)
@@ -941,10 +943,11 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
        ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
-       ierr = CopyFrom_A11_CUDA(ctx->cudactx,ctx->Yu_repart,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+       ierr = CopyFrom_A11_CUDA(ctx->cudactx,ctx->Yu_repart_base,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
 #else
        /* Rank_sub 0 AVX Implementation */
+       // TODO: this hasn't been tested in a while! Probably broken!
        ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using testing AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
@@ -997,7 +1000,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
            for (i=0; i<NQP; i++) {
              PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*(e+ee)+i];
              for (l=0; l<3; l++) {
-               Yu_repart[3*E+l] += elv[l][i][ee];
+               Yu_repart_base[3*E+l] += elv[l][i][ee];
              }
            }
          }
@@ -1014,7 +1017,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
      /* Transfer and accumulate contributions to Yu from rank_sub 0 */
      ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
-     ierr = TransferYu_A11_SubRepart(ctx,Yu,ctx->Yu_remote,ctx->Yu_repart);CHKERRQ(ierr);
+     ierr = TransferYu_A11_SubRepart(ctx,Yu);CHKERRQ(ierr);
      ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
      // Outdated. TODO update once AVX and CUDA guts are in
