@@ -497,32 +497,32 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
   ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
 
   /* Set up CUDA data */
-  {
   ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
-    PetscReal *gaussdata_host;
-  if(!cudactx->state) {
-    PetscReal x1[3],w1[3],w[NQP];
+  {
+    PetscReal *gaussdata_host=NULL;
+    if(!cudactx->state) {
+      PetscReal x1[3],w1[3],w[NQP];
 
-    ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
-    for (i=0; i<3; i++)
-      for (j=0; j<3; j++)
-        for (k=0; k<3; k++)
-          w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
+      ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
+      for (i=0; i<3; i++)
+        for (j=0; j<3; j++)
+          for (k=0; k<3; k++)
+            w[(i*3+j)*3+k] = w1[i] * w1[j] * w1[k];
 
-    ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
-    for (e=0; e<nel; e++) {
-      ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-      for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
+      ierr = PetscMalloc(nel * NQP * sizeof(PetscReal), &gaussdata_host);CHKERRQ(ierr);
+      for (e=0; e<nel; e++) {
+        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
+        for (i=0; i<NQP; i++) gaussdata_host[e*NQP + i] = cell_gausspoints[i].eta * w[i];
+      }
+
     }
+    ierr = CopyTo_A11_CUDA(mf,cudactx,ufield,LA_gcoords,gaussdata_host,nel,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); 
 
-  }
-  ierr = CopyTo_A11_CUDA(mf,cudactx,ufield,LA_gcoords,gaussdata_host,nel,nen_u,elnidx_u,localsize/NSD);CHKERRQ(ierr); 
-
-  if(gaussdata_host) {
-    ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
+    if(gaussdata_host) {
+      ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
+    }
   }
   ierr = PetscLogEventEnd(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
-  }
 
   /* CUDA entry point
    *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata_w
