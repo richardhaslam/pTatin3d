@@ -173,7 +173,7 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   }
 
   /* Send required quadrature-pointwise data to rank_sub 0 */
-  // TODO: replace with MPI_Igatherv
+  // TODO: replace with shared mem operations
   if (rank_sub) {
     ierr = MPI_Send(gaussdata_w_remote,NQP*ctx->nel_remote,MPIU_REAL,0,0,ctx->comm_sub);CHKERRQ(ierr);
   } else {
@@ -211,7 +211,7 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
     ierr = PetscMemcpy(LA_gcoords_repart ,LA_gcoords ,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  // TODO: replace with MPI_Igatherv
+  // TODO: replace with shared mem operations
   if (rank_sub) {
     ierr = MPI_Send(LA_gcoords_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
   } else {
@@ -278,7 +278,7 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
 }
 #endif
 
-// TODO: introducing a debugging mode where you can still use this when you don't have a working shared memory subcommunicator
+// TODO: take this out (would be nice to have, but hard to maintain all this)
 #if 0
   {
     PetscMPIInt *displs,*recvcounts;
@@ -785,8 +785,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = MPI_Win_shared_query(ctx->win_Yu_repart,MPI_PROC_NULL,&sz,&du,&ctx->Yu_repart_base);CHKERRQ(ierr);
        ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_Yu_repart);CHKERRQ(ierr);
      }
-
-     // !! TODO : do we need to zero this Yu_repart_base array?
 
      if (rank_sub) {
        ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
