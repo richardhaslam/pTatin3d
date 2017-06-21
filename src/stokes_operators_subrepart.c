@@ -173,34 +173,6 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
 
-// TODO: take this out (would be nice to have, but hard to maintain all this)
-#if 0
-  {
-    PetscMPIInt *displs,*recvcounts;
-    PetscMPIInt sendcount = rank_sub ? NSD*ctx->nnodes_remote : NSD*ctx->nnodes;
-    PetscScalar *sendbuf = rank_sub ? ufield_remote : ufield;
-    if(!rank_sub) {
-      ierr = PetscMalloc1(ctx->size_sub,&displs);CHKERRQ(ierr);
-      ierr = PetscMalloc1(ctx->size_sub,&recvcounts);CHKERRQ(ierr);
-      recvcounts[0] = NSD*ctx->nnodes;
-      for(i=1;i<ctx->size_sub;++i){
-        recvcounts[i] = NSD*ctx->nnodes_remote_in[i];
-      }
-      displs[0] = 0;
-      displs[1] = NSD*ctx->nnodes;
-      for(i=2;i<ctx->size_sub;++i){
-        displs[i] = displs[i-1] + NSD*ctx->nnodes_remote_in[i-1];
-      }
-    }
-
-    ierr = MPI_Gatherv(sendbuf,sendcount,MPIU_SCALAR,ufield_repart,recvcounts,displs,MPIU_SCALAR,0,ctx->comm_sub);CHKERRQ(ierr);
-
-    if(!rank_sub) {
-      ierr = PetscFree(displs);
-      ierr = PetscFree(recvcounts);
-    }
-  }
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -214,38 +186,6 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
-
-  //TODO: remove (would be nice to have, but don't want to maintain all this)
-#if 0
-  /* Scatter from rank_sub 0 to all ranks. Rank_sub 0 sends
-     directly to its Yu array, and the other ranks receive in
-     Yu_repart, which is then used to popoulate Yu */
-  {
-    PetscMPIInt *displs,*sendcounts;
-    PetscMPIInt recvcount = rank_sub ? NSD*ctx->nnodes_remote : NSD*ctx->nnodes;
-    PetscScalar *recvbuf = rank_sub ? Yu_remote : Yu;
-    if(!rank_sub) {
-      ierr = PetscMalloc1(ctx->size_sub,&displs);CHKERRQ(ierr);
-      ierr = PetscMalloc1(ctx->size_sub,&sendcounts);CHKERRQ(ierr);
-      sendcounts[0] = NSD*ctx->nnodes;
-      for(i=1;i<ctx->size_sub;++i){
-        sendcounts[i] = NSD*ctx->nnodes_remote_in[i];
-      }
-      displs[0] = 0;
-      displs[1] = NSD*ctx->nnodes;
-      for(i=2;i<ctx->size_sub;++i){
-        displs[i] = displs[i-1] + NSD*ctx->nnodes_remote_in[i-1];
-      }
-    }
-
-    ierr = MPI_Scatterv(Yu_repart,sendcounts,displs,MPIU_SCALAR,recvbuf,recvcount,MPIU_SCALAR,0,ctx->comm_sub);CHKERRQ(ierr);
-
-    if(!rank_sub) {
-      ierr = PetscFree(displs);
-      ierr = PetscFree(sendcounts);
-    }
-  }
-#endif
 
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
