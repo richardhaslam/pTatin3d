@@ -43,20 +43,13 @@
 
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
-#define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
-#define NEV 4			/* Number of elements over which to vectorize */
-
-typedef enum {
-	GRAD,
-	GRAD_TRANSPOSE
-} GradMode;
 
 #undef __FUNCT__
 #define __FUNCT__ "TensorContractNEV_AVX"
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
-static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
+PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV])
 {
 	PetscReal R[3][3],S[3][3],T[3][3];
 	PetscReal u[3][NQP][NEV] ALIGN32,v[3][NQP][NEV] ALIGN32;
@@ -119,8 +112,7 @@ static PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],
 	return 0;
 }
 
-__attribute__((noinline))
-static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
+PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV])
 {
 	PetscInt i,j,k,e;
 
@@ -154,7 +146,7 @@ static PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],Petsc
 }
 
 __attribute__((noinline))
-static PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
+PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
 					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
 					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
 					   PetscReal w[Q2_NODES_PER_EL_3D],

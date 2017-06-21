@@ -30,6 +30,12 @@ CONFIG_AVX ?= n
 CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
+ifeq ($(CONFIG_AVX)$(CONFIG_CUDA),yy)
+CONFIG_AVX_CUDA = y
+else
+CONFIG_AVX_CUDA = n
+endif
+
 TATIN_LIB +=  $(LIBZ_LIB)
 
 ifeq ($(CONFIG_CUDA),y)

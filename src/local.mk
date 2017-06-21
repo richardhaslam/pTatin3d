@@ -87,6 +87,9 @@ libptatin3d-$(CONFIG_CUDA).cu += $(call thisdir, \
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
 			stokes_operators_avx.c \
 	)
+libptatin3d-$(CONFIG_AVX_CUDA).c += $(call thisdir, \
+			stokes_operators_subrepart.c \
+	)
 
 libptatin3d-$(CONFIG_OPENCL).c += $(call thisdir, \
 			stokes_operators_opencl.c \

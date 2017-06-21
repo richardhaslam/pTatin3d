@@ -42,11 +42,10 @@
 #include <CL/cl.h>
 #endif
 
-extern PetscLogEvent MAT_MultMFA11_setup;
-extern PetscLogEvent MAT_MultMFA11_copyto;
-extern PetscLogEvent MAT_MultMFA11_kernel;
-extern PetscLogEvent MAT_MultMFA11_copyfrom;
-extern PetscLogEvent MAT_MultMFA11_merge;
+extern PetscLogEvent MAT_MultMFA11_stp;
+extern PetscLogEvent MAT_MultMFA11_cto;
+extern PetscLogEvent MAT_MultMFA11_ker;
+extern PetscLogEvent MAT_MultMFA11_cfr;
 
 typedef struct _p_MFA11OpenCL *MFA11OpenCL;
 
@@ -570,7 +569,7 @@ PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,Pet
       openclctx->Yu = clCreateBuffer(openclctx->context,CL_MEM_READ_WRITE,localsize * sizeof(PetscScalar),NULL,&ierr);ERR_CHECK(ierr);
     }
 
-	ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+	ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
     /* Launch OpenCL kernel for zeroing Yu */
 	ierr = clSetKernelArg(openclctx->kernel0,0,sizeof(cl_mem),  &openclctx->Yu);ERR_CHECK(ierr);
@@ -599,16 +598,16 @@ PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,Pet
 	  ierr = clEnqueueNDRangeKernel(openclctx->queue,openclctx->kernel1,1,NULL,&gwsize,&lwsize,0,NULL,NULL);ERR_CHECK(ierr);
     }
     ierr = clFinish(openclctx->queue);ERR_CHECK(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
     PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
     PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
     PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
     /* Read back OpenCL data */
-	ierr = PetscLogEventBegin(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
+	ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
     ierr = clEnqueueReadBuffer(openclctx->queue,openclctx->Yu,CL_TRUE,0,localsize * sizeof(PetscScalar),&(Yu[0]),0,NULL,NULL);ERR_CHECK(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
 	ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 

@@ -65,6 +65,10 @@ PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf);
 }
 #endif
 
+PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf);
+PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf);
+
 /* MatGetDiagonal wrappers */
 PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScalar Yu[]);

@@ -30,7 +30,9 @@
 #ifndef __DATA_BUCKET_H__
 #define __DATA_BUCKET_H__
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

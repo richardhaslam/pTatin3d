@@ -34,15 +34,6 @@
 #include <dmda_element_q2p1.h>
 #include <stokes_operators.h>
 
-
-#define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
-#define NEV 4			/* Number of elements over which to vectorize */
-
-typedef enum {
-	GRAD,
-	GRAD_TRANSPOSE
-} GradMode;
-
 #undef __FUNCT__
 #define __FUNCT__ "TensorContractNEV"
 /*
