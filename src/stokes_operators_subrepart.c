@@ -8,17 +8,18 @@ but that we would like to process arbitrary subsets of elements
 on each rank, utilizing different kernels (in particular,
 we're interested in using AVX on some ranks and CUDA on others).
 
-This prototype does not implement general redistribution of work.
-Instead, it assumes that the MPI communicator on which the
-velocity DA lives (comm_u) can be decomposed into sub-communicators
-representing shared-memory domains,
-where different computational resources are available on
-rank_sub 0 than on the remaining ranks. The use case in mind
+The use case in mind
 is a heterogeneous compute node with a single coprocessor
 and several CPU cores, when we would like to use a flat MPI
 paradigm.
 
-This current prototype assume working MPI-3 Shared Memory features,
+This prototype does not implement general redistribution of work.
+Instead, it assumes that the MPI communicator on which the
+velocity DA lives (comm_u) can be decomposed into sub-communicators
+representing shared-memory domains,
+each with exactly one CUDA-enabled GPU available.
+
+This current prototype assumes working MPI-3 Shared Memory features,
 CUDA, and AVX.
 */
 
@@ -102,7 +103,7 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
     }
   }
 
-  // TODO: possible optimization is to delay this until we actually need this data
+  /* Note: a possible optimization is to delay this until we actually need this data */
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
@@ -134,7 +135,7 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
     ierr = PetscMemcpy(LA_gcoords_repart_base,LA_gcoords,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  // TODO: possible optimization is to delay this until we actually need this data
+  /* Note: a possible optimization is to delay this until we actually need this data */
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
@@ -250,24 +251,12 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ctx->Yu_repart_base = NULL;
   ctx->mem_Yu_repart = NULL;
 
-  // TODO: as with CUDA, put any non-twiddling stuff (element-based stuff) in the apply function but guard it 
-  //       with checks on the state. This should make profiling easier, as this stuff is not included in the "setup" log stage!
-
-  /* Define a subcomm. We would hope that this would
-     work with MPI_Comm_split_type to split by shared-memory
-     domains, but for now we hard-code picking every Nth rank */
-  {
-    PetscMPIInt size_sub_nominal = 12;
-    ierr = PetscOptionsGetInt(NULL,NULL,"-subrepart_size",&size_sub_nominal,NULL);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(comm_u,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm_u,&size);CHKERRQ(ierr);
-    ierr = MPI_Comm_split(comm_u,rank/size_sub_nominal,0,&ctx->comm_sub);CHKERRQ(ierr); // TODO: somehow check that this actually is a shared-memory subdomain
-    ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(ctx->comm_sub,&ctx->size_sub);CHKERRQ(ierr);
-    if(size > size_sub_nominal && size % ctx->size_sub != 0) {
-      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"The current shared memory implementation (which doesn't use MPI_Comm_split_type yet) assumes that, if you have multiple nodes, you have a exactly %d ranks on each, continguously numbered, and that these live in the same shared-memory domain",size_sub_nominal);
-    }
-  }
+  /* Define a subcomm relative to the local shared-memory domain.
+     This implementation assumes that you have exactly one CUDA-enabled
+     GPU per shared-memory domain. */
+  ierr = MPI_Comm_split_type(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,0,MPI_INFO_NULL,&ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(ctx->comm_sub,&ctx->size_sub);CHKERRQ(ierr);
 
   ierr = DMDAGetElements_pTatinQ2P1(dau,&ctx->nel,&ctx->nen_u,&ctx->elnidx_u);CHKERRQ(ierr);
 

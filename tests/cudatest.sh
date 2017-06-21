@@ -17,18 +17,17 @@ srun -N 1 -n 4 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -
 echo 6:
 srun -N 1 -n 7 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 3 -my 7 -mz 11 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  | grep A11_mfo
 
-# these don't currently work, as we don't properly use MPI_Comm_split_type. These aren't important for real usage.
-#echo 7:
-#srun -N 2 -n 16 ../ $PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 5 -my 7 -mz 14 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10 | grep A11_mfo
+echo 7:
+srun -N 2 -n 16 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 5 -my 7 -mz 14 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10 | grep A11_mfo
 
-#echo 8:
-#srun -N 2 -n 16 ../ $PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 16 -my 16 -mz 8 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  -subrepart_frac 0.25 | grep A11_mfo
+echo 8:
+srun -N 2 -n 16 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 16 -my 16 -mz 8 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  -subrepart_frac 0.25 | grep A11_mfo
 
 echo 9:
 srun -N 2 -n 24 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 16 -my 16 -mz 16 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  | grep A11_mfo
 
-#echo 10:
-#srun -N 6 -n 64 ../ $PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 16 -my 16 -mz 16 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  | grep A11_mfo
+echo 10:
+srun -N 6 -n 64 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 16 -my 16 -mz 16 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  | grep A11_mfo
 
 echo 11:
 srun -N 6 -n 72 ../$PETSC_ARCH/bin/test_stokes_operators.app -compare_operators -a11_op subrepart -mx 128 -my 96 -mz 48 -ptatin_model viscous_sinker -model_viscous_sinker_eta1 10  | grep A11_mfo
