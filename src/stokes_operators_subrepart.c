@@ -22,8 +22,6 @@ This current prototype assume working MPI-3 Shared Memory features,
 CUDA, and AVX.
 */
 
-//#define DEBUG_TIMING
-
 #include <petscfe.h>
 #include <../src/sys/utils/hash.h> /* not portable to prefix installs
                                      In master (PETSc 3.8), this header is
@@ -162,20 +160,10 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   }
 
   // TODO: possible optimization is to delay this until we actually need this data
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m gaussdata_w sync %gs\n",t_debug);
-}
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -204,20 +192,10 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
   }
 
   // TODO: possible optimization is to delay this until we actually need this data
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m gaussdata_w sync %gs\n",t_debug);
-}
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -236,11 +214,6 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   /* Gather velocity field entries from all ranks in shared mem array
      starting at ufield_repart_base. */
 
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Rank_sub 1,2,.. poke data directly into the shared array, and rank_sub 0
      simply copies */
   if (rank_sub) {
@@ -254,26 +227,11 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   } else {
     ierr = PetscMemcpy(ctx->ufield_repart_base,ufield,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u poke and copy %gs\n",t_debug);
-}
-#endif
 
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m u sync %gs\n",t_debug);
-}
-#endif
 
 // TODO: take this out (would be nice to have, but hard to maintain all this)
 #if 0
@@ -349,26 +307,11 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   }
 #endif
 
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu sync %gs\n",t_debug);
-}
-#endif
 
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Accumulate into Yu on rank_sub 1,2,.. just copy on rank_sub 0*/
   if (rank_sub) {
     PetscScalar * const Yu_remote = &ctx->Yu_repart_base[NSD*ctx->nodes_offset];
@@ -387,26 +330,11 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
     ierr = PetscMemcpy(Yu,ctx->Yu_repart_base,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
 #endif
   }
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu poke and copy %gs\n",t_debug);
-}
-#endif
 
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m Yu sync %gs\n",t_debug);
-}
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -758,11 +686,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
    ctx->state = 0; /* always invalidate the state when using the debug routine (inefficient) */
 #endif
    if(ctx->state != mf->state) {
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
      /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
 
      /* (re)Allocate shared memory windows */
@@ -817,74 +740,25 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_gaussdata_w_repart);CHKERRQ(ierr);
      }
 
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m mallocs %gs\n",t_debug);
-}
-#endif
-
      /* Send required quadrature-pointwise data to rank_sub 0 */
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
      ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_repart_base,win_gaussdata_w_repart);CHKERRQ(ierr);
 
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer qp %gs\n",t_debug);
-}
-#endif
      /* Send required coordinate data to rank_sub 0 */
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
      ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_repart_base,win_LA_gcoords_repart);CHKERRQ(ierr);
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer coord %gs\n",t_debug);
-}
-#endif
 
      ctx->state = mf->state;
    }
 
   /* Send required ufield data to rank_sub 0 */
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
   ierr = TransferUfield_A11_SubRepart(ctx,ufield);CHKERRQ(ierr);
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer ufield %gs\n",t_debug);
-}
-#endif
-
-#if defined(DEBUG_TIMING)
-{
-  double t_debug;
-  t_debug = MPI_Wtime();
-#endif
 
 #if !defined(TATIN_HAVE_CUDA)
   /* For the debug AVX impl (not performant), zero the shared array */
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"debug AVX impl not implemented for shared memory version.");
 #endif
 
-#if defined(DEBUG_TIMING)
-  t_debug = MPI_Wtime() - t_debug;
-  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m memzero %gs\n",t_debug);
-}
-#endif
-
-
-     ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
-     ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
