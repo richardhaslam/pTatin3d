@@ -346,8 +346,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     PetscInt *nodes_offsets = NULL;
     if (!rank_sub) {
       ierr = PetscMalloc1(ctx->size_sub,&nodes_offsets);
-      ctx->nodes_offset=0; // TODO: set this in the next line at let it be scattered to
-      nodes_offsets[0] = ctx->nodes_offset;
+      nodes_offsets[0] = 0;
       nodes_offsets[1] = ctx->nnodes;
       for (i=2;i<ctx->size_sub;++i) nodes_offsets[i] = nodes_offsets[i-1] + ctx->nnodes_remote_in[i-1];
     }
@@ -366,8 +365,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     PetscInt *el_offsets = NULL;
     if (!rank_sub) {
       ierr = PetscMalloc1(ctx->size_sub,&el_offsets);
-      ctx->el_offset=0; // TODO: don't need to set this as it gets scattered to
-      el_offsets[0] = ctx->el_offset;
+      el_offsets[0] = 0;
       el_offsets[1] = ctx->nel;
       for (i=2;i<ctx->size_sub;++i) el_offsets[i] = el_offsets[i-1] + ctx->nel_remote_in[i-1];
     }
