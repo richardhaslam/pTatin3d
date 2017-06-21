@@ -1,32 +1,32 @@
 /*
-A prototype of a matrix-free method
-designed to operate on heterogeneous compute nodes.
+   A prototype of a matrix-free method
+   designed to operate on heterogeneous compute nodes.
 
-That is, it is assumed that moving data is cheap (or even free if
-we are on a shared-memory/UMA domain with the appropriate tools),
-but that we would like to process arbitrary subsets of elements
-on each rank, utilizing different kernels (in particular,
-we're interested in using AVX on some ranks and CUDA on others).
+   That is, it is assumed that moving data is cheap (or even free if
+   we are on a shared-memory/UMA domain with the appropriate tools),
+   but that we would like to process arbitrary subsets of elements
+   on each rank, utilizing different kernels (in particular,
+   we're interested in using AVX on some ranks and CUDA on others).
 
-The use case in mind
-is a heterogeneous compute node with a single coprocessor
-and several CPU cores, when we would like to use a flat MPI
-paradigm.
+   The use case in mind
+   is a heterogeneous compute node with a single coprocessor
+   and several CPU cores, when we would like to use a flat MPI
+   paradigm.
 
-This prototype does not implement general redistribution of work.
-Instead, it assumes that the MPI communicator on which the
-velocity DA lives (comm_u) can be decomposed into sub-communicators
-representing shared-memory domains,
-each with exactly one CUDA-enabled GPU available.
+   This prototype does not implement general redistribution of work.
+   Instead, it assumes that the MPI communicator on which the
+   velocity DA lives (comm_u) can be decomposed into sub-communicators
+   representing shared-memory domains,
+   each with exactly one CUDA-enabled GPU available.
 
-This current prototype assumes working MPI-3 Shared Memory features,
-CUDA, and AVX.
-*/
+   This current prototype assumes working MPI-3 Shared Memory features,
+   CUDA, and AVX.
+   */
 
 #include <petscfe.h>
 #include <../src/sys/utils/hash.h> /* not portable to prefix installs
-                                     In master (PETSc 3.8), this header is
-                                     moved to $PETSC_DIR/include/petsc/private) */
+                                      In master (PETSc 3.8), this header is
+                                      moved to $PETSC_DIR/include/petsc/private) */
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
@@ -56,7 +56,7 @@ struct _p_MFA11SubRepart {
   /* 
    <no postfix> : refers to quantities used in the "normal" case without repartitioning
    _repart      : refers to quantities which are used after repartitioning (these can 
-                    be the same as the unrepartitioned values, say if we use the same array)
+                  be the same as the unrepartitioned values, say if we use the same array)
    _remote      : refers to quantities which are used to communicate with rank 0
    */
   PetscObjectState state;
@@ -266,11 +266,11 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ierr = DMDAGetElements_pTatinQ2P1(dau,&ctx->nel,&ctx->nen_u,&ctx->elnidx_u);CHKERRQ(ierr);
 
   /* Decide on a repartitioning of the elements 
-    We assume that we send a contiguous chunk of elements from
-    each non-zero rank on comm_sub to rank 0 on comm_sub, and simply process 
-    fewer elements from the original list on ranks 1,... size_comm-1. On rank 0, 
-    we process a larger array.
-  */
+     We assume that we send a contiguous chunk of elements from
+     each non-zero rank on comm_sub to rank 0 on comm_sub, and simply process 
+     fewer elements from the original list on ranks 1,... size_comm-1. On rank 0, 
+     we process a larger array.
+     */
   ierr = MPI_Allreduce(&ctx->nel,&ctx->nel_sub,1,MPIU_INT,MPI_SUM,ctx->comm_sub);CHKERRQ(ierr);
 
   /* To compute how many elements to send to rank_sub 0, we compute an equal partition
@@ -303,30 +303,30 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   if (rank_sub) {  
     ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&ctx->nodes_remote);CHKERRQ(ierr);
     ierr = PetscMemcpy(ctx->nodes_remote,&ctx->elnidx_u[ctx->nel_repart*ctx->nen_u],
-                       ctx->nel_remote*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr);
+        ctx->nel_remote*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr);
     ctx->nnodes_remote = ctx->nen_u*ctx->nel_remote; /* will be updated */
     ierr = PetscSortRemoveDupsInt(&ctx->nnodes_remote,ctx->nodes_remote);CHKERRQ(ierr);
   } else {
     ctx->nnodes_remote = 0;
   }
-  
+
   /* Create a map from the entries of the local vector here
      to just the entries which will be needed on rank_sub 0, without the offset.
      That is, the inverse of nodes_remote[].  This is a hash table.
      This lets us do a rank-local "scatter" to an array
      which we send to the right place on rank_sub 0. This table is only used 
      here, and is then destroyed */
-   PetscHashICreate(nodes_remote_inv);
-   for(i=0;i<ctx->nnodes_remote;++i){
-      PetscHashIAdd(nodes_remote_inv,ctx->nodes_remote[i],i);
-   }
+  PetscHashICreate(nodes_remote_inv);
+  for(i=0;i<ctx->nnodes_remote;++i){
+    PetscHashIAdd(nodes_remote_inv,ctx->nodes_remote[i],i);
+  }
 
   /* On rank_sub 0, obtain the number of nodes being sent from 
      each other rank in comm_sub */
-    if (!rank_sub) {
-      ierr = PetscMalloc1(ctx->size_sub,&ctx->nnodes_remote_in);CHKERRQ(ierr);
-    }
-    ierr = MPI_Gather(&ctx->nnodes_remote,1,MPIU_INT,ctx->nnodes_remote_in,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
+  if (!rank_sub) {
+    ierr = PetscMalloc1(ctx->size_sub,&ctx->nnodes_remote_in);CHKERRQ(ierr);
+  }
+  ierr = MPI_Gather(&ctx->nnodes_remote,1,MPIU_INT,ctx->nnodes_remote_in,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
 
   /* Compute the number of nodes on each rank 
      This is only actually used on sub_rank 0.  */
@@ -552,71 +552,71 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
 
-   if(ctx->state != mf->state) {
-     ierr = PetscLogEventBegin(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
-     /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
+  if(ctx->state != mf->state) {
+    ierr = PetscLogEventBegin(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
+    /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
 
-     /* (re)Allocate shared memory windows */
-     if (ctx->win_ufield_repart_allocated) {
-       ctx->ufield_repart_base = NULL;
-       ctx->mem_ufield_repart = NULL;
-       ierr = MPI_Win_unlock_all(ctx->win_ufield_repart);CHKERRQ(ierr);
-       ierr = MPI_Win_free(&ctx->win_ufield_repart);CHKERRQ(ierr);
-       ctx->win_ufield_repart_allocated = PETSC_FALSE;
-     }
-     { 
-       MPI_Aint          sz;
-       PetscMPIInt       du;
-       const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
-       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_ufield_repart,&ctx->win_ufield_repart);CHKERRQ(ierr);
-       ctx->win_ufield_repart_allocated = PETSC_TRUE;
-       ierr = MPI_Win_shared_query(ctx->win_ufield_repart,MPI_PROC_NULL,&sz,&du,&ctx->ufield_repart_base);CHKERRQ(ierr);
-       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_ufield_repart);CHKERRQ(ierr);
-     }
-     if (ctx->win_Yu_repart_allocated) {
-       ctx->Yu_repart_base = NULL;
-       ctx->mem_Yu_repart = NULL;
-       ierr = MPI_Win_unlock_all(ctx->win_Yu_repart);CHKERRQ(ierr);
-       ierr = MPI_Win_free(&ctx->win_Yu_repart);CHKERRQ(ierr);
-       ctx->win_Yu_repart_allocated = PETSC_FALSE;
-     }
-     { 
-       MPI_Aint          sz;
-       PetscMPIInt       du;
-       const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
-       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_Yu_repart,&ctx->win_Yu_repart);CHKERRQ(ierr);
-       ctx->win_Yu_repart_allocated = PETSC_TRUE;
-       ierr = MPI_Win_shared_query(ctx->win_Yu_repart,MPI_PROC_NULL,&sz,&du,&ctx->Yu_repart_base);CHKERRQ(ierr);
-       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_Yu_repart);CHKERRQ(ierr);
-     }
-     { 
-       MPI_Aint          sz;
-       PetscMPIInt       du;
-       const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
-       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_LA_gcoords_repart,&win_LA_gcoords_repart);CHKERRQ(ierr);
-       win_LA_gcoords_repart_allocated = PETSC_TRUE;
-       ierr = MPI_Win_shared_query(win_LA_gcoords_repart,MPI_PROC_NULL,&sz,&du,&LA_gcoords_repart_base);CHKERRQ(ierr);
-       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_LA_gcoords_repart);CHKERRQ(ierr);
-     }
-     { 
-       MPI_Aint          sz;
-       PetscMPIInt       du;
-       const PetscMPIInt nel_win = rank_sub ? 0 : ctx->nel_repart;
-       ierr = MPI_Win_allocate_shared(NQP*nel_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_gaussdata_w_repart,&win_gaussdata_w_repart);CHKERRQ(ierr);
-       win_gaussdata_w_repart_allocated = PETSC_TRUE;
-       ierr = MPI_Win_shared_query(win_gaussdata_w_repart,MPI_PROC_NULL,&sz,&du,&gaussdata_w_repart_base);CHKERRQ(ierr);
-       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_gaussdata_w_repart);CHKERRQ(ierr);
-     }
+    /* (re)Allocate shared memory windows */
+    if (ctx->win_ufield_repart_allocated) {
+      ctx->ufield_repart_base = NULL;
+      ctx->mem_ufield_repart = NULL;
+      ierr = MPI_Win_unlock_all(ctx->win_ufield_repart);CHKERRQ(ierr);
+      ierr = MPI_Win_free(&ctx->win_ufield_repart);CHKERRQ(ierr);
+      ctx->win_ufield_repart_allocated = PETSC_FALSE;
+    }
+    { 
+      MPI_Aint          sz;
+      PetscMPIInt       du;
+      const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+      ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_ufield_repart,&ctx->win_ufield_repart);CHKERRQ(ierr);
+      ctx->win_ufield_repart_allocated = PETSC_TRUE;
+      ierr = MPI_Win_shared_query(ctx->win_ufield_repart,MPI_PROC_NULL,&sz,&du,&ctx->ufield_repart_base);CHKERRQ(ierr);
+      ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_ufield_repart);CHKERRQ(ierr);
+    }
+    if (ctx->win_Yu_repart_allocated) {
+      ctx->Yu_repart_base = NULL;
+      ctx->mem_Yu_repart = NULL;
+      ierr = MPI_Win_unlock_all(ctx->win_Yu_repart);CHKERRQ(ierr);
+      ierr = MPI_Win_free(&ctx->win_Yu_repart);CHKERRQ(ierr);
+      ctx->win_Yu_repart_allocated = PETSC_FALSE;
+    }
+    { 
+      MPI_Aint          sz;
+      PetscMPIInt       du;
+      const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+      ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_Yu_repart,&ctx->win_Yu_repart);CHKERRQ(ierr);
+      ctx->win_Yu_repart_allocated = PETSC_TRUE;
+      ierr = MPI_Win_shared_query(ctx->win_Yu_repart,MPI_PROC_NULL,&sz,&du,&ctx->Yu_repart_base);CHKERRQ(ierr);
+      ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_Yu_repart);CHKERRQ(ierr);
+    }
+    { 
+      MPI_Aint          sz;
+      PetscMPIInt       du;
+      const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+      ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_LA_gcoords_repart,&win_LA_gcoords_repart);CHKERRQ(ierr);
+      win_LA_gcoords_repart_allocated = PETSC_TRUE;
+      ierr = MPI_Win_shared_query(win_LA_gcoords_repart,MPI_PROC_NULL,&sz,&du,&LA_gcoords_repart_base);CHKERRQ(ierr);
+      ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_LA_gcoords_repart);CHKERRQ(ierr);
+    }
+    { 
+      MPI_Aint          sz;
+      PetscMPIInt       du;
+      const PetscMPIInt nel_win = rank_sub ? 0 : ctx->nel_repart;
+      ierr = MPI_Win_allocate_shared(NQP*nel_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_gaussdata_w_repart,&win_gaussdata_w_repart);CHKERRQ(ierr);
+      win_gaussdata_w_repart_allocated = PETSC_TRUE;
+      ierr = MPI_Win_shared_query(win_gaussdata_w_repart,MPI_PROC_NULL,&sz,&du,&gaussdata_w_repart_base);CHKERRQ(ierr);
+      ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_gaussdata_w_repart);CHKERRQ(ierr);
+    }
 
-     /* Send required quadrature-pointwise data to rank_sub 0 */
-     ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_repart_base,win_gaussdata_w_repart);CHKERRQ(ierr);
+    /* Send required quadrature-pointwise data to rank_sub 0 */
+    ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_repart_base,win_gaussdata_w_repart);CHKERRQ(ierr);
 
-     /* Send required coordinate data to rank_sub 0 */
-     ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_repart_base,win_LA_gcoords_repart);CHKERRQ(ierr);
+    /* Send required coordinate data to rank_sub 0 */
+    ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_repart_base,win_LA_gcoords_repart);CHKERRQ(ierr);
 
-     ctx->state = mf->state;
-     ierr = PetscLogEventEnd(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
-   }
+    ctx->state = mf->state;
+    ierr = PetscLogEventEnd(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
+  }
 
   /* Send required ufield data to rank_sub 0 */
   ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
@@ -624,114 +624,114 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
-  
+
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
 #else
 #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
-     if (rank_sub) {
-       /* Rank_sub > 0 implementation. This is the same as the AVX implementation,
-          over a smaller set of elements (ctx->nel_repart) */
+  if (rank_sub) {
+    /* Rank_sub > 0 implementation. This is the same as the AVX implementation,
+       over a smaller set of elements (ctx->nel_repart) */
 #if defined(_OPENMP)
 #pragma omp parallel for private(i)
 #endif
-       for (e=0;e<ctx->nel_repart;e+=NEV) {
-         PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
-         PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
-         const QPntVolCoefStokes *cell_gausspoints[NEV];
-         PetscInt ee,l;
+    for (e=0;e<ctx->nel_repart;e+=NEV) {
+      PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elx[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32,elv[3][Q2_NODES_PER_EL_3D][NEV] ALIGN32;
+      PetscScalar dx[3][3][NQP][NEV] ALIGN32,dxdet[NQP][NEV],du[3][3][NQP][NEV] ALIGN32,dv[3][3][NQP][NEV] ALIGN32;
+      const QPntVolCoefStokes *cell_gausspoints[NEV];
+      PetscInt ee,l;
 
-         for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-           for (ee=0; ee<NEV; ee++) {
-             PetscInt E = ctx->elnidx_u[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
-             for (l=0; l<3; l++) {
-               elx[l][i][ee] = LA_gcoords[3*E+l];
-               elu[l][i][ee] = ufield[3*E+l];
-             }
-           }
-         }
-         for (ee=0; ee<NEV; ee++) {
-           ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,ctx->nel_repart-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
-         }
+      for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+        for (ee=0; ee<NEV; ee++) {
+          PetscInt E = ctx->elnidx_u[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
+          for (l=0; l<3; l++) {
+            elx[l][i][ee] = LA_gcoords[3*E+l];
+            elu[l][i][ee] = ufield[3*E+l];
+          }
+        }
+      }
+      for (ee=0; ee<NEV; ee++) {
+        ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,ctx->nel_repart-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
+      }
 
-         ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
+      ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-         ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
+      ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
-         ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
+      ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
-         ierr = QuadratureAction_A11_AVX(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
+      ierr = QuadratureAction_A11_AVX(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
 
-         ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
+      ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+      ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
 #if defined(_OPENMP)
 #pragma omp critical
 #endif
-         for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
-           for (i=0; i<NQP; i++) {
-             PetscInt E = ctx->elnidx_u[ctx->nen_u*(e+ee)+i];
-             for (l=0; l<3; l++) {
-               Yu[3*E+l] += elv[l][i][ee];
-             }
-           }
-         }
+      for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
+        for (i=0; i<NQP; i++) {
+          PetscInt E = ctx->elnidx_u[ctx->nen_u*(e+ee)+i];
+          for (l=0; l<3; l++) {
+            Yu[3*E+l] += elv[l][i][ee];
+          }
+        }
+      }
 
-       }
+    }
 
-     } else {
-       /* Rank_sub 0 CUDA Implementation */
-       ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
-       ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart_base,gaussdata_w_repart_base,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
-       ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
-       ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-       ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
-       ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
-       ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-       ierr = CopyFrom_A11_CUDA(ctx->cudactx,ctx->Yu_repart_base,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
-       ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
-     }
+  } else {
+    /* Rank_sub 0 CUDA Implementation */
+    ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart_base,gaussdata_w_repart_base,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
+    ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
+    ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+    ierr = CopyFrom_A11_CUDA(ctx->cudactx,ctx->Yu_repart_base,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
+  }
 #undef OPENMP_CHKERRQ
 
-     if (win_LA_gcoords_repart_allocated) {
-       LA_gcoords_repart_base = NULL;
-       mem_LA_gcoords_repart = NULL;
-       ierr = MPI_Win_unlock_all(win_LA_gcoords_repart);CHKERRQ(ierr);
-       ierr = MPI_Win_free(&win_LA_gcoords_repart);CHKERRQ(ierr);
-       win_LA_gcoords_repart_allocated = PETSC_FALSE;
-     }
-     if (win_gaussdata_w_repart_allocated) {
-       gaussdata_w_repart_base = NULL;
-       mem_gaussdata_w_repart = NULL;
-       ierr = MPI_Win_unlock_all(win_gaussdata_w_repart);CHKERRQ(ierr);
-       ierr = MPI_Win_free(&win_gaussdata_w_repart);CHKERRQ(ierr);
-       win_gaussdata_w_repart_allocated = PETSC_FALSE;
-     }
+  if (win_LA_gcoords_repart_allocated) {
+    LA_gcoords_repart_base = NULL;
+    mem_LA_gcoords_repart = NULL;
+    ierr = MPI_Win_unlock_all(win_LA_gcoords_repart);CHKERRQ(ierr);
+    ierr = MPI_Win_free(&win_LA_gcoords_repart);CHKERRQ(ierr);
+    win_LA_gcoords_repart_allocated = PETSC_FALSE;
+  }
+  if (win_gaussdata_w_repart_allocated) {
+    gaussdata_w_repart_base = NULL;
+    mem_gaussdata_w_repart = NULL;
+    ierr = MPI_Win_unlock_all(win_gaussdata_w_repart);CHKERRQ(ierr);
+    ierr = MPI_Win_free(&win_gaussdata_w_repart);CHKERRQ(ierr);
+    win_gaussdata_w_repart_allocated = PETSC_FALSE;
+  }
 
-     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
+  ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-     ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
-     /* Transfer and accumulate contributions to Yu from rank_sub 0 */
-     ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
-     ierr = TransferYu_A11_SubRepart(ctx,Yu);CHKERRQ(ierr);
-     ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
+  /* Transfer and accumulate contributions to Yu from rank_sub 0 */
+  ierr = PetscLogEventBegin(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
+  ierr = TransferYu_A11_SubRepart(ctx,Yu);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
-     /* Note that this is identical to the AVX impl, under the assumption
-        that we are logging "useful flops" and that identical work is being performed. 
-        This has not been scrutinized */
-     PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
-     PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
-     PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
+  /* Note that this is identical to the AVX impl, under the assumption
+     that we are logging "useful flops" and that identical work is being performed. 
+     This has not been scrutinized */
+  PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+  PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+  PetscLogFlops(ctx->nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
-     PetscFunctionReturn(0);
-   }
+  PetscFunctionReturn(0);
+}
