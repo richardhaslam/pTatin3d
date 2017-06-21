@@ -46,63 +46,6 @@ extern PetscLogEvent MAT_MultMFA11_rfr;
 
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
-__attribute__((noinline))
-static PetscErrorCode QuadratureAction_A11AVX_mod(const PetscReal *gaussdata_w,
-					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
-					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
-					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
-					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV])
-{
-	PetscInt i,l,k,e;
-
-	for (i=0; i<NQP; i++) {
-		PetscScalar Du[6][NEV] ALIGN32,Dv[6][NEV] ALIGN32; /* Symmetric gradient with respect to physical coordinates, xx, yy, zz, xy+yx, xz+zx, yz+zy */
-		__m256d dux[3][3],mhalf = _mm256_set1_pd(0.5),dvx[3][3];
-		__m256d mdxdet = _mm256_load_pd(dxdet[i]);
-
-		for (k=0; k<3; k++) { /* directions */
-			__m256d dxk[3] = {_mm256_load_pd(dx[k][0][i]),_mm256_load_pd(dx[k][1][i]),_mm256_load_pd(dx[k][2][i])};
-			for (l=0; l<3; l++) { /* fields */
-				dux[k][l] = _mm256_mul_pd(_mm256_load_pd(du[0][l][i]),dxk[0]);
-				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[1][l][i]),dxk[1],dux[k][l]);
-				dux[k][l] = _mm256_fmadd_pd(_mm256_load_pd(du[2][l][i]),dxk[2],dux[k][l]);
-			}
-		}
-		_mm256_store_pd(Du[0],dux[0][0]);
-		_mm256_store_pd(Du[1],dux[1][1]);
-		_mm256_store_pd(Du[2],dux[2][2]);
-		_mm256_store_pd(Du[3],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][1],dux[1][0])));
-		_mm256_store_pd(Du[4],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[0][2],dux[2][0])));
-		_mm256_store_pd(Du[5],_mm256_mul_pd(mhalf,_mm256_add_pd(dux[1][2],dux[2][1])));
-
-		for (e=0; e<NEV; e++) {
-			for (k=0; k<6; k++) { /* Stress is coefficient of test function */
-				Dv[k][e] = 2 * gaussdata_w[NQP*e+i]* Du[k][e]; 
-			}
-		}
-
-		dvx[0][0] = _mm256_load_pd(Dv[0]);
-		dvx[0][1] = _mm256_load_pd(Dv[3]);
-		dvx[0][2] = _mm256_load_pd(Dv[4]);
-		dvx[1][0] = _mm256_load_pd(Dv[3]);
-		dvx[1][1] = _mm256_load_pd(Dv[1]);
-		dvx[1][2] = _mm256_load_pd(Dv[5]);
-		dvx[2][0] = _mm256_load_pd(Dv[4]);
-		dvx[2][1] = _mm256_load_pd(Dv[5]);
-		dvx[2][2] = _mm256_load_pd(Dv[2]);
-
-		for (l=0; l<3; l++) { /* fields  */
-			for (k=0; k<3; k++) { /* directions */
-				__m256d sum = _mm256_mul_pd(dvx[0][l],_mm256_load_pd(dx[0][k][i]));
-				sum = _mm256_fmadd_pd(dvx[1][l],_mm256_load_pd(dx[1][k][i]),sum);
-				sum = _mm256_fmadd_pd(dvx[2][l],_mm256_load_pd(dx[2][k][i]),sum);
-				_mm256_store_pd(dv[k][l][i],_mm256_mul_pd(mdxdet,sum));
-			}
-		}
-	}
-	return 0;
-}
-
 typedef struct _p_MFA11SubRepart *MFA11SubRepart;
 
 struct _p_MFA11SubRepart {
@@ -112,22 +55,19 @@ struct _p_MFA11SubRepart {
                     be the same as the unrepartitioned values, say if we use the same array)
    _remote      : refers to quantities which are used to communicate with rank 0
    */
-  PetscObjectState  state;
-  const PetscInt    *elnidx_u;
-  MPI_Comm          comm_sub;
-  PetscMPIInt       size_sub;
-  PetscInt          nel_sub,nen_u;
-  PetscInt          nel,nel_remote,nel_repart,el_offset;
-  PetscInt          nnodes,nnodes_remote,nnodes_repart;
-  PetscInt          *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
-  PetscInt          *elnidx_u_repart;
-  PetscScalar       *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
-  PetscBool         win_ufield_repart_allocated,win_Yu_repart_allocated;
-  MPI_Win           win_ufield_repart,win_Yu_repart;
+  PetscObjectState state;
+  const PetscInt   *elnidx_u;
+  MPI_Comm         comm_sub;
+  PetscMPIInt      size_sub;
+  PetscInt         nel_sub,nen_u;
+  PetscInt         nel,nel_remote,nel_repart,el_offset,*nel_remote_in;
+  PetscInt         nnodes,nnodes_remote,nnodes_repart,*nnodes_remote_in,nodes_offset,*nodes_remote;
+  PetscInt         *elnidx_u_repart;
+  PetscScalar      *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
+  PetscBool        win_ufield_repart_allocated,win_Yu_repart_allocated;
+  MPI_Win          win_ufield_repart,win_Yu_repart;
 
-#ifdef TATIN_HAVE_CUDA
-  MFA11CUDA     cudactx;
-#endif
+  MFA11CUDA        cudactx;
 };
 
 #undef __FUNCT__
@@ -572,13 +512,11 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   }
 #endif
 
-#ifdef TATIN_HAVE_CUDA
   /* Set up CUDA context */
   if (!rank_sub) { 
     ierr = PetscMalloc1(1,&ctx->cudactx);CHKERRQ(ierr);
     ierr = MFA11CUDA_SetUp(ctx->cudactx);CHKERRQ(ierr);
   }
-#endif
 
   mf->ctx=ctx;
   ierr = PetscLogEventEnd(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
@@ -622,13 +560,12 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
   }
 
-#ifdef TATIN_HAVE_CUDA
   /* Destroy CUDA ctx */
   if (!rank_sub) {
     ierr = MFA11CUDA_CleanUp(ctx->cudactx);CHKERRQ(ierr);
     ierr = PetscFree(ctx->cudactx);CHKERRQ(ierr);
   }
-#endif
+
   mf->ctx = NULL;
 
   PetscFunctionReturn(0);
@@ -681,10 +618,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
 
-
-#if !defined(TATIN_HAVE_CUDA)
-   ctx->state = 0; /* always invalidate the state when using the debug routine (inefficient) */
-#endif
    if(ctx->state != mf->state) {
      /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
 
@@ -752,14 +685,9 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   /* Send required ufield data to rank_sub 0 */
   ierr = TransferUfield_A11_SubRepart(ctx,ufield);CHKERRQ(ierr);
 
-#if !defined(TATIN_HAVE_CUDA)
-  /* For the debug AVX impl (not performant), zero the shared array */
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"debug AVX impl not implemented for shared memory version.");
-#endif
-
   ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
-
+  
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
 #else
@@ -824,78 +752,10 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        }
 
      } else {
-#if TATIN_HAVE_CUDA
        /* Rank_sub 0 CUDA Implementation */
        ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart_base,gaussdata_w_repart_base,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
-
-
        ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
-
        ierr = CopyFrom_A11_CUDA(ctx->cudactx,ctx->Yu_repart_base,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
-
-#else
-       /* Rank_sub 0 AVX Implementation */
-       // TODO: this hasn't been tested in a while! Probably broken!
-       ierr = PetscPrintf(PETSC_COMM_WORLD,"\033[31m!!!!!!!!\nWARNING: using testing AVX implementation on rank_sub 0, because CUDA isn't available: THIS WILL NEVER PERFORM BETTER THAN THE AVX IMPLEMENTATION\n!!!!!!!!\033[0m\n");CHKERRQ(ierr);
-#if defined(_OPENMP)
-#pragma omp parallel for private(i)
-#endif
-       for (e=0;e<ctx->nel_repart;e+=NEV) {
-         PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
-         PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
-         PetscInt    ee,l;
-         PetscReal   gaussdata_w_local[NQP*NEV];
-
-         for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-           for (ee=0; ee<NEV; ee++) {
-             PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*PetscMin(e+ee,ctx->nel_repart-1)+i]; /* Pad up to length NEV by duplicating last element */
-             for (l=0; l<3; l++) {
-               elx[l][i][ee] = LA_gcoords_repart[3*E+l];
-               elu[l][i][ee] = ufield_repart_base[3*E+l];
-             }
-           }
-         }
-
-         for (ee=0; ee<NEV; ++ee){
-           const PetscInt el = PetscMin(e + ee,ctx->nel_repart-1);
-           for (i=0;i<NQP;++i){
-             gaussdata_w_local[ee*NQP+i] = gaussdata_w_repart[el*NQP+i];
-           }
-         }
-         ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
-
-         ierr = JacobianInvertNEV_AVX(dx,dxdet);OPENMP_CHKERRQ(ierr);
-
-         ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
-
-         ierr = QuadratureAction_A11AVX_mod(gaussdata_w_local,dx,dxdet,du,dv);OPENMP_CHKERRQ(ierr);
-
-         ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
-         ierr = TensorContractNEV_AVX(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
-
-#if defined(_OPENMP)
-#pragma omp critical
-#endif
-         for (ee=0; ee<PetscMin(NEV,ctx->nel_repart-e); ee++) {
-           for (i=0; i<NQP; i++) {
-             PetscInt E = ctx->elnidx_u_repart[ctx->nen_u*(e+ee)+i];
-             for (l=0; l<3; l++) {
-               Yu_repart_base[3*E+l] += elv[l][i][ee];
-             }
-           }
-         }
-       }
-       ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
-       ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
-#endif
      }
 #undef OPENMP_CHKERRQ
 
