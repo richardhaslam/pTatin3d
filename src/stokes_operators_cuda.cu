@@ -35,9 +35,9 @@
 #include <stokes_operators.h>
 
 extern PetscLogEvent MAT_MultMFA11_stp;
-extern PetscLogEvent MAT_MultMFA11_copyto;
-extern PetscLogEvent MAT_MultMFA11_kernel;
-extern PetscLogEvent MAT_MultMFA11_copyfrom;
+extern PetscLogEvent MAT_MultMFA11_cto;
+extern PetscLogEvent MAT_MultMFA11_ker;
+extern PetscLogEvent MAT_MultMFA11_cfr;
 
 /* Constant memory for D and B matrices */
 __constant__ PetscReal CUDA_D[3*3], CUDA_B[3*3];
@@ -497,7 +497,7 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
   ierr = PetscLogEventEnd(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
 
   /* Set up CUDA data */
-  ierr = PetscLogEventBegin(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
   {
     PetscReal *gaussdata_host=NULL;
     if(!cudactx->state) {
@@ -522,25 +522,25 @@ PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,Petsc
       ierr = PetscFree(gaussdata_host);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogEventEnd(MAT_MultMFA11_copyto,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
 
   /* CUDA entry point
    *  - inputs: elnidx_u, LA_gcoords, ufield, gaussdata_w
    *  - output: Yu
    */
 
-    ierr = PetscLogEventBegin(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
     ierr = ProcessElements_A11_CUDA(cudactx,nen_u,localsize);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_kernel,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
 
     PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
     PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
     PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
     /* Read back CUDA data */
-    ierr = PetscLogEventBegin(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
     ierr = CopyFrom_A11_CUDA(cudactx,Yu,localsize);CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(MAT_MultMFA11_copyfrom,0,0,0,0);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_MultMFA11_cfr,0,0,0,0);CHKERRQ(ierr);
 
     ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 

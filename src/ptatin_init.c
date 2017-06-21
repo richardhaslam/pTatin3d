@@ -116,9 +116,9 @@ extern PetscErrorCode PCCreate_WSMP(PC pc);
 extern PetscErrorCode PCCreate_DMDARepart(PC pc);
 extern PetscLogEvent MAT_MultMFA11;
 extern PetscLogEvent MAT_MultMFA11_stp;
-extern PetscLogEvent MAT_MultMFA11_copyto;
-extern PetscLogEvent MAT_MultMFA11_kernel;
-extern PetscLogEvent MAT_MultMFA11_copyfrom;
+extern PetscLogEvent MAT_MultMFA11_cto;
+extern PetscLogEvent MAT_MultMFA11_ker;
+extern PetscLogEvent MAT_MultMFA11_cfr;
 
 extern PetscLogEvent MAT_MultMFA11_sub;
 extern PetscLogEvent MAT_MultMFA11_rto;
@@ -178,9 +178,9 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PCRegister("dmdarepart",PCCreate_DMDARepart);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_stp",MAT_CLASSID,&MAT_MultMFA11_stp);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_copyto",MAT_CLASSID,&MAT_MultMFA11_copyto);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_kernel",MAT_CLASSID,&MAT_MultMFA11_kernel);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_copy_from",MAT_CLASSID,&MAT_MultMFA11_copyfrom);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_cto",MAT_CLASSID,&MAT_MultMFA11_cto);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_ker",MAT_CLASSID,&MAT_MultMFA11_ker);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_cfr",MAT_CLASSID,&MAT_MultMFA11_cfr);CHKERRQ(ierr);
 
 	ierr = PetscLogEventRegister("MatMultMFA11_sub",MAT_CLASSID,&MAT_MultMFA11_sub);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11_rto",MAT_CLASSID,&MAT_MultMFA11_rto);CHKERRQ(ierr);

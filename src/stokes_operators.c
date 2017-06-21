@@ -67,9 +67,9 @@
 
 PetscLogEvent MAT_MultMFA11;
 PetscLogEvent MAT_MultMFA11_stp;
-PetscLogEvent MAT_MultMFA11_copyto;
-PetscLogEvent MAT_MultMFA11_kernel;
-PetscLogEvent MAT_MultMFA11_copyfrom;
+PetscLogEvent MAT_MultMFA11_cto;
+PetscLogEvent MAT_MultMFA11_ker;
+PetscLogEvent MAT_MultMFA11_cfr;
 
 PetscLogEvent MAT_MultMFA11_sub;
 PetscLogEvent MAT_MultMFA11_rto;
