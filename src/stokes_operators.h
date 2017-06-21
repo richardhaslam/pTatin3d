@@ -99,8 +99,8 @@ PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3);
 PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3);
 
 /* Implementation-specific structures and routines shared amongst multiple implementations */
-#define NQP 27		/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
-#define NEV 4			/* Number of elements over which to vectorize */
+#define NQP 27  /* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
+#define NEV 4   /* Number of elements over which to vectorize */
 
 typedef enum {
 	GRAD,
