@@ -10,21 +10,16 @@ we're interested in using AVX on some ranks and CUDA on others).
 
 This prototype does not implement general redistribution of work.
 Instead, it assumes that the MPI communicator on which the
-velocity DA lives (comm_u) can be decomposed into sub-communicators,
+velocity DA lives (comm_u) can be decomposed into sub-communicators
+representing shared-memory domains,
 where different computational resources are available on
 rank_sub 0 than on the remaining ranks. The use case in mind
 is a heterogeneous compute node with a single coprocessor
 and several CPU cores, when we would like to use a flat MPI
 paradigm.
 
-This current prototype is intended to allow you to choose
-to use a modified AVX implementation, or the CUDA implementation,
-on rank_sub 0, and the usual AVX implementation on other ranks.
-
-Farther into the future, it would be natural to investigate
-shared-memory abstractions (such as those supported by MPI-3)
-which would allow for a more natural set of operations on a single
-shared set elements to be processed per shared memory domain.
+This current prototype assume working MPI-3 Shared Memory features,
+CUDA, and AVX.
 */
 
 //#define DEBUG_TIMING
@@ -748,7 +743,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
      /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
 
      /* (re)Allocate shared memory windows */
-     if(ctx->win_ufield_repart_allocated){
+     if (ctx->win_ufield_repart_allocated) {
        ctx->ufield_repart_base = NULL;
        ctx->mem_ufield_repart = NULL;
        ierr = MPI_Win_unlock_all(ctx->win_ufield_repart);CHKERRQ(ierr);
@@ -764,7 +759,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = MPI_Win_shared_query(ctx->win_ufield_repart,MPI_PROC_NULL,&sz,&du,&ctx->ufield_repart_base);CHKERRQ(ierr);
        ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_ufield_repart);CHKERRQ(ierr);
      }
-     if(ctx->win_Yu_repart_allocated){
+     if (ctx->win_Yu_repart_allocated) {
        ctx->Yu_repart_base = NULL;
        ctx->mem_Yu_repart = NULL;
        ierr = MPI_Win_unlock_all(ctx->win_Yu_repart);CHKERRQ(ierr);
