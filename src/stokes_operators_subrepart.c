@@ -119,7 +119,7 @@ struct _p_MFA11SubRepart {
   MPI_Comm          comm_sub;
   PetscMPIInt       size_sub;
   PetscInt          nel_sub,nen_u;
-  PetscInt          nel,nel_remote,nel_repart;
+  PetscInt          nel,nel_remote,nel_repart,el_offset;
   PetscInt          nnodes,nnodes_remote,nnodes_repart;
   PetscInt          *nnodes_remote_in,nodes_offset,*nodes_remote,*nel_remote_in;
   PetscInt          *elnidx_u_repart;
@@ -134,7 +134,7 @@ struct _p_MFA11SubRepart {
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferQPData_A11_SubRepart"
-static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal (*wp)[NQP],Quadrature volQ,QPntVolCoefStokes *all_gausspoints,PetscReal *gaussdata_w_remote, PetscReal *gaussdata_w_repart)
+static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal (*wp)[NQP],Quadrature volQ,QPntVolCoefStokes *all_gausspoints,PetscReal *gaussdata_w_repart_base,MPI_Win win_gaussdata_w_repart)
 {
   PetscErrorCode          ierr;
   PetscInt                i,e;
@@ -144,42 +144,45 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
-  /* Create and populate gaussdata_w_remote and _repart. This is the quadrature-point-wise
+  /* Create and populate data in gaussdata_w_repart_base. This is the quadrature-point-wise
      information needed to apply the operator. On rank_sub 0, this
-     has information for all the elements which will be processed. On  other 
-     ranks it has information on the elements which will be offloaded 
-     to rank_sub 0. */
-  if (rank_sub ) {
+     has information for all the elements which will be processed.  */
+  if (rank_sub) {
+    PetscReal * const gaussdata_w_remote = &gaussdata_w_repart_base[NQP*ctx->el_offset];
     for (e=ctx->nel_repart; e<ctx->nel; e++) {
       PetscInt e_remote = e - ctx->nel_repart; /* element number in set to send */
       ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
       for (i=0; i<NQP; i++) gaussdata_w_remote[e_remote*NQP + i] = cell_gausspoints[i].eta * (*wp)[i];
     }
   } else {
-    for (e=0;               e<ctx->nel; e++) {
+    for (e=0; e<ctx->nel; e++) {
       ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,e,(QPntVolCoefStokes**)&cell_gausspoints);CHKERRQ(ierr);
-      for (i=0; i<NQP; i++) gaussdata_w_repart[e       *NQP + i] = cell_gausspoints[i].eta * (*wp)[i];
+      for (i=0; i<NQP; i++) gaussdata_w_repart_base[e*NQP + i] = cell_gausspoints[i].eta * (*wp)[i];
     }
   }
 
-  /* Send required quadrature-pointwise data to rank_sub 0 */
-  // TODO: replace with shared mem operations
-  if (rank_sub) {
-    ierr = MPI_Send(gaussdata_w_remote,NQP*ctx->nel_remote,MPIU_REAL,0,0,ctx->comm_sub);CHKERRQ(ierr);
-  } else {
-    PetscInt el_offset=ctx->nel;
-    for(i=1; i<ctx->size_sub; ++i) {
-      ierr = MPI_Recv(&gaussdata_w_repart[NQP * el_offset],NQP * ctx->nel_remote_in[i],MPIU_REAL,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-      el_offset += ctx->nel_remote_in[i];
-    }
-  }
+  // TODO: possible optimization is to delay this until we actually need this data
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  /* Synchronize (not sure if this is the optimal set of commands) */
+  ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr);
+  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m gaussdata_w sync %gs\n",t_debug);
+}
+#endif
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "TransferCoordinates_A11_SubRepart"
-static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const PetscReal *LA_gcoords,PetscReal *LA_gcoords_remote,PetscReal *LA_gcoords_repart)
+static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const PetscReal *LA_gcoords,PetscReal *LA_gcoords_repart_base,MPI_Win win_LA_gcoords_repart)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -188,8 +191,8 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
   PetscFunctionBeginUser;
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
-  /* Copy to arrays to send, or to receive */
   if (rank_sub) {
+    PetscReal * const LA_gcoords_remote = &LA_gcoords_repart_base[NSD*ctx->nodes_offset];
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
       for(d=0;d<NSD;++d){
@@ -197,20 +200,24 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
       }
     }
   } else {
-    /* Rank 0  - populate local contributions to arrays we'll receive with */
-    ierr = PetscMemcpy(LA_gcoords_repart ,LA_gcoords ,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(LA_gcoords_repart_base,LA_gcoords,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  // TODO: replace with shared mem operations
-  if (rank_sub) {
-    ierr = MPI_Send(LA_gcoords_remote,NSD*ctx->nnodes_remote,MPIU_SCALAR,0,0,ctx->comm_sub);CHKERRQ(ierr);
-  } else {
-    PetscInt nodes_offset = ctx->nnodes;
-    for(i=1;i<ctx->size_sub;++i){
-      ierr = MPI_Recv(&LA_gcoords_repart[NSD*nodes_offset],NSD*ctx->nnodes_remote_in[i],MPIU_SCALAR,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
-      nodes_offset += ctx->nnodes_remote_in[i];
-    }
-  }
+  // TODO: possible optimization is to delay this until we actually need this data
+#if defined(DEBUG_TIMING)
+{
+  double t_debug;
+  t_debug = MPI_Wtime();
+#endif
+  /* Synchronize (not sure if this is the optimal set of commands) */
+  ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr);
+  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#if defined(DEBUG_TIMING)
+  t_debug = MPI_Wtime() - t_debug;
+  if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m gaussdata_w sync %gs\n",t_debug);
+}
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -539,7 +546,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     PetscInt *nodes_offsets = NULL;
     if (!rank_sub) {
       ierr = PetscMalloc1(ctx->size_sub,&nodes_offsets);
-      ctx->nodes_offset=0;
+      ctx->nodes_offset=0; // TODO: set this in the next line at let it be scattered to
       nodes_offsets[0] = ctx->nodes_offset;
       nodes_offsets[1] = ctx->nnodes;
       for (i=2;i<ctx->size_sub;++i) nodes_offsets[i] = nodes_offsets[i-1] + ctx->nnodes_remote_in[i-1];
@@ -553,6 +560,20 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      and coordinate arrays */
   ierr = PetscMalloc1(ctx->size_sub,&ctx->nel_remote_in);CHKERRQ(ierr);
   ierr = MPI_Gather(&ctx->nel_remote,1,MPIU_INT,ctx->nel_remote_in,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
+
+  /* Compute an element offset for each rank */
+  {
+    PetscInt *el_offsets = NULL;
+    if (!rank_sub) {
+      ierr = PetscMalloc1(ctx->size_sub,&el_offsets);
+      ctx->el_offset=0; // TODO: don't need to set this as it gets scattered to
+      el_offsets[0] = ctx->el_offset;
+      el_offsets[1] = ctx->nel;
+      for (i=2;i<ctx->size_sub;++i) el_offsets[i] = el_offsets[i-1] + ctx->nel_remote_in[i-1];
+    }
+    ierr = MPI_Scatter(el_offsets,1,MPIU_INT,&ctx->el_offset,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
+    ierr = PetscFree(el_offsets);
+  }
 
   /* Send and receive elements being offloaded to rank 0, defining element-->node 
      maps for the repartition.  On rank_sub > 0, this involves computing the 
@@ -698,8 +719,10 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   PetscInt                i,j,k,e;
   QPntVolCoefStokes       *all_gausspoints;
   PetscMPIInt             rank_sub;
-  PetscReal               *gaussdata_w_remote,*gaussdata_w_repart=NULL;
-  PetscReal               *LA_gcoords_remote, *LA_gcoords_repart=NULL;
+  PetscReal               *mem_gaussdata_w_repart,*gaussdata_w_repart_base,*mem_LA_gcoords_repart,*LA_gcoords_repart_base;
+  PetscBool               win_LA_gcoords_repart_allocated=PETSC_FALSE,win_gaussdata_w_repart_allocated=PETSC_FALSE ;
+  MPI_Win                 win_LA_gcoords_repart,win_gaussdata_w_repart;
+
 
   PetscFunctionBeginUser;
   ctx = (MFA11SubRepart)mf->ctx;
@@ -775,14 +798,25 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
        ierr = MPI_Win_shared_query(ctx->win_Yu_repart,MPI_PROC_NULL,&sz,&du,&ctx->Yu_repart_base);CHKERRQ(ierr);
        ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_Yu_repart);CHKERRQ(ierr);
      }
-
-     if (rank_sub) {
-       ierr = PetscMalloc1(NSD*ctx->nnodes_remote,&LA_gcoords_remote );CHKERRQ(ierr);
-       ierr = PetscMalloc1(NQP*ctx->nel_remote   ,&gaussdata_w_remote);CHKERRQ(ierr);
-     } else {
-       ierr = PetscMalloc1(NSD*ctx->nnodes_repart,&LA_gcoords_repart );CHKERRQ(ierr);
-       ierr = PetscMalloc1(NQP*ctx->nel_repart   ,&gaussdata_w_repart);CHKERRQ(ierr);
+     { 
+       MPI_Aint          sz;
+       PetscMPIInt       du;
+       const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_LA_gcoords_repart,&win_LA_gcoords_repart);CHKERRQ(ierr);
+       win_LA_gcoords_repart_allocated = PETSC_TRUE;
+       ierr = MPI_Win_shared_query(win_LA_gcoords_repart,MPI_PROC_NULL,&sz,&du,&LA_gcoords_repart_base);CHKERRQ(ierr);
+       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_LA_gcoords_repart);CHKERRQ(ierr);
      }
+     { 
+       MPI_Aint          sz;
+       PetscMPIInt       du;
+       const PetscMPIInt nel_win = rank_sub ? 0 : ctx->nel_repart;
+       ierr = MPI_Win_allocate_shared(NQP*nel_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_gaussdata_w_repart,&win_gaussdata_w_repart);CHKERRQ(ierr);
+       win_gaussdata_w_repart_allocated = PETSC_TRUE;
+       ierr = MPI_Win_shared_query(win_gaussdata_w_repart,MPI_PROC_NULL,&sz,&du,&gaussdata_w_repart_base);CHKERRQ(ierr);
+       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_gaussdata_w_repart);CHKERRQ(ierr);
+     }
+
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m mallocs %gs\n",t_debug);
@@ -795,7 +829,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-     ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_remote,gaussdata_w_repart);CHKERRQ(ierr);
+     ierr = TransferQPData_A11_SubRepart(ctx,&w,volQ,all_gausspoints,gaussdata_w_repart_base,win_gaussdata_w_repart);CHKERRQ(ierr);
 
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
@@ -808,18 +842,13 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   double t_debug;
   t_debug = MPI_Wtime();
 #endif
-     ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_remote,LA_gcoords_repart);CHKERRQ(ierr);
+     ierr = TransferCoordinates_A11_SubRepart(ctx,LA_gcoords,LA_gcoords_repart_base,win_LA_gcoords_repart);CHKERRQ(ierr);
 #if defined(DEBUG_TIMING)
   t_debug = MPI_Wtime() - t_debug;
   if(!rank_sub) printf("\033[32m >>> DEBUG \033[0m xfer coord %gs\n",t_debug);
 }
 #endif
 
-
-     if (rank_sub) {
-       ierr = PetscFree(LA_gcoords_remote);CHKERRQ(ierr);
-       ierr = PetscFree(gaussdata_w_remote);CHKERRQ(ierr);
-     }
      ctx->state = mf->state;
    }
 
@@ -923,17 +952,8 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
      } else {
 #if TATIN_HAVE_CUDA
        /* Rank_sub 0 CUDA Implementation */
+       ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart_base,gaussdata_w_repart_base,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
 
-       ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart,gaussdata_w_repart,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
-
-       if(!rank_sub) {
-         if (LA_gcoords_repart) {
-           ierr = PetscFree(LA_gcoords_repart);CHKERRQ(ierr);
-         }
-         if (gaussdata_w_repart) {
-           ierr = PetscFree(gaussdata_w_repart);CHKERRQ(ierr);
-         }
-       }
 
        ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
 
@@ -1004,6 +1024,21 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #endif
      }
 #undef OPENMP_CHKERRQ
+
+     if (win_LA_gcoords_repart_allocated) {
+       LA_gcoords_repart_base = NULL;
+       mem_LA_gcoords_repart = NULL;
+       ierr = MPI_Win_unlock_all(win_LA_gcoords_repart);CHKERRQ(ierr);
+       ierr = MPI_Win_free(&win_LA_gcoords_repart);CHKERRQ(ierr);
+       win_LA_gcoords_repart_allocated = PETSC_FALSE;
+     }
+     if (win_gaussdata_w_repart_allocated) {
+       gaussdata_w_repart_base = NULL;
+       mem_gaussdata_w_repart = NULL;
+       ierr = MPI_Win_unlock_all(win_gaussdata_w_repart);CHKERRQ(ierr);
+       ierr = MPI_Win_free(&win_gaussdata_w_repart);CHKERRQ(ierr);
+       win_gaussdata_w_repart_allocated = PETSC_FALSE;
+     }
 
      ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr); 
 
