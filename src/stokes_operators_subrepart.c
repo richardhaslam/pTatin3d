@@ -235,6 +235,11 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   MPI_Comm        comm_u = PetscObjectComm((PetscObject)dau);
   PetscHashI      nodes_remote_inv;
 
+  // TODO: this whole function wantonly uses MPI calls. These should be collected
+  //       to minimize communication, and the heavy transfer for the elements should be done with shared memory.
+  //       It might be best just to do one MPI_Allgather to get the number of remote elements and nodes from each rank,
+  //       on all ranks. Then each rank can independently compute its offsets.
+
   PetscFunctionBeginUser;
   if (mf->ctx) PetscFunctionReturn(0);
 
@@ -401,7 +406,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     ierr = PetscMemcpy(ctx->elnidx_u_repart,ctx->elnidx_u,ctx->nel*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr); 
 
     /* Receive a chunk of elements (sets of 27 nodes for Q2 elements) from each other rank */
-    // TODO: replace with MPI_Igatherv
+    // TODO: replace with shared memory operation (just as we have for other arrays in this impl)
     for(i=1;i<ctx->size_sub;++i)  {
       ierr = MPI_Recv(&ctx->elnidx_u_repart[ctx->nen_u*el_offset],ctx->nen_u*ctx->nel_remote_in[i],MPIU_INT,i,0,ctx->comm_sub,MPI_STATUS_IGNORE);CHKERRQ(ierr);
       el_offset += ctx->nel_remote_in[i];
