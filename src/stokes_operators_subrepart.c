@@ -279,7 +279,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   if (ctx->size_sub == 1) {
     ctx->nel_repart = ctx->nel;
   } else {
-    PetscReal remotefrac = 0.5; /* How much of the work on each rank to offload to rank_sub 0 */
+    PetscReal remotefrac = 0.78; /* How much of the work on each rank to offload to rank_sub 0 */
     ierr = PetscOptionsGetReal(NULL,NULL,"-subrepart_frac",&remotefrac,NULL);CHKERRQ(ierr);
     if (remotefrac < 0.0 || remotefrac > 1.0) {
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"-subrepart_frac must be in [0,1]");
