@@ -44,6 +44,7 @@ typedef enum {
     PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,
 	PTATIN_MODEL_APPLY_INIT_MESH_GEOM,
 	PTATIN_MODEL_APPLY_INIT_MAT_GEOM,
+	PTATIN_MODEL_APPLY_EXPORT_INNER_MESH,
 	PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,
 	PTATIN_MODEL_OUTPUT,
 	PTATIN_MODEL_DESTROY
@@ -75,6 +76,7 @@ PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const char name[]);
 PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Vec X);
+PetscErrorCode pTatinModel_ExportInnerMesh(pTatinModel model,pTatinCtx ctx,DM da,Vec X);
 PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx ctx);
 PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ctx);
@@ -84,4 +86,3 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,pTatinCtx ctx,Vec X);
 
 #endif
-

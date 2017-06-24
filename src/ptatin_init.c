@@ -136,6 +136,7 @@ extern PetscLogEvent PTATIN_ModelApplyInitialStokesVariableMarkers;
 extern PetscLogEvent PTATIN_ModelApplyBoundaryCondition;
 extern PetscLogEvent PTATIN_ModelApplyBoundaryConditionMG;
 extern PetscLogEvent PTATIN_ModelApplyMaterialBoundaryCondition;
+extern PetscLogEvent PTATIN_ModelExportInnerMesh;
 extern PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
 extern PetscLogEvent PTATIN_ModelOutput;
 
@@ -168,6 +169,7 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("ModelBC",        PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryCondition);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelBCMG",      PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryConditionMG);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("ModelExportInnerMesh",PTATIN_CLASSID,&PTATIN_ModelExportInnerMesh);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
 	
@@ -196,4 +198,3 @@ PetscErrorCode pTatinFinalize(void)
 	
 	PetscFunctionReturn(0);
 }
-

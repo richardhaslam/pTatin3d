@@ -43,6 +43,7 @@ PetscLogEvent PTATIN_ModelApplyInitialStokesVariableMarkers;
 PetscLogEvent PTATIN_ModelApplyBoundaryCondition;
 PetscLogEvent PTATIN_ModelApplyBoundaryConditionMG;
 PetscLogEvent PTATIN_ModelApplyMaterialBoundaryCondition;
+PetscLogEvent PTATIN_ModelExportInnerMesh;
 PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
 PetscLogEvent PTATIN_ModelOutput;
 
@@ -65,6 +66,7 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	m->disable_apply_material_bc         = PETSC_FALSE;
 	m->disable_initial_mesh_geometry     = PETSC_FALSE;
 	m->disable_initial_material_geometry = PETSC_FALSE;
+	m->disable_export_inner_mesh 		 = PETSC_FALSE;
 	m->disable_update_mesh_geometry      = PETSC_FALSE;
 	m->disable_output                    = PETSC_FALSE;
 
@@ -75,6 +77,7 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_apply_material_bc_disable",&m->disable_apply_material_bc,0);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_initial_mesh_geometry_disable",&m->disable_initial_mesh_geometry,0);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_initial_material_geometry_disable",&m->disable_initial_material_geometry,0);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,"-ptatin_model_export_inner_mesh_disable",&m->disable_export_inner_mesh,0);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_update_mesh_geometry_disable",&m->disable_update_mesh_geometry,0);CHKERRQ(ierr);
 	ierr = PetscOptionsGetBool(NULL,"-ptatin_model_output_disable",&m->disable_output,0);CHKERRQ(ierr);
 	
@@ -203,6 +206,9 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 			break;
 		case PTATIN_MODEL_APPLY_INIT_MAT_GEOM:
 			model->FP_pTatinModel_ApplyInitialMaterialGeometry = ( PetscErrorCode(*)(pTatinCtx,void*) )func;
+			break;
+		case PTATIN_MODEL_APPLY_EXPORT_INNER_MESH:
+			model->FP_pTatinModel_ExportInnerMesh = ( PetscErrorCode(*)(pTatinCtx,DM,Vec,void*) )func;
 			break;
 		case PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM:
 			model->FP_pTatinModel_UpdateMeshGeometry = ( PetscErrorCode(*)(pTatinCtx,Vec,void*) )func;
@@ -384,6 +390,24 @@ PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,p
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "pTatinModel_ExportInnerMesh"
+PetscErrorCode pTatinModel_ExportInnerMesh(pTatinModel model,pTatinCtx ctx,DM da, Vec X)
+{
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = PetscLogEventBegin(PTATIN_ModelExportInnerMesh,0,0,0,0);CHKERRQ(ierr);
+	if (!model->disable_export_inner_mesh) {
+		if (model->FP_pTatinModel_ExportInnerMesh) {
+			ierr = model->FP_pTatinModel_ExportInnerMesh(ctx,da,X,model->model_data);CHKERRQ(ierr);
+		}
+	}
+	ierr = PetscLogEventEnd(PTATIN_ModelExportInnerMesh,0,0,0,0);CHKERRQ(ierr);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinModel_UpdateMeshGeometry"
 PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Vec X)
 {
@@ -400,6 +424,7 @@ PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Ve
 	
 	PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModel_ApplyInitialMaterialGeometry"
@@ -516,6 +541,8 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
   PetscErrorCode ierr;
   PetscInt i;
   pTatinModel item;
+  
+  if (!registered_model_list) PetscFunctionReturn(0);
   
   i = 0;
   item = registered_model_list[0];
