@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">
-<Collection>
-  <DataSet timestep="0.000000e+00" file="./step000000_X.pvts"/>
-  <DataSet timestep="5.000000e-13" file="./step000001_X.pvts"/>
-</Collection>
-</VTKFile>
