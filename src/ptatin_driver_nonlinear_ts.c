@@ -56,6 +56,9 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "ptatin3d_energy.h"
 #include "energy_assembly.h"
 
+#include "dmda_remesh.h"
+#include "dmda_redundant.h"
+
 #define MAX_MG_LEVELS 20
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
@@ -1521,10 +1524,13 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		
+
+		/* export inner mesh */
+		ierr = pTatinModel_ExportInnerMesh(model,user, dav, X);CHKERRQ(ierr);
+				
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
-		
+
 		/* update mesh coordinate hierarchy */
 		ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
 		
@@ -1585,8 +1591,8 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			
@@ -2327,7 +2333,10 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
-		
+
+		/* export inner mesh */
+		ierr = pTatinModel_ExportInnerMesh(model,user, dav, X);CHKERRQ(ierr);
+
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
 		
@@ -2387,12 +2396,12 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		if (active_energy) {
 			SNES snesT;
 			
-			ierr = VecZeroEntries(T);CHKERRQ(ierr);
+			//ierr = VecZeroEntries(T);CHKERRQ(ierr);
 			
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			
@@ -2985,6 +2994,9 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = DMCompositeGetAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
 		ierr = MaterialPointStd_UpdateGlobalCoordinates(user->materialpoint_db,dav_hierarchy[nlevels-1],velocity,user->dt);CHKERRQ(ierr);
 		ierr = DMCompositeRestoreAccess(user->pack,X,&velocity,&pressure);CHKERRQ(ierr);
+
+		/* export inner mesh */
+		ierr = pTatinModel_ExportInnerMesh(model,user, dav, X);CHKERRQ(ierr);
 		
 		/* update mesh */
 		ierr = pTatinModel_UpdateMeshGeometry(model,user,X);CHKERRQ(ierr);
@@ -3049,8 +3061,8 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 			
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
-			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)energy);CHKERRQ(ierr);
-			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)energy);CHKERRQ(ierr);
+			ierr = SNESSetFunction(snesT,f,    SNES_FormFunctionEnergy,(void*)user);CHKERRQ(ierr);
+			ierr = SNESSetJacobian(snesT,JE,JE,SNES_FormJacobianEnergy,(void*)user);CHKERRQ(ierr);
 			ierr = SNESSetType(snesT,SNESKSPONLY);
 			ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
 			
