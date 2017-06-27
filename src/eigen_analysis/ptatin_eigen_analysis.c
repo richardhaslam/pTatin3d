@@ -1418,6 +1418,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   
   ierr = SlepcInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
 
   ierr = pTatin3d_linear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
   
