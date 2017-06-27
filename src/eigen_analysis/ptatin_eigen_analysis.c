@@ -644,7 +644,7 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
 	ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
 	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
 	ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4G, maxit=%D\n",tol,maxit);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",(double)tol,maxit);CHKERRQ(ierr);
 	
 	ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
 	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
