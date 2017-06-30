@@ -3,15 +3,15 @@
 ##     makefile for pTatin3d
 ##
 ## ==============================================================================
-.SECONDEXPANSION:		# to expand $$(@D)/.DIR
-.SUFFIXES:	                # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+.SECONDEXPANSION:           # To expand $$(@D)/.DIR
+.SUFFIXES:                  # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:           # Delete likely-corrupt target file if rule fails
 
 include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 all : info tests drivers
 
-# Compilation options are to be placed in makefile.arch
+# Compilation options are to be placed in makefile.arch;
 # if that (untracked) file does not exist, defaults are copied there
 makefile.arch:
 	-@echo "[pTatin config] using config/makefile.arch.default as makefile.arch"
@@ -28,7 +28,7 @@ CONFIG_FASTSCAPE ?= n
 CONFIG_FORTRAN = y
 CONFIG_AVX ?= n
 
-# directory that contains most recently-parsed makefile (current)
+# Directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
 incsubdirs = $(addsuffix /local.mk,$(call thisdir,$(1)))
 
@@ -48,9 +48,9 @@ include local.mk
 ifeq ($(V),)
   quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-else ifeq ($(V),0)		# Same, but do not print any help
+else ifeq ($(V),0) # Same, but do not print any help
   quiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)
-else				# Show the full command line
+else # Show the full command line
   quiet = $($1)
 endif
 
@@ -110,18 +110,13 @@ TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
 
 
-# Tests
+# Test executables
 tests: $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app)
 $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-tests-y.c:%.c=$(OBJDIR)/%.o) # don't delete the intermediate files
 
 
 # Drivers
-#ptatin-drivers-y = $(notdir $(ptatin-drivers-y.c))
-#drivers: $(ptatin-drivers-y:%.c=$(BINDIR)/%.app)
-#$(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
-#.SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
-
 drivers: $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app)
 $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
@@ -142,8 +137,8 @@ $(OBJDIR)/%.o: %.f90 | $$(@D)/.DIR
 	@touch $@
 
 .PRECIOUS: %/.DIR
-.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+.SUFFIXES:                 # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:          # Delete likely-corrupt target file if rule fails
 
 .PHONY: clean all print
 
