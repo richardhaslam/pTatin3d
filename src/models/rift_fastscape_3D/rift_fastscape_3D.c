@@ -58,9 +58,12 @@
 #include "material_constants_energy.h"
 #include "dmda_remesh.h"
 #include "dmda_redundant.h"
+#include "petscsys.h"
+#include "petscviewerhdf5.h"
 
 
-PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D_semi_eulerian(pTatinCtx c,DM da, Vec X,void *ctx);
+
+PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c, Vec X,void *ctx);
 PetscErrorCode ModelApplyUpdateMeshGeometry_rift_fastscape_3D_semi_eulerian(pTatinCtx c,Vec X,void *ctx);
 PetscErrorCode ModelApplyMaterialBoundaryCondition_rift_fastscape_3D_semi_eulerian(pTatinCtx c,void *ctx);
 PetscBool BCListEvaluator_rift_fastscape_3Dl( PetscScalar position[], PetscScalar *value, void *ctx );
@@ -1282,26 +1285,36 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_rift_fastscape_3D_semi_euleri
 
 
 #undef __FUNCT__
-#define __FUNCT__ "ModelApplyExportInnerMesh_rift_fastscape_3D_semi_eulerian"
-PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D_semi_eulerian(pTatinCtx c,DM da,Vec X,void *ctx)
+#define __FUNCT__ "ModelApplyExportInnerMesh_rift_fastscape_3D"
+PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,void *ctx)
 {
 	Modelrift_fastscape_3DCtx     *data = (Modelrift_fastscape_3DCtx*)ctx;
-	PetscInt M,N,P,si,sj,sk,ei,ej,ek,lsi,lsj,lsk,m,n,p;
-	DM	seq_dav,dav;
-	Vec	vel_natural;
+	PetscInt M,N,P,si,sj,sk,ei,ej,ek,lsi,lsj,lsk,m,n,p,nsurf_nodes;
+	PetscReal        step;
+	DM  stokes_pack, seq_dav, dav,dap;
+	PhysCompStokes   stokes;
+	Vec velocity, pressure, vel_natural, seq_vec_vel;
+	VecScatter     toLoc;
+	
 	PetscMPIInt	rank;
 	PetscErrorCode	ierr;
+
+
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	printf("000000000000000\n");
-	printf("000000000000000\n");
-	printf("000000000000000\n");
+	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
+	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
+	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	ierr = DMDAGetInfo( da, 0, &M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(da,&lsi,&lsj,&lsk,&m,&n,&p);CHKERRQ(ierr);
+	ierr = DMDAGetInfo( dav, 0, &M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetCorners(dav,&lsi,&lsj,&lsk,&m,&n,&p);CHKERRQ(ierr);
+	
 	if (rank == 0) {
 		/* rank zero claims everything */
 		si = sj = sk = 0;
@@ -1315,24 +1328,71 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D_semi_eulerian(pTatinC
 		si = lsi;
 		sj = lsj;
 		sk = lsk;
-		ei++;
-		ej++;
-		ek++;
+		ei=si+1;
+		ej=sj+1;
+		ek=sk+1;
 	}
-
+		
 	/* all ranks call this function */
-
-	ierr = DMDACreate3dRedundant(da,si,ei,sj,ej,sk,ek,3,&seq_dav);CHKERRQ(ierr);
+	ierr = DMDACreate3dRedundant(dav,si,ei,sj,ej,sk,ek,3,&seq_dav);CHKERRQ(ierr);
 
 	/* To get the velocity on rank 0, in the correct ordering, you need to do this */
-
+	printf("3\n");
 	ierr = DMDACreateNaturalVector(dav,&vel_natural);CHKERRQ(ierr);
-	ierr = DMDAGlobalToNaturalBegin(dav,X,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
-	ierr = DMDAGlobalToNaturalEnd(dav,X,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalBegin(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
+	ierr = DMDAGlobalToNaturalEnd(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
+
+	/* Create local comm_self vector to store height */
+	nsurf_nodes = m * n * p;
+	ierr = VecCreate(PETSC_COMM_SELF,&seq_vec_vel);CHKERRQ(ierr);
+	ierr = VecSetSizes(seq_vec_vel,PETSC_DECIDE,nsurf_nodes);CHKERRQ(ierr);
+	ierr = VecSetFromOptions(seq_vec_vel);CHKERRQ(ierr);
 	
+	ierr = VecScatterCreateToZero(vel_natural,&toLoc,&seq_vec_vel);CHKERRQ(ierr);
+	ierr = VecScatterBegin(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	ierr = VecScatterEnd(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+	if (rank == 0) {
+	 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
+		PetscViewer    viewer3;
+		PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer3);
+		PetscViewerHDF5PushGroup(viewer3, "/data");
+		VecView(seq_vec_vel, viewer3);
+		PetscViewerHDF5PopGroup(viewer3);
+		PetscViewerDestroy(&viewer3);
+	 #endif
+	 
+	 PetscViewer    viewer4;
+     PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer4); /*save ascii dfile to check*/
+     VecView(seq_vec_vel,viewer4);
+     PetscViewerDestroy(&viewer4);
+	}
+
+
+	/* create distributed array (just trying to do the interpolation in parallel) */
+	DM daim;
+	Mat A;
+	Vec imVel;
+	DMDAStencilType  stype = DMDA_STENCIL_BOX;
+	PetscInt nx,ny,nz;
+	nx = ny = nz = 20;
+	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,nx,ny,nz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,0,&daim);CHKERRQ(ierr);
+	ierr = DMDASetUniformCoordinates(daim,0.2,1.0,0.8,1.0,0.2,1.0);CHKERRQ(ierr);
+	ierr = DMCreateGlobalVector(daim,&imVel);CHKERRQ(ierr);
+	
+	
+	
+	
+	
+
+	/* destroy allocated memory*/
+	ierr = DMDestroy(&daim);CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&toLoc);CHKERRQ(ierr);
+	ierr = VecDestroy(&seq_vec_vel);CHKERRQ(ierr);
+	ierr = VecDestroy(&imVel);CHKERRQ(ierr);
 	ierr = DMDestroy(&seq_dav);CHKERRQ(ierr);
 	ierr = VecDestroy(&vel_natural);CHKERRQ(ierr);
-	
+
 	PetscFunctionReturn(0);
 }
 
@@ -1542,10 +1602,10 @@ PetscErrorCode pTatinModelRegister_rift_fastscape_3D(void)
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_rift_fastscape_3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_rift_fastscape_3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_STOKES_VARIABLE_MARKERS,   (void (*)(void))ModelApplyInitialStokesVariableMarkers_rift_fastscape_3D);CHKERRQ(ierr);
-	
+
+	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_EXPORT_INNER_MESH,(void (*)(void))ModelApplyExportInnerMesh_rift_fastscape_3D);CHKERRQ(ierr);	
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_rift_fastscape_3D_semi_eulerian);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_EXPORT_INNER_MESH,(void (*)(void))ModelApplyExportInnerMesh_rift_fastscape_3D_semi_eulerian);CHKERRQ(ierr);
-	
+
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_rift_fastscape_3D);CHKERRQ(ierr);
 	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_rift_fastscape_3D);CHKERRQ(ierr);
 	
