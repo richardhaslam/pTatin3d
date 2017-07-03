@@ -58,6 +58,8 @@
 #include "material_constants_energy.h"
 #include "dmda_remesh.h"
 #include "dmda_redundant.h"
+#include "material_point_point_location.h"
+#include "dmda_element_q2p1.h"
 #include "petscsys.h"
 #include "petscviewerhdf5.h"
 
@@ -1289,7 +1291,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_rift_fastscape_3D_semi_euleri
 PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,void *ctx)
 {
 	Modelrift_fastscape_3DCtx     *data = (Modelrift_fastscape_3DCtx*)ctx;
-	PetscInt M,N,P,si,sj,sk,ei,ej,ek,lsi,lsj,lsk,m,n,p,nsurf_nodes;
+	PetscInt M,N,P,si,sj,sk,ei,ej,ek,lsi,lsj,lsk,m,n,p,im_nodes;
 	PetscReal        step;
 	DM  stokes_pack, seq_dav, dav,dap;
 	PhysCompStokes   stokes;
@@ -1299,8 +1301,6 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	PetscMPIInt	rank;
 	PetscErrorCode	ierr;
 
-
-	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -1337,55 +1337,83 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	ierr = DMDACreate3dRedundant(dav,si,ei,sj,ej,sk,ek,3,&seq_dav);CHKERRQ(ierr);
 
 	/* To get the velocity on rank 0, in the correct ordering, you need to do this */
-	printf("3\n");
+
 	ierr = DMDACreateNaturalVector(dav,&vel_natural);CHKERRQ(ierr);
 	ierr = DMDAGlobalToNaturalBegin(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
 	ierr = DMDAGlobalToNaturalEnd(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
-
+	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+	
 	/* Create local comm_self vector to store height */
-	nsurf_nodes = m * n * p;
+	im_nodes = m * n * p;
 	ierr = VecCreate(PETSC_COMM_SELF,&seq_vec_vel);CHKERRQ(ierr);
-	ierr = VecSetSizes(seq_vec_vel,PETSC_DECIDE,nsurf_nodes);CHKERRQ(ierr);
+	ierr = VecSetSizes(seq_vec_vel,PETSC_DECIDE,im_nodes);CHKERRQ(ierr);
 	ierr = VecSetFromOptions(seq_vec_vel);CHKERRQ(ierr);
 	
 	ierr = VecScatterCreateToZero(vel_natural,&toLoc,&seq_vec_vel);CHKERRQ(ierr);
 	ierr = VecScatterBegin(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterEnd(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-
+	
 	if (rank == 0) {
-	 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
-		PetscViewer    viewer3;
-		PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer3);
-		PetscViewerHDF5PushGroup(viewer3, "/data");
-		VecView(seq_vec_vel, viewer3);
-		PetscViewerHDF5PopGroup(viewer3);
-		PetscViewerDestroy(&viewer3);
-	 #endif
-	 
-	 PetscViewer    viewer4;
-     PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer4); /*save ascii dfile to check*/
-     VecView(seq_vec_vel,viewer4);
-     PetscViewerDestroy(&viewer4);
+		 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
+			PetscViewer    viewer3;
+			PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer3);
+			PetscViewerHDF5PushGroup(viewer3, "/data");
+			VecView(seq_vec_vel, viewer3);
+			PetscViewerHDF5PopGroup(viewer3);
+			PetscViewerDestroy(&viewer3);
+		 #endif
+		 
+		 PetscViewer    viewer4;
+		 PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer4); /*save ascii dfile to check*/
+		 VecView(seq_vec_vel,viewer4);
+		 PetscViewerDestroy(&viewer4);
 	}
+	
+		//create distributed array (just trying to do the interpolation in parallel)
+		DM daim;
+		Vec imVel;
+		DMDAStencilType  stype = DMDA_STENCIL_BOX;
+		PetscInt nx,ny,nz;
+		nx = ny = nz = 20;
+		ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
+		ierr = DMDASetUniformCoordinates(daim,0.2,1.0,0.8,1.0,0.2,1.0);CHKERRQ(ierr);
+		ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
 
 
-	/* create distributed array (just trying to do the interpolation in parallel) */
-	DM daim;
-	Mat A;
-	Vec imVel;
-	DMDAStencilType  stype = DMDA_STENCIL_BOX;
-	PetscInt nx,ny,nz;
-	nx = ny = nz = 20;
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,nx,ny,nz,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,0,&daim);CHKERRQ(ierr);
-	ierr = DMDASetUniformCoordinates(daim,0.2,1.0,0.8,1.0,0.2,1.0);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(daim,&imVel);CHKERRQ(ierr);
-	
-	
+
+		PetscInt nelements,nodes_per_element,i,L,bs;
+		const PetscInt *element;
+		const PetscScalar *LA_coor;
+		Vec coor;
+
+		if (rank == 0) {
+			ierr = DMDAGetElements_pTatinQ2P1(daim,&nelements,&nodes_per_element,&element);CHKERRQ(ierr);
+			ierr = DMGetCoordinates(daim,&coor);CHKERRQ(ierr);
+			ierr = VecGetArrayRead(coor,&LA_coor);CHKERRQ(ierr);
+			ierr = VecGetSize(coor,&L);CHKERRQ(ierr);
+			ierr = VecGetBlockSize(coor,&bs);CHKERRQ(ierr);
+			L = L / bs;
+			for (i=0; i<L; i++) {
+				MPntStd marker;
+
+				marker.coor[0] = LA_coor[3*i+0];
+				marker.coor[1] = LA_coor[3*i+1];
+				marker.coor[2] = LA_coor[3*i+2];
+
+				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,nx,ny,nz,element,1,&marker);
+				//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
+				//Now you are ready to do the interpolation.
+			}
+			ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
+			//printf("6\n");
+		}
+
 	
 	
 	
 
 	/* destroy allocated memory*/
+	
 	ierr = DMDestroy(&daim);CHKERRQ(ierr);
 	ierr = VecScatterDestroy(&toLoc);CHKERRQ(ierr);
 	ierr = VecDestroy(&seq_vec_vel);CHKERRQ(ierr);
