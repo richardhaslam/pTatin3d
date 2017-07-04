@@ -89,8 +89,14 @@ externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT CFLAGS ———————
 	-@echo $(TATIN_CFLAGS)
 
-legacyunittests: all
-	python tests/ptatin-with-verification/ptatin3d-execute-tests.py
+test :
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py smoke)
+
+testall :
+	cd tests && ./runTests.py 
+
+testclassic :
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py classic)
 
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^

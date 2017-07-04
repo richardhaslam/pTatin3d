@@ -5,23 +5,13 @@
 #                                                                               #
 #################################################################################
 # Usage:                                                                        #
-#  ./runTests.py [-h] [-other_pyTestHarness_options] [--group <groupname>]       #
-#                     [--list_groups]                                           #
+#  ./runTests.py [-h] [-other_pyTestHarness_options]                            #
 #                                                                               #
 # Design principles:                                                            #
 # * It should be easy to add, move, or rename tests                             #
 # * It should be easy to run a meaningful subset of tests                       #
 # * Tests should have descriptive names                                         #
 #                                                                               #
-# Useful test groups:                                                           #
-#  --group all           : All tests (default).                                 #
-#  --group smoke         : Smoke tests. Quickly check minimal operation.        #
-#  --group unit          : Unit tests. Check first if code is broken.           #
-#  --group integration   : Integration tests. Check second if code is broken.   #
-#  --group verification  : Verification tests. If these pass, the code "works". #
-#  --group validation    : Validation tests.                                    #
-#  --group ci            : Tests to run during automated tests.                 #
-#  --group classic       : The previous tests.                                  #
 #################################################################################
 
 import pyTestHarness.harness as pyth_harness   # bitbucket.org/dmay/pyTestHarness
@@ -43,17 +33,13 @@ if not PETSC_ARCH :
 
 #  Interpret any child directory containing "test.py" as defining as a test
 #  with a name defined as the relative path to the containing directory.
-#  Each intermediate directory becomes a group.
 allTests = []
-# TODO: populate a list of groups here corresponding to subdirectories
-for (root, dirs, files) in os.walk(os.getcwd()) :
+for (root, dirs, files) in os.walk(thisDir) :
     if 'test.py' in files :
         relpath = os.path.relpath(root,thisDir)
         mod = relpath.replace(os.sep,'.') + '.test'
         exec('import ' + mod)
         exec('allTests.append('+mod+'.test())')
-
-# TODO: parse command line args to define groups
 
 # Run tests
 # TODO: these need to be somehow sandboxed, so that output files (even if you don't think you're supposed to generate any) don't clash
