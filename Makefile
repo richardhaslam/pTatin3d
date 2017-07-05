@@ -90,13 +90,22 @@ externals:
 	-@echo $(TATIN_CFLAGS)
 
 test :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py smoke)
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke)
+
+testcheck :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke) --verify
 
 testall :
-	cd tests && ./runTests.py 
+	cd tests && ./runTests.py -s  
+
+testallcheck :
+	cd tests && ./runTests.py -s --verify
 
 testclassic :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py classic)
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic)
+
+testclassiccheck :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic) --verify
 
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^
