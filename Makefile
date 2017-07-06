@@ -101,6 +101,9 @@ testall :
 testallcheck :
 	cd tests && ./runTests.py -s --verify
 
+testallclean :
+	cd tests && ./runTests.py -s -p
+
 testclassic :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic)
 
