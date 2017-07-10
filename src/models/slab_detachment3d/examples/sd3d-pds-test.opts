@@ -1,0 +1,107 @@
+################################################################################
+# 3D Slab Benchmark Example                                                    #
+################################################################################
+# These options are intended to test a simple nonlinear solve, e.g.
+# $PTATIN_DIR/$PETSC_ARCH/bin/ptatin_driver_nonlinear_ts.app -options_file $PTATIN_DIR/src/models/slab_detachment3d/examples/sd3d-pds-test.opts
+
+################################################################################
+# Problem Setup and Parameters
+################################################################################
+-ptatin_model sd3d
+
+# ------------------------------------------------------------------------------ 
+# Geometry
+# ------------------------------------------------------------------------------
+-mx 12
+-my 12
+-mz 12
+
+# ------------------------------------------------------------------------------
+# Particles
+# ------------------------------------------------------------------------------
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+-mp_popctrl_np_upper -1
+-lattice_layout_perturb 0.0       # For reproducibility of tests across machines
+
+################################################################################
+# Time Stepping
+################################################################################
+-nsteps 10
+-dt_max 0.0023890909091 # 500,000 years, using characteristic time of 6.6e15 sec
+
+################################################################################
+# Monitoring and Logging
+################################################################################
+-output_path sd3d_test
+-output_frequency 1
+-monitor_stages
+-checkpoint_disable
+-options_left 1
+-log_view
+
+# ------------------------------------------------------------------------------
+# Solver monitors and logging
+# ------------------------------------------------------------------------------
+-snes_monitor
+-snes_converged_reason
+-ksp_converged_reason
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_pc_mg_log
+
+################################################################################
+# Solver Setup
+################################################################################
+# ------------------------------------------------------------------------------
+# Nonlinear Solver
+# ------------------------------------------------------------------------------
+-snes_type newtonls
+-snes_linesearch_type basic
+-snes_rtol 1.0e-5
+-snes_atol 1.0e-8
+-snes_max_it 5
+-snes_max_linear_solve_fail 100000
+
+# ------------------------------------------------------------------------------
+# Linear Solver (Outer Krylov Method)
+# ------------------------------------------------------------------------------
+-ksp_type fgmres
+-ksp_rtol 1.0e-3
+-ksp_atol 1.0e-8
+-ksp_max_it 2000
+
+# ------------------------------------------------------------------------------
+# ABF (fieldsplit) solver
+# ------------------------------------------------------------------------------
+-pc_type fieldsplit
+-pc_fieldsplit_type schur
+-pc_fieldsplit_schur_fact_type upper
+
+# ------------------------------------------------------------------------------
+# Viscous block subsolver
+# ------------------------------------------------------------------------------
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_ksp_max_it 10
+-fieldsplit_u_ksp_rtol 1.0e-2
+
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 2
+
+-fieldsplit_u_mg_levels_ksp_type fgmres
+-fieldsplit_u_mg_levels_ksp_max_it 2
+-fieldsplit_u_mg_levels_pc_type jacobi
+
+-fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_type bjacobi
+-fieldsplit_u_mg_coarse_ksp_max_it 4
+
+-stk_velocity_dm_mat_type aij
+-dau_nlevels 2
+-A11_operator_type 0,1
+
+# ------------------------------------------------------------------------------
+# Pressure / Schur Complement block subsolver
+# ------------------------------------------------------------------------------
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
