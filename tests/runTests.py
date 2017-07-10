@@ -42,9 +42,7 @@ for (root, dirs, files) in os.walk(thisDir) :
         exec('allTests.append('+mod+'.test())')
 
 # Run tests
-# TODO: these need to be somehow sandboxed, so that output files (even if you don't think you're supposed to generate any) don't clash
 os.environ['PYTHONUNBUFFERED'] = str('1')
 launcher = pyth_harness.pthHarness(allTests)
 launcher.execute()
-exitcode = launcher.verify()
-exit(exitcode)
+launcher.verify()
