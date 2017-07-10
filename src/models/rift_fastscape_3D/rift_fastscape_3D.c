@@ -1389,6 +1389,7 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
 		PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
 		PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
+		PetscScalar     *LA_velocity;
 		const PetscInt  *elnidx_u;
 		int             wil;
 
@@ -1401,23 +1402,28 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 			ierr = VecGetBlockSize(coor,&bs);CHKERRQ(ierr);
 			L = L / bs;
 			printf("6\n");
+			ierr = VecGetArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
+			printf("6\n");
 			for (i=0; i<L; i++) {
 				MPntStd marker;
-
+				printf("6\n");
 				marker.coor[0] = LA_coor[3*i+0];
 				marker.coor[1] = LA_coor[3*i+1];
 				marker.coor[2] = LA_coor[3*i+2];
 
 				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,nx,ny,nz,element,1,&marker);
+				//InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,ei,ej,ek,elnidx_u,1,&marker);
 				//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
 				//Now you are ready to do the interpolation.
-				
-				wil   = marker.wil;
-				e     = wil;
-				if (wil < 0) { SETERRQ1(PetscObjectComm((PetscObject)daim),PETSC_ERR_SUP,"Point[%d] has wil_e < 0", wil ); }
-				
-				ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
-				ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],seq_vec_vel);CHKERRQ(ierr);
+				printf("6\n");
+				e     = marker.wil;
+			
+				//ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+				ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&element[nodes_per_element*e]);CHKERRQ(ierr);
+				printf("6\n");
+				//ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr);
+				ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&element[nodes_per_element*e],LA_velocity);CHKERRQ(ierr);
+				printf("6\n");
 				P3D_ConstructNi_Q2_3D(marker.xi,Ni_p);
 
 				vel_p[0] = vel_p[1] = vel_p[2] = 0.0;
@@ -1429,16 +1435,13 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 				
 			}
 			ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
+			ierr = VecRestoreArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
 			printf("6\n");
 
 		}
 
-	
-	
-	
 
 	/* destroy allocated memory*/
-	
 	ierr = DMDestroy(&daim);CHKERRQ(ierr);
 	ierr = VecScatterDestroy(&toLoc);CHKERRQ(ierr);
 	ierr = VecDestroy(&seq_vec_vel);CHKERRQ(ierr);
