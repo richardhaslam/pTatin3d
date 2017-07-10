@@ -1373,16 +1373,15 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		DM daim;
 		Vec imVel;
 		DMDAStencilType  stype = DMDA_STENCIL_BOX;
-		PetscInt nx,ny,nz;
+		PetscInt nx,ny,nz,lmx,lmy,lmz;
 		nx = ny = nz = 20;
 		ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
-		ierr = DMDASetUniformCoordinates(daim,0.2,1.0,0.8,1.0,0.2,1.0);CHKERRQ(ierr);
+		ierr = DMDASetUniformCoordinates(daim,2.0,8.0,1.0,2.0,2.0,8.0);CHKERRQ(ierr);
 		ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
 
 
 
-		PetscInt nelements,nodes_per_element,i,j,L,bs;
-		const PetscInt *element;
+		PetscInt i,j,L,bs;
 		const PetscScalar *LA_coor;
 		Vec coor;
 		PetscInt        nel,nen_u,e;
@@ -1395,48 +1394,40 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 
 		if (rank == 0) {
 			ierr = DMDAGetElements_pTatinQ2P1(seq_dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr); //get elements from model mesh
-			ierr = DMDAGetElements_pTatinQ2P1(daim,&nelements,&nodes_per_element,&element);CHKERRQ(ierr); //get elements from inner mesh
+			ierr = DMDAGetLocalSizeElementQ2(seq_dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+				
 			ierr = DMGetCoordinates(daim,&coor);CHKERRQ(ierr);
 			ierr = VecGetArrayRead(coor,&LA_coor);CHKERRQ(ierr);
 			ierr = VecGetSize(coor,&L);CHKERRQ(ierr);
 			ierr = VecGetBlockSize(coor,&bs);CHKERRQ(ierr);
 			L = L / bs;
-			printf("6\n");
 			ierr = VecGetArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
-			printf("6\n");
 			for (i=0; i<L; i++) {
 				MPntStd marker;
-				printf("6\n");
+
 				marker.coor[0] = LA_coor[3*i+0];
 				marker.coor[1] = LA_coor[3*i+1];
 				marker.coor[2] = LA_coor[3*i+2];
-
-				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,nx,ny,nz,element,1,&marker);
-				//InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,ei,ej,ek,elnidx_u,1,&marker);
+				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,lmx,lmy,lmz,elnidx_u,1,&marker);
 				//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
 				//Now you are ready to do the interpolation.
-				printf("6\n");
+				
 				e     = marker.wil;
-			
-				//ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
-				ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&element[nodes_per_element*e]);CHKERRQ(ierr);
-				printf("6\n");
-				//ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr);
-				ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&element[nodes_per_element*e],LA_velocity);CHKERRQ(ierr);
-				printf("6\n");
+				ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+				ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr);
 				P3D_ConstructNi_Q2_3D(marker.xi,Ni_p);
-
+				
 				vel_p[0] = vel_p[1] = vel_p[2] = 0.0;
 				for (j=0; j<Q2_NODES_PER_EL_3D; j++) {
 					vel_p[0] += Ni_p[j] * el_velocity[NSD*j+0];
 					vel_p[1] += Ni_p[j] * el_velocity[NSD*j+1];
 					vel_p[2] += Ni_p[j] * el_velocity[NSD*j+2];
+					//printf("%g %g %g\n",vel_p[0],vel_p[1],vel_p[2]);
 				}
 				
 			}
 			ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
 			ierr = VecRestoreArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
-			printf("6\n");
 
 		}
 
