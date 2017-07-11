@@ -1353,22 +1353,7 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	ierr = VecScatterBegin(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterEnd(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	
-	if (rank == 0) {
-		 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
-			PetscViewer    viewer3;
-			PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer3);
-			PetscViewerHDF5PushGroup(viewer3, "/data");
-			VecView(seq_vec_vel, viewer3);
-			PetscViewerHDF5PopGroup(viewer3);
-			PetscViewerDestroy(&viewer3);
-		 #endif
-		 
-		 PetscViewer    viewer4;
-		 PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer4); /*save ascii dfile to check*/
-		 VecView(seq_vec_vel,viewer4);
-		 PetscViewerDestroy(&viewer4);
-	}
-	
+
 		//create distributed array (just trying to do the interpolation in parallel)
 		DM daim;
 		Vec imVel;
@@ -1376,14 +1361,12 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		PetscInt nx,ny,nz,lmx,lmy,lmz;
 		nx = ny = nz = 20;
 		ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
-		ierr = DMDASetUniformCoordinates(daim,2.0,8.0,1.0,2.0,2.0,8.0);CHKERRQ(ierr);
+		ierr = DMDASetUniformCoordinates(daim,4.0,6.0,2.0,3.0,4.0,6.0);CHKERRQ(ierr);
 		ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
 
-
-
 		PetscInt i,j,L,bs;
-		const PetscScalar *LA_coor;
-		Vec coor;
+		const PetscScalar *LA_coor,*LA_coorm;
+		Vec coor,coorm;
 		PetscInt        nel,nen_u,e;
 		PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
 		PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
@@ -1395,7 +1378,10 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		if (rank == 0) {
 			ierr = DMDAGetElements_pTatinQ2P1(seq_dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr); //get elements from model mesh
 			ierr = DMDAGetLocalSizeElementQ2(seq_dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-				
+
+			ierr = DMGetCoordinates(seq_dav,&coorm);CHKERRQ(ierr);
+			ierr = VecGetArrayRead(coorm,&LA_coorm);CHKERRQ(ierr);
+
 			ierr = DMGetCoordinates(daim,&coor);CHKERRQ(ierr);
 			ierr = VecGetArrayRead(coor,&LA_coor);CHKERRQ(ierr);
 			ierr = VecGetSize(coor,&L);CHKERRQ(ierr);
@@ -1408,7 +1394,8 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 				marker.coor[0] = LA_coor[3*i+0];
 				marker.coor[1] = LA_coor[3*i+1];
 				marker.coor[2] = LA_coor[3*i+2];
-				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coor,lmx,lmy,lmz,elnidx_u,1,&marker);
+
+				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coorm,lmx,lmy,lmz,elnidx_u,1,&marker);
 				//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
 				//Now you are ready to do the interpolation.
 				
@@ -1424,8 +1411,29 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 					vel_p[2] += Ni_p[j] * el_velocity[NSD*j+2];
 					//printf("%g %g %g\n",vel_p[0],vel_p[1],vel_p[2]);
 				}
-				
+				VecSetValues(imVel,3,&rank,&vel_p,ADD_VALUES);
+			
 			}
+			VecAssemblyBegin(imVel);
+			VecAssemblyEnd(imVel);
+
+
+			 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
+				PetscViewer    viewer1;
+				PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);
+				PetscViewerHDF5PushGroup(viewer1, "/data");
+				VecView(imVel, viewer1);
+				PetscViewerHDF5PopGroup(viewer1);
+				PetscViewerDestroy(&viewer1);
+			 #endif
+			 
+			 PetscViewer    viewer2;
+			 PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2); /*save ascii dfile to check*/
+			 VecView(imVel,viewer2);
+			 PetscViewerDestroy(&viewer2);
+
+
+
 			ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
 			ierr = VecRestoreArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
 
