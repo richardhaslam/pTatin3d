@@ -130,8 +130,8 @@ else
 endif
 
 # gcc/gfortran style dependency flags; these are set in petscvariables starting with petsc-3.5
-C_DEPFLAGS ?=
-FC_DEPFLAGS ?=
+C_DEPFLAGS ?= -MMD -MP
+FC_DEPFLAGS ?= -MMD -MP
 
 TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_CFLAGS_OPENMP) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
