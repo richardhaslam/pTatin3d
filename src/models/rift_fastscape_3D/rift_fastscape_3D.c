@@ -1323,10 +1323,9 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
-	
+		
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(dav,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dav,NULL,&M,&N,&P,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&lsi,&lsj,&lsk,&m,&n,&p);CHKERRQ(ierr);
 	
 	if (rank == 0) {
@@ -1367,13 +1366,10 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 
 	//create distributed array (just trying to do the interpolation in parallel)
 	nx = ny = nz = 20;
-	ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
+	ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,NULL,NULL,NULL,&daim);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(daim,4.0,6.0,2.0,3.0,4.0,6.0);CHKERRQ(ierr);
-	//ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
-		
 
 	if (rank == 0) {
-
 		ierr = DMDAGetElements_pTatinQ2P1(seq_dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr); //get elements from model mesh
 		ierr = DMDAGetLocalSizeElementQ2(seq_dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
@@ -1419,9 +1415,9 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 			}
 			
 			//printf("%d: %g %g %g\n",i, vel_p[0],vel_p[1],vel_p[2]); //check values
-			ierr = VecSetValue(imVel,3*i+0,vel_p[0],INSERT_VALUES);CHKERRQ(ierr); //add value to vector
-			ierr = VecSetValue(imVel,3*i+1,vel_p[1],INSERT_VALUES);CHKERRQ(ierr); //add value to vector
-			ierr = VecSetValue(imVel,3*i+2,vel_p[2],INSERT_VALUES);CHKERRQ(ierr); //add value to vector
+			ierr = VecSetValue(imVel,3*i+0,vel_p[0],INSERT_VALUES);CHKERRQ(ierr); // insert value to vector
+			ierr = VecSetValue(imVel,3*i+1,vel_p[1],INSERT_VALUES);CHKERRQ(ierr); // insert value to vector
+			ierr = VecSetValue(imVel,3*i+2,vel_p[2],INSERT_VALUES);CHKERRQ(ierr); // insert value to vector
 		}	
 		ierr = VecAssemblyBegin(imVel);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(imVel);CHKERRQ(ierr);
