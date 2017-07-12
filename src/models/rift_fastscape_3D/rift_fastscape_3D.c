@@ -1291,29 +1291,29 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_rift_fastscape_3D_semi_euleri
 #define __FUNCT__ "ModelApplyExportInnerMesh_rift_fastscape_3D"
 PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,void *ctx)
 {
-	Modelrift_fastscape_3DCtx     *data = (Modelrift_fastscape_3DCtx*)ctx;
-	PetscInt M,N,P,si,sj,sk,ei,ej,ek,lsi,lsj,lsk,m,n,p,im_nodes;
-	PetscReal        step;
-	DM  stokes_pack, seq_dav, dav,dap;
-	PhysCompStokes   stokes;
-	Vec velocity, pressure, vel_natural, seq_vec_vel;
-	VecScatter     toLoc;
-	PetscMPIInt	rank;
-	PetscErrorCode	ierr;
-  PetscInt i,j,L,bs;
+	Modelrift_fastscape_3DCtx *data = (Modelrift_fastscape_3DCtx*)ctx;
+	PetscInt          M,N,P,si,sj,sk,ei,ej,ek,lsi,lsj,lsk,m,n,p,im_nodes;
+	PetscReal         step;
+	DM                stokes_pack,seq_dav,dav,dap;
+	PhysCompStokes    stokes;
+	Vec               velocity,pressure,vel_natural,seq_vec_vel;
+	VecScatter        toLoc;
+	PetscMPIInt	      rank;
+	PetscErrorCode	  ierr;
+  PetscInt          i,j,L,bs;
   const PetscScalar *LA_coor,*LA_coorm;
-  DM daim;
-  DMDAStencilType  stype = DMDA_STENCIL_BOX;
-  PetscInt nx,ny,nz,lmx,lmy,lmz;
-  PetscInt size;
-  Vec coor,coorm,imVel;
-  PetscInt        nel,nen_u,e;
-  PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
-  PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
-  PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
-  PetscScalar     *LA_velocity;
-  const PetscInt  *elnidx_u;
-  int             wil;
+  DM                daim;
+  DMDAStencilType   stype = DMDA_STENCIL_BOX;
+  PetscInt          nx,ny,nz,lmx,lmy,lmz;
+  PetscInt          size;
+  Vec               coor,coorm,imVel;
+  PetscInt          nel,nen_u,e;
+  PetscInt          vel_el_lidx[U_BASIS_FUNCTIONS*3];
+  PetscScalar       el_velocity[Q2_NODES_PER_EL_3D*NSD];
+  PetscScalar       Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
+  PetscScalar       *LA_velocity;
+  const PetscInt    *elnidx_u;
+  int               wil;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
