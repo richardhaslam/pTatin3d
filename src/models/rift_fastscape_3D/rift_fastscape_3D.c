@@ -1326,7 +1326,7 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	ierr = DMDAGetInfo( dav, 0, &M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
+	ierr = DMDAGetInfo(dav,0,&M,&N,&P, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&lsi,&lsj,&lsk,&m,&n,&p);CHKERRQ(ierr);
 	
 	if (rank == 0) {
@@ -1351,7 +1351,6 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	ierr = DMDACreate3dRedundant(dav,si,ei,sj,ej,sk,ek,3,&seq_dav);CHKERRQ(ierr);
 
 	/* Get the velocity on rank 0, in the correct ordering */
-
 	ierr = DMDACreateNaturalVector(dav,&vel_natural);CHKERRQ(ierr);
 	ierr = DMDAGlobalToNaturalBegin(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
 	ierr = DMDAGlobalToNaturalEnd(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
@@ -1366,14 +1365,12 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	ierr = VecScatterBegin(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterEnd(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
-
 	//create distributed array (just trying to do the interpolation in parallel)
 	nx = ny = nz = 20;
 	ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(daim,4.0,6.0,2.0,3.0,4.0,6.0);CHKERRQ(ierr);
 	//ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
 		
-	ierr = VecCreate(PETSC_COMM_SELF,&imVel);CHKERRQ(ierr);
 
 	if (rank == 0) {
 
@@ -1390,6 +1387,7 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		
 		ierr = VecGetArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
 
+    ierr = VecCreate(PETSC_COMM_SELF,&imVel);CHKERRQ(ierr);
 		ierr = VecSetSizes(imVel,PETSC_DECIDE,L);CHKERRQ(ierr);
 		ierr = VecSetFromOptions(imVel);CHKERRQ(ierr);
 
@@ -1430,7 +1428,7 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 
 		#if defined(PETSC_HAVE_HDF5) /* save h5 file */
     {
-			PetscViewer    viewer1;
+			PetscViewer viewer1;
       
 			ierr = PetscViewerHDF5Open(PETSC_COMM_SELF,"h5-for-jean_seq.h5",FILE_MODE_WRITE,&viewer1);CHKERRQ(ierr);
 			ierr = PetscViewerHDF5PushGroup(viewer1,"/data");CHKERRQ(ierr);
@@ -1447,16 +1445,17 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
       ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
     }
 
-		/* destroy allocated memory*/
+		/* destroy allocated memory */
+    ierr = VecRestoreArrayRead(coorm,&LA_coorm);CHKERRQ(ierr);
 		ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
 		ierr = VecRestoreArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
+    ierr = VecDestroy(&imVel);CHKERRQ(ierr);
 	}
 
-	/* destroy allocated memory*/
+	/* destroy allocated memory */
 	ierr = DMDestroy(&daim);CHKERRQ(ierr);
 	ierr = VecScatterDestroy(&toLoc);CHKERRQ(ierr);
 	ierr = VecDestroy(&seq_vec_vel);CHKERRQ(ierr);
-	ierr = VecDestroy(&imVel);CHKERRQ(ierr);
 	ierr = DMDestroy(&seq_dav);CHKERRQ(ierr);
 	ierr = VecDestroy(&vel_natural);CHKERRQ(ierr);
 
