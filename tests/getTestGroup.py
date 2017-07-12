@@ -18,11 +18,11 @@ import sys
 
 # Custom Groups
 if 'smoke' in sys.argv :
-    print('integration.operator.compare_mf_assm_8x9x11,integration.viscousSolve.assm_8x8x8,verification.linear.sinker_galerkin_8x8x8')
+    print('integration.operator.compare_mf_assm_8x9x11,integration.viscousSolve.assm_8x8x8,application.linear.sinker_galerkin_8x8x8')
     exit(0)
 
 if 'classic' in sys.argv :
-    print('integration.operator.compare_mf_assm_8x9x11,integration.viscousSolve.assm_8x8x8,verification.linear.sinker_galerkin_8x8x8,verification.linear.sinker_hybrid_8x8x8,verification.linear.sinker_hybrid_8x8x8_p8,verification.linear.sinker_mf_8x8x8')
+    print('integration.operator.compare_mf_assm_8x9x11,integration.viscousSolve.assm_8x8x8,application.linear.sinker_galerkin_8x8x8,application.linear.sinker_hybrid_8x8x8,application.linear.sinker_hybrid_8x8x8_p8,application.linear.sinker_mf_8x8x8')
     exit(0)
 
 # If no custom group matched, look for subdirectories of $PTATIN_DIR/tests
