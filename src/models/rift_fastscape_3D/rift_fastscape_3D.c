@@ -1428,7 +1428,6 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		ierr = VecAssemblyBegin(imVel);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(imVel);CHKERRQ(ierr);
 
-
 		#if defined(PETSC_HAVE_HDF5) /* save h5 file */
     {
 			PetscViewer    viewer1;
@@ -1447,7 +1446,6 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
       ierr = VecView(imVel,viewer2);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
     }
-
 
 		/* destroy allocated memory*/
 		ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
