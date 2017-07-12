@@ -1424,31 +1424,31 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 			}
 			
 			//printf("%d: %g %g %g\n",i, vel_p[0],vel_p[1],vel_p[2]); //check values
-			VecSetValue(imVel,3*i+0,vel_p[0],INSERT_VALUES); //add value to vector
-			VecSetValue(imVel,3*i+1,vel_p[1],INSERT_VALUES); //add value to vector
-			VecSetValue(imVel,3*i+2,vel_p[2],INSERT_VALUES); //add value to vector
+			ierr = VecSetValue(imVel,3*i+0,vel_p[0],INSERT_VALUES);CHKERRQ(ierr); //add value to vector
+			ierr = VecSetValue(imVel,3*i+1,vel_p[1],INSERT_VALUES);CHKERRQ(ierr); //add value to vector
+			ierr = VecSetValue(imVel,3*i+2,vel_p[2],INSERT_VALUES);CHKERRQ(ierr); //add value to vector
 		}	
-		VecAssemblyBegin(imVel);
-		VecAssemblyEnd(imVel);
+		ierr = VecAssemblyBegin(imVel);CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(imVel);CHKERRQ(ierr);
 
 
 		#if defined(PETSC_HAVE_HDF5) /* save h5 file */
     {
 			PetscViewer    viewer1;
       
-			PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);
-			PetscViewerHDF5PushGroup(viewer1, "/data");
-			VecView(imVel, viewer1);
-			PetscViewerHDF5PopGroup(viewer1);
-			PetscViewerDestroy(&viewer1);
+			ierr = PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);CHKERRQ(ierr);
+			ierr = PetscViewerHDF5PushGroup(viewer1, "/data");CHKERRQ(ierr);
+			ierr = VecView(imVel, viewer1);CHKERRQ(ierr);
+			ierr = PetscViewerHDF5PopGroup(viewer1);CHKERRQ(ierr);
+			ierr = PetscViewerDestroy(&viewer1);CHKERRQ(ierr);
     }
     #endif
     {
-      PetscViewer    viewer2; /* save ascii file */
+      PetscViewer viewer2; /* save ascii file */
       
-      PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2); /*save ascii dfile to check*/
-      VecView(imVel,viewer2);
-      PetscViewerDestroy(&viewer2);
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2);CHKERRQ(ierr); /*save ascii dfile to check*/
+      ierr = VecView(imVel,viewer2);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
     }
 
 
