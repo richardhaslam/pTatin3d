@@ -1399,9 +1399,10 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		L = L/bs;
 		for (i=0; i<L; i++) {
 			MPntStd marker;
-			marker.coor[0] = 0.;
-			marker.coor[1] = 0.;
-			marker.coor[2] = 0.;
+      
+			marker.coor[0] = 0.0;
+			marker.coor[1] = 0.0;
+			marker.coor[2] = 0.0;
 			
 			marker.coor[0] = LA_coor[3*i+0];
 			marker.coor[1] = LA_coor[3*i+1];
@@ -1410,7 +1411,7 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 			InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coorm,lmx,lmy,lmz,elnidx_u,1,&marker);
 			//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
 			
-			e     = marker.wil;
+			e = marker.wil;
 			ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
 			ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr); //Do the interpolation between the set of inner mesh coordinates and the main mesh
 			P3D_ConstructNi_Q2_3D(marker.xi,Ni_p);
