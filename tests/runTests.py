@@ -32,7 +32,7 @@ if not PETSC_ARCH :
     sys.exit(1)
 
 # bitbucket.org/dmay/pythontestharness
-sys.path.append(os.path.join(os.getcwd(),'pythontestharness','lib'))  # overrides
+sys.path.append(os.path.join(PTATIN_DIR,'tests','pythontestharness','lib'))  # overrides
 try :
     import pyTestHarness.harness as pyth_harness
 except ImportError :
