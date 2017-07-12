@@ -1298,9 +1298,22 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	PhysCompStokes   stokes;
 	Vec velocity, pressure, vel_natural, seq_vec_vel;
 	VecScatter     toLoc;
-	
 	PetscMPIInt	rank;
 	PetscErrorCode	ierr;
+  PetscInt i,j,L,bs;
+  const PetscScalar *LA_coor,*LA_coorm;
+  DM daim;
+  DMDAStencilType  stype = DMDA_STENCIL_BOX;
+  PetscInt nx,ny,nz,lmx,lmy,lmz;
+  PetscInt size;
+  Vec coor,coorm,imVel;
+  PetscInt        nel,nen_u,e;
+  PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
+  PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
+  PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
+  PetscScalar     *LA_velocity;
+  const PetscInt  *elnidx_u;
+  int             wil;
 
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -1355,27 +1368,11 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 
 
 	//create distributed array (just trying to do the interpolation in parallel)
-	DM daim;
-	DMDAStencilType  stype = DMDA_STENCIL_BOX;
-	PetscInt nx,ny,nz,lmx,lmy,lmz;
 	nx = ny = nz = 20;
-	PetscInt size;
 	ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(daim,4.0,6.0,2.0,3.0,4.0,6.0);CHKERRQ(ierr);
 	//ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
-	
-	
-	PetscInt i,j,L,bs;
-	const PetscScalar *LA_coor,*LA_coorm;
-	Vec coor,coorm,imVel;
-	PetscInt        nel,nen_u,e;
-	PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
-	PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
-	PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
-	PetscScalar     *LA_velocity;
-	const PetscInt  *elnidx_u;
-	int             wil;
-
+		
 	ierr = VecCreate(PETSC_COMM_SELF,&imVel);CHKERRQ(ierr);
 
 	if (rank == 0) {
