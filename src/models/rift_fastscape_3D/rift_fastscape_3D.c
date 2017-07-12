@@ -1432,19 +1432,24 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		VecAssemblyEnd(imVel);
 
 
-		 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
+		#if defined(PETSC_HAVE_HDF5) /* save h5 file */
+    {
 			PetscViewer    viewer1;
+      
 			PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);
 			PetscViewerHDF5PushGroup(viewer1, "/data");
 			VecView(imVel, viewer1);
 			PetscViewerHDF5PopGroup(viewer1);
 			PetscViewerDestroy(&viewer1);
-		 #endif
-		 
-		 PetscViewer    viewer2; /* save ascii file */
-		 PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2); /*save ascii dfile to check*/
-		 VecView(imVel,viewer2);
-		 PetscViewerDestroy(&viewer2);
+    }
+    #endif
+    {
+      PetscViewer    viewer2; /* save ascii file */
+      
+      PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2); /*save ascii dfile to check*/
+      VecView(imVel,viewer2);
+      PetscViewerDestroy(&viewer2);
+    }
 
 
 		/* destroy allocated memory*/
