@@ -1342,9 +1342,9 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		si = lsi;
 		sj = lsj;
 		sk = lsk;
-		ei=si+1;
-		ej=sj+1;
-		ek=sk+1;
+		ei = si + 1;
+		ej = sj + 1;
+		ek = sk + 1;
 	}
 		
 	/* Gather distributed mesh information on rank 0 */
@@ -1433,9 +1433,9 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
     {
 			PetscViewer    viewer1;
       
-			ierr = PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);CHKERRQ(ierr);
-			ierr = PetscViewerHDF5PushGroup(viewer1, "/data");CHKERRQ(ierr);
-			ierr = VecView(imVel, viewer1);CHKERRQ(ierr);
+			ierr = PetscViewerHDF5Open(PETSC_COMM_SELF,"h5-for-jean_seq.h5",FILE_MODE_WRITE,&viewer1);CHKERRQ(ierr);
+			ierr = PetscViewerHDF5PushGroup(viewer1,"/data");CHKERRQ(ierr);
+			ierr = VecView(imVel,viewer1);CHKERRQ(ierr);
 			ierr = PetscViewerHDF5PopGroup(viewer1);CHKERRQ(ierr);
 			ierr = PetscViewerDestroy(&viewer1);CHKERRQ(ierr);
     }
