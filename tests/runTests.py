@@ -14,22 +14,35 @@
 #                                                                               #
 #################################################################################
 
-import pyTestHarness.harness as pyth_harness   # bitbucket.org/dmay/pyTestHarness
 import os
+import sys
 
 # PTATIN_DIR and PETSC_ARCH are used to make easily-copyable tests
 thisDir = os.path.dirname(os.path.abspath(__file__))
 PTATIN_DIR = os.getenv('PTATIN_DIR')
 if not PTATIN_DIR :
     print("You must define PTATIN_DIR in your environment. Exiting.")
-    exit(1)
+    sys.exit(1)
 if os.path.join(PTATIN_DIR,'tests') != thisDir :
     print("PTATIN_DIR is not set correctly in your environment. Exiting.")
-    exit(1)
+    sys.exit(1)
 PETSC_ARCH = os.getenv('PETSC_ARCH')
 if not PETSC_ARCH :
     print("You must define PETSC_ARCH in your environment. Exiting.")
-    exit(1)
+    sys.exit(1)
+
+# bitbucket.org/dmay/pythontestharness
+sys.path.append(os.path.join(os.getcwd(),'pythontestharness','lib'))  # overrides
+try :
+    import pyTestHarness.harness as pyth_harness
+except ImportError :
+    print("********************")
+    print("pyTestHarness was not found. Exiting.")
+    print("If you already have this somewhere on your system, add pythontestharness/lib to your PYTHONPATH.")
+    print("Otherwise, you may clone as follows:")
+    print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'tests','pythontestharness'))
+    print("********************")
+    sys.exit(1)
 
 #  Interpret any child directory containing "test.py" as defining as a test
 #  with a name defined as the relative path to the containing directory.
@@ -43,6 +56,6 @@ for (root, dirs, files) in os.walk(thisDir) :
 
 # Run tests
 os.environ['PYTHONUNBUFFERED'] = str('1')
-launcher = pyth_harness.pthHarness(allTests)
-launcher.execute()
-launcher.verify()
+h = pyth_harness.pthHarness(allTests)
+h.execute()
+h.verify()
