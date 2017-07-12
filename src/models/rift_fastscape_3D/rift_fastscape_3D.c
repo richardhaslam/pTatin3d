@@ -1334,10 +1334,10 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 		ek=sk+1;
 	}
 		
-	/* all ranks call this function */
+	/* Gather distributed mesh information on rank 0 */
 	ierr = DMDACreate3dRedundant(dav,si,ei,sj,ej,sk,ek,3,&seq_dav);CHKERRQ(ierr);
 
-	/* To get the velocity on rank 0, in the correct ordering, you need to do this */
+	/* Get the velocity on rank 0, in the correct ordering */
 
 	ierr = DMDACreateNaturalVector(dav,&vel_natural);CHKERRQ(ierr);
 	ierr = DMDAGlobalToNaturalBegin(dav,velocity,INSERT_VALUES,vel_natural);CHKERRQ(ierr);
@@ -1352,93 +1352,104 @@ PetscErrorCode ModelApplyExportInnerMesh_rift_fastscape_3D(pTatinCtx c,Vec X,voi
 	ierr = VecScatterCreateToZero(vel_natural,&toLoc,&seq_vec_vel);CHKERRQ(ierr);
 	ierr = VecScatterBegin(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 	ierr = VecScatterEnd(toLoc,vel_natural,seq_vec_vel,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+
+
+	//create distributed array (just trying to do the interpolation in parallel)
+	DM daim;
+	DMDAStencilType  stype = DMDA_STENCIL_BOX;
+	PetscInt nx,ny,nz,lmx,lmy,lmz;
+	nx = ny = nz = 20;
+	PetscInt size;
+	ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
+	ierr = DMDASetUniformCoordinates(daim,4.0,6.0,2.0,3.0,4.0,6.0);CHKERRQ(ierr);
+	//ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
 	
+	
+	PetscInt i,j,L,bs;
+	const PetscScalar *LA_coor,*LA_coorm;
+	Vec coor,coorm,imVel;
+	PetscInt        nel,nen_u,e;
+	PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
+	PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
+	PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
+	PetscScalar     *LA_velocity;
+	const PetscInt  *elnidx_u;
+	int             wil;
 
-		//create distributed array (just trying to do the interpolation in parallel)
-		DM daim;
-		Vec imVel;
-		DMDAStencilType  stype = DMDA_STENCIL_BOX;
-		PetscInt nx,ny,nz,lmx,lmy,lmz;
-		nx = ny = nz = 20;
-		ierr = DMDACreate3d(PETSC_COMM_SELF,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stype,2*nx+1,2*ny+1,2*nz+1,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,2,1,0,0,0,&daim);CHKERRQ(ierr);
-		ierr = DMDASetUniformCoordinates(daim,4.0,6.0,2.0,3.0,4.0,6.0);CHKERRQ(ierr);
-		ierr = DMCreateLocalVector(daim,&imVel);CHKERRQ(ierr);
+	ierr = VecCreate(PETSC_COMM_SELF,&imVel);CHKERRQ(ierr);
 
-		PetscInt i,j,L,bs;
-		const PetscScalar *LA_coor,*LA_coorm;
-		Vec coor,coorm;
-		PetscInt        nel,nen_u,e;
-		PetscInt        vel_el_lidx[U_BASIS_FUNCTIONS*3];
-		PetscScalar     el_velocity[Q2_NODES_PER_EL_3D*NSD];
-		PetscScalar     Ni_p[Q2_NODES_PER_EL_3D],vel_p[NSD];
-		PetscScalar     *LA_velocity;
-		const PetscInt  *elnidx_u;
-		int             wil;
+	if (rank == 0) {
 
-		if (rank == 0) {
-			ierr = DMDAGetElements_pTatinQ2P1(seq_dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr); //get elements from model mesh
-			ierr = DMDAGetLocalSizeElementQ2(seq_dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+		ierr = DMDAGetElements_pTatinQ2P1(seq_dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr); //get elements from model mesh
+		ierr = DMDAGetLocalSizeElementQ2(seq_dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-			ierr = DMGetCoordinates(seq_dav,&coorm);CHKERRQ(ierr);
-			ierr = VecGetArrayRead(coorm,&LA_coorm);CHKERRQ(ierr);
+		ierr = DMGetCoordinates(seq_dav,&coorm);CHKERRQ(ierr); //get coordinates from main mesh
+		ierr = VecGetArrayRead(coorm,&LA_coorm);CHKERRQ(ierr);
 
-			ierr = DMGetCoordinates(daim,&coor);CHKERRQ(ierr);
-			ierr = VecGetArrayRead(coor,&LA_coor);CHKERRQ(ierr);
-			ierr = VecGetSize(coor,&L);CHKERRQ(ierr);
-			ierr = VecGetBlockSize(coor,&bs);CHKERRQ(ierr);
-			L = L / bs;
-			ierr = VecGetArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
-			for (i=0; i<L; i++) {
-				MPntStd marker;
+		ierr = DMGetCoordinates(daim,&coor);CHKERRQ(ierr);
+		ierr = VecGetArrayRead(coor,&LA_coor);CHKERRQ(ierr);
+		ierr = VecGetSize(coor,&L);CHKERRQ(ierr);
+		ierr = VecGetBlockSize(coor,&bs);CHKERRQ(ierr);
+		
+		ierr = VecGetArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
 
-				marker.coor[0] = LA_coor[3*i+0];
-				marker.coor[1] = LA_coor[3*i+1];
-				marker.coor[2] = LA_coor[3*i+2];
+		ierr = VecSetSizes(imVel,PETSC_DECIDE,L);CHKERRQ(ierr);
+		ierr = VecSetFromOptions(imVel);CHKERRQ(ierr);
 
-				InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coorm,lmx,lmy,lmz,elnidx_u,1,&marker);
-				//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
-				//Now you are ready to do the interpolation.
-				
-				e     = marker.wil;
-				ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
-				ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr);
-				P3D_ConstructNi_Q2_3D(marker.xi,Ni_p);
-				
-				vel_p[0] = vel_p[1] = vel_p[2] = 0.0;
-				for (j=0; j<Q2_NODES_PER_EL_3D; j++) {
-					vel_p[0] += Ni_p[j] * el_velocity[NSD*j+0];
-					vel_p[1] += Ni_p[j] * el_velocity[NSD*j+1];
-					vel_p[2] += Ni_p[j] * el_velocity[NSD*j+2];
-					//printf("%g %g %g\n",vel_p[0],vel_p[1],vel_p[2]);
-				}
-				VecSetValues(imVel,3,&rank,&vel_p,ADD_VALUES);
+		L = L/bs;
+		for (i=0; i<L; i++) {
+			MPntStd marker;
+			marker.coor[0] = 0.;
+			marker.coor[1] = 0.;
+			marker.coor[2] = 0.;
 			
+			marker.coor[0] = LA_coor[3*i+0];
+			marker.coor[1] = LA_coor[3*i+1];
+			marker.coor[2] = LA_coor[3*i+2];
+
+			InverseMappingDomain_3dQ2(1.0e-10,20,PETSC_FALSE,PETSC_FALSE,LA_coorm,lmx,lmy,lmz,elnidx_u,1,&marker);
+			//The local coordinates are stored in marker.xi[] and the cell index is stored in marker.wil
+			
+			e     = marker.wil;
+			ierr = StokesVelocity_GetElementLocalIndices(vel_el_lidx,(PetscInt*)&elnidx_u[nen_u*e]);CHKERRQ(ierr);
+			ierr = DMDAGetVectorElementFieldQ2_3D(el_velocity,(PetscInt*)&elnidx_u[nen_u*e],LA_velocity);CHKERRQ(ierr); //Do the interpolation between the set of inner mesh coordinates and the main mesh
+			P3D_ConstructNi_Q2_3D(marker.xi,Ni_p);
+			
+			vel_p[0] = vel_p[1] = vel_p[2] = 0.0;
+			for (j=0; j<Q2_NODES_PER_EL_3D; j++) {
+				vel_p[0] += Ni_p[j] * el_velocity[NSD*j+0];
+				vel_p[1] += Ni_p[j] * el_velocity[NSD*j+1];
+				vel_p[2] += Ni_p[j] * el_velocity[NSD*j+2];
 			}
-			VecAssemblyBegin(imVel);
-			VecAssemblyEnd(imVel);
+			
+			//printf("%d: %g %g %g\n",i, vel_p[0],vel_p[1],vel_p[2]); //check values
+			VecSetValue(imVel,3*i+0,vel_p[0],INSERT_VALUES); //add value to vector
+			VecSetValue(imVel,3*i+1,vel_p[1],INSERT_VALUES); //add value to vector
+			VecSetValue(imVel,3*i+2,vel_p[2],INSERT_VALUES); //add value to vector
+		}	
+		VecAssemblyBegin(imVel);
+		VecAssemblyEnd(imVel);
 
 
-			 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
-				PetscViewer    viewer1;
-				PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);
-				PetscViewerHDF5PushGroup(viewer1, "/data");
-				VecView(imVel, viewer1);
-				PetscViewerHDF5PopGroup(viewer1);
-				PetscViewerDestroy(&viewer1);
-			 #endif
-			 
-			 PetscViewer    viewer2;
-			 PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2); /*save ascii dfile to check*/
-			 VecView(imVel,viewer2);
-			 PetscViewerDestroy(&viewer2);
+		 #if defined(PETSC_HAVE_HDF5) /* save h5 file */
+			PetscViewer    viewer1;
+			PetscViewerHDF5Open(PETSC_COMM_SELF, "h5-for-jean_seq.h5", FILE_MODE_WRITE, &viewer1);
+			PetscViewerHDF5PushGroup(viewer1, "/data");
+			VecView(imVel, viewer1);
+			PetscViewerHDF5PopGroup(viewer1);
+			PetscViewerDestroy(&viewer1);
+		 #endif
+		 
+		 PetscViewer    viewer2; /* save ascii file */
+		 PetscViewerASCIIOpen(PETSC_COMM_SELF,"h5-for-jean_seq.output",&viewer2); /*save ascii dfile to check*/
+		 VecView(imVel,viewer2);
+		 PetscViewerDestroy(&viewer2);
 
 
-
-			ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
-			ierr = VecRestoreArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
-
-		}
-
+		/* destroy allocated memory*/
+		ierr = VecRestoreArrayRead(coor,&LA_coor);CHKERRQ(ierr);
+		ierr = VecRestoreArray(seq_vec_vel,&LA_velocity);CHKERRQ(ierr);
+	}
 
 	/* destroy allocated memory*/
 	ierr = DMDestroy(&daim);CHKERRQ(ierr);
