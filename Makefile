@@ -116,6 +116,10 @@ externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT CFLAGS ———————
 	-@echo $(TATIN_CFLAGS)
 
+ifeq ($(CONFIG_AVX),n)
+TEST_NO_AVX=no_avx
+endif
+
 test :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke)
 
@@ -123,13 +127,13 @@ testcheck :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke) --verify
 
 testall :
-	cd tests && ./runTests.py -s  
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_NO_AVX))
 
 testallcheck :
-	cd tests && ./runTests.py -s --verify
+	cd tests && ./runTests.py -s --verify $(shell ./tests/getTestGroup.py all $(TEST_NO_AVX))
 
 testallclean :
-	cd tests && ./runTests.py -s -p
+	cd tests && ./runTests.py -s -p 
 
 testclassic :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic)
