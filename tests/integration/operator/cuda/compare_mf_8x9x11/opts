@@ -6,5 +6,5 @@
 -ptatin_model viscous_sinker
 -model_viscous_sinker_eta1 10
 -lattice_layout_perturb 0.0
--a11_op avx
+-a11_op cuda
 -options_left

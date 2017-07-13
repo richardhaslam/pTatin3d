@@ -20,9 +20,9 @@
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Created output directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2017.07.13_17:00:27 
+[pTatin] Created log file: pt3dout/ptatin.log-2017.07.13_17:00:33 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2017.07.13_17:00:27 
+[pTatin] Created options file: pt3dout/ptatin.options-2017.07.13_17:00:33 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -101,9 +101,9 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 7.27e-02 (MB) 
   Total mem. usage                                                      = 7.27e-02 (MB) 
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0004 (sec)]]
+[[Swarm initialization: 0.0002 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 6336 points : 0.0013 (sec)]]
+[[Swarm->coordinate assignment: 6336 points : 0.0006 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
 Mat Object: 1 MPI processes
@@ -112,8 +112,8 @@ Mat Object: 1 MPI processes
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 2.0146e-04 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 2.3699e-04 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.1444e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.3375e-04 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
 [[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
@@ -124,12 +124,12 @@ RUNNING DEFORMED MESH EXAMPLE
 ====================================================================
 
 +  Test [compare_mf_A11]: Mesh 8 x 9 x 11 
-MatMultA11(MF):      time 2.5952e-03 (sec): ratio 1.0000e+02%: min/max 2.5952e-03 2.5952e-03 (sec)
-MatAssemblyA11(ASM): time 2.5295e-01 (sec): ratio 1.0000e+02%: min/max 2.5295e-01 2.5295e-01 (sec)
-MatMultA11(ASM):     time 1.4206e-02 (sec): ratio 1.0000e+02%: min/max 1.4206e-02 1.4206e-02 (sec)
+MatMultA11(MF):      time 1.3518e-03 (sec): ratio 1.0000e+02%: min/max 1.3518e-03 1.3518e-03 (sec)
+MatAssemblyA11(ASM): time 2.4407e-01 (sec): ratio 1.0000e+02%: min/max 2.4407e-01 2.4407e-01 (sec)
+MatMultA11(ASM):     time 1.4350e-02 (sec): ratio 1.0000e+02%: min/max 1.4350e-02 1.4350e-02 (sec)
   y.y    = +5.71909086e+04 [mfo]
   y2.y2  = +5.71909086e+04 [asm]
-  min[A11_mfo.x-A11_asm.x]  = -1.79361734e-14 
+  min[A11_mfo.x-A11_asm.x]  = -1.79084178e-14 
   max[A11_mfo.x-A11_asm.x]  = +2.41681675e-14 
 
 +  Test [compare_mf_A21]: Mesh 8 x 9 x 11 
@@ -149,8 +149,8 @@ StokesA12Preallocation_basic: using nnz = 32 and onnz = 16
 +  Test [compare_mf_A]: Mesh 8 x 9 x 11 
   y.y    = +2.14457051e+03 [mfo]
   y2.y2  = +2.14457051e+03 [asm]
-  min[A_mfo.x-A_asm.x]  = -4.44089210e-16 
-  max[A_mfo.x-A_asm.x]  = +8.88178420e-16 
+  min[A_mfo.x-A_asm.x]  = -8.88178420e-16 
+  max[A_mfo.x-A_asm.x]  = +6.66133815e-16 
 
 +  Test [compare_mf_diagA11]: Mesh 8 x 9 x 11 
   y.y    = +1.80245954e+04 [mfo]
@@ -179,7 +179,7 @@ StokesA12Preallocation_basic: using nnz = 32 and onnz = 16
 [[ModelDestroy_Subduction_Initiation2d]]
 [[ModelDestroy_Thermal_Convection2d]]
 #PETSc Option Table entries:
--a11_op avx
+-a11_op cuda
 -compare_operators
 -lattice_layout_perturb 0.0
 -model_viscous_sinker_eta1 10

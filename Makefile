@@ -117,7 +117,16 @@ externals:
 	-@echo $(TATIN_CFLAGS)
 
 ifeq ($(CONFIG_AVX),n)
-TEST_NO_AVX=no_avx
+TEST_IGNORE+=no_avx
+endif
+ifeq ($(CONFIG_CUDA),n)
+TEST_IGNORE+=no_cuda
+endif
+ifeq ($(CONFIG_OPENCL),n)
+TEST_IGNORE+=no_opencl
+endif
+ifeq ($(CONFIG_AVX_CUDA),n)
+TEST_IGNORE+=no_avx_cuda
 endif
 
 test :
@@ -127,10 +136,10 @@ testcheck :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke) --verify
 
 testall :
-	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_NO_AVX))
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallcheck :
-	cd tests && ./runTests.py -s --verify $(shell ./tests/getTestGroup.py all $(TEST_NO_AVX))
+	cd tests && ./runTests.py -s --verify $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallclean :
 	cd tests && ./runTests.py -s -p 
