@@ -3,15 +3,15 @@
 ##     makefile for pTatin3d
 ##
 ## ==============================================================================
-.SECONDEXPANSION:		# to expand $$(@D)/.DIR
-.SUFFIXES:	                # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+.SECONDEXPANSION:           # To expand $$(@D)/.DIR
+.SUFFIXES:                  # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:           # Delete likely-corrupt target file if rule fails
 
 include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 all : info tests drivers
 
-# Compilation options are to be placed in makefile.arch
+# Compilation options are to be placed in makefile.arch;
 # if that (untracked) file does not exist, defaults are copied there
 makefile.arch:
 	-@echo "[pTatin config] using config/makefile.arch.default as makefile.arch"
@@ -54,7 +54,7 @@ ifeq ($(CONFIG_AVX),y)
 TATIN_CFLAGS += -DTATIN_HAVE_AVX
 endif
 
-# directory that contains most recently-parsed makefile (current)
+# Directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
 incsubdirs = $(addsuffix /local.mk,$(call thisdir,$(1)))
 
@@ -75,9 +75,9 @@ include local.mk
 ifeq ($(V),)
   quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-else ifeq ($(V),0)		# Same, but do not print any help
+else ifeq ($(V),0) # Same, but do not print any help
   quiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)
-else				# Show the full command line
+else # Show the full command line
   quiet = $($1)
 endif
 
@@ -116,8 +116,26 @@ externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT CFLAGS ———————
 	-@echo $(TATIN_CFLAGS)
 
-legacyunittests: all
-	python tests/ptatin-with-verification/ptatin3d-execute-tests.py
+test :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke)
+
+testcheck :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke) --verify
+
+testall :
+	cd tests && ./runTests.py -s  
+
+testallcheck :
+	cd tests && ./runTests.py -s --verify
+
+testallclean :
+	cd tests && ./runTests.py -s -p
+
+testclassic :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic)
+
+testclassiccheck :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic) --verify
 
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^
@@ -138,18 +156,13 @@ TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(
 TATIN_COMPILE.cu = $(CUDA_NVCC) -c -Xcompiler "$(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)"
 
 
-# Tests
+# Test executables
 tests: $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app)
 $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-tests-y.c:%.c=$(OBJDIR)/%.o) # don't delete the intermediate files
 
 
 # Drivers
-#ptatin-drivers-y = $(notdir $(ptatin-drivers-y.c))
-#drivers: $(ptatin-drivers-y:%.c=$(BINDIR)/%.app)
-#$(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
-#.SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
-
 drivers: $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app)
 $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
@@ -173,8 +186,8 @@ $(OBJDIR)/%.o: %.cu | $$(@D)/.DIR
 	@touch $@
 
 .PRECIOUS: %/.DIR
-.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+.SUFFIXES:                 # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:          # Delete likely-corrupt target file if rule fails
 
 .PHONY: clean all print
 
