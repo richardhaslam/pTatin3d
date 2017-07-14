@@ -20,9 +20,9 @@
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created log file: pt3dout/ptatin.log-2017.07.14_09:36:51 
+[pTatin] Created log file: pt3dout/ptatin.log-2017.07.14_09:37:07 
 [pTatin] Writing output to existing directory: pt3dout 
-[pTatin] Created options file: pt3dout/ptatin.options-2017.07.14_09:36:51 
+[pTatin] Created options file: pt3dout/ptatin.options-2017.07.14_09:37:07 
 [pTatin] Created options file: pt3dout/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -48,72 +48,72 @@ RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max =
   [pTatinModel]: Registering model [21] with name "pd"
   [pTatinModel]: -ptatin_model "viscous_sinker" was detected
 [[ModelInitialize_ViscousSinker]]
-BCList: Mem. usage (min,max) = 7.13e-01,7.13e-01 (MB) 
+BCList: Mem. usage (min,max) = 3.78e-02,5.54e-02 (MB) 
 VolumeQuadratureCreate_GaussLegendreStokes:
 	Using 3x3 pnt Gauss Legendre quadrature
-DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
-  L                  = 21384 
-  buffer             = 1 
-  allocated          = 21385 
+DataBucketView(MPI): ("GaussLegendre StokesCoefficients")
+  L                  = 6237 
+  buffer (max)       = 7 
+  allocated          = 6244 
   nfields registered = 1 
-    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 1.03e+00 (MB) 
-  Total mem. usage                                                      = 1.03e+00 (MB) 
-DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
-  L                  = 891 
-  buffer             = 1 
-  allocated          = 892 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 5.45e-02 (MB) : rank0
+  Total mem. usage                                                      = 3.00e-01 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 693 
+  buffer (max)       = 7 
+  allocated          = 700 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 9.99e-02 (MB) 
-  Total mem. usage                                                      = 9.99e-02 (MB) 
-DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
-  L                  = 891 
-  buffer             = 1 
-  allocated          = 892 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.42e-02 (MB) : rank0
+  Total mem. usage                                                      = 7.84e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 693 
+  buffer (max)       = 7 
+  allocated          = 700 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 9.99e-02 (MB) 
-  Total mem. usage                                                      = 9.99e-02 (MB) 
-DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
-  L                  = 792 
-  buffer             = 1 
-  allocated          = 793 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.42e-02 (MB) : rank0
+  Total mem. usage                                                      = 7.84e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 297 
+  buffer (max)       = 7 
+  allocated          = 304 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 8.88e-02 (MB) 
-  Total mem. usage                                                      = 8.88e-02 (MB) 
-DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
-  L                  = 792 
-  buffer             = 1 
-  allocated          = 793 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.16e-03 (MB) : rank0
+  Total mem. usage                                                      = 3.40e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 297 
+  buffer (max)       = 7 
+  allocated          = 304 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 8.88e-02 (MB) 
-  Total mem. usage                                                      = 8.88e-02 (MB) 
-DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
-  L                  = 648 
-  buffer             = 1 
-  allocated          = 649 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.16e-03 (MB) : rank0
+  Total mem. usage                                                      = 3.40e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 189 
+  buffer (max)       = 7 
+  allocated          = 202 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 7.27e-02 (MB) 
-  Total mem. usage                                                      = 7.27e-02 (MB) 
-DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
-  L                  = 648 
-  buffer             = 1 
-  allocated          = 649 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 2.26e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 189 
+  buffer (max)       = 7 
+  allocated          = 202 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 7.27e-02 (MB) 
-  Total mem. usage                                                      = 7.27e-02 (MB) 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.13e-02 (MB) : rank0
+  Total mem. usage                                                      = 2.26e-02 (MB) : collective
   MaterialPointsStokes: Using Q1 projection
-[[Swarm initialization: 0.0003 (sec)]]
+[[Swarm initialization: 0.0001 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 6336 points : 0.0007 (sec)]]
+[[Swarm->coordinate assignment: 336 points : 0.0001 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
-max_nnz = 0 
-Mat Object: 1 MPI processes
-  type: seqaij
-  rows=1, cols=1
-  total: nonzeros=0, allocated nonzeros=0
+max_nnz = 2 
+Mat Object: 7 MPI processes
+  type: mpiaij
+  rows=7, cols=7
+  total: nonzeros=12, allocated nonzeros=19
   total number of mallocs used during MatSetValues calls =0
-    not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 2.1696e-04 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 2.4796e-04 (sec)]]
+    not using I-node (on process 0) routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.5831e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.6780e-03 (sec)]]
 [[ModelApplyInitialMeshGeometry_ViscousSinker]]
 RUNNING DEFORMED MESH EXAMPLE 
 [[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
@@ -123,40 +123,40 @@ RUNNING DEFORMED MESH EXAMPLE
 
 ====================================================================
 
-+  Test [compare_mf_A11]: Mesh 8 x 9 x 11 
-MatMultA11(MF):      time 2.1532e-03 (sec): ratio 1.0000e+02%: min/max 2.1532e-03 2.1532e-03 (sec)
-MatAssemblyA11(ASM): time 1.7864e-01 (sec): ratio 1.0000e+02%: min/max 1.7864e-01 1.7864e-01 (sec)
-MatMultA11(ASM):     time 7.6170e-03 (sec): ratio 1.0000e+02%: min/max 7.6170e-03 7.6170e-03 (sec)
-  y.y    = +5.71909086e+04 [mfo]
-  y2.y2  = +5.71909086e+04 [asm]
-  min[A11_mfo.x-A11_asm.x]  = -2.80192536e-14 
-  max[A11_mfo.x-A11_asm.x]  = +2.18609852e-14 
++  Test [compare_mf_A11]: Mesh 3 x 7 x 11 
+MatMultA11(MF):      time 4.0131e-03 (sec): ratio 9.9947e+01%: min/max 4.0131e-03 4.0152e-03 (sec)
+MatAssemblyA11(ASM): time 1.6035e-02 (sec): ratio 9.9658e+01%: min/max 1.6001e-02 1.6056e-02 (sec)
+MatMultA11(ASM):     time 5.2714e-04 (sec): ratio 7.2454e+01%: min/max 3.9697e-04 5.4789e-04 (sec)
+  y.y    = +3.18732900e+04 [mfo]
+  y2.y2  = +3.18732900e+04 [asm]
+  min[A11_mfo.x-A11_asm.x]  = -4.39466172e-14 
+  max[A11_mfo.x-A11_asm.x]  = +5.17468013e-14 
 
-+  Test [compare_mf_A21]: Mesh 8 x 9 x 11 
++  Test [compare_mf_A21]: Mesh 3 x 7 x 11 
 StokesA21Preallocation_basic: using nnz = 81 and onnz = 30 
-  y.y    = +2.08663233e+00 [mfo]
-  y2.y2  = +2.08663233e+00 [asm]
-  min[A21_mfo.x-A21_asm.x]  = -9.10729825e-17 
-  max[A21_mfo.x-A21_asm.x]  = +1.10588622e-16 
+  y.y    = +5.92841879e+00 [mfo]
+  y2.y2  = +5.92841879e+00 [asm]
+  min[A21_mfo.x-A21_asm.x]  = -2.77555756e-16 
+  max[A21_mfo.x-A21_asm.x]  = +2.22044605e-16 
 
-+  Test [compare_mf_A12]: Mesh 8 x 9 x 11 
++  Test [compare_mf_A12]: Mesh 3 x 7 x 11 
 StokesA12Preallocation_basic: using nnz = 32 and onnz = 16 
-  y.y    = +2.46117948e+00 [mfo]
-  y2.y2  = +2.46117948e+00 [asm]
-  min[A12_mfo.x-A12_asm.x]  = -1.59594560e-16 
-  max[A12_mfo.x-A12_asm.x]  = +1.52655666e-16 
+  y.y    = +6.27937038e+00 [mfo]
+  y2.y2  = +6.27937038e+00 [asm]
+  min[A12_mfo.x-A12_asm.x]  = -4.44089210e-16 
+  max[A12_mfo.x-A12_asm.x]  = +4.85722573e-16 
 
-+  Test [compare_mf_A]: Mesh 8 x 9 x 11 
-  y.y    = +2.14457051e+03 [mfo]
-  y2.y2  = +2.14457051e+03 [asm]
-  min[A_mfo.x-A_asm.x]  = -8.88178420e-16 
++  Test [compare_mf_A]: Mesh 3 x 7 x 11 
+  y.y    = +2.41317244e+03 [mfo]
+  y2.y2  = +2.41317244e+03 [asm]
+  min[A_mfo.x-A_asm.x]  = -1.77635684e-15 
   max[A_mfo.x-A_asm.x]  = +8.88178420e-16 
 
-+  Test [compare_mf_diagA11]: Mesh 8 x 9 x 11 
-  y.y    = +1.80245954e+04 [mfo]
-  y2.y2  = +1.80245954e+04 [asm]
-  min[diagA11_mfo-diagA11_asm]  = -4.44089210e-15 
-  max[diagA11_mfo-diagA11_asm]  = +4.44089210e-15 
++  Test [compare_mf_diagA11]: Mesh 3 x 7 x 11 
+  y.y    = +1.70008709e+04 [mfo]
+  y2.y2  = +1.70008709e+04 [asm]
+  min[diagA11_mfo-diagA11_asm]  = -7.10542736e-15 
+  max[diagA11_mfo-diagA11_asm]  = +5.32907052e-15 
 
 
 
@@ -183,8 +183,8 @@ StokesA12Preallocation_basic: using nnz = 32 and onnz = 16
 -compare_operators
 -lattice_layout_perturb 0.0
 -model_viscous_sinker_eta1 10
--mx 8
--my 9
+-mx 3
+-my 7
 -mz 11
 -options_left
 -output_path pt3dout
