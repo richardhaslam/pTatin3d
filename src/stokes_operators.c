@@ -2072,7 +2072,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 		ierr = DMCreateMatrix(dau,&Auu);CHKERRQ(ierr);
 	} else {
 		ierr = StokesQ2P1CreateMatrix_MFOperator_A11(A11Ctx,&Auu);CHKERRQ(ierr);
-		ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
 	}
 	ierr = MatSetOptionsPrefix(Auu,"stokes_A_A11_");CHKERRQ(ierr);
 	ierr = MatSetFromOptions(Auu);CHKERRQ(ierr);
@@ -2118,6 +2117,8 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
 	ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
 	ierr = PetscFree(is);CHKERRQ(ierr);
+	ierr = MatA11MFDestroy(&A11Ctx);CHKERRQ(ierr);
+	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
