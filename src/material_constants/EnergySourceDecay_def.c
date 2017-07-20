@@ -118,7 +118,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceDecay(const char model_name
   /* options for HeatSourceRef ==>> H0 */
   sprintf(opt_name,"-HeatSourceRef_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) { EnergySourceDecaySetField_HeatSourceRef(data,(double)value); }
     else if ( (!found)  && (essential) ) {
       ierr = MaterialConstantsReportParseError(model_name,"HeatSourceRef",region_id);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceDecay(const char model_name
   /* options for HalfLife ==>> lambda */
   sprintf(opt_name,"-HalfLife_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) { EnergySourceDecaySetField_HalfLife(data,(double)value); }
     else if ( (!found)  && (essential) ) {
       ierr = MaterialConstantsReportParseError(model_name,"HalfLife",region_id);CHKERRQ(ierr);

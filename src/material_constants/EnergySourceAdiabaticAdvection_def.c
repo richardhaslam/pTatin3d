@@ -92,7 +92,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceAdiabaticAdv(const char mod
   /* options for VerticalThermalGradient ==>> dTdy */
   sprintf(opt_name,"-VerticalThermalGradient_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) { EnergySourceAdiabaticAdvectionSetField_VerticalThermalGradient(data,(double)value); }
     else if ( (!found)  && (essential) ) {
       ierr = MaterialConstantsReportParseError(model_name,"VerticalThermalGradient",region_id);CHKERRQ(ierr);

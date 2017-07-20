@@ -280,7 +280,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   /* options for ThermalExpansivity ==>> alpha */
   sprintf(opt_name,"-ThermalExpansivity_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->alpha = (double)value;
     }
@@ -291,7 +291,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   /* options for Compressibility ==>> beta */
   sprintf(opt_name,"-Compressibility_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->beta = (double)value;
     }
@@ -302,7 +302,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   /* options for ReferenceDensity ==>> rho_ref */
   sprintf(opt_name,"-ReferenceDensity_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->rho_ref = (double)value;
     }
@@ -313,7 +313,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   /* options for SpecificHeat ==>> Cp */
   sprintf(opt_name,"-SpecificHeat_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->Cp = (double)value;
     }
@@ -324,7 +324,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   /* options for DensityMethod ==>> density_type */
   sprintf(opt_name,"-DensityMethod_%d",region_id);
   { PetscInt value;
-    ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->density_type = (int)value;
     }
@@ -335,7 +335,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   /* options for ConductivityMethod ==>> conductivity_type */
   sprintf(opt_name,"-ConductivityMethod_%d",region_id);
   { PetscInt value;
-    ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->conductivity_type = (int)value;
     }
@@ -347,7 +347,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   sprintf(opt_name,"-SourceMethod_%d",region_id);
   { PetscInt value[7];
     PetscInt nv;
-    ierr = PetscOptionsGetIntArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetIntArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);
     if (found) {
       data->source_type[0] = (int)value[0];
       data->source_type[1] = (int)value[1];

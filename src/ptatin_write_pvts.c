@@ -569,13 +569,13 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	PetscFunctionBegin;
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		sprintf(outputpath,".");
 	}
 	
 	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetString(NULL,NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) { 
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
 	}
@@ -634,6 +634,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
 	}
 	
 	flg = PETSC_FALSE;
+  prefix[0] = '\0';
 	ierr = PetscOptionsGetString(NULL,NULL,"-file_prefix",prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
 	if (flg == PETSC_FALSE) {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Required to know the prefix of the checkpointed files. Set via -file_prefix");
@@ -654,25 +655,25 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
 	
   nvars = 0;
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_region",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_region",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_region; nvars++; }
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_viscosity",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_viscosity",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_viscosity; nvars++; }
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_density",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_density",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_density; nvars++; }
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_plastic_strain",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_plastic_strain",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_plastic_strain; nvars++; }
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_yield_indicator",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_yield_indicator",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_yield_indicator; nvars++; }
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_diffusivity",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_diffusivity",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_diffusivity; nvars++; }
 
-  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,"-markercellp0_heat_source",&hasfield,NULL);
+  hasfield = PETSC_FALSE; PetscOptionsGetBool(NULL,NULL,"-markercellp0_heat_source",&hasfield,NULL);
   if (hasfield) { varlist[nvars] = MPV_heat_source; nvars++; }
 
   if (nvars == 0) {
@@ -688,7 +689,7 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify at least one marker field to project");
   }
   
-  if (prefix) {
+  if (prefix[0] != '\0') {
 		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",outputpath,prefix);
 	} else {
 		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",outputpath);
@@ -714,10 +715,10 @@ int main(int nargs,char *args[])
 	ierr = pTatinInitialize(&nargs,&args,0,ptatin_driver_help);CHKERRQ(ierr);
 	
 
-  PetscOptionsGetBool(NULL,"-write_stokes",&write_stokes,NULL);
-  PetscOptionsGetBool(NULL,"-write_energy",&write_energy,NULL);
-  PetscOptionsGetBool(NULL,"-write_markercellp0",&write_cell_data,NULL);
-  PetscOptionsGetBool(NULL,"-write_mpdata",&write_mp_data,NULL);
+  PetscOptionsGetBool(NULL,NULL,"-write_stokes",&write_stokes,NULL);
+  PetscOptionsGetBool(NULL,NULL,"-write_energy",&write_energy,NULL);
+  PetscOptionsGetBool(NULL,NULL,"-write_markercellp0",&write_cell_data,NULL);
+  PetscOptionsGetBool(NULL,NULL,"-write_mpdata",&write_mp_data,NULL);
   
   if (!write_stokes && !write_cell_data && !write_energy && !write_mp_data) {
     PetscPrintf(PETSC_COMM_WORLD,"No writer specified. Use one (or several) of the following command line arguments"

@@ -92,7 +92,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityConst(const char mode
   /* options for k0 ==>> k0 */
   sprintf(opt_name,"-k0_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->k0 = (double)value;
     }

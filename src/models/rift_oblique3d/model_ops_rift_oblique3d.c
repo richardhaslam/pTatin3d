@@ -126,16 +126,16 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->Lx = 1200.0e3;
 	data->Ly = 250.0e3;
 	data->Lz = 1200.0e3;
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_Lx",&data->Lx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_Ly",&data->Ly,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_Lz",&data->Lz,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_Lx",&data->Lx,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_Ly",&data->Ly,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_Lz",&data->Lz,&flg);CHKERRQ(ierr);
 	
 	data->hc = 35.0e3;
 	data->hm = 85.0e3;
 	data->ha = 130.0e3;
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hc",&data->hc,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hm",&data->hm,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_ha",&data->ha,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hc",&data->hc,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hm",&data->hm,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_ha",&data->ha,&flg);CHKERRQ(ierr);
 	
 	/* notch geometry */
 	data->notch_type   = 1;
@@ -147,20 +147,20 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->beta   = 0.0;
 	data->damage = 0.1;
 	data->buffer = 50e3;
- 	ierr = PetscOptionsGetInt(NULL,"-model_Rift_oblique3d_notch_type",&data->notch_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_notch_width",&data->notch_width,&flg);CHKERRQ(ierr);
- 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_notch_height",&data->notch_height,&flg);CHKERRQ(ierr);
- 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_notch_base",&data->notch_base,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_dxn",&data->dxn,&flg);CHKERRQ(ierr);
- 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_dyn",&data->dyn,&flg);CHKERRQ(ierr);
- 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_beta",&data->beta,&flg);CHKERRQ(ierr);
- 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_damage",&data->damage,&flg);CHKERRQ(ierr);
- 	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_buffer",&data->buffer,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetInt(NULL,NULL,"-model_Rift_oblique3d_notch_type",&data->notch_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_notch_width",&data->notch_width,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_notch_height",&data->notch_height,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_notch_base",&data->notch_base,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_dxn",&data->dxn,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_dyn",&data->dyn,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_beta",&data->beta,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_damage",&data->damage,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_buffer",&data->buffer,&flg);CHKERRQ(ierr);
 
 
  	/* Z-bcs adding viscous bands */
  	data->isoBorder   = 0;
- 	ierr = PetscOptionsGetInt(NULL,"-model_Rift_oblique3d_isoBorder",&data->isoBorder,&flg);CHKERRQ(ierr);
+ 	ierr = PetscOptionsGetInt(NULL,NULL,"-model_Rift_oblique3d_isoBorder",&data->isoBorder,&flg);CHKERRQ(ierr);
 
 	/* velocity boundary condition geometry */
 	//data->hvbx1 = 125.0e3;
@@ -168,9 +168,9 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->vx_up = 0.5 * cm_per_yer2m_per_sec;
 	//data->vybottom = 2.0 * data->vx_up * data->Ly / data->Lx;
 	/* VELOCITY BOUNDARY CONDITION GEOMETRY */
-	//ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
-	//ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hvbx1",&data->hvbx1,&flg);CHKERRQ(ierr);
+	//ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_hvbx2",&data->hvbx2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vx_up",&data->vx_up,&flg);CHKERRQ(ierr);
 	
 	/* material properties */
 	data->rhoc = 2800.0;
@@ -186,18 +186,18 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	data->coe1 = 2e7; // cohesion before weakening
 	data->coe2 = 2e7;
 	/* MATERIAL PARAMETERS */
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_rhom",&data->rhom,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_rhoa",&data->rhoa,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_etac",&data->etac,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_etam",&data->etam,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_etaa",&data->etaa,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eps1",&data->eps1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eps2",&data->eps2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_phi1",&data->phi1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_phi2",&data->phi2,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_coe1",&data->coe1,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_coe2",&data->coe2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_rhoc",&data->rhoc,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_rhom",&data->rhom,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_rhoa",&data->rhoa,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_etac",&data->etac,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_etam",&data->etam,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_etaa",&data->etaa,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_eps1",&data->eps1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_eps2",&data->eps2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_phi1",&data->phi1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_phi2",&data->phi2,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_coe1",&data->coe1,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_coe2",&data->coe2,&flg);CHKERRQ(ierr);
 	
 	/* Initial Temperature profile */
 	if(use_energy) {
@@ -736,19 +736,19 @@ CHKERRQ(ierr);
   
 	/* Read the options */
 	/* cutoff */
-	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_apply_viscosity_cutoff_global",&rheology->apply_viscosity_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_eta_lower_cutoff_global",&rheology->eta_lower_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_eta_upper_cutoff_global",&rheology->eta_upper_cutoff_global,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_runwithmises",&data->runmises,NULL);CHKERRQ(ierr);
 	/* scaling */
 	nondim = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_nondimensional",&nondim,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_nondimensional",&nondim,NULL);CHKERRQ(ierr);
 	if (nondim) {
 		data->dimensional = PETSC_FALSE;
 	} else {
-		ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
-		ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
-		ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vis_bar",&data->viscosity_bar,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vel_bar",&data->velocity_bar,NULL);CHKERRQ(ierr);
+		ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_length_bar",&data->length_bar,NULL);CHKERRQ(ierr);
 	}
 	
 	/* compute vxdown */
@@ -830,11 +830,11 @@ CHKERRQ(ierr);
 	}
 	
 	data->output_markers = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
+	ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_output_markers",&data->output_markers,NULL);CHKERRQ(ierr);
 	
 	/* USE ENERGY EQUATION */
 	if (use_energy) {
-		ierr = PetscOptionsInsertString("-activate_energy");CHKERRQ(ierr);
+		ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 	}
 	
 	PetscFunctionReturn(0);
@@ -859,7 +859,7 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
-	PetscOptionsGetBool(NULL,"-model_Rift_oblique3d_use_initial_up_field",&use_initial_up_field,NULL);
+	PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_use_initial_up_field",&use_initial_up_field,NULL);
 	
 	if (use_initial_up_field) {
 		PetscPrintf(PETSC_COMM_WORLD,"[rift_oblique3d] Using velocity from boundary condition and mantle hydrostatic pressure as initial condition\n");
@@ -937,9 +937,9 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	data->tmin = 8.0; // time (in Ma) when pull stops along X, used only when vbc_type = 3
 	data->tmax = 10.0; // time (in Ma) when pull starts along Z, used only when vbc_type = 3
 	/* vbc PARAMETERS */
-	ierr = PetscOptionsGetInt(NULL,"-model_Rift_oblique3d_vbc_type",&data->vbc_type,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vbc_tmin",&data->tmin,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,"-model_Rift_oblique3d_vbc_tmax",&data->tmax,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(NULL,NULL,"-model_Rift_oblique3d_vbc_type",&data->vbc_type,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vbc_tmin",&data->tmin,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetReal(NULL,NULL,"-model_Rift_oblique3d_vbc_tmax",&data->tmax,&flg);CHKERRQ(ierr);
 
 
 

@@ -92,7 +92,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceConst(const char model_name
   /* options for HeatSource ==>> H */
   sprintf(opt_name,"-HeatSource_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) { EnergySourceConstSetField_HeatSource(data,(double)value); }
     else if ( (!found)  && (essential) ) {
       ierr = MaterialConstantsReportParseError(model_name,"HeatSource",region_id);CHKERRQ(ierr);

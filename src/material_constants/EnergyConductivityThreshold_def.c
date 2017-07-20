@@ -172,7 +172,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char 
   /* options for k0 ==>> k0 */
   sprintf(opt_name,"-k0_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->k0 = (double)value;
     }
@@ -183,7 +183,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char 
   /* options for k1 ==>> k1 */
   sprintf(opt_name,"-k1_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->k1 = (double)value;
     }
@@ -194,7 +194,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char 
   /* options for ThresholdTemperature ==>> T_threshold */
   sprintf(opt_name,"-ThresholdTemperature_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->T_threshold = (double)value;
     }
@@ -205,7 +205,7 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char 
   /* options for DeltaT ==>> dT */
   sprintf(opt_name,"-DeltaT_%d",region_id);
   { PetscReal value;
-    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);
     if (found) {
       data->dT = (double)value;
     }

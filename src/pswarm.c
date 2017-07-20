@@ -110,7 +110,7 @@ PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
 
     ierr = PSwarmInitializePackage();CHKERRQ(ierr);
     
-    PetscHeaderCreate(p, _p_PSwarm, struct _PSwarmOps, PSWARM_CLASSID, "PSwarm", "Particle Swarm Manager", "PSwarm", comm, PSwarmDestroy, PSwarmView);
+    ierr = PetscHeaderCreate(p, PSWARM_CLASSID, "PSwarm", "Particle Swarm Manager", "PSwarm", comm, PSwarmDestroy, PSwarmView);CHKERRQ(ierr);
     ierr = PetscMemzero(p->ops, sizeof(struct _PSwarmOps));CHKERRQ(ierr);
 
     p->state = PSW_TS_UNINIT;
@@ -775,11 +775,11 @@ PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
   xmax[2] = 1.0e32;
 
   nn = 3;
-	PetscOptionsGetIntArray(prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
+	PetscOptionsGetIntArray(NULL,prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
   nn = 3;
-  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_min",xmin,&nn,NULL);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_lattice_min",xmin,&nn,NULL);
   nn = 3;
-  PetscOptionsGetRealArray(prefix,"-pswarm_lattice_max",xmax,&nn,NULL);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_lattice_max",xmax,&nn,NULL);
 
   ierr = SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(ps->db,dmv,xmin,xmax,Nxp,0.0);CHKERRQ(ierr);
   
@@ -831,18 +831,18 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   xmax[2] = 1.0e32;
   
   nn = 3;
-	PetscOptionsGetIntArray(prefix,"-pswarm_box_nx",Nxp,&nn,NULL);
+	PetscOptionsGetIntArray(NULL,prefix,"-pswarm_box_nx",Nxp,&nn,NULL);
   
   if (Nxp[0] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[0] must be greater than 1, use -pswarm_box_nx");
   if (Nxp[1] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[1] must be greater than 1, use -pswarm_box_nx");
   if (Nxp[2] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[2] must be greater than 1, use -pswarm_box_nx");
   
   nn = 3;
-  PetscOptionsGetRealArray(prefix,"-pswarm_box_min",xmin,&nn,&found);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_box_min",xmin,&nn,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box min extent via -pswarm_box_min");
   
   nn = 3;
-  PetscOptionsGetRealArray(prefix,"-pswarm_box_max",xmax,&nn,&found);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_box_max",xmax,&nn,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify box max extent via -pswarm_box_max");
 
   /* Create array of coordinates */
@@ -959,7 +959,7 @@ PetscErrorCode PSwarmSetUpCoords_FromUserList(PSwarm ps)
   ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
 
-  PetscOptionsGetInt(prefix,"-pswarm_coor_n",&nlistsize,&found);
+  PetscOptionsGetInt(NULL,prefix,"-pswarm_coor_n",&nlistsize,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify number of coordinates via -pswarm_coor_n");
 
   PetscMalloc(sizeof(PetscReal)*3*nlistsize,&coorlist);
@@ -968,17 +968,17 @@ PetscErrorCode PSwarmSetUpCoords_FromUserList(PSwarm ps)
   PetscMalloc(sizeof(PetscReal)*nlistsize,&coorz);
   
   nlist = nlistsize;
-  PetscOptionsGetRealArray(prefix,"-pswarm_coor_x",coorx,&nlist,&found);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_coor_x",coorx,&nlist,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify x coordinates via -pswarm_coor_x");
   if (nlist != nlistsize) SETERRQ1(comm,PETSC_ERR_USER,"Must specify %D x coordinates",nlistsize);
   
   nlist = nlistsize;
-  PetscOptionsGetRealArray(prefix,"-pswarm_coor_y",coory,&nlist,&found);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_coor_y",coory,&nlist,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify y coordinates via -pswarm_coor_y");
   if (nlist != nlistsize) SETERRQ1(comm,PETSC_ERR_USER,"Must specify %D y coordinates",nlistsize);
 
   nlist = nlistsize;
-  PetscOptionsGetRealArray(prefix,"-pswarm_coor_z",coorz,&nlist,&found);
+  PetscOptionsGetRealArray(NULL,prefix,"-pswarm_coor_z",coorz,&nlist,&found);
   if (!found) SETERRQ(comm,PETSC_ERR_USER,"Must specify z coordinates via -pswarm_coor_z");
   if (nlist != nlistsize) SETERRQ1(comm,PETSC_ERR_USER,"Must specify %D z coordinates",nlistsize);
 
@@ -1013,7 +1013,7 @@ PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
   ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   
   type = 1;
-  PetscOptionsGetInt(prefix,"-pswarm_coord_layout",&type,NULL);
+  PetscOptionsGetInt(NULL,prefix,"-pswarm_coord_layout",&type,NULL);
 
   comm = PetscObjectComm((PetscObject)ps);
   switch (type) {
@@ -1083,7 +1083,7 @@ PetscErrorCode PSwarmSetUp(PSwarm ps)
         ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
         ridx = 0;
         isactive = PETSC_FALSE;
-        ierr = PetscOptionsGetInt(prefix,"-pswarm_region_index",&ridx,&isactive);CHKERRQ(ierr);
+        ierr = PetscOptionsGetInt(NULL,prefix,"-pswarm_region_index",&ridx,&isactive);CHKERRQ(ierr);
         if (isactive) { ierr = PSwarmSetRegionIndex(ps,ridx);CHKERRQ(ierr); }
     }
   
@@ -1102,7 +1102,7 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
   
     PetscFunctionBegin;
     ierr = PetscObjectOptionsBegin((PetscObject)ps);CHKERRQ(ierr);
-    ierr = PetscOptionsHead("PSwarm options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(NULL,"PSwarm options");CHKERRQ(ierr);
     
     isactive = PETSC_FALSE;
     ierr = PetscOptionsBool("-pswarm_transport_mode_eulerian","Transport mode set to Eulerian","PSwarmSetTransportModeType",isactive,&isactive,0);CHKERRQ(ierr);
@@ -1138,7 +1138,7 @@ PetscErrorCode PSwarmCreateMultipleInstances(MPI_Comm comm,PSwarm **pslist)
     char           *namelist[20];
     
     PetscFunctionBegin;
-    ierr = PetscOptionsGetStringArray(NULL,"-pswarm_list",namelist,&max,&found);CHKERRQ(ierr);
+    ierr = PetscOptionsGetStringArray(NULL,NULL,"-pswarm_list",namelist,&max,&found);CHKERRQ(ierr);
     nswarms = max;
     
     PetscMalloc(sizeof(PSwarm)*(nswarms+1),&plist);
