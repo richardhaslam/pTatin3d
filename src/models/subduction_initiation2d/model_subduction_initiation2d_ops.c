@@ -438,6 +438,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Subduction_Initiation2d(pTatinCtx c
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
 	//	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,data->Lx, 0.0,data->Ly, 0.0, data->Lz);CHKERRQ(ierr);	
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
@@ -831,7 +835,7 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	HPctx.surface_pressure = 0.0;
 	HPctx.ref_height = domain_height;
 	HPctx.ref_N      = c->stokes_ctx->my-1;
-	HPctx.grav       = 10.0;
+	HPctx.grav       = 9.8;
 	HPctx.rho        = data->rho[0];
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%e %d %e]]\n", HPctx.ref_height,HPctx.ref_N,HPctx.rho);

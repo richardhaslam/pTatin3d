@@ -3083,6 +3083,20 @@ PetscErrorCode _get_field_MPntPEnergy(MPAccess X,const int p,MPntPEnergy **point
 
 /* std */
 #undef __FUNCT__
+#define __FUNCT__ "MaterialPointGet_point_index"
+PetscErrorCode MaterialPointGet_point_index(MPAccess X,const int p,long int *var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdGetField_point_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MaterialPointGet_global_coord"
 PetscErrorCode MaterialPointGet_global_coord(MPAccess X,const int p,double *var[])
 {
@@ -3324,6 +3338,20 @@ PetscErrorCode MaterialPointSet_heat_source(MPAccess X,const int p,double var)
 }
 
 /* std */
+#undef __FUNCT__
+#define __FUNCT__ "MaterialPointSet_point_index"
+PetscErrorCode MaterialPointSet_point_index(MPAccess X,const int p,long int var)
+{
+	MPntStd    *point;
+	PetscErrorCode ierr;
+	PetscFunctionBegin;
+	
+	ierr = _get_field_MPntStd(X,p,&point);CHKERRQ(ierr);
+	MPntStdSetField_point_index(point,var);
+	
+	PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "MaterialPointSet_global_coord"
 PetscErrorCode MaterialPointSet_global_coord(MPAccess X,const int p,double var[])

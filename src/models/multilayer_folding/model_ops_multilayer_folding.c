@@ -417,7 +417,6 @@ PetscErrorCode MultilayerFoldingSetMeshGeometry(DM dav, void *ctx)
 			}
 		}
 	}
-	
 	ierr = DMDAVecRestoreArray(cda,coord,&LA_coord);CHKERRQ(ierr);
 	ierr = DMDAUpdateGhostedCoordinates(dav);CHKERRQ(ierr);
 	
@@ -685,8 +684,6 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
                 region_idx = layer;
 				}
             
-				rho = -rho * GRAVITY;
-		
             }
 			jminlayer += data->layer_res_j[layer];
 			layer++;
@@ -801,7 +798,6 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
 				rho        = (double)data->rho[layer];
 				region_idx = layer;
 				
-				rho = -rho * GRAVITY;
 			}
 			jminlayer += data->layer_res_j[layer];
 			layer++;
@@ -1089,7 +1085,7 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 		}
 		
 		ierr = MaterialPointSet_viscosity(  mpX,p, data->eta[phase]);CHKERRQ(ierr);
-		ierr = MaterialPointSet_density(    mpX,p,-data->rho[phase] * GRAVITY);CHKERRQ(ierr);
+		ierr = MaterialPointSet_density(    mpX,p, data->rho[phase]);CHKERRQ(ierr);
 		ierr = MaterialPointSet_phase_index(mpX,p,phase);CHKERRQ(ierr);
         
     }
@@ -1159,6 +1155,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	if (data->quasi2d) {
 		ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
 	}
+  {
+    PetscReal gvec[] = { 0.0, -GRAVITY, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
+	
 	
 	PetscFunctionReturn(0);
 }

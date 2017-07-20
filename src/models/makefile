@@ -12,6 +12,7 @@ TATIN_MODEL_DIR = \
 	advdiff_example\
 	delamination \
 	riftrh \
+	rift_oblique3d \
 	geomod2008 \
 	multilayer_folding \
 	submarinelavaflow \
