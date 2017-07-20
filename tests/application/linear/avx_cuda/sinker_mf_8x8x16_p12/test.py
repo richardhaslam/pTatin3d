@@ -1,6 +1,5 @@
 import os
 import pyTestHarness.unittest as pth
-import pyTestHarness.launch as launch
 import re
 
 def test() :
