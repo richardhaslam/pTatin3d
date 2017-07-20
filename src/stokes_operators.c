@@ -490,32 +490,26 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 {
 	PetscErrorCode ierr;
-	MatA11MF A11;
+	MatA11MF       A11;
 	
 	PetscFunctionBegin;
-	
 	ierr = MatA11MFCreate(&A11);CHKERRQ(ierr);
-	
-	A11->mu    = A->mu;
-	A11->Mu    = A->Mu;
-	
+
+	A11->mu       = A->mu;
+	A11->Mu       = A->Mu;
 	A11->u_bclist = A->u_bclist;
 	A11->volQ     = A->volQ;
-	
-	A11->isU   = A->isU;             if (A->isU) { ierr = PetscObjectReference((PetscObject)A->isU);CHKERRQ(ierr); }
-	A11->isV   = A->isV;             if (A->isV) { ierr = PetscObjectReference((PetscObject)A->isV);CHKERRQ(ierr); }
-	A11->isW   = A->isW;             if (A->isW) { ierr = PetscObjectReference((PetscObject)A->isW);CHKERRQ(ierr); }
-	
-	A11->daUVW = A->daUVW;        if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
-	A11->daU   = A->daU;          if (A->daU) { ierr = PetscObjectReference((PetscObject)A->daU);CHKERRQ(ierr); }
-	
+	A11->isU      = A->isU;   if (A->isU)   { ierr = PetscObjectReference((PetscObject)A->isU);  CHKERRQ(ierr); }
+	A11->isV      = A->isV;   if (A->isV)   { ierr = PetscObjectReference((PetscObject)A->isV);  CHKERRQ(ierr); }
+	A11->isW      = A->isW;   if (A->isW)   { ierr = PetscObjectReference((PetscObject)A->isW);  CHKERRQ(ierr); }
+	A11->daUVW    = A->daUVW; if (A->daUVW) { ierr = PetscObjectReference((PetscObject)A->daUVW);CHKERRQ(ierr); }
+	A11->daU      = A->daU;   if (A->daU)   { ierr = PetscObjectReference((PetscObject)A->daU);  CHKERRQ(ierr); }
   if (A11->SpMVOp_SetUp) {
     ierr = A11->SpMVOp_SetUp(A11);CHKERRQ(ierr);
   }
-
-	A11->refcnt = 1;
+	A11->refcnt   = 1;
 	A11->is_setup = PETSC_TRUE;
-	
+
 	*B = A11;
 	PetscFunctionReturn(0);
 }
