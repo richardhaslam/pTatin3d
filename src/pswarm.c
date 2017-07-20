@@ -283,7 +283,8 @@ PetscErrorCode PSwarmDestroy(PSwarm *ps)
     PetscFunctionBegin;
     if (!ps) PetscFunctionReturn(0);
     p = *ps;
-    
+    if (!p) PetscFunctionReturn(0);
+  
     if (!p->db_set_by_user) {
         if (p->db) { DataBucketDestroy(&p->db); }
     }
@@ -1102,7 +1103,7 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
   
     PetscFunctionBegin;
     ierr = PetscObjectOptionsBegin((PetscObject)ps);CHKERRQ(ierr);
-    ierr = PetscOptionsHead(NULL,"PSwarm options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"PSwarm options");CHKERRQ(ierr);
     
     isactive = PETSC_FALSE;
     ierr = PetscOptionsBool("-pswarm_transport_mode_eulerian","Transport mode set to Eulerian","PSwarmSetTransportModeType",isactive,&isactive,0);CHKERRQ(ierr);
