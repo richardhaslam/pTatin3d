@@ -788,6 +788,15 @@ PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
+/*
+ There is a possibility that this routine may create duplicate points, e.g.
+ two ranks may define a particle with identical coordinates. 
+ In general, for usage with passive swarms, this is likely to not be a problem.
+ When using this method to define a deformation mesh, duplicate points may be 
+ problematic. As a work around, I explicitly assign ALL points a pid value given
+ by i + j*nx + k*nx*ny. In this way, associating a particle coordinate with a 
+ point in a structured mesh using pid will be safe.
+*/
 #undef __FUNCT__
 #define __FUNCT__ "PSwarmSetUpCoords_FillBox"
 PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
@@ -897,6 +906,26 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   ierr = SwarmMPntStd_CoordAssignment_InsertFromList(ps->db,dmv,nlist,coorlist,0,PETSC_TRUE);CHKERRQ(ierr);
   
   PetscFree(coorlist);
+  
+  /* Traverse points, examine coordinates, set pid based on xp,yp,zp */
+  {
+    DataField df;
+    int p,npoints;
+    MPntStd *points;
+    
+    DataBucketGetSizes(ps->db,&npoints,NULL,NULL);
+    DataBucketGetDataFieldByName(ps->db,MPntStd_classname,&df);
+    DataFieldGetEntries(df,(void**)&points);
+    for (p=0; p<npoints; p++) {
+      long int ii,jj,kk;
+      
+      ii = (long int)( (1.0e-12*elmin[0] + points[p].coor[0] - xmin[0])/ dx[0]);
+      jj = (long int)( (1.0e-12*elmin[1] + points[p].coor[1] - xmin[1])/ dx[1]);
+      kk = (long int)( (1.0e-12*elmin[2] + points[p].coor[2] - xmin[2])/ dx[2]);
+      
+      points[p].pid = ii + jj * Nxp[0] + kk * Nxp[0] * Nxp[1];
+    }
+  }
   
   if (rank == 0) {
     char filename[PETSC_MAX_PATH_LEN];

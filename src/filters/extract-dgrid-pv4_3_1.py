@@ -14,8 +14,12 @@ import vtk.numpy_interface.dataset_adapter as dsa
 
 
 def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
-	
-	tracer_ug = simple.XMLUnstructuredGridReader( FileName=inputfile )
+
+	if os.path.splitext(inputfile)[1] in ('.vtu'):
+		tracer_ug = simple.XMLUnstructuredGridReader( FileName=inputfile )
+	else:
+		tracer_ug = simple.XMLPartitionedUnstructuredGridReader( FileName=inputfile )
+  
 	tracer_ug.UpdatePipeline()
 	tracer_ug.UpdatePipelineInformation()
 
@@ -38,12 +42,18 @@ def ExtractDefGridAsVTU(inputfile,inputbasefile,outputfile):
 
 	npoints_defmesh = rawdata_defmesh.GetNumberOfPoints() 
 
-	print('# tracers from input vtu file: ' + str(npoints_tracer))
+	print('# points from input vtu file: ' + str(npoints_tracer))
 	print('# mesh nodes from base vts file: ' + str(npoints_defmesh))
 
 	if npoints_tracer != npoints_defmesh:
-		print('ERROR: Particle dataset does not contain the same number of points as the base VTS file')
-		sys.exit(1)
+		print('-----------------------------------------------------------------------------------------------')
+		print('WARNING: Particle dataset does not contain the same number of points as the base mesh VTS file')
+		print('WARNING: This likely implies that multiple instances of the same particle have been assigned to multiple MPI-ranks')
+		if npoints_tracer < npoints_defmesh:
+			print('ERROR: The number of particles is less than the number of grid points in your VTS file')
+			print('ERROR: This is an unexplained error - possibly you need to deactivate population control on your passive swarm')
+			print('ERROR: This is an unexplained error - possibly points have left the domain and been deleted <this behaviour is currently the default>')
+			sys.exit(1)
 
 	coord_t = rawdata_tracer.GetPoints()
 	coord_dm = rawdata_defmesh.GetPoints()
@@ -94,24 +104,24 @@ def main():
 	inbasefilename = options.opt_inputbasefile
 	outputfilename = options.opt_outputfile
 
-	if os.path.splitext(infilename)[1] != '.vtu':
-		print('Warning: Input file specified is not a valid VTU file')
-		print('Warning: A valid VTU file must have the extension .vtu')
-		print('Warning: Found input file: ' + infilename)
+	if os.path.splitext(infilename)[1] not in ('.vtu','.pvtu'):
+		print('Warning: Input file specified is not a valid VTU or PVTU file')
+		print('Warning: A valid VTU or PVTU file must have the extension .vtu or .pvtu')
+		print('Warning: Found input filename: ' + infilename)
 		optparser.print_help()
 		sys.exit(1)
 
 	if os.path.splitext(inbasefilename)[1] != '.vts':
 		print('Warning: Input base file specified is not a valid VTS file')
 		print('Warning: A valid VTS file must have the extension .vts')
-		print('Warning: Found input file: ' + inbasefilename)
+		print('Warning: Found base filename: ' + inbasefilename)
 		optparser.print_help()
 		sys.exit(1)
 
 	if os.path.splitext(outputfilename)[1] != '.vts':
 		print('Warning: Output file specified is not valid')
 		print('Warning: A valid VTS file must have the extension .vts')
-		print('Warning: Found input file: ' + outputfilename)
+		print('Warning: Found output filename: ' + outputfilename)
 		optparser.print_help()
 		sys.exit(1)
 	
