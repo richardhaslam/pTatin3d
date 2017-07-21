@@ -40,6 +40,7 @@
 #include <pswarm_impl.h>
 #include <mpiio_blocking.h>
 #include <model_utils.h>
+#include <element_utils_q2.h>
 
 
 PetscClassId PSWARM_CLASSID;
@@ -329,6 +330,12 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   MPntStd *tracer;
   double *tracer_pressure;
   int n_tracers,p;
+  PetscReal elcoords[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
+  Vec gcoords,pressure_l;
+  const PetscScalar *LA_gcoords;
+  const PetscScalar *LA_pfield;
+  PetscInt nel,nen_u,nen_p,k;
+  const PetscInt *elnidx_u,*elnidx_p;
   
   if (ps->state == PSW_TS_STALE) {
     /* update local coordinates and perform communication */
@@ -342,10 +349,39 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   DataBucketGetDataFieldByName(ps->db,"pressure",&datafield);
 	DataFieldGetEntries(datafield,(void**)&tracer_pressure);
   
+  ierr = DMDAGetElements_pTatinQ2P1(dmv,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dmv,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+  ierr = DMDAGetElements_pTatinQ2P1(dmp,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmp,&pressure_l);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dmp,pressure,INSERT_VALUES,pressure_l);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dmp,pressure,INSERT_VALUES,pressure_l);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(pressure_l,&LA_pfield);CHKERRQ(ierr);
+  
 	DataBucketGetSizes(ps->db,&n_tracers,NULL,NULL);
   for (p=0; p<n_tracers; p++) {
-    tracer_pressure[p] = tracer[p].coor[1];
+    double        *xi_p;
+    PetscReal     NIp[P_BASIS_FUNCTIONS],pressure_p;
+    PetscInt      eidx;
+    
+    xi_p = tracer[p].xi;
+    eidx = (PetscInt)tracer[p].wil;
+
+    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx],(PetscScalar*)LA_gcoords);CHKERRQ(ierr);
+    ierr = DMDAGetScalarElementField(elp,nen_p,(PetscInt*)&elnidx_p[nen_p*eidx],(PetscScalar*)LA_pfield);CHKERRQ(ierr);
+    
+    ConstructNi_pressure(xi_p,elcoords,NIp);
+
+    pressure_p = 0.0;
+    for (k=0; k<P_BASIS_FUNCTIONS; k++) {
+      pressure_p += NIp[k] * elp[k];
+    }
+    tracer_pressure[p] = pressure_p;
   }
+  ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(pressure_l,&LA_pfield);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dmp,&pressure_l);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
