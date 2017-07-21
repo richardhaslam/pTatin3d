@@ -831,11 +831,14 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	PetscInt k,nsplits;
 	PC       pc,pc_i;
 	KSP      *sub_ksp,ksp_coarse,ksp_smoother;
+  PetscBool ispcmg;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ispcmg);CHKERRQ(ierr);
+  if (!ispcmg) PetscFunctionReturn(0);
 	ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 	
     ierr = KSPSetDM(sub_ksp[0],dav_hierarchy[nlevels-1]);CHKERRQ(ierr);
