@@ -172,7 +172,7 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 				asprintf (&option_name, "-Phi_%d", i);
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->dp_pressure_dependance[i]),&found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
-					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);CHKERRQ(ierr);
+					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
