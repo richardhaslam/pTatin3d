@@ -33,9 +33,11 @@ def write_out_c_class_externdefs( ParticleClass, ParticleClassShortName, variabl
 	print '#include <petsc.h>\n'
 	print '#include "'+ParticleClass+'_def.h"\n\n'
 
+	# function prototype
+	print 'PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);\n\n'
+
 	# generate classname
 	print 'const char '+ParticleClass+'_classname[] = "'+ParticleClass+'";\n'
-	
 
 	# strings and constant stuff #
 	print 'const int ' + ParticleClass +'_nmembers = ' + str(L) + ';\n'
