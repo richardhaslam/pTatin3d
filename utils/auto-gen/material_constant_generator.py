@@ -417,13 +417,13 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 		if variable_type_list[f] == 'float':
 			if variable_extend_list[f] == 1:
 				print '  { PetscReal value;'
-				print '    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
+				print '    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				print '      data->' + variable_name_list[f] + ' = (float)value;'
 			else:
 				print '  { PetscReal value['+ str(variable_extend_list[f]) + '];'
 				print '    PetscInt nv;'
-				print '    ierr = PetscOptionsGetRealArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
+				print '    ierr = PetscOptionsGetRealArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				for ii in xrange(variable_extend_list[f]):
 					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (float)value[' + str(ii) + '];'
@@ -436,13 +436,13 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 		if variable_type_list[f] == 'double':
 			if variable_extend_list[f] == 1:
 				print '  { PetscReal value;'
-				print '    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
+				print '    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				print '      data->' + variable_name_list[f] + ' = (double)value;'
 			else:
 				print '  { PetscReal value['+ str(variable_extend_list[f]) + '];'
 				print '    PetscInt nv;'
-				print '    ierr = PetscOptionsGetRealArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
+				print '    ierr = PetscOptionsGetRealArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				for ii in xrange(variable_extend_list[f]):
 					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (double)value[' + str(ii) + '];'
@@ -455,13 +455,13 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 		if variable_type_list[f] == 'int':
 			if variable_extend_list[f] == 1:
 				print '  { PetscInt value;'
-				print '    ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
+				print '    ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				print '      data->' + variable_name_list[f] + ' = (int)value;'
 			else:
 				print '  { PetscInt value['+ str(variable_extend_list[f]) + '];'
 				print '    PetscInt nv;'
-				print '    ierr = PetscOptionsGetIntArray(model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
+				print '    ierr = PetscOptionsGetIntArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
 				print '    if (found) {'
 				for ii in xrange(variable_extend_list[f]):
 					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (int)value[' + str(ii) + '];'
