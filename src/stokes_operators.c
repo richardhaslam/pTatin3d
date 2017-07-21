@@ -1798,7 +1798,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
-	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagonal_MFStokes_A11);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
 	A11->refcnt++;	
 	*A = B;
@@ -1825,7 +1825,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF_QuasiNewtonX);CHKERRQ(ierr);
-	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagonal_MFStokes_A11_QuasiNewtonX);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
 
 	ierr = DMGetCoordinateDM(A11->daUVW,&dax);CHKERRQ(ierr);
@@ -1856,8 +1856,8 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 //	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
 	// does the true diagonal work better??
-	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagonal_MFStokes_A11);CHKERRQ(ierr);
-	//ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*))MatGetDiagonal_MFStokes_A11LowOrder);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11);CHKERRQ(ierr);
+	//ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
 
 	 A11->refcnt++;	
