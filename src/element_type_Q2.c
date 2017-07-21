@@ -660,8 +660,8 @@ void compute_surface_geometry_Q2_3D(	ConformingElementFamily e,
 										const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
 										double n0[], double t0[],double *J ) // n0[],t0[] contains 1 point with dimension 3 (x,y,z) //
 {
-	const int SURFACE_DIM = 2;
-	const int Q2_NPS = 9;
+	enum {SURFACE_DIM=2};
+	enum {Q2_NPS=9};
 	double x_s,y_s,z_s;
 	double x_t,y_t,z_t;
 	double n[3],t[3],mag,magt;
@@ -879,8 +879,8 @@ void compute_element_normal_Q2_2D(	ConformingElementFamily e,
 																	const QPoint1d *xi0,      // should contain 1 point with dimension 1 (xi,)   //
 																	double n0[]) // n0[] contains 1 point with dimension 2 (x,y) //
 {
-	const int SURFACE_DIM = 1;
-	const int Q2_NPS = 3;
+	enum {SURFACE_DIM=1};
+	enum {Q2_NPS = 3};
 	double x_s,y_s;
 	double n[2],mag;
 	int i;
@@ -914,8 +914,8 @@ void compute_element_normal_Q2_3D(	ConformingElementFamily e,
 									const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
 									double n0[]) // n0[] contains 1 point with dimension 3 (x,y,z) //
 {
-	const int SURFACE_DIM = 2;
-	const int Q2_NPS = 9;
+	enum {SURFACE_DIM=2};
+	enum {Q2_NPS=9};
 	double x_s,y_s,z_s;
 	double x_t,y_t,z_t;
 	double n[3],mag;
@@ -1010,8 +1010,8 @@ void compute_element_tangent_Q2_3D(	ConformingElementFamily e,
 																	const QPoint2d *xi0,      // should contain 1 point with dimension 2 (xi,eta)   //
 																	double t1[],double t2[] ) // t1[],t2[] contains 1 point with dimension 3 (x,y,z) //
 {
-	const int SURFACE_DIM = 2;
-	const int Q2_NPS = 9;
+	enum {SURFACE_DIM=2};
+	enum {Q2_NPS=9};
 	double x_s,y_s,z_s;
 	double x_t,y_t,z_t;
 	double mag;
