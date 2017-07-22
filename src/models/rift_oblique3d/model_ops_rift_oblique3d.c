@@ -1846,75 +1846,82 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 #define __FUNCT__ "ModelOutput_Rift_oblique3d"
 PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
-	PetscBool        active_energy;
-	DataBucket       materialpoint_db;
-	PetscInt         Step,outFre;
-	PetscErrorCode   ierr;
+  ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
+  PetscBool        active_energy,simple_output;
+  DataBucket       materialpoint_db;
+  PetscInt         Step,outFre;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	
-	ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 
-	if (data->output_markers) { 
-		ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
-	}
-	
-	if (data->output_markers) { 
-		ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
-		//  Write out just the stokes variable?
-		//  const int nf = 1;
-		//  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
-		//
-		//  Write out just std, stokes and plastic variables
-		const int nf = 3;
-		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
-		char mp_file_prefix[256];
-		
-		sprintf(mp_file_prefix,"%s_mpoints",prefix);
-		ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
-		//sprintf(mp_file_prefix,"%s_all_mp_data",prefix);
-		//ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
-	}
+  simple_output = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_simple_output",&simple_output,NULL);CHKERRQ(ierr);
+  if (simple_output) {
+    ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } 
 
-	/* MPOINTS_CELL OUTPUT */
-	Step = c->step;
-	outFre = c->output_frequency;
-	if (Step%(outFre*2) == 0) 
-	/*{
-		const int  nf = 4;
-		const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
-		ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
-	}*/
-	{
-     	MaterialPointVariable vars[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain, MPV_diffusivity, MPV_heat_source };
-	ierr = pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(c,PETSC_FALSE,sizeof(vars)/sizeof(MaterialPointVariable),vars,prefix);CHKERRQ(ierr);
-	}
-	 
-	/* ENERGY OUTPUT */
-	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
-	if (active_energy) {
-		PhysCompEnergy energy;
-		Vec            temperature;
-		
-		ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
-		// commented out the next line to stop creating energy outputs
-		//ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
-		if (Step%(outFre*2) == 0) {
-			ierr = pTatin3dModelOutput_Energy_PetscVec(c,PETSC_FALSE,temperature,prefix);
-			//ierr = pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(c,temperature,prefix);CHKERRQ(ierr);
-			//ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr); //old reader
-		}
-	}
+  ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
-	/* Dump the PSwarm */
+  if (data->output_markers) { 
+    ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
+  }
 
-	ierr = PSwarmView(data->pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
-	ierr = PSwarmViewInfo(data->pswarm);CHKERRQ(ierr);
+  if (data->output_markers) { 
+    ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
+    //  Write out just the stokes variable?
+    //  const int nf = 1;
+    //  const MaterialPointField mp_prop_list[] = { MPField_Stokes };
+    //
+    //  Write out just std, stokes and plastic variables
+    const int nf = 3;
+    const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
+    char mp_file_prefix[256];
 
-	PetscFunctionReturn(0);
+    sprintf(mp_file_prefix,"%s_mpoints",prefix);
+    ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+    //sprintf(mp_file_prefix,"%s_all_mp_data",prefix);
+    //ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,c->outputpath,mp_file_prefix);CHKERRQ(ierr);
+  }
+
+  /* MPOINTS_CELL OUTPUT */
+  Step = c->step;
+  outFre = c->output_frequency;
+  if (Step%(outFre*2) == 0) 
+    /*{
+      const int  nf = 4;
+      const MaterialPointVariable mp_prop_list[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain };
+      ierr = pTatin3d_ModelOutput_MarkerCellFields(c,nf,mp_prop_list,prefix);CHKERRQ(ierr);
+      }*/
+  {
+    MaterialPointVariable vars[] = { MPV_region, MPV_viscosity, MPV_density, MPV_plastic_strain, MPV_diffusivity, MPV_heat_source };
+    ierr = pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(c,PETSC_FALSE,sizeof(vars)/sizeof(MaterialPointVariable),vars,prefix);CHKERRQ(ierr);
+  }
+
+  /* ENERGY OUTPUT */
+  ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
+  if (active_energy) {
+    PhysCompEnergy energy;
+    Vec            temperature;
+
+    ierr = pTatinGetContext_Energy(c,&energy);CHKERRQ(ierr);
+    ierr = pTatinPhysCompGetData_Energy(c,&temperature,NULL);CHKERRQ(ierr);
+    // commented out the next line to stop creating energy outputs
+    //ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
+    if (Step%(outFre*2) == 0) {
+      ierr = pTatin3dModelOutput_Energy_PetscVec(c,PETSC_FALSE,temperature,prefix);
+      //ierr = pTatin3d_ModelOutput_EnergyTemperature_PetscVTS(c,temperature,prefix);CHKERRQ(ierr);
+      //ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr); //old reader
+    }
+  }
+
+  /* Dump the PSwarm */
+
+  ierr = PSwarmView(data->pswarm,PSW_VT_SINGLETON);CHKERRQ(ierr);
+  ierr = PSwarmViewInfo(data->pswarm);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
