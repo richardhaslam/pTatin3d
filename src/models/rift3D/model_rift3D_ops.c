@@ -32,7 +32,6 @@
 */
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"

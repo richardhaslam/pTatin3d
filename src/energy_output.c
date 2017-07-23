@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "petscvec.h"
 #include "petscdm.h"

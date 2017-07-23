@@ -26,7 +26,6 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"

@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "data_bucket.h"
 #include "rheology.h"
