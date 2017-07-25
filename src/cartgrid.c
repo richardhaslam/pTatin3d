@@ -47,10 +47,11 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
 #define __FUNCT__ "CartGridCreate"
 PetscErrorCode CartGridCreate(CartGrid *map)
 {
-	CartGrid p;
+  PetscErrorCode ierr;
+	CartGrid       p;
     
     PetscFunctionBegin;
-	PetscNew(&p);
+    ierr = PetscNew(&p);CHKERRQ(ierr);
     
     p->type = CARTGRID_INMEM;
     p->getindex = CartGridGetIndex_InMem;
