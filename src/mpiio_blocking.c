@@ -69,7 +69,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
     if (!skip_header) {
       fwrite(&len_total_bytes,sizeof(long int),1,fp);
     }
-    printf("[write] total bytes %ld \n",len_total_bytes);
+    /*printf("[write] total bytes %ld \n",len_total_bytes);*/
 
     bytes = 0;
     for (r=0; r<commsize; r++) {
@@ -126,8 +126,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
  Description:
    Blocking MPI input implementation in which data is streamed from root to all ranks in comm.
    Only root reads data from disk.
-   Each MPI-rank will receive a chunk of data from root. where it is written to disk.
-   The data written to disk will be in order of the rank which defined it.
+   Each MPI-rank will receive a chunk of data from root.
  
  Collective over comm
  
@@ -192,7 +191,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
     if (!skip_header) {
       /* read header */
       fread(&len_total_bytes,sizeof(long int),1,fp);
-      printf("[read] total bytes = %ld\n",len_total_bytes);
+      /*printf("[read] total bytes = %ld\n",len_total_bytes);*/
     }
     //printf("[read] total len = %ld\n",len_total_bytes/size);
   }
