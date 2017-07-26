@@ -28,5 +28,6 @@ libptatin3dmodels-y.c += $(call thisdir, \
             pinch_and_swell/pinchandswell_def.c \
 			plasticdemo/demo.c \
                         static_box/static_box.c \
-                        static_box_thermomech/static_box.c \
+                        static_box_thermomech/static_box_tm.c \
+                        analytics_vv/SolKxSolution.c analytics_vv/analytics_vv.c \
 	)

@@ -54,6 +54,7 @@ extern PetscErrorCode pTatinModelRegister_PAS(void);
 extern PetscErrorCode pTatinModelRegister_PD(void);
 extern PetscErrorCode pTatinModelCreate_StaticBox(pTatinModel);
 extern PetscErrorCode pTatinModelCreate_StaticBoxTM(pTatinModel);
+extern PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m);
 
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelRegisterAll"
@@ -89,6 +90,7 @@ PetscErrorCode pTatinModelRegisterAll(void)
 
   ierr = pTatinModelDynamicRegister("static_box",pTatinModelCreate_StaticBox);CHKERRQ(ierr);
   ierr = pTatinModelDynamicRegister("static_box_thermomech",pTatinModelCreate_StaticBoxTM);CHKERRQ(ierr);
+  ierr = pTatinModelDynamicRegister("analytics_vv",pTatinModelCreate_AnlVV);CHKERRQ(ierr);
   
 	PetscFunctionReturn(0);
 }
