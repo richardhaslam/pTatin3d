@@ -27,4 +27,6 @@ libptatin3dmodels-y.c += $(call thisdir, \
             slab_detachment3d/sd3d_definition.c \
             pinch_and_swell/pinchandswell_def.c \
 			plasticdemo/demo.c \
+                        static_box/static_box.c \
+                        static_box_thermomech/static_box.c \
 	)
