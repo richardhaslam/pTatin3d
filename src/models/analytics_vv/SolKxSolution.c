@@ -34,7 +34,7 @@
  $  meaning that the density rho is -sigma*sin(km*z)*cos(kn*x). Here we set sigma = 1.
  $  The viscosity eta is exp(2*B*x).
  */
-static PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, PetscReal B,
+PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, PetscReal B,
                                     PetscScalar vel[], PetscScalar *p, PetscScalar s[], PetscScalar gamma[], PetscScalar *nu)
 {
   PetscReal sigma = 1.0;

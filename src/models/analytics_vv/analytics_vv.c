@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   static_box.c
+ **    filename:   analytics_vv.c
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -155,6 +155,38 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
   ierr = PetscOptionsGetReal(NULL,NULL,"-solkx_B",&B,NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(NULL,NULL,"-solkx_n",&n,NULL);CHKERRQ(ierr);
   
+  {
+    PetscReal pos[2],vel[2],pressure;
+    
+    pos[0] = 0.2;
+    pos[1] = 0.2;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e vx %+1.12e\n",pos[0],pos[1],vel[0]);
+    pos[0] = 0.2;
+    pos[1] = 0.7;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e vx %+1.12e\n",pos[0],pos[1],vel[0]);
+
+    pos[0] = 0.0;
+    pos[1] = 0.5;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e vy %+1.12e\n",pos[0],pos[1],vel[1]);
+    pos[0] = 0.5;
+    pos[1] = 0.5;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e vy %+1.12e\n",pos[0],pos[1],vel[1]);
+
+    pos[0] = 0.1;
+    pos[1] = 0.1;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e p %+1.12e\n",pos[0],pos[1],pressure);
+    pos[0] = 0.1;
+    pos[1] = 0.8;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e p %+1.12e\n",pos[0],pos[1],pressure);
+
+    
+  }
   km = m*PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
   kn = (PetscReal) n*PETSC_PI;
   
@@ -172,7 +204,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
     
     phase = 0;
     eta = exp(2.0*B*position[0]);
-    rho = sin(km*position[1])*cos(kn*position[0]);
+    rho = -sin(km*position[1])*cos(kn*position[0]);
     
     MPntStdSetField_phase_index(material_point,phase);
     MPntPStokesSetField_eta_effective(material_point_properties_stokes,eta);
