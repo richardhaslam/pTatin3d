@@ -32,7 +32,6 @@
 #include <string.h>
 #include <math.h>
 
-#define _GNU_SOURCE
 
 #include <petsc.h>
 #include <petscvec.h>

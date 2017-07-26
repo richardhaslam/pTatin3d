@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 // -*- indent-tabs-mode:t c-basic-offset:8 -*-
 
-#include <assert.h>
 #include <petscsys.h>
 #include <petscfe.h>
 #include <ptatin3d.h>
@@ -70,9 +69,10 @@ struct _p_MFA11OpenCL {
 };
 
 /* OpenCL error checking */
-#define ERROR_CHECKER_CASE(ERRORCODE)  case ERRORCODE: assert("#ERRORCODE");
-static void checkError(cl_int err)
+#define ERROR_CHECKER_CASE(ERRORCODE)  case ERRORCODE: SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_LIB,"OpenCL Error: %d",ERRORCODE)
+static PetscErrorCode checkError(cl_int err)
 {
+  PetscFunctionBeginUser;
   if (err != CL_SUCCESS)
   {
     switch (err)
@@ -125,9 +125,10 @@ static void checkError(cl_int err)
       ERROR_CHECKER_CASE(CL_INVALID_MIP_LEVEL);
       ERROR_CHECKER_CASE(CL_INVALID_GLOBAL_WORK_SIZE);
         
-      default: assert("Unknown error. Maybe OpenCL SDK not properly installed?");
+      default: SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_LIB,"Unknown OpenCL error. Maybe OpenCL SDK not properly installed?");
     }
   }
+  PetscFunctionReturn(0);
 }
 
 #define ERR_CHECK(err) checkError(err);
@@ -338,9 +339,9 @@ PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf)
   ctx->state = 0;
   mf->ctx = ctx;
 
-  if (sizeof(PetscInt)    != 4) assert("OpenCL SpMV kernels only support 32-bit integers!");
-  if (sizeof(PetscScalar) != 8) assert("OpenCL SpMV kernels only support double precision!");
-  if (sizeof(PetscReal)   != 8) assert("OpenCL SpMV kernels only support double precision!");
+  if (sizeof(PetscInt)    != 4) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"OpenCL SpMV kernels only support 32-bit integers!");
+  if (sizeof(PetscScalar) != 8) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"OpenCL SpMV kernels only support double precision!");
+  if (sizeof(PetscReal)   != 8) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"OpenCL SpMV kernels only support double precision!");
 
   /************** Initialize OpenCL **************/
 

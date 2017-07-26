@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#define _GNU_SOURCE
 #include "petsc/private/dmdaimpl.h" 
 #include "petsc.h"
 

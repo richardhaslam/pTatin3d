@@ -26,7 +26,6 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-
 #include <ptatin3d.h>
 #include <private/ptatin_impl.h>
 #include <MPntStd_def.h>

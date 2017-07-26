@@ -30,7 +30,7 @@
 #ifndef __material_constants_h__
 #define __material_constants_h__
 
-/* add auto geneterated classes here */
+/* add auto generated classes here */
 #include "material_constants/MaterialConst_MaterialType_def.h"
 #include "material_constants/MaterialConst_ViscosityConst_def.h"
 #include "material_constants/MaterialConst_DensityConst_def.h"
