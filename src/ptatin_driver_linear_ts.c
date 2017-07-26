@@ -831,20 +831,25 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	PetscInt k,nsplits;
 	PC       pc,pc_i;
 	KSP      *sub_ksp,ksp_coarse,ksp_smoother;
-  PetscBool ispcmg;
+  PetscBool ispcfs,ispcmg;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&ispcmg);CHKERRQ(ierr);
-  if (!ispcmg) PetscFunctionReturn(0);
+  ierr = PetscObjectTypeCompare((PetscObject)pc,PCFIELDSPLIT,&ispcfs);CHKERRQ(ierr);
+  if (!ispcfs) PetscFunctionReturn(0);
 	ierr = PCFieldSplitGetSubKSP(pc,&nsplits,&sub_ksp);CHKERRQ(ierr);
 	
     ierr = KSPSetDM(sub_ksp[0],dav_hierarchy[nlevels-1]);CHKERRQ(ierr);
     ierr = KSPSetDMActive(sub_ksp[0],PETSC_FALSE);CHKERRQ(ierr);
     
 	ierr = KSPGetPC(sub_ksp[0],&pc_i);CHKERRQ(ierr);
+  ierr = PetscObjectTypeCompare((PetscObject)pc_i,PCMG,&ispcmg);CHKERRQ(ierr);
+  if (!ispcmg) {
+    ierr = PetscFree(sub_ksp);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 	ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 	ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 	ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
