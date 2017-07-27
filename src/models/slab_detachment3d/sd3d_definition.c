@@ -610,6 +610,8 @@ PetscErrorCode SD3D_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,SD3DCtx 
         case CASE_1B:
             ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,NORTH_FACE,0.0);CHKERRQ(ierr);
             break;
+        default:
+            break;
     }
     
 	PetscFunctionReturn(0);

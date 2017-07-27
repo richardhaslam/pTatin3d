@@ -886,6 +886,8 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
             ierr = GeometryObjectSetType_HalfSpace(go,cx,sign,axis);CHKERRQ(ierr);
         }
             break;
+        case GeomType_NULL:
+            SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Not defined for undefined geometry type");
     }
 
     {

@@ -1232,6 +1232,8 @@ PetscErrorCode GeometryObjectPointInside_SetOperation(GeometryObject go,double x
 				*inside = 0;
 			}
 			break;
+    case GeomSet_Undefined :
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Operation not defined for GeometryObject of undefined type");
 	}
 	
 	PetscFunctionReturn(0);

@@ -258,10 +258,6 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 				free (option_name);
 			}
 				break;
-			case 3:
-			{
-				SETERRQ(PETSC_COMM_SELF, PETSC_ERR_USER, "visco-elasto-plastic rheology not handled in 3D tatin \n");
-			}
 		}
 	}
 	

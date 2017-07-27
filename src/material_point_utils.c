@@ -2747,6 +2747,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 cell_quadraturepoints[0].eta *= eta_p; /* GEOMETRIC */
                 cell_quadraturepoints[1].eta += 1.0;
                 break;
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
         
         switch (rho_type) {
@@ -2762,6 +2764,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 cell_quadraturepoints[0].rho *= rho_p; /* GEOMETRIC */
                 cell_quadraturepoints[1].rho += 1.0;
                 break;
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
     }
     PetscTime(&t1);
@@ -2799,6 +2803,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 avg_field  = pow(prod_field,1.0/sum_np);
                 break;
             }
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
         /* If the averaging type was one of arth,harm,geom, set constant value on quadrature point */
         if (eta_type != CoefAvgNULL) {
@@ -2834,6 +2840,8 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
                 avg_field  = pow(prod_field,1.0/sum_np);
                 break;
             }
+            case CoefAvgNULL:
+                SETERRQ(PetscObjectComm((PetscObject)clone),PETSC_ERR_USER,"CoefAvgNULL not supported");
         }
         /* If the averaging type was one of arth,harm,geom, set constant value on quadrature point */
         if (rho_type != CoefAvgNULL) {

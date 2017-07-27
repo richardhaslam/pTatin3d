@@ -303,6 +303,9 @@ PetscErrorCode XDMFDataWriteField_Generic(Vec x,
             ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
             break;
         }
+
+        case XDMFXML:
+          SETERRQ(comm,PETSC_ERR_SUP,"Format not supported");
     }
 
     PetscFunctionReturn(0);
@@ -369,6 +372,8 @@ PetscErrorCode XDMFDataWriteField_GenericDMDA(DM dm,Vec x,
             ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
             break;
         }
+        case XDMFXML:
+          SETERRQ(comm,PETSC_ERR_SUP,"Format not supported");
     }
     ierr = VecDestroy(&xn);CHKERRQ(ierr);
 

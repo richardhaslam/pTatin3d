@@ -117,6 +117,8 @@ PetscErrorCode DMDAPackDataToFile(DM da,const char name[])
 			case DM_BOUNDARY_PERIODIC:
 				val = 3.1;
 				break;
+      case DM_BOUNDARY_TWIST:
+        SETERRQ(PetscObjectComm((PetscObject)dd),PETSC_ERR_SUP,"DM_BOUNDARY_TWIST not supported");
 		}
 		if (i == 0) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPX, val, INSERT_VALUES );CHKERRQ(ierr); }
 		if (i == 1) { ierr = VecSetValue( dd, (PetscInt)DMDA_WRAPY, val, INSERT_VALUES );CHKERRQ(ierr); }
