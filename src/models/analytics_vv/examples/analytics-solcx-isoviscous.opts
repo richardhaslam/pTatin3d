@@ -9,6 +9,10 @@
 -ptatin_model analytics_vv
 
 # Model parameters
+-solcx_eta0 1.0
+-solcx_eta1 1.0
+-solcx_xc 0.5
+-solcx_n 2
 
 # Mesh resolution
 -mx 6
@@ -30,7 +34,7 @@
 -coefficient_projection_type 4
 
 # ---- Define ptatin timestepping/io parameters ---- #
--output_path analytics_solkx
+-output_path analytics_solcx
 -nsteps 0
 -output_frequency 1
 
@@ -46,6 +50,9 @@
 -fieldsplit_u_ksp_type preonly
 -fieldsplit_u_pc_type mg
 -fieldsplit_u_pc_mg_levels 2
+-fieldsplit_u_mg_levels_ksp_type gmres
+-fieldsplit_u_mg_levels_pc_type ilu
+-fieldsplit_u_mg_levels_ksp_max_it 8
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
 #-log_view
