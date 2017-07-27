@@ -83,6 +83,7 @@ libptatin3d-y.c += $(call thisdir, \
 			spm_utils.c \
 			petsc_utils.c \
             mpiio_blocking.c \
+            inorms.c \
 	)
 
 libptatin3d-$(CONFIG_CUDA).cu += $(call thisdir, \

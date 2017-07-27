@@ -42,6 +42,9 @@
 #include <output_material_points.h>
 #include <pswarm.h>
 
+#include <inorms.h>
+#include <models/analytics_vv/SolKxSolution.h>
+#include <models/analytics_vv/SolCxSolution.h>
 
 PSwarm pswarm;
 
@@ -176,6 +179,16 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
     SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
     printf("%+1.12e %+1.12e vy %+1.12e\n",pos[0],pos[1],vel[1]);
 
+    pos[0] = 0.25;
+    pos[1] = 1.0;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e vy %+1.12e <top>\n",pos[0],pos[1],vel[1]);
+    pos[0] = 0.75;
+    pos[1] = 1.0;
+    SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
+    printf("%+1.12e %+1.12e vy %+1.12e <top>\n",pos[0],pos[1],vel[1]);
+    
+    
     pos[0] = 0.1;
     pos[1] = 0.1;
     SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
@@ -184,11 +197,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
     pos[1] = 0.8;
     SolKxSolution(pos,m,n,B,vel,&pressure, NULL,NULL,NULL);
     printf("%+1.12e %+1.12e p %+1.12e\n",pos[0],pos[1],pressure);
-
-    
   }
-  km = m*PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
-  kn = (PetscReal) n*PETSC_PI;
+  
+  km = m * PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
+  kn = (PetscReal)n * PETSC_PI;
   
   for (p=0; p<n_mp_points; p++) {
     MPntStd     *material_point;
@@ -204,7 +216,74 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
     
     phase = 0;
     eta = exp(2.0*B*position[0]);
-    rho = -sin(km*position[1])*cos(kn*position[0]);
+    rho = -PetscSinReal(km*position[1])*PetscCosReal(kn*position[0]);
+    
+    MPntStdSetField_phase_index(material_point,phase);
+    MPntPStokesSetField_eta_effective(material_point_properties_stokes,eta);
+    MPntPStokesSetField_density(material_point_properties_stokes,rho);
+  }
+  
+  DataFieldRestoreAccess(PField_std);
+  DataFieldRestoreAccess(PField_stokes);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ModelApplyInitialMaterialGeometry_AnlVV_solcx"
+PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solcx(pTatinCtx c,void *ctx)
+{
+  int            p,n_mp_points;
+  DataBucket     db;
+  DataField      PField_std,PField_stokes;
+  PetscReal      eta0,eta1,xc,m,km,kn;
+  PetscInt       n;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  
+  /* define properties on material points */
+  ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
+  DataBucketGetSizes(db,&n_mp_points,0,0);
+  
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+  DataFieldGetAccess(PField_std);
+  
+  DataBucketGetDataFieldByName(db,MPntPStokes_classname,&PField_stokes);
+  DataFieldGetAccess(PField_stokes);
+  
+  eta0 = 1.0;
+  eta1 = 1.0;
+  xc = 0.5;
+  n = 2;
+  m = 1.0;
+  ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&eta0,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&eta1,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&xc,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-solcx_n",&n,NULL);CHKERRQ(ierr);
+  
+  km = m * PETSC_PI; /* solution valid for km not zero -- should get trivial solution if km=0 */
+  kn = (PetscReal)n * PETSC_PI;
+  
+  for (p=0; p<n_mp_points; p++) {
+    MPntStd     *material_point;
+    MPntPStokes *material_point_properties_stokes;
+    double      *position;
+    double      eta,rho;
+    int         phase;
+    
+    DataFieldAccessPoint(PField_std,p,   (void**)&material_point);
+    DataFieldAccessPoint(PField_stokes,p,(void**)&material_point_properties_stokes);
+    
+    MPntStdGetField_global_coord(material_point,&position);
+    
+    phase = 0;
+    if (position[0] <= xc) {
+      eta = eta0;
+    } else {
+      eta = eta1;
+    }
+    rho = -PetscCosReal(km*position[0])*PetscSinReal(kn*position[1]);
     
     MPntStdSetField_phase_index(material_point,phase);
     MPntPStokesSetField_eta_effective(material_point_properties_stokes,eta);
@@ -223,6 +302,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
 PetscErrorCode ModelOutput_AnlVV(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   PetscErrorCode ierr;
+  PhysCompStokes stokes_ctx;
+  DM dms,dmv,dmp;
+  Vec Xv,Xp;
+  Quadrature volQ;
+  PetscReal ds,ev_L2,eE_H1s,eE_H1,ep_L2;
   
   PetscFunctionBegin;
   ierr = PSwarmFieldUpdateAll(pswarm);CHKERRQ(ierr);
@@ -233,7 +317,57 @@ PetscErrorCode ModelOutput_AnlVV(pTatinCtx c,Vec X,const char prefix[],void *ctx
   ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
   ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
 
+  ierr = pTatinGetStokesContext(c,&stokes_ctx);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetVolumeQuadrature(stokes_ctx,&volQ);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes_ctx,&dms);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(dms,&dmv,&dmp);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(dms,X,&Xv,&Xp);CHKERRQ(ierr);
 
+
+  /*
+  {
+    PetscReal m,B;
+    PetscInt n;
+    ParamsSolKx solkx;
+
+    m = 1.2;
+    n = 2;
+    B = 1.0;
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solkx_m",&m,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solkx_B",&B,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-solkx_n",&n,NULL);CHKERRQ(ierr);
+    ierr = SolKxParamsSetValues(&solkx,m,n,B);CHKERRQ(ierr);
+    
+    ierr = Evaluate_uL2_symuH1_pL2(dmv,dmp,Xv,Xp,volQ,
+                                   EvaluateV_SolKx,EvaluateE_SolKx,EvaluateP_SolKx,(void*)&solkx,
+                                   &ev_L2,&eE_H1s,&eE_H1,&ep_L2);CHKERRQ(ierr);
+  }
+  */
+
+  {
+    PetscReal eta0,eta1,xc;
+    PetscInt n;
+    ParamsSolCx solcx;
+    
+    eta0 = 1.0;
+    eta1 = 1.0;
+    xc = 0.5;
+    n = 2;
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta0",&eta0,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_eta1",&eta1,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(NULL,NULL,"-solcx_xc",&xc,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-solcx_n",&n,NULL);CHKERRQ(ierr);
+    ierr = SolCxParamsSetValues(&solcx,eta0,eta1,xc,n);CHKERRQ(ierr);
+    
+    ierr = Evaluate_uL2_symuH1_pL2(dmv,dmp,Xv,Xp,volQ,
+                                   EvaluateV_SolCx,EvaluateE_SolCx,EvaluateP_SolCx,(void*)&solcx,
+                                   &ev_L2,&eE_H1s,&eE_H1,&ep_L2);CHKERRQ(ierr);
+  }
+
+  ierr = DMCompositeRestoreAccess(dms,X,&Xv,&Xp);CHKERRQ(ierr);
+
+  ds = 1.0 / (PetscReal)(c->mx);         /* ds     v_L2   H1_semi     H1      p_L2 */
+  PetscPrintf(PETSC_COMM_WORLD,"[inorms] %+1.12e,%+1.12e,%+1.12e,%+1.12e,%+1.12e\n",ds,ev_L2,eE_H1s,eE_H1,ep_L2);
   
   PetscFunctionReturn(0);
 }
@@ -295,7 +429,11 @@ PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m)
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_AnlVV);CHKERRQ(ierr);
   /*ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_AnlVV);CHKERRQ(ierr);*/
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_AnlVV);CHKERRQ(ierr);
-  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_AnlVV_solkx);CHKERRQ(ierr);
+  
+  //ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_AnlVV_solkx);CHKERRQ(ierr);
+  
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_AnlVV_solcx);CHKERRQ(ierr);
+  
   /*ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_AnlVV);CHKERRQ(ierr);*/
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_AnlVV);CHKERRQ(ierr);
   ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_AnlVV);CHKERRQ(ierr);

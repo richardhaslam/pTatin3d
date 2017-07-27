@@ -23,13 +23,11 @@
 -passive_pswarm_box_max 5.0,6.0,5.0
 -passive_pswarm_box_nx 3,10,3
 
-# Material point resolution per cell
--lattice_layout_Nx 6
--lattice_layout_Ny 6
--lattice_layout_Nz 6
+# Material point layout (3x3x3 Gauss quadrature)
+-mp_layout 2
 
-# use P0 projection
--coefficient_projection_type 1
+# use one-to-one projection from material points to Gauss quadrature
+-coefficient_projection_type 4
 
 # ---- Define ptatin timestepping/io parameters ---- #
 -output_path analytics_solkx

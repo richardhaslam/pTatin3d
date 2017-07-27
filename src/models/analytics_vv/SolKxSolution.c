@@ -1,5 +1,6 @@
 
 #include <petsc.h>
+#include <models/analytics_vv/SolKxSolution.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "SolKxSolution"
@@ -511,3 +512,65 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "EvaluateV_SolKx"
+PetscErrorCode EvaluateV_SolKx(PetscReal pos[],PetscReal vel[],void *ctx)
+{
+  ParamsSolKx *data = (ParamsSolKx*)ctx;
+  PetscErrorCode ierr;
+  
+  ierr = SolKxSolution((const PetscReal*)pos,data->m,data->n,data->B,
+                               vel,NULL,NULL,NULL,NULL);CHKERRQ(ierr);
+  vel[2] = 0.0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "EvaluateE_SolKx"
+PetscErrorCode EvaluateE_SolKx(PetscReal pos[],PetscReal E[],void *ctx)
+{
+  ParamsSolKx *data = (ParamsSolKx*)ctx;
+  PetscReal E_voigt[3];
+  PetscErrorCode ierr;
+  
+  ierr = SolKxSolution((const PetscReal*)pos, data->m, data->n, data->B,
+                       NULL,NULL,NULL,E_voigt,NULL);CHKERRQ(ierr);
+  
+  E[0] = E_voigt[0]; /* E_xx */
+  E[1] = E_voigt[1]; /* E_xy */
+  E[2] = 0.0;        /* E_xz */
+
+  E[3] = E_voigt[1]; /* E_yx */
+  E[4] = E_voigt[2]; /* E_yy */
+  E[5] = 0.0;        /* E_yz */
+
+  E[6] = 0.0;
+  E[7] = 0.0;
+  E[8] = 0.0;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "EvaluateP_SolKx"
+PetscErrorCode EvaluateP_SolKx(PetscReal pos[],PetscReal p[],void *ctx)
+{
+  ParamsSolKx *data = (ParamsSolKx*)ctx;
+  PetscErrorCode ierr;
+  
+  ierr = SolKxSolution((const PetscReal*)pos, data->m, data->n, data->B,
+                       NULL,p,NULL,NULL,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SolKxParamsSetValues"
+PetscErrorCode SolKxParamsSetValues(ParamsSolKx *data,PetscReal m,PetscInt n,PetscReal B)
+{
+  data->m = m;
+  data->n = n;
+  data->B = B;
+  PetscFunctionReturn(0);
+}
+

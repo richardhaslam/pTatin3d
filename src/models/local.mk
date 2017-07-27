@@ -29,5 +29,5 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			plasticdemo/demo.c \
                         static_box/static_box.c \
                         static_box_thermomech/static_box_tm.c \
-                        analytics_vv/SolKxSolution.c analytics_vv/analytics_vv.c \
+                        analytics_vv/SolKxSolution.c analytics_vv/SolCxSolution.c analytics_vv/analytics_vv.c \
 	)
