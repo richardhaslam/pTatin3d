@@ -18,6 +18,7 @@
 -fieldsplit_u_ksp_monitor_short
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
+-fieldsplut_u_pc_type mg
 -fieldsplit_u_mg_coarse_pc_type lu
 -fieldsplit_u_mg_levels_1_ksp_max_it 2
 -fieldsplit_u_mg_levels_1_ksp_type gmres

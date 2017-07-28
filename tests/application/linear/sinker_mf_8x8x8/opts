@@ -15,6 +15,7 @@
 -dau_nlevels 3
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
+-fieldsplit_u_pc_type mg
 -fieldsplit_u_ksp_monitor_short
 -fieldsplit_u_ksp_rtol 1.0e-2
 -fieldsplit_u_ksp_type fgmres
