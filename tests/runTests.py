@@ -16,6 +16,7 @@
 
 import os
 import sys
+from os import environ
 
 # PTATIN_DIR and PETSC_ARCH are used to make easily-copyable tests
 thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -37,10 +38,16 @@ try :
     import pyTestHarness.harness as pyth_harness
 except ImportError :
     print("********************")
-    print("pyTestHarness was not found. Exiting.")
-    print("If you already have this somewhere on your system, add pythontestharness/lib to your PYTHONPATH.")
-    print("Otherwise, you may clone as follows:")
+    print("The required python library pyTestHarness was not found. Exiting.")
+    print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
+    print("If pyTestHarness is not installed, obtain the source by executing the following:")
     print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'tests','pythontestharness'))
+    print("then execute the following:")
+    shellType = environ['SHELL']
+    if shellType == '/bin/bash' or shellType == '/bin/sh':
+      print("  export PYTHONPATH="+os.path.join(PTATIN_DIR,'tests','pythontestharness','lib')+":${PYTHONPATH}")
+    if shellType == '/bin/tcsh' or shellType == '/bin/csh':
+      print("  setenv PYTHONPATH "+os.path.join(PTATIN_DIR,'tests','pythontestharness','lib')+":${PYTHONPATH}")
     print("********************")
     sys.exit(1)
 
