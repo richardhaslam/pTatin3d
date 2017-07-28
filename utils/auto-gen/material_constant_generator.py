@@ -226,7 +226,7 @@ def write_out_SetDefaultAll( protoype, ClassName, ClassNameShort, variable_name_
 
 	for f in xrange(L):
 		if variable_type_list[f] == 'float':
-			print '    { double float;'
+			print '    { float value;'
 			print '      ' + ClassName + 'GetDefault_' + variable_textural_name_list[f] + '((float*)&value);'
 			if variable_extend_list[f] == 1:
 				print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(float)value);'
@@ -391,7 +391,7 @@ def write_out_ScaleValues( protoype, ClassName, ClassNameShort, variable_name_li
 	for f in xrange(L):
 
 		if variable_type_list[f] == 'float':
-			print '  { double float;'
+			print '  { float value;'
 			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f] + '(data,(float*)&value);'
 			print '    value = value / ' +  variable_name_list[f] + ';'
 			print '    ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(float)value);'
