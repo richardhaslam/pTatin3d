@@ -36,7 +36,9 @@ if not PETSC_ARCH :
 sys.path.append(os.path.join(PTATIN_DIR,'tests','pythontestharness','lib'))  # overrides
 try :
     import pyTestHarness.harness as pyth_harness
-except ImportError :
+except Exception as errorMessage :
+  print(format(errorMessage))
+  if format(errorMessage) == "No module named pyTestHarness.harness":
     print("********************")
     print("The required python library pyTestHarness was not found. Exiting.")
     print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
