@@ -19,6 +19,8 @@
 -fieldsplit_u_ksp_monitor_short
 -fieldsplit_u_ksp_max_it 2
 -fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_mg_coarse_ksp_type gmres
+-fieldsplit_u_mg_coarse_ksp_max_it 1
 -fieldsplit_u_mg_coarse_pc_type bjacobi
 -fieldsplit_u_mg_levels_1_ksp_max_it 2
 -fieldsplit_u_mg_levels_1_ksp_type gmres
