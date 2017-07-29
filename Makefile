@@ -150,6 +150,8 @@ testclassic :
 testclassiccheck :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic) --verify
 
+.PHONY: test testall testallcheck testallclean testclassic testclassiccheck
+
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^
 	$(call quiet,RANLIB) $@
