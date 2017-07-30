@@ -455,6 +455,7 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
 		DataFieldAccessPoint(PField_std, p, (void **) &material_point);
 		MPntStdGetField_global_coord(material_point,&pos);
         
+    phase = -1;
 		for (i=0; i<nLayer; i++) {
 			if ( (pos[1] >= YLayer[i]) && (pos[1] <= YLayer[i+1]) ) {
 				phase = phaseLayer[i];
@@ -521,6 +522,8 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
             dir_1 = 1;
         }
             break;
+        default :
+            SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"-extrude_dir %d not valid",direction);
     }
     
     asprintf(&name,"./inputdata/%s.pmap",map_file);
