@@ -1,0 +1,256 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+[pTatin] Writing output to existing directory: ex2_staticBox 
+[pTatin] Created log file: ex2_staticBox/ptatin.log-2017.07.30_13:52:28 
+[pTatin] Writing output to existing directory: ex2_staticBox 
+[pTatin] Created options file: ex2_staticBox/ptatin.options-2017.07.30_13:52:28 
+[pTatin] Created options file: ex2_staticBox/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: Registering model [23] with name "static_box"
+  [pTatinModel]: -ptatin_model "static_box" was detected
+pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
+pTatin3dRestart: Unable to restart job
+BCList: Mem. usage (min,max) = 7.00e-02,7.00e-02 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 1728 
+  buffer             = 1 
+  allocated          = 1729 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 8.30e-02 (MB) 
+  Total mem. usage                                                      = 8.30e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+Generated vel/pressure mesh --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+  MaterialPointsStokes: Using P0 projection [arithmetic avg]
+[[Swarm initialization: 0.0001 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 1728 points : 0.0006 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Mat Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.8191e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 2.0218e-04 (sec)]]
+Generated material points --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Mat Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 6.4135e-05 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 7.6056e-05 (sec)]]
+[PSwarmSetUpCoords_FillBox]
+DataBucketView(SEQ): ("MaterialPoints StokesCoefficients")
+  L                  = 1728 
+  buffer             = 1000 
+  allocated          = 2728 
+  nfields registered = 3 
+    [  0]: field name  ==>>                        MPntStd : Mem. usage = 1.75e-01 (MB) 
+    [  1]: field name  ==>>                    MPntPStokes : Mem. usage = 4.36e-02 (MB) 
+    [  2]: field name  ==>>                  MPntPStokesPl : Mem. usage = 2.18e-02 (MB) 
+  Total mem. usage                                                      = 2.40e-01 (MB) 
+Mesh size (4 x 4 x 4) : MG levels 1  
+         level [ 0]: global Q2 elements (4 x 4 x 4) 
+level [ 0]: [total cores    1]: np-I [   1]: element range I [    4 ]
+                                np-J [   1]: element range J [    4 ]
+                                np-K [   1]: element range K [    4 ]
+Generated velocity mesh hierarchy --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+Generated quadrature point hierarchy --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+Level [0]: Coarse grid type :: Re-discretisation :: assembled operator 
+Generated stokes operators --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
+PreSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   --------- LINEAR STAGE ---------
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 8.11e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.39e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.19e-05 (sec)
+   --------- PICARD STAGE ---------
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.82e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.79e-05 (sec)
+PostSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 2.9316e+13 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep[stokes] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 1 ]]
+     dt    : 5.0000e-11 
+     time  : 5.0000e-11 
+*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.22e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   8.82e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    6.20e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+   [[ COMPUTING FLOW FIELD FOR STEP : 1 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.60e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.20e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 2.9316e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[1] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 2 ]]
+     dt    : 5.0000e-01 
+     time  : 5.0000e-01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.55e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    6.91e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+   [[ COMPUTING FLOW FIELD FOR STEP : 2 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.29e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+[staticBox] ||v0 - v0_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||v1 - v1_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||v2 - v2_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||p - p_exact||_inf <= 1.0e-12 <pass>
+[staticBox] rho = variable
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 2.9316e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[2] dt_courant = 5.0000e-01 
+pTatin3dMaxMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Gene3DNueve]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_Sierra]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+[[ModelDestroy_StaticBox]]
