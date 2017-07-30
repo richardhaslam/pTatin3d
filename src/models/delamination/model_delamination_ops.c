@@ -469,7 +469,7 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
 	DM stokes_pack,dau,dap;
 	Vec velocity,pressure;
-	PetscReal vxl,vxr,vzb,vzf,vy;
+	/* PetscReal vxl,vxr,vzb,vzf;,vy; */
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
 	PetscReal MeshMin[3],MeshMax[3],domain_height;
 	PetscErrorCode ierr;
@@ -481,12 +481,14 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
 	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
-	
+
+  /*
 	vxl = -data->vx;
 	vxr =  data->vx;
 	vy  =  data->vy;
 	vzf = -data->vz;
 	vzb =  0.0;//data->vz;
+  */
 	
 	//	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
 	/* apply -5 < vx 5 across the domain x \in [0,1] */
