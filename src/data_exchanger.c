@@ -125,13 +125,12 @@ PetscLogEvent PTATIN_DataExchangerEnd;
 DataEx DataExCreate(MPI_Comm comm,const PetscInt count)
 {
 	DataEx         d;
-	PetscErrorCode ierr;
 	
 	d = (DataEx)malloc( sizeof(struct _p_DataEx) );
 	memset( d, 0, sizeof(struct _p_DataEx) );
 	
-	ierr = MPI_Comm_dup(comm,&d->comm);
-	ierr = MPI_Comm_rank(d->comm,&d->rank);
+	MPI_Comm_dup(comm,&d->comm);
+	MPI_Comm_rank(d->comm,&d->rank);
 	
 	d->instance = count;
 	
