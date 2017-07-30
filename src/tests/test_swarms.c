@@ -444,12 +444,12 @@ int SwarmTest_Parallel1(MPI_Comm comm)
 	DataBucket    db;
 	DataField     dbField;
     MaterialPoint *mp_list;
-    int           ierr,nproc,rank,i,k,init_size,L_local;
+    int           nproc,rank,i,k,init_size,L_local;
     long int      L_global;
     
     
-    ierr = MPI_Comm_size(comm,&nproc);
-    ierr = MPI_Comm_rank(comm,&rank);
+    MPI_Comm_size(comm,&nproc);
+    MPI_Comm_rank(comm,&rank);
     if (rank) {
         printf("[[%s]]\n",__FUNCTION__);
     }
