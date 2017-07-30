@@ -634,28 +634,30 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
 	}
 	
     switch (direction) {
-        case 0:
-		{
-			dir_0 = 2;
-			dir_1 = 1;
+      case 0:
+        {
+          dir_0 = 2;
+          dir_1 = 1;
         }
-			break;
-			
-        case 1:
-		{
-			dir_0 = 0;
-			dir_1 = 2;
+        break;
+
+      case 1:
+        {
+          dir_0 = 0;
+          dir_1 = 2;
         }
-			break;
-			
-        case 2:
-		{
-			dir_0 = 0;
-			dir_1 = 1;
+        break;
+
+      case 2:
+        {
+          dir_0 = 0;
+          dir_1 = 1;
         }
-			break;
+        break;
+      default :
+        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"-extrude_dir %d not valid",direction);
     }
-	
+
     asprintf(&name,"./inputdata/%s.pmap",map_file);
     ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
     ierr = CartGridSetFilename(phasemap,map_file);CHKERRQ(ierr);
@@ -713,31 +715,33 @@ PetscErrorCode MaterialPointSetRegionIndexFromExtrudedMap(DataBucket db,const ch
     
 	PetscFunctionBegin;
 	
-    switch (direction) {
-        case 0:
-		{
-			dir_0 = 2;
-			dir_1 = 1;
-			dir_normal = 0;
-        }
-			break;
-			
-        case 1:
-		{
-			dir_0 = 0;
-			dir_1 = 2;
-			dir_normal = 1;
-        }
-			break;
-			
-        case 2:
-		{
-			dir_0 = 0;
-			dir_1 = 1;
-			dir_normal = 2;
-        }
-			break;
-    }
+  switch (direction) {
+    case 0:
+      {
+        dir_0 = 2;
+        dir_1 = 1;
+        dir_normal = 0;
+      }
+      break;
+
+    case 1:
+      {
+        dir_0 = 0;
+        dir_1 = 2;
+        dir_normal = 1;
+      }
+      break;
+
+    case 2:
+      {
+        dir_0 = 0;
+        dir_1 = 1;
+        dir_normal = 2;
+      }
+      break;
+    default :
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"direction %d not valid",direction);
+  }
 	
     ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
     ierr = CartGridSetFilename(phasemap,map_filename);CHKERRQ(ierr);
