@@ -53,12 +53,6 @@ except Exception as errorMessage :
     print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
     print("If pyTestHarness is not installed, obtain the source by executing the following:")
     print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'tests','pythontestharness'))
-    print("then execute the following:")
-    shellType = environ['SHELL']
-    if shellType == '/bin/bash' or shellType == '/bin/sh':
-      print("  export PYTHONPATH="+os.path.join(PTATIN_DIR,'tests','pythontestharness','lib')+":${PYTHONPATH}")
-    if shellType == '/bin/tcsh' or shellType == '/bin/csh':
-      print("  setenv PYTHONPATH "+os.path.join(PTATIN_DIR,'tests','pythontestharness','lib')+":${PYTHONPATH}")
     print("********************")
     sys.exit(1)
 
