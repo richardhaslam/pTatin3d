@@ -1173,7 +1173,7 @@ PetscErrorCode _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGr
     PetscInt          p,i,nel,nen,e;
     const PetscInt    *elnidx;
     PetscInt          nqp;
-    PetscReal         *qp_coor,*qp_weight;
+    PetscReal         *qp_coor;
     QPntVolCoefStokes *all_quadraturepoints,*cell_quadraturepoints;
     PetscErrorCode ierr;
     
@@ -1188,7 +1188,6 @@ PetscErrorCode _BuildQ1CoefficientProjection_QuadraturePoints_MPntPStokes_FineGr
     
     nqp       = Q->npoints;
     qp_coor   = Q->q_xi_coor;
-    qp_weight = Q->q_weight;
     
     ierr = DMGetLocalVector(clone,&Lproperties_A1);CHKERRQ(ierr);  ierr = VecZeroEntries(Lproperties_A1);CHKERRQ(ierr);
     ierr = DMGetLocalVector(clone,&Lproperties_A2);CHKERRQ(ierr);  ierr = VecZeroEntries(Lproperties_A2);CHKERRQ(ierr);
