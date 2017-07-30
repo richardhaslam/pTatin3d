@@ -713,10 +713,9 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
 	DataBucket     db;
     DM             stokes_pack,dav,dap;
 	PhysCompStokes stokes;
-	PetscReal dmin,dmax,drange;
+	PetscReal dmin,dmax;
     PetscInt  damagelist[100],maxlayers=100;
     PetscBool layer2damge[100];
-    
     
 	PetscFunctionBegin;
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);CHKERRQ(ierr);
@@ -725,7 +724,6 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
     dmax = 0.0;
     PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_damage_init_min",&dmin,0);
     PetscOptionsGetReal(NULL,NULL,"-model_multilayer_folding_damage_init_max",&dmax,0);
-    drange = dmax - dmin;
 
     for (p=0; p<100; p++) {
         damagelist[p] = -1;
