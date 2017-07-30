@@ -494,6 +494,7 @@ PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *i
     char      *type;
     PetscBool same;
     
+    *isset = PETSC_FALSE;
     cJSON_GetObjectValue_char(obj,"type",&found,&type);
     if (found == cJSON_False) {
         SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"JSON.GeometryObject requires field \"type\"");
@@ -501,7 +502,6 @@ PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *i
     
     PetscStrcmp(type,GeomTypeNames[(int)GeomType_SetOperation],&same);
 
-    *isset = PETSC_FALSE;
     if (same) {
         *isset = PETSC_TRUE;
     }
