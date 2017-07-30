@@ -275,7 +275,8 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
             for (i=startI[0]; i<endI[0]; i++) {
                 PetscMPIInt rank_ijk_re,rank_reI[3];
                 PetscInt    s0_re;
-                PetscInt    ii,jj,kk,local_ijk_re,mapped_ijk,natural_ijk;
+                PetscInt    ii,jj,kk,local_ijk_re,mapped_ijk;
+                /* PetscInt    natural_ijk; */
                 PetscInt    lenI_re[3];
                 
                 location = (i - startI[0]) + (j - startI[1])*lenI[0] + (k - startI[2])*lenI[0]*lenI[1];
@@ -302,7 +303,7 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
                 
                 local_ijk_re = ii + jj * lenI_re[0] + kk * lenI_re[0] * lenI_re[1];
                 mapped_ijk = s0_re + local_ijk_re;
-                natural_ijk = i + j*nx + k*nx*ny;
+                /* natural_ijk = i + j*nx + k*nx*ny; */
                 
                 ierr = MatSetValue(Pscalar,sr+location,mapped_ijk,1.0,INSERT_VALUES);CHKERRQ(ierr);
                 //PetscPrintf(PETSC_COMM_SELF,"[%d] (%D,%D,%D) --> local %D [g=%D] [natural %D] --> repart %D \n",(int)rank,i,j,k,location,sr+location,natural_ijk,mapped_ijk);
