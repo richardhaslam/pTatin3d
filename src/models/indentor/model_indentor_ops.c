@@ -257,13 +257,12 @@ PetscBool BCListEvaluator_indentor( PetscScalar position[], PetscScalar *value, 
 	PetscBool impose_dirichlet = PETSC_TRUE;
 	pTatinCtx user = (pTatinCtx)ctx;
 	PetscScalar vx,Vx_max;
-	PetscReal time,Dprime,cc;
+	PetscReal Dprime,cc;
 	ModelIndentorCtx *model_data_ctx;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
 	ierr = pTatinModelGetUserData(user->model,(void**)&model_data_ctx);CHKERRQ(ierr);
-	time = user->time;
 
 	Dprime = model_data_ctx->Lz/4.0;
 	Vx_max = model_data_ctx->indentation_velocity;
