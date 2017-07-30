@@ -16,7 +16,6 @@
 
 import os
 import sys
-from os import environ
 
 # PTATIN_DIR and PETSC_ARCH are used to make easily-copyable tests
 thisDir = os.path.dirname(os.path.abspath(__file__))
