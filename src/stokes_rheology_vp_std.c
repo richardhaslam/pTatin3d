@@ -471,7 +471,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				double tau_yield_mp  = PlasticMises_data[ region_idx ].tau_yield;
 				double tau_yield_inf = PlasticMises_data[ region_idx ].tau_yield_inf;
 				
-				switch (MatType_data[ region_idx ].softening_type) {
+				switch (softening_type) {
 					case SOFTENING_NONE: {
 						
 					}
