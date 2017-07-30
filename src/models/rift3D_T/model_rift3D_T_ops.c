@@ -1265,11 +1265,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Atlantic(pTatinCtx c,void *ctx)
     PetscErrorCode ierr;
   
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-    ierr = ModelDefineGeometryObjects_Atlantic(c,ctx);
-    ierr = ModelApplyInitialMaterialIndex_Atlantic(c,ctx);
-    ierr = ModelApplyInitialMaterialPlasticProperties_Atlantic(c,ctx);
-    ierr = ModelApplyInitialMaterialThermalProperties_Atlantic(c,ctx);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);CHKERRQ(ierr);
+    ierr = ModelDefineGeometryObjects_Atlantic(c,ctx);CHKERRQ(ierr);
+    ierr = ModelApplyInitialMaterialIndex_Atlantic(c,ctx);CHKERRQ(ierr);
+    ierr = ModelApplyInitialMaterialPlasticProperties_Atlantic(c,ctx);CHKERRQ(ierr);
+    ierr = ModelApplyInitialMaterialThermalProperties_Atlantic(c,ctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 
@@ -1448,7 +1448,7 @@ PetscErrorCode ModelApplyInitialMaterialPlasticProperties_Atlantic(pTatinCtx c,v
      */
     
     n_pls_go = 1;
-    ierr=GeometryObjectIdFindByName(G,"notches",&go_pls_go[0]);
+    ierr = GeometryObjectIdFindByName(G,"notches",&go_pls_go[0]);CHKERRQ(ierr);
     max_pls_notch[0]   = 0.3;
     
 	/* define properties on material points */
