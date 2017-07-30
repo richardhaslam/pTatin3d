@@ -364,17 +364,19 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 	for (p=0; p<n_mp_points; p++) {
 		MPntStd       *material_point;
 		MPntPStokes   *mpprop_stokes;
-		double        *position,ycoord,xcoord,zcoord;
+		/* double        *position,ycoord,xcoord,zcoord; */
 		
 		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
 		DataFieldAccessPoint(PField_stokes,p,(void**)&mpprop_stokes);
 		
 		/* Access using the getter function provided for you (recommeneded for beginner user) */
+    /*
 		MPntStdGetField_global_coord(material_point,&position);
-		
+	
 		xcoord = position[0] * data->length_bar;
 		ycoord = position[1] * data->length_bar;
 		zcoord = position[2] * data->length_bar;
+    */
 		
 		phase = 0;
 		/* user the setters provided for you */
@@ -404,18 +406,19 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 #define __FUNCT__ "DMDAVecTraverse3d_PerturbationThermal_Convection2d"
 PetscBool DMDAVecTraverse3d_PerturbationThermal_Convection2d(PetscScalar position[], PetscScalar *val, void *ctx) 
 {
-	PetscScalar x,y,z;
+	PetscScalar x,y;
+  /* PetscScalar z; */
 	PetscReal  *coeffs;
 	PetscBool  impose;
 	PetscReal  Tbot,Ttop,Ly,Lx,Oy,Ox;
-	PetscReal  cm_yr2m_s;
+	/* PetscReal  cm_yr2m_s; */
 	
-	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
+	/* cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ; */
 	
 	/* get coordinates */
 	x = position[0];
 	y = position[1];
-	z = position[2];
+	/* z = position[2]; */
 	/* fetch user data */
 	coeffs = (PetscReal*)ctx;
 	Ttop       = coeffs[0]; 
