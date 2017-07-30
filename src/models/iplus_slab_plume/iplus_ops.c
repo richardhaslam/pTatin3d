@@ -188,7 +188,8 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
     PhysCompStokes   stokes;
     DM               stokes_pack,dav,dap;
     PetscBool        ribe_slab,wouter_slab,shallow_mantle,G3_slab;
-    PetscReal        Gmin[3],Gmax[3],center_x,center_z,Lx,Ly,Lz;
+    PetscReal        Gmin[3],Gmax[3],center_x,center_z,Lx,Lz;
+    /* PetscReal       Ly; */
     PetscErrorCode   ierr;
     
     
@@ -233,7 +234,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
     /* refine? */
     ierr = DMDAGetBoundingBox(dav,Gmin,Gmax);CHKERRQ(ierr);
     Lx = (Gmax[0] - Gmin[0]);
-    Ly = (Gmax[1] - Gmin[1]);
+    /* Ly = (Gmax[1] - Gmin[1]); */
     Lz = (Gmax[2] - Gmin[2]);
     center_x = (Gmax[0] + Gmin[0]) * 0.5;
     center_z = (Gmax[2] + Gmin[2]) * 0.5;
