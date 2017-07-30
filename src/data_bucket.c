@@ -393,15 +393,14 @@ void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated )
 void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated )
 {
 	long int _L,_buffer,_allocated;
-	int ierr;
 	
 	_L = (long int)db->L;
 	_buffer = (long int)db->buffer;
 	_allocated = (long int)db->allocated;
 	
-	if (L) {         ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm); }
-	if (buffer) {    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm); }
-	if (allocated) { ierr = MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm); }
+	if (L) {         MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm); }
+	if (buffer) {    MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm); }
+	if (allocated) { MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm); }
 }
 
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] )
@@ -977,9 +976,8 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 			long int L,buffer,allocated;
 			double memory_usage_total,memory_usage_total_local = 0.0;
 			int rank;
-			int ierr;
 			
-			ierr = MPI_Comm_rank(comm,&rank);
+			MPI_Comm_rank(comm,&rank);
 			
 			DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
 			
