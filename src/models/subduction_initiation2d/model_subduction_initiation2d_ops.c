@@ -481,7 +481,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 		MPntStd       *material_point;
 		MPntPStokes   *mpprop_stokes;
 		MPntPStokesPl *mpprop_pls;
-		double        *position,ycoord,xcoord,zcoord;
+		double        *position,ycoord,xcoord;
+    /* double       zcoord; */
 		float         pls;
 		char          yield;
 		
@@ -494,7 +495,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 		
 		xcoord = position[0] * data->length_bar;
 		ycoord = position[1] * data->length_bar;
-		zcoord = position[2] * data->length_bar;
+		/* zcoord = position[2] * data->length_bar; */
 		
 		phase = 0;
 		pls   = 0.0;		
@@ -662,26 +663,25 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 #define __FUNCT__ "DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d"
 PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar position[], PetscScalar *val, void *ctx ) 
 {
-	PetscScalar x,y,z;
+	PetscScalar x,y;
 	PetscReal   *coeffs;
 	PetscBool   impose;
-	PetscReal   Tbot,age,Ttop,Ly,length_bar,diffusivity;
-	PetscReal   cm_yr2m_s;
+	PetscReal   Tbot,Ttop,length_bar;
+	/* PetscReal   cm_yr2m_s,diffusivity,Ly,age; */
 	
-	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
+	/* cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ; */
 	
 	/* get coordinates */
 	x = position[0];
 	y = position[1];
-	z = position[2];
 	/* fetch user data */
 	coeffs = (PetscReal*)ctx;
 	Ttop       = coeffs[0]; 
 	Tbot       = coeffs[1]; 
-	age        = coeffs[2];
-	Ly         = coeffs[3];
+	/* age        = coeffs[2]; */
+	/* Ly         = coeffs[3]; */
 	length_bar = coeffs[4];
-	diffusivity= coeffs[5];
+	/* diffusivity= coeffs[5]; */
 	
 	/*ridge*/   
 	//       if(x>=0.61&&x<=0.64){
@@ -973,11 +973,11 @@ PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char 
 		
 		ierr = pTatin3d_ModelOutput_Temperature_Energy(c,temperature,prefix);CHKERRQ(ierr);
 		
-		Quadrature     volQ;
-		DM             daT;	
+		/* Quadrature     volQ; */
+		/* DM             daT; */
 		
-		daT  = energy->daT;
-		volQ = energy->volQ;
+		/* volQ = energy->volQ; */
+		/* daT  = energy->daT; */
 	}
 	
 	PetscFunctionReturn(0);
