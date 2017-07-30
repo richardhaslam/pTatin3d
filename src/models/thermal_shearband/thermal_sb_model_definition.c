@@ -465,11 +465,11 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
 	if (active_energy) {
 		PhysCompEnergy energy;
 		Vec            temperature;
-		DM             daT;
+		/* DM             daT; */
 		
 		ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
 		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
-		daT  = energy->daT;
+		/* daT  = energy->daT; */
         
         ierr = VecSet(temperature,400.0+273.0);CHKERRQ(ierr);
 	}
@@ -491,9 +491,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
     PetscReal        Ox[3],gmin[3],gmax[3],inc_rad2;
 	PetscErrorCode   ierr;
 	MaterialConst_DensityConst      *DensityConst_data;
-	MaterialConst_ViscosityArrh     *ViscArrh_data;
+	/* MaterialConst_ViscosityArrh     *ViscArrh_data; */
 	DataField                       PField_DensityConst,PField_ViscArrh;
-    PetscReal                       kappa,H;
+  PetscReal                       kappa;
+  /* PetscReal                       H; */
 	
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -504,7 +505,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 	DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
 
 	DataBucketGetDataFieldByName(materialconstants,MaterialConst_ViscosityArrh_classname,&PField_ViscArrh);
-	ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data;
+	/* ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data; */
 	
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -518,7 +519,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 	
     /* background */
     kappa = 1.0/(2700.0 * 1050.0) * 2.5 * data->t_bar / ( data->L_bar * data->L_bar );
-    H = 1.0/(2700.0 * 1050.0) * data->eta_bar * data->E_bar * data->E_bar;
+    /* H = 1.0/(2700.0 * 1050.0) * data->eta_bar * data->E_bar * data->E_bar; */
     
     PetscPrintf(PETSC_COMM_WORLD,"thermal_sb: BACKGROUND kappa = %1.4e \n",kappa );
     for (p=0; p<n_mpoints; p++) {
