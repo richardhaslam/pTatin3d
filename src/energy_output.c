@@ -288,7 +288,8 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Quadrature Q,Vec X,const 
 	
 	/* VTS CELL DATA */	
 	fprintf(vtk_fp, "    <CellData>\n");
-	
+
+  nqp = 0;
   if (Q) {
     nqp  = Q->npoints;
     ierr = VolumeQuadratureGetAllCellData_Energy(Q,&all_quadrature_points);CHKERRQ(ierr);
