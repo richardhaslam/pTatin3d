@@ -897,11 +897,11 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
         if (cj_rotation) {
             cJSON  *cj_r_angle = NULL;
             cJSON  *cj_r_axis = NULL;
-            cJSON  *cj_r_deg = NULL;
+            /* cJSON  *cj_r_deg = NULL; */
             int    k,nag,nax;
             double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
             GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
-            PetscBool      same,isdegrees;
+            /* PetscBool     isdegrees; */
             
             cj_r_angle = cJSON_GetObjectItem(cj_rotation,"angle");
             cj_r_axis  = cJSON_GetObjectItem(cj_rotation,"axis");
@@ -920,19 +920,20 @@ PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
             }
             
             cJSON_GetObjectValue_doublearray(cj_rotation,"angle",&found,&nag,rotation_angle);
-
+            /*
             isdegrees = PETSC_FALSE;
             cj_r_deg  = cJSON_GetObjectItem(cj_rotation,"unit");
             if (cj_r_deg) {
-                char *truename;
+                char      *truename;
+                PetscBool same;
                 
                 truename = cj_r_deg->valuestring;
-
                 same = PETSC_FALSE; PetscStrcmp(truename,"degree",&same);  if (same) { isdegrees = PETSC_TRUE; }
                 same = PETSC_FALSE; PetscStrcmp(truename,"degrees",&same); if (same) { isdegrees = PETSC_TRUE; }
                 same = PETSC_FALSE; PetscStrcmp(truename,"deg",&same);     if (same) { isdegrees = PETSC_TRUE; }
                 same = PETSC_FALSE; PetscStrcmp(truename,"d",&same);       if (same) { isdegrees = PETSC_TRUE; }
             }
+            */
             for (k=0; k<nag; k++) {
                 rotation_angle[k] = rotation_angle[k] * M_PI/180.0;
             }
