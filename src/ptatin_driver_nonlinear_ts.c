@@ -1182,6 +1182,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
+	nlevels = 1;
 	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1882,6 +1883,7 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
+	nlevels = 1;
 	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -2676,6 +2678,7 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
 	
 	/* setup mg */
+	nlevels = 1;
 	PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
 	PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n", user->mx,user->my,user->mz,nlevels );
 	ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
