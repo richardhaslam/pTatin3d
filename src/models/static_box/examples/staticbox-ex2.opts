@@ -49,7 +49,7 @@
 # ---- Solver configuration ---- #
 -stokes_snes_monitor_up false
 -stokes_ksp_monitor_up false
-#-dau_nlevels 1
+-dau_nlevels 1
 -A11_operator_type 0
 -ksp_type fgmres
 -ksp_rtol 1.0e-20
