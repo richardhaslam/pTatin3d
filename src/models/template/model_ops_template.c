@@ -59,7 +59,7 @@ PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialMeshGeometry_Template"
 PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
 {
-  ModelTemplateCtx *data;
+  /* ModelTemplateCtx *data; */
   PhysCompStokes   stokes;
   DM               stokes_pack,dav,dap;
   PetscErrorCode   ierr;
@@ -68,7 +68,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
   
   
-  data = (ModelTemplateCtx*)ctx;
+  /* data = (ModelTemplateCtx*)ctx; */
   ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
   stokes_pack = stokes->stokes_pack;
   ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
@@ -81,11 +81,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialMaterialGeometry_Template"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 {
-  ModelTemplateCtx *data;
+  /* ModelTemplateCtx *data; */
   
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-  data = (ModelTemplateCtx*)ctx;
+  /* data = (ModelTemplateCtx*)ctx; */
   
   PetscFunctionReturn(0);
 }
@@ -94,11 +94,11 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 #define __FUNCT__ "ModelApplyInitialSolution_Template"
 PetscErrorCode ModelApplyInitialSolution_Template(pTatinCtx c,Vec X,void *ctx)
 {
-  ModelTemplateCtx *data;
+  /* ModelTemplateCtx *data; */
   
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-  data = (ModelTemplateCtx*)ctx;
+  /* data = (ModelTemplateCtx*)ctx; */
   
   PetscFunctionReturn(0);
 }
@@ -164,11 +164,11 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Template(PetscInt nl,BCList bclist[
 #define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Template"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ctx)
 {
-  ModelTemplateCtx *data;
+  /* ModelTemplateCtx *data; */
   
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-  data = (ModelTemplateCtx*)ctx;
+  /* data = (ModelTemplateCtx*)ctx; */
   
   PetscFunctionReturn(0);
 }
@@ -177,11 +177,11 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ct
 #define __FUNCT__ "ModelApplyUpdateMeshGeometry_Template"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx)
 {
-  ModelTemplateCtx *data;
+  /* ModelTemplateCtx *data; */
   
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-  data = (ModelTemplateCtx*)ctx;
+  /* data = (ModelTemplateCtx*)ctx; */
   
   PetscFunctionReturn(0);
 }
@@ -190,11 +190,11 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx
 #define __FUNCT__ "ModelOutput_Template"
 PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
-  ModelTemplateCtx *data;
+  /* ModelTemplateCtx *data; */
   
   PetscFunctionBegin;
   PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-  data = (ModelTemplateCtx*)ctx;
+  /* data = (ModelTemplateCtx*)ctx; */
 
   /* ---- Velocity-Pressure Mesh Output ---- */
   /* [1] Standard viewer: v,p written out as binary in double */
