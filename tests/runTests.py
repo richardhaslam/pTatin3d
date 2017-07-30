@@ -35,10 +35,19 @@ if not PETSC_ARCH :
 # bitbucket.org/dmay/pythontestharness
 sys.path.append(os.path.join(PTATIN_DIR,'tests','pythontestharness','lib'))  # overrides
 try :
-    import pyTestHarness.harness as pyth_harness
+  import numpy
 except Exception as errorMessage :
   print(format(errorMessage))
-  if format(errorMessage) == "No module named pyTestHarness.harness":
+  print("********************")
+  print("numpy is required to use the required pyTestHarness module.")
+  print("Make sure that numpy is available with your python installation.")
+  print("********************")
+  sys.exit(1)
+try :
+  import pyTestHarness.harness as pyth_harness
+except Exception as errorMessage :
+  if not sys.exc_info()[-1].tb_next :
+    print(format(errorMessage))
     print("********************")
     print("The required python library pyTestHarness was not found. Exiting.")
     print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
