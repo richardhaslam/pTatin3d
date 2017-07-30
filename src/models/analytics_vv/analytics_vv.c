@@ -417,8 +417,6 @@ PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m)
   
   /* Allocate memory for the data structure for this model */
   
-  /* Set name, model select via -ptatin_model NAME */
-  
   /* Set model data */
   ierr = pTatinModelSetUserData(m,NULL);CHKERRQ(ierr);
   
