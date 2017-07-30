@@ -414,9 +414,8 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nn
             nnz_i = ia[i+1]-ia[i];
             for (j=cnt; j<cnt+nnz_i; j++) {
                 if (ja[j] >= (i+start)) {
-                    PetscReal value,abs_value;
+                    PetscReal abs_value;
                     
-                    value     = PetscRealPart(array[j]);
                     abs_value = PetscAbsReal(array[j]);
                     if (abs_value > drop_tol) {
                         vals[idx] = (double)array[j];
