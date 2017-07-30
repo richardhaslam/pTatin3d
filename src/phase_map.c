@@ -170,9 +170,7 @@ void PhaseMapLoadFromFile(const char filename[],PhaseMap *map)
 	}
     
 	if (is_zipped == 1) {
-		int ierr;
-        
-        ierr = PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
+    PhaseMapLoadFromFile_ASCII_ZIPPED(filename,map);
 	} else {
 		PhaseMapLoadFromFile_ASCII(filename,map);
 	}
