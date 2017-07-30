@@ -40,14 +40,12 @@
 -mp_popctrl_nzp 2
 
 # ---- Define ptatin timestepping/io parameters ---- #
--output_path ex1_staticBox_tm
+-output_path ex2_staticBox_tm
 -nsteps 45
 -output_frequency 1
 
 -dt_min 0.5
 -dt_max 0.5
-
-
 
 # ---- Solver configuration ---- #
 -nonlinear_driver_v1
