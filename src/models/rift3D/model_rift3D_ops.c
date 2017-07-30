@@ -359,7 +359,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	int                    phase;
 	DataBucket materialconstants = c->material_constants;
 	MaterialConst_DensityConst *DensConst_data;
-	MaterialConst_ViscosityZ *ViscZ_data;
+	/* MaterialConst_ViscosityZ *ViscZ_data; */
 			
 	PetscFunctionBegin;
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
@@ -382,7 +382,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D(pTatinCtx c,void *ctx)
 	DensConst_data    = (MaterialConst_DensityConst*)PField_DensConst->data;
 	
 	DataBucketGetDataFieldByName(materialconstants,MaterialConst_ViscosityZ_classname,  &PField_ViscZ);
-	ViscZ_data    = (MaterialConst_ViscosityZ*)PField_ViscZ->data;
+	/* ViscZ_data    = (MaterialConst_ViscosityZ*)PField_ViscZ->data; */
 	
 	/* m */
 	y_lab      = -120.0e3; 
