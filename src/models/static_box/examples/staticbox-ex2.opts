@@ -39,14 +39,12 @@
 -mp_popctrl_nzp 2
 
 # ---- Define ptatin timestepping/io parameters ---- #
--output_path ex1_staticBox
+-output_path ex2_staticBox
 -nsteps 2
 -output_frequency 1
 
 -dt_min 1.0e-6
 -dt_max 0.5
-
-
 
 # ---- Solver configuration ---- #
 -stokes_snes_monitor_up false
