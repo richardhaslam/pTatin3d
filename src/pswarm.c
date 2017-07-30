@@ -600,6 +600,7 @@ PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps)
     
     ierr = pTatinGetContext_Energy(ps->pctx,&energy);CHKERRQ(ierr);
     temperature = NULL;
+    dmT = NULL;
     if (energy) {
         dmT = energy->daT;
         ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
