@@ -57,10 +57,11 @@ PetscErrorCode pTatinGenerateParallelVTKName(const char prefix[],const char suff
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (prefix!=NULL) {
 		asprintf(&nn,"%s-subdomain%1.5d.%s",prefix,rank,suffix);
+    *name = nn;
 	} else {
+    *name = NULL;
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a prefix");
 	}
-	*name = nn;
 	PetscFunctionReturn(0);
 }
 
