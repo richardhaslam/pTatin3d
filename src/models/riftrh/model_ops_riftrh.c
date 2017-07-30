@@ -735,7 +735,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	DataBucket             db;
 	DataField              PField_std,PField_stokes,PField_pls;
 	int                    phase;
-	PetscScalar            ha_dimensional,hm_dimensional,hc_dimensional,notch_height,notch_width,x_center,y_center,z_center;
+	PetscScalar            ha_dimensional,hm_dimensional,notch_height,notch_width,x_center,z_center;
+  /* PetscScalar           hc_dimensional,y_center; */
 	PetscScalar            xp_dimensional,yp_dimensional,zp_dimensional;
 	PetscErrorCode ierr;
 	MPAccess           mpX;
@@ -760,9 +761,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	
 	ha_dimensional = data->ha * data->length_bar;
 	hm_dimensional = data->hm * data->length_bar;
-	hc_dimensional = data->hc * data->length_bar;
+	/* hc_dimensional = data->hc * data->length_bar; */
 	x_center       = 0.5 * data->Lx * data->length_bar;
-	y_center       = 0.5 * data->Ly * data->length_bar;
+	/* y_center       = 0.5 * data->Ly * data->length_bar; */
 	z_center       = 0.5 * data->Lz * data->length_bar;
 	notch_width    = 50.0e3;
 	notch_height   = 30.0e3;
