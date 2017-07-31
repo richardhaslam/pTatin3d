@@ -274,7 +274,7 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
             xip[2] = q_coor[3*q+2];
             
             pTatin_ConstructNi_Q2_3D(xip,Ni);
-            
+            xp[0] = 0.0; xp[1] = 0.0; xp[2] = 0.0;
             for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
                 xp[0] += Ni[k] * el_coords[NSD*k+0];
                 xp[1] += Ni[k] * el_coords[NSD*k+1];
