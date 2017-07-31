@@ -115,7 +115,7 @@ void StringFindInList( const char name[], const int N, const DataField gfield[],
 	}
 }
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF )
+void DataFieldCreate( const char registration_function[], const char name[], const size_t size, const int L, DataField *DF )
 {
 	DataField df;
 	
@@ -123,7 +123,7 @@ void DataFieldCreate( const char registeration_function[], const char name[], co
 	memset( df, 0, sizeof(struct _p_DataField) ); 
 	
 	
-	if (asprintf( &df->registeration_function, "%s", registeration_function ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
+	if (asprintf( &df->registration_function, "%s", registration_function ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 	if (asprintf( &df->name, "%s", name ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 	df->atomic_size = size;
 	df->L = L;
@@ -138,7 +138,7 @@ void DataFieldDestroy( DataField *DF )
 {
 	DataField df = *DF;
 	
-	free( df->registeration_function );
+	free( df->registration_function );
 	free( df->name );
 	free( df->data );
 	free(df);
@@ -190,7 +190,7 @@ void DataBucketDestroy( DataBucket *DB )
 
 void _DataBucketRegisterField(
 						DataBucket db,
-						const char registeration_function[],
+						const char registration_function[],
 						const char field_name[],
 						size_t atomic_size, DataField *_gfield )
 {
@@ -217,7 +217,7 @@ void _DataBucketRegisterField(
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, db->allocated, &fp );
+	DataFieldCreate( registration_function, field_name, atomic_size, db->allocated, &fp );
 	db->field[ db->nfields ] = fp;
 	
 	db->nfields++;
@@ -677,7 +677,7 @@ void _DataFieldViewBinary(DataField field, FILE *fp )
 	fprintf(fp,"<DataField>\n");
 	fprintf(fp,"%d\n", field->L);
 	fprintf(fp,"%zu\n",field->atomic_size);
-	fprintf(fp,"%s\n", field->registeration_function);
+	fprintf(fp,"%s\n", field->registration_function);
 	fprintf(fp,"%s\n", field->name);
 	
 	fwrite(field->data, field->atomic_size, field->L, fp);
@@ -694,7 +694,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 
 	DataField gfield;
 	char dummy[100];
-	char registeration_function[5000];
+	char registration_function[5000];
 	char field_name[5000];
 	int L;
 	size_t atomic_size,strL;
@@ -716,10 +716,10 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	
 	fscanf( fp, "%zu\n",&atomic_size); //printf("read(size): %zu\n",atomic_size);
 	
-	fgets(registeration_function,4999,fp); //printf("read(reg func): %s", registeration_function );
-	strL = strlen(registeration_function);
+	fgets(registration_function,4999,fp); //printf("read(reg func): %s", registration_function );
+	strL = strlen(registration_function);
 	if(strL>1){ 
-		registeration_function[strL-1] = 0;
+		registration_function[strL-1] = 0;
 	}
 	
 	fgets(field_name,4999,fp); //printf("read(name): %s", field_name );
@@ -729,7 +729,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	}
 
 #ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
+	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registration_function,field_name);
 #endif
 	
 	
@@ -745,7 +745,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );
+	DataFieldCreate( registration_function, field_name, atomic_size, L, &gfield );
 
 	/* copy contents of file */
 	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
