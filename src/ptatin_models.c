@@ -107,7 +107,7 @@ PetscErrorCode pTatinModelDestroy(pTatinModel *m)
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[])
 {
 	PetscFunctionBegin;
-	asprintf(&model->model_name,"%s",name);
+	if (asprintf(&model->model_name,"%s",name) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	PetscFunctionReturn(0);
 }
 

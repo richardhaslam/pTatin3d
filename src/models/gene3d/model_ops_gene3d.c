@@ -130,13 +130,13 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 		switch (rheology->rheology_type){
 			case 0:
 			{
-				asprintf(&option_name, "-eta0_%d", i);
+				if (asprintf(&option_name, "-eta0_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->const_eta0[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 					free (option_name);
 				}
-				asprintf (&option_name, "-rho_%d", i);
+				if (asprintf (&option_name, "-rho_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->const_rho0[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
@@ -147,42 +147,42 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 				
 			case 1:
 			{
-				asprintf(&option_name, "-eta0_%d", i);
+				if (asprintf(&option_name, "-eta0_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->const_eta0[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1 (PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",	option_name);
 				}
 				free(option_name);
 				
-				asprintf(&option_name, "-rho_%d", i);
+				if (asprintf(&option_name, "-rho_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->const_rho0[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf(&option_name, "-Co_%d", i);
+				if (asprintf(&option_name, "-Co_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->mises_tau_yield[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Phi_%d", i);
+				if (asprintf (&option_name, "-Phi_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->dp_pressure_dependance[i]),&found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Tens_%d", i);
+				if (asprintf (&option_name, "-Tens_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->tens_cutoff[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Hs_%d", i);
+				if (asprintf (&option_name, "-Hs_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->Hst_cutoff[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
@@ -192,65 +192,65 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 				break;
 			case 2:
 			{
-				asprintf (&option_name, "-eta0_%d", i);
+				if (asprintf (&option_name, "-eta0_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->const_eta0[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-rho_%d", i);
+				if (asprintf (&option_name, "-rho_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->const_rho0[i]), &found);CHKERRQ(ierr);
-				asprintf (&option_name, "-Co_%d", i);
+				if (asprintf (&option_name, "-Co_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->mises_tau_yield[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_USER,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Phi_%d", i);
+				if (asprintf (&option_name, "-Phi_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->dp_pressure_dependance[i]),&found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Tens_%d", i);
+				if (asprintf (&option_name, "-Tens_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->tens_cutoff[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Hs_%d", i);
+				if (asprintf (&option_name, "-Hs_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->Hst_cutoff[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Co_inf_%d", i);
+				if (asprintf (&option_name, "-Co_inf_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->soft_Co_inf[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-Phi_inf_%d", i);
+				if (asprintf (&option_name, "-Phi_inf_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->soft_phi_inf[i]), &found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-eps_min_%d", i);
+				if (asprintf (&option_name, "-eps_min_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->soft_min_strain_cutoff[i]),&found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
 				}
 				free (option_name);
 				
-				asprintf (&option_name, "-eps_max_%d", i);
+				if (asprintf (&option_name, "-eps_max_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name,&(rheology->soft_max_strain_cutoff[i]),&found);CHKERRQ(ierr);
 				if (found == PETSC_FALSE) {
 					SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_SUP,"Expected user to provide value to option %s \n",option_name);
@@ -423,7 +423,7 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
     YLayer[0] = data->Oy;
     for (i=1; i<=nLayer; i++) {
         
-		asprintf (&option_name, "-layer_y_%d", i);
+		if (asprintf (&option_name, "-layer_y_%d", i) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		ierr = PetscOptionsGetReal(NULL,MODEL_NAME, option_name, &YLayer[i], &flg);CHKERRQ(ierr);
 		if (flg == PETSC_FALSE) {
 			/* NOTE - these error messages are useless if you don't include "model_Gene3D_" in the statement. I added &name[1] so that the "-" is skipped */
@@ -432,7 +432,7 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
 		free (option_name);
         
 		if (YLayer[i] > YLayer[i-1]) {
-			asprintf (&option_name, "-layer_phase_%d", i-1);
+			if (asprintf (&option_name, "-layer_phase_%d", i-1) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			ierr = PetscOptionsGetInt(NULL,MODEL_NAME, option_name, &phaseLayer[i-1],&flg);CHKERRQ(ierr);
 			
 			if (flg == PETSC_FALSE) {
@@ -526,13 +526,13 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
             SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"-extrude_dir %d not valid",direction);
     }
     
-    asprintf(&name,"./inputdata/%s.pmap",map_file);
+    if (asprintf(&name,"./inputdata/%s.pmap",map_file) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
     ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
     ierr = CartGridSetFilename(phasemap,map_file);CHKERRQ(ierr);
     ierr = CartGridSetUp(phasemap);CHKERRQ(ierr);
     free(name);
 	
-    asprintf(&name,"./inputdata/%s_phase_map.gp",map_file);
+    if (asprintf(&name,"./inputdata/%s_phase_map.gp",map_file) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
     ierr = CartGridViewPV(phasemap,name);CHKERRQ(ierr);
     free(name);
 	

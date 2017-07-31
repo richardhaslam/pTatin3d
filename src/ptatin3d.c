@@ -148,10 +148,10 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 
 		if (ctx->restart_from_file) {
 			pTatinGenerateFormattedTimestamp(date_time);
-			asprintf(&pvdfilename,"%s/timeseries_vp_%s.pvd",ctx->outputpath,date_time);
+			if (asprintf(&pvdfilename,"%s/timeseries_vp_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
 		} else {
-			asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath);
+			if (asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
@@ -162,9 +162,9 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 		char *vtkfilename;
 		
 		if (prefix) {
-			asprintf(&vtkfilename, "%s_vp.pvts",prefix);
+			if (asprintf(&vtkfilename, "%s_vp.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&vtkfilename, "vp.pvts");
+			if (asprintf(&vtkfilename, "vp.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
@@ -173,9 +173,9 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	
 	// PVTS + VTS
 	if (prefix) {
-		asprintf(&name,"%s_vp",prefix);
+		if (asprintf(&name,"%s_vp",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&name,"vp");
+		if (asprintf(&name,"vp") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
@@ -210,10 +210,10 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 		
 		if (ctx->restart_from_file) {
 			pTatinGenerateFormattedTimestamp(date_time);
-			asprintf(&pvdfilename,"%s/timeseries_v_%s.pvd",ctx->outputpath,date_time);
+			if (asprintf(&pvdfilename,"%s/timeseries_v_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
 		} else {
-			asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath);
+			if (asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
@@ -224,9 +224,9 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 		char *vtkfilename;
 		
 		if (prefix) {
-			asprintf(&vtkfilename, "%s_v.pvts",prefix);
+			if (asprintf(&vtkfilename, "%s_v.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&vtkfilename, "v.pvts");
+			if (asprintf(&vtkfilename, "v.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, NULL);CHKERRQ(ierr);
@@ -235,9 +235,9 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	
 	// PVTS + VTS
 	if (prefix) {
-		asprintf(&name,"%s_v",prefix);
+		if (asprintf(&name,"%s_v",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&name,"v");
+		if (asprintf(&name,"v") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
@@ -271,10 +271,10 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		
 		if (ctx->restart_from_file) {
 			pTatinGenerateFormattedTimestamp(date_time);
-			asprintf(&pvdfilename,"%s/timeseries_X_%s.pvd",ctx->outputpath,date_time);
+			if (asprintf(&pvdfilename,"%s/timeseries_X_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
 		} else {
-			asprintf(&pvdfilename,"%s/timeseries_X.pvd",ctx->outputpath);
+			if (asprintf(&pvdfilename,"%s/timeseries_X.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
@@ -285,9 +285,9 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		char *vtkfilename;
 		
 		if (prefix) {
-			asprintf(&vtkfilename, "%s_X.pvts",prefix);
+			if (asprintf(&vtkfilename, "%s_X.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&vtkfilename, "X.pvts");
+			if (asprintf(&vtkfilename, "X.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
@@ -575,7 +575,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath);
+		if (asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
@@ -585,9 +585,9 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 		char *vtkfilename;
 		
 		if (prefix) {
-			asprintf(&vtkfilename, "%s_mpoints_std.pvtu",prefix);
+			if (asprintf(&vtkfilename, "%s_mpoints_std.pvtu",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&vtkfilename, "mpoints_std.pvtu");
+			if (asprintf(&vtkfilename, "mpoints_std.pvtu") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
@@ -596,9 +596,9 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	
 	// PVTS + VTS
 	if (prefix) {
-		asprintf(&name,"%s_mpoints_std",prefix);
+		if (asprintf(&name,"%s_mpoints_std",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&name,"mpoints_std");
+		if (asprintf(&name,"mpoints_std") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,ctx->outputpath,name);CHKERRQ(ierr);

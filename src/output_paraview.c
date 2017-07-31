@@ -56,7 +56,7 @@ PetscErrorCode pTatinGenerateParallelVTKName(const char prefix[],const char suff
 	PetscFunctionBegin;
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	if (prefix!=NULL) {
-		asprintf(&nn,"%s-subdomain%1.5d.%s",prefix,rank,suffix);
+		if (asprintf(&nn,"%s-subdomain%1.5d.%s",prefix,rank,suffix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
     *name = nn;
 	} else {
     *name = NULL;
@@ -73,7 +73,7 @@ PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],cha
 
 	PetscFunctionBegin;
 	if (prefix!=NULL) {
-		asprintf(&nn,"%s.%s",prefix,suffix);
+		if (asprintf(&nn,"%s.%s",prefix,suffix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify a prefix");
 	}
@@ -177,9 +177,9 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 	PetscFunctionBegin;
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	if (binary) {
@@ -202,9 +202,9 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputMeshVelocityPressurePVTS(pack,prefix,filename);CHKERRQ(ierr);
@@ -227,9 +227,9 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	PetscFunctionBegin;
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	if (binary) {
@@ -243,9 +243,9 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputLiteMeshVelocityPVTS(pack,prefix,filename);CHKERRQ(ierr);
@@ -1029,7 +1029,7 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 					int procid32;
 					
 					PetscMPIIntCast(procid,&procid32);
-					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
+					if (asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 					for( II=0; II<indent_level; II++ ) {
 						if(vtk_fp) fprintf(vtk_fp,"  ");
 					}
@@ -1050,7 +1050,7 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 				int procid32;
 				
 				PetscMPIIntCast(procid,&procid32);
-				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
+				if (asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				for( II=0; II<indent_level; II++ ) {
 					if(vtk_fp) fprintf(vtk_fp,"  ");
 				}
@@ -1140,7 +1140,7 @@ PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
 				procid = i + j*processor_span[0] + k*processor_span[0]*processor_span[1]; /* convert proc(i,j,k) to pid */
 				PetscMPIIntCast(procid,&procid32);
 
-				asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid32 );
+				if (asprintf( &name, "%s-subdomain%1.5d.vts", prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				if(vtk_fp) PetscFPrintf(PETSC_COMM_SELF, vtk_fp, "      <Piece Extent=\"%D %D %D %D %D %D\"      Source=\"%s\"/>\n",
 													 olx[i],olx[i]+lmx[i]*2,
 													 oly[j],oly[j]+lmy[j]*2,
@@ -1196,9 +1196,9 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			PetscSNPrintf(pprefix,PETSC_MAX_PATH_LEN-1,"%s_v_PSliceI%D",prefix,i);
 			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 			if (path) {
-				asprintf(&filename,"%s/%s",path,vtkfilename);
+				if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			} else {
-				asprintf(&filename,"./%s",vtkfilename);
+				if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			}
 
 			vtk_fp = NULL;
@@ -1234,9 +1234,9 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			PetscSNPrintf(pprefix,PETSC_MAX_PATH_LEN-1,"%s_v_PSliceJ%D",prefix,j);
 			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 			if (path) {
-				asprintf(&filename,"%s/%s",path,vtkfilename);
+				if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			} else {
-				asprintf(&filename,"./%s",vtkfilename);
+				if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			}
 			
 			vtk_fp = NULL;
@@ -1272,9 +1272,9 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			PetscSNPrintf(pprefix,PETSC_MAX_PATH_LEN-1,"%s_v_PSliceK%D",prefix,k);
 			ierr = pTatinGenerateVTKName(pprefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 			if (path) {
-				asprintf(&filename,"%s/%s",path,vtkfilename);
+				if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			} else {
-				asprintf(&filename,"./%s",vtkfilename);
+				if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			}
 			
 			vtk_fp = NULL;

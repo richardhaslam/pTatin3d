@@ -1094,9 +1094,9 @@ PetscErrorCode pTatinOutputParaViewMarkerFields(DM pack,DataBucket material_poin
 
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
@@ -1108,9 +1108,9 @@ PetscErrorCode pTatinOutputParaViewMarkerFields(DM pack,DataBucket material_poin
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 
 	ierr = pTatinOutputParaViewMarkerFields_PVTS(dau,nvars,vars,prefix,filename);CHKERRQ(ierr);
@@ -1141,10 +1141,10 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 		
 		if (ctx->restart_from_file) {
 			pTatinGenerateFormattedTimestamp(date_time);
-			asprintf(&pvdfilename,"%s/timeseries_mpoints_cell_%s.pvd",ctx->outputpath,date_time);
+			if (asprintf(&pvdfilename,"%s/timeseries_mpoints_cell_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
 		} else {
-			asprintf(&pvdfilename,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
+			if (asprintf(&pvdfilename,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		}
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
@@ -1155,9 +1155,9 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 		char *vtkfilename;
 		
 		if (prefix) {
-			asprintf(&vtkfilename, "%s_mpoints_cell.pvts",prefix);
+			if (asprintf(&vtkfilename, "%s_mpoints_cell.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&vtkfilename, "mpoints_cell.pvts");
+			if (asprintf(&vtkfilename, "mpoints_cell.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
@@ -1166,9 +1166,9 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 	
 	// PVTS + VTS
 	if (prefix) {
-		asprintf(&name,"%s_mpoints_cell",prefix);
+		if (asprintf(&name,"%s_mpoints_cell",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&name,"mpoints_cell");
+		if (asprintf(&name,"mpoints_cell") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = pTatinGetMaterialPoints(ctx,&material_points,NULL);CHKERRQ(ierr);

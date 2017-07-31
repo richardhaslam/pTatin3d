@@ -1071,7 +1071,7 @@ void ElementTypeCreate_Q2(ConformingElementFamily *_e,const int dim)
 	
 	e = calloc( 1, sizeof(struct _p_ConformingElementFamily) );
 	
-	asprintf( &e->name, "Q2(%d)", dim );
+	if (asprintf( &e->name, "Q2(%d)", dim ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 	e->nsd = dim;
 	
 	e->n_nodes_0D = 1;

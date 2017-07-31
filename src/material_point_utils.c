@@ -451,7 +451,7 @@ PetscErrorCode SwarmViewGeneric_PVTUXML(const int nfields,const MaterialPointFie
         int i32;
         
         PetscMPIIntCast(i,&i32);
-		asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 );
+		if (asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 		free(sourcename);
 	}
@@ -480,9 +480,9 @@ PetscErrorCode SwarmViewGeneric_ParaView(DataBucket db,const int nfields,const M
 	
 	ierr = pTatinGenerateParallelVTKName(prefix,"vtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	//#ifdef __VTK_ASCII__
@@ -496,9 +496,9 @@ PetscErrorCode SwarmViewGeneric_ParaView(DataBucket db,const int nfields,const M
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

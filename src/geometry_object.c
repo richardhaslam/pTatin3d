@@ -78,14 +78,13 @@ void PointBackTranslate(double xin[],double shift[],double xout[]);
 PetscErrorCode GeometryObjectCreate(const char name[],GeometryObject *G)
 {
 	GeometryObject go;
-	int k;
+	int            k;
 	PetscErrorCode ierr;
-	
 	
 	ierr = PetscMalloc(sizeof(struct _p_GeometryObject),&go);CHKERRQ(ierr);
 	ierr = PetscMemzero(go,sizeof(struct _p_GeometryObject));CHKERRQ(ierr);
 	
-	asprintf(&go->name,"%s",name);
+	if (asprintf(&go->name,"%s",name) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	go->type = GeomType_NULL;
 	go->ctx = NULL;
 	go->n_rotations = 0;

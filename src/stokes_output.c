@@ -280,7 +280,7 @@ PetscErrorCode _SurfaceQuadratureViewParaviewPVTU_Stokes(const char prefix[],con
             PetscMPIIntCast(i,&i32);
             PetscMPIIntCast(fe,&fe32);
             
-			asprintf( &sourcename, "%s_face%.2d-subdomain%1.5d.vtu", prefix, fe32,i32 );
+			if (asprintf( &sourcename, "%s_face%.2d-subdomain%1.5d.vtu", prefix, fe32,i32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 			fprintf( fp, "    <Piece Source=\"%s\"/>\n",sourcename);
 			free(sourcename);
 		}
@@ -312,12 +312,12 @@ PetscErrorCode SurfaceQuadratureViewParaview_Stokes(PhysCompStokes ctx,const cha
         int e32;
 		
         PetscMPIIntCast(e,&e32);
-		asprintf(&appended,"%s_face%.2d",prefix,e32);
+		if (asprintf(&appended,"%s_face%.2d",prefix,e32) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		ierr = pTatinGenerateParallelVTKName(appended,"vtu",&vtkfilename);CHKERRQ(ierr);
 		if (path) {
-			asprintf(&filename,"%s/%s",path,vtkfilename);
+			if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&filename,"./%s",vtkfilename);
+			if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = _SurfaceQuadratureViewParaviewVTU_Stokes(ctx->surfQ[e],ctx->dav,filename);CHKERRQ(ierr);
@@ -326,12 +326,12 @@ PetscErrorCode SurfaceQuadratureViewParaview_Stokes(PhysCompStokes ctx,const cha
 		free(appended);
 	}
 	
-	asprintf(&appended,"%s_allfaces",prefix);
+	if (asprintf(&appended,"%s_allfaces",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	ierr = pTatinGenerateVTKName(appended,"pvtu",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	if (rank==0) { /* not we are a bit tricky about which name we pass in here to define the edge data sets */
 		ierr = _SurfaceQuadratureViewParaviewPVTU_Stokes(prefix,filename);CHKERRQ(ierr);

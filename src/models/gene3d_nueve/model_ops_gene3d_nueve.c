@@ -658,7 +658,7 @@ PetscErrorCode MaterialPointSetRegionIndexFromMap(pTatinCtx c,void *ctx)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"-extrude_dir %d not valid",direction);
     }
 
-    asprintf(&name,"./inputdata/%s.pmap",map_file);
+    if (asprintf(&name,"./inputdata/%s.pmap",map_file) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
     ierr = CartGridCreate(&phasemap);CHKERRQ(ierr);
     ierr = CartGridSetFilename(phasemap,map_file);CHKERRQ(ierr);
     ierr = CartGridSetUp(phasemap);CHKERRQ(ierr);

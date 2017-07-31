@@ -459,7 +459,7 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 					int procid32;
 					
 					PetscMPIIntCast(procid,&procid32);
-					asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
+					if (asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 					for( II=0; II<indent_level; II++ ) {
 						if(vtk_fp) fprintf(vtk_fp,"  ");
 					}
@@ -480,7 +480,7 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
                 int procid32;
                 
                 PetscMPIIntCast(procid,&procid32);
-				asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 );
+				if (asprintf( &name, "%s-subdomain%1.5d.vts", local_file_prefix, procid32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 				for( II=0; II<indent_level; II++ ) {
 					if(vtk_fp) fprintf(vtk_fp,"  ");
 				}
@@ -568,9 +568,9 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Quadrature Q,Vec X,const ch
 	PetscFunctionBegin;
 	ierr = pTatinGenerateParallelVTKName(prefix,"vts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = pTatinOutputMeshEnergyVTS(daT,Q,X,binary,filename);CHKERRQ(ierr); /* binary */
@@ -579,9 +579,9 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Quadrature Q,Vec X,const ch
 	
 	ierr = pTatinGenerateVTKName(prefix,"pvts",&vtkfilename);CHKERRQ(ierr);
 	if (path) {
-		asprintf(&filename,"%s/%s",path,vtkfilename);
+		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&filename,"./%s",vtkfilename);
+		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 	ierr = pTatinOutputMeshEnergyPVTS(daT,Q,prefix,filename);CHKERRQ(ierr);
@@ -613,7 +613,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	PetscTime(&t0);
 	// PVD
 	if (beenhere==0) {
-		asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath);
+		if (asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
@@ -623,9 +623,9 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 		char *vtkfilename;
 		
 		if (prefix) {
-			asprintf(&vtkfilename, "%s_energy.pvts",prefix);
+			if (asprintf(&vtkfilename, "%s_energy.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
-			asprintf(&vtkfilename, "energy.pvts");
+			if (asprintf(&vtkfilename, "energy.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
 		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
@@ -634,9 +634,9 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	
 	// PVTS + VTS
 	if (prefix) {
-		asprintf(&name,"%s_energy",prefix);
+		if (asprintf(&name,"%s_energy",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {
-		asprintf(&name,"energy");
+		if (asprintf(&name,"energy") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
 	ierr = pTatinOutputParaViewMeshEnergy(daT,volQ,X,ctx->outputpath,name);CHKERRQ(ierr);

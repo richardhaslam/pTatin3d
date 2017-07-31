@@ -1703,7 +1703,7 @@ PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],con
     if (nplist[i] != 0) {
       
       PetscMPIIntCast(i,&i32);
-      asprintf(&sourcename,"%s-subdomain%1.5d.vtu",fileprefix,i32);
+      if (asprintf(&sourcename,"%s-subdomain%1.5d.vtu",fileprefix,i32) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
       fprintf(vtk_fp,"    <Piece Source=\"%s\"/>\n",sourcename);
       free(sourcename);
     }

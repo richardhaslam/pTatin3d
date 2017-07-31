@@ -123,8 +123,8 @@ void DataFieldCreate( const char registeration_function[], const char name[], co
 	memset( df, 0, sizeof(struct _p_DataField) ); 
 	
 	
-	asprintf( &df->registeration_function, "%s", registeration_function );
-	asprintf( &df->name, "%s", name );
+	if (asprintf( &df->registeration_function, "%s", registeration_function ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
+	if (asprintf( &df->name, "%s", name ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 	df->atomic_size = size;
 	df->L = L;
 	
@@ -226,15 +226,6 @@ void _DataBucketRegisterField(
 		*_gfield = fp;
 	}
 }
-
-/*
-#define DataBucketRegisterField(db,name,size,k) {\
-  char *location;\
-  asprintf(&location,"Registered by %s() at line %d within file %s", __FUNCTION__, __LINE__, __FILE__);\
-  _DataBucketRegisterField( (db), location, (name), (size), (k) );\
-  free(location);\
-}
-*/
 
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
@@ -880,7 +871,7 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
 		} else {
 			char *name;
 			
-			asprintf(&name,"%s_p%1.5d",filename, rank );
+			if (asprintf(&name,"%s_p%1.5d",filename, rank ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 			_DataBucketLoadFromFileBinary_SEQ(name,db);
 			free(name);
 		}
@@ -1021,7 +1012,7 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 			
 			/* create correct extension */
 			MPI_Comm_rank(comm,&rank);
-			asprintf(&name,"%s_p%1.5d",filename, rank );
+			if (asprintf(&name,"%s_p%1.5d",filename, rank ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
 
 			_DataBucketViewBinary(db,name);
 			

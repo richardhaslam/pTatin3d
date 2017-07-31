@@ -95,7 +95,7 @@ void _DataBucketRegisterField(
 
 #define DataBucketRegisterField(db,name,size,k) {\
   char *location;\
-  asprintf(&location,"Registered by %s() at line %d within file %s", __FUNCTION__, __LINE__, __FILE__);\
+  if (asprintf(&location,"Registered by %s() at line %d within file %s", __FUNCTION__, __LINE__, __FILE__) < 0) {printf("asprintf() failed. Exiting ungracefully.\n"); exit(1);}\
   _DataBucketRegisterField( (db), location, (name), (size), (k) );\
   free(location);\
 }

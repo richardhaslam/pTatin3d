@@ -154,7 +154,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 		char *name;
 		PetscMPIInt rank;
 		MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);
-		asprintf(&name,"test_dmda_redundant_out_%d.vtk",rank);
+		if (asprintf(&name,"test_dmda_redundant_out_%d.vtk",rank) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da_red), name, &vv);CHKERRQ(ierr);
 		free(name);
 	}

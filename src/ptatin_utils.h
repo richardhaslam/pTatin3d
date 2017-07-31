@@ -46,4 +46,3 @@ PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[]);
 PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[]);
 
 #endif
-

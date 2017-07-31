@@ -105,7 +105,7 @@ PetscErrorCode _strlcat(char orig[],const char append[],size_t L)
 		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Input string is not long enough");
 	}
 	
-	asprintf(&new,"%s%s",orig,append);
+	if (asprintf(&new,"%s%s",orig,append) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	strcpy(orig,new);
 	free(new);
 #endif	
