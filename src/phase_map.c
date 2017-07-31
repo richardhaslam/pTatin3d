@@ -91,9 +91,9 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	/* read header information, mx,my,x0,y0,x1,y1 */
   //  fscanf(fp,"%s\n",dummy);
   if (!fgets(dummy,sizeof(dummy),fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-    fscanf(fp,"%d\n",&phasemap->mx);
-    fscanf(fp,"%d\n",&phasemap->my);
-    fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1);
+    if (fscanf(fp,"%d\n",&phasemap->mx) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+    if (fscanf(fp,"%d\n",&phasemap->my) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+    if (fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1) < 4) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
 	//
 	phasemap->dx = (phasemap->x1 - phasemap->x0)/(double)(phasemap->mx);
 	phasemap->dy = (phasemap->y1 - phasemap->y0)/(double)(phasemap->my);
@@ -103,16 +103,14 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	phasemap->data = malloc( sizeof(int)* phasemap->mx * phasemap->my );
 	
 	/* parse phase map from file */
-	//
-    index = 0;
-    for (j=0; j<phasemap->my; j++) {
-		for (i=0; i<phasemap->mx; i++) {
-            fscanf(fp,"%d",&phasemap->data[index]);
-			//printf("%d \n", phasemap->data[index]);
-            index++;
-        }
+  index = 0;
+  for (j=0; j<phasemap->my; j++) {
+    for (i=0; i<phasemap->mx; i++) {
+      if (fscanf(fp,"%d",&phasemap->data[index]) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
+      //printf("%d \n", phasemap->data[index]);
+      index++;
     }
-	//
+  }
     
 	/* compute max number of phases */
 	phasemap_max = -1;

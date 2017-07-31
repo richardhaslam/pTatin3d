@@ -713,10 +713,10 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
   //printf("read(header): %s", dummy );
 	
-	fscanf( fp, "%d\n",&L); 
+	if (fscanf( fp, "%d\n",&L) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
   //printf("read(L): %d\n", L);
 	
-	fscanf( fp, "%zu\n",&atomic_size); 
+	if (fscanf( fp, "%zu\n",&atomic_size) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
   //printf("read(size): %zu\n",atomic_size);
 	
 	if (!fgets(registration_function,4999,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
@@ -841,7 +841,7 @@ void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
 	/* read header */
 	_DataBucketViewAscii_HeaderRead_v00(fp);
 	
-	fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields);
+	if (fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields) < 3) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
 	
 	DataBucketCreate(&db);
 	

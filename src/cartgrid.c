@@ -558,15 +558,15 @@ ParseHeader:
     }
     
     /* read header: dim */
-    fscanf(fp,"%d\n",&dim);
+    if (fscanf(fp,"%d\n",&dim) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
     map->dim = (PetscInt)dim;
     
     if (dim == 2) {
         /* read header: mx,my */
-        fscanf(fp,"%d %d",&mx,&my);
+        if (fscanf(fp,"%d %d",&mx,&my) < 2) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         mz = 1;
         /* read header: x0,x1,y0,y1 */
-        fscanf(fp,"%lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1]);
+        if (fscanf(fp,"%lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1]) < 4) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         zr[0] = -1.0e32;
         zr[1] =  1.032;
         printf("[%d x %d] --> [%1.4e,%1.4e] x [%1.4e,%1.4e]\n",mx,my,xr[0],xr[1],yr[0],yr[1]);
@@ -576,9 +576,9 @@ ParseHeader:
         dz = 0.0;
     } else if (dim == 3) {
         /* read header: mx,my,mz */
-        fscanf(fp,"%d %d %d",&mx,&my,&mz);
+        if (fscanf(fp,"%d %d %d",&mx,&my,&mz) < 3) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         /* read header: x0,x1,y0,y1,z0,z1 */
-        fscanf(fp,"%lf %lf %lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1],&zr[0],&zr[1]);
+        if (fscanf(fp,"%lf %lf %lf %lf %lf %lf",&xr[0],&xr[1],&yr[0],&yr[1],&zr[0],&zr[1]) < 6) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
         printf("[%d x %d x %d] --> [%1.2e,%1.2e] x [%1.2e,%1.2e] x [%1.2e,%1.2e]\n",mx,my,mz,xr[0],xr[1],yr[0],yr[1],zr[0],zr[1]);
 
         dx = (xr[1] - xr[0])/(double)(mx);
