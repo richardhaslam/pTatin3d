@@ -737,7 +737,6 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registration_function,field_name);
 #endif
 	
-	
 	/* check for repeated name */
 	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
 	if(val == BTRUE ) {
@@ -753,7 +752,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	DataFieldCreate( registration_function, field_name, atomic_size, L, &gfield );
 
 	/* copy contents of file */
-	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
+	if (fread(gfield->data, gfield->atomic_size, gfield->L, fp) < gfield->L) {printf("fread() failure. Exiting ungracefully\n");exit(1);}
 #ifdef PTAT3D_LOG_DATA_BUCKET
 	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
 #endif	
@@ -766,7 +765,6 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	db->field[ db->nfields ] = gfield;
 	
 	db->nfields++;
-	
 }
 
 void _DataBucketViewAscii_HeaderWrite_v00(FILE *fp)
