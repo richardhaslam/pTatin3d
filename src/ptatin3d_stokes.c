@@ -1021,7 +1021,7 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 	ierr = DMCompositeRestoreAccess(stokes_pack,dX,&dXu,&dXp);CHKERRQ(ierr);
 	ierr = DMCompositeRestoreAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 
-	if (!it) {
+	if (it) {
 		/* set parameter for default relative tolerance convergence test */
         ttol = fnorm*rtol;
 	}
