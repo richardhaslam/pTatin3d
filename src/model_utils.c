@@ -1029,7 +1029,8 @@ PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType 
     gavg[0] = gavg[1] = gavg[2] = 0.0;
     
     ierr = DMDAVecGetArray(cda,coords,&LA_coords);CHKERRQ(ierr);
-    
+   
+    n_face = 0;
     switch (ft) {
         case NORTH_FACE:
             if (sj+nj == N) {

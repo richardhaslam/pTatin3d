@@ -2771,7 +2771,7 @@ PetscErrorCode _LocalP0Projection_MPntPStokes_MapToQuadratePoints(
     
     /* Compute cell wise average and set constant value on all quadrature points within each element */
     for (e=0; e<nel; e++) {
-        double avg_field;
+        double avg_field = 0.0;
         
         ierr = VolumeQuadratureGetCellData_Stokes(Q,all_quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
         
