@@ -73,10 +73,10 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 {
 	FILE *fp = NULL;
 	PhaseMap phasemap;
-    char dummy[1000];
+  char dummy[1000];
     
 	int i,j,phasemap_max;
-    int index;
+  int index;
 	
 	/* open file to parse */
 	fp = fopen(filename,"r");
@@ -89,8 +89,8 @@ void PhaseMapLoadFromFile_ASCII(const char filename[],PhaseMap *map)
 	PhaseMapCreate(&phasemap);
 	
 	/* read header information, mx,my,x0,y0,x1,y1 */
-    //  fscanf(fp,"%s\n",dummy);
-	fgets(dummy,sizeof(dummy),fp);
+  //  fscanf(fp,"%s\n",dummy);
+  if (!fgets(dummy,sizeof(dummy),fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
     fscanf(fp,"%d\n",&phasemap->mx);
     fscanf(fp,"%d\n",&phasemap->my);
     fscanf(fp,"%lf %lf %lf %lf\n",&phasemap->x0,&phasemap->y0,&phasemap->x1,&phasemap->y1);
