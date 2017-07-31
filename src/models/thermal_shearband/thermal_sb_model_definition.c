@@ -323,7 +323,7 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 {
 	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
 	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
+	DM               stokes_pack=NULL,dav,dap;
     Vec              coords,velocity,pressure;
     PetscBool        active_energy;
 	PetscErrorCode   ierr;
