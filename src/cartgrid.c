@@ -42,52 +42,52 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Pe
 PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found);
 
 
-
 #undef __FUNCT__
 #define __FUNCT__ "CartGridCreate"
 PetscErrorCode CartGridCreate(CartGrid *map)
 {
   PetscErrorCode ierr;
-	CartGrid       p;
-    
-    PetscFunctionBegin;
-    ierr = PetscNew(&p);CHKERRQ(ierr);
-    
-    p->type = CARTGRID_INMEM;
-    p->getindex = CartGridGetIndex_InMem;
-    p->getvalue = CartGridGetValue_InMem;
-    p->destroy = NULL;
-    
-	*map = p;
-    PetscFunctionReturn(0);
+  CartGrid       p;
+
+  PetscFunctionBegin;
+  *map = NULL;
+  ierr = PetscNew(&p);CHKERRQ(ierr);
+
+  p->type = CARTGRID_INMEM;
+  p->getindex = CartGridGetIndex_InMem;
+  p->getvalue = CartGridGetValue_InMem;
+  p->destroy = NULL;
+
+  *map = p;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "CartGridDestroy"
 PetscErrorCode CartGridDestroy(CartGrid *map)
 {
-	CartGrid p;
-    
-    PetscFunctionBegin;
-	if (!map) { PetscFunctionReturn(0); }
-	p = *map;
-	
-	if (p->data) {
-		PetscFree(p->data);
-		p->data = NULL;
-	}
+  CartGrid p;
 
-    if (p->type == CARTGRID_OUTOFCORE) {
-        if (p->data_fp) {
-            fclose(p->data_fp);
-            p->data_fp = NULL;
-        }
+  PetscFunctionBegin;
+  if (!map) { PetscFunctionReturn(0); }
+  p = *map;
+
+  if (p->data) {
+    PetscFree(p->data);
+    p->data = NULL;
+  }
+
+  if (p->type == CARTGRID_OUTOFCORE) {
+    if (p->data_fp) {
+      fclose(p->data_fp);
+      p->data_fp = NULL;
     }
-    
-    PetscFree(p);
-    
-	*map = NULL;
-    PetscFunctionReturn(0);
+  }
+
+  PetscFree(p);
+
+  *map = NULL;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -446,11 +446,12 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
 #define __FUNCT__ "CartGridGetValue"
 PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
-    PetscErrorCode ierr;
-    PetscFunctionBegin;
-	(*found) = PETSC_FALSE;
-    ierr = map->getvalue(map,xp,value,found);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  (*found) = PETSC_FALSE;
+  ierr = map->getvalue(map,xp,value,found);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -835,7 +836,7 @@ PetscErrorCode pTatinCtxGetCartGrid(pTatinCtx ctx,CartGrid *map)
 #define __FUNCT__ "ex1"
 PetscErrorCode ex1(void)
 {
-    CartGrid           cg;
+    CartGrid       cg;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -877,7 +878,7 @@ PetscErrorCode ex1(void)
 PetscErrorCode ex2(void)
 {
     PetscReal      xr[2],yr[2],zr[2];
-    CartGrid           cgin,cg;
+    CartGrid       cgin,cg;
     int            i,j,k;
     long int       *data;
     PetscErrorCode ierr;
