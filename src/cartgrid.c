@@ -505,7 +505,7 @@ PetscErrorCode CartGridSetUp(CartGrid map)
 
     /* header */
 ParseHeader:
-    fgets(str,STRMAX,fp);
+    if (!fgets(str,STRMAX,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
     if (str[0] == '#') { goto ParseHeader; }
     if (str[0] == '!') { goto ParseHeader; }
     if (str[0] == '%') { goto ParseHeader; }

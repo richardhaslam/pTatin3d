@@ -710,19 +710,24 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	
 	
 	/* read file contents */
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 	
-	fscanf( fp, "%d\n",&L); //printf("read(L): %d\n", L);
+	fscanf( fp, "%d\n",&L); 
+  //printf("read(L): %d\n", L);
 	
-	fscanf( fp, "%zu\n",&atomic_size); //printf("read(size): %zu\n",atomic_size);
+	fscanf( fp, "%zu\n",&atomic_size); 
+  //printf("read(size): %zu\n",atomic_size);
 	
-	fgets(registration_function,4999,fp); //printf("read(reg func): %s", registration_function );
+	if (!fgets(registration_function,4999,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(reg func): %s", registration_function );
 	strL = strlen(registration_function);
 	if(strL>1){ 
 		registration_function[strL-1] = 0;
 	}
 	
-	fgets(field_name,4999,fp); //printf("read(name): %s", field_name );
+	if (!fgets(field_name,4999,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(name): %s", field_name );
 	strL = strlen(field_name);
 	if(strL>1){ 
 		field_name[strL-1] = 0;
@@ -753,8 +758,10 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
 #endif	
 	/* finish reading meta data */
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 	
 	db->field[ db->nfields ] = gfield;
 	
@@ -777,10 +784,12 @@ void _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 	size_t strL;
 
 	// header open
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 
 	// type
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 	strL = strlen(dummy);
 	if(strL>1) { dummy[strL-1] = 0; }
 	if(strcmp(dummy,"type=DataBucket")!=0) {
@@ -789,10 +798,12 @@ void _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 	}
 
 	// format
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 
 	// version
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 	strL = strlen(dummy);
 	if(strL>1) { dummy[strL-1] = 0; }
 	if(strcmp(dummy,"version=0.0")!=0) {
@@ -801,9 +812,11 @@ void _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
 	}
 	
 	// options
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 	// header close
-	fgets(dummy,99,fp); //printf("read(header): %s", dummy );
+	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
+  //printf("read(header): %s", dummy );
 }
 
 

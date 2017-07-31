@@ -135,7 +135,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	position = -1;
 	while (!feof(fp)) {
 		position = ftell(fp);
-		fgets(line,10000-1,fp);
+		if (!fgets(line,10000-1,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
 		if (strncmp(key,line,key_L) == 0) {
 			break;
 		}

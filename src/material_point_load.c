@@ -65,9 +65,9 @@ PetscErrorCode MarkerCoordinatesLoadFromFile(const char name[],long int *length,
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"File %s not found",name);
 	}
 	
-	fgets(line,255,fp);
+	if (!fgets(line,255,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
 	//vtk_data_type = atoi( line );
-	fgets(line,255,fp);
+	if (!fgets(line,255,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
 	n_markers = atol( line );
 
 	*length = n_markers;
@@ -102,9 +102,9 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"File %s not found",name);
 	}
 	
-	fgets(line,255,fp);
+	if (!fgets(line,255,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
 	vtk_data_type = atoi( line );
-	fgets(line,255,fp);
+	if (!fgets(line,255,fp)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fgets() failed");
 	n_markers = atol( line );
 
 	// write field types
