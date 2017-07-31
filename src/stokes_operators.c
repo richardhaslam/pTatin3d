@@ -91,11 +91,12 @@ PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 {
 	PetscErrorCode ierr;
 	MatStokesMF Stk;
+
 	PetscFunctionBegin;
-	
+  *B = NULL;
 	ierr = PetscMalloc(sizeof(struct _p_MatStokesMF),&Stk);CHKERRQ(ierr);
 	ierr = PetscMemzero(Stk,sizeof(struct _p_MatStokesMF));CHKERRQ(ierr);
-	
+
 	*B = Stk;
 	PetscFunctionReturn(0);
 }

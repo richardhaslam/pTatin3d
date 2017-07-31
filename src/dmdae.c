@@ -169,6 +169,7 @@ PetscErrorCode DMAttachDMDAE(DM dm)
 	ierr = DMDAECreate(&dae);CHKERRQ(ierr);
 	
     ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
+    dae = NULL;
     ierr = PetscContainerSetPointer(container,(void*)dae);CHKERRQ(ierr);
 	
 	ierr = PetscObjectCompose((PetscObject)dm,"DMDAEobject",(PetscObject)container);CHKERRQ(ierr);
@@ -224,7 +225,8 @@ PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
 	PetscInt pM,pN,pP;
 	PetscErrorCode ierr;
 	
-    PetscFunctionBegin;
+  PetscFunctionBegin;
+  dae = NULL;
 	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
 	
 	ierr = DMDAGetInfo(dm,0,0,0,0,&pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
@@ -250,7 +252,8 @@ PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt
 	DMDAE dae;
 	PetscErrorCode ierr;
 	
-    PetscFunctionBegin;
+  PetscFunctionBegin;
+  dae = NULL;
 	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
 	if (esi) { *esi = dae->si; }
 	if (esj) { *esj = dae->sj; }

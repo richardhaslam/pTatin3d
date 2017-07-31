@@ -72,6 +72,7 @@ PetscErrorCode PhysCompCreate_Energy(PhysCompEnergy *E)
 	PhysCompEnergy energy;
 	
 	PetscFunctionBegin;
+  *E = NULL;
 	ierr = PetscMalloc(sizeof(struct _p_PhysCompEnergy),&energy);CHKERRQ(ierr);
 	ierr = PetscMemzero(energy,sizeof(struct _p_PhysCompEnergy));CHKERRQ(ierr);
 	*E = energy;
@@ -219,7 +220,7 @@ PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,Pe
 	DM              cda;
 	
 	PetscFunctionBegin;
-	
+
 	ierr = PhysCompCreate_Energy(&energy);CHKERRQ(ierr);
 
 	ierr = PhysCompCreateMesh_Energy(energy,dav,mx,my,mz,mesh_generator_type);CHKERRQ(ierr);

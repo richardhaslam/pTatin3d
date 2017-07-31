@@ -983,6 +983,7 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     ierr = SD3DOutput_ComputeZrange(dav,range);CHKERRQ(ierr);
     
     ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    volume = 0.0;
     ierr = SD3DOutput_ComputeVrms(dav,velocity,&volume,&Vrms);CHKERRQ(ierr);
     ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
     

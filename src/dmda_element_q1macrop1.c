@@ -96,6 +96,10 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetSizeElement(DM da,PetscInt *MX,PetscI
 	
 	PetscFunctionBegin;
 	ierr = DMDAGetInfo(da,0,&M,&N,&P, 0,0,0, 0,&width, 0,0,0, 0);CHKERRQ(ierr);
+	if (MX) { *MX = (M-1)/order; }
+	if (MY) { *MY = (N-1)/order; }
+	if (MZ) { *MZ = (P-1)/order; }
+
 	if (width!=1) {
 		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"Stencil width must be 1 for Q1Macro");
 	}
@@ -104,19 +108,16 @@ PetscErrorCode _DMDAEQ1Macro_MixedSpace_GetSizeElement(DM da,PetscInt *MX,PetscI
 	if ( (M-1)%order != 0 ) {
 		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in x direction");
 	}
-	if (MX) { *MX = (M-1)/order; }
 	
 	//
 	if ( (N-1)%order != 0 ) {
 		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in y direction");
 	}
-	if (MY) { *MY = (N-1)/order; }
 	
 	//
 	if ( (P-1)%order != 0 ) {
 		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_SUP,"DMDA is not compatible with Q1Macro elements in z direction");
 	}
-	if (MZ) { *MZ = (P-1)/order; }
 	
 	PetscFunctionReturn(0);
 }
@@ -129,7 +130,8 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetSizeElement(DM da,PetscInt *MX,Pets
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-
+  
+  m = 0; n = 0; p = 0;
 	ierr = _DMDAEQ1Macro_MixedSpace_GetSizeElement(da,&m,&n,&p);CHKERRQ(ierr);
 	if (MX) { *MX = 2 * m; }
 	if (MY) { *MY = 2 * n; }
@@ -564,6 +566,7 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpace_GetElements3D(DM dm,PetscInt *nel,Pets
 	_npe = 2 * 2 * 2;
 
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
+  mx_natural = 0; my_natural = 0; mz_natural = 0;
 	ierr = _DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dm,&mx_natural,&my_natural,&mz_natural);CHKERRQ(ierr);
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 
@@ -657,6 +660,8 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedSpace3D(DM dm,PetscInt **natural
 	}
 	
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
+
+  mx_natural = 0; my_natural = 0; mz_natural = 0;
 	ierr = _DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dm,&mx_natural,&my_natural,&mz_natural);CHKERRQ(ierr);
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx_natural*my_natural*mz_natural),&idx);CHKERRQ(ierr);
@@ -709,6 +714,7 @@ PetscErrorCode _DMDAEQ1Macro_NaturalSpaceToMixedLocalSpace3D(DM dm,PetscInt **na
 	}
 	
 	ierr = DMDAEQ1Macro_MixedSpace_GetCornersElement(dm,&esi,&esj,&esk,&mx,&my,&mz);CHKERRQ(ierr);
+  mx_natural = 0; my_natural = 0; mz_natural = 0;
 	ierr = _DMDAEQ1Macro_NaturalSpace_GetLocalSizeElement(dm,&mx_natural,&my_natural,&mz_natural);CHKERRQ(ierr);
 	//ierr = DMDAEQ1Macro_NaturalSpace_GetCornersElement(dm,&esi_natural,&esj_natural,&esk_natural,);CHKERRQ(ierr);
 	ierr = PetscMalloc(sizeof(PetscInt)*(mx_natural*my_natural*mz_natural),&idx);CHKERRQ(ierr);

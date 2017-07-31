@@ -72,6 +72,7 @@ PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],cha
 	char *nn;
 
 	PetscFunctionBegin;
+  *name = NULL;
 	if (prefix!=NULL) {
 		if (asprintf(&nn,"%s.%s",prefix,suffix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	} else {

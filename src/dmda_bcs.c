@@ -63,13 +63,15 @@ PetscErrorCode BCListCreate(BCList *list)
 {
 	BCList ll;
 	PetscErrorCode ierr;
-	
+
+  *list = NULL;
 	ierr = PetscMalloc( sizeof(struct _p_BCList),&ll);CHKERRQ(ierr);
 	ierr = PetscMemzero(ll,sizeof(struct _p_BCList));CHKERRQ(ierr);
 	ll->allEmpty = PETSC_FALSE;
 	*list = ll;
 	PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "BCListDestroy"
 PetscErrorCode BCListDestroy(BCList *list)
