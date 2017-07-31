@@ -16,7 +16,7 @@
 
 import os
 import sys
-from os import environ
+import traceback
 
 # PTATIN_DIR and PETSC_ARCH are used to make easily-copyable tests
 thisDir = os.path.dirname(os.path.abspath(__file__))
@@ -35,23 +35,18 @@ if not PETSC_ARCH :
 # bitbucket.org/dmay/pythontestharness
 sys.path.append(os.path.join(PTATIN_DIR,'tests','pythontestharness','lib'))  # overrides
 try :
-    import pyTestHarness.harness as pyth_harness
+  import pyTestHarness.harness as pyth_harness
 except Exception as errorMessage :
-  print(format(errorMessage))
-  if format(errorMessage) == "No module named pyTestHarness.harness":
+  if not sys.exc_info()[-1].tb_next :     # Check that the traceback has depth 1
+    traceback.print_exc()
     print("********************")
     print("The required python library pyTestHarness was not found. Exiting.")
     print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
     print("If pyTestHarness is not installed, obtain the source by executing the following:")
     print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'tests','pythontestharness'))
-    print("then execute the following:")
-    shellType = environ['SHELL']
-    if shellType == '/bin/bash' or shellType == '/bin/sh':
-      print("  export PYTHONPATH="+os.path.join(PTATIN_DIR,'tests','pythontestharness','lib')+":${PYTHONPATH}")
-    if shellType == '/bin/tcsh' or shellType == '/bin/csh':
-      print("  setenv PYTHONPATH "+os.path.join(PTATIN_DIR,'tests','pythontestharness','lib')+":${PYTHONPATH}")
     print("********************")
     sys.exit(1)
+  raise
 
 #  Interpret any child directory containing "test.py" as defining as a test
 #  with a name defined as the relative path to the containing directory.
