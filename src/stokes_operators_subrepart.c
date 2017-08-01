@@ -231,7 +231,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   DM              dau = mf->daUVW;
   PetscInt        i;
   MFA11SubRepart  ctx;
-  PetscMPIInt     rank,size,rank_sub;
+  PetscMPIInt     rank_sub;
   MPI_Comm        comm_u = PetscObjectComm((PetscObject)dau);
   PetscHashI      nodes_remote_inv;
 
@@ -259,7 +259,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   /* Define a subcomm relative to the local shared-memory domain.
      This implementation assumes that you have exactly one CUDA-enabled
      GPU per shared-memory domain. */
-  ierr = MPI_Comm_split_type(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,0,MPI_INFO_NULL,&ctx->comm_sub);CHKERRQ(ierr);
+  ierr = MPI_Comm_split_type(comm_u,MPI_COMM_TYPE_SHARED,0,MPI_INFO_NULL,&ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ctx->comm_sub,&ctx->size_sub);CHKERRQ(ierr);
 
