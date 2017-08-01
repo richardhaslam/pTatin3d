@@ -11,16 +11,16 @@ endif
 export LIBZ_LIB=-lz
 
 # Various levels of optimization (and warning suppression) for C compilers
-export TATIN_CFLAGS_DEBUG	= -O0 -g -Wall -Wno-unused-variable
-export TATIN_CFLAGS_OPT_a	= -O2 
-export TATIN_CFLAGS_OPT_b	= -O3 -ffast-math -ftree-vectorize -ftree-vectorizer-verbose=4  -Wstrict-aliasing  -fstrict-aliasing -funroll-loops -march=native
+export TATIN_CFLAGS_DEBUG	= -O0 -g -Wall
+export TATIN_CFLAGS_OPT_a	= -O2 -Wall
+export TATIN_CFLAGS_OPT_b	= -O3 -Wall -ffast-math -ftree-vectorize -ftree-vectorizer-verbose=4  -Wstrict-aliasing  -fstrict-aliasing -funroll-loops
 
 export TATIN_FFLAGS_DEBUG	= -O0 -g -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_b = -O2 -ffree-line-length-4000
 
 # Choose options
-export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_b}
+export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_b} -dynamic -march=native -fopenmp
 export TATIN_CFLAGS_OPENMP = -fopenmp
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 #export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG} -fopenmp
@@ -30,7 +30,6 @@ export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 #export TATIN_CFLAGS=-hgnu
 CONFIG_AVX=y
 
-#
 #
 #  -- pTatin external packages --
 #  User should select which packages are present
