@@ -64,7 +64,6 @@
 -ksp_type fgmres
 -lattice_layout_perturb 0.0
 -log_summary
--model_Rift_oblique3d_AscaleCrust 1
 -model_Rift_oblique3d_beta 30.0
 -model_Rift_oblique3d_buffer 50.0e3
 -model_Rift_oblique3d_coe1 20e6
