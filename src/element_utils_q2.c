@@ -30,8 +30,11 @@
 #include "element_utils_q1.h"
 #include "element_utils_q2.h"
 
-#define ELEMENT_OPERATION_STANDARD
-//#define ELEMENT_OPERATION_OPTIMIZED
+#define PTAT3D_ELEMENT_OPERATION_STANDARD
+//#define PTAT3D_ELEMENT_OPERATION_OPTIMIZED
+#if defined(PTAT3D_ELEMENT_OPERATION_STANDARD) && defined(PTAT_ELEMENT_OPERATION_OPTIMIZED)
+#error Only one of PTAT3D_ELEMENT_OPERATION_STANDARD and PTAT_ELEMENT_OPERATION_OPTIMIZED may be defined
+#endif
 
 
 void P3D_ConstructNi_Q2_2D(PetscReal _xi[],PetscReal Ni[])
@@ -393,7 +396,7 @@ void P3D_prepare_elementQ2(PetscInt nqp,PetscReal WEIGHT[],PetscReal XI[][3],Pet
 	}
 }
 
-#ifdef ELEMENT_OPERATION_STANDARD
+#if defined(PTAT3D_ELEMENT_OPERATION_STANDARD)
 void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
 																 PetscReal detJ[],
 																 PetscReal dNudx[][NPE],
@@ -472,7 +475,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],Pet
 }
 #endif
 
-#ifdef ELEMENT_OPERATION_OPTIMIZED
+#if defined(PTAT3D_ELEMENT_OPERATION_OPTIMIZED)
 void P3D_evaluate_geometry_elementQ2(PetscInt nqp,
                                      PetscReal el_coords[NPE*3],
                                      PetscReal GNI[][3][NPE],
@@ -523,7 +526,7 @@ void P3D_evaluate_geometry_elementQ2(PetscInt nqp,
 		
 		t17 = 1.0/detJ[p]; // [NQP] * 1
 /* </option_A> */
-#ifdef COMPUTE_DETERMINANT_OPTION_B
+#if defined(PTAT3D_COMPUTE_DETERMINANT_OPTION_B)
 	 /* 
 		 NOTE: Option A and option B are identical, however B uses 2 less operations.
 		 We elected for option A as more unit tests fail with option B variant due to small floating point differences 
