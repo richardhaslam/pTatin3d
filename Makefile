@@ -139,7 +139,7 @@ testall :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallcheck :
-	cd tests && ./runTests.py -s --verify $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+	cd tests && ./runTests.py -s --verify -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallclean :
 	cd tests && ./runTests.py -s -p 
