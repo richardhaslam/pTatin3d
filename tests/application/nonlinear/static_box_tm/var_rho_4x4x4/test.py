@@ -1,5 +1,5 @@
 import os
-import pyTestHarness.test as pth
+import pyTestHarness.unittest as pth
 import re
 
 def test() :
@@ -20,7 +20,7 @@ def test() :
     t.compareFloatingPoint(re.escape('[staticBox] Q = '),1e-14)
 
   # Create Test Object
-  t = pth.Test(testName,ranks,launch,expectedFile)
+  t = pth.pthUnitTest(testName,ranks,launch,expectedFile)
   t.setVerifyMethod(comparefunc)
 
   return(t)

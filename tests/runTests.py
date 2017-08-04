@@ -33,7 +33,7 @@ if not PETSC_ARCH :
     sys.exit(1)
 
 # bitbucket.org/dmay/pythontestharness
-sys.path.append(os.path.join(PTATIN_DIR,'tests','pythontestharness','lib'))  # overrides
+sys.path.append(os.path.join(PTATIN_DIR,'pythontestharness','lib'))  # overrides
 try :
   import pyTestHarness.harness as pyth_harness
 except Exception as errorMessage :
@@ -43,7 +43,7 @@ except Exception as errorMessage :
     print("The required python library pyTestHarness was not found. Exiting.")
     print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
     print("If pyTestHarness is not installed, obtain the source by executing the following:")
-    print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'tests','pythontestharness'))
+    print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'pythontestharness'))
     print("********************")
     sys.exit(1)
   raise
@@ -55,6 +55,7 @@ for (root, dirs, files) in os.walk(thisDir) :
     if 'test.py' in files :
         relpath = os.path.relpath(root,thisDir)
         mod = relpath.replace(os.sep,'.') + '.test'
+        print("MOD:",mod)
         exec('import ' + mod)
         exec('allTests.append('+mod+'.test())')
 
