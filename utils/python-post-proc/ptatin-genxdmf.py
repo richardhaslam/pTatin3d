@@ -7,6 +7,9 @@
 # 
 
 import re
+import os
+import sys
+import json
 
 def pTatinDMDAStokes_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, velocity_scale, stress_scale):
 
@@ -24,7 +27,9 @@ def pTatinDMDAStokes_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, v
 	f.write('    <Grid Name="Stokes" GridType="Uniform">\n')
 
 	time_value = float(time) * float(time_scale['Scale'])
-	f.write('      <Time Value="' + str(time_value) + '"/>\n')
+	#f.write('      <Time Value="' + str(time_value) + '"/>\n')
+	f.write('      <Time Type="Single" Value="' + str(time_value) + '"/>\n')  #<Time Type="Single" Value="   0.00850" />
+
 	f.write('      <Topology TopologyType="3DSMesh" Dimensions="' + nodesize + '"/>\n')
 	f.write('      <Geometry GeometryType="XYZ">\n')
 	scale = length_scale['Scale']
@@ -35,6 +40,10 @@ def pTatinDMDAStokes_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, v
 	f.write('        </DataItem>\n')
 	f.write('      </Geometry>\n')
 	f.write('\n')
+
+	fileToLoad = prefix + '.dmda-velocity.coords'
+	if os.path.isfile(fileToLoad) == False:
+		print('[ERROR] Failed to locate file in the current working directory: ' + fileToLoad + ' <this will result in a ParaView error if you try to load the XMF file>')
 
 	fieldname = 'velocity' + ' [' + velocity_scale['Unit'] + ']'
 	scale = velocity_scale['Scale']
@@ -47,6 +56,10 @@ def pTatinDMDAStokes_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, v
 	f.write('      </Attribute>\n')
 	f.write('    </Grid>\n')
 	f.write('\n')
+
+	fileToLoad = prefix + '.dmda-Xu'
+	if os.path.isfile(fileToLoad) == False:
+		print('[ERROR] Failed to locate file in the current working directory: ' + fileToLoad + ' <this will result in a ParaView error if you try to load the XMF file>')
 
 	f.close()
 
@@ -71,7 +84,8 @@ def pTatinDMDAStokesP0_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale,
 	f.write('<Grid Name="StokesP0_' + prefix + '" GridType="Uniform">\n')
 
 	time_value = float(time) * float(time_scale['Scale'])
-	f.write('  <Time Value="' + str(time_value) + '"/>\n')
+	#f.write('  <Time Value="' + str(time_value) + '"/>\n')
+	f.write('  <Time Type="Single" Value="' + str(time_value) + '"/>\n')
 	f.write('\n')
 
 	f.write('  <Topology TopologyType="3DSMesh" Dimensions="' + nodesize + '"/>\n')
@@ -143,7 +157,8 @@ def pTatinDMDAEnergy_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, t
 	f.write('    <Grid Name="Energy" GridType="Uniform">\n')
 
 	time_value = float(time) * float(time_scale['Scale'])
-	f.write('      <Time Value="' + str(time_value) + '"/>\n')
+	#f.write('      <Time Value="' + str(time_value) + '"/>\n')
+	f.write('      <Time Type="Single" Value="' + str(time_value) + '"/>\n')
 	f.write('      <Topology TopologyType="3DSMesh" Dimensions="' + nodesize + '"/>\n')
 	f.write('      <Geometry GeometryType="XYZ">\n')
 
@@ -184,7 +199,8 @@ def pTatinDMDACell_WriteXDMF(mx,my,mz,prefix,time, length_scale, time_scale, act
 	f.write('    <Grid Name="Cell" GridType="Uniform">\n')
 
 	time_value = float(time) * float(time_scale['Scale'])
-	f.write('      <Time Value="' + str(time_value) + '"/>\n')
+	#f.write('      <Time Value="' + str(time_value) + '"/>\n')
+	f.write('      <Time Type="Single" Value="' + str(time_value) + '"/>\n')
 	f.write('      <Topology TopologyType="3DSMesh" Dimensions="' + nodesize + '"/>\n')
 	f.write('      <Geometry GeometryType="XYZ">\n')
 	
@@ -486,9 +502,9 @@ def pTatinCreateGeodynamicUnitDictionary(unit):
 #
 
 # Specify Q2 mesh sizes
-mx = 8
-my = 4
-mz = 8
+mx = 64
+my = 32
+mz = 64
 
 # Specify which xdmf output to generate from the dmda
 Stokes = True
