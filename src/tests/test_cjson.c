@@ -143,6 +143,80 @@ PetscErrorCode test_GeometryObjectParse2_cJSON(void)
 	PetscFunctionReturn(0);
 }
 
+PetscErrorCode render(void)
+{
+  char filename[] = "ptatin_mesh_state.json";
+  FILE *file;
+  cJSON *root,*parent,*item;
+  char *j;
+  
+  root = cJSON_CreateObject();
+
+  parent = cJSON_CreateObject();
+    item = cJSON_CreateNumber(64);  cJSON_AddItemToObject(parent,"mx",item);
+    item = cJSON_CreateNumber(32);  cJSON_AddItemToObject(parent,"my",item);
+    item = cJSON_CreateNumber(64);  cJSON_AddItemToObject(parent,"mz",item);
+  cJSON_AddItemToObject(root,"StokesDMDA",parent);
+
+  item = cJSON_CreateString("rift3D");  cJSON_AddItemToObject(root,"ptatinModel",item);
+
+  
+  j = cJSON_Print(root);
+  printf("[ptatin state]\n");
+  printf("%s\n",j);
+  file = fopen(filename,"w");
+  fprintf(file,"%s",j);
+  fclose(file);
+  free(j);
+  
+  cJSON_Delete(root);
+  
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode render_units(void)
+{
+  char filename[] = "ptatin_units.json";
+  FILE *file;
+  cJSON *root,*parent,*array,*item;
+  char *j;
+  
+  root = cJSON_CreateObject();
+  
+  {
+    const char *units[] = { "length", "velocity", "viscosity" };
+    item = cJSON_CreateStringArray(units,3);  cJSON_AddItemToObject(root,"ptatinReferenceScales",item);
+  }
+  
+  array = cJSON_CreateArray();
+  // length
+  parent = cJSON_CreateObject();
+  item = cJSON_CreateString("length");    cJSON_AddItemToObject(parent,"quantity",item);
+  item = cJSON_CreateString("m");         cJSON_AddItemToObject(parent,"unit",item);
+  item = cJSON_CreateNumber(1.0e5);       cJSON_AddItemToObject(parent,"scale",item);
+  cJSON_AddItemToArray(array,parent);
+  // velocity
+  parent = cJSON_CreateObject();
+  item = cJSON_CreateString("velocity");    cJSON_AddItemToObject(parent,"quantity",item);
+  item = cJSON_CreateString("m/s");         cJSON_AddItemToObject(parent,"unit",item);
+  item = cJSON_CreateNumber(1.0e-10);       cJSON_AddItemToObject(parent,"scale",item);
+  cJSON_AddItemToArray(array,parent);
+  
+  cJSON_AddItemToObject(root,"ptatinScales",array);
+  
+  
+  j = cJSON_Print(root);
+  printf("[ptatin units]\n");
+  printf("%s\n",j);
+  file = fopen(filename,"w");
+  fprintf(file,"%s",j);
+  fclose(file);
+  free(j);
+  
+  cJSON_Delete(root);
+  
+  PetscFunctionReturn(0);
+}
 
 int main(int argc,char **argv)
 {
@@ -167,7 +241,11 @@ int main(int argc,char **argv)
         case 2:
             ierr = test_GeometryObjectParse2_cJSON();CHKERRQ(ierr);
             break;
-            
+        
+      case 3:
+        ierr = render();CHKERRQ(ierr);
+        ierr = render_units();CHKERRQ(ierr);
+        break;
         default:
             ierr = test_GeometryObjectParse_cJSON();CHKERRQ(ierr);
             break;
