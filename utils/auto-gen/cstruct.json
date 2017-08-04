@@ -1,0 +1,17 @@
+{
+  "className": "MaterialConst_SoftExpo",
+  "classNameShort": "SoftExpo",
+  "optionPrefix": "soft_expo",
+  "params": [
+  {
+  "name": "eps_min",
+  "textualName": "eps_min",
+  "type": "double"
+  },
+  {
+  "name": "eps_fold",
+  "textualName": "eps_fold",
+  "type": "double"
+  }
+  ]
+}
