@@ -15,11 +15,7 @@
 ** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
 ** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
 **                                                                       
-** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
-**                                                                       
-** WARNING pTatin3d appears to have been compiled with debug options 
-** For significant performance improvements, please consult the file makefile.arch  
-** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+** TATIN_CFLAGS = -std=gnu99 -O3 -Wall -ftree-vectorize -fstrict-aliasing -funroll-loops -g -march=native -fopenmp -DTATIN_HAVE_CUDA -DTATIN_HAVE_AVX
 **                                                                       
 ** ====================================================================================== 
 RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
@@ -46,10 +42,10 @@ DataBucketView(SEQ): ("Material Constants")
     [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
     [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
   Total mem. usage                                                      = 8.00e-02 (MB) 
-[pTatin] Created output directory: analytics_solcx 
-[pTatin] Created log file: analytics_solcx/ptatin.log-2017.07.30_16:34:56 
 [pTatin] Writing output to existing directory: analytics_solcx 
-[pTatin] Created options file: analytics_solcx/ptatin.options-2017.07.30_16:34:56 
+[pTatin] Created log file: analytics_solcx/ptatin.log-2017.08.04_08:43:09 
+[pTatin] Writing output to existing directory: analytics_solcx 
+[pTatin] Created options file: analytics_solcx/ptatin.options-2017.08.04_08:43:09 
 [pTatin] Created options file: analytics_solcx/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -81,44 +77,44 @@ DataBucketView(SEQ): ("Material Constants")
   [pTatinModel]: -ptatin_model "analytics_vv" was detected
 pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
 pTatin3dRestart: Unable to restart job
-BCList: Mem. usage (min,max) = 5.40e-01,5.40e-01 (MB) 
+BCList: Mem. usage (min,max) = 3.00e-01,3.00e-01 (MB) 
 VolumeQuadratureCreate_GaussLegendreStokes:
 	Using 3x3 pnt Gauss Legendre quadrature
 DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
-  L                  = 15552 
+  L                  = 7776 
   buffer             = 1 
-  allocated          = 15553 
+  allocated          = 7777 
   nfields registered = 1 
-    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 7.47e-01 (MB) 
-  Total mem. usage                                                      = 7.47e-01 (MB) 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 3.73e-01 (MB) 
+  Total mem. usage                                                      = 3.73e-01 (MB) 
 DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
-  L                  = 432 
+  L                  = 216 
   buffer             = 1 
-  allocated          = 433 
+  allocated          = 217 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 4.85e-02 (MB) 
-  Total mem. usage                                                      = 4.85e-02 (MB) 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.43e-02 (MB) 
+  Total mem. usage                                                      = 2.43e-02 (MB) 
 DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
-  L                  = 432 
+  L                  = 216 
   buffer             = 1 
-  allocated          = 433 
+  allocated          = 217 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 4.85e-02 (MB) 
-  Total mem. usage                                                      = 4.85e-02 (MB) 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.43e-02 (MB) 
+  Total mem. usage                                                      = 2.43e-02 (MB) 
 DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
-  L                  = 432 
+  L                  = 216 
   buffer             = 1 
-  allocated          = 433 
+  allocated          = 217 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 4.85e-02 (MB) 
-  Total mem. usage                                                      = 4.85e-02 (MB) 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.43e-02 (MB) 
+  Total mem. usage                                                      = 2.43e-02 (MB) 
 DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
-  L                  = 432 
+  L                  = 216 
   buffer             = 1 
-  allocated          = 433 
+  allocated          = 217 
   nfields registered = 1 
-    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 4.85e-02 (MB) 
-  Total mem. usage                                                      = 4.85e-02 (MB) 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.43e-02 (MB) 
+  Total mem. usage                                                      = 2.43e-02 (MB) 
 DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
   L                  = 1296 
   buffer             = 1 
@@ -134,9 +130,9 @@ DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
     [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.45e-01 (MB) 
   Total mem. usage                                                      = 1.45e-01 (MB) 
   MaterialPointsStokes: Using one2one projection
-[[Swarm initialization: 0.0003 (sec)]]
+[[Swarm initialization: 0.0001 (sec)]]
 SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
-[[Swarm->coordinate assignment: 15552 points : 0.0042 (sec)]]
+[[Swarm->coordinate assignment: 7776 points : 0.0009 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
 Mat Object: 1 MPI processes
@@ -145,8 +141,8 @@ Mat Object: 1 MPI processes
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 1.7595e-04 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 1.9789e-04 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.3947e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.5998e-04 (sec)]]
 ************************** Starting _DataExCompleteCommunicationMap ************************** 
 max_nnz = 0 
 Mat Object: 1 MPI processes
@@ -155,52 +151,59 @@ Mat Object: 1 MPI processes
   total: nonzeros=0, allocated nonzeros=0
   total number of mallocs used during MatSetValues calls =0
     not using I-node routines
-************************** Ending _DataExCompleteCommunicationMap [setup time: 5.6028e-05 (sec)] ************************** 
-[[SwarmDMDA3dDataExchangerCreate: time = 6.7949e-05 (sec)]]
+************************** Ending _DataExCompleteCommunicationMap [setup time: 5.6982e-05 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 7.2479e-05 (sec)]]
 [PSwarmSetUpCoords_FillBox]
-Mesh size (12 x 12 x 4) : MG levels 2  
-         level [ 0]: global Q2 elements (6 x 6 x 2) 
-         level [ 1]: global Q2 elements (12 x 12 x 4) 
-[r   0]: level [ 0]: local Q2 elements  (6 x 6 x 2) 
-[r   0]: level [ 1]: local Q2 elements  (12 x 12 x 4) 
-[r   0]: level [ 0]: element range [0 - 5] x [0 - 5] x [0 - 1] 
-[r   0]: level [ 1]: element range [0 - 11] x [0 - 11] x [0 - 3] 
+Mesh size (12 x 12 x 2) : MG levels 2  
+         level [ 0]: global Q2 elements (6 x 6 x 1) 
+         level [ 1]: global Q2 elements (12 x 12 x 2) 
+[r   0]: level [ 0]: local Q2 elements  (6 x 6 x 1) 
+[r   0]: level [ 1]: local Q2 elements  (12 x 12 x 2) 
+[r   0]: level [ 0]: element range [0 - 5] x [0 - 5] x [0 - 0] 
+[r   0]: level [ 1]: element range [0 - 11] x [0 - 11] x [0 - 1] 
 VolumeQuadratureCreate_GaussLegendreStokes:
 	Using 3x3 pnt Gauss Legendre quadrature
 DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
-  L                  = 1944 
+  L                  = 972 
   buffer             = 1 
-  allocated          = 1945 
+  allocated          = 973 
   nfields registered = 1 
-    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 9.34e-02 (MB) 
-  Total mem. usage                                                      = 9.34e-02 (MB) 
-BCList: Mem. usage (min,max) = 8.11e-02,8.11e-02 (MB) 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 4.67e-02 (MB) 
+  Total mem. usage                                                      = 4.67e-02 (MB) 
+BCList: Mem. usage (min,max) = 4.87e-02,4.87e-02 (MB) 
 *** Rheology update for RHEOLOGY_VISCOUS selected ***
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 5.07e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 7.49e-05 (sec)
 Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
 Level [0]: Coarse grid type :: Re-discretisation :: assembled operator 
    [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 4.87e-04 (sec)
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 3.43e-04 (sec)
-  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 8.417448271605e-03, 0.000000000000e+00, 0.000000000000e+00 ]
-  1 KSP Component U,V,W,P residual norm [ 4.892897047723e-10, 1.987718119474e-04, 5.160335370531e-10, 1.278139746540e-03 ]
-  2 KSP Component U,V,W,P residual norm [ 1.167663361741e-09, 1.388736602750e-09, 9.772349426490e-10, 6.844924298839e-07 ]
-  3 KSP Component U,V,W,P residual norm [ 1.234925370620e-09, 1.467585778890e-09, 1.033538456904e-09, 9.988848447960e-10 ]
-  4 KSP Component U,V,W,P residual norm [ 5.907525351885e-11, 7.020423330339e-11, 4.944112291012e-11, 4.663404951117e-10 ]
-  5 KSP Component U,V,W,P residual norm [ 2.782149166381e-15, 2.178119822271e-15, 1.505801137335e-15, 5.718918106639e-14 ]
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 3.66e-04 (sec)
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,1.00e+00; log10(max/min) 0.00e+00; cpu time 2.63e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 4.58e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 4.84e-05 (sec)
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 1.175046217399e-02, 0.000000000000e+00, 0.000000000000e+00 ]
+  1 KSP Component U,V,W,P residual norm [ 2.218043590951e-10, 1.166969865187e-02, 9.116522313010e-11, 9.708171636285e-04 ]
+  2 KSP Component U,V,W,P residual norm [ 1.271210027105e-08, 9.534663762843e-03, 3.565278376945e-09, 4.596399984369e-03 ]
+  3 KSP Component U,V,W,P residual norm [ 1.132295922072e-07, 3.852899022941e-07, 3.164771488351e-08, 6.689229766376e-05 ]
+  4 KSP Component U,V,W,P residual norm [ 1.206648367543e-07, 6.237131338631e-08, 3.371754982728e-08, 1.243690294431e-06 ]
+  5 KSP Component U,V,W,P residual norm [ 1.459444892001e-07, 7.542756961358e-08, 4.077800818818e-08, 1.000708929742e-07 ]
+  6 KSP Component U,V,W,P residual norm [ 7.180567864417e-09, 3.707601556377e-09, 2.005472330100e-09, 4.494235114472e-08 ]
+  7 KSP Component U,V,W,P residual norm [ 4.151165826024e-11, 2.365859501683e-11, 2.952227891983e-11, 2.811275797430e-09 ]
+  8 KSP Component U,V,W,P residual norm [ 3.238930938358e-11, 2.370385767361e-11, 3.354798667607e-11, 5.148263316873e-10 ]
+  9 KSP Component U,V,W,P residual norm [ 1.201894465686e-12, 8.034333580560e-13, 1.019517471801e-12, 9.326286440348e-11 ]
+ 10 KSP Component U,V,W,P residual norm [ 8.280253783887e-13, 5.355640538884e-13, 5.727797957273e-13, 7.519008008524e-12 ]
+ 11 KSP Component U,V,W,P residual norm [ 6.560992393145e-13, 4.252024969924e-13, 4.540619483402e-13, 2.045708950273e-12 ]
+ 12 KSP Component U,V,W,P residual norm [ 9.119946905098e-15, 6.125001675093e-15, 6.210464970761e-15, 2.246392584996e-13 ]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 4.58e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 4.32e-05 (sec)
   writing pvdfilename analytics_solcx/timeseries_passive_pswarm.pvd 
   writing pvdfilename analytics_solcx/timeseries_vp.pvd 
 [[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
 [[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
-pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 1.95e-03 (sec) 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 4.74e-04 (sec) 
   writing pvdfilename analytics_solcx/timeseries_mpoints_std.pvd 
-pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 7.35e-03 (sec) 
-[inorms] +8.333333333333e-02,+3.295094395141e-06,+2.523764913614e-04,+2.523980012578e-04,+9.898661210575e-04
-  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 1.1045e+01 [accepted] | ==>> dt used = 1.1045e+01 |
-  TimeStep control(StkSurfaceCourant): | current = 1.1045e+01 : trial = 1.0000e+32 | ==>> dt used = 1.1045e+01 |
-  timestep[] dt_courant = 1.1045e+01 
+pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 1.17e-03 (sec) 
+[inorms] +8.333333333333e-02,+3.538097891534e-04,+2.599731542955e-02,+2.599972290065e-02,+1.253730546487e-03
+  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 5.1936e-01 [accepted] | ==>> dt used = 5.1936e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.1936e-01 : trial = 1.0000e+32 | ==>> dt used = 5.1936e-01 |
+  timestep[] dt_courant = 5.1936e-01 
 [[ModelDestroy_Template]]
 [[ModelDestroy_ViscousSinker]]
 [[ModelDestroy_Gene3D]]

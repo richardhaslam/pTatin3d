@@ -1,0 +1,4 @@
+-mx 12
+-my 12
+-mz 2
+-fieldsplit_u_mg_levels_pc_type bjacobi
