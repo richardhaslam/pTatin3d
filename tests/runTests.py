@@ -55,7 +55,6 @@ for (root, dirs, files) in os.walk(thisDir) :
     if 'test.py' in files :
         relpath = os.path.relpath(root,thisDir)
         mod = relpath.replace(os.sep,'.') + '.test'
-        print("MOD:",mod)
         exec('import ' + mod)
         exec('allTests.append('+mod+'.test())')
 
