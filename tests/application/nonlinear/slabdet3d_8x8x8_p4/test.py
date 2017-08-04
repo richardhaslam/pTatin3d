@@ -8,7 +8,7 @@ def test() :
   thisDir = os.path.split(os.path.abspath(__file__))[0]
   testName = os.path.relpath(thisDir,os.path.join(PTATIN_DIR,'tests')).replace(os.sep,'.')
   ranks = 4
-  launch = os.path.join(PTATIN_DIR,PETSC_ARCH,'bin','ptatin_driver_nonlinear_ts.app') + ' -options_file ' + os.path.join(PTATIN_DIR,'src','models','slab_detachment3d','examples','sd3d-pds-test.opts') + ' -options_file ' + os.path.join(thisDir,'moreOpts')
+  launch = os.path.join(PTATIN_DIR,PETSC_ARCH,'bin','ptatin_driver_nonlinear_ts.app') + ' -options_file ' + os.path.join(PTATIN_DIR,'src','models','slab_detachment3d','examples','sd3d-pds-test.opts') + ' -options_file ' + os.path.join(thisDir,'more.opts')
   expectedFile = os.path.join(thisDir,'expected')
 
   def comparefunc(t) :

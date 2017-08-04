@@ -2,3 +2,4 @@
 -my 8
 -mz 8
 -nsteps 2
+-snes_view
