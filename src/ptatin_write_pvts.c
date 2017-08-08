@@ -706,10 +706,10 @@ int main(int nargs,char *args[])
 {
 	PetscErrorCode ierr;
 	PetscLogDouble t0,t1,gt,lt;
-	PetscBool write_stokes = PETSC_FALSE;
-	PetscBool write_energy = PETSC_FALSE;
-	PetscBool write_cell_data = PETSC_FALSE;
-	PetscBool write_mp_data = PETSC_FALSE;
+	PetscBool      write_stokes = PETSC_FALSE;
+	PetscBool      write_energy = PETSC_FALSE;
+	PetscBool      write_cell_data = PETSC_FALSE;
+	PetscBool      write_mp_data = PETSC_FALSE;
 	
 	ierr = pTatinInitialize(&nargs,&args,0,ptatin_driver_help);CHKERRQ(ierr);
 	
@@ -725,7 +725,7 @@ int main(int nargs,char *args[])
                 "  -write_energy\n"
                 "  -write_markercellp0\n"
                 "  -write_mpdata\n");
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specifiy at least one writer");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"You must specify at least one writer");
   }
   
 	if (write_stokes) {
