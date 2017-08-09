@@ -481,14 +481,8 @@ The most important (i.e. useful) of these are summarized below.
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Example models and test}
-A small number of units tests are provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The unit tests can be found in the directory \unix{src/unit\_tests}. To execute the tests, execute the following command
-\shellcmd{python ptatin3d-execute-tests.py}
-If a given test (e.g. test03a) is successful, you will see the following information display
-\shellcmd{\\
---------------------------------------------------------\\
--- Performing test: test03a\\
----- Unix diff with expected file: ./expected/test01.expected}
+\section{Example models and tests}
+A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and numpy and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
 
 Numerous example models are provided with the source distribution. These serve as a starting point to generate your own models. The most simple model is ``viscous\_sinker'', with source files living in \unix{src/models/viscous\_sinker}. Several example options files are provided in \unix{src/models/viscous\_sinker/testjobs}. We summarize the examples below
 \begin{enumerate}
