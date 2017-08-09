@@ -46,10 +46,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   if (rank == root) {
-    if (!fp) {
-      printf("[MPIWrite_Blocking] File error: File pointer is NULL on root\n");
-      PetscFunctionReturn(0);
-    }
+    if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIWrite_Blocking] File error: File pointer is NULL on root");
   }
 
   ierr = MPI_Reduce(&len,&len_total,1,MPI_LONG,MPI_SUM,root,comm);CHKERRQ(ierr);
@@ -165,16 +162,12 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (!data) {
-    if (!rank) printf("[MPIRead_Blocking] Pointer error: A valid pointer to store data must be provided\n");
-    PetscFunctionReturn(0);
+    if (!rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] Pointer error: A valid pointer to store data must be provided");
   }
   
   /* check file pointer is valid */
   if (rank == root) {
-    if (!fp) {
-      printf("[MPIRead_Blocking] File error: File pointer is NULL on root\n");
-      PetscFunctionReturn(0);
-    }
+    if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] File error: File pointer is NULL on root");
   }
 
   //if (rank == root) printf("<in> filepos %ld \n",ftell(fp));
@@ -199,8 +192,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   if (!skip_header) {
     ierr = MPI_Bcast(&len_total_bytes,1,MPI_LONG,root,comm);CHKERRQ(ierr);
     if (len_total_bytes != len_total_bytes_est) {
-      if (!rank) printf("[MPIRead_Blocking] File error: Sizes don't match. File contains %ld bytes, your lengths sum to %ld bytes\n",len_total_bytes,len_total_bytes_est);
-      PetscFunctionReturn(0);
+      if (!rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] File error: Sizes don't match. File contains %ld bytes, your lengths sum to %ld bytes",len_total_bytes,len_total_bytes_est);
     }
   }
 
@@ -236,8 +228,8 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
       } else {
         /* get size */
         tagI = 2*r;
-        ierr = MPI_Irecv(ipackr,2,MPI_LONG,r,tagI,comm,&request);
-        ierr = MPI_Wait(&request,&status);
+        ierr = MPI_Irecv(ipackr,2,MPI_LONG,r,tagI,comm,&request);CHKERRQ(ierr);
+        ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
         
         //printf("r[%d] requested [%ld,%ld] \n",r,ipackr[0],ipackr[0]+ipackr[1]);
         
