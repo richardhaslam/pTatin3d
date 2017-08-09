@@ -458,10 +458,10 @@ The most important (i.e. useful) of these are summarized below.
 	A basic driver used for testing the advection diffusion solver. It does not solve Stokes.
 	
 	\item \unix{ptatin\_driver\_linear\_ts.app}
-	A driver for solving time dependent, {\textit linear} Stokes flow problems. Checkpointing is enabled.
+	A driver for solving time dependent, \emph{linear} Stokes flow problems. Checkpointing is enabled.
 
 	\item \unix{ptatin\_driver\_nonlinear\_ts.app}
-	A driver for solving time dependent, {\textit non-linear} Stokes flow problems. The energy equation may be optionally activated within this model.
+	A driver for solving time dependent, \emph{non-linear} Stokes flow problems. The energy equation may be optionally activated within this model.
 \end{enumerate}
 
 \subsection{Options for standard drivers}
@@ -562,7 +562,7 @@ Material point data can be represented in two distinct manners:
 	We refer to this as a ``cell-wise'' representation.
 \end{enumerate}
 Each form of representing material point data has several advantages and disadvantages.
-The point-wise representation of material point data has the following limitations: (i) the point-wise representation requires a large amount of storage, and (ii) investigation of the 3D data set is limited as operations such as iso-surfaces, clipping, etc cannot be defined on point clouds. Furthermore, points do not represent a finite volume, thus they do not define a surface. Hence no lighting/shading can be applied, thereby limiting the depth perception of the material point data set. However, the point-wise representation is useful for debugging model setups. The cell-wise representation of material point data overcomes both of the two limitations of the point-wise representation. However, to define the material properties on each cell we have to introduce an interpolation (or projection) between the data defined on the material points and the mesh. This means that the result stored in the cell-wise data representation is only an {\textit approximation} of the true material point data. Cell-wise representation is useful for high-resolution simulations and production runs in which the correctness of model setups has been verified.
+The point-wise representation of material point data has the following limitations: (i) the point-wise representation requires a large amount of storage, and (ii) investigation of the 3D data set is limited as operations such as iso-surfaces, clipping, etc cannot be defined on point clouds. Furthermore, points do not represent a finite volume, thus they do not define a surface. Hence no lighting/shading can be applied, thereby limiting the depth perception of the material point data set. However, the point-wise representation is useful for debugging model setups. The cell-wise representation of material point data overcomes both of the two limitations of the point-wise representation. However, to define the material properties on each cell we have to introduce an interpolation (or projection) between the data defined on the material points and the mesh. This means that the result stored in the cell-wise data representation is only an \emph{approximation} of the true material point data. Cell-wise representation is useful for high-resolution simulations and production runs in which the correctness of model setups has been verified.
 \\[8pt]
 %%	
 {\bf Point-wise representation:} Material point data fields associated with the basic marker type (\unix{MPField\_Std}) are contained in the following set of files: \\
@@ -826,9 +826,9 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 \subsubsection*{Convergence failure of Stokes solver}
 \begin{enumerate}
 	%%%%%%%%%%%%
-	\item {\textit Elements possess a high aspect ratio (AR)}. When using $Q_2$-$P_1$ elements, the inf-sup constant increases with increasing AR. Possible fixes: (1) Strengthen the Schur complement preconditioner. This could be achieved by \unix{-fieldsplit\_p\_pc\_type lu}, or switching to use an approximate form  of $S = B^T A^{-1} B$ via say one application of a Krylov method preconditioned with the scaled lumped mass matrix. Increasing the strength of the Schur complement preconditioner can be achieved by making the solve on $A^{-1}$ more accurate and making the solve on $S$ more accurate; (2) modify the element resolution to make AR $< 10$.
+	\item \emph{Elements possess a high aspect ratio (AR)}. When using $Q_2$-$P_1$ elements, the inf-sup constant increases with increasing AR. Possible fixes: (1) Strengthen the Schur complement preconditioner. This could be achieved by \unix{-fieldsplit\_p\_pc\_type lu}, or switching to use an approximate form  of $S = B^T A^{-1} B$ via say one application of a Krylov method preconditioned with the scaled lumped mass matrix. Increasing the strength of the Schur complement preconditioner can be achieved by making the solve on $A^{-1}$ more accurate and making the solve on $S$ more accurate; (2) modify the element resolution to make AR $< 10$.
 	%%%%%%%%%%%%
-	\item {\textit Convergence failure of the viscous block}. This can be diagnosed by running with these options; \unix{-fieldsplit\_u\_ksp\_monitor\_true\_residual -fieldsplit\_u\_ksp\_converged\_reason}. See below for more information.
+	\item \emph{Convergence failure of the viscous block}. This can be diagnosed by running with these options; \unix{-fieldsplit\_u\_ksp\_monitor\_true\_residual -fieldsplit\_u\_ksp\_converged\_reason}. See below for more information.
 	%%%%%%%%%%%%
 \end{enumerate}
 
@@ -836,13 +836,13 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 \subsubsection*{Convergence failure of viscous block}
 \begin{enumerate}
 	%%%%%%%%%%%%
-	\item {\textit MG smoother is not strong enough}. Possible fixes: 
+	\item \emph{MG smoother is not strong enough}. Possible fixes: 
 	(1) Increase the number of smoothing applications via \unix{-fieldsplit\_u\_mg\_levels\_ksp\_max\_it}; 
 	(2) completely re-configure the smoother for example try \unix{-fieldsplit\_u\_mg\_levels\_ksp\_type fgmres -fieldsplit\_u\_mg\_levels\_ksp\_max\_it 4 -fieldsplit\_u\_mg\_levels\_pc\_type bjacobi}. Not that this will require assembling the coarse grid operators; 
 	(3) Use more robust coarse grid operators, e.g. assemble some levels and use Galerkin coarsening on the coarser levels;
 	(4) Use less levels, or try aggressive coarsening.
 	%%%%%%%%%%%%
-	\item {\textit MG coarse grid solver fails to converge}. 
+	\item \emph{MG coarse grid solver fails to converge}. 
 	This can be diagnosed by running with these options; \
 	\unix{-fieldsplit\_u\_mg\_coarse\_ksp\_monitor\_true\_residual -fieldsplit\_u\_mg\_coarse\_ksp\_converged\_reason}.
 	Possible fixes: (1) Improve the coarse grid solver. See below for more details.
@@ -853,7 +853,7 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 \subsubsection*{Convergence failure of viscous block, GMG coarse grid solver}
 \begin{enumerate}
 	%%%%%%%%%%%%
-	\item {\textit MG coarse grid preconditioner isn't strong enough}. Possible fixes: 
+	\item \emph{MG coarse grid preconditioner isn't strong enough}. Possible fixes: 
 	(1) Use algebraic multigrid (ML, Hypre) as a preconditioner; 
 	(2) Use heavy sub-domain preconditioners, e.g. \unix{-fieldsplit\_u\_mg\_coarse\_pc\_type asm -fieldsplit\_u\_mg\_coarse\_pc\_asm\_overlap 2 
 	-fieldsplit\_u\_mg\_coarse\_sub\_pc\_type ilu -fieldsplit\_u\_mg\_coarse\_sub\_pc\_factor\_levels 2};
@@ -864,7 +864,7 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 \subsubsection*{Convergence failure of non-linear Stokes solver}
 \begin{enumerate}
 	%%%%%%%%%%%%
-	\item {\textit Coming soon\dots}.
+	\item \emph{Coming soon\dots}.
 	%%%%%%%%%%%%
 \end{enumerate}
 
@@ -936,7 +936,7 @@ $$
 % -------
 	\item Convergence of both linear and non-linear solver will appear slow if the scaling if the characteristic size of the velocity and pressure coming out of your model are orders of magnitude different. For instance, if your choice of scaling produces $F_u \sim 10^6$ and $F_p \sim 10^{-1}$ and you stop on $\delta_\text{abs} = 10^{-6}$, then a large number of iterations will be required to reduce the 2-norm of $(F_u, F_p)$ to be less than $10^{-6}$.
 % -------
-	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to {\textit decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to {\textit increase} by a factor of $X^2$ and $p'$ to {\textit increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will {\textit decrease} by a factor of $X$.
+	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to \emph{decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to \emph{increase} by a factor of $X^2$ and $p'$ to \emph{increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will \emph{decrease} by a factor of $X$.
 \end{enumerate}
 
 \end{document}
