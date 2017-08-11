@@ -56,6 +56,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
   rbuffer = NULL;
   if (rank == root) {
     rbuffer = malloc(size*len_max);
+    if (!rbuffer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIWrite_Blocking] Memory allocation error: could not allocate auxiliary buffer");
   }
   
 
