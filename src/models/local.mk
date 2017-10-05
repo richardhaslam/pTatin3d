@@ -2,6 +2,7 @@ libptatin3dmodels-y.c += $(call thisdir, \
 			ptatin_models_reg.c \
 			template/model_ops_template.c \
 			viscous_sinker/model_viscous_sinker_ops.c \
+			gene3d/model_ops_gene3d.c \
 			indentor/model_indentor_ops.c \
 			rift3D_T/model_rift3D_T_ops.c \
 			advdiff_example/model_ops_advdiff_example.c \
