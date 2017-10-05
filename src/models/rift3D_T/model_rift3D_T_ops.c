@@ -406,22 +406,29 @@ PetscErrorCode ModelRift3D_T_GetDescription_InitialThermalField(ModelRift3D_TCtx
 #define __FUNCT__ "ModelRift3D_T_DefineBCList"
 PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRift3D_TCtx *data)
 {
-	PetscScalar    vxl,vxr,vzf,vzb,vy;
+	PetscScalar    vy;
+    PetscBool      scissor;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	
-	vxl = -data->vx;
-	vxr =  data->vx;
+    scissor = PETSC_FALSE;
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_scissors",&scissor,NULL);CHKERRQ(ierr);
+   
 	vy  =  data->vy;
-	vzf = -data->vz;
-	vzb =  0.0;//data->vz;
 	
 	/* infilling free slip base */
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&vy);CHKERRQ(ierr);
-	
 	/* free surface top*/
 	
+    if(scissor == PETSC_FALSE){
+        PetscScalar    vxl,vxr,vzf,vzb;
+        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        vxl = -data->vx;
+        vxr =  data->vx;
+        vzf = -data->vz;
+        vzb =  0.0;//data->vz;
+        
 	/*extension along face of normal x */
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&(vxl));CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&(vxr));CHKERRQ(ierr);
@@ -429,6 +436,38 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 	/*compression along face of normal z */
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&(vzb));CHKERRQ(ierr);
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&(vzf));CHKERRQ(ierr);
+    }else{
+        PetscReal    coeffs[5];
+        PetscBool    rigid=PETSC_FALSE;
+        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        // set center of rotation x0
+        coeffs[0]= 6.0;
+        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        // set center of rotation z0
+        coeffs[1]= 4.0;
+        // set direction of interpolation
+        coeffs[2]= 0;
+        // set lenght in direction of interpolation
+        coeffs[3]= data->Lx-data->Ox;
+        // set x a;gular velocity based on vx at the right back corner
+        coeffs[4]=data->vx/(data->Oz-4.0);
+        
+        ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_scissors_rigid",&rigid,NULL);CHKERRQ(ierr);
+        if (rigid){
+            ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,DMDAVecTraverse3d_ROTXZ_Z,(void*)coeffs);CHKERRQ(ierr);
+            ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,DMDAVecTraverse3d_ROTXZ_Z,(void*)coeffs);CHKERRQ(ierr);
+            
+        }
+   
+    
+    /*extension along face of normal x */
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,DMDAVecTraverse3d_ROTXZ_X,(void*)coeffs);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,DMDAVecTraverse3d_ROTXZ_X,(void*)coeffs);CHKERRQ(ierr);
+    
+    /*compression along face of normal z */
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,DMDAVecTraverse3d_ROTXZ_Z,(void*)coeffs);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,DMDAVecTraverse3d_ROTXZ_Z,(void*)coeffs);CHKERRQ(ierr);
+    }
 	
 	PetscFunctionReturn(0);
 }
@@ -898,7 +937,8 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx HPctx;
 	DMDAVecTraverse3d_InterpCtx IntpCtx;
 	PetscReal MeshMin[3],MeshMax[3],domain_height;
-	PetscBool active_energy;
+	PetscBool active_energy, scissor;
+    
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -908,24 +948,53 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+    scissor = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_scissors",&scissor,NULL);CHKERRQ(ierr);
     
-    vxl = -data->vx;
-	vxr =  data->vx;
-	vy  =  data->vy;
-	vzf = -data->vz;
-	vzb =  0.0;//data->vz;
-	
-	ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
-	/* apply -5 < vx 5 across the domain x \in [0,1] */
-	
-	ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(data->Lx-data->Ox),vxl,0.0);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-	
-	ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
-	ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
-	
+    if(scissor == PETSC_FALSE){
+        
+        vxl = -data->vx;
+        vxr =  data->vx;
+        
+        vzf = -data->vz;
+        vzb =  0.0;//data->vz;
+        
+        ierr = VecZeroEntries(velocity);CHKERRQ(ierr);
+        
+        ierr = DMDAVecTraverse3d_InterpCtxSetUp_X(&IntpCtx,(vxr-vxl)/(data->Lx-data->Ox),vxl,0.0);CHKERRQ(ierr);
+        ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+        ierr = DMDAVecTraverse3d_InterpCtxSetUp_Z(&IntpCtx,(vzf-vzb)/(data->Lz-data->Oz),vzb,0.0);CHKERRQ(ierr);
+        ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+        
+        
+
+    }else{
+        PetscReal    coeffs[5];
+       
+
+        // set center of rotation x0
+        coeffs[0]= 6.0;
+        // set center of rotation z0
+        coeffs[1]= 4.0;
+        // set direction of interpolation
+        coeffs[2]= 0;
+        // set lenght in direction of interpolation
+        coeffs[3]= data->Lx-data->Ox;
+        // set x a;gular velocity based on vx at the right back corner
+        coeffs[4]=data->vx/(data->Oz-4.0);
+        
+        
+        ierr = DMDAVecTraverse3d(dau,velocity,0,DMDAVecTraverse3d_ROTXZ_X,(void*)coeffs);CHKERRQ(ierr);
+        
+        
+        ierr = DMDAVecTraverse3d(dau,velocity,2,DMDAVecTraverse3d_ROTXZ_Z,(void*)coeffs);CHKERRQ(ierr);
+        
+        
+    }
+    vy= data->vy;
+    ierr = DMDAVecTraverse3d_InterpCtxSetUp_Y(&IntpCtx,-vy/(data->Ly-data->Oy),0.0,0.0);CHKERRQ(ierr);
+    ierr = DMDAVecTraverse3d(dau,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
+   	
 	ierr = VecZeroEntries(pressure);CHKERRQ(ierr);
 	
 	ierr = DMDAGetBoundingBox(dau,MeshMin,MeshMax);CHKERRQ(ierr);
@@ -941,9 +1010,9 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
     ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
     ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 	
-    /*
+    
      ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"testHP");CHKERRQ(ierr);
-     */
+    
 	
 	/* initial condition for temperature */
 	ierr = pTatinContextValid_Energy(c,&active_energy);CHKERRQ(ierr);
