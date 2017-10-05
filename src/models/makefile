@@ -5,6 +5,7 @@ TATIN_MODEL_DIR = \
 	viscous_sinker \
 	indentor \
 	rift3D_T \
+	gene3d \
 	advdiff_example\
 	delamination \
 	riftrh \
