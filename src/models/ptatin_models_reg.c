@@ -31,12 +31,12 @@
 /* Users add prototypes here */
 extern PetscErrorCode pTatinModelRegister_Template(void);
 extern PetscErrorCode pTatinModelRegister_ViscousSinker(void);
-extern PetscErrorCode pTatinModelRegister_Gene3D(void);
-extern PetscErrorCode pTatinModelRegister_Gene3DNueve(void);
+//extern PetscErrorCode pTatinModelRegister_Gene3D(void);
+//extern PetscErrorCode pTatinModelRegister_Gene3DNueve(void);
 extern PetscErrorCode pTatinModelRegister_Indentor(void);
-extern PetscErrorCode pTatinModelRegister_Rift3D(void);
+//extern PetscErrorCode pTatinModelRegister_Rift3D(void);
 extern PetscErrorCode pTatinModelRegister_Rift3D_T(void);
-extern PetscErrorCode pTatinModelRegister_Sierra(void);
+//extern PetscErrorCode pTatinModelRegister_Sierra(void);
 extern PetscErrorCode pTatinModelRegister_AdvDiffExample(void);
 extern PetscErrorCode pTatinModelRegister_Delamination(void);
 extern PetscErrorCode pTatinModelRegister_Riftrh(void);
@@ -66,12 +66,12 @@ PetscErrorCode pTatinModelRegisterAll(void)
 	/* call registration functions for each model here */
 	ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Gene3DNueve();CHKERRQ(ierr);
+	//ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
+	//ierr = pTatinModelRegister_Gene3DNueve();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Rift3D();CHKERRQ(ierr);
+	//ierr = pTatinModelRegister_Rift3D();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Rift3D_T();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Sierra();CHKERRQ(ierr);
+	//ierr = pTatinModelRegister_Sierra();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
 	ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);

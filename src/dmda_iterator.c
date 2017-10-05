@@ -197,6 +197,65 @@ PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_X(DMDAVecTraverse3d_InterpCtx *c
 	
 	PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_ROTXZ_X"
+PetscBool DMDAVecTraverse3d_ROTXZ_X(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+    PetscScalar x,y,z;
+    PetscReal  *coeffs;
+    PetscBool  impose;
+    PetscReal  x0,z0,Length,v,VXA,VXB;
+    PetscInt   dir;
+    
+    /* get coordinates */
+    x = pos[0];
+    y = pos[1];
+    z = pos[2];
+    /* fetch user data */
+    coeffs = (PetscReal*)ctx;
+    x0       = coeffs[0];
+    z0       = coeffs[1];
+     dir      = (int)(coeffs[2]);
+    Length   = coeffs[3];
+    v        = coeffs[4];
+    VXA = -(z-z0)*v;
+    VXB = (z-z0)*v;
+    *val = VXA+(VXB-VXA)/Length*pos[dir];
+    /* indicate you want to set this value into the vector */
+    impose = PETSC_TRUE;
+    
+    return impose;
+}
+#undef __FUNCT__
+#define __FUNCT__ "DMDAVecTraverse3d_ROTXZ_Z"
+PetscBool DMDAVecTraverse3d_ROTXZ_Z(PetscScalar pos[],PetscScalar *val,void *ctx)
+{
+    PetscScalar x,y,z;
+    PetscReal  *coeffs;
+    PetscBool  impose;
+    PetscReal  x0,z0,Length,v,VZA,VZB;
+    PetscInt   dir;
+    /* get coordinates */
+    x = pos[0];
+    y = pos[1];
+    z = pos[2];
+    /* fetch user data */
+    coeffs = (PetscReal*)ctx;
+    x0       = coeffs[0];
+    z0       = coeffs[1];
+    dir      = (int)(coeffs[2]);
+    Length   = coeffs[3];
+    v        = coeffs[4];
+    VZA = (x-x0)*v;
+    VZB = -(x-x0)*v;
+    *val = VZA+(VZB-VZA)/Length*pos[dir];
+    impose = PETSC_TRUE;
+    
+    return impose;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVecTraverse3d_InterpCtxSetUp_Y"
 PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_Y(DMDAVecTraverse3d_InterpCtx *c,PetscScalar a, PetscScalar b,PetscScalar oy)
@@ -555,6 +614,9 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val
     
 	return impose;
 }
+
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "DMDAVecTraverseIJK_ZeroInteriorMinusNmax"
