@@ -1,32 +1,32 @@
 /*
-   A prototype of a matrix-free method
-   designed to operate on heterogeneous compute nodes.
+   A prototype of a matrix-free method designed to operate on heterogeneous
+   compute nodes.
 
-   That is, it is assumed that moving data is cheap (or even free if
-   we are on a shared-memory/UMA domain with the appropriate tools),
-   but that we would like to process arbitrary subsets of elements
-   on each rank, utilizing different kernels (in particular,
-   we're interested in using AVX on some ranks and CUDA on others).
+   It is assumed that moving data is cheap (or even free if we are on a
+   shared-memory/UMA domain with the appropriate tools), but that we would like
+   to process arbitrary subsets of elements on each rank, utilizing different
+   kernels (in particular, we're interested in using AVX on some ranks and CUDA
+   on others).
 
-   The use case in mind
-   is a heterogeneous compute node with a single coprocessor
-   and several CPU cores, when we would like to use a flat MPI
+   The use case in mind is a heterogeneous compute node with a single
+   coprocessor and several CPU cores, when we would like to use a flat MPI
    paradigm.
 
-   This prototype does not implement general redistribution of work.
-   Instead, it assumes that the MPI communicator on which the
-   velocity DA lives (comm_u) can be decomposed into sub-communicators
-   representing shared-memory domains,
+   This prototype does not implement general redistribution of work. Instead,
+   it assumes that the MPI communicator on which the velocity DA lives (comm_u)
+   can be decomposed into sub-communicators representing shared-memory domains,
    each with exactly one CUDA-enabled GPU available.
 
-   This current prototype assumes working MPI-3 Shared Memory features,
-   CUDA, and AVX.
+   This implementation assumes working
+    * MPI-3 Shared Memory features,
+    * CUDA, and
+    * AVX.
    */
 
 #include <petscfe.h>
-#include <../src/sys/utils/hash.h> /* not portable to prefix installs
-                                      In master (PETSc 3.8), this header is
-                                      moved to $PETSC_DIR/include/petsc/private) */
+#include <../src/sys/utils/hash.h> /* Not portable to prefix installs
+                                      In PETSc 3.8, this header is
+                                      moved to $PETSC_DIR/include/petsc/private */
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
@@ -53,24 +53,22 @@ extern PetscLogEvent MAT_MultMFA11_cfr;
 typedef struct _p_MFA11SubRepart *MFA11SubRepart;
 
 struct _p_MFA11SubRepart {
-  /* 
+  /*
    <no postfix> : refers to quantities used in the "normal" case without repartitioning
-   _repart      : refers to quantities which are used after repartitioning (these can 
+   _repart      : refers to quantities which are used after repartitioning (these can
                   be the same as the unrepartitioned values, say if we use the same array)
    _remote      : refers to quantities which are used to communicate with rank 0
    */
   PetscObjectState state;
   const PetscInt   *elnidx_u;
   MPI_Comm         comm_sub;
-  PetscMPIInt      size_sub;
-  PetscInt         nel_sub,nen_u;
-  PetscInt         nel,nel_remote,nel_repart,el_offset,*nel_remote_in;
-  PetscInt         nnodes,nnodes_remote,nnodes_repart,*nnodes_remote_in,nodes_offset,*nodes_remote;
-  PetscInt         *elnidx_u_repart;
+  PetscMPIInt      size_sub,rank_sub;
+  PetscInt         nel_sub,nen_u,nel,nel_remote,nel_repart,el_offset,nnodes,
+                   nnodes_remote,nnodes_repart, nodes_offset;
+  PetscInt         *nel_remote_in,*nnodes_remote_in,*nodes_remote,*elnidx_u_repart;
   PetscScalar      *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
   PetscBool        win_ufield_repart_allocated,win_Yu_repart_allocated;
   MPI_Win          win_ufield_repart,win_Yu_repart;
-
   MFA11CUDA        cudactx;
 };
 
@@ -80,16 +78,14 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
 {
   PetscErrorCode          ierr;
   PetscInt                i,e;
-  PetscMPIInt             rank_sub;
   const QPntVolCoefStokes *cell_gausspoints;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
   /* Create and populate data in gaussdata_w_repart_base. This is the quadrature-point-wise
      information needed to apply the operator. On rank_sub 0, this
      has information for all the elements which will be processed.  */
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     PetscReal * const gaussdata_w_remote = &gaussdata_w_repart_base[NQP*ctx->el_offset];
     for (e=ctx->nel_repart; e<ctx->nel; e++) {
       PetscInt e_remote = e - ctx->nel_repart; /* element number in set to send */
@@ -118,12 +114,10 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscMPIInt    rank_sub;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     PetscReal * const LA_gcoords_remote = &LA_gcoords_repart_base[NSD*ctx->nodes_offset];
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
@@ -150,17 +144,15 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscMPIInt    rank_sub;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
   /* Gather velocity field entries from all ranks in shared mem array
      starting at ufield_repart_base. */
 
   /* Rank_sub 1,2,.. poke data directly into the shared array, and rank_sub 0
      simply copies */
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     PetscScalar * const ufield_remote = &ctx->ufield_repart_base[NSD*ctx->nodes_offset];
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
@@ -186,10 +178,8 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscMPIInt    rank_sub;
 
   PetscFunctionBeginUser;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
@@ -197,7 +187,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
 
   /* Accumulate into Yu on rank_sub 1,2,.. just copy on rank_sub 0*/
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     PetscScalar * const Yu_remote = &ctx->Yu_repart_base[NSD*ctx->nodes_offset];
     for (i=0; i<ctx->nnodes_remote; ++i) {
       PetscInt d;
@@ -231,7 +221,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   DM              dau = mf->daUVW;
   PetscInt        i;
   MFA11SubRepart  ctx;
-  PetscMPIInt     rank,size,rank_sub;
+  PetscMPIInt     rank,size;
   MPI_Comm        comm_u = PetscObjectComm((PetscObject)dau);
   PetscHashI      nodes_remote_inv;
 
@@ -250,31 +240,31 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   ctx->state = 0;
 
   ctx->win_ufield_repart_allocated = PETSC_FALSE;
-  ctx->ufield_repart_base = NULL;
-  ctx->mem_ufield_repart = NULL;
-  ctx->win_Yu_repart_allocated = PETSC_FALSE;
-  ctx->Yu_repart_base = NULL;
-  ctx->mem_Yu_repart = NULL;
+  ctx->ufield_repart_base          = NULL;
+  ctx->mem_ufield_repart           = NULL;
+  ctx->win_Yu_repart_allocated     = PETSC_FALSE;
+  ctx->Yu_repart_base              = NULL;
+  ctx->mem_Yu_repart               = NULL;
 
   /* Define a subcomm relative to the local shared-memory domain.
      This implementation assumes that you have exactly one CUDA-enabled
      GPU per shared-memory domain. */
   ierr = MPI_Comm_split_type(MPI_COMM_WORLD,MPI_COMM_TYPE_SHARED,0,MPI_INFO_NULL,&ctx->comm_sub);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(ctx->comm_sub,&ctx->rank_sub);CHKERRQ(ierr);
   ierr = MPI_Comm_size(ctx->comm_sub,&ctx->size_sub);CHKERRQ(ierr);
 
   ierr = DMDAGetElements_pTatinQ2P1(dau,&ctx->nel,&ctx->nen_u,&ctx->elnidx_u);CHKERRQ(ierr);
 
-  /* Decide on a repartitioning of the elements 
+  /* Decide on a repartitioning of the elements
      We assume that we send a contiguous chunk of elements from
-     each non-zero rank on comm_sub to rank 0 on comm_sub, and simply process 
-     fewer elements from the original list on ranks 1,... size_comm-1. On rank 0, 
+     each non-zero rank on comm_sub to rank 0 on comm_sub, and simply process
+     fewer elements from the original list on ranks 1,... size_comm-1. On rank 0,
      we process a larger array.
      */
   ierr = MPI_Allreduce(&ctx->nel,&ctx->nel_sub,1,MPIU_INT,MPI_SUM,ctx->comm_sub);CHKERRQ(ierr);
 
   /* To compute how many elements to send to rank_sub 0, we compute an equal partition
-     of the elements among the non-zero rank_subs, compute a fraction of this to 
+     of the elements among the non-zero rank_subs, compute a fraction of this to
      send to rank_sub 0, and round down. */
   if (ctx->size_sub == 1) {
     ctx->nel_repart = ctx->nel;
@@ -286,12 +276,12 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     }
     const PetscInt nel_repart_small = (PetscInt) ((1.0-remotefrac) * ctx->nel_sub / (ctx->size_sub-1));
     const PetscInt nel_repart_big   = ctx->nel_sub - ((ctx->size_sub-1) * nel_repart_small);
-    ctx->nel_repart                 = rank_sub ?  nel_repart_small : nel_repart_big;
+    ctx->nel_repart                 = ctx->rank_sub ?  nel_repart_small : nel_repart_big;
   }
 
-  /* (non-zero ranks) Determine the unique nodes corresponding to the elements 
+  /* (non-zero ranks) Determine the unique nodes corresponding to the elements
      which will be sent to rank_sub 0. Obtain a count. */
-  ctx->nel_remote = rank_sub ? ctx->nel - ctx->nel_repart: 0;
+  ctx->nel_remote = ctx->rank_sub ? ctx->nel - ctx->nel_repart: 0;
 
   if (ctx->nel_remote < 0) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"SubRepart's current partitioning scheme does not allow for the current partition. Perhaps you have too few ranks in a sub communicator.");
@@ -300,7 +290,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   /* Overestimate the number of remote nodes, then get the actual number
      of unique nodes by sorting. This could, with the help of a hash table
      be done in linear time, and the wasted memory here could be recovered */
-  if (rank_sub) {  
+  if (ctx->rank_sub) {
     ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&ctx->nodes_remote);CHKERRQ(ierr);
     ierr = PetscMemcpy(ctx->nodes_remote,&ctx->elnidx_u[ctx->nel_repart*ctx->nen_u],
         ctx->nel_remote*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr);
@@ -314,31 +304,31 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      to just the entries which will be needed on rank_sub 0, without the offset.
      That is, the inverse of nodes_remote[].  This is a hash table.
      This lets us do a rank-local "scatter" to an array
-     which we send to the right place on rank_sub 0. This table is only used 
+     which we send to the right place on rank_sub 0. This table is only used
      here, and is then destroyed */
   PetscHashICreate(nodes_remote_inv);
   for(i=0;i<ctx->nnodes_remote;++i){
     PetscHashIAdd(nodes_remote_inv,ctx->nodes_remote[i],i);
   }
 
-  /* On rank_sub 0, obtain the number of nodes being sent from 
+  /* On rank_sub 0, obtain the number of nodes being sent from
      each other rank in comm_sub */
-  if (!rank_sub) {
+  if (!ctx->rank_sub) {
     ierr = PetscMalloc1(ctx->size_sub,&ctx->nnodes_remote_in);CHKERRQ(ierr);
   }
   ierr = MPI_Gather(&ctx->nnodes_remote,1,MPIU_INT,ctx->nnodes_remote_in,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
 
-  /* Compute the number of nodes on each rank 
+  /* Compute the number of nodes on each rank
      This is only actually used on sub_rank 0.  */
   {
-    PetscInt X,Y,Z; /* local sizes */ 
+    PetscInt X,Y,Z; /* local sizes */
     ierr = DMDAGetGhostCorners(dau,NULL,NULL,NULL, &X,&Y,&Z);CHKERRQ(ierr);
     ctx->nnodes = X * Y * Z;
   }
 
   /* Calculate the number of nodes on each rank, after repartitioning.
      This only changes on rank_sub 0 */
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     ctx->nnodes_repart = ctx->nnodes; /* We use the existing array */
   } else {
     ctx->nnodes_repart = ctx->nnodes;
@@ -349,7 +339,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      list to correspond to the numbering on rank_sub 0 */
   {
     PetscInt *nodes_offsets = NULL;
-    if (!rank_sub) {
+    if (!ctx->rank_sub) {
       ierr = PetscMalloc1(ctx->size_sub,&nodes_offsets);
       nodes_offsets[0] = 0;
       nodes_offsets[1] = ctx->nnodes;
@@ -360,7 +350,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   }
 
   /* On rank 0, we need to know how many elements from each other rank, in order
-     to receive data in the correct parts of the concatenated element, nodes, 
+     to receive data in the correct parts of the concatenated element, nodes,
      and coordinate arrays */
   ierr = PetscMalloc1(ctx->size_sub,&ctx->nel_remote_in);CHKERRQ(ierr);
   ierr = MPI_Gather(&ctx->nel_remote,1,MPIU_INT,ctx->nel_remote_in,1,MPIU_INT,0,ctx->comm_sub);CHKERRQ(ierr);
@@ -368,7 +358,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   /* Compute an element offset for each rank */
   {
     PetscInt *el_offsets = NULL;
-    if (!rank_sub) {
+    if (!ctx->rank_sub) {
       ierr = PetscMalloc1(ctx->size_sub,&el_offsets);
       el_offsets[0] = 0;
       el_offsets[1] = ctx->nel;
@@ -378,14 +368,14 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     ierr = PetscFree(el_offsets);
   }
 
-  /* Send and receive elements being offloaded to rank 0, defining element-->node 
-     maps for the repartition.  On rank_sub > 0, this involves computing the 
-     element indices to send to rank 0 by mapping them into the local ordering 
+  /* Send and receive elements being offloaded to rank 0, defining element-->node
+     maps for the repartition.  On rank_sub > 0, this involves computing the
+     element indices to send to rank 0 by mapping them into the local ordering
      for the nodes which are used there, and then offsetting.  */
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     PetscInt *elnidx_u_remote;
     PetscInt i;
-    ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&elnidx_u_remote);CHKERRQ(ierr); 
+    ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&elnidx_u_remote);CHKERRQ(ierr);
     for (i=0;i<ctx->nen_u*ctx->nel_remote;++i){
       PetscInt ind = ctx->elnidx_u[ctx->nen_u*ctx->nel_repart + i];
       {
@@ -403,7 +393,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     PetscMPIInt i;
     PetscInt    el_offset=ctx->nel;
     ierr = PetscMalloc1(ctx->nel_repart*ctx->nen_u,&ctx->elnidx_u_repart);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ctx->elnidx_u_repart,ctx->elnidx_u,ctx->nel*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr); 
+    ierr = PetscMemcpy(ctx->elnidx_u_repart,ctx->elnidx_u,ctx->nel*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr);
 
     /* Receive a chunk of elements (sets of 27 nodes for Q2 elements) from each other rank */
     // TODO: replace with shared memory operation (just as we have for other arrays in this impl)
@@ -424,8 +414,8 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     for(r=0;r<size;++r) {
       if(r==rank) {
         ierr = PetscPrintf(PETSC_COMM_SELF,"\033[32m[%d/%d]\033[0m ",rank,size);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF,"\033[32m[n%d/%d]\033[0m\n",rank_sub,ctx->size_sub);CHKERRQ(ierr);
-        if (!rank_sub) {
+        ierr = PetscPrintf(PETSC_COMM_SELF,"\033[32m[n%d/%d]\033[0m\n",ctx->rank_sub,ctx->size_sub);CHKERRQ(ierr);
+        if (!ctx->rank_sub) {
           ierr = PetscPrintf(PETSC_COMM_SELF, " nel_sub:%d \n  nnodes_remote_in[]: ",ctx->nel_sub);CHKERRQ(ierr);
           for (i=0;i<ctx->size_sub;++i) {
             ierr = PetscPrintf(PETSC_COMM_SELF, "%d ",ctx->nnodes_remote_in[i]);CHKERRQ(ierr);
@@ -448,7 +438,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 #endif
 
   /* Set up CUDA context */
-  if (!rank_sub) { 
+  if (!ctx->rank_sub) {
     ierr = PetscMalloc1(1,&ctx->cudactx);CHKERRQ(ierr);
     ierr = MFA11CUDA_SetUp(ctx->cudactx);CHKERRQ(ierr);
   }
@@ -465,11 +455,9 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
 {
   PetscErrorCode  ierr;
   MFA11SubRepart  ctx;
-  PetscMPIInt     rank_sub;
 
   PetscFunctionBeginUser;
   ctx = (MFA11SubRepart)mf->ctx;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);CHKERRQ(ierr);
 
   /* Free shared memory windows */
   if (ctx->win_ufield_repart_allocated) {
@@ -487,20 +475,21 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
     ctx->mem_Yu_repart = NULL;
   }
 
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     ierr = PetscFree(ctx->nodes_remote);CHKERRQ(ierr);
-  }else {
+  } else {
     ierr = PetscFree(ctx->elnidx_u_repart);CHKERRQ(ierr);
-    ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr); 
+    ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr);
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
   }
 
   /* Destroy CUDA ctx */
-  if (!rank_sub) {
+  if (!ctx->rank_sub) {
     ierr = MFA11CUDA_CleanUp(ctx->cudactx);CHKERRQ(ierr);
     ierr = PetscFree(ctx->cudactx);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree(mf->ctx);CHKERRQ(ierr);
   mf->ctx = NULL;
 
   PetscFunctionReturn(0);
@@ -518,15 +507,12 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   PetscReal               x1[3],w1[3],B[3][3],D[3][3],w[NQP];
   PetscInt                i,j,k,e;
   QPntVolCoefStokes       *all_gausspoints;
-  PetscMPIInt             rank_sub;
   PetscReal               *mem_gaussdata_w_repart,*gaussdata_w_repart_base,*mem_LA_gcoords_repart,*LA_gcoords_repart_base;
   PetscBool               win_LA_gcoords_repart_allocated=PETSC_FALSE,win_gaussdata_w_repart_allocated=PETSC_FALSE ;
   MPI_Win                 win_LA_gcoords_repart,win_gaussdata_w_repart;
 
-
   PetscFunctionBeginUser;
   ctx = (MFA11SubRepart)mf->ctx;
-  ierr = MPI_Comm_rank(ctx->comm_sub,&rank_sub);
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_stp,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
@@ -556,7 +542,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
     ierr = PetscLogEventBegin(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
     /* Allocate space for repartitioned node-wise fields, and repartitioned elementwise data */
 
-    /* (re)Allocate shared memory windows */
+    /* (re)Allocate shared memory windows on rank_sub 0*/
     if (ctx->win_ufield_repart_allocated) {
       ctx->ufield_repart_base = NULL;
       ctx->mem_ufield_repart = NULL;
@@ -564,10 +550,10 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
       ierr = MPI_Win_free(&ctx->win_ufield_repart);CHKERRQ(ierr);
       ctx->win_ufield_repart_allocated = PETSC_FALSE;
     }
-    { 
+    {
       MPI_Aint          sz;
       PetscMPIInt       du;
-      const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+      const PetscMPIInt nnodes_win = ctx->rank_sub ? 0 : ctx->nnodes_repart;
       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_ufield_repart,&ctx->win_ufield_repart);CHKERRQ(ierr);
       ctx->win_ufield_repart_allocated = PETSC_TRUE;
       ierr = MPI_Win_shared_query(ctx->win_ufield_repart,MPI_PROC_NULL,&sz,&du,&ctx->ufield_repart_base);CHKERRQ(ierr);
@@ -580,28 +566,28 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
       ierr = MPI_Win_free(&ctx->win_Yu_repart);CHKERRQ(ierr);
       ctx->win_Yu_repart_allocated = PETSC_FALSE;
     }
-    { 
+    {
       MPI_Aint          sz;
       PetscMPIInt       du;
-      const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+      const PetscMPIInt nnodes_win = ctx->rank_sub ? 0 : ctx->nnodes_repart;
       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscScalar),sizeof(PetscScalar),MPI_INFO_NULL,ctx->comm_sub,&ctx->mem_Yu_repart,&ctx->win_Yu_repart);CHKERRQ(ierr);
       ctx->win_Yu_repart_allocated = PETSC_TRUE;
       ierr = MPI_Win_shared_query(ctx->win_Yu_repart,MPI_PROC_NULL,&sz,&du,&ctx->Yu_repart_base);CHKERRQ(ierr);
       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,ctx->win_Yu_repart);CHKERRQ(ierr);
     }
-    { 
+    {
       MPI_Aint          sz;
       PetscMPIInt       du;
-      const PetscMPIInt nnodes_win = rank_sub ? 0 : ctx->nnodes_repart;
+      const PetscMPIInt nnodes_win = ctx->rank_sub ? 0 : ctx->nnodes_repart;
       ierr = MPI_Win_allocate_shared(NSD*nnodes_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_LA_gcoords_repart,&win_LA_gcoords_repart);CHKERRQ(ierr);
       win_LA_gcoords_repart_allocated = PETSC_TRUE;
       ierr = MPI_Win_shared_query(win_LA_gcoords_repart,MPI_PROC_NULL,&sz,&du,&LA_gcoords_repart_base);CHKERRQ(ierr);
       ierr = MPI_Win_lock_all(MPI_MODE_NOCHECK,win_LA_gcoords_repart);CHKERRQ(ierr);
     }
-    { 
+    {
       MPI_Aint          sz;
       PetscMPIInt       du;
-      const PetscMPIInt nel_win = rank_sub ? 0 : ctx->nel_repart;
+      const PetscMPIInt nel_win = ctx->rank_sub ? 0 : ctx->nel_repart;
       ierr = MPI_Win_allocate_shared(NQP*nel_win*sizeof(PetscReal),sizeof(PetscReal),MPI_INFO_NULL,ctx->comm_sub,&mem_gaussdata_w_repart,&win_gaussdata_w_repart);CHKERRQ(ierr);
       win_gaussdata_w_repart_allocated = PETSC_TRUE;
       ierr = MPI_Win_shared_query(win_gaussdata_w_repart,MPI_PROC_NULL,&sz,&du,&gaussdata_w_repart_base);CHKERRQ(ierr);
@@ -630,7 +616,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 #else
 #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
 #endif
-  if (rank_sub) {
+  if (ctx->rank_sub) {
     /* Rank_sub > 0 implementation. This is the same as the AVX implementation,
        over a smaller set of elements (ctx->nel_repart) */
 #if defined(_OPENMP)
@@ -685,13 +671,11 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
           }
         }
       }
-
     }
-
   } else {
     /* Rank_sub 0 CUDA Implementation */
     ierr = PetscLogEventBegin(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
-    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart_base,gaussdata_w_repart_base,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr); 
+    ierr = CopyTo_A11_CUDA(mf,ctx->cudactx,ctx->ufield_repart_base,LA_gcoords_repart_base,gaussdata_w_repart_base,ctx->nel_repart,ctx->nen_u,ctx->elnidx_u_repart,ctx->nnodes_repart);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_MultMFA11_cto,0,0,0,0);CHKERRQ(ierr);
     ierr = PetscLogEventBegin(MAT_MultMFA11_ker,0,0,0,0);CHKERRQ(ierr);
     ierr = ProcessElements_A11_CUDA(ctx->cudactx,ctx->nen_u,NSD*ctx->nnodes_repart);CHKERRQ(ierr);
@@ -718,7 +702,6 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   }
 
   ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
-
   ierr = PetscLogEventEnd(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
 
   /* Transfer and accumulate contributions to Yu from rank_sub 0 */
@@ -727,7 +710,7 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   ierr = PetscLogEventEnd(MAT_MultMFA11_rfr,0,0,0,0);CHKERRQ(ierr);
 
   /* Note that this is identical to the AVX impl, under the assumption
-     that we are logging "useful flops" and that identical work is being performed. 
+     that we are logging "useful flops" and that identical work is being performed.
      This has not been scrutinized */
   PetscLogFlops((ctx->nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
   PetscLogFlops(ctx->nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
