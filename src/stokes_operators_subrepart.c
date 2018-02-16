@@ -501,6 +501,7 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
     ierr = PetscFree(ctx->cudactx);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree(mf->ctx);CHKERRQ(ierr);
   mf->ctx = NULL;
 
   PetscFunctionReturn(0);
