@@ -58,6 +58,9 @@ struct _p_MFA11SubRepart {
    _repart      : refers to quantities which are used after repartitioning (these can
                   be the same as the unrepartitioned values, say if we use the same array)
    _remote      : refers to quantities which are used to communicate with rank 0
+
+   Note that not all fields are used on all ranks. For example, elnidx_u_repart is only
+   used when rank_sub == 0.
    */
   PetscObjectState state;
   const PetscInt   *elnidx_u;
@@ -268,6 +271,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      send to rank_sub 0, and round down. */
   if (ctx->size_sub == 1) {
     ctx->nel_repart = ctx->nel;
+    ierr = PetscPrintf(PETSC_COMM_SELF,"WARNING: sub-communicator of size 1. Unless you are testing, something is wrong with your use of the repartitioned operator. Perhaps you are in an environment in which MPI_Comm_split_type() is not behaving as expected.\n");CHKERRQ(ierr);
   } else {
     PetscReal remotefrac = 0.78; /* How much of the work on each rank to offload to rank_sub 0 */
     ierr = PetscOptionsGetReal(NULL,NULL,"-subrepart_frac",&remotefrac,NULL);CHKERRQ(ierr);
@@ -388,7 +392,6 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     PetscHashIDestroy(nodes_remote_inv);
     ierr = MPI_Send(elnidx_u_remote,ctx->nen_u*ctx->nel_remote,MPIU_INT,0,0,ctx->comm_sub);CHKERRQ(ierr);
     ierr = PetscFree(elnidx_u_remote);CHKERRQ(ierr);
-
   } else {
     PetscMPIInt i;
     PetscInt    el_offset=ctx->nel;
@@ -430,6 +433,33 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
         ierr = PetscPrintf(PETSC_COMM_SELF, " [Unpartitioned] nel: %4d  nnodes: %4d \n",ctx->nel,ctx->nnodes);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_SELF, " [Remote]        nel: %4d  nnodes: %4d\n",ctx->nel_remote,ctx->nnodes_remote);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_SELF, " [Repartitioned] nel: %4d  nnodes: %4d \n",ctx->nel_repart,ctx->nnodes_repart);CHKERRQ(ierr);
+#       if 1
+        /* Compute the range of indices used after repartitioning, and the percentage of indices in this range that are used by
+           the repartitioned set of elements */
+        {
+          PetscInt    imin=PETSC_MAX_INT, imax=0, icount, icountUnique;
+          PetscInt    *indices;
+          PetscScalar efficiency;
+          icount = ctx->nel_repart*ctx->nen_u;
+          ierr = PetscMalloc1(icount,&indices);CHKERRQ(ierr);
+          for (i=0; i<icount; ++i) {
+            PetscInt curr;
+            if (ctx->rank_sub == 0) {
+              curr = ctx->elnidx_u_repart[i];
+            } else {
+              curr = ctx->elnidx_u[i];
+            }
+            imin = PetscMin(imin,curr);
+            imax = PetscMax(imax,curr);
+            indices[i] = curr;
+          }
+          icountUnique = icount; /* will be overwritten */
+          ierr = PetscSortRemoveDupsInt(&icountUnique,indices);CHKERRQ(ierr);
+          efficiency = icountUnique/((PetscScalar)(imax-imin));
+          ierr = PetscPrintf(PETSC_COMM_SELF, " [Repartitioned] element dof range: %d-%d #unique: %d, usage: %0.2f pct.\n",imin,imax,icountUnique,efficiency*100.0);CHKERRQ(ierr);
+          ierr = PetscFree(indices);CHKERRQ(ierr);
+        }
+#       endif
       }
       ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
