@@ -224,8 +224,6 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   DM              dau = mf->daUVW;
   PetscInt        i;
   MFA11SubRepart  ctx;
-  PetscMPIInt     rank,size;
-  MPI_Comm        comm_u = PetscObjectComm((PetscObject)dau);
   PetscHashI      nodes_remote_inv;
 
   // TODO: this whole function wantonly uses MPI calls. These should be collected
