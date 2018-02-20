@@ -193,13 +193,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
       Yu[NSD*ctx->nodes_remote_offset+i] += Yu_remote[i];
     }
   } else {
-#if 1
-    for (i=0;i<NSD*ctx->nnodes;++i){
-      Yu[i] += ctx->Yu_repart_base[i];
-    }
-#else
     ierr = PetscMemcpy(Yu,ctx->Yu_repart_base,NSD*ctx->nnodes*sizeof(PetscScalar));CHKERRQ(ierr);
-#endif
   }
 
   /* Synchronize (not sure if this is the optimal set of commands) */
