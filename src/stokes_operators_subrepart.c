@@ -290,6 +290,21 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     ctx->nodes_remote_offset = -1; /* Not used */
   }
 
+  /* Note: In return for the convenience of sending a continguous range of node 
+     numbers, we send some that are not actually needed, as the subset of 
+     elements likely "splits a layer" of the grid. A further optimization 
+     could be to make sure that the partition respects the grid layering.
+
+     Note that a previous, more complex implementation computed exactly which
+     nodes were required. See this commit where it was removed:
+
+      commit acdfb706034aeea4b9d662ed6b9094ca06efb855
+      Author: Patrick Sanan <patrick.sanan@gmail.com>
+      Date:   Mon Feb 19 17:36:05 2018 +0100
+
+      SubRepart : using contiguous node ranges
+  */
+
   /* On rank_sub 0, obtain the number of nodes being sent from
      each other rank in comm_sub */
   if (!ctx->rank_sub) {
