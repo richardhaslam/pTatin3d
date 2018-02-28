@@ -915,7 +915,6 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	MatStokesMF       ctx;
   PetscErrorCode    ierr;
   DM                stokes_pack,dau,dap;
-  DMDALocalInfo     infou,infop;
   Vec               XUloc,XPloc,YUloc,YPloc;
 	Vec               Xu,Xp,Yu,Yp;
   PetscScalar       *LA_XUloc,*LA_XPloc;
@@ -928,8 +927,6 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	stokes_pack = ctx->stokes_pack;
 	
   ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dap,&infop);CHKERRQ(ierr);
 	
   ierr = DMCompositeGetLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
@@ -1184,7 +1181,6 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	MatA11MF          ctx;
   PetscErrorCode    ierr;
   DM                dau;
-  DMDALocalInfo     infou;
   Vec               XUloc,YUloc;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
@@ -1204,8 +1200,6 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ctx->state = state;
   
 	dau = ctx->daUVW;
-	
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
@@ -1254,7 +1248,6 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	MatA11MF          ctx;
   PetscErrorCode    ierr;
   DM                dau;
-  DMDALocalInfo     infou;
   Vec               XUloc,YUloc;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YUloc;
@@ -1266,8 +1259,6 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 	
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
-	
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
@@ -1336,7 +1327,6 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	MatStokesMF       ctx;
   PetscErrorCode    ierr;
   DM                dau,dap;
-  DMDALocalInfo     infou,infop;
   Vec               XPloc,YUloc;
   PetscScalar       *LA_XPloc;
   PetscScalar       *LA_YUloc;
@@ -1348,9 +1338,6 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
 	dap = ctx->dap;
-	
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dap,&infop);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dap,&XPloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
@@ -1484,7 +1471,6 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
 	MatStokesMF       ctx;
   PetscErrorCode    ierr;
   DM                dau,dap;
-  DMDALocalInfo     infou,infop;
   Vec               XUloc,YPloc;
   PetscScalar       *LA_XUloc;
   PetscScalar       *LA_YPloc;
@@ -1496,9 +1482,6 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
 	ierr = MatShellGetContext(A,(void**)&ctx);CHKERRQ(ierr);
 	dau = ctx->daUVW;
 	dap = ctx->dap;
-	
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dap,&infop);CHKERRQ(ierr);
 	
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dap,&YPloc);CHKERRQ(ierr);

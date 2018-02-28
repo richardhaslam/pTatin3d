@@ -139,7 +139,7 @@ testall :
 	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallcheck :
-	cd tests && ./runTests.py -s --verify $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+	cd tests && ./runTests.py -s --verify -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallclean :
 	cd tests && ./runTests.py -s -p 
@@ -171,7 +171,7 @@ TATIN_CFLAGS_EXTENSIONS+=-D_GNU_SOURCE
 
 TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_CFLAGS_OPENMP) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS) $(TATIN_CFLAGS_EXTENSIONS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
-TATIN_COMPILE.cu = $(CUDA_NVCC) -c -Xcompiler "$(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS) $(TATIN_CFLAGS_EXTENSIONS)"
+TATIN_COMPILE.cu = $(CUDA_NVCC) -c -Xcompiler "$(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(TATIN_CFLAGS_EXTENSIONS)"
 
 
 # Test executables

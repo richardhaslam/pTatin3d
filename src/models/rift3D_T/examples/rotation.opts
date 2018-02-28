@@ -1,0 +1,110 @@
+##
+###  Using driver     : ./ptatin3d/src/ptatin_driver_nonlinear_ts.app
+### Options file for : 
+###  L. Le Pourhiet, N. Chamot-Rooke, M. Delescluse, D. May, L. Watremez, and M. Pubellier,
+###  "Stalled continental break-up explains the width of the South China Sea", submitted, 2017
+### PHYSICS PARAMETER for model POLC 100 km described in the paper.  
+### For model with out of plane compression
+### To reproduce FREES-SLIP model 
+### -model_rift3D_T_vz 0.0
+### To reproduce model with Out of plane Extension 
+### -model_rift3D_T_vz -7.85e-11
+### =============================================================== 
+-nonlinear_driver_v1
+-ptatin_model rift3D_T
+-log_summary
+-options_left 1
+-output_path ./SCS.opts
+########### BASIC NUMERICS ##############
+-mx 256
+-my 32
+-mz 128
+-nsteps 2001
+-dt_max 1e-3
+-output_frequency 25
+-model_rift3D_T_use_semi_eulerian
+#################PHYSICS##################
+-model_rift3D_T_vz 7.85e-11
+-model_rift3D_Ttheta_1 0.030
+################ SOLVERS ################
+###### MG 
+-A11_operator_type 0,1,1
+-dau_nlevels 3
+-stk_velocity_dm_mat_type aij
+-stk_velocity_da_refine_hierarchy_x 2,2
+-stk_velocity_da_refine_hierarchy_y 2,1
+-stk_velocity_da_refine_hierarchy_z 2,2
+# if you have 512 proc
+#-stk_velocity_da_refine_hierarchy_x 4,2
+#-stk_velocity_da_refine_hierarchy_y 2,1
+#-stk_velocity_da_refine_hierarchy_z 4,2
+#### SNES 
+-newton_its 0
+-snes_atol 1e-2
+-snes_max_it 5
+-snes_rtol 1e-4
+-snes_max_linear_solve_fail 10
+-snes_monitor
+-snes_converged_reason
+#####  KSP 
+-ksp_max_it 50
+-ksp_rtol 1.0e-3
+-ksp_type fgmres
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 2
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_pc_type mg
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_mg_levels_ksp_type gmres
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_mg_levels_ksp_max_it 10
+-fieldsplit_u_mg_levels_ksp_norm_type NONE
+#### KSP COARSE
+-fieldsplit_u_pc_mg_log
+-fieldsplit_u_mg_coarse_dmdarepart_pc_mg_log
+-fieldsplit_u_mg_coarse_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type dmdarepart
+-fieldsplit_u_mg_coarse_pc_dmdarepart_factor 8
+# -----------------
+# 64 x 16 x 32
+# 32 x  8 x 16
+# 16 x  4 x  8
+# -----------------
+    -fieldsplit_u_mg_coarse_dmdarepart_ksp_type preonly
+    -fieldsplit_u_mg_coarse_dmdarepart_pc_type mg
+    -fieldsplit_u_mg_coarse_dmdarepart_pc_mg_galerkin
+    -fieldsplit_u_mg_coarse_dmdarepart_pc_mg_levels 3
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_type gmres
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_norm_type NONE
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_pc_type jacobi
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
+# -----------------
+# 16 x 4 x 8
+#  8 x 2 x 4
+# -----------------
+  -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_ksp_type preonly
+  -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_pc_type dmdarepart
+  -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_pc_dmdarepart_factor 64
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_ksp_type preonly
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_type mg
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_mg_galerkin
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_pc_mg_levels 2
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_type gmres
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_norm_type NONE
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_pc_type bjacobi
+    -fieldsplit_u_mg_coarse_dmdarepart_mg_coarse_dmdarepart_mg_levels_ksp_max_it 6
+
+
+#### THERMAL SOLVER 
+-T_ksp_atol 1.0e-4
+-T_ksp_monitor
+-T_ksp_rtol 1.0e-10
+-T_ksp_type fgmres
+-T_pc_type bjacobi
+-T_snes_type ksponly

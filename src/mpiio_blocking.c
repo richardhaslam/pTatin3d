@@ -46,10 +46,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   if (rank == root) {
-    if (!fp) {
-      printf("[MPIWrite_Blocking] File error: File pointer is NULL on root\n");
-      PetscFunctionReturn(0);
-    }
+    if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIWrite_Blocking] File error: File pointer is NULL on root");
   }
 
   ierr = MPI_Reduce(&len,&len_total,1,MPI_LONG,MPI_SUM,root,comm);CHKERRQ(ierr);
@@ -59,6 +56,7 @@ PetscErrorCode MPIWrite_Blocking(FILE *fp,void *data,long int len,size_t size,in
   rbuffer = NULL;
   if (rank == root) {
     rbuffer = malloc(size*len_max);
+    if (!rbuffer) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIWrite_Blocking] Memory allocation error: could not allocate auxiliary buffer");
   }
   
 
@@ -165,16 +163,12 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   if (!data) {
-    if (!rank) printf("[MPIRead_Blocking] Pointer error: A valid pointer to store data must be provided\n");
-    PetscFunctionReturn(0);
+    if (!rank) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] Pointer error: A valid pointer to store data must be provided");
   }
   
   /* check file pointer is valid */
   if (rank == root) {
-    if (!fp) {
-      printf("[MPIRead_Blocking] File error: File pointer is NULL on root\n");
-      PetscFunctionReturn(0);
-    }
+    if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] File error: File pointer is NULL on root");
   }
 
   //if (rank == root) printf("<in> filepos %ld \n",ftell(fp));
@@ -199,8 +193,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   if (!skip_header) {
     ierr = MPI_Bcast(&len_total_bytes,1,MPI_LONG,root,comm);CHKERRQ(ierr);
     if (len_total_bytes != len_total_bytes_est) {
-      if (!rank) printf("[MPIRead_Blocking] File error: Sizes don't match. File contains %ld bytes, your lengths sum to %ld bytes\n",len_total_bytes,len_total_bytes_est);
-      PetscFunctionReturn(0);
+      if (!rank) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"[MPIRead_Blocking] File error: Sizes don't match. File contains %ld bytes, your lengths sum to %ld bytes",len_total_bytes,len_total_bytes_est);
     }
   }
 
@@ -236,8 +229,8 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
       } else {
         /* get size */
         tagI = 2*r;
-        ierr = MPI_Irecv(ipackr,2,MPI_LONG,r,tagI,comm,&request);
-        ierr = MPI_Wait(&request,&status);
+        ierr = MPI_Irecv(ipackr,2,MPI_LONG,r,tagI,comm,&request);CHKERRQ(ierr);
+        ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
         
         //printf("r[%d] requested [%ld,%ld] \n",r,ipackr[0],ipackr[0]+ipackr[1]);
         
@@ -281,178 +274,3 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   
   PetscFunctionReturn(0);
 }
-
-
-#if 0
-
-#define FAC 100000
-
-int test1(void)
-{
-  int ierr,rank;
-  int root = 0;
-  FILE *fp = NULL;
-  double *data;
-  int length,i;
-  
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (rank == root) {
-    fp = fopen("test.bin","w");
-  }
-
-  length = FAC + rank*3;
-  data = malloc(length*sizeof(double));
-  for (i=0; i<length; i++) {
-    data[i] = 100.0*rank + i;
-  }
-  
-  ierr = MPIWrite_Blocking(fp,data,length,sizeof(double),root,MPI_COMM_WORLD);
-
-  free(data);
-  data = NULL;
-  
-  if (rank == root) {
-    fclose(fp);
-  }
-  return(0);
-}
-
-int test2(void)
-{
-  int ierr,rank;
-  int r,root = 0;
-  FILE *fp = NULL;
-  double *data;
-  int length,i,start;
-  
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  if (rank == root) {
-    fp = fopen("test.bin","r");
-  }
-  
-  length = FAC + rank*3;
-  start = 0;
-  for (r=0; r<rank; r++) {
-    start += (FAC + r*3);
-  }
-  ierr = MPIRead_Blocking(fp,(void**)&data,length,sizeof(double),root,MPI_COMM_WORLD);
-
-  if (rank == 2) {
-    for (i=0; i<length; i++) {
-      //printf("** %d %1.4e\n",start+i,data[i]);
-    }
-  }
-  
-  free(data);
-  data = NULL;
-  
-  if (rank == root) {
-    fclose(fp);
-  }
-  return(0);
-}
-
-
-
-int test_multidata_write(void)
-{
-  int ierr,rank;
-  int root = 0;
-  FILE *fp = NULL;
-  double *data1;
-  int   *data2;
-  short *data3;
-  long int length[3],i;
-  
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  
-  length[0] = (rank+1)*3;
-  length[1] = (rank+2)*2;
-  length[2] = (rank+3)*1;
-
-  data1 = malloc(length[0]*sizeof(double));
-  data2 = malloc(length[1]*sizeof(int));
-  data3 = malloc(length[2]*sizeof(short));
-
-  for (i=0; i<length[0]; i++) {
-    data1[i] = 100.0*rank + i;
-  }
-  for (i=0; i<length[1]; i++) {
-    data2[i] = 10 * rank + i;
-  }
-  for (i=0; i<length[2]; i++) {
-    data3[i] = (short)(2*rank + i);
-  }
-  
-  if (rank == root) {
-    fp = fopen("test_multi.bin","w");
-  }
-  ierr = MPIWrite_Blocking(fp,data1,length[0],sizeof(double),root,MPI_COMM_WORLD);
-  ierr = MPIWrite_Blocking(fp,data2,length[1],sizeof(int),root,MPI_COMM_WORLD);
-  ierr = MPIWrite_Blocking(fp,data3,length[2],sizeof(short),root,MPI_COMM_WORLD);
-  
-  
-  free(data3);
-  free(data2);
-  free(data1);
-  
-  if (rank == root) {
-    fclose(fp);
-  }
-  return(0);
-}
-
-int test_multidata_read(void)
-{
-  int ierr,rank;
-  int root = 0;
-  FILE *fp = NULL;
-  double *data1 = NULL;
-  int   *data2 = NULL;
-  short *data3 = NULL;
-  long int length[3],i;
-  
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-  
-  length[0] = (rank+1)*3;
-  length[1] = (rank+2)*2;
-  length[2] = (rank+3)*1;
-  
-  if (rank == root) {
-    fp = fopen("test_multi.bin","r");
-  }
-  ierr = MPIRead_Blocking(fp,(void**)&data1,length[0],sizeof(double),root,MPI_COMM_WORLD);
-  ierr = MPIRead_Blocking(fp,(void**)&data2,length[1],sizeof(int),root,MPI_COMM_WORLD);
-  ierr = MPIRead_Blocking(fp,(void**)&data3,length[2],sizeof(short),root,MPI_COMM_WORLD);
-  
-  free(data3);
-  free(data2);
-  free(data1);
-  
-  if (rank == root) {
-    fclose(fp);
-  }
-  return(0);
-}
-
-int main(int nargs,char *args[])
-{
-  int ierr,rank,size;
-
-  ierr = MPI_Init(&nargs,&args);
-  ierr = MPI_Comm_size(MPI_COMM_WORLD,&size);
-  ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-
-  //test1();
-  //test2();
-  
-  test_multidata_write();
-  test_multidata_read();
-  
-  
-  
-  ierr = MPI_Finalize();
-  return(0);
-}
-
-#endif
