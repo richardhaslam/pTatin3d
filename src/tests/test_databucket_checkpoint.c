@@ -16,8 +16,11 @@ PetscErrorCode ptatin_db_checkpoint(void)
   pTatinCtx      user;
   Vec            X;
   pTatinModel    model;
+  PetscLogDouble time[4];
   
   PetscFunctionBegin;
+  
+  ierr = PetscOptionsInsertString(NULL,"-output_path cptest");CHKERRQ(ierr);
   
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -60,21 +63,21 @@ PetscErrorCode ptatin_db_checkpoint(void)
   {
     DM dms;
     
-    ierr = DMDACheckpointWrite(dav,"./cpdump/stokes");CHKERRQ(ierr);
+    ierr = DMDACheckpointWrite(dav,"./cptest/stokes");CHKERRQ(ierr);
 
-    ierr = DMDACheckpointLoad(PETSC_COMM_WORLD,"./cpdump/stokes_dmda.json",&dms);CHKERRQ(ierr);
+    ierr = DMDACheckpointLoad(PETSC_COMM_WORLD,"./cptest/stokes_dmda.json",&dms);CHKERRQ(ierr);
     ierr = DMView(dms,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-    //ierr = DMDACheckpointLoad(PETSC_COMM_SELF,"./cpdump/stokes_dmda.json",&dms);CHKERRQ(ierr);
+    //ierr = DMDACheckpointLoad(PETSC_COMM_SELF,"./cptest/stokes_dmda.json",&dms);CHKERRQ(ierr);
     //ierr = DMView(dms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
   
-  // Write to file
-  //	ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_FALSE,"filters/coords_markers.dat","filters/phase_markers.dat");CHKERRQ(ierr);
+  // Write databucket
   //DataBucketView(PETSC_COMM_WORLD,material_points,"mp-ascii",DATABUCKET_VIEW_STDOUT);
   //DataBucketView(PETSC_COMM_WORLD,material_points,"mp-binary",DATABUCKET_VIEW_BINARY);
-  
-  //DataBucketView(PETSC_COMM_WORLD,material_points,"cpdump/mp-native",DATABUCKET_VIEW_NATIVE);
+  PetscTime(&time[0]);
+  DataBucketView(PETSC_COMM_WORLD,material_points,"./cptest/mp-native",DATABUCKET_VIEW_NATIVE);
+  PetscTime(&time[1]);
   
   {
     DataBucket dbload;
@@ -82,26 +85,32 @@ PetscErrorCode ptatin_db_checkpoint(void)
     
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     
-    DataBucketLoad_NATIVE(PETSC_COMM_WORLD,"cpdump/mp-native_db.json",&dbload);
-    DataBucketView(PETSC_COMM_SELF,dbload,"mp-ascii",DATABUCKET_VIEW_STDOUT);
+    PetscTime(&time[2]);
+    DataBucketLoad_NATIVE(PETSC_COMM_WORLD,"./cptest/mp-native_db.json",&dbload);
+    PetscTime(&time[3]);
+    
+    DataBucketView(PETSC_COMM_WORLD,dbload,"mp-ascii",DATABUCKET_VIEW_STDOUT);
 
     // Better way to load redundant data - relies on the network rather than the file system
-    //DataBucketLoadRedundant_NATIVE(PETSC_COMM_WORLD,"cpdump/mp-native_db.json",&dbload);
+    //DataBucketLoadRedundant_NATIVE(PETSC_COMM_WORLD,"./cptest/mp-native_db.json",&dbload);
     //DataBucketView(PETSC_COMM_SELF,dbload,"mp-ascii[red]",DATABUCKET_VIEW_STDOUT);
     
     // Code below makes sense in two scenarios:
     //   (i) if you run once with N ranks then write; launch again on 1 rank and ONLY read
     //   (ii) if you are fine having every rank open and read the file
-    //DataBucketLoad_NATIVE(PETSC_COMM_SELF,"cpdump/mp-native_db.json",&dbload);
+    //DataBucketLoad_NATIVE(PETSC_COMM_SELF,"cptest/mp-native_db.json",&dbload);
     //DataBucketView(PETSC_COMM_SELF,dbload,"mp-ascii",DATABUCKET_VIEW_STDOUT);
 
+    /*
+    // as a sanity check - write out the loaded data bucket data into a PV file
     {
       const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
       
-      ierr = SwarmViewGeneric_ParaView(dbload,3,mp_prop_list,"./","allmprop");CHKERRQ(ierr);
+      ierr = SwarmViewGeneric_ParaView(dbload,3,mp_prop_list,"./cptest","cpmprop");CHKERRQ(ierr);
     //ierr = SwarmOutputParaView_MPntStd(dbload,"./","mpstd");CHKERRQ(ierr);
     }
-
+    */
+     
     /*
     if (rank == 0) {
       const MaterialPointField  mp_prop_list[] = { MPField_Std, MPField_Stokes, MPField_StokesPl };
@@ -111,14 +120,18 @@ PetscErrorCode ptatin_db_checkpoint(void)
     //ierr = SwarmOutputParaView_MPntStd(dbload,"./","seqmp");CHKERRQ(ierr);
     }
     */
+    
+    DataBucketDestroy(&dbload);
   }
   
+  PetscPrintf(PETSC_COMM_WORLD,"DataBucket checkpoint write %+1.4e (sec)\n",time[1]-time[0]);
+  PetscPrintf(PETSC_COMM_WORLD,"DataBucket checkpoint load %+1.4e (sec)\n",time[3]-time[2]);
   
   /* define boundary conditions */
   ierr = pTatinModel_ApplyBoundaryCondition(model,user);CHKERRQ(ierr);
   
   /* write out vts file */
-  ierr = pTatinModel_Output(model,user,X,"test");CHKERRQ(ierr);
+  //ierr = pTatinModel_Output(model,user,X,"test");CHKERRQ(ierr);
   
   ierr = pTatin3dDestroyContext(&user);
   
