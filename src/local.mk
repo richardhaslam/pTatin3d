@@ -114,6 +114,7 @@ ptatin-drivers-y.c += $(call thisdir, \
 			ptatin_driver_energy.c \
 			ptatin_driver_linear_ts.c \
 			ptatin_driver_nonlinear_ts.c \
+			ptatin_driver_ts_init.c \
 	)
 
 TATIN_INC += -I$(abspath $(call thisdir,.))
