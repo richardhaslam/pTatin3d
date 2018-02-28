@@ -85,6 +85,11 @@ PetscLogEvent MAT_MultMFA11_QuasiNewtonX;
 PetscLogEvent MAT_MultMFA12_QuasiNewtonX; 
 PetscLogEvent MAT_MultMFA21_QuasiNewtonX; 
 
+PetscLogEvent MAT_MultMFA11_gtl;
+PetscLogEvent MAT_MultMFA11_ltg;
+PetscLogEvent MAT_MultMFA11_yz;
+PetscLogEvent MAT_MultMFA11_gv;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatStokesMFCreate"
 PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
@@ -1200,12 +1205,16 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   
 	dau = ctx->daUVW;
 	
+	ierr = PetscLogEventBegin(MAT_MultMFA11_gv,A,X,Y,0);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&XUloc);CHKERRQ(ierr);
   ierr = DMGetLocalVector(dau,&YUloc);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(MAT_MultMFA11_gv,A,X,Y,0);CHKERRQ(ierr);
 	
 	/* get the local (ghosted) entries for each physics */
+	ierr = PetscLogEventBegin(MAT_MultMFA11_gtl,A,X,Y,0);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalBegin(dau,X,INSERT_VALUES,XUloc);CHKERRQ(ierr);
 	ierr = DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,XUloc);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(MAT_MultMFA11_gtl,A,X,Y,0);CHKERRQ(ierr);
 	
 	/* Zero entries in local vectors corresponding to dirichlet boundary conditions */
 	/* This has the affect of zeroing out columns when the mat-mult is performed */
@@ -1224,12 +1233,16 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 	ierr = VecRestoreArray(XUloc,&LA_XUloc);CHKERRQ(ierr);
 	
 	/* do global fem summation */
+	ierr = PetscLogEventBegin(MAT_MultMFA11_yz,A,X,Y,0);CHKERRQ(ierr);
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(MAT_MultMFA11_yz,A,X,Y,0);CHKERRQ(ierr);
+	ierr = PetscLogEventBegin(MAT_MultMFA11_ltg,A,X,Y,0);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalBegin(dau,YUloc,ADD_VALUES,Y);CHKERRQ(ierr);
 	ierr = DMLocalToGlobalEnd  (dau,YUloc,ADD_VALUES,Y);CHKERRQ(ierr);
 	
   ierr = DMRestoreLocalVector(dau,&YUloc);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dau,&XUloc);CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(MAT_MultMFA11_ltg,A,X,Y,0);CHKERRQ(ierr);
 	
 	/* modify Y for the boundary conditions, y_k = scale_k(x_k) */
 	/* Clobbering entries in global vector corresponding to dirichlet boundary conditions */
