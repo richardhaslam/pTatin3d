@@ -1201,7 +1201,7 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
   /* NOTE - Calling pTatinPhysCompActivate_Energy() after pTatin3dCreateMaterialPoints() is not essential when restarting */
   /* The reason for this is pTatinPhysCompActivate_Energy_FromFile() does not register new fields, rather DataBucketLoad() does */
   if (activate_energy) {
-    ierr = pTatinPhysCompActivate_Energy_FromFile(user,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = pTatinPhysCompActivate_Energy_FromFile(user);CHKERRQ(ierr);
     ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
     dmenergy = energy->daT;
   }

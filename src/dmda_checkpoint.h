@@ -43,5 +43,8 @@ PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[]);
 PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file);
 PetscErrorCode VecLoadFromFile(Vec x,const char name[]);
 
+PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[]);
+PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da);
+
 #endif
 

@@ -150,6 +150,9 @@ void DataBucketDestroyPackedArray(DataBucket db,void **buf);
 void DataBucketFillPackedArray(DataBucket db,const int index,void *buf);
 void DataBucketInsertPackedArray(DataBucket db,const int idx,void *data);
 
+void DataBucketView_NATIVE(MPI_Comm comm,DataBucket db,const char prefix[]);
+void DataBucketLoad_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db);
+void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db);
 
 #endif
 

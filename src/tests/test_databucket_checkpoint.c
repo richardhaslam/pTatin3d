@@ -4,6 +4,7 @@
 #include <ptatin_init.h>
 #include <ptatin_models.h>
 #include <data_bucket.h>
+#include <dmda_checkpoint.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "ptatin_db_checkpoint"

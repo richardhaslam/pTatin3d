@@ -49,5 +49,7 @@ PetscErrorCode VolumeQuadratureGetAllCellData_Energy(Quadrature Q,QPntVolCoefEne
 PetscErrorCode VolumeQuadratureGetCellData_Energy(Quadrature Q,QPntVolCoefEnergy coeffs[],PetscInt cidx,QPntVolCoefEnergy *cell[]);
 
 PetscErrorCode PhysCompAddMaterialPointCoefficients_Energy(DataBucket db);
+PetscErrorCode PhysCompCheckpointWrite_Energy(PhysCompEnergy e,PetscBool write_dmda,const char path[],const char prefix[]);
+PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy *E);
 
 #endif
