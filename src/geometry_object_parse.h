@@ -34,17 +34,6 @@
 #include "geometry_object.h"
 #include "cJSON.h"
 
-/* cJSON extensions */
-void cJSON_FileView(const char filename[],cJSON **jf);
-void cJSON_GetObjectValue_bool(cJSON *cj,const char name[],int *found,int *val);
-void cJSON_GetObjectValue_int(cJSON *cj,const char name[],int *found,int *val);
-void cJSON_GetObjectValue_intarray(cJSON *cj,const char name[],int *found,int *nv,int vals[]);
-void cJSON_GetObjectValue_double(cJSON *cj,const char name[],int *found,double *val);
-void cJSON_GetObjectValue_doublearray(cJSON *cj,const char name[],int *found,int *nv,double vals[]);
-void cJSON_GetObjectValue_char(cJSON *cj,const char name[],int *found,char **val);
-cJSON* cJSON_GetArrayItemRoot(cJSON *gobject);
-cJSON* cJSON_GetArrayItemNext(cJSON *gobj_k);
-
 PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,GeometryObject **golist);
 PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObject **_list);
 PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *isset);
