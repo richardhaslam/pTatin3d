@@ -105,8 +105,10 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   /* Note: a possible optimization is to delay this until we actually need this data */
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr);
+#if 0
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -135,8 +137,10 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
   /* Note: a possible optimization is to delay this until we actually need this data */
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr);
+#if 0
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -166,8 +170,10 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
 
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
+#if 0
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#endif
 
   PetscFunctionReturn(0);
 }
@@ -183,8 +189,10 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
+#if 0
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
+#endif
 
   /* Accumulate into Yu on rank_sub 1,2,.. just copy on rank_sub 0*/
   if (ctx->rank_sub > 0) {
