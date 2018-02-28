@@ -85,31 +85,6 @@ static inline void ComputeStrainRate3d(double ux[],double uy[],double uz[],doubl
 	D[2][0] = exz;		D[2][1] = eyz;		D[2][2] = ezz;
 }
 
-static inline void ComputeDeformationGradient3d(double ux[],double uy[],double uz[],double dNudx[],double dNudy[],double dNudz[],double L[NSD][NSD])
-{
-	int i,j,k;
-	
-	for (i=0; i<3; i++) {
-		for (j=0; j<3; j++) {
-			L[i][j] = 0.0;
-		}
-	}
-	for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-		// du/dx_i
-		L[0][0] += dNudx[k] * ux[k];
-		L[0][1] += dNudy[k] * ux[k];
-		L[0][2] += dNudz[k] * ux[k];
-		// dv/dx_i
-		L[1][0] += dNudx[k] * uy[k];
-		L[1][1] += dNudy[k] * uy[k];
-		L[1][2] += dNudz[k] * uy[k];
-		// dw/dx_i
-		L[2][0] += dNudx[k] * uz[k];
-		L[2][1] += dNudy[k] * uz[k];
-		L[2][2] += dNudz[k] * uz[k];
-	}
-}
-
 static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 {
 	int i,j;
@@ -120,14 +95,6 @@ static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 		}
 	}
 	*A2 = sqrt( 0.5 * sum );	
-}
-
-static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
-{
-	const double one_third = 0.333333333333333;
-	
-	*A2 = one_third * ( A[0][0] + A[1][1] + A[2][2] );
-	
 }
 
 #undef __FUNCT__

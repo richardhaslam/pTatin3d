@@ -108,6 +108,7 @@ static inline void ComputeStrainRate3d(double ux[],double uy[],double uz[],doubl
 	D[2][0] = exz;		D[2][1] = eyz;		D[2][2] = ezz;
 }
 
+#if 0
 static inline void ComputeDeformationGradient3d(double ux[],double uy[],double uz[],double dNudx[],double dNudy[],double dNudz[],double L[NSD][NSD])
 {
 	int i,j,k;
@@ -132,6 +133,7 @@ static inline void ComputeDeformationGradient3d(double ux[],double uy[],double u
 		L[2][2] += dNudz[k] * uz[k];
 	}
 }
+#endif
 
 static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 {
@@ -145,6 +147,7 @@ static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 	*A2 = sqrt( 0.5 * sum );	
 }
 
+#if 0
 static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
 {
 	const double one_third = 0.333333333333333;
@@ -152,6 +155,7 @@ static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
 	*A2 = one_third * ( A[0][0] + A[1][1] + A[2][2] );
 	
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "private_EvaluateRheologyNonlinearitiesMarkers_VPSTD"

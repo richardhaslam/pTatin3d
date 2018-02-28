@@ -27,6 +27,7 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
+#if defined(PTAT3D_ELEMENT_MF_STANDARD)
 #include <petsclog.h>           /* for PetscLogFlops() */
 
 static inline void MatMultMF_Stokes_MixedFEM3d_B(const double FAC,const double eta_gp,const double Ux[],const double Uy[],const double Uz[],const double P[],const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
@@ -544,3 +545,4 @@ static inline void MatMultMF_Stokes_MixedFEM3d_A22(const double FAC,const double
   Y[2] += 0.0;
   Y[3] += 0.0;
 }
+#endif
