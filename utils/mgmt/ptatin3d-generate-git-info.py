@@ -31,7 +31,8 @@ def pTatin3d_GitFound_WriteInfoHeader():
         giturl = line.rstrip('\n')
     gitf.close();
 
-    # We do this splitting nonesense to remove the username from the URL
+    # We do this splitting nonsense to remove the username from the URL
+    # Note that this will only work with HTTPS addresses (not SSH ones)
     tmp = giturl.split("bitbucket.org")
     giturl = "https://bitbucket.org" + tmp[1]
     giturl = '"%s"' % ("git url: " + giturl)

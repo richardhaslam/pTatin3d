@@ -1,0 +1,395 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O3 -Wall -ftree-vectorize -fstrict-aliasing -funroll-loops -g -march=native -fopenmp -DTATIN_HAVE_CUDA -DTATIN_HAVE_AVX
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+  allocated          = 200 
+  nfields registered = 17 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+  allocated          = 200 
+  nfields registered = 17 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+[pTatin] Writing output to existing directory: analytics_solcx 
+[pTatin] Created log file: analytics_solcx/ptatin.log-2017.08.04_08:38:06 
+[pTatin] Writing output to existing directory: analytics_solcx 
+[pTatin] Created options file: analytics_solcx/ptatin.options-2017.08.04_08:38:06 
+[pTatin] Created options file: analytics_solcx/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: Registering model [23] with name "analytics_vv"
+  [pTatinModel]: -ptatin_model "analytics_vv" was detected
+pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
+pTatin3dRestart: Unable to restart job
+BCList: Mem. usage (min,max) = 4.18e-02,5.16e-02 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(MPI): ("GaussLegendre StokesCoefficients")
+  L                  = 7776 
+  buffer (max)       = 8 
+  allocated          = 7784 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 4.67e-02 (MB) : rank0
+  Total mem. usage                                                      = 3.74e-01 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 216 
+  buffer (max)       = 8 
+  allocated          = 230 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 2.58e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 216 
+  buffer (max)       = 8 
+  allocated          = 230 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.22e-02 (MB) : rank0
+  Total mem. usage                                                      = 2.58e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 216 
+  buffer (max)       = 8 
+  allocated          = 228 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 2.55e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 216 
+  buffer (max)       = 8 
+  allocated          = 228 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.16e-03 (MB) : rank0
+  Total mem. usage                                                      = 2.55e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 1296 
+  buffer (max)       = 8 
+  allocated          = 1304 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.83e-02 (MB) : rank0
+  Total mem. usage                                                      = 1.46e-01 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 1296 
+  buffer (max)       = 8 
+  allocated          = 1304 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.83e-02 (MB) : rank0
+  Total mem. usage                                                      = 1.46e-01 (MB) : collective
+  MaterialPointsStokes: Using one2one projection
+[[Swarm initialization: 0.0001 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 972 points : 0.0006 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 5 
+Mat Object: 8 MPI processes
+  type: mpiaij
+  rows=8, cols=8
+  total: nonzeros=32, allocated nonzeros=40
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node (on process 0) routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 2.8317e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 3.1424e-03 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 5 
+Mat Object: 8 MPI processes
+  type: mpiaij
+  rows=8, cols=8
+  total: nonzeros=32, allocated nonzeros=40
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node (on process 0) routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 2.3353e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 2.4681e-03 (sec)]]
+[PSwarmSetUpCoords_FillBox]
+Mesh size (12 x 12 x 2) : MG levels 2  
+         level [ 0]: global Q2 elements (6 x 6 x 1) 
+         level [ 1]: global Q2 elements (12 x 12 x 2) 
+[r   0]: level [ 0]: local Q2 elements  (2 x 3 x 1) 
+[r   0]: level [ 1]: local Q2 elements  (3 x 6 x 2) 
+[r   0]: level [ 0]: element range [0 - 1] x [0 - 2] x [0 - 0] 
+[r   0]: level [ 1]: element range [0 - 2] x [0 - 5] x [0 - 1] 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(MPI): ("GaussLegendre StokesCoefficients")
+  L                  = 972 
+  buffer (max)       = 8 
+  allocated          = 980 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 7.82e-03 (MB) : rank0
+  Total mem. usage                                                      = 4.70e-02 (MB) : collective
+BCList: Mem. usage (min,max) = 7.56e-03,1.09e-02 (MB) 
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 2.27e-04 (sec)
+Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
+Level [0]: Coarse grid type :: Re-discretisation :: assembled operator 
+   [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 1.13e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 1.39e-04 (sec)
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 1.175046217399e-02, 0.000000000000e+00, 0.000000000000e+00 ]
+  1 KSP Component U,V,W,P residual norm [ 2.384342628602e-06, 1.166978904901e-02, 5.852257044145e-07, 9.702733734108e-04 ]
+  2 KSP Component U,V,W,P residual norm [ 4.838015278168e-05, 9.532981061633e-03, 1.244410069075e-05, 4.597308494932e-03 ]
+  3 KSP Component U,V,W,P residual norm [ 4.609243144093e-04, 4.794716414123e-04, 1.151838162768e-04, 5.736674267656e-04 ]
+  4 KSP Component U,V,W,P residual norm [ 1.247769984367e-04, 9.013323417391e-05, 3.004580357584e-05, 4.458407679701e-05 ]
+  5 KSP Component U,V,W,P residual norm [ 4.938208075336e-06, 3.770748537708e-06, 1.434974302626e-06, 1.849400332165e-05 ]
+  6 KSP Component U,V,W,P residual norm [ 6.199965123655e-06, 2.389479076949e-06, 1.365914316591e-06, 5.761616671703e-06 ]
+  7 KSP Component U,V,W,P residual norm [ 6.098032784202e-07, 7.525003867222e-07, 2.001785844402e-07, 1.945263493670e-06 ]
+  8 KSP Component U,V,W,P residual norm [ 7.376698961310e-07, 3.499835843404e-07, 1.934096976763e-07, 4.744100798472e-07 ]
+  9 KSP Component U,V,W,P residual norm [ 7.130737715167e-08, 5.187405073454e-08, 3.955511440574e-08, 9.618312161765e-08 ]
+ 10 KSP Component U,V,W,P residual norm [ 1.927160480523e-08, 1.945601566586e-08, 1.768981807623e-08, 4.793161618875e-08 ]
+ 11 KSP Component U,V,W,P residual norm [ 2.000437002339e-08, 9.262347392291e-09, 9.036354892773e-09, 2.453110410582e-08 ]
+ 12 KSP Component U,V,W,P residual norm [ 1.512171584648e-09, 1.540999199171e-09, 9.927025200053e-10, 4.149948601754e-09 ]
+ 13 KSP Component U,V,W,P residual norm [ 9.878223430896e-10, 1.268364509243e-09, 5.924520159720e-10, 1.814860728188e-09 ]
+ 14 KSP Component U,V,W,P residual norm [ 2.745037956608e-10, 3.877426068244e-10, 1.216554656692e-10, 4.158250766345e-10 ]
+ 15 KSP Component U,V,W,P residual norm [ 7.515356457031e-11, 5.105307063471e-11, 2.674767639361e-11, 1.688987045748e-10 ]
+ 16 KSP Component U,V,W,P residual norm [ 3.065560116679e-11, 2.378807534560e-11, 1.672853312811e-11, 3.478516650787e-11 ]
+ 17 KSP Component U,V,W,P residual norm [ 8.724884191200e-12, 1.118237235032e-11, 3.817664629765e-12, 1.630305424358e-11 ]
+ 18 KSP Component U,V,W,P residual norm [ 5.738382478323e-12, 7.714549106482e-12, 4.515936532618e-12, 7.000942700668e-12 ]
+ 19 KSP Component U,V,W,P residual norm [ 3.767423990698e-12, 3.975713993240e-12, 1.988427938038e-12, 3.121211703339e-12 ]
+ 20 KSP Component U,V,W,P residual norm [ 1.322647930691e-12, 8.883812558703e-13, 6.419038845145e-13, 1.444961390970e-12 ]
+ 21 KSP Component U,V,W,P residual norm [ 2.905785099781e-13, 2.554289785657e-13, 1.878772101073e-13, 8.303765990436e-13 ]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 1.77e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-02,1.00e+02; log10(max/min) 4.00e+00; cpu time 1.61e-04 (sec)
+  writing pvdfilename analytics_solcx/timeseries_passive_pswarm.pvd 
+  writing pvdfilename analytics_solcx/timeseries_vp.pvd 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 7.78e-04 (sec) 
+  writing pvdfilename analytics_solcx/timeseries_mpoints_std.pvd 
+pTatin3d_ModelOutput_MPntStd() -> step000000_mpoints_std.(pvd,pvtu,vtu): CPU time 3.89e-04 (sec) 
+[inorms] +8.333333333333e-02,+3.538097891639e-04,+2.599731542956e-02,+2.599972290065e-02,+1.253730546593e-03
+  TimeStep control(StkCourant): | current = 1.0000e+30 : trial = 5.1936e-01 [accepted] | ==>> dt used = 5.1936e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.1936e-01 : trial = 1.0000e+32 | ==>> dt used = 5.1936e-01 |
+  timestep[] dt_courant = 5.1936e-01 
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Gene3DNueve]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_Sierra]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+[[ModelDestroy_AnlVV]]
