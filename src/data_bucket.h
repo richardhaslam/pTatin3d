@@ -45,7 +45,7 @@
 
 
 typedef enum { BFALSE=0, BTRUE } BTruth;
-typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5 } DataBucketViewType;
+typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5, DATABUCKET_VIEW_NATIVE } DataBucketViewType;
 
 typedef struct _p_DataField* DataField;
 typedef struct _p_DataBucket* DataBucket;
