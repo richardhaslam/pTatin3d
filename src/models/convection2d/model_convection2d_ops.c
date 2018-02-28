@@ -47,7 +47,6 @@
 */
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "petscmath.h"
 #include "ptatin3d.h"
@@ -326,7 +325,11 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Thermal_Convection2d(pTatinCtx c,vo
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
 	ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
-	
+  {
+    PetscReal gvec[] = { 0.0, -9.8, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
+  
 	PetscFunctionReturn(0);
 }
 

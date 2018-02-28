@@ -1,0 +1,3010 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -Wall -g
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+[pTatin] Created output directory: sd3d_test 
+[pTatin] Created log file: sd3d_test/ptatin.log-2017.08.04_17:56:02 
+[pTatin] Writing output to existing directory: sd3d_test 
+[pTatin] Created options file: sd3d_test/ptatin.options-2017.08.04_17:56:02 
+[pTatin] Created options file: sd3d_test/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: -ptatin_model "sd3d" was detected
+pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
+pTatin3dRestart: Unable to restart job
+  [model sd3d]: CASE 1A
+Current Value -preexpA_0   :  1.0000e+00  
+Current Value -Ascale_0   :  1.0000e+21  
+Current Value -entalpy_0   :  0.0000e+00  
+Current Value -Vmol_0   :  0.0000e+00  
+Current Value -nexp_0   :  1.0000e+00  
+Current Value -Tref_0   :  1.0000e+00  
+Current Value -Eta_scale_0   :  1.0000e+24  
+Current Value -P_scale_0   :  1.5152e+08  
+Current Value -density_0   :  1.3721e+01  
+Current Value -preexpA_1   :  1.0000e+00  
+Current Value -Ascale_1   :  4.7500e+11  
+Current Value -entalpy_1   :  0.0000e+00  
+Current Value -Vmol_1   :  0.0000e+00  
+Current Value -nexp_1   :  4.0000e+00  
+Current Value -Tref_1   :  1.0000e+00  
+Current Value -Eta_scale_1   :  1.0000e+24  
+Current Value -P_scale_1   :  1.5152e+08  
+Current Value -density_1   :  1.4375e+01  
+Current Value -preexpA_2   :  1.0000e+00  
+Current Value -Ascale_2   :  4.7500e+11  
+Current Value -entalpy_2   :  0.0000e+00  
+Current Value -Vmol_2   :  0.0000e+00  
+Current Value -nexp_2   :  4.0000e+00  
+Current Value -Tref_2   :  1.0000e+00  
+Current Value -Eta_scale_2   :  1.0000e+24  
+Current Value -P_scale_2   :  1.5152e+08  
+Current Value -density_2   :  1.4375e+01  
+Current Value -preexpA_3   :  1.0000e+00  
+Current Value -Ascale_3   :  4.7500e+11  
+Current Value -entalpy_3   :  0.0000e+00  
+Current Value -Vmol_3   :  0.0000e+00  
+Current Value -nexp_3   :  4.0000e+00  
+Current Value -Tref_3   :  1.0000e+00  
+Current Value -Eta_scale_3   :  1.0000e+24  
+Current Value -P_scale_3   :  1.5152e+08  
+Current Value -density_3   :  1.4375e+01  
+Current Value -preexpA_4   :  1.0000e+00  
+Current Value -Ascale_4   :  4.7500e+11  
+Current Value -entalpy_4   :  0.0000e+00  
+Current Value -Vmol_4   :  0.0000e+00  
+Current Value -nexp_4   :  4.0000e+00  
+Current Value -Tref_4   :  1.0000e+00  
+Current Value -Eta_scale_4   :  1.0000e+24  
+Current Value -P_scale_4   :  1.5152e+08  
+Current Value -density_4   :  1.4375e+01  
+BCList: Mem. usage (min,max) = 1.26e-01,1.57e-01 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(MPI): ("GaussLegendre StokesCoefficients")
+  L                  = 13824 
+  buffer (max)       = 4 
+  allocated          = 13828 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 1.66e-01 (MB) : rank0
+  Total mem. usage                                                      = 6.64e-01 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 576 
+  buffer (max)       = 4 
+  allocated          = 580 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) : rank0
+  Total mem. usage                                                      = 6.50e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 576 
+  buffer (max)       = 4 
+  allocated          = 580 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) : rank0
+  Total mem. usage                                                      = 6.50e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 576 
+  buffer (max)       = 4 
+  allocated          = 582 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 6.52e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 576 
+  buffer (max)       = 4 
+  allocated          = 582 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 3.24e-02 (MB) : rank0
+  Total mem. usage                                                      = 6.52e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 576 
+  buffer (max)       = 4 
+  allocated          = 582 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 6.52e-02 (MB) : collective
+DataBucketView(MPI): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 576 
+  buffer (max)       = 4 
+  allocated          = 582 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 3.24e-02 (MB) : rank0
+  Total mem. usage                                                      = 6.52e-02 (MB) : collective
+Generated vel/pressure mesh --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0001 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 3456 points : 0.0019 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 3 
+Mat Object: 4 MPI processes
+  type: mpiaij
+  rows=4, cols=4
+  total: nonzeros=12, allocated nonzeros=16
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node (on process 0) routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 2.8491e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 3.2659e-03 (sec)]]
+Generated material points --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+[[ModelApplyInitialMeshGeometry_SD3D]]
+[[ModelApplyInitialMaterialGeometry_SD3D]]
+DataBucketView(MPI): ("MaterialPoints StokesCoefficients")
+  L                  = 19860 
+  buffer (max)       = 4000 
+  allocated          = 23860 
+  nfields registered = 3 
+    [  0]: field name  ==>>                        MPntStd : Mem. usage = 3.00e-01 (MB) : rank0
+    [  1]: field name  ==>>                    MPntPStokes : Mem. usage = 7.51e-02 (MB) : rank0
+    [  2]: field name  ==>>                  MPntPStokesPl : Mem. usage = 3.76e-02 (MB) : rank0
+  Total mem. usage                                                      = 2.10e+00 (MB) : collective
+Mesh size (8 x 8 x 8) : MG levels 2  
+         level [ 0]: global Q2 elements (4 x 4 x 4) 
+         level [ 1]: global Q2 elements (8 x 8 x 8) 
+level [ 0]: [total cores    4]: np-I [   1]: element range I [    4 ]
+                                np-J [   2]: element range J [    2,    2 ]
+                                np-K [   2]: element range K [    2,    2 ]
+level [ 1]: [total cores    4]: np-I [   1]: element range I [    8 ]
+                                np-J [   2]: element range J [    4,    4 ]
+                                np-K [   2]: element range K [    4,    4 ]
+Generated velocity mesh hierarchy --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(MPI): ("GaussLegendre StokesCoefficients")
+  L                  = 1728 
+  buffer (max)       = 4 
+  allocated          = 1732 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 2.08e-02 (MB) : rank0
+  Total mem. usage                                                      = 8.31e-02 (MB) : collective
+Generated quadrature point hierarchy --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+BCList: Mem. usage (min,max) = 2.03e-02,2.94e-02 (MB) 
+Level [1]: Coarse grid type :: Re-discretisation :: matrix free operator 
+Level [0]: Coarse grid type :: Re-discretisation :: assembled operator 
+Generated stokes operators --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
+PreSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   --------- LINEAR STAGE ---------
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.78e-04 (sec)
+  0 SNES Function norm 1.386601539724e+00 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.79e-04 (sec)
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 1.386601539724e+00, 0.000000000000e+00, 0.000000000000e+00 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000000000000e+00 
+      1 KSP Residual norm 3.545327890629e-01 
+      2 KSP Residual norm 7.021883413814e-02 
+      3 KSP Residual norm 1.371789719984e-02 
+      4 KSP Residual norm 2.748262359186e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.959819892257e-08, 1.386547893157e+00, 1.077529522696e-07, 8.624589010438e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 6.068006612263e-03 
+      1 KSP Residual norm 1.461217594662e-03 
+      2 KSP Residual norm 2.372703772724e-04 
+      3 KSP Residual norm 4.903251703257e-05 
+  2 KSP Component U,V,W,P residual norm [ 4.801883326243e-06, 1.386007552382e+00, 7.813325636903e-06, 2.869269665969e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.878573416490e-02 
+      1 KSP Residual norm 4.486511306807e-03 
+      2 KSP Residual norm 7.798903572489e-04 
+      3 KSP Residual norm 1.612846609179e-04 
+  3 KSP Component U,V,W,P residual norm [ 3.856613810554e-05, 1.383171499908e+00, 4.293390447425e-05, 6.887909344760e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.953491780703e-02 
+      1 KSP Residual norm 4.371989513665e-03 
+      2 KSP Residual norm 7.996408619699e-04 
+      3 KSP Residual norm 1.463360312058e-04 
+  4 KSP Component U,V,W,P residual norm [ 4.341691959836e-04, 1.346135305076e+00, 4.754767123637e-04, 2.333935682561e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.861363781857e-02 
+      1 KSP Residual norm 3.589139473609e-03 
+      2 KSP Residual norm 6.296198609135e-04 
+      3 KSP Residual norm 1.261751559598e-04 
+  5 KSP Component U,V,W,P residual norm [ 2.227785769248e-03, 1.134509530245e+00, 2.374791881002e-03, 5.347790105253e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.649457504264e-02 
+      1 KSP Residual norm 4.537813642320e-03 
+      2 KSP Residual norm 9.573583592330e-04 
+      3 KSP Residual norm 1.672440469229e-04 
+  6 KSP Component U,V,W,P residual norm [ 4.529727175717e-03, 5.348741187506e-01, 4.734597488711e-03, 6.749153245123e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.491435679368e-02 
+      1 KSP Residual norm 6.598290398578e-03 
+      2 KSP Residual norm 1.404200832620e-03 
+      3 KSP Residual norm 2.108221462855e-04 
+  7 KSP Component U,V,W,P residual norm [ 2.190447852254e-03, 1.077580981085e-01, 2.199221021804e-03, 3.711887506873e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.899072917342e-02 
+      1 KSP Residual norm 6.366618222712e-03 
+      2 KSP Residual norm 1.294785111066e-03 
+      3 KSP Residual norm 1.768794073109e-04 
+  8 KSP Component U,V,W,P residual norm [ 5.518129107560e-04, 2.558713596903e-02, 4.669519798596e-04, 1.866014074291e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.466818424240e-02 
+      1 KSP Residual norm 5.746366398103e-03 
+      2 KSP Residual norm 1.139513148914e-03 
+      3 KSP Residual norm 1.928658808342e-04 
+  9 KSP Component U,V,W,P residual norm [ 1.491182703389e-04, 3.552560792937e-03, 8.575357786343e-05, 7.007783070455e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.525182701861e-02 
+      1 KSP Residual norm 3.459174167209e-03 
+      2 KSP Residual norm 5.756313774395e-04 
+      3 KSP Residual norm 1.356213627466e-04 
+ 10 KSP Component U,V,W,P residual norm [ 1.788476670536e-04, 3.369266068713e-04, 1.782043583045e-04, 2.046103541568e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 5.540610433502e-02 
+      1 KSP Residual norm 5.921774209125e-03 
+      2 KSP Residual norm 1.338907440806e-03 
+      3 KSP Residual norm 1.913790494289e-04 
+ 11 KSP Component U,V,W,P residual norm [ 1.046696932719e-04, 9.448470945203e-05, 9.590497119222e-05, 7.432168535442e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 5.225554166265e-02 
+      1 KSP Residual norm 9.897820934844e-03 
+      2 KSP Residual norm 2.226988805159e-03 
+      3 KSP Residual norm 2.788162902880e-04 
+ 12 KSP Component U,V,W,P residual norm [ 3.431150342661e-05, 3.014674110745e-05, 3.991350763581e-05, 3.368655358843e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 5.502127187310e-02 
+      1 KSP Residual norm 1.070394283301e-02 
+      2 KSP Residual norm 2.278240656328e-03 
+      3 KSP Residual norm 2.570554996520e-04 
+ 13 KSP Component U,V,W,P residual norm [ 2.733836002655e-06, 3.008520510972e-06, 3.633930074832e-06, 1.179859424682e-03 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 13
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 4.12e-04 (sec)
+  1 SNES Function norm 1.179872023787e-03 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 1
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=1, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-08, solution=1e-08
+  total number of linear solver iterations=13
+  total number of function evaluations=2
+  norm schedule ALWAYS
+  SNESLineSearch Object:   4 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   4 MPI processes
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=2000
+    tolerances:  relative=0.001, absolute=1e-08, divergence=10000.
+    right preconditioning
+    using nonzero initial guess
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   4 MPI processes
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, factorization UPPER
+      Preconditioner for the Schur complement formed from A11
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block
+        KSP Object:        (fieldsplit_u_)         4 MPI processes
+          type: fgmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+          right preconditioning
+          using UNPRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_u_)         4 MPI processes
+          type: mg
+            MG: type is MULTIPLICATIVE, levels=2 cycles=v
+              Cycles per PCApply=1
+              Not using Galerkin computed coarse grid matrices
+          Coarse grid solver -- level -------------------------------
+            KSP Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=4, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using UNPRECONDITIONED norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: bjacobi
+                block Jacobi: number of blocks = 4
+                Local solve is same for all blocks, in the following KSP and PC objects:
+              KSP Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: ilu
+                  ILU: out-of-place factorization
+                  0 levels of fill
+                  tolerance for zero pivot 2.22045e-14
+                  matrix ordering: natural
+                  factor fill ratio given 1., needed 1.
+                    Factored matrix follows:
+                      Mat Object:                       1 MPI processes
+                        type: seqaij
+                        rows=675, cols=675, bs=3
+                        package used to perform factorization: petsc
+                        total: nonzeros=126711, allocated nonzeros=126711
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 225 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object:                (Buu_)                 1 MPI processes
+                  type: seqaij
+                  rows=675, cols=675, bs=3
+                  total: nonzeros=126711, allocated nonzeros=126711
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 225 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Mat Object:              (Buu_)               4 MPI processes
+                type: mpiaij
+                rows=2187, cols=2187, bs=3
+                total: nonzeros=533871, allocated nonzeros=533871
+                total number of mallocs used during MatSetValues calls =0
+                  has attached near null space
+          Down solver (pre-smoother) on level 1 -------------------------------
+            KSP Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=2
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using nonzero initial guess
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: jacobi
+              linear system matrix = precond matrix:
+              Mat Object:              (fieldsplit_u_)               4 MPI processes
+                type: shell
+                rows=14739, cols=14739, bs=3
+          Up solver (post-smoother) same as down solver (pre-smoother)
+          linear system matrix = precond matrix:
+          Mat Object:          (fieldsplit_u_)           4 MPI processes
+            type: shell
+            rows=14739, cols=14739, bs=3
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object:        (fieldsplit_p_)         4 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_p_)         4 MPI processes
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: schurcomplement
+            rows=2048, cols=2048
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Mat Object:                (fieldsplit_p_)                 4 MPI processes
+                  type: mpisbaij
+                  rows=2048, cols=2048, bs=4
+                  total: nonzeros=8192, allocated nonzeros=8192
+                  total number of mallocs used during MatSetValues calls =0
+              A10
+                Mat Object:                (Bpu_)                 4 MPI processes
+                  type: shell
+                  rows=2048, cols=14739
+              KSP of A00
+                KSP Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: fgmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10, initial guess is zero
+                  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+                  right preconditioning
+                  using UNPRECONDITIONED norm type for convergence test
+                PC Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: mg
+                    MG: type is MULTIPLICATIVE, levels=2 cycles=v
+                      Cycles per PCApply=1
+                      Not using Galerkin computed coarse grid matrices
+                  Coarse grid solver -- level -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=4, initial guess is zero
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using UNPRECONDITIONED norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: bjacobi
+                        block Jacobi: number of blocks = 4
+                        Local solve is same for all blocks, in the following KSP and PC objects:
+                      KSP Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: preonly
+                        maximum iterations=10000, initial guess is zero
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                        left preconditioning
+                        using NONE norm type for convergence test
+                      PC Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: ilu
+                          ILU: out-of-place factorization
+                          0 levels of fill
+                          tolerance for zero pivot 2.22045e-14
+                          matrix ordering: natural
+                          factor fill ratio given 1., needed 1.
+                            Factored matrix follows:
+                              Mat Object:                               1 MPI processes
+                                type: seqaij
+                                rows=675, cols=675, bs=3
+                                package used to perform factorization: petsc
+                                total: nonzeros=126711, allocated nonzeros=126711
+                                total number of mallocs used during MatSetValues calls =0
+                                  using I-node routines: found 225 nodes, limit used is 5
+                        linear system matrix = precond matrix:
+                        Mat Object:                        (Buu_)                         1 MPI processes
+                          type: seqaij
+                          rows=675, cols=675, bs=3
+                          total: nonzeros=126711, allocated nonzeros=126711
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 225 nodes, limit used is 5
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (Buu_)                       4 MPI processes
+                        type: mpiaij
+                        rows=2187, cols=2187, bs=3
+                        total: nonzeros=533871, allocated nonzeros=533871
+                        total number of mallocs used during MatSetValues calls =0
+                          has attached near null space
+                  Down solver (pre-smoother) on level 1 -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=2
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using nonzero initial guess
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: jacobi
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (fieldsplit_u_)                       4 MPI processes
+                        type: shell
+                        rows=14739, cols=14739, bs=3
+                  Up solver (post-smoother) same as down solver (pre-smoother)
+                  linear system matrix = precond matrix:
+                  Mat Object:                  (fieldsplit_u_)                   4 MPI processes
+                    type: shell
+                    rows=14739, cols=14739, bs=3
+              A01
+                Mat Object:                (Bup_)                 4 MPI processes
+                  type: shell
+                  rows=14739, cols=2048
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: mpisbaij
+            rows=2048, cols=2048, bs=4
+            total: nonzeros=8192, allocated nonzeros=8192
+            total number of mallocs used during MatSetValues calls =0
+    linear system matrix followed by preconditioner matrix:
+    Mat Object:    (stokes_Amf_)     4 MPI processes
+      type: shell
+      rows=16787, cols=16787
+    Mat Object:     4 MPI processes
+      type: nest
+      rows=16787, cols=16787
+        Matrix object: 
+          type=nest, rows=2, cols=2 
+          MatNest structure: 
+          (0,0) : prefix="fieldsplit_u_", type=shell, rows=14739, cols=14739 
+          (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
+          (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
+          (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 2.68e-04 (sec)
+[[ModelOutput_SD3D]]
+  writing pvdfilename sd3d_test/timeseries_v.pvd 
+pTatin3d_ModelOutputLite_Velocity_Stokes() -> linear_stage_v.(pvd,pvts,vts): CPU time 2.29e-03 (sec) 
+  writing pvdfilename sd3d_test/timeseries_vp.pvd 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> linear_stage_vp.(pvd,pvts,vts): CPU time 1.37e-03 (sec) 
+  writing pvdfilename sd3d_test/timeseries_mpoints_cell.pvd 
+pTatin3d_ModelOutput_MarkerCellFields() -> linear_stage_mpoints_cell.(pvd,pvts,vts): CPU time 7.38e-03 (sec) 
+slab base range: gmin 6.9697e-01 5.0000e-01 0.0000e+00
+slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
+slab edge range: gmax(x) 6.9697e-01
+slab edge identified: pidx_w,rank_w 5586 1
+slab edge range: W,Dn 6.9697e-01 5.7891e-01
+slab edge (back face) range: gmax(x) 6.9697e-01
+slab edge (back face) identified: pidx_w,rank_w 5117 1
+slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
+slab edge (front face) range: gmin(z) 3.7879e-01
+slab edge (front face) identified: pidx_w,rank_w 5105 3
+slab edge (front face) range: W,Dn 3.7879e-01 0.0000e+00
+topo range: 1.0000e+00 1.0000e+00
+vol,int v.v,vrms: 5.7392e-01 7.5860e+00 3.6356e+00
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.41e-04 (sec)
+Phi: 0.0000e+00
+   --------- PICARD STAGE ---------
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; npoints_yielded 0; cpu time 1.52e-02 (sec)
+  0 SNES Function norm 4.775270692599e-01 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; npoints_yielded 0; cpu time 1.50e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 4.323463059691e-01, 1.631895869650e+00, 2.796259607959e-01, 2.359718849364e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.999337514724e-01 
+      1 KSP Residual norm 7.377663916583e-01 
+      2 KSP Residual norm 3.247753649000e-01 
+      3 KSP Residual norm 1.180000143558e-01 
+      4 KSP Residual norm 4.476193682318e-02 
+      5 KSP Residual norm 2.266441997008e-02 
+      6 KSP Residual norm 7.126643874177e-03 
+  1 KSP Component U,V,W,P residual norm [ 4.323113329898e-01, 1.631763922576e+00, 2.796033191056e-01, 1.561211320214e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.608872633069e-02 
+      1 KSP Residual norm 7.610552612623e-03 
+      2 KSP Residual norm 2.591614508176e-03 
+      3 KSP Residual norm 8.134818099417e-04 
+      4 KSP Residual norm 3.286406878235e-04 
+      5 KSP Residual norm 1.345728859666e-04 
+  2 KSP Component U,V,W,P residual norm [ 4.318722425688e-01, 1.630088176618e+00, 2.793100125193e-01, 5.697187913211e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.294086120971e-01 
+      1 KSP Residual norm 4.630962292008e-02 
+      2 KSP Residual norm 1.298539442427e-02 
+      3 KSP Residual norm 4.741242682944e-03 
+      4 KSP Residual norm 1.566799361102e-03 
+      5 KSP Residual norm 6.182545100761e-04 
+  3 KSP Component U,V,W,P residual norm [ 4.310636145363e-01, 1.627105399860e+00, 2.788427362297e-01, 9.249484097894e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.743232294350e-01 
+      1 KSP Residual norm 9.034002744114e-02 
+      2 KSP Residual norm 2.277628530904e-02 
+      3 KSP Residual norm 8.689672373818e-03 
+      4 KSP Residual norm 2.898199410235e-03 
+      5 KSP Residual norm 1.014690899333e-03 
+  4 KSP Component U,V,W,P residual norm [ 4.181022672362e-01, 1.577871786375e+00, 2.700981356665e-01, 3.062270765655e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.546074195955e-01 
+      1 KSP Residual norm 7.714030011321e-02 
+      2 KSP Residual norm 1.775904334489e-02 
+      3 KSP Residual norm 6.204353801266e-03 
+      4 KSP Residual norm 2.340059915742e-03 
+  5 KSP Component U,V,W,P residual norm [ 3.887250048233e-01, 1.466456623288e+00, 2.516492917045e-01, 5.164728390804e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.476424992971e-01 
+      1 KSP Residual norm 1.038753365913e-01 
+      2 KSP Residual norm 2.380139338460e-02 
+      3 KSP Residual norm 7.530804879965e-03 
+      4 KSP Residual norm 3.307860114347e-03 
+  6 KSP Component U,V,W,P residual norm [ 2.154124821158e-01, 8.169447268093e-01, 1.416703730773e-01, 8.555365402711e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.819403044573e-01 
+      1 KSP Residual norm 1.085730980136e-01 
+      2 KSP Residual norm 2.310334687460e-02 
+      3 KSP Residual norm 7.321495060813e-03 
+      4 KSP Residual norm 2.770113831639e-03 
+  7 KSP Component U,V,W,P residual norm [ 9.831040678219e-02, 3.671706782827e-01, 6.308899148921e-02, 7.142478918077e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 7.166818587624e-01 
+      1 KSP Residual norm 1.842646368333e-01 
+      2 KSP Residual norm 4.274495865966e-02 
+      3 KSP Residual norm 1.452104764683e-02 
+      4 KSP Residual norm 6.756055844849e-03 
+  8 KSP Component U,V,W,P residual norm [ 1.829237640261e-02, 6.452476009706e-02, 1.253464896633e-02, 3.325627046167e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.777216640729e-01 
+      1 KSP Residual norm 1.950452077814e-01 
+      2 KSP Residual norm 4.495350478926e-02 
+      3 KSP Residual norm 1.124623888506e-02 
+      4 KSP Residual norm 3.667226874463e-03 
+  9 KSP Component U,V,W,P residual norm [ 3.424445899771e-03, 1.290170698800e-02, 2.685385105097e-03, 1.509279964586e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.715601642679e-01 
+      1 KSP Residual norm 1.636403410058e-01 
+      2 KSP Residual norm 4.131527676692e-02 
+      3 KSP Residual norm 1.066949864305e-02 
+      4 KSP Residual norm 3.834077584371e-03 
+ 10 KSP Component U,V,W,P residual norm [ 1.441490215607e-03, 2.835456666087e-03, 1.201124859333e-03, 6.996547816853e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.272613540572e+00 
+      1 KSP Residual norm 2.153028286846e-01 
+      2 KSP Residual norm 4.987195190205e-02 
+      3 KSP Residual norm 1.175210046254e-02 
+ 11 KSP Component U,V,W,P residual norm [ 6.503941849269e-04, 9.165844858627e-04, 5.703092731559e-04, 3.248193633219e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.064086402652e-01 
+      1 KSP Residual norm 1.367346726619e-01 
+      2 KSP Residual norm 3.792511352886e-02 
+      3 KSP Residual norm 9.336292182991e-03 
+      4 KSP Residual norm 3.282048453045e-03 
+ 12 KSP Component U,V,W,P residual norm [ 3.461452438674e-04, 4.266637125580e-04, 3.492848154664e-04, 1.890428643838e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 8.634442722720e-01 
+      1 KSP Residual norm 1.998760119833e-01 
+      2 KSP Residual norm 4.878436346496e-02 
+      3 KSP Residual norm 1.143474229069e-02 
+      4 KSP Residual norm 4.236429204700e-03 
+ 13 KSP Component U,V,W,P residual norm [ 8.323351068192e-05, 9.991496467417e-05, 1.004660704911e-04, 7.136005277845e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 7.817142750674e-01 
+      1 KSP Residual norm 1.696181825090e-01 
+      2 KSP Residual norm 3.645052558990e-02 
+      3 KSP Residual norm 9.476119768731e-03 
+      4 KSP Residual norm 3.598975795274e-03 
+ 14 KSP Component U,V,W,P residual norm [ 4.724619117613e-05, 4.605591434327e-05, 4.964569171649e-05, 3.569129770910e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.180405756569e+00 
+      1 KSP Residual norm 2.303125845581e-01 
+      2 KSP Residual norm 5.616214474420e-02 
+      3 KSP Residual norm 1.372883004919e-02 
+      4 KSP Residual norm 4.185940545519e-03 
+ 15 KSP Component U,V,W,P residual norm [ 1.824177508461e-05, 1.489367871111e-05, 1.143303356583e-05, 1.616757747387e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.193482508448e+00 
+      1 KSP Residual norm 1.775685117671e-01 
+      2 KSP Residual norm 4.323695171057e-02 
+      3 KSP Residual norm 9.530144745861e-03 
+ 16 KSP Component U,V,W,P residual norm [ 2.855169223165e-05, 2.251626862878e-05, 1.751882310630e-05, 8.772662819631e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.260267444858e+00 
+      1 KSP Residual norm 2.349957847567e-01 
+      2 KSP Residual norm 6.198660151113e-02 
+      3 KSP Residual norm 1.275108677979e-02 
+      4 KSP Residual norm 3.908411132976e-03 
+ 17 KSP Component U,V,W,P residual norm [ 4.319761132042e-06, 6.693352903310e-06, 7.600429728724e-06, 4.081751945967e-04 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 17
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.53e-02 (sec)
+  1 SNES Function norm 2.585390859939e-02 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.51e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.611774152150e-01, 3.959729186059e-01, 1.610310482639e-01, 1.315550690869e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000402566235e+00 
+      1 KSP Residual norm 3.255598463171e-01 
+      2 KSP Residual norm 9.025152801919e-02 
+      3 KSP Residual norm 2.520344417865e-02 
+      4 KSP Residual norm 7.559005570878e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.632934288046e-02, 2.531630340634e-02, 1.056716680899e-02, 1.219141494504e-01 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.051964279872e+00 
+      1 KSP Residual norm 3.815412132803e-01 
+      2 KSP Residual norm 6.209131892155e-02 
+      3 KSP Residual norm 1.310286814228e-02 
+      4 KSP Residual norm 3.982309957027e-03 
+  2 KSP Component U,V,W,P residual norm [ 6.909967394090e-03, 9.699591298154e-03, 4.124616327621e-03, 7.718551137009e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.307040508485e+00 
+      1 KSP Residual norm 3.637791046711e-01 
+      2 KSP Residual norm 7.933241979170e-02 
+      3 KSP Residual norm 2.468891687758e-02 
+      4 KSP Residual norm 9.672013322791e-03 
+  3 KSP Component U,V,W,P residual norm [ 9.597075650788e-04, 1.625655515569e-03, 6.609139333744e-04, 2.934273508953e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.479634252731e+00 
+      1 KSP Residual norm 2.400478604869e-01 
+      2 KSP Residual norm 5.867558918115e-02 
+      3 KSP Residual norm 1.984904407884e-02 
+      4 KSP Residual norm 6.865889815820e-03 
+  4 KSP Component U,V,W,P residual norm [ 4.021543191921e-04, 5.159370099377e-04, 2.798937528297e-04, 1.836766843999e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.032548582400e+00 
+      1 KSP Residual norm 2.691954719614e-01 
+      2 KSP Residual norm 5.035222907819e-02 
+      3 KSP Residual norm 1.699085885967e-02 
+      4 KSP Residual norm 5.536553096592e-03 
+  5 KSP Component U,V,W,P residual norm [ 1.692395915487e-04, 1.609927883139e-04, 1.772253551958e-04, 5.781137027764e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.063517752662e+00 
+      1 KSP Residual norm 2.604915783021e-01 
+      2 KSP Residual norm 5.834639668159e-02 
+      3 KSP Residual norm 1.823158181319e-02 
+  6 KSP Component U,V,W,P residual norm [ 8.412834313164e-05, 9.659261075953e-05, 1.083867814411e-04, 3.342289252928e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.655534649322e+00 
+      1 KSP Residual norm 2.571188710360e-01 
+      2 KSP Residual norm 4.916329437900e-02 
+      3 KSP Residual norm 1.423703889194e-02 
+  7 KSP Component U,V,W,P residual norm [ 7.231846223901e-05, 5.590733736047e-05, 7.459007722758e-05, 1.847767878911e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.200311960721e+00 
+      1 KSP Residual norm 2.431866593731e-01 
+      2 KSP Residual norm 6.810097629764e-02 
+      3 KSP Residual norm 2.838790837564e-02 
+      4 KSP Residual norm 1.316009733147e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.457436284718e-05, 1.327395588607e-05, 1.346028797058e-05, 9.520941788237e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.183272909433e+00 
+      1 KSP Residual norm 2.156399606467e-01 
+      2 KSP Residual norm 6.593847066809e-02 
+      3 KSP Residual norm 2.635127542289e-02 
+      4 KSP Residual norm 1.150628432657e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.823651309220e-05, 3.123789657987e-05, 3.439092078412e-05, 4.585618086287e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.798359131139e+00 
+      1 KSP Residual norm 2.274868821693e-01 
+      2 KSP Residual norm 5.651471902329e-02 
+      3 KSP Residual norm 2.750314178350e-02 
+      4 KSP Residual norm 1.296492480072e-02 
+ 10 KSP Component U,V,W,P residual norm [ 1.038892913104e-05, 1.133799133401e-05, 1.172699062870e-05, 2.697379895893e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.760208179290e+00 
+      1 KSP Residual norm 2.558899315715e-01 
+      2 KSP Residual norm 7.239776613463e-02 
+      3 KSP Residual norm 3.407423663601e-02 
+      4 KSP Residual norm 1.607895858888e-02 
+ 11 KSP Component U,V,W,P residual norm [ 7.524650795465e-06, 8.220620269825e-06, 7.797348236047e-06, 1.412688768462e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.073491043482e+00 
+      1 KSP Residual norm 2.002217477295e-01 
+      2 KSP Residual norm 5.318876955896e-02 
+      3 KSP Residual norm 1.774500484364e-02 
+ 12 KSP Component U,V,W,P residual norm [ 2.668927684315e-06, 2.933795370122e-06, 2.161693510977e-06, 6.435461536221e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.424003247137e+00 
+      1 KSP Residual norm 2.322892342373e-01 
+      2 KSP Residual norm 5.442839429123e-02 
+      3 KSP Residual norm 1.412814165868e-02 
+ 13 KSP Component U,V,W,P residual norm [ 2.868380897813e-06, 2.960083574436e-06, 2.465929330019e-06, 4.040524935739e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.550577994892e+00 
+      1 KSP Residual norm 2.600229091067e-01 
+      2 KSP Residual norm 7.229804673286e-02 
+      3 KSP Residual norm 3.039008073088e-02 
+      4 KSP Residual norm 1.445269197186e-02 
+ 14 KSP Component U,V,W,P residual norm [ 8.312162698570e-07, 9.538834089532e-07, 1.125378347505e-06, 2.159289777121e-05 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 14
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.69e-02 (sec)
+  2 SNES Function norm 1.033310105618e-02 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.58e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.590919608328e-02, 2.055553424213e-02, 1.162685527462e-02, 4.204990350428e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.997058670740e-01 
+      1 KSP Residual norm 2.538807722149e-01 
+      2 KSP Residual norm 7.179550351348e-02 
+      3 KSP Residual norm 2.184410412628e-02 
+      4 KSP Residual norm 9.388674461322e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.494555577772e-03, 2.850953908881e-03, 1.566080646856e-03, 1.204886442195e-02 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.715149782967e-01 
+      1 KSP Residual norm 2.643272170067e-02 
+      2 KSP Residual norm 1.107558629319e-02 
+      3 KSP Residual norm 5.114679790627e-03 
+      4 KSP Residual norm 1.891388833376e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.407137068638e-03, 9.866306168312e-04, 7.195311223747e-04, 7.696860425386e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 5.475833734148e-01 
+      1 KSP Residual norm 1.300898361199e-01 
+      2 KSP Residual norm 6.067738620583e-02 
+      3 KSP Residual norm 2.381918133528e-02 
+      4 KSP Residual norm 9.281601997042e-03 
+      5 KSP Residual norm 3.379920045736e-03 
+  3 KSP Component U,V,W,P residual norm [ 1.393365196359e-04, 9.948279000764e-05, 9.957265033176e-05, 2.285318952048e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.112519676596e+00 
+      1 KSP Residual norm 1.499992678750e-01 
+      2 KSP Residual norm 4.486281842635e-02 
+      3 KSP Residual norm 1.702099635898e-02 
+      4 KSP Residual norm 7.528831124937e-03 
+  4 KSP Component U,V,W,P residual norm [ 4.125556102684e-05, 2.806550626648e-05, 2.448748539956e-05, 1.369991706006e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.542778959897e-01 
+      1 KSP Residual norm 2.161133284975e-01 
+      2 KSP Residual norm 7.350058563040e-02 
+      3 KSP Residual norm 2.474469764786e-02 
+      4 KSP Residual norm 1.134187483136e-02 
+      5 KSP Residual norm 4.966683964005e-03 
+  5 KSP Component U,V,W,P residual norm [ 8.906467141637e-06, 9.069183001108e-06, 6.853420890168e-06, 4.701923628004e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.385348945045e+00 
+      1 KSP Residual norm 1.737819592531e-01 
+      2 KSP Residual norm 4.162730956959e-02 
+      3 KSP Residual norm 1.266123007133e-02 
+  6 KSP Component U,V,W,P residual norm [ 4.966590056199e-06, 4.338616707188e-06, 4.678324949368e-06, 3.066812733748e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 8.809430112467e-01 
+      1 KSP Residual norm 1.947523182230e-01 
+      2 KSP Residual norm 5.312993808689e-02 
+      3 KSP Residual norm 1.716441367329e-02 
+      4 KSP Residual norm 7.560266316744e-03 
+  7 KSP Component U,V,W,P residual norm [ 3.296102903035e-06, 3.027926585221e-06, 4.441842414200e-06, 1.304220171227e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.702984604903e+00 
+      1 KSP Residual norm 1.838105198272e-01 
+      2 KSP Residual norm 4.097092440134e-02 
+      3 KSP Residual norm 1.345608372017e-02 
+  8 KSP Component U,V,W,P residual norm [ 2.067598957067e-06, 1.813234207616e-06, 2.167027577500e-06, 6.872669821604e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.440457001414e+00 
+      1 KSP Residual norm 2.684170850902e-01 
+      2 KSP Residual norm 7.168564385974e-02 
+      3 KSP Residual norm 2.351107415783e-02 
+      4 KSP Residual norm 1.092322151620e-02 
+  9 KSP Component U,V,W,P residual norm [ 9.027027121982e-07, 1.704834549094e-06, 1.971821245118e-06, 3.451428259872e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.339883902453e+00 
+      1 KSP Residual norm 1.903959480153e-01 
+      2 KSP Residual norm 6.526258665288e-02 
+      3 KSP Residual norm 2.971567408991e-02 
+      4 KSP Residual norm 1.326114555341e-02 
+ 10 KSP Component U,V,W,P residual norm [ 6.116446858402e-07, 5.026312522541e-07, 6.588500708605e-07, 1.661589459926e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.591355222224e+00 
+      1 KSP Residual norm 2.565764316005e-01 
+      2 KSP Residual norm 8.165743273477e-02 
+      3 KSP Residual norm 3.029696861328e-02 
+      4 KSP Residual norm 1.212596249759e-02 
+ 11 KSP Component U,V,W,P residual norm [ 3.514219614105e-07, 4.400508705502e-07, 4.270027513669e-07, 8.139058201559e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.52e-02 (sec)
+  3 SNES Function norm 6.376576964796e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.50e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 6.783122084545e-03, 6.438517077408e-03, 3.055297076740e-03, 2.736194196722e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.998744666349e-01 
+      1 KSP Residual norm 2.459543302050e-01 
+      2 KSP Residual norm 7.779913286057e-02 
+      3 KSP Residual norm 2.860677918135e-02 
+      4 KSP Residual norm 1.342147490864e-02 
+      5 KSP Residual norm 6.380053381451e-03 
+  1 KSP Component U,V,W,P residual norm [ 8.119968639887e-04, 7.717553377670e-04, 3.601972645796e-04, 3.189677634092e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.678128592626e-01 
+      1 KSP Residual norm 2.089740732946e-02 
+      2 KSP Residual norm 9.133497654097e-03 
+      3 KSP Residual norm 4.156715843705e-03 
+      4 KSP Residual norm 1.499623947917e-03 
+  2 KSP Component U,V,W,P residual norm [ 9.623871324306e-05, 1.193072738088e-04, 1.360814529273e-04, 1.043159987504e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.126904214971e+00 
+      1 KSP Residual norm 2.356283170756e-01 
+      2 KSP Residual norm 1.097168088254e-01 
+      3 KSP Residual norm 3.997593113372e-02 
+      4 KSP Residual norm 1.651787955110e-02 
+      5 KSP Residual norm 6.846821085273e-03 
+  3 KSP Component U,V,W,P residual norm [ 2.192800180707e-05, 2.045451625268e-05, 1.508848852189e-05, 5.494502709837e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.188607921855e+00 
+      1 KSP Residual norm 2.655217552980e-01 
+      2 KSP Residual norm 1.186846261983e-01 
+      3 KSP Residual norm 4.261705928340e-02 
+      4 KSP Residual norm 1.875467907264e-02 
+      5 KSP Residual norm 8.876111665468e-03 
+  4 KSP Component U,V,W,P residual norm [ 1.208979797593e-05, 1.855673909992e-05, 2.223564804502e-05, 2.822713987099e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.421745676299e+00 
+      1 KSP Residual norm 3.055310785129e-01 
+      2 KSP Residual norm 1.202432638807e-01 
+      3 KSP Residual norm 3.831240825886e-02 
+      4 KSP Residual norm 1.496387048132e-02 
+      5 KSP Residual norm 7.286339909919e-03 
+  5 KSP Component U,V,W,P residual norm [ 1.378024960482e-06, 1.295021303258e-06, 1.138747937040e-06, 1.020314304671e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.432461235725e+00 
+      1 KSP Residual norm 1.680518712327e-01 
+      2 KSP Residual norm 5.505546737775e-02 
+      3 KSP Residual norm 2.123468631658e-02 
+      4 KSP Residual norm 1.099249631603e-02 
+  6 KSP Component U,V,W,P residual norm [ 7.306353565340e-07, 7.114111184445e-07, 7.132638583804e-07, 7.131353869402e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.188128340679e+00 
+      1 KSP Residual norm 2.788406410348e-01 
+      2 KSP Residual norm 9.563102256059e-02 
+      3 KSP Residual norm 3.209664145452e-02 
+      4 KSP Residual norm 1.364941548237e-02 
+      5 KSP Residual norm 6.885853349672e-03 
+  7 KSP Component U,V,W,P residual norm [ 7.295637206839e-07, 4.578572717812e-07, 6.065473555867e-07, 2.903158903439e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.876065541341e+00 
+      1 KSP Residual norm 2.394762860584e-01 
+      2 KSP Residual norm 7.567355946333e-02 
+      3 KSP Residual norm 2.367490149721e-02 
+      4 KSP Residual norm 7.342734806577e-03 
+  8 KSP Component U,V,W,P residual norm [ 4.937724344315e-07, 7.215647223657e-07, 9.016858302039e-07, 1.687772136331e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.283650793948e+00 
+      1 KSP Residual norm 2.745472854673e-01 
+      2 KSP Residual norm 1.036785450837e-01 
+      3 KSP Residual norm 4.569879162570e-02 
+      4 KSP Residual norm 2.313953743074e-02 
+      5 KSP Residual norm 8.849270514153e-03 
+  9 KSP Component U,V,W,P residual norm [ 2.306047448597e-07, 2.881435856977e-07, 4.309921578900e-07, 8.374862233733e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.122155064944e+00 
+      1 KSP Residual norm 2.861206875959e-01 
+      2 KSP Residual norm 8.168719097038e-02 
+      3 KSP Residual norm 3.466550974240e-02 
+      4 KSP Residual norm 1.620224427758e-02 
+ 10 KSP Component U,V,W,P residual norm [ 2.109417903348e-07, 2.716888176204e-07, 3.551593139468e-07, 4.371493506251e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.53e-02 (sec)
+  4 SNES Function norm 4.783461266624e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.51e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.925748731820e-03, 3.065266290168e-03, 1.311889446602e-03, 8.550911105732e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000466329111e+00 
+      1 KSP Residual norm 2.315972178394e-01 
+      2 KSP Residual norm 7.913254971721e-02 
+      3 KSP Residual norm 3.101071309288e-02 
+      4 KSP Residual norm 1.498631708590e-02 
+      5 KSP Residual norm 7.491369839858e-03 
+  1 KSP Component U,V,W,P residual norm [ 2.407358774450e-04, 2.539803656657e-04, 1.060497992801e-04, 1.217612980416e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.755258045436e-01 
+      1 KSP Residual norm 2.962402976258e-02 
+      2 KSP Residual norm 1.276975313671e-02 
+      3 KSP Residual norm 4.933847459184e-03 
+      4 KSP Residual norm 1.925681278810e-03 
+  2 KSP Component U,V,W,P residual norm [ 4.215318313107e-05, 5.344668771942e-05, 6.775413765973e-05, 4.049008223592e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.352287231401e+00 
+      1 KSP Residual norm 3.482442385405e-01 
+      2 KSP Residual norm 1.563417494127e-01 
+      3 KSP Residual norm 5.060447136589e-02 
+      4 KSP Residual norm 2.177076728463e-02 
+      5 KSP Residual norm 1.040270848186e-02 
+  3 KSP Component U,V,W,P residual norm [ 6.923371702184e-06, 7.722030634727e-06, 7.738927178411e-06, 2.042722989154e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.685859817621e+00 
+      1 KSP Residual norm 3.941509793434e-01 
+      2 KSP Residual norm 1.710268821461e-01 
+      3 KSP Residual norm 5.621033448385e-02 
+      4 KSP Residual norm 2.404084402534e-02 
+      5 KSP Residual norm 1.218010258720e-02 
+  4 KSP Component U,V,W,P residual norm [ 5.349038672566e-06, 9.233924073783e-06, 1.162949397737e-05, 1.073242028879e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.973162325893e+00 
+      1 KSP Residual norm 3.965427996030e-01 
+      2 KSP Residual norm 1.532395660140e-01 
+      3 KSP Residual norm 4.671596383078e-02 
+      4 KSP Residual norm 1.789739801308e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.178681100578e-06, 9.362868881878e-07, 1.380868436553e-06, 3.738879085189e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.710376241736e+00 
+      1 KSP Residual norm 2.736338105258e-01 
+      2 KSP Residual norm 1.089175085642e-01 
+      3 KSP Residual norm 4.864875970032e-02 
+      4 KSP Residual norm 2.526160076558e-02 
+      5 KSP Residual norm 9.839396389206e-03 
+  6 KSP Component U,V,W,P residual norm [ 3.304236391473e-07, 3.979056597006e-07, 4.914212816975e-07, 2.641247677685e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.422127911725e+00 
+      1 KSP Residual norm 3.511180624752e-01 
+      2 KSP Residual norm 1.434498313835e-01 
+      3 KSP Residual norm 5.724265709083e-02 
+      4 KSP Residual norm 2.800574261400e-02 
+      5 KSP Residual norm 1.267031034595e-02 
+  7 KSP Component U,V,W,P residual norm [ 4.900182044978e-07, 7.493207175855e-07, 1.084546887041e-06, 1.098428941948e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.265682812102e+00 
+      1 KSP Residual norm 2.759292581649e-01 
+      2 KSP Residual norm 9.703744586125e-02 
+      3 KSP Residual norm 4.006226844323e-02 
+      4 KSP Residual norm 1.992597816761e-02 
+  8 KSP Component U,V,W,P residual norm [ 3.120892590422e-07, 4.507166506048e-07, 6.190610940761e-07, 5.965001647747e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.427812925847e+00 
+      1 KSP Residual norm 3.773977332723e-01 
+      2 KSP Residual norm 1.680965966790e-01 
+      3 KSP Residual norm 7.869595280031e-02 
+      4 KSP Residual norm 3.434554860549e-02 
+      5 KSP Residual norm 1.114757714945e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.118611093129e-07, 3.106589882016e-07, 4.586327167977e-07, 3.239168832192e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.51e-02 (sec)
+  5 SNES Function norm 3.799090156380e-03 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 5
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=5, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-08, solution=1e-08
+  total number of linear solver iterations=61
+  total number of function evaluations=6
+  norm schedule ALWAYS
+  SNESLineSearch Object:   4 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   4 MPI processes
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=2000
+    tolerances:  relative=0.001, absolute=1e-08, divergence=10000.
+    right preconditioning
+    using nonzero initial guess
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   4 MPI processes
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, factorization UPPER
+      Preconditioner for the Schur complement formed from A11
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block
+        KSP Object:        (fieldsplit_u_)         4 MPI processes
+          type: fgmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+          right preconditioning
+          using UNPRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_u_)         4 MPI processes
+          type: mg
+            MG: type is MULTIPLICATIVE, levels=2 cycles=v
+              Cycles per PCApply=1
+              Not using Galerkin computed coarse grid matrices
+          Coarse grid solver -- level -------------------------------
+            KSP Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=4, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using UNPRECONDITIONED norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: bjacobi
+                block Jacobi: number of blocks = 4
+                Local solve is same for all blocks, in the following KSP and PC objects:
+              KSP Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: ilu
+                  ILU: out-of-place factorization
+                  0 levels of fill
+                  tolerance for zero pivot 2.22045e-14
+                  matrix ordering: natural
+                  factor fill ratio given 1., needed 1.
+                    Factored matrix follows:
+                      Mat Object:                       1 MPI processes
+                        type: seqaij
+                        rows=675, cols=675, bs=3
+                        package used to perform factorization: petsc
+                        total: nonzeros=126711, allocated nonzeros=126711
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 225 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object:                (Buu_)                 1 MPI processes
+                  type: seqaij
+                  rows=675, cols=675, bs=3
+                  total: nonzeros=126711, allocated nonzeros=126711
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 225 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Mat Object:              (Buu_)               4 MPI processes
+                type: mpiaij
+                rows=2187, cols=2187, bs=3
+                total: nonzeros=533871, allocated nonzeros=533871
+                total number of mallocs used during MatSetValues calls =0
+                  has attached near null space
+          Down solver (pre-smoother) on level 1 -------------------------------
+            KSP Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=2
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using nonzero initial guess
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: jacobi
+              linear system matrix = precond matrix:
+              Mat Object:              (fieldsplit_u_)               4 MPI processes
+                type: shell
+                rows=14739, cols=14739, bs=3
+          Up solver (post-smoother) same as down solver (pre-smoother)
+          linear system matrix = precond matrix:
+          Mat Object:          (fieldsplit_u_)           4 MPI processes
+            type: shell
+            rows=14739, cols=14739, bs=3
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object:        (fieldsplit_p_)         4 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_p_)         4 MPI processes
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: schurcomplement
+            rows=2048, cols=2048
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Mat Object:                (fieldsplit_p_)                 4 MPI processes
+                  type: mpisbaij
+                  rows=2048, cols=2048, bs=4
+                  total: nonzeros=8192, allocated nonzeros=8192
+                  total number of mallocs used during MatSetValues calls =0
+              A10
+                Mat Object:                (Bpu_)                 4 MPI processes
+                  type: shell
+                  rows=2048, cols=14739
+              KSP of A00
+                KSP Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: fgmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10, initial guess is zero
+                  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+                  right preconditioning
+                  using UNPRECONDITIONED norm type for convergence test
+                PC Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: mg
+                    MG: type is MULTIPLICATIVE, levels=2 cycles=v
+                      Cycles per PCApply=1
+                      Not using Galerkin computed coarse grid matrices
+                  Coarse grid solver -- level -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=4, initial guess is zero
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using UNPRECONDITIONED norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: bjacobi
+                        block Jacobi: number of blocks = 4
+                        Local solve is same for all blocks, in the following KSP and PC objects:
+                      KSP Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: preonly
+                        maximum iterations=10000, initial guess is zero
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                        left preconditioning
+                        using NONE norm type for convergence test
+                      PC Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: ilu
+                          ILU: out-of-place factorization
+                          0 levels of fill
+                          tolerance for zero pivot 2.22045e-14
+                          matrix ordering: natural
+                          factor fill ratio given 1., needed 1.
+                            Factored matrix follows:
+                              Mat Object:                               1 MPI processes
+                                type: seqaij
+                                rows=675, cols=675, bs=3
+                                package used to perform factorization: petsc
+                                total: nonzeros=126711, allocated nonzeros=126711
+                                total number of mallocs used during MatSetValues calls =0
+                                  using I-node routines: found 225 nodes, limit used is 5
+                        linear system matrix = precond matrix:
+                        Mat Object:                        (Buu_)                         1 MPI processes
+                          type: seqaij
+                          rows=675, cols=675, bs=3
+                          total: nonzeros=126711, allocated nonzeros=126711
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 225 nodes, limit used is 5
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (Buu_)                       4 MPI processes
+                        type: mpiaij
+                        rows=2187, cols=2187, bs=3
+                        total: nonzeros=533871, allocated nonzeros=533871
+                        total number of mallocs used during MatSetValues calls =0
+                          has attached near null space
+                  Down solver (pre-smoother) on level 1 -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=2
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using nonzero initial guess
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: jacobi
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (fieldsplit_u_)                       4 MPI processes
+                        type: shell
+                        rows=14739, cols=14739, bs=3
+                  Up solver (post-smoother) same as down solver (pre-smoother)
+                  linear system matrix = precond matrix:
+                  Mat Object:                  (fieldsplit_u_)                   4 MPI processes
+                    type: shell
+                    rows=14739, cols=14739, bs=3
+              A01
+                Mat Object:                (Bup_)                 4 MPI processes
+                  type: shell
+                  rows=14739, cols=2048
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: mpisbaij
+            rows=2048, cols=2048, bs=4
+            total: nonzeros=8192, allocated nonzeros=8192
+            total number of mallocs used during MatSetValues calls =0
+    linear system matrix followed by preconditioner matrix:
+    Mat Object:    (stokes_Amf_)     4 MPI processes
+      type: shell
+      rows=16787, cols=16787
+    Mat Object:     4 MPI processes
+      type: nest
+      rows=16787, cols=16787
+        Matrix object: 
+          type=nest, rows=2, cols=2 
+          MatNest structure: 
+          (0,0) : prefix="fieldsplit_u_", type=shell, rows=14739, cols=14739 
+          (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
+          (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
+          (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.52e-02 (sec)
+[[ModelOutput_SD3D]]
+pTatin3d_ModelOutputLite_Velocity_Stokes() -> picard_stage_v.(pvd,pvts,vts): CPU time 1.05e-03 (sec) 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> picard_stage_vp.(pvd,pvts,vts): CPU time 1.22e-03 (sec) 
+pTatin3d_ModelOutput_MarkerCellFields() -> picard_stage_mpoints_cell.(pvd,pvts,vts): CPU time 6.83e-03 (sec) 
+slab base range: gmin 6.9697e-01 5.0000e-01 0.0000e+00
+slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
+slab edge range: gmax(x) 6.9697e-01
+slab edge identified: pidx_w,rank_w 5586 1
+slab edge range: W,Dn 6.9697e-01 5.7891e-01
+slab edge (back face) range: gmax(x) 6.9697e-01
+slab edge (back face) identified: pidx_w,rank_w 5117 1
+slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
+slab edge (front face) range: gmin(z) 3.7879e-01
+slab edge (front face) identified: pidx_w,rank_w 5105 3
+slab edge (front face) range: W,Dn 3.7879e-01 0.0000e+00
+topo range: 1.0000e+00 1.0000e+00
+vol,int v.v,vrms: 5.7392e-01 2.0679e-02 1.8982e-01
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.73e-02 (sec)
+Phi: 0.0000e+00
+PostSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+[[ModelOutput_SD3D]]
+pTatin3d_ModelOutputLite_Velocity_Stokes() -> step000000_v.(pvd,pvts,vts): CPU time 1.58e-03 (sec) 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000000_vp.(pvd,pvts,vts): CPU time 1.44e-03 (sec) 
+pTatin3d_ModelOutput_MarkerCellFields() -> step000000_mpoints_cell.(pvd,pvts,vts): CPU time 6.41e-03 (sec) 
+slab base range: gmin 6.9697e-01 5.0000e-01 0.0000e+00
+slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
+slab edge range: gmax(x) 6.9697e-01
+slab edge identified: pidx_w,rank_w 5586 1
+slab edge range: W,Dn 6.9697e-01 5.7891e-01
+slab edge (back face) range: gmax(x) 6.9697e-01
+slab edge (back face) identified: pidx_w,rank_w 5117 1
+slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
+slab edge (front face) range: gmin(z) 3.7879e-01
+slab edge (front face) identified: pidx_w,rank_w 5105 3
+slab edge (front face) range: W,Dn 3.7879e-01 0.0000e+00
+topo range: 1.0000e+00 1.0000e+00
+vol,int v.v,vrms: 5.7392e-01 2.0679e-02 1.8982e-01
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+Phi: 0.0000e+00
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 2.4662e-01 [accepted] | dt > dt_max : restricted to = 2.3891e-03 | ==>> dt used = 2.3891e-03 |
+  TimeStep control(StkSurfaceCourant): | current = 2.3891e-03 : trial = 1.0000e+32 | ==>> dt used = 2.3891e-03 |
+  timestep[stokes] dt_courant = 2.3891e-03 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 1 ]]
+     dt    : 2.3891e-13 
+     time  : 2.3891e-13 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     19860 (init) / 19860 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     3.77e-03 (sec) efficiency 46.2%
+    	SwarmUpdatePosition_Communication_Generic   2.55e-03 (sec) efficiency 21.7%
+    	MaterialPointStd_Removal                    2.10e-05 (sec) efficiency 43.2%
+=========== ================================== ============= 
+   [[ COMPUTING FLOW FIELD FOR STEP : 1 ]]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.52e-02 (sec)
+  0 SNES Function norm 3.799090156380e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.51e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.329199543321e-03, 2.852981335902e-03, 9.318811664976e-04, 3.239168832192e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.999115427679e-01 
+      1 KSP Residual norm 2.181557241208e-01 
+      2 KSP Residual norm 7.646882494740e-02 
+      3 KSP Residual norm 3.229313601440e-02 
+      4 KSP Residual norm 1.558383709325e-02 
+      5 KSP Residual norm 7.669508934496e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.877000847964e-04, 2.315861653999e-04, 7.571890632014e-05, 1.034074921984e-03 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.196342905871e-01 
+      1 KSP Residual norm 1.259857289532e-01 
+      2 KSP Residual norm 3.364625564101e-02 
+      3 KSP Residual norm 1.124351232539e-02 
+      4 KSP Residual norm 3.921804586892e-03 
+  2 KSP Component U,V,W,P residual norm [ 3.203551847576e-05, 4.325536443572e-05, 4.210240075014e-05, 3.910767825626e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.131943864957e+00 
+      1 KSP Residual norm 5.244775386051e-01 
+      2 KSP Residual norm 1.630184244703e-01 
+      3 KSP Residual norm 5.175204978122e-02 
+      4 KSP Residual norm 1.732479388702e-02 
+  3 KSP Component U,V,W,P residual norm [ 8.092449373600e-06, 9.562175715994e-06, 5.671859346411e-06, 1.995870382370e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.632624381852e+00 
+      1 KSP Residual norm 4.075206156205e-01 
+      2 KSP Residual norm 1.343689501331e-01 
+      3 KSP Residual norm 5.179288819505e-02 
+      4 KSP Residual norm 1.546535641658e-02 
+  4 KSP Component U,V,W,P residual norm [ 3.339136568433e-06, 4.200900163786e-06, 4.057024081356e-06, 9.640315048044e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.834780040767e+00 
+      1 KSP Residual norm 5.566274863353e-01 
+      2 KSP Residual norm 2.163833499256e-01 
+      3 KSP Residual norm 8.045574564191e-02 
+      4 KSP Residual norm 2.942349933474e-02 
+      5 KSP Residual norm 1.439155581352e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.480463228198e-06, 2.099378459239e-06, 2.540681690224e-06, 4.100663486837e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.285120673371e+00 
+      1 KSP Residual norm 3.206632279963e-01 
+      2 KSP Residual norm 1.137498383504e-01 
+      3 KSP Residual norm 3.532925121226e-02 
+      4 KSP Residual norm 1.196052174835e-02 
+  6 KSP Component U,V,W,P residual norm [ 6.956791588920e-07, 5.560390934276e-07, 6.245496273289e-07, 2.517230337331e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.073081314810e+00 
+      1 KSP Residual norm 4.118215129902e-01 
+      2 KSP Residual norm 1.269770664992e-01 
+      3 KSP Residual norm 4.456271498121e-02 
+      4 KSP Residual norm 1.961275125906e-02 
+  7 KSP Component U,V,W,P residual norm [ 3.142856057955e-07, 7.473928541370e-07, 8.064778628057e-07, 1.242231005622e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.430399654993e+00 
+      1 KSP Residual norm 4.993930130630e-01 
+      2 KSP Residual norm 1.750757495714e-01 
+      3 KSP Residual norm 5.962178070693e-02 
+      4 KSP Residual norm 1.847989109971e-02 
+  8 KSP Component U,V,W,P residual norm [ 4.793045109457e-07, 6.068281764690e-07, 7.623600626318e-07, 6.446911752933e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.643033736144e+00 
+      1 KSP Residual norm 5.095681902407e-01 
+      2 KSP Residual norm 1.677953158478e-01 
+      3 KSP Residual norm 6.309892426307e-02 
+      4 KSP Residual norm 3.209035500213e-02 
+      5 KSP Residual norm 1.345091024005e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.212870254433e-07, 3.815608109351e-07, 4.542859084366e-07, 4.282859052631e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.391113921008e+00 
+      1 KSP Residual norm 4.073388782643e-01 
+      2 KSP Residual norm 1.301665739766e-01 
+      3 KSP Residual norm 4.986505716729e-02 
+      4 KSP Residual norm 2.368716771712e-02 
+ 10 KSP Component U,V,W,P residual norm [ 1.228793239214e-07, 2.117085842310e-07, 2.479764781342e-07, 2.424630254116e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.54e-02 (sec)
+  1 SNES Function norm 2.835206361052e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 1.817217926037e-03, 2.073972283138e-03, 6.593536296891e-04, 2.424630254117e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000231492783e+00 
+      1 KSP Residual norm 2.038074123900e-01 
+      2 KSP Residual norm 7.101139283565e-02 
+      3 KSP Residual norm 3.124206195040e-02 
+      4 KSP Residual norm 1.460912161259e-02 
+      5 KSP Residual norm 7.044139871748e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.139094493562e-04, 1.312650321714e-04, 4.222299667559e-05, 6.872392192332e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.107447191481e+00 
+      1 KSP Residual norm 1.496761278534e-01 
+      2 KSP Residual norm 3.700878583263e-02 
+      3 KSP Residual norm 1.353964541749e-02 
+      4 KSP Residual norm 5.001053195986e-03 
+  2 KSP Component U,V,W,P residual norm [ 2.080337199767e-05, 2.819506164831e-05, 2.877138714885e-05, 2.636539241156e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.574658449670e+00 
+      1 KSP Residual norm 5.746898092951e-01 
+      2 KSP Residual norm 1.711227352442e-01 
+      3 KSP Residual norm 6.095806728901e-02 
+      4 KSP Residual norm 2.086575954772e-02 
+  3 KSP Component U,V,W,P residual norm [ 5.736848101325e-06, 6.540697855079e-06, 4.456815139867e-06, 1.365041218194e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.202754165507e+00 
+      1 KSP Residual norm 5.029049798983e-01 
+      2 KSP Residual norm 1.720829716473e-01 
+      3 KSP Residual norm 6.579965844885e-02 
+      4 KSP Residual norm 1.876315949932e-02 
+  4 KSP Component U,V,W,P residual norm [ 2.583447493181e-06, 3.489009962250e-06, 3.671190114331e-06, 6.339815996666e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.531993592551e+00 
+      1 KSP Residual norm 6.452197760054e-01 
+      2 KSP Residual norm 2.614249623496e-01 
+      3 KSP Residual norm 9.252353327763e-02 
+      4 KSP Residual norm 3.458358276685e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.765013537451e-06, 1.945995584587e-06, 2.219114584270e-06, 2.614502192366e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.005835857352e+00 
+      1 KSP Residual norm 3.339937938782e-01 
+      2 KSP Residual norm 1.131677084573e-01 
+      3 KSP Residual norm 3.402233517520e-02 
+      4 KSP Residual norm 1.128378287611e-02 
+  6 KSP Component U,V,W,P residual norm [ 2.991172521761e-07, 3.093491173732e-07, 2.706077746819e-07, 1.745840372366e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.036756431054e+00 
+      1 KSP Residual norm 3.900490685050e-01 
+      2 KSP Residual norm 1.275193352239e-01 
+      3 KSP Residual norm 4.991288232621e-02 
+      4 KSP Residual norm 2.231937955129e-02 
+      5 KSP Residual norm 9.963806560880e-03 
+  7 KSP Component U,V,W,P residual norm [ 4.555746154589e-07, 6.388594377682e-07, 6.886509096850e-07, 8.572035735361e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.961008581697e+00 
+      1 KSP Residual norm 5.353010774882e-01 
+      2 KSP Residual norm 1.997687551070e-01 
+      3 KSP Residual norm 6.376134217117e-02 
+      4 KSP Residual norm 1.924612973474e-02 
+  8 KSP Component U,V,W,P residual norm [ 4.588968129855e-07, 4.665213509456e-07, 5.693640404707e-07, 4.375932747525e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.944456411288e+00 
+      1 KSP Residual norm 5.639201157427e-01 
+      2 KSP Residual norm 1.985824216632e-01 
+      3 KSP Residual norm 8.022312130691e-02 
+      4 KSP Residual norm 3.932799166716e-02 
+      5 KSP Residual norm 1.486331689840e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.177524378327e-07, 2.818562156978e-07, 3.197802733235e-07, 2.816659505736e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.753740210621e+00 
+      1 KSP Residual norm 4.237074039838e-01 
+      2 KSP Residual norm 1.358861227518e-01 
+      3 KSP Residual norm 4.542465964220e-02 
+      4 KSP Residual norm 2.090367195226e-02 
+ 10 KSP Component U,V,W,P residual norm [ 1.064884321277e-07, 1.335920805784e-07, 1.442076108504e-07, 1.606054007842e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 10
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+  2 SNES Function norm 1.838203468010e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.51e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 1.188702969966e-03, 1.336153662157e-03, 4.250506448541e-04, 1.606054007842e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000195592856e+00 
+      1 KSP Residual norm 2.010856867221e-01 
+      2 KSP Residual norm 7.129302686597e-02 
+      3 KSP Residual norm 3.178520238109e-02 
+      4 KSP Residual norm 1.453507232110e-02 
+      5 KSP Residual norm 6.825283181438e-03 
+  1 KSP Component U,V,W,P residual norm [ 6.742012075846e-05, 7.641667928977e-05, 2.483224256174e-05, 4.249257953138e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.184961155818e+00 
+      1 KSP Residual norm 1.620926664705e-01 
+      2 KSP Residual norm 3.970873246641e-02 
+      3 KSP Residual norm 1.567294847244e-02 
+      4 KSP Residual norm 6.215402708834e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.288985326035e-05, 1.782202283044e-05, 1.834465378374e-05, 1.640453270691e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.823488205376e+00 
+      1 KSP Residual norm 6.250584849524e-01 
+      2 KSP Residual norm 1.844540475792e-01 
+      3 KSP Residual norm 6.991202303587e-02 
+      4 KSP Residual norm 2.451210178404e-02 
+  3 KSP Component U,V,W,P residual norm [ 3.808640908623e-06, 4.387290359750e-06, 3.149958675673e-06, 8.656269877575e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.515484857446e+00 
+      1 KSP Residual norm 5.524833375576e-01 
+      2 KSP Residual norm 1.940248658608e-01 
+      3 KSP Residual norm 7.007785404433e-02 
+      4 KSP Residual norm 1.990522953450e-02 
+  4 KSP Component U,V,W,P residual norm [ 1.709033453637e-06, 2.494995545092e-06, 2.764876360759e-06, 3.875286741522e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.808037470644e+00 
+      1 KSP Residual norm 6.585543822395e-01 
+      2 KSP Residual norm 2.690692060810e-01 
+      3 KSP Residual norm 9.335246965144e-02 
+      4 KSP Residual norm 3.613818172824e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.052524909321e-06, 1.183345573474e-06, 1.241449031884e-06, 1.605108952141e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.483598948320e+00 
+      1 KSP Residual norm 3.363601483487e-01 
+      2 KSP Residual norm 1.083026951647e-01 
+      3 KSP Residual norm 3.465657597107e-02 
+  6 KSP Component U,V,W,P residual norm [ 4.152293896483e-07, 4.135106124785e-07, 3.341907443025e-07, 1.079083896496e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.919756173653e+00 
+      1 KSP Residual norm 3.779605281105e-01 
+      2 KSP Residual norm 1.143205413895e-01 
+      3 KSP Residual norm 3.979566269407e-02 
+      4 KSP Residual norm 1.626348247060e-02 
+  7 KSP Component U,V,W,P residual norm [ 4.292854233783e-07, 4.997471540526e-07, 5.951646743576e-07, 5.390077189157e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 4.135005787355e+00 
+      1 KSP Residual norm 5.507340599495e-01 
+      2 KSP Residual norm 2.032727261392e-01 
+      3 KSP Residual norm 6.280254976421e-02 
+      4 KSP Residual norm 1.761020126362e-02 
+  8 KSP Component U,V,W,P residual norm [ 2.916333027126e-07, 2.620756392484e-07, 3.194085169062e-07, 2.733032784710e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.134780750903e+00 
+      1 KSP Residual norm 5.553734036201e-01 
+      2 KSP Residual norm 1.882268569468e-01 
+      3 KSP Residual norm 7.192897882271e-02 
+      4 KSP Residual norm 3.356497051226e-02 
+      5 KSP Residual norm 1.170749717463e-02 
+  9 KSP Component U,V,W,P residual norm [ 1.502307555139e-07, 1.741747536343e-07, 2.008479290694e-07, 1.687162667720e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+  3 SNES Function norm 1.066796162460e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 6.866638359524e-04, 7.761853375973e-04, 2.531408774084e-04, 1.687162667720e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000231217125e+00 
+      1 KSP Residual norm 2.103148089651e-01 
+      2 KSP Residual norm 7.316731371453e-02 
+      3 KSP Residual norm 3.264880949167e-02 
+      4 KSP Residual norm 1.475717416652e-02 
+      5 KSP Residual norm 6.697276640037e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.835119777938e-05, 4.359842918472e-05, 1.454155778125e-05, 2.446814712609e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.164384541957e+00 
+      1 KSP Residual norm 1.642661624693e-01 
+      2 KSP Residual norm 4.127384532296e-02 
+      3 KSP Residual norm 1.690006711733e-02 
+      4 KSP Residual norm 7.019707074426e-03 
+  2 KSP Component U,V,W,P residual norm [ 7.445644889946e-06, 1.038582297402e-05, 1.062808317472e-05, 9.412188645935e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.884313927222e+00 
+      1 KSP Residual norm 6.692613499849e-01 
+      2 KSP Residual norm 1.966839749172e-01 
+      3 KSP Residual norm 7.610483933551e-02 
+      4 KSP Residual norm 2.756744624176e-02 
+  3 KSP Component U,V,W,P residual norm [ 2.246776765521e-06, 2.750204538918e-06, 1.918026527611e-06, 5.023160966448e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.639109993046e+00 
+      1 KSP Residual norm 5.714528417403e-01 
+      2 KSP Residual norm 1.991525853737e-01 
+      3 KSP Residual norm 7.048071867641e-02 
+      4 KSP Residual norm 2.000310475218e-02 
+  4 KSP Component U,V,W,P residual norm [ 1.030701073205e-06, 1.486533889814e-06, 1.714177726697e-06, 2.224164630984e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.898101173659e+00 
+      1 KSP Residual norm 6.656518419475e-01 
+      2 KSP Residual norm 2.724815633963e-01 
+      3 KSP Residual norm 9.494819134160e-02 
+      4 KSP Residual norm 3.788033244104e-02 
+  5 KSP Component U,V,W,P residual norm [ 5.939281343906e-07, 6.939729512564e-07, 6.527515682572e-07, 9.310050421751e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.660894065392e+00 
+      1 KSP Residual norm 3.387490200297e-01 
+      2 KSP Residual norm 1.069850520353e-01 
+      3 KSP Residual norm 3.463972165398e-02 
+  6 KSP Component U,V,W,P residual norm [ 2.633456166143e-07, 2.265140043656e-07, 1.732538766469e-07, 6.146056833793e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.887052869279e+00 
+      1 KSP Residual norm 3.574404890188e-01 
+      2 KSP Residual norm 1.110100181390e-01 
+      3 KSP Residual norm 3.777177774026e-02 
+      4 KSP Residual norm 1.536959832320e-02 
+  7 KSP Component U,V,W,P residual norm [ 2.296648572598e-07, 2.859083731566e-07, 3.445118350811e-07, 3.031779272481e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 4.144000576838e+00 
+      1 KSP Residual norm 5.697348022840e-01 
+      2 KSP Residual norm 2.146984341906e-01 
+      3 KSP Residual norm 6.335862258680e-02 
+      4 KSP Residual norm 1.884338707656e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.749271185082e-07, 1.730905969597e-07, 1.974352587954e-07, 1.515961608214e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.369667656770e+00 
+      1 KSP Residual norm 5.622601955496e-01 
+      2 KSP Residual norm 1.933299274415e-01 
+      3 KSP Residual norm 7.084173034076e-02 
+      4 KSP Residual norm 3.198460072966e-02 
+  9 KSP Component U,V,W,P residual norm [ 6.680085725417e-08, 8.669669711760e-08, 1.019941400227e-07, 9.438174888394e-07 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.54e-02 (sec)
+  4 SNES Function norm 5.864896219896e-04 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.59e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 3.748204292307e-04, 4.279599442311e-04, 1.425802155807e-04, 9.438174888395e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000337608927e+00 
+      1 KSP Residual norm 2.174289700126e-01 
+      2 KSP Residual norm 7.952045740066e-02 
+      3 KSP Residual norm 3.545475415681e-02 
+      4 KSP Residual norm 1.596829738170e-02 
+      5 KSP Residual norm 7.254448170451e-03 
+  1 KSP Component U,V,W,P residual norm [ 2.108509427734e-05, 2.423737004433e-05, 8.271212961392e-06, 1.349544276304e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.123481821827e+00 
+      1 KSP Residual norm 1.605037000247e-01 
+      2 KSP Residual norm 4.118780795113e-02 
+      3 KSP Residual norm 1.697339380200e-02 
+      4 KSP Residual norm 7.069694146723e-03 
+  2 KSP Component U,V,W,P residual norm [ 4.357341111838e-06, 6.007151387221e-06, 6.264953228881e-06, 5.233884270646e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.815292337939e+00 
+      1 KSP Residual norm 6.828176520242e-01 
+      2 KSP Residual norm 2.022902062391e-01 
+      3 KSP Residual norm 7.797883206182e-02 
+      4 KSP Residual norm 2.811298725718e-02 
+  3 KSP Component U,V,W,P residual norm [ 1.236117981047e-06, 1.564818668598e-06, 1.086258320951e-06, 2.764424941589e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.665230652770e+00 
+      1 KSP Residual norm 5.773201377701e-01 
+      2 KSP Residual norm 2.037314224582e-01 
+      3 KSP Residual norm 7.062648766900e-02 
+      4 KSP Residual norm 2.058115886480e-02 
+  4 KSP Component U,V,W,P residual norm [ 6.068897977274e-07, 8.726269341375e-07, 1.009231913666e-06, 1.238298540291e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.906712521412e+00 
+      1 KSP Residual norm 6.765599447539e-01 
+      2 KSP Residual norm 2.779396096220e-01 
+      3 KSP Residual norm 9.569275146449e-02 
+      4 KSP Residual norm 3.816330417380e-02 
+  5 KSP Component U,V,W,P residual norm [ 3.279458580883e-07, 3.874263168217e-07, 3.476633862858e-07, 5.101600006069e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.794511381540e+00 
+      1 KSP Residual norm 3.473541963179e-01 
+      2 KSP Residual norm 1.064914792679e-01 
+      3 KSP Residual norm 3.634533578470e-02 
+  6 KSP Component U,V,W,P residual norm [ 1.491958103605e-07, 1.301318550994e-07, 1.002600927465e-07, 3.358321107219e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.871998396818e+00 
+      1 KSP Residual norm 3.526412397978e-01 
+      2 KSP Residual norm 1.064561297775e-01 
+      3 KSP Residual norm 3.498240105762e-02 
+      4 KSP Residual norm 1.380643661646e-02 
+  7 KSP Component U,V,W,P residual norm [ 1.268242920593e-07, 1.547564589446e-07, 1.892241964703e-07, 1.667286436958e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 4.101881955474e+00 
+      1 KSP Residual norm 5.706355811711e-01 
+      2 KSP Residual norm 2.142837568048e-01 
+      3 KSP Residual norm 6.325010966748e-02 
+      4 KSP Residual norm 1.892986121720e-02 
+  8 KSP Component U,V,W,P residual norm [ 9.358005591764e-08, 9.187168867174e-08, 1.026979446305e-07, 8.419562637207e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.390936061980e+00 
+      1 KSP Residual norm 5.570309868470e-01 
+      2 KSP Residual norm 1.869283097563e-01 
+      3 KSP Residual norm 6.696902680132e-02 
+      4 KSP Residual norm 2.978689083697e-02 
+  9 KSP Component U,V,W,P residual norm [ 3.482604370513e-08, 4.525198800242e-08, 5.425609796245e-08, 5.183929373775e-07 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.86e-02 (sec)
+  5 SNES Function norm 3.129309046632e-04 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 5
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=5, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-08, solution=1e-08
+  total number of linear solver iterations=47
+  total number of function evaluations=6
+  norm schedule ALWAYS
+  SNESLineSearch Object:   4 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   4 MPI processes
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=2000, initial guess is zero
+    tolerances:  relative=0.001, absolute=1e-08, divergence=10000.
+    right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   4 MPI processes
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, factorization UPPER
+      Preconditioner for the Schur complement formed from A11
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block
+        KSP Object:        (fieldsplit_u_)         4 MPI processes
+          type: fgmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+          right preconditioning
+          using UNPRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_u_)         4 MPI processes
+          type: mg
+            MG: type is MULTIPLICATIVE, levels=2 cycles=v
+              Cycles per PCApply=1
+              Not using Galerkin computed coarse grid matrices
+          Coarse grid solver -- level -------------------------------
+            KSP Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=4, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using UNPRECONDITIONED norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: bjacobi
+                block Jacobi: number of blocks = 4
+                Local solve is same for all blocks, in the following KSP and PC objects:
+              KSP Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: ilu
+                  ILU: out-of-place factorization
+                  0 levels of fill
+                  tolerance for zero pivot 2.22045e-14
+                  matrix ordering: natural
+                  factor fill ratio given 1., needed 1.
+                    Factored matrix follows:
+                      Mat Object:                       1 MPI processes
+                        type: seqaij
+                        rows=675, cols=675, bs=3
+                        package used to perform factorization: petsc
+                        total: nonzeros=126711, allocated nonzeros=126711
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 225 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object:                (Buu_)                 1 MPI processes
+                  type: seqaij
+                  rows=675, cols=675, bs=3
+                  total: nonzeros=126711, allocated nonzeros=126711
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 225 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Mat Object:              (Buu_)               4 MPI processes
+                type: mpiaij
+                rows=2187, cols=2187, bs=3
+                total: nonzeros=533871, allocated nonzeros=533871
+                total number of mallocs used during MatSetValues calls =0
+                  has attached near null space
+          Down solver (pre-smoother) on level 1 -------------------------------
+            KSP Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=2
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using nonzero initial guess
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: jacobi
+              linear system matrix = precond matrix:
+              Mat Object:              (fieldsplit_u_)               4 MPI processes
+                type: shell
+                rows=14739, cols=14739, bs=3
+          Up solver (post-smoother) same as down solver (pre-smoother)
+          linear system matrix = precond matrix:
+          Mat Object:          (fieldsplit_u_)           4 MPI processes
+            type: shell
+            rows=14739, cols=14739, bs=3
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object:        (fieldsplit_p_)         4 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_p_)         4 MPI processes
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: schurcomplement
+            rows=2048, cols=2048
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Mat Object:                (fieldsplit_p_)                 4 MPI processes
+                  type: mpisbaij
+                  rows=2048, cols=2048, bs=4
+                  total: nonzeros=8192, allocated nonzeros=8192
+                  total number of mallocs used during MatSetValues calls =0
+              A10
+                Mat Object:                (Bpu_)                 4 MPI processes
+                  type: shell
+                  rows=2048, cols=14739
+              KSP of A00
+                KSP Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: fgmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10, initial guess is zero
+                  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+                  right preconditioning
+                  using UNPRECONDITIONED norm type for convergence test
+                PC Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: mg
+                    MG: type is MULTIPLICATIVE, levels=2 cycles=v
+                      Cycles per PCApply=1
+                      Not using Galerkin computed coarse grid matrices
+                  Coarse grid solver -- level -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=4, initial guess is zero
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using UNPRECONDITIONED norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: bjacobi
+                        block Jacobi: number of blocks = 4
+                        Local solve is same for all blocks, in the following KSP and PC objects:
+                      KSP Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: preonly
+                        maximum iterations=10000, initial guess is zero
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                        left preconditioning
+                        using NONE norm type for convergence test
+                      PC Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: ilu
+                          ILU: out-of-place factorization
+                          0 levels of fill
+                          tolerance for zero pivot 2.22045e-14
+                          matrix ordering: natural
+                          factor fill ratio given 1., needed 1.
+                            Factored matrix follows:
+                              Mat Object:                               1 MPI processes
+                                type: seqaij
+                                rows=675, cols=675, bs=3
+                                package used to perform factorization: petsc
+                                total: nonzeros=126711, allocated nonzeros=126711
+                                total number of mallocs used during MatSetValues calls =0
+                                  using I-node routines: found 225 nodes, limit used is 5
+                        linear system matrix = precond matrix:
+                        Mat Object:                        (Buu_)                         1 MPI processes
+                          type: seqaij
+                          rows=675, cols=675, bs=3
+                          total: nonzeros=126711, allocated nonzeros=126711
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 225 nodes, limit used is 5
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (Buu_)                       4 MPI processes
+                        type: mpiaij
+                        rows=2187, cols=2187, bs=3
+                        total: nonzeros=533871, allocated nonzeros=533871
+                        total number of mallocs used during MatSetValues calls =0
+                          has attached near null space
+                  Down solver (pre-smoother) on level 1 -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=2
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using nonzero initial guess
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: jacobi
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (fieldsplit_u_)                       4 MPI processes
+                        type: shell
+                        rows=14739, cols=14739, bs=3
+                  Up solver (post-smoother) same as down solver (pre-smoother)
+                  linear system matrix = precond matrix:
+                  Mat Object:                  (fieldsplit_u_)                   4 MPI processes
+                    type: shell
+                    rows=14739, cols=14739, bs=3
+              A01
+                Mat Object:                (Bup_)                 4 MPI processes
+                  type: shell
+                  rows=14739, cols=2048
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: mpisbaij
+            rows=2048, cols=2048, bs=4
+            total: nonzeros=8192, allocated nonzeros=8192
+            total number of mallocs used during MatSetValues calls =0
+    linear system matrix followed by preconditioner matrix:
+    Mat Object:    (stokes_Amf_)     4 MPI processes
+      type: shell
+      rows=16787, cols=16787
+    Mat Object:     4 MPI processes
+      type: nest
+      rows=16787, cols=16787
+        Matrix object: 
+          type=nest, rows=2, cols=2 
+          MatNest structure: 
+          (0,0) : prefix="fieldsplit_u_", type=shell, rows=14739, cols=14739 
+          (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
+          (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
+          (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.61e-02 (sec)
+[[ModelOutput_SD3D]]
+pTatin3d_ModelOutputLite_Velocity_Stokes() -> step000001_v.(pvd,pvts,vts): CPU time 1.18e-03 (sec) 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000001_vp.(pvd,pvts,vts): CPU time 1.29e-03 (sec) 
+pTatin3d_ModelOutput_MarkerCellFields() -> step000001_mpoints_cell.(pvd,pvts,vts): CPU time 6.46e-03 (sec) 
+slab base range: gmin 6.9697e-01 5.0000e-01 6.0261e-22
+slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
+slab edge range: gmax(x) 6.9697e-01
+slab edge identified: pidx_w,rank_w 5230 1
+slab edge range: W,Dn 6.9697e-01 8.7879e-01
+slab edge (back face) range: gmax(x) 6.9697e-01
+slab edge (back face) identified: pidx_w,rank_w 5155 1
+slab edge (back face) range: W,Dn 6.9697e-01 8.7879e-01
+slab edge (front face) range: gmin(z) 3.7879e-01
+slab edge (front face) identified: pidx_w,rank_w 5105 3
+slab edge (front face) range: W,Dn 3.7879e-01 0.0000e+00
+topo range: 1.0000e+00 1.0000e+00
+vol,int v.v,vrms: 5.7392e-01 1.4128e-02 1.5690e-01
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.53e-02 (sec)
+Phi: 0.0000e+00
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 3.1012e-02 [accepted] | dt > dt_max : restricted to = 2.3891e-03 | ==>> dt used = 2.3891e-03 |
+  TimeStep control(StkSurfaceCourant): | current = 2.3891e-03 : trial = 1.0000e+32 | ==>> dt used = 2.3891e-03 |
+  timestep_stokes[1] dt_courant = 2.3891e-03 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 2 ]]
+     dt    : 2.3891e-03 
+     time  : 2.3891e-03 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     19860 (init) / 19860 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     1.54e-02 (sec) efficiency 38.6%
+    	SwarmUpdatePosition_Communication_Generic   1.73e-02 (sec) efficiency 45.3%
+    	MaterialPointStd_Removal                    2.17e-04 (sec) efficiency 6.5%
+=========== ================================== ============= 
+   [[ COMPUTING FLOW FIELD FOR STEP : 2 ]]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.60e-02 (sec)
+  0 SNES Function norm 1.198663390408e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.62e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 4.355067200055e-04, 1.094883686343e-03, 2.199028535117e-04, 5.183929373773e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.999654994590e-01 
+      1 KSP Residual norm 1.878147928070e-01 
+      2 KSP Residual norm 4.316082648998e-02 
+      3 KSP Residual norm 1.479838633502e-02 
+      4 KSP Residual norm 4.749094954697e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.472673428983e-04, 8.730237147232e-04, 1.755301783717e-04, 4.817629181214e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.179476435098e-01 
+      1 KSP Residual norm 2.767264750439e-02 
+      2 KSP Residual norm 9.255034019840e-03 
+      3 KSP Residual norm 3.236212235352e-03 
+      4 KSP Residual norm 1.111653423594e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.631526418596e-04, 4.106053343321e-04, 8.200965108579e-05, 5.802095132233e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 7.702374494293e-01 
+      1 KSP Residual norm 1.553582678463e-01 
+      2 KSP Residual norm 5.275658842867e-02 
+      3 KSP Residual norm 1.628464955209e-02 
+      4 KSP Residual norm 5.125441092780e-03 
+  3 KSP Component U,V,W,P residual norm [ 2.073612025435e-05, 5.144037183759e-05, 1.041508970667e-05, 2.532174761928e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.255701129802e+00 
+      1 KSP Residual norm 2.372502385276e-01 
+      2 KSP Residual norm 7.968044964185e-02 
+      3 KSP Residual norm 2.319883290611e-02 
+      4 KSP Residual norm 7.054771416351e-03 
+  4 KSP Component U,V,W,P residual norm [ 7.167296288705e-06, 1.640989891668e-05, 5.240572480004e-06, 1.445819091510e-04 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.897345412318e+00 
+      1 KSP Residual norm 5.761651951266e-01 
+      2 KSP Residual norm 1.989156800451e-01 
+      3 KSP Residual norm 5.605418348914e-02 
+      4 KSP Residual norm 1.638063361335e-02 
+  5 KSP Component U,V,W,P residual norm [ 2.489064956563e-06, 3.383194374169e-06, 2.768477154861e-06, 5.615469846791e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.411480436858e+00 
+      1 KSP Residual norm 4.966884141856e-01 
+      2 KSP Residual norm 1.599353842673e-01 
+      3 KSP Residual norm 4.738703502034e-02 
+      4 KSP Residual norm 1.377808120359e-02 
+  6 KSP Component U,V,W,P residual norm [ 5.610456079875e-07, 6.712798333184e-07, 5.548047218769e-07, 2.645580893018e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.611338791397e-01 
+      1 KSP Residual norm 1.807112894182e-01 
+      2 KSP Residual norm 4.294071235698e-02 
+      3 KSP Residual norm 1.392692203653e-02 
+      4 KSP Residual norm 4.947966715276e-03 
+  7 KSP Component U,V,W,P residual norm [ 4.764040350578e-07, 4.724436206531e-07, 4.904084939171e-07, 1.572229712743e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.657717590915e+00 
+      1 KSP Residual norm 5.146346881262e-01 
+      2 KSP Residual norm 1.740838069100e-01 
+      3 KSP Residual norm 5.110242846722e-02 
+      4 KSP Residual norm 1.347358353700e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.959069883020e-07, 2.662355167453e-07, 3.739235379691e-07, 6.249455337724e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.745147181657e+00 
+      1 KSP Residual norm 3.117201043134e-01 
+      2 KSP Residual norm 7.681665852765e-02 
+      3 KSP Residual norm 2.261854511307e-02 
+      4 KSP Residual norm 8.043806371359e-03 
+  9 KSP Component U,V,W,P residual norm [ 1.030567747971e-07, 6.851665911219e-08, 9.744610182044e-08, 3.178192121690e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.220982893799e+00 
+      1 KSP Residual norm 4.454017504468e-01 
+      2 KSP Residual norm 1.125125898485e-01 
+      3 KSP Residual norm 3.490615658788e-02 
+      4 KSP Residual norm 1.071953975664e-02 
+ 10 KSP Component U,V,W,P residual norm [ 6.108266481464e-08, 8.328234247722e-08, 9.921625452206e-08, 1.427759593947e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.379010903503e+00 
+      1 KSP Residual norm 3.306240924880e-01 
+      2 KSP Residual norm 8.538786546100e-02 
+      3 KSP Residual norm 2.273412386400e-02 
+ 11 KSP Component U,V,W,P residual norm [ 3.060480520489e-08, 4.645836558791e-08, 3.994381320800e-08, 8.029813125698e-07 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 11
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+  1 SNES Function norm 1.243645099618e-04 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.66e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 6.938362872084e-05, 9.619375099568e-05, 3.739733805994e-05, 8.029813125701e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 9.983757453407e-01 
+      1 KSP Residual norm 1.857676345768e-01 
+      2 KSP Residual norm 6.084042999375e-02 
+      3 KSP Residual norm 1.782071960611e-02 
+      4 KSP Residual norm 5.983508206504e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.605835137099e-06, 2.169215346899e-06, 8.827446960772e-07, 1.821122425498e-05 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.292535342767e+00 
+      1 KSP Residual norm 3.404748374639e-01 
+      2 KSP Residual norm 8.235828886507e-02 
+      3 KSP Residual norm 3.710711350849e-02 
+      4 KSP Residual norm 1.397643744468e-02 
+  2 KSP Component U,V,W,P residual norm [ 4.035193707400e-07, 6.377316181759e-07, 3.818893796666e-07, 8.108403794542e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.696344258258e+00 
+      1 KSP Residual norm 4.392272829219e-01 
+      2 KSP Residual norm 1.115779582759e-01 
+      3 KSP Residual norm 4.034889427466e-02 
+      4 KSP Residual norm 1.484984809727e-02 
+  3 KSP Component U,V,W,P residual norm [ 1.971514648346e-07, 2.079979377150e-07, 1.684666306218e-07, 4.959633421424e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.654306693381e+00 
+      1 KSP Residual norm 5.212913795762e-01 
+      2 KSP Residual norm 1.300807876209e-01 
+      3 KSP Residual norm 4.652935244439e-02 
+      4 KSP Residual norm 1.694724085257e-02 
+  4 KSP Component U,V,W,P residual norm [ 7.339901073611e-08, 1.054147527137e-07, 7.184778841114e-08, 2.735493058929e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.091245521271e+00 
+      1 KSP Residual norm 5.476833145611e-01 
+      2 KSP Residual norm 1.793076938253e-01 
+      3 KSP Residual norm 5.757384642921e-02 
+      4 KSP Residual norm 1.975360964803e-02 
+  5 KSP Component U,V,W,P residual norm [ 8.265336435193e-08, 1.130115185079e-07, 1.205668625974e-07, 1.337872335025e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.348676130941e+00 
+      1 KSP Residual norm 4.255725927100e-01 
+      2 KSP Residual norm 1.143826639795e-01 
+      3 KSP Residual norm 3.294906864073e-02 
+  6 KSP Component U,V,W,P residual norm [ 4.180048754993e-08, 3.542552536900e-08, 5.004271966186e-08, 7.593441536951e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.021805425606e+00 
+      1 KSP Residual norm 4.756715276379e-01 
+      2 KSP Residual norm 1.395755569173e-01 
+      3 KSP Residual norm 4.452875401458e-02 
+      4 KSP Residual norm 2.153127914965e-02 
+  7 KSP Component U,V,W,P residual norm [ 1.535648157406e-08, 2.339367890325e-08, 2.836695005357e-08, 3.793930269071e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.052112731272e+00 
+      1 KSP Residual norm 5.102067918075e-01 
+      2 KSP Residual norm 1.493114912790e-01 
+      3 KSP Residual norm 4.458424981844e-02 
+      4 KSP Residual norm 1.759502534346e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.167497409752e-08, 1.801796272331e-08, 2.133624608695e-08, 1.980787096671e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.142703927640e+00 
+      1 KSP Residual norm 4.960862549085e-01 
+      2 KSP Residual norm 1.414135078729e-01 
+      3 KSP Residual norm 4.710942410724e-02 
+      4 KSP Residual norm 2.241258378921e-02 
+  9 KSP Component U,V,W,P residual norm [ 5.030554444152e-09, 8.632856129443e-09, 9.438067317281e-09, 1.129166593492e-07 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.78e-02 (sec)
+  2 SNES Function norm 3.791041046831e-05 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.85e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.164851545813e-05, 2.828206528875e-05, 1.298664826528e-05, 1.129166593494e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000521580424e+00 
+      1 KSP Residual norm 2.053237364502e-01 
+      2 KSP Residual norm 6.773579945520e-02 
+      3 KSP Residual norm 2.027996430824e-02 
+      4 KSP Residual norm 6.095232980867e-03 
+  1 KSP Component U,V,W,P residual norm [ 5.475646287515e-07, 7.011658486317e-07, 3.271884815927e-07, 5.831252190150e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.253164225969e+00 
+      1 KSP Residual norm 3.394590119234e-01 
+      2 KSP Residual norm 8.080079185845e-02 
+      3 KSP Residual norm 2.682853932564e-02 
+      4 KSP Residual norm 9.976137412092e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.500845258378e-07, 2.043840055813e-07, 1.057464625923e-07, 2.876394708865e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.711625353166e+00 
+      1 KSP Residual norm 4.185189802716e-01 
+      2 KSP Residual norm 1.078767701595e-01 
+      3 KSP Residual norm 2.992589065098e-02 
+      4 KSP Residual norm 1.065788691554e-02 
+  3 KSP Component U,V,W,P residual norm [ 5.649884559436e-08, 7.087286518037e-08, 5.821457441458e-08, 1.695060872008e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.312066096195e+00 
+      1 KSP Residual norm 4.575809464664e-01 
+      2 KSP Residual norm 1.133515394091e-01 
+      3 KSP Residual norm 3.936447826416e-02 
+      4 KSP Residual norm 1.518510409979e-02 
+  4 KSP Component U,V,W,P residual norm [ 2.138594449476e-08, 2.443909096433e-08, 1.922601638892e-08, 9.590477755522e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.543668794740e+00 
+      1 KSP Residual norm 4.584581328355e-01 
+      2 KSP Residual norm 1.433330751283e-01 
+      3 KSP Residual norm 4.783698190090e-02 
+      4 KSP Residual norm 1.819796084956e-02 
+  5 KSP Component U,V,W,P residual norm [ 2.705247914034e-08, 3.791225481108e-08, 3.263821214568e-08, 4.576262569159e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.022259865615e+00 
+      1 KSP Residual norm 4.467239263022e-01 
+      2 KSP Residual norm 1.071133806147e-01 
+      3 KSP Residual norm 2.711013332783e-02 
+  6 KSP Component U,V,W,P residual norm [ 1.114007984408e-08, 8.536298032998e-09, 1.612567857566e-08, 2.438677252188e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.700968705597e+00 
+      1 KSP Residual norm 4.119249489213e-01 
+      2 KSP Residual norm 1.211140531043e-01 
+      3 KSP Residual norm 4.567276521498e-02 
+      4 KSP Residual norm 2.016971090541e-02 
+  7 KSP Component U,V,W,P residual norm [ 3.181208562217e-09, 5.329656476912e-09, 5.184448263968e-09, 1.222622843076e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.701521163172e+00 
+      1 KSP Residual norm 4.279447850142e-01 
+      2 KSP Residual norm 1.304992487034e-01 
+      3 KSP Residual norm 4.514989411243e-02 
+      4 KSP Residual norm 1.925025527403e-02 
+  8 KSP Component U,V,W,P residual norm [ 4.366669426691e-09, 5.943722942064e-09, 6.967575312631e-09, 6.280637309165e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.619005457088e+00 
+      1 KSP Residual norm 4.298720243303e-01 
+      2 KSP Residual norm 1.304237111380e-01 
+      3 KSP Residual norm 5.016818605965e-02 
+      4 KSP Residual norm 2.276374980714e-02 
+  9 KSP Component U,V,W,P residual norm [ 1.294541275370e-09, 2.276824081322e-09, 1.982732847794e-09, 3.713808702370e-08 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.55e-02 (sec)
+  3 SNES Function norm 1.327603524142e-05 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.52e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 7.671662163512e-06, 9.966094295996e-06, 4.251387611834e-06, 3.713808702365e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000455177556e+00 
+      1 KSP Residual norm 2.109364862062e-01 
+      2 KSP Residual norm 6.993548076158e-02 
+      3 KSP Residual norm 2.130139118513e-02 
+      4 KSP Residual norm 6.351622901260e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.926199392542e-07, 2.501723956872e-07, 1.075878527299e-07, 2.044246462559e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.216685102078e+00 
+      1 KSP Residual norm 3.440716273888e-01 
+      2 KSP Residual norm 8.178708536331e-02 
+      3 KSP Residual norm 2.488615046710e-02 
+      4 KSP Residual norm 8.613250856416e-03 
+  2 KSP Component U,V,W,P residual norm [ 6.022852714988e-08, 7.520242501825e-08, 3.964359962715e-08, 1.064122725802e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.825979173860e+00 
+      1 KSP Residual norm 4.417183891660e-01 
+      2 KSP Residual norm 1.150422738123e-01 
+      3 KSP Residual norm 3.022483239460e-02 
+      4 KSP Residual norm 9.617835393820e-03 
+  3 KSP Component U,V,W,P residual norm [ 2.062961270499e-08, 2.399213569981e-08, 2.035579589180e-08, 6.033525609897e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.169035976243e+00 
+      1 KSP Residual norm 4.528127438855e-01 
+      2 KSP Residual norm 1.106000754908e-01 
+      3 KSP Residual norm 3.816155561152e-02 
+      4 KSP Residual norm 1.372912795151e-02 
+  4 KSP Component U,V,W,P residual norm [ 6.970096322807e-09, 8.356901965363e-09, 6.630173036320e-09, 3.294424159736e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.558135315811e+00 
+      1 KSP Residual norm 4.484146576626e-01 
+      2 KSP Residual norm 1.348466598782e-01 
+      3 KSP Residual norm 4.667722198814e-02 
+      4 KSP Residual norm 1.714527891282e-02 
+  5 KSP Component U,V,W,P residual norm [ 9.399935126256e-09, 1.065790206015e-08, 1.046851490957e-08, 1.598431184431e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.837804768301e+00 
+      1 KSP Residual norm 4.549628824774e-01 
+      2 KSP Residual norm 1.054942841664e-01 
+      3 KSP Residual norm 2.745891249733e-02 
+  6 KSP Component U,V,W,P residual norm [ 3.885372656616e-09, 3.469616191158e-09, 5.197014799852e-09, 8.541602784062e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.717537842411e+00 
+      1 KSP Residual norm 3.918318108228e-01 
+      2 KSP Residual norm 1.107418589326e-01 
+      3 KSP Residual norm 3.666088454990e-02 
+      4 KSP Residual norm 1.619977836442e-02 
+  7 KSP Component U,V,W,P residual norm [ 9.992962276620e-10, 2.056427729949e-09, 1.719903211084e-09, 4.456383229396e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.431502664526e+00 
+      1 KSP Residual norm 4.181725339453e-01 
+      2 KSP Residual norm 1.136083749042e-01 
+      3 KSP Residual norm 3.495550501240e-02 
+      4 KSP Residual norm 1.400045593656e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.543550493145e-09, 1.131917065681e-09, 2.223570464376e-09, 2.213185851044e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.756591849283e+00 
+      1 KSP Residual norm 4.242390012005e-01 
+      2 KSP Residual norm 1.279764346173e-01 
+      3 KSP Residual norm 5.170902371574e-02 
+      4 KSP Residual norm 2.249383950453e-02 
+  9 KSP Component U,V,W,P residual norm [ 4.177976491513e-10, 8.886352005838e-10, 7.266342886749e-10, 1.237458593771e-08 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.54e-02 (sec)
+  4 SNES Function norm 4.780560007247e-06 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.54e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.888961444277e-06, 3.591835300022e-06, 1.267368061579e-06, 1.237458593768e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000770713447e+00 
+      1 KSP Residual norm 2.158613361910e-01 
+      2 KSP Residual norm 7.437397449409e-02 
+      3 KSP Residual norm 2.350749148326e-02 
+      4 KSP Residual norm 7.479638916002e-03 
+  1 KSP Component U,V,W,P residual norm [ 7.960748529446e-08, 1.015003897340e-07, 3.627047681770e-08, 7.748246422206e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.938642803554e+00 
+      1 KSP Residual norm 2.901880747221e-01 
+      2 KSP Residual norm 6.794415590444e-02 
+      3 KSP Residual norm 1.969796699431e-02 
+      4 KSP Residual norm 6.426139457642e-03 
+  2 KSP Component U,V,W,P residual norm [ 2.940373697883e-08, 3.706307820001e-08, 2.022219596432e-08, 4.329636551834e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.032862305518e+00 
+      1 KSP Residual norm 4.908044384096e-01 
+      2 KSP Residual norm 1.280742243283e-01 
+      3 KSP Residual norm 3.252962263599e-02 
+      4 KSP Residual norm 8.908240902230e-03 
+  3 KSP Component U,V,W,P residual norm [ 7.795078111148e-09, 8.821090932283e-09, 5.102584649224e-09, 2.198384143565e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.067714509574e+00 
+      1 KSP Residual norm 4.305892387631e-01 
+      2 KSP Residual norm 1.263028505513e-01 
+      3 KSP Residual norm 4.553892110186e-02 
+      4 KSP Residual norm 1.612036361878e-02 
+  4 KSP Component U,V,W,P residual norm [ 2.776043333972e-09, 4.973682385065e-09, 3.598210113967e-09, 1.156849945185e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.719327155717e+00 
+      1 KSP Residual norm 4.886851424596e-01 
+      2 KSP Residual norm 1.545464071238e-01 
+      3 KSP Residual norm 5.276431708820e-02 
+      4 KSP Residual norm 1.866572889030e-02 
+  5 KSP Component U,V,W,P residual norm [ 3.409683853912e-09, 3.755289803552e-09, 3.612982994972e-09, 5.557774088351e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.709325976609e+00 
+      1 KSP Residual norm 4.454652202797e-01 
+      2 KSP Residual norm 1.060356664450e-01 
+      3 KSP Residual norm 3.201566072957e-02 
+      4 KSP Residual norm 1.204318620836e-02 
+  6 KSP Component U,V,W,P residual norm [ 7.453931643365e-10, 1.368541815160e-09, 8.813147466398e-10, 3.214745024888e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.710478275360e+00 
+      1 KSP Residual norm 4.298562787513e-01 
+      2 KSP Residual norm 1.327647822914e-01 
+      3 KSP Residual norm 4.370705195705e-02 
+      4 KSP Residual norm 1.957133532778e-02 
+  7 KSP Component U,V,W,P residual norm [ 5.220859380505e-10, 1.167719461555e-09, 1.002929083412e-09, 1.663866055649e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.605667738620e+00 
+      1 KSP Residual norm 4.783918071201e-01 
+      2 KSP Residual norm 1.410185695105e-01 
+      3 KSP Residual norm 3.914816819189e-02 
+      4 KSP Residual norm 1.478496005668e-02 
+  8 KSP Component U,V,W,P residual norm [ 5.268803752514e-10, 3.863059360527e-10, 5.373477257726e-10, 7.657923570882e-09 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 8
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.80e-02 (sec)
+  5 SNES Function norm 1.899032790196e-06 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 5
+SNES Object: 4 MPI processes
+  type: newtonls
+  maximum iterations=5, maximum function evaluations=10000
+  tolerances: relative=1e-05, absolute=1e-08, solution=1e-08
+  total number of linear solver iterations=46
+  total number of function evaluations=6
+  norm schedule ALWAYS
+  SNESLineSearch Object:   4 MPI processes
+    type: basic
+    maxstep=1.000000e+08, minlambda=1.000000e-12
+    tolerances: relative=1.000000e-08, absolute=1.000000e-15, lambda=1.000000e-08
+    maximum iterations=40
+  KSP Object:   4 MPI processes
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=2000, initial guess is zero
+    tolerances:  relative=0.001, absolute=1e-08, divergence=10000.
+    right preconditioning
+    using UNPRECONDITIONED norm type for convergence test
+  PC Object:   4 MPI processes
+    type: fieldsplit
+      FieldSplit with Schur preconditioner, factorization UPPER
+      Preconditioner for the Schur complement formed from A11
+      Split info:
+      Split number 0 Defined by IS
+      Split number 1 Defined by IS
+      KSP solver for A00 block
+        KSP Object:        (fieldsplit_u_)         4 MPI processes
+          type: fgmres
+            GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+            GMRES: happy breakdown tolerance 1e-30
+          maximum iterations=10, initial guess is zero
+          tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+          right preconditioning
+          using UNPRECONDITIONED norm type for convergence test
+        PC Object:        (fieldsplit_u_)         4 MPI processes
+          type: mg
+            MG: type is MULTIPLICATIVE, levels=2 cycles=v
+              Cycles per PCApply=1
+              Not using Galerkin computed coarse grid matrices
+          Coarse grid solver -- level -------------------------------
+            KSP Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=4, initial guess is zero
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using UNPRECONDITIONED norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_coarse_)             4 MPI processes
+              type: bjacobi
+                block Jacobi: number of blocks = 4
+                Local solve is same for all blocks, in the following KSP and PC objects:
+              KSP Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: preonly
+                maximum iterations=10000, initial guess is zero
+                tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                left preconditioning
+                using NONE norm type for convergence test
+              PC Object:              (fieldsplit_u_mg_coarse_sub_)               1 MPI processes
+                type: ilu
+                  ILU: out-of-place factorization
+                  0 levels of fill
+                  tolerance for zero pivot 2.22045e-14
+                  matrix ordering: natural
+                  factor fill ratio given 1., needed 1.
+                    Factored matrix follows:
+                      Mat Object:                       1 MPI processes
+                        type: seqaij
+                        rows=675, cols=675, bs=3
+                        package used to perform factorization: petsc
+                        total: nonzeros=126711, allocated nonzeros=126711
+                        total number of mallocs used during MatSetValues calls =0
+                          using I-node routines: found 225 nodes, limit used is 5
+                linear system matrix = precond matrix:
+                Mat Object:                (Buu_)                 1 MPI processes
+                  type: seqaij
+                  rows=675, cols=675, bs=3
+                  total: nonzeros=126711, allocated nonzeros=126711
+                  total number of mallocs used during MatSetValues calls =0
+                    using I-node routines: found 225 nodes, limit used is 5
+              linear system matrix = precond matrix:
+              Mat Object:              (Buu_)               4 MPI processes
+                type: mpiaij
+                rows=2187, cols=2187, bs=3
+                total: nonzeros=533871, allocated nonzeros=533871
+                total number of mallocs used during MatSetValues calls =0
+                  has attached near null space
+          Down solver (pre-smoother) on level 1 -------------------------------
+            KSP Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: fgmres
+                GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                GMRES: happy breakdown tolerance 1e-30
+              maximum iterations=2
+              tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+              right preconditioning
+              using nonzero initial guess
+              using NONE norm type for convergence test
+            PC Object:            (fieldsplit_u_mg_levels_1_)             4 MPI processes
+              type: jacobi
+              linear system matrix = precond matrix:
+              Mat Object:              (fieldsplit_u_)               4 MPI processes
+                type: shell
+                rows=14739, cols=14739, bs=3
+          Up solver (post-smoother) same as down solver (pre-smoother)
+          linear system matrix = precond matrix:
+          Mat Object:          (fieldsplit_u_)           4 MPI processes
+            type: shell
+            rows=14739, cols=14739, bs=3
+      KSP solver for S = A11 - A10 inv(A00) A01 
+        KSP Object:        (fieldsplit_p_)         4 MPI processes
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+          left preconditioning
+          using NONE norm type for convergence test
+        PC Object:        (fieldsplit_p_)         4 MPI processes
+          type: jacobi
+          linear system matrix followed by preconditioner matrix:
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: schurcomplement
+            rows=2048, cols=2048
+              Schur complement A11 - A10 inv(A00) A01
+              A11
+                Mat Object:                (fieldsplit_p_)                 4 MPI processes
+                  type: mpisbaij
+                  rows=2048, cols=2048, bs=4
+                  total: nonzeros=8192, allocated nonzeros=8192
+                  total number of mallocs used during MatSetValues calls =0
+              A10
+                Mat Object:                (Bpu_)                 4 MPI processes
+                  type: shell
+                  rows=2048, cols=14739
+              KSP of A00
+                KSP Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: fgmres
+                    GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                    GMRES: happy breakdown tolerance 1e-30
+                  maximum iterations=10, initial guess is zero
+                  tolerances:  relative=0.01, absolute=1e-50, divergence=10000.
+                  right preconditioning
+                  using UNPRECONDITIONED norm type for convergence test
+                PC Object:                (fieldsplit_u_)                 4 MPI processes
+                  type: mg
+                    MG: type is MULTIPLICATIVE, levels=2 cycles=v
+                      Cycles per PCApply=1
+                      Not using Galerkin computed coarse grid matrices
+                  Coarse grid solver -- level -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=4, initial guess is zero
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using UNPRECONDITIONED norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_coarse_)                     4 MPI processes
+                      type: bjacobi
+                        block Jacobi: number of blocks = 4
+                        Local solve is same for all blocks, in the following KSP and PC objects:
+                      KSP Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: preonly
+                        maximum iterations=10000, initial guess is zero
+                        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                        left preconditioning
+                        using NONE norm type for convergence test
+                      PC Object:                      (fieldsplit_u_mg_coarse_sub_)                       1 MPI processes
+                        type: ilu
+                          ILU: out-of-place factorization
+                          0 levels of fill
+                          tolerance for zero pivot 2.22045e-14
+                          matrix ordering: natural
+                          factor fill ratio given 1., needed 1.
+                            Factored matrix follows:
+                              Mat Object:                               1 MPI processes
+                                type: seqaij
+                                rows=675, cols=675, bs=3
+                                package used to perform factorization: petsc
+                                total: nonzeros=126711, allocated nonzeros=126711
+                                total number of mallocs used during MatSetValues calls =0
+                                  using I-node routines: found 225 nodes, limit used is 5
+                        linear system matrix = precond matrix:
+                        Mat Object:                        (Buu_)                         1 MPI processes
+                          type: seqaij
+                          rows=675, cols=675, bs=3
+                          total: nonzeros=126711, allocated nonzeros=126711
+                          total number of mallocs used during MatSetValues calls =0
+                            using I-node routines: found 225 nodes, limit used is 5
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (Buu_)                       4 MPI processes
+                        type: mpiaij
+                        rows=2187, cols=2187, bs=3
+                        total: nonzeros=533871, allocated nonzeros=533871
+                        total number of mallocs used during MatSetValues calls =0
+                          has attached near null space
+                  Down solver (pre-smoother) on level 1 -------------------------------
+                    KSP Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: fgmres
+                        GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+                        GMRES: happy breakdown tolerance 1e-30
+                      maximum iterations=2
+                      tolerances:  relative=1e-05, absolute=1e-50, divergence=10000.
+                      right preconditioning
+                      using nonzero initial guess
+                      using NONE norm type for convergence test
+                    PC Object:                    (fieldsplit_u_mg_levels_1_)                     4 MPI processes
+                      type: jacobi
+                      linear system matrix = precond matrix:
+                      Mat Object:                      (fieldsplit_u_)                       4 MPI processes
+                        type: shell
+                        rows=14739, cols=14739, bs=3
+                  Up solver (post-smoother) same as down solver (pre-smoother)
+                  linear system matrix = precond matrix:
+                  Mat Object:                  (fieldsplit_u_)                   4 MPI processes
+                    type: shell
+                    rows=14739, cols=14739, bs=3
+              A01
+                Mat Object:                (Bup_)                 4 MPI processes
+                  type: shell
+                  rows=14739, cols=2048
+          Mat Object:          (fieldsplit_p_)           4 MPI processes
+            type: mpisbaij
+            rows=2048, cols=2048, bs=4
+            total: nonzeros=8192, allocated nonzeros=8192
+            total number of mallocs used during MatSetValues calls =0
+    linear system matrix followed by preconditioner matrix:
+    Mat Object:    (stokes_Amf_)     4 MPI processes
+      type: shell
+      rows=16787, cols=16787
+    Mat Object:     4 MPI processes
+      type: nest
+      rows=16787, cols=16787
+        Matrix object: 
+          type=nest, rows=2, cols=2 
+          MatNest structure: 
+          (0,0) : prefix="fieldsplit_u_", type=shell, rows=14739, cols=14739 
+          (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
+          (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
+          (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.54e-02 (sec)
+[[ModelOutput_SD3D]]
+pTatin3d_ModelOutputLite_Velocity_Stokes() -> step000002_v.(pvd,pvts,vts): CPU time 1.49e-03 (sec) 
+[[DESIGN FLAW]] pTatin3d_ModelOutput_VelocityPressure_Stokes: require better physics modularity to extract (u,p) <---| (X) 
+[[DESIGN FLAW]] pTatinOutputMeshVelocityPressureVTS_v0_binary: only printing P0 component of pressure field 
+pTatin3d_ModelOutput_VelocityPressure_Stokes() -> step000002_vp.(pvd,pvts,vts): CPU time 1.57e-03 (sec) 
+pTatin3d_ModelOutput_MarkerCellFields() -> step000002_mpoints_cell.(pvd,pvts,vts): CPU time 7.02e-03 (sec) 
+slab base range: gmin 6.9697e-01 4.9902e-01 -7.0740e-13
+slab base range: gmax 7.5758e-01 4.9920e-01 3.7878e-01
+slab edge range: gmax(x) 6.9715e-01
+slab edge identified: pidx_w,rank_w 5180 1
+slab edge range: W,Dn 6.9715e-01 8.7815e-01
+slab edge (back face) range: gmax(x) 6.9715e-01
+slab edge (back face) identified: pidx_w,rank_w 5155 1
+slab edge (back face) range: W,Dn 6.9715e-01 8.7815e-01
+slab edge (front face) range: gmin(z) 3.7847e-01
+slab edge (front face) identified: pidx_w,rank_w 7679 1
+slab edge (front face) range: W,Dn 3.7847e-01 8.7822e-01
+topo range: 1.0000e+00 1.0000e+00
+vol,int v.v,vrms: 5.7392e-01 1.5117e-02 1.6230e-01
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.72e-02 (sec)
+Phi: 0.0000e+00
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 3.1164e-02 [accepted] | dt > dt_max : restricted to = 2.3891e-03 | ==>> dt used = 2.3891e-03 |
+  TimeStep control(StkSurfaceCourant): | current = 2.3891e-03 : trial = 1.0000e+32 | ==>> dt used = 2.3891e-03 |
+  timestep_stokes[2] dt_courant = 2.3891e-03 
+pTatin3dMaxMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Gene3DNueve]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_Sierra]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+************************************************************************************************************************
+***             WIDEN YOUR WINDOW TO 120 CHARACTERS.  Use 'enscript -r -fCourier9' to print this document            ***
+************************************************************************************************************************
+
+---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
+
+/Users/patrick/ptatin3d/arch-darwin-maint-double-opt/bin/ptatin_driver_nonlinear_ts.app on a arch-darwin-maint-double-opt named geop-460.ethz.ch with 4 processors, by patrick Fri Aug  4 17:56:36 2017
+Using Petsc Release Version 3.7.5, unknown 
+
+                         Max       Max/Min        Avg      Total 
+Time (sec):           3.435e+01      1.00001   3.435e+01
+Objects:              3.577e+03      1.00000   3.577e+03
+Flops:                3.879e+10      1.02399   3.831e+10  1.532e+11
+Flops/sec:            1.129e+09      1.02398   1.115e+09  4.461e+09
+MPI Messages:         4.680e+04      1.01738   4.638e+04  1.855e+05
+MPI Message Lengths:  1.413e+08      1.12496   2.872e+03  5.328e+08
+MPI Reductions:       4.356e+04      1.00000
+
+Flop counting convention: 1 flop = 1 real number operation of type (multiply/divide/add/subtract)
+                            e.g., VecAXPY() for real vectors of length N --> 2N flops
+                            and VecAXPY() for complex vectors of length N --> 8N flops
+
+Summary of Stages:   ----- Time ------  ----- Flops -----  --- Messages ---  -- Message Lengths --  -- Reductions --
+                        Avg     %Total     Avg     %Total   counts   %Total     Avg         %Total   counts   %Total 
+ 0:      Main Stage: 9.7174e+00  28.3%  3.4048e+10  22.2%  4.209e+04  22.7%  7.166e+02       25.0%  7.551e+03  17.3% 
+ 1:        MG Apply: 2.2900e+01  66.7%  1.1918e+11  77.8%  1.434e+05  77.3%  2.155e+03       75.0%  1.207e+04  27.7% 
+
+------------------------------------------------------------------------------------------------------------------------
+See the 'Profiling' chapter of the users' manual for details on interpreting output.
+Phase summary info:
+   Count: number of times phase was executed
+   Time and Flops: Max - maximum over all processors
+                   Ratio - ratio of maximum to minimum over all processors
+   Mess: number of messages sent
+   Avg. len: average message length (bytes)
+   Reduct: number of global reductions
+   Global: entire computation
+   Stage: stages of a computation. Set stages with PetscLogStagePush() and PetscLogStagePop().
+      %T - percent time in this phase         %F - percent flops in this phase
+      %M - percent messages in this phase     %L - percent message lengths in this phase
+      %R - percent reductions in this phase
+   Total Mflop/s: 10e-6 * (sum of flops over all processors)/(max time over all processors)
+------------------------------------------------------------------------------------------------------------------------
+Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total
+                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %T %F %M %L %R  %T %F %M %L %R Mflop/s
+------------------------------------------------------------------------------------------------------------------------
+
+--- Event Stage 0: Main Stage
+
+MatMultMFA11         670 1.0 2.9401e+00 1.0 4.68e+09 1.0 1.6e+04 3.4e+03 0.0e+00  8 12  9 10  0  30 55 38 42  0  6367
+MatMultMFA           356 1.0 1.9948e+00 1.0 2.71e+09 1.0 8.5e+03 3.4e+03 0.0e+00  6  7  5  6  0  20 32 20 22  0  5442
+MatMultMFA12         167 1.0 7.1297e-01 1.0 7.47e+08 1.0 2.0e+03 3.4e+03 0.0e+00  2  2  1  1  0   7  9  5  5  0  4190
+DataExTopoSetup        1 1.0 3.1590e-03 1.1 0.00e+00 0.0 6.0e+01 5.6e+00 1.6e+01  0  0  0  0  0   0  0  0  0  0     0
+DataExBegin            2 1.0 5.2929e-05 1.4 0.00e+00 0.0 1.2e+01 6.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+DataExEnd              2 1.0 1.3700e-0326.4 0.00e+00 0.0 1.2e+01 6.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInit              1 1.0 4.2391e-04 3.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInitSoln          1 1.0 9.5367e-07 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInitMesh          1 1.0 2.9898e-04 1.5 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInitMat           1 1.0 6.7126e-02 1.6 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   1  0  0  0  0     0
+ModelInitStkVar        1 1.0 9.5367e-07 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelBC                3 1.0 6.7420e-03 1.0 0.00e+00 0.0 5.8e+02 3.4e+03 0.0e+00  0  0  0  0  0   0  0  1  1  0     0
+ModelBCMG              3 1.0 1.0677e-02 1.0 0.00e+00 0.0 1.2e+03 2.3e+03 0.0e+00  0  0  1  0  0   0  0  3  2  0     0
+ModelMatBC             2 1.0 1.4067e-0514.8 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelUpdateMesh        2 1.0 0.0000e+00 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelOutput            5 1.0 2.5508e-01 1.0 3.33e+07 1.0 9.6e+02 2.2e+03 3.7e+02  1  0  1  0  1   3  0  2  2  5   522
+MPAdvGCoord            2 1.0 8.2622e-03 2.3 0.00e+00 0.0 2.4e+01 3.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPAdvLCoord            2 1.0 1.9125e-02 2.5 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPAdvComm              2 1.0 7.8411e-03 2.0 0.00e+00 0.0 4.8e+01 3.2e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPAdvRemove            2 1.0 2.3603e-0411.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPPCInsert             2 1.0 8.5592e-04 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecMax                24 1.0 4.3504e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
+VecMin                24 1.0 5.3856e-03 1.6 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
+VecMDot              846 1.0 1.9186e-01 1.6 2.34e+07 1.3 0.0e+00 0.0e+00 8.5e+02  0  0  0  0  2   2  0  0  0 11   438
+VecNorm             1254 1.0 2.5946e-01 1.1 8.98e+06 1.3 0.0e+00 0.0e+00 1.3e+03  1  0  0  0  3   3  0  0  0 17   124
+VecScale            1196 1.0 1.3776e-02 1.3 5.00e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1299
+VecCopy              463 1.0 1.8158e-03 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecSet              4584 1.0 1.1176e-02 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecAXPY              350 1.0 6.4971e-03 1.3 3.08e+06 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1703
+VecAYPX              183 1.0 3.2766e-03 1.3 8.50e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   938
+VecWAXPY              22 1.0 4.7183e-04 1.3 1.02e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   783
+VecMAXPY            1196 1.0 4.3064e-02 1.2 3.98e+07 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3316
+VecPointwiseMult     203 1.0 7.7415e-04 1.6 9.36e+04 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   476
+VecScatterBegin     4695 1.0 1.4762e-01 1.1 0.00e+00 0.0 3.6e+04 3.1e+03 0.0e+00  0  0 20 21  0   1  0 86 85  0     0
+VecScatterEnd       4695 1.0 5.1847e-01 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   5  0  0  0  0     0
+VecReduceArith        48 1.0 5.0092e-04 1.3 4.46e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3217
+VecReduceComm         16 1.0 3.5093e-03 1.9 0.00e+00 0.0 0.0e+00 0.0e+00 1.6e+01  0  0  0  0  0   0  0  0  0  0     0
+VecNormalize           9 1.0 1.6298e-03 1.0 1.82e+04 1.6 0.0e+00 0.0e+00 9.0e+00  0  0  0  0  0   0  0  0  0  0    36
+MatMult             1196 1.0 5.6423e+00 1.0 8.14e+09 1.0 2.7e+04 3.4e+03 0.0e+00 16 21 14 17  0  58 96 63 69  0  5771
+MatMultTranspose      54 1.0 3.4978e-03 1.2 4.56e+05 1.2 2.7e+02 2.7e+02 0.0e+00  0  0  0  0  0   0  0  1  0  0   482
+MatAssemblyBegin     114 1.0 1.8753e-01 2.5 0.00e+00 0.0 1.0e+03 1.7e+04 3.0e+02  0  0  1  3  1   1  0  2 13  4     0
+MatAssemblyEnd       187 1.0 8.0824e-02 3.1 0.00e+00 0.0 1.1e+02 2.8e+02 7.0e+01  0  0  0  0  0   1  0  0  0  1     0
+MatGetRow              1 1.0 5.9605e-06 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatGetSubMatrix      108 1.0 3.2027e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 1.5e+02  0  0  0  0  0   0  0  0  0  2     0
+MatZeroEntries        35 1.0 2.5783e-03 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatView               37 1.3 1.0673e-02 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 1.7e+01  0  0  0  0  0   0  0  0  0  0     0
+DMCoarsen              1 1.0 4.8220e-03 1.0 0.00e+00 0.0 5.6e+01 4.3e+02 3.7e+01  0  0  0  0  0   0  0  0  0  0     0
+DMCreateInterp         1 1.0 3.0971e-03 1.0 0.00e+00 0.0 2.0e+01 7.0e+01 2.1e+01  0  0  0  0  0   0  0  0  0  0     0
+Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
+SNESSolve              4 1.0 3.1684e+01 1.0 3.87e+10 1.0 1.8e+05 2.9e+03 1.8e+04 92100 97 98 42 326449429391241  4828
+SNESFunctionEval      24 1.0 8.3196e-01 1.0 1.60e+08 1.0 3.7e+03 1.9e+03 8.6e+02  2  0  2  1  2   9  2  9  5 11   768
+SNESJacobianEval      16 1.0 1.3408e+00 1.0 6.04e+07 1.0 7.0e+03 3.1e+03 1.9e+03  4  0  4  4  4  14  1 17 17 25   180
+SNESLineSearch        16 1.0 5.7718e-01 1.0 1.07e+08 1.0 2.5e+03 1.9e+03 5.9e+02  2  0  1  1  1   6  1  6  3  8   742
+KSPGMRESOrthog       837 1.0 2.1335e-01 1.5 4.67e+07 1.3 0.0e+00 0.0e+00 8.4e+02  1  0  0  0  2   2  0  0  0 11   786
+KSPSetUp              83 1.0 5.8796e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 3.6e+01  0  0  0  0  0   0  0  0  0  0     0
+Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
+KSPSolve              16 1.0 2.9637e+01 1.0 3.85e+10 1.0 1.7e+05 2.9e+03 1.6e+04 86 99 92 92 36 305447405370207  5136
+PCSetUp               51 1.0 4.1435e-01 1.0 4.33e+07 1.0 2.4e+02 3.9e+03 3.2e+02  1  0  0  0  1   4  1  1  1  4   418
+Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
+PCApply              167 1.0 2.7250e+01 1.0 3.58e+10 1.0 1.6e+05 2.9e+03 1.4e+04 79 92 87 87 31 280415384348180  5183
+Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
+KSPSolve_FS_0        167 1.0 2.6527e+01 1.0 3.50e+10 1.0 1.6e+05 2.9e+03 1.4e+04 77 90 86 86 31 273406379343180  5211
+KSPSolve_FS_Schu     167 1.0 1.2862e-02 1.2 8.55e+04 1.0 0.0e+00 0.0e+00 6.0e+00  0  0  0  0  0   0  0  0  0  0    27
+MGSetup Level 0       16 1.0 2.1207e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 1.2e+01  0  0  0  0  0   0  0  0  0  0     0
+MGSetup Level 1       16 1.0 3.5538e-01 1.0 4.33e+07 1.0 1.6e+02 3.4e+03 1.2e+01  1  0  0  0  0   4  1  0  0  0   487
+
+--- Event Stage 1: MG Apply
+
+MatMultMFA11        4020 1.0 1.7399e+01 1.0 2.81e+10 1.0 9.6e+04 3.4e+03 0.0e+00 50 73 52 62  0  75 94 67 83  0  6455
+VecMDot             5360 1.0 1.5044e+00 3.8 4.22e+07 1.3 0.0e+00 0.0e+00 5.4e+03  3  0  0  0 12   4  0  0  0 44    98
+VecNorm             6700 1.0 1.5224e+00 1.2 3.22e+07 1.3 0.0e+00 0.0e+00 6.7e+03  4  0  0  0 15   6  0  0  0 56    74
+VecScale            7370 1.0 3.8853e-02 1.1 1.64e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1490
+VecCopy             1340 1.0 3.6943e-03 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecSet             16086 1.0 3.4940e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecAXPY             2010 1.0 2.0827e-02 1.2 1.20e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  2037
+VecAYPX              670 1.0 9.7420e-03 1.2 2.77e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1014
+VecWAXPY            1340 1.0 1.2812e-02 1.3 3.22e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   885
+VecMAXPY            7370 1.0 7.9861e-02 1.3 6.80e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  2987
+VecPointwiseMult    2680 1.0 4.8447e-02 1.4 1.11e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   815
+VecScatterBegin    12733 1.0 5.0642e-01 1.1 0.00e+00 0.0 1.4e+05 2.8e+03 0.0e+00  1  0 77 75  0   2  0100100  0     0
+VecScatterEnd      12733 1.0 1.1776e+00 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  3  0  0  0  0   5  0  0  0  0     0
+MatMult             7370 1.0 1.9227e+01 1.0 2.92e+10 1.0 1.4e+05 2.9e+03 0.0e+00 55 76 74 74  0  82 97 95 99  0  6027
+MatMultAdd           670 1.0 1.2295e-01 2.1 1.70e+07 1.2 3.4e+03 5.5e+02 0.0e+00  0  0  2  0  0   0  0  2  0  0   511
+MatMultTranspose     670 1.0 7.8833e-02 1.5 1.70e+07 1.2 3.4e+03 5.5e+02 0.0e+00  0  0  2  0  0   0  0  2  0  0   797
+MatSolve            2680 1.0 9.9354e-01 1.7 6.77e+08 1.8 0.0e+00 0.0e+00 0.0e+00  2  1  0  0  0   3  2  0  0  0  2056
+MatLUFactorNum        16 1.0 2.0137e-01 1.9 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   1  0  0  0  0  2143
+MatILUFactorSym        3 1.0 3.8631e-03 1.8 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatResidual          670 1.0 2.9402e+00 1.0 4.68e+09 1.0 1.6e+04 3.4e+03 0.0e+00  8 12  9 10  0  13 16 11 14  0  6370
+MatGetRowIJ            3 1.0 4.0531e-06 2.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatGetOrdering         3 1.0 2.3413e-04 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+KSPGMRESOrthog      5360 1.0 1.5594e+00 3.4 8.45e+07 1.3 0.0e+00 0.0e+00 5.4e+03  3  0  0  0 12   5  0  0  0 44   190
+KSPSetUp              16 1.0 1.1444e-05 6.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+KSPSolve            2010 1.0 1.9704e+01 1.0 2.56e+10 1.0 1.2e+05 2.8e+03 1.2e+04 57 65 65 64 28  86 84 84 85100  5092
+PCSetUp               16 1.0 2.0576e-01 1.9 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   1  0  0  0  0  2097
+PCSetUpOnBlocks      670 1.0 2.0647e-01 1.9 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   1  0  0  0  0  2090
+PCApply             5360 1.0 1.3049e+00 1.5 6.98e+08 1.8 3.6e+01 3.4e+03 6.0e+00  3  1  0  0  0   5  2  0  0  0  1627
+MGSmooth Level 0     670 1.0 4.0149e+00 1.0 1.99e+09 1.8 4.0e+04 1.6e+03 6.0e+03 12  4 22 12 14  17  5 28 16 50  1529
+MGSmooth Level 1    1340 1.0 1.5879e+01 1.0 2.36e+10 1.0 8.0e+04 3.4e+03 6.0e+03 46 61 43 52 14  69 79 56 69 50  5931
+MGResid Level 1      670 1.0 2.9411e+00 1.0 4.68e+09 1.0 1.6e+04 3.4e+03 0.0e+00  8 12  9 10  0  13 16 11 14  0  6368
+MGInterp Level 1    1340 1.0 1.7907e-01 1.3 3.40e+07 1.2 6.7e+03 5.5e+02 0.0e+00  0  0  4  1  0   1  0  5  1  0   702
+------------------------------------------------------------------------------------------------------------------------
+
+Memory usage is given in bytes:
+
+Object Type          Creations   Destructions     Memory  Descendants' Mem.
+Reports information only for process 0.
+
+--- Event Stage 0: Main Stage
+
+           Container     4              4         2272     0.
+              Viewer    14             12         9984     0.
+              Vector  1758           1821     38153544     0.
+      Vector Scatter   201            201      1960168     0.
+              Matrix    49             52     11099812     0.
+   Matrix Null Space     3              3         2064     0.
+    Distributed Mesh   189            189       954040     0.
+Star Forest Bipartite Graph   378            378       319424     0.
+     Discrete System   189            189       163296     0.
+           Index Set   466            475      1623752     0.
+   IS L to G Mapping   185            185      1700928     0.
+                SNES     3              3         3996     0.
+      SNESLineSearch     3              3         2976     0.
+              DMSNES     3              3         1992     0.
+       Krylov Solver    24             24       243600     0.
+     DMKSP interface     3              3         1944     0.
+      Preconditioner    24             24        23088     0.
+
+--- Event Stage 1: MG Apply
+
+              Vector    63              0            0     0.
+              Matrix     3              0            0     0.
+           Index Set    15              6         7356     0.
+========================================================================================================================
+Average time to get PetscTime(): 0.
+Average time for MPI_Barrier(): 6.83784e-05
+Average time for zero size MPI_Send(): 1.84774e-05
+#PETSc Option Table entries:
+-A11_operator_type 0,1
+-checkpoint_disable
+-dau_nlevels 2
+-dt_max 0.0023890909091
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 10
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_mg_coarse_ksp_max_it 4
+-fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_type bjacobi
+-fieldsplit_u_mg_levels_ksp_max_it 2
+-fieldsplit_u_mg_levels_ksp_type fgmres
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 2
+-fieldsplit_u_pc_mg_log
+-fieldsplit_u_pc_type mg
+-ksp_atol 1.0e-8
+-ksp_converged_reason
+-ksp_max_it 2000
+-ksp_rtol 1.0e-3
+-ksp_type fgmres
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+-lattice_layout_perturb 0.0
+-log_view
+-monitor_stages
+-mp_popctrl_np_upper -1
+-mx 8
+-my 8
+-mz 8
+-nsteps 2
+-options_left 1
+-output_frequency 1
+-output_path sd3d_test
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model sd3d
+-snes_atol 1.0e-8
+-snes_converged_reason
+-snes_linesearch_type basic
+-snes_max_it 5
+-snes_max_linear_solve_fail 100000
+-snes_monitor
+-snes_rtol 1.0e-5
+-snes_type newtonls
+-snes_view
+-stk_velocity_dm_mat_type aij
+#End of PETSc Option Table entries
+Compiled without FORTRAN kernels
+Compiled with full precision matrices (default)
+sizeof(short) 2 sizeof(int) 4 sizeof(long) 8 sizeof(void*) 8 sizeof(PetscScalar) 8 sizeof(PetscInt) 4
+Configure options: PETSC_DIR=/Users/patrick/petsc-maint PETSC_ARCH=arch-darwin-maint-double-opt --download-mpich --download-yaml --download-fblaslapack --with-cc=clang --with-cxx=clang++ --with-fc=gfortran --with-debugging=0 --with-precision=double --with-scalar-type=real --COPTFLAGS="-g -O3 -march=native -mtune=native " --CXXOPTFLAGS="-g -O3 -march=native -mtune=native " --FOPTFLAGS="-g -O3 -march=native -mtune=native " --with-viennacl=0 --download-suitesparse --download-c2html -download-sowing
+-----------------------------------------
+Libraries compiled on Thu Apr 20 17:33:03 2017 on geop-460.ethz.ch 
+Machine characteristics: Darwin-16.5.0-x86_64-i386-64bit
+Using PETSc directory: /Users/patrick/petsc-maint
+Using PETSc arch: arch-darwin-maint-double-opt
+-----------------------------------------
+
+Using C compiler: /Users/patrick/petsc-maint/arch-darwin-maint-double-opt/bin/mpicc    -Wall -Wwrite-strings -Wno-strict-aliasing -Wno-unknown-pragmas -Qunused-arguments -fvisibility=hidden  ${COPTFLAGS} ${CFLAGS}
+Using Fortran compiler: /Users/patrick/petsc-maint/arch-darwin-maint-double-opt/bin/mpif90    -Wall -ffree-line-length-0 -Wno-unused-dummy-argument  ${FOPTFLAGS} ${FFLAGS} 
+-----------------------------------------
+
+Using include paths: -I/Users/patrick/petsc-maint/arch-darwin-maint-double-opt/include -I/Users/patrick/petsc-maint/include -I/Users/patrick/petsc-maint/include -I/Users/patrick/petsc-maint/arch-darwin-maint-double-opt/include -I/opt/X11/include
+-----------------------------------------
+
+Using C linker: /Users/patrick/petsc-maint/arch-darwin-maint-double-opt/bin/mpicc
+Using Fortran linker: /Users/patrick/petsc-maint/arch-darwin-maint-double-opt/bin/mpif90
+Using libraries: -Wl,-rpath,/Users/patrick/petsc-maint/arch-darwin-maint-double-opt/lib -L/Users/patrick/petsc-maint/arch-darwin-maint-double-opt/lib -lpetsc -Wl,-rpath,/Users/patrick/petsc-maint/arch-darwin-maint-double-opt/lib -L/Users/patrick/petsc-maint/arch-darwin-maint-double-opt/lib -Wl,-rpath,/opt/X11/lib -L/opt/X11/lib -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib -Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.1.0/lib/darwin -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.1.0/lib/darwin -Wl,-rpath,/opt/local/lib/gcc6/gcc/x86_64-apple-darwin16/6.3.0 -L/opt/local/lib/gcc6/gcc/x86_64-apple-darwin16/6.3.0 -Wl,-rpath,/opt/local/lib/gcc6 -L/opt/local/lib/gcc6  -lLTO -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.1.0/lib/darwin  -lclang_rt.osx -lumfpack -lklu -lcholmod -lbtf -lccolamd -lcolamd -lcamd -lamd -lsuitesparseconfig -lflapack -lfblas -lX11 -lyaml -lLTO -lclang_rt.osx -lmpifort -lgfortran -lgcc_ext.10.5 -lquadmath -lm -lLTO -lclang_rt.osx -lmpicxx -lc++ -lto_library -lLTO -ldl -lmpi -lpmpi -lSystem -lclang_rt.osx -ldl
+-----------------------------------------
+
+#PETSc Option Table entries:
+-A11_operator_type 0,1
+-checkpoint_disable
+-dau_nlevels 2
+-dt_max 0.0023890909091
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_max_it 10
+-fieldsplit_u_ksp_monitor
+-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_mg_coarse_ksp_max_it 4
+-fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_pc_type bjacobi
+-fieldsplit_u_mg_levels_ksp_max_it 2
+-fieldsplit_u_mg_levels_ksp_type fgmres
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 2
+-fieldsplit_u_pc_mg_log
+-fieldsplit_u_pc_type mg
+-ksp_atol 1.0e-8
+-ksp_converged_reason
+-ksp_max_it 2000
+-ksp_rtol 1.0e-3
+-ksp_type fgmres
+-lattice_layout_Nx 3
+-lattice_layout_Ny 3
+-lattice_layout_Nz 3
+-lattice_layout_perturb 0.0
+-log_view
+-monitor_stages
+-mp_popctrl_np_upper -1
+-mx 8
+-my 8
+-mz 8
+-nsteps 2
+-options_left 1
+-output_frequency 1
+-output_path sd3d_test
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model sd3d
+-snes_atol 1.0e-8
+-snes_converged_reason
+-snes_linesearch_type basic
+-snes_max_it 5
+-snes_max_linear_solve_fail 100000
+-snes_monitor
+-snes_rtol 1.0e-5
+-snes_type newtonls
+-snes_view
+-stk_velocity_dm_mat_type aij
+#End of PETSc Option Table entries
+There are no unused options.

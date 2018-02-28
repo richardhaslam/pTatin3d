@@ -1,0 +1,904 @@
+{
+"GeometryObjectList": [
+{
+    "name":     "Ucrust-1",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-2",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-3",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-4",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-5",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-6",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-7",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-8",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-9",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-10",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-11",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-12",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-13",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-14",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-15",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-16",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-17",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-18",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-19",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-20",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-21",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-22",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-23",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-24",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-25",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-26",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-27",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-28",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-29",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-30",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-31",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-32",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-33",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-34",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-35",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-36",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-37",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-38",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-39",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-40",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-41",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-42",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-43",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-44",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-45",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-46",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-47",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-48",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-49",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-50",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-51",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-52",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-53",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-54",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-55",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-56",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-57",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-58",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-59",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-60",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-61",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-62",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-63",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-64",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-65",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-66",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-67",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-68",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-69",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-70",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-71",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-72",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-73",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-74",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-75",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-76",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-77",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-78",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-79",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-80",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-81",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-82",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-83",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-84",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-85",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-86",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-87",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-88",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-89",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-90",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-91",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-92",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-93",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-94",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-95",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-96",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-97",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-98",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-99",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+},
+{
+    "name":     "Ucrust-100",
+    "type":     "GeomType_EllipticCylinder",
+    "centroid": [1.5, 1.2, 1.3],
+    "length":   1.0,
+    "radiusA":  0.6,
+    "radiusB":  0.8,
+    "axis":     "Y"
+}
+]
+}

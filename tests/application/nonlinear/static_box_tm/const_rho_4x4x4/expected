@@ -1,0 +1,1328 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-switch -Wno-unused-function -Wno-incompatible-pointer-types-discards-qualifiers -Wno-tautological-constant-out-of-range-compare -Wno-enum-conversion -Wno-type-safety
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** ====================================================================================== 
+[[Using "pTatin3d_nonlinear_viscous_forward_model_driver_v1"]]
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+DataBucketView(SEQ): ("Material Constants")
+  L                  = 200 
+  buffer             = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) 
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) 
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) 
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) 
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) 
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) 
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) 
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) 
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) 
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) 
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) 
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) 
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) 
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) 
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) 
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) 
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) 
+  Total mem. usage                                                      = 8.00e-02 (MB) 
+[pTatin] Created output directory: ex1_staticBox_tm 
+[pTatin] Created log file: ex1_staticBox_tm/ptatin.log-2017.07.30_13:27:26 
+[pTatin] Writing output to existing directory: ex1_staticBox_tm 
+[pTatin] Created options file: ex1_staticBox_tm/ptatin.options-2017.07.30_13:27:26 
+[pTatin] Created options file: ex1_staticBox_tm/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: Registering model [23] with name "static_box_thermomech"
+  [pTatinModel]: -ptatin_model "static_box_thermomech" was detected
+pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix
+pTatin3dRestart: Unable to restart job
+BCList: Mem. usage (min,max) = 7.00e-02,7.00e-02 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre StokesCoefficients")
+  L                  = 1728 
+  buffer             = 1 
+  allocated          = 1729 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 8.30e-02 (MB) 
+  Total mem. usage                                                      = 8.30e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 0]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 1]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 2]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 3]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 4]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+DataBucketView(SEQ): ("SurfaceGaussLegendre StokesCoefficients[face 5]")
+  L                  = 144 
+  buffer             = 1 
+  allocated          = 145 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.62e-02 (MB) 
+  Total mem. usage                                                      = 1.62e-02 (MB) 
+Generated vel/pressure mesh --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+  MaterialPointsStokes: Using P0 projection [arithmetic avg]
+[[Swarm initialization: 0.0001 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 1728 points : 0.0007 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Mat Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.8406e-04 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 2.1100e-04 (sec)]]
+Generated material points --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 0 
+Mat Object: 1 MPI processes
+  type: seqaij
+  rows=1, cols=1
+  total: nonzeros=0, allocated nonzeros=0
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 7.1049e-05 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 8.5115e-05 (sec)]]
+[PSwarmSetUpCoords_FillBox]
+PhysCompCreateMesh_Energy: Generating overlapping Q1 DMDA
+BCList: Mem. usage (min,max) = 4.00e-03,4.00e-03 (MB) 
+VolumeQuadratureCreate_GaussLegendreEnergy:
+	Using 2x2 pnt Gauss Legendre quadrature
+DataBucketView(SEQ): ("GaussLegendre EnergyCoefficients")
+  L                  = 512 
+  buffer             = 1 
+  allocated          = 513 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefEnergy : Mem. usage = 8.21e-03 (MB) 
+  Total mem. usage                                                      = 8.21e-03 (MB) 
+Generated energy mesh + J/T/F --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+MPntPEnergy field offset[0] 0 
+MPntPEnergy field offset[1] 8 
+QPntVolCoefEnergy field offset[0] 0 
+QPntVolCoefEnergy field offset[1] 8 
+DataBucketView(SEQ): ("MaterialPoints StokesCoefficients")
+  L                  = 1728 
+  buffer             = 1000 
+  allocated          = 2728 
+  nfields registered = 4 
+    [  0]: field name  ==>>                        MPntStd : Mem. usage = 1.75e-01 (MB) 
+    [  1]: field name  ==>>                    MPntPStokes : Mem. usage = 4.36e-02 (MB) 
+    [  2]: field name  ==>>                  MPntPStokesPl : Mem. usage = 2.18e-02 (MB) 
+    [  3]: field name  ==>>                    MPntPEnergy : Mem. usage = 4.36e-02 (MB) 
+  Total mem. usage                                                      = 2.84e-01 (MB) 
+Mesh size (4 x 4 x 4) : MG levels 1  
+         level [ 0]: global Q2 elements (4 x 4 x 4) 
+level [ 0]: [total cores    1]: np-I [   1]: element range I [    4 ]
+                                np-J [   1]: element range J [    4 ]
+                                np-K [   1]: element range K [    4 ]
+Generated velocity mesh hierarchy --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+Generated quadrature point hierarchy --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+Level [0]: Coarse grid type :: Re-discretisation :: assembled operator 
+Generated stokes operators --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   [[ COMPUTING FLOW FIELD FOR STEP : 0 ]]
+PreLinearSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   --------- LINEAR STAGE ---------
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 8.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.60e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+PostLinearSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+PrePicardSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+   --------- PICARD STAGE ---------
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+PostPicardSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+13 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep[stokes] dt_courant = 5.0000e-01 
+ALE(vel) min = 0.0000e+00 : max = 0.0000e+00 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.660254037844e+09 
+\int \phi dV = 8.596800000000e+04 
+  timestep[adv-diff] dt_courant = 3.7500e-02 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 1 ]]
+     dt    : 5.0000e-11 
+     time  : 5.0000e-11 
+*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.45e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   9.06e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = 0.0000e+00 : max = 0.0000e+00 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 1 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 1 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.69e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.89e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[1] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.660254037844e+09 
+\int \phi dV = 8.596800001543e+04 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[1] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 2 ]]
+     dt    : 5.0000e-01 
+     time  : 5.0000e-01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.19e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.81e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 2 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 2 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.98e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.19e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.79e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[2] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.346302424079e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[2] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 3 ]]
+     dt    : 5.0000e-01 
+     time  : 1.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.68e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   5.01e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 3 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 3 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.29e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.72e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[3] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.537731461516e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[3] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 4 ]]
+     dt    : 5.0000e-01 
+     time  : 1.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.81e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 4 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 4 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.98e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[4] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.615683850944e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[4] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 5 ]]
+     dt    : 5.0000e-01 
+     time  : 2.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.45e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 5 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 5 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.70e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[5] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.647575167404e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[5] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 6 ]]
+     dt    : 5.0000e-01 
+     time  : 2.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 6 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 6 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.22e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.79e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[6] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.660630314135e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[6] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 7 ]]
+     dt    : 5.0000e-01 
+     time  : 3.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 7 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 7 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.29e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.69e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[7] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.665975047501e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[7] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 8 ]]
+     dt    : 5.0000e-01 
+     time  : 3.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.18e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 8 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 8 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.48e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[8] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.668163186586e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[8] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 9 ]]
+     dt    : 5.0000e-01 
+     time  : 4.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.56e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 9 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 9 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.91e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[9] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669059014118e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[9] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 10 ]]
+     dt    : 5.0000e-01 
+     time  : 4.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.78e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.96e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 10 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 10 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.89e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[10] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669425767365e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[10] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 11 ]]
+     dt    : 5.0000e-01 
+     time  : 5.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 11 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 11 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.39e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.41e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[11] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669575916743e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[11] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 12 ]]
+     dt    : 5.0000e-01 
+     time  : 5.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   9.54e-07 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 12 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 12 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.50e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.29e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[12] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669637388145e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[12] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 13 ]]
+     dt    : 5.0000e-01 
+     time  : 6.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.29e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 13 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 13 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.82e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.81e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[13] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669662554637e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[13] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 14 ]]
+     dt    : 5.0000e-01 
+     time  : 6.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   9.54e-07 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 14 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 14 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.89e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.22e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.29e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[14] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669672857840e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[14] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 15 ]]
+     dt    : 5.0000e-01 
+     time  : 7.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.41e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.86e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 15 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 15 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.29e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[15] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669677075988e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[15] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 16 ]]
+     dt    : 5.0000e-01 
+     time  : 7.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.37e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 16 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 16 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.39e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.22e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[16] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669678802905e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[16] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 17 ]]
+     dt    : 5.0000e-01 
+     time  : 8.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.81e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 17 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 17 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[17] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679509907e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[17] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 18 ]]
+     dt    : 5.0000e-01 
+     time  : 8.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 18 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 18 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[18] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679799355e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[18] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 19 ]]
+     dt    : 5.0000e-01 
+     time  : 9.0000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   9.54e-07 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 19 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 19 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.89e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.82e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.01e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[19] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679917856e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[19] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 20 ]]
+     dt    : 5.0000e-01 
+     time  : 9.5000e+00 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.47e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   3.81e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 20 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 20 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.91e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[20] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679966370e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[20] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 21 ]]
+     dt    : 5.0000e-01 
+     time  : 1.0000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.69e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 21 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 21 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.82e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.19e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.89e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[21] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679986232e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[21] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 22 ]]
+     dt    : 5.0000e-01 
+     time  : 1.0500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.17e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 22 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 22 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.91e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[22] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679994363e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[22] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 23 ]]
+     dt    : 5.0000e-01 
+     time  : 1.1000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 23 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 23 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.82e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.22e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.60e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[23] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679997692e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[23] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 24 ]]
+     dt    : 5.0000e-01 
+     time  : 1.1500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.79e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.81e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 24 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 24 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.91e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[24] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999055e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[24] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 25 ]]
+     dt    : 5.0000e-01 
+     time  : 1.2000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.10e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 25 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 25 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.91e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[25] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999613e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[25] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 26 ]]
+     dt    : 5.0000e-01 
+     time  : 1.2500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.83e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    7.15e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 26 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 26 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[26] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999842e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[26] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 27 ]]
+     dt    : 5.0000e-01 
+     time  : 1.3000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.40e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 27 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 27 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.99e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.60e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.29e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[27] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999935e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[27] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 28 ]]
+     dt    : 5.0000e-01 
+     time  : 1.3500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     1.24e-03 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.86e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    7.87e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 28 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 28 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.41e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[28] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999973e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[28] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 29 ]]
+     dt    : 5.0000e-01 
+     time  : 1.4000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.15e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    4.05e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 29 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 29 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[29] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999989e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[29] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 30 ]]
+     dt    : 5.0000e-01 
+     time  : 1.4500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.27e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   3.10e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 30 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 30 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.60e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.79e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[30] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999996e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[30] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 31 ]]
+     dt    : 5.0000e-01 
+     time  : 1.5000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.46e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   3.10e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 31 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 31 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.89e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[31] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999998e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[31] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 32 ]]
+     dt    : 5.0000e-01 
+     time  : 1.5500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.59e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   3.81e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    7.15e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 32 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 32 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.19e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[32] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669679999999e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[32] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 33 ]]
+     dt    : 5.0000e-01 
+     time  : 1.6000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.52e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   3.81e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 33 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 33 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.58e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.69e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.50e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[33] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[33] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 34 ]]
+     dt    : 5.0000e-01 
+     time  : 1.6500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.70e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   8.11e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    8.11e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 34 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 34 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.32e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[34] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[34] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 35 ]]
+     dt    : 5.0000e-01 
+     time  : 1.7000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.45e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.86e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 35 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 35 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.89e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.10e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.01e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[35] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[35] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 36 ]]
+     dt    : 5.0000e-01 
+     time  : 1.7500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.17e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.10e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 36 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 36 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.41e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.60e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[36] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[36] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 37 ]]
+     dt    : 5.0000e-01 
+     time  : 1.8000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.14e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   9.54e-07 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    2.86e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 37 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 37 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.00e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.38e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[37] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[37] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 38 ]]
+     dt    : 5.0000e-01 
+     time  : 1.8500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.51e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 38 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 38 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.60e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.20e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.31e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[38] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[38] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 39 ]]
+     dt    : 5.0000e-01 
+     time  : 1.9000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.18e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.81e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 39 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 39 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.50e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[39] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[39] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 40 ]]
+     dt    : 5.0000e-01 
+     time  : 1.9500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.57e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.96e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 40 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 40 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 7.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.79e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.70e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[40] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[40] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 41 ]]
+     dt    : 5.0000e-01 
+     time  : 2.0000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.15e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    2.86e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 41 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 41 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.91e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.51e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.60e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[41] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[41] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 42 ]]
+     dt    : 5.0000e-01 
+     time  : 2.0500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.16e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   1.91e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    3.10e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 42 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 42 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 4.51e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.48e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[42] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[42] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 43 ]]
+     dt    : 5.0000e-01 
+     time  : 2.1000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     8.38e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    7.87e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 43 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 43 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.48e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 5.98e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.41e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[43] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[43] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 44 ]]
+     dt    : 5.0000e-01 
+     time  : 2.1500e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.71e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   2.86e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.01e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 44 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 44 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.99e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 6.01e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[44] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[44] dt_courant = 5.0000e-01 
+<<----------------------------------------------------------------------------------------------->>
+   [[ EXECUTING TIME STEP : 45 ]]
+     dt    : 5.0000e-01 
+     time  : 2.2000e+01 
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     1728 (init) / 1728 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     9.63e-04 (sec) efficiency 100.0%
+    	SwarmUpdatePosition_Communication_Generic   4.05e-06 (sec) efficiency 100.0%
+    	MaterialPointStd_Removal                    5.96e-06 (sec) efficiency 100.0%
+=========== ================================== ============= 
+ALE(vel) min = -9.7700e-15 : max = 3.9080e-14 
+   [[ COMPUTING THERMAL FIELD FOR STEP : 45 ]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 45 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.48e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
+[staticBox] ||v0 - v0_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||v1 - v1_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||v2 - v2_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||p - p_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||T - T_exact||_inf <= 1.0e-12 <pass>
+[staticBox] Q = +0.00e+00
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
+  timestep_stokes[45] dt_courant = 5.0000e-01 
+Diffusion dt = 3.749999999962e-02 
+Advective dt = 8.658885265490e+09 
+\int \phi dV = 1.669680000000e+05 
+  TimeStep control(AdvDiffCourant): | current = 5.0000e-01 : trial = 3.7500e-02 [accepted] | dt < dt_min : limited to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
+  timestep_advdiff[45] dt_courant = 5.0000e-01 
+pTatin3dMaxMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Gene3DNueve]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_Sierra]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+[[ModelDestroy_StaticBoxTM]]

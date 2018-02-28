@@ -26,7 +26,6 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-
 #include <ptatin3d.h>
 #include <private/ptatin_impl.h>
 #include <MPntStd_def.h>
@@ -39,6 +38,8 @@
 #include <pswarm.h>
 #include <private/pswarm_impl.h>
 #include <mpiio_blocking.h>
+#include <model_utils.h>
+#include <element_utils_q2.h>
 
 
 PetscClassId PSWARM_CLASSID;
@@ -109,7 +110,7 @@ PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
 
     ierr = PSwarmInitializePackage();CHKERRQ(ierr);
     
-    PetscHeaderCreate(p, PSWARM_CLASSID, "PSwarm", "Particle Swarm Manager", "PSwarm", comm, PSwarmDestroy, PSwarmView);
+    ierr = PetscHeaderCreate(p, PSWARM_CLASSID, "PSwarm", "Particle Swarm Manager", "PSwarm", comm, PSwarmDestroy, PSwarmView);CHKERRQ(ierr);
     ierr = PetscMemzero(p->ops, sizeof(struct _PSwarmOps));CHKERRQ(ierr);
 
     p->state = PSW_TS_UNINIT;
@@ -282,7 +283,8 @@ PetscErrorCode PSwarmDestroy(PSwarm *ps)
     PetscFunctionBegin;
     if (!ps) PetscFunctionReturn(0);
     p = *ps;
-    
+    if (!p) PetscFunctionReturn(0);
+  
     if (!p->db_set_by_user) {
         if (p->db) { DataBucketDestroy(&p->db); }
     }
@@ -327,6 +329,12 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   MPntStd *tracer;
   double *tracer_pressure;
   int n_tracers,p;
+  PetscReal elcoords[3*Q2_NODES_PER_EL_3D],elp[P_BASIS_FUNCTIONS];
+  Vec gcoords,pressure_l;
+  const PetscScalar *LA_gcoords;
+  const PetscScalar *LA_pfield;
+  PetscInt nel,nen_u,nen_p,k;
+  const PetscInt *elnidx_u,*elnidx_p;
   
   if (ps->state == PSW_TS_STALE) {
     /* update local coordinates and perform communication */
@@ -340,10 +348,39 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   DataBucketGetDataFieldByName(ps->db,"pressure",&datafield);
 	DataFieldGetEntries(datafield,(void**)&tracer_pressure);
   
+  ierr = DMDAGetElements_pTatinQ2P1(dmv,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dmv,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+
+  ierr = DMDAGetElements_pTatinQ2P1(dmp,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dmp,&pressure_l);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dmp,pressure,INSERT_VALUES,pressure_l);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dmp,pressure,INSERT_VALUES,pressure_l);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(pressure_l,&LA_pfield);CHKERRQ(ierr);
+  
 	DataBucketGetSizes(ps->db,&n_tracers,NULL,NULL);
   for (p=0; p<n_tracers; p++) {
-    tracer_pressure[p] = tracer[p].coor[1];
+    double        *xi_p;
+    PetscReal     NIp[P_BASIS_FUNCTIONS],pressure_p;
+    PetscInt      eidx;
+    
+    xi_p = tracer[p].xi;
+    eidx = (PetscInt)tracer[p].wil;
+
+    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx_u[nen_u*eidx],(PetscScalar*)LA_gcoords);CHKERRQ(ierr);
+    ierr = DMDAGetScalarElementField(elp,nen_p,(PetscInt*)&elnidx_p[nen_p*eidx],(PetscScalar*)LA_pfield);CHKERRQ(ierr);
+    
+    ConstructNi_pressure(xi_p,elcoords,NIp);
+
+    pressure_p = 0.0;
+    for (k=0; k<P_BASIS_FUNCTIONS; k++) {
+      pressure_p += NIp[k] * elp[k];
+    }
+    tracer_pressure[p] = pressure_p;
   }
+  ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(pressure_l,&LA_pfield);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dmp,&pressure_l);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -787,6 +824,15 @@ PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
+/*
+ There is a possibility that this routine may create duplicate points, e.g.
+ two ranks may define a particle with identical coordinates. 
+ In general, for usage with passive swarms, this is likely to not be a problem.
+ When using this method to define a deformation mesh, duplicate points may be 
+ problematic. As a work around, I explicitly assign ALL points a pid value given
+ by i + j*nx + k*nx*ny. In this way, associating a particle coordinate with a 
+ point in a structured mesh using pid will be safe.
+*/
 #undef __FUNCT__
 #define __FUNCT__ "PSwarmSetUpCoords_FillBox"
 PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
@@ -801,7 +847,7 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   PetscMPIInt    rank;
   MPI_Comm       comm;
   PetscInt       ii,jj,kk,c;
-  PetscReal      dx[3],damin[3],damax[3],coor[3];
+  PetscReal      dx[3],damin[3],damax[3],elmin[3],elmax[3],coor[3];
   
   PetscFunctionBegin;
   
@@ -841,7 +887,16 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   dx[1] = (xmax[1]-xmin[1])/((PetscReal)Nxp[1]-1);
   dx[2] = (xmax[2]-xmin[2])/((PetscReal)Nxp[2]-1);
 
-  ierr = DMDAGetLocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
+  /*ierr = DMDAGetLocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);*/
+  ierr = DMDAComputeQ2ElementBoundingBox(dmv,elmin,elmax);CHKERRQ(ierr);
+  ierr = DMDAComputeQ2LocalBoundingBox(dmv,damin,damax);CHKERRQ(ierr);
+  damin[0] -= elmin[0] * 1.0e-6;
+  damin[1] -= elmin[1] * 1.0e-6;
+  damin[2] -= elmin[2] * 1.0e-6;
+
+  damax[0] += elmax[0] * 1.0e-6;
+  damax[1] += elmax[1] * 1.0e-6;
+  damax[2] += elmax[2] * 1.0e-6;
 
   c = 0;
   for (kk=0; kk<Nxp[2]; kk++) {
@@ -887,6 +942,26 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   ierr = SwarmMPntStd_CoordAssignment_InsertFromList(ps->db,dmv,nlist,coorlist,0,PETSC_TRUE);CHKERRQ(ierr);
   
   PetscFree(coorlist);
+  
+  /* Traverse points, examine coordinates, set pid based on xp,yp,zp */
+  {
+    DataField df;
+    int p,npoints;
+    MPntStd *points;
+    
+    DataBucketGetSizes(ps->db,&npoints,NULL,NULL);
+    DataBucketGetDataFieldByName(ps->db,MPntStd_classname,&df);
+    DataFieldGetEntries(df,(void**)&points);
+    for (p=0; p<npoints; p++) {
+      long int ii,jj,kk;
+      
+      ii = (long int)( (1.0e-12*elmin[0] + points[p].coor[0] - xmin[0])/ dx[0]);
+      jj = (long int)( (1.0e-12*elmin[1] + points[p].coor[1] - xmin[1])/ dx[1]);
+      kk = (long int)( (1.0e-12*elmin[2] + points[p].coor[2] - xmin[2])/ dx[2]);
+      
+      points[p].pid = ii + jj * Nxp[0] + kk * Nxp[0] * Nxp[1];
+    }
+  }
   
   if (rank == 0) {
     char filename[PETSC_MAX_PATH_LEN];
@@ -1063,7 +1138,7 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
   
     PetscFunctionBegin;
     ierr = PetscObjectOptionsBegin((PetscObject)ps);CHKERRQ(ierr);
-    //ierr = PetscOptionsHead("PSwarm options");CHKERRQ(ierr);
+    ierr = PetscOptionsHead(PetscOptionsObject,"PSwarm options");CHKERRQ(ierr);
     
     isactive = PETSC_FALSE;
     ierr = PetscOptionsBool("-pswarm_transport_mode_eulerian","Transport mode set to Eulerian","PSwarmSetTransportModeType",isactive,&isactive,0);CHKERRQ(ierr);
@@ -2164,7 +2239,6 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
 PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	char vtkfilename[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
-  int n_points;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -2176,10 +2250,7 @@ PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const
 	if (path) { sprintf(filename,"%s/%s",path,vtkfilename); }
 	else {      sprintf(filename,"./%s",vtkfilename); }
   
-  DataBucketGetSizes(ps->db,&n_points,NULL,NULL);
-  if (n_points > 0) {
-    ierr = PSwarmViewSingleton_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
-  }
+  ierr = PSwarmViewSingleton_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }

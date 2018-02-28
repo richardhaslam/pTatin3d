@@ -73,6 +73,7 @@
 
 -fieldsplit_p_ksp_type preonly
 -fieldsplit_p_pc_type jacobi
+-fieldsplit_u_pc_type mg
 -fieldsplit_u_ksp_max_it 1
 -fieldsplit_u_ksp_monitor
 -fieldsplit_u_ksp_rtol 1.0e-4

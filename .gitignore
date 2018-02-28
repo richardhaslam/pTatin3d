@@ -12,3 +12,4 @@ run/
 output/
 *.DS_Store
 makefile.arch
+pythontestharness

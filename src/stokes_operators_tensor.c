@@ -32,14 +32,7 @@
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>
-
-#define NQP 27			/* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
-#define NEV 4			/* Number of elements over which to vectorize */
-
-typedef enum {
-	GRAD,
-	GRAD_TRANSPOSE
-} GradMode;
+#include <stokes_operators.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "TensorContractNEV"
@@ -50,7 +43,7 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 {
 	PetscReal R[3][3],S[3][3],T[3][3];
 	PetscReal u[3][NQP][NEV],v[3][NQP][NEV];
-  PetscInt i,j,k,l,kj,ji,a,b,c,e;
+    PetscInt i,j,k,l,kj,ji,a,b,c,e;
 
 	PetscFunctionBegin;
 	for (j=0; j<3; j++) {
@@ -97,7 +90,6 @@ static PetscErrorCode TensorContractNEV(PetscReal Rf[][3],PetscReal Sf[][3],Pets
 			}
 		}
 	}
-	PetscLogFlops(3*NQP*NEV*(6+6+6));
 	PetscFunctionReturn(0);
 }
 
@@ -131,7 +123,6 @@ static PetscErrorCode JacobianInvertNEV(PetscScalar dx[3][3][NQP][NEV],PetscScal
 			dxdet[i][e] =  det;
 		}
 	}
-	PetscLogFlops(NQP*NEV*(14 + 1/* division */ + 27));
 	return 0;
 }
 
@@ -186,23 +177,22 @@ static PetscErrorCode QuadratureAction(const QPntVolCoefStokes *gausspt[],
 			}
 		}
 	}
-	PetscLogFlops(NQP*NEV*(5*9+6+6+6*9));
 	return 0;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MFStokesWrapper_A11_Tensor"
-PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
+PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;
 	DM cda;
 	Vec gcoords;
 	const PetscReal *LA_gcoords;
-	PetscInt nel,nen_u,e,i,j,k;
+	PetscInt nel,nen_u;
 	const PetscInt *elnidx_u;
 	QPntVolCoefStokes *all_gausspoints;
-	const QPntVolCoefStokes *cell_gausspoints[NEV];
 	PetscReal x1[3],w1[3],B[3][3],D[3][3],w[NQP];
+	PetscInt i,j,k,e;
 
 	PetscFunctionBegin;
 	ierr = PetscDTGaussQuadrature(3,-1,1,x1,w1);CHKERRQ(ierr);
@@ -228,9 +218,19 @@ PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufi
 
 	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&all_gausspoints);CHKERRQ(ierr);
 
+#if defined(_OPENMP)
+  #define OPENMP_CHKERRQ(x)
+#else
+  #define OPENMP_CHKERRQ(x)   CHKERRQ(x)
+#endif
+
+#if defined(_OPENMP)
+    #pragma omp parallel for private(i)
+#endif
 	for (e=0;e<nel;e+=NEV) {
 		PetscScalar elu[3][Q2_NODES_PER_EL_3D][NEV]={},elx[3][Q2_NODES_PER_EL_3D][NEV]={},elv[3][Q2_NODES_PER_EL_3D][NEV];
 		PetscScalar dx[3][3][NQP][NEV],dxdet[NQP][NEV],du[3][3][NQP][NEV],dv[3][3][NQP][NEV];
+		const QPntVolCoefStokes *cell_gausspoints[NEV];
 		PetscInt ee,l;
 
 		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
@@ -243,28 +243,31 @@ PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufi
 			}
 		}
 		for (ee=0; ee<NEV; ee++) {
-			ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);CHKERRQ(ierr);
+			ierr = VolumeQuadratureGetCellData_Stokes(volQ,all_gausspoints,PetscMin(e+ee,nel-1),(QPntVolCoefStokes**)&cell_gausspoints[ee]);OPENMP_CHKERRQ(ierr);
 		}
 
-		ierr = PetscMemzero(dx,sizeof dx);CHKERRQ(ierr);
-		ierr = TensorContractNEV(D,B,B,GRAD,elx,dx[0]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,D,B,GRAD,elx,dx[1]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,B,D,GRAD,elx,dx[2]);CHKERRQ(ierr);
+		ierr = PetscMemzero(dx,sizeof dx);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(D,B,B,GRAD,elx,dx[0]);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(B,D,B,GRAD,elx,dx[1]);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(B,B,D,GRAD,elx,dx[2]);OPENMP_CHKERRQ(ierr);
 
-		ierr = JacobianInvertNEV(dx,dxdet);CHKERRQ(ierr);
+		ierr = JacobianInvertNEV(dx,dxdet);OPENMP_CHKERRQ(ierr);
 
-		ierr = PetscMemzero(du,sizeof du);CHKERRQ(ierr);
-		ierr = TensorContractNEV(D,B,B,GRAD,elu,du[0]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,D,B,GRAD,elu,du[1]);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,B,D,GRAD,elu,du[2]);CHKERRQ(ierr);
+		ierr = PetscMemzero(du,sizeof du);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(D,B,B,GRAD,elu,du[0]);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(B,D,B,GRAD,elu,du[1]);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(B,B,D,GRAD,elu,du[2]);OPENMP_CHKERRQ(ierr);
 
-		ierr = QuadratureAction(cell_gausspoints,dx,dxdet,w,du,dv);CHKERRQ(ierr);
+		ierr = QuadratureAction(cell_gausspoints,dx,dxdet,w,du,dv);OPENMP_CHKERRQ(ierr);
 
-		ierr = PetscMemzero(elv,sizeof elv);CHKERRQ(ierr);
-		ierr = TensorContractNEV(D,B,B,GRAD_TRANSPOSE,dv[0],elv);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,D,B,GRAD_TRANSPOSE,dv[1],elv);CHKERRQ(ierr);
-		ierr = TensorContractNEV(B,B,D,GRAD_TRANSPOSE,dv[2],elv);CHKERRQ(ierr);
+		ierr = PetscMemzero(elv,sizeof elv);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(D,B,B,GRAD_TRANSPOSE,dv[0],elv);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(B,D,B,GRAD_TRANSPOSE,dv[1],elv);OPENMP_CHKERRQ(ierr);
+		ierr = TensorContractNEV(B,B,D,GRAD_TRANSPOSE,dv[2],elv);OPENMP_CHKERRQ(ierr);
 
+#if defined(_OPENMP)
+		#pragma omp critical
+#endif
 		for (ee=0; ee<PetscMin(NEV,nel-e); ee++) {
 			for (i=0; i<NQP; i++) {
 				PetscInt E = elnidx_u[nen_u*(e+ee)+i];
@@ -275,6 +278,11 @@ PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufi
 		}
 
 	}
+
+#undef OPENMP_CHKERRQ
+    PetscLogFlops((nel * 9) * 3*NQP*(6+6+6));           /* 9 tensor contractions per element */
+    PetscLogFlops(nel*NQP*(14 + 1/* division */ + 27)); /* 1 Jacobi inversion per element */
+    PetscLogFlops(nel*NQP*(5*9+6+6+6*9));               /* 1 quadrature action per element */
 
 	ierr = VecRestoreArrayRead(gcoords,&LA_gcoords);CHKERRQ(ierr);
 

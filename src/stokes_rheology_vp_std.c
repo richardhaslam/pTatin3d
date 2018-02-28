@@ -665,7 +665,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 			case DENSITY_CONSTANT: {
 				PetscReal rho_mp;
 				
-				rho_mp = -10.0*DensityConst_data[region_idx].density;
+				rho_mp = DensityConst_data[region_idx].density;
 				MPntPStokesSetField_density(mpprop_stokes,rho_mp);
 			}
 				break;
@@ -676,7 +676,7 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 				PetscReal alpha = DensityBoussinesq_data[region_idx].alpha;
 				PetscReal beta  = DensityBoussinesq_data[region_idx].beta;
 				
-				rho_mp = -10.0*rho0*(1-alpha*T_mp+beta*pressure_mp);
+				rho_mp = rho0*(1-alpha*T_mp+beta*pressure_mp);
 				MPntPStokesSetField_density(mpprop_stokes,rho_mp);         
 			}
 				break;

@@ -36,15 +36,12 @@ typedef struct _p_MatA11MF *MatA11MF;
 
 struct _p_MatStokesMF {
 	PetscInt    mu,mp,Mu,Mp;
-	PetscInt    level;
-	PetscInt    ii;
 	DM          stokes_pack,daUVW,dap;
 	BCList      u_bclist,p_bclist;
 	Quadrature  volQ;
 	DM          daU;
 	IS          isUVW,isU,isV,isW,isP; /* Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
-	Vec         nodal_viscosity;
 };
 
 struct _p_MatA11MF {
@@ -56,14 +53,13 @@ struct _p_MatA11MF {
 	IS          isUVW; /* Needed for full column space */
 	IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
 	PetscInt    refcnt;
-	/* Not sure I need this at all */
-	PetscInt    level;
-	PetscInt    ii;
-	Vec         nodal_viscosity;
-	PetscErrorCode (*Wrapper_A11)(Quadrature,DM,PetscScalar[],PetscScalar[]);
+	PetscObjectState state;
+	PetscBool   is_setup;
+	void        *ctx; /* special context for cuda, opencl, openmp spmv implementations */
+	PetscErrorCode (*SpMVOp_MatMult)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
+	PetscErrorCode (*SpMVOp_SetUp)(MatA11MF);
+	PetscErrorCode (*SpMVOp_Destroy)(MatA11MF);
 };
-
-
 
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B);
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes user,Mat *B);
@@ -101,6 +97,54 @@ PetscErrorCode MatShellGetMatA11MF(Mat A,MatA11MF *mf);
 
 PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3);
 PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3);
+
+/* Implementation-specific structures and routines shared amongst multiple implementations */
+#define NQP 27  /* Number of quadrature points per element; must equal Q2_NODES_PER_EL_3D (27) */
+#define NEV 4   /* Number of elements over which to vectorize */
+
+typedef enum {
+	GRAD,
+	GRAD_TRANSPOSE
+} GradMode;
+
+PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV]);
+__attribute__((noinline))
+PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV]);
+__attribute__((noinline))
+PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
+					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
+					   PetscReal w[Q2_NODES_PER_EL_3D],
+					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
+					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV]);
+
+
+typedef struct _p_MFA11CUDA *MFA11CUDA;
+
+struct _p_MFA11CUDA {
+  PetscObjectState state;
+
+  PetscScalar *ufield;
+  PetscReal   *LA_gcoords;
+  PetscReal   *gaussdata_w;  // Data at Gauss points multiplied by respective quadrature weight
+  PetscInt    element_colors;
+  PetscInt    *elements_per_color;
+  PetscInt    **el_ids_colored;
+  PetscInt    *elnidx_u;
+  PetscScalar *Yu;
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA);
+PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA);
+PetscErrorCode CopyTo_A11_CUDA(MatA11MF,MFA11CUDA,const PetscScalar*,const PetscReal*,const PetscReal*,PetscInt,PetscInt,const PetscInt*,PetscInt);
+PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA,PetscInt,PetscInt);
+PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA,PetscScalar*,PetscInt);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

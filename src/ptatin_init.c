@@ -59,6 +59,12 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 		PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
 		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	}
+
+#if defined(__AVX__) && !defined(TATIN_HAVE_AVX)
+	PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. \n");
+	PetscPrintf(PETSC_COMM_WORLD,"** For significant performance gains, set CONFIG_AVX=y in makefile.arch\n");
+	PetscPrintf(PETSC_COMM_WORLD,"**                                                                     \n");
+#endif
 	
 	PetscFunctionReturn(0);
 }
@@ -113,9 +119,24 @@ extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
 extern PetscErrorCode PCCreate_WSMP(PC pc);
 extern PetscErrorCode PCCreate_DMDARepart(PC pc);
 extern PetscLogEvent MAT_MultMFA11;
+extern PetscLogEvent MAT_MultMFA11_stp;
+extern PetscLogEvent MAT_MultMFA11_cto;
+extern PetscLogEvent MAT_MultMFA11_ker;
+extern PetscLogEvent MAT_MultMFA11_cfr;
+
+extern PetscLogEvent MAT_MultMFA11_sub;
+extern PetscLogEvent MAT_MultMFA11_rto;
+extern PetscLogEvent MAT_MultMFA11_rfr;
+extern PetscLogEvent MAT_MultMFA11_SUP;
+
 extern PetscLogEvent MAT_MultMFA; /* stokes operator */
-extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient opertor */
-extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence opertor */
+extern PetscLogEvent MAT_MultMFA12; /* stokes operator - gradient operator */
+extern PetscLogEvent MAT_MultMFA21; /* stokes operator - divergence operator */
+
+extern PetscLogEvent MAT_MultMFA_QuasiNewtonX; 
+extern PetscLogEvent MAT_MultMFA11_QuasiNewtonX;
+extern PetscLogEvent MAT_MultMFA12_QuasiNewtonX;
+extern PetscLogEvent MAT_MultMFA21_QuasiNewtonX;
 
 PetscClassId PTATIN_CLASSID;
 extern PetscLogEvent PTATIN_DataExchangerTopologySetup;
@@ -160,6 +181,24 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
 	ierr = PCRegister("dmdarepart",PCCreate_DMDARepart);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_stp",MAT_CLASSID,&MAT_MultMFA11_stp);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_cto",MAT_CLASSID,&MAT_MultMFA11_cto);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_ker",MAT_CLASSID,&MAT_MultMFA11_ker);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_cfr",MAT_CLASSID,&MAT_MultMFA11_cfr);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("MatMultMFA11_sub",MAT_CLASSID,&MAT_MultMFA11_sub);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_rto",MAT_CLASSID,&MAT_MultMFA11_rto);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_rfr",MAT_CLASSID,&MAT_MultMFA11_rfr);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_SUP",MAT_CLASSID,&MAT_MultMFA11_SUP);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("MatMultMFA",  MAT_CLASSID,&MAT_MultMFA  );CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA12",MAT_CLASSID,&MAT_MultMFA12);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA21",MAT_CLASSID,&MAT_MultMFA21);CHKERRQ(ierr);
+
+	ierr = PetscLogEventRegister("MatMultMFA_QuasiNewtonX",  MAT_CLASSID,&MAT_MultMFA_QuasiNewtonX  );CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA11_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA11_QuasiNewtonX);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA12_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA12_QuasiNewtonX);CHKERRQ(ierr);
+	ierr = PetscLogEventRegister("MatMultMFA21_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA21_QuasiNewtonX);CHKERRQ(ierr);
 
 	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);

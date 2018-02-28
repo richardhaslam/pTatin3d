@@ -7,15 +7,15 @@
 # The user should NOT edit this file. 
 #   Instead, place your custom configuration in makefile.arch
 
-.SECONDEXPANSION:   # to expand $$(@D)/.DIR
-.SUFFIXES:          # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:   # Delete likely-corrupt target file if rule fails
+.SECONDEXPANSION:           # To expand $$(@D)/.DIR
+.SUFFIXES:                  # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:           # Delete likely-corrupt target file if rule fails
 
 include $(PETSC_DIR)/$(PETSC_ARCH)/lib/petsc/conf/petscvariables
 
 all : info tests drivers save_config
 
-# Compilation options are to be placed in makefile.arch
+# Compilation options are to be placed in makefile.arch;
 # if that (untracked) file does not exist, defaults are copied there
 makefile.arch:
 	-@echo "[pTatin config] using config/makefile.arch.default as makefile.arch"
@@ -43,12 +43,39 @@ CONFIG_FASTSCAPE ?= n
 
 CONFIG_FORTRAN = y
 CONFIG_AVX ?= n
+CONFIG_CUDA ?= n
+CONFIG_OPENCL ?= n
 
-# directory that contains most recently-parsed makefile (current)
+ifeq ($(CONFIG_AVX)$(CONFIG_CUDA),yy)
+CONFIG_AVX_CUDA = y
+else
+CONFIG_AVX_CUDA = n
+endif
+
+TATIN_LIB +=  $(LIBZ_LIB)
+
+ifeq ($(CONFIG_CUDA),y)
+TATIN_CFLAGS += -DTATIN_HAVE_CUDA
+TATIN_LIB += $(CUDA_LIB)
+TATIN_INC += $(CUDA_INC)     #Note: This is usually set by NVCC automatically
+endif
+
+ifeq ($(CONFIG_OPENCL),y)
+TATIN_CFLAGS += -DTATIN_HAVE_OPENCL
+TATIN_LIB += $(OPENCL_LIB)
+TATIN_INC += $(OPENCL_INC)
+endif
+
+ifeq ($(CONFIG_AVX),y)
+TATIN_CFLAGS += -DTATIN_HAVE_AVX
+endif
+
+# Directory that contains most recently-parsed makefile (current)
 thisdir = $(addprefix $(dir $(lastword $(MAKEFILE_LIST))),$(1))
 incsubdirs = $(addsuffix /local.mk,$(call thisdir,$(1)))
 
 libptatin3d-y.c :=
+libptatin3d-y.cu :=
 libptatin3d-y.f :=
 libptatin3dmodels-y.c :=
 libptatin3dmodels-y.f :=
@@ -64,9 +91,9 @@ include local.mk
 ifeq ($(V),)
   quiet_HELP := "Use \"$(MAKE) V=1\" to see the verbose compile lines.\n"
   quiet = @printf $(quiet_HELP)$(eval quiet_HELP:=)"  %10s %s\n" "$1$2" "$@"; $($1)
-else ifeq ($(V),0)		# Same, but do not print any help
+else ifeq ($(V),0) # Same, but do not print any help
   quiet = @printf "  %10s %s\n" "$1$2" "$@"; $($1)
-else				# Show the full command line
+else # Show the full command line
   quiet = $($1)
 endif
 
@@ -75,7 +102,7 @@ endif
 libptatin3d = $(LIBDIR)/libptatin3d.$(AR_LIB_SUFFIX)
 libptatin3d : $(libptatin3d)
 
-$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
+$(libptatin3d) : $(libptatin3d-y.c:%.c=$(OBJDIR)/%.o) $(libptatin3d-y.cu:%.cu=$(OBJDIR)/%.o) $(libptatin3d-y.f:%.f90=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 
 libptatin3dmodels = $(LIBDIR)/libptatin3dmodels.$(AR_LIB_SUFFIX)
 libptatin3dmodels : $(libptatin3dmodels)
@@ -105,8 +132,41 @@ externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT CFLAGS ———————
 	-@echo $(TATIN_CFLAGS)
 
-legacyunittests: all
-	python tests/ptatin-with-verification/ptatin3d-execute-tests.py
+ifeq ($(CONFIG_AVX),n)
+TEST_IGNORE+=no_avx
+endif
+ifeq ($(CONFIG_CUDA),n)
+TEST_IGNORE+=no_cuda
+endif
+ifeq ($(CONFIG_OPENCL),n)
+TEST_IGNORE+=no_opencl
+endif
+ifeq ($(CONFIG_AVX_CUDA),n)
+TEST_IGNORE+=no_avx_cuda
+endif
+
+test :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke)
+
+testcheck :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke) --verify
+
+testall :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+
+testallcheck :
+	cd tests && ./runTests.py -s --verify -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+
+testallclean :
+	cd tests && ./runTests.py -s -p 
+
+testclassic :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic)
+
+testclassiccheck :
+	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic) --verify
+
+.PHONY: test testall testallcheck testallclean testclassic testclassiccheck
 
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^
@@ -122,30 +182,29 @@ endif
 C_DEPFLAGS ?= -MMD -MP
 FC_DEPFLAGS ?= -MMD -MP
 
-TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS)
+# GNU extensions flag
+TATIN_CFLAGS_EXTENSIONS+=-D_GNU_SOURCE
+
+TATIN_COMPILE.c = $(call quiet,$(cc_name)) -c $(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_CFLAGS_OPENMP) $(TATIN_INC) $(CFLAGS) $(C_DEPFLAGS) $(TATIN_CFLAGS_EXTENSIONS)
 TATIN_COMPILE.f90 = $(call quiet,FC) -c $(FC_FLAGS) $(FCPPFLAGS) $(TATIN_INC) $(FFLAGS) $(FC_DEPFLAGS)
+TATIN_COMPILE.cu = $(CUDA_NVCC) -c -Xcompiler "$(PCC_FLAGS) $(CCPPFLAGS) $(TATIN_CFLAGS) $(TATIN_INC) $(CFLAGS) $(TATIN_CFLAGS_EXTENSIONS)"
 
 
-# Tests
+# Test executables
 tests: $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app)
 $(ptatin-tests-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-tests-y.c:%.c=$(OBJDIR)/%.o) # don't delete the intermediate files
 
 
 # Drivers
-#ptatin-drivers-y = $(notdir $(ptatin-drivers-y.c))
-#drivers: $(ptatin-drivers-y:%.c=$(BINDIR)/%.app)
-#$(ptatin-drivers-y:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
-#.SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
-
 drivers: $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app)
 $(ptatin-drivers-y.c:%.c=$(BINDIR)/%.app) : $(libptatin3dmodels) $(libptatin3d)
 .SECONDARY: $(ptatin-drivers-y.c:%.c=$(OBJDIR)/%.o)
 
 $(BINDIR)/%.app : $(OBJDIR)/%.o | $$(@D)/.DIR
-	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(LIBZ_LIB)
+	$(call quiet,PCC_LINKER) $(TATIN_CFLAGS) -o $@ $^ $(PETSC_SNES_LIB) $(TATIN_LIB)
 #@mv $@ $(BINDIR)
-	@ln -sF $(abspath $@) $(BINDIR)
+	@ln -sf $(abspath $@) $(BINDIR)
 
 $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 	$(TATIN_COMPILE.c) $(abspath $<) -o $@
@@ -153,13 +212,16 @@ $(OBJDIR)/%.o: %.c | $$(@D)/.DIR
 $(OBJDIR)/%.o: %.f90 | $$(@D)/.DIR
 	$(TATIN_COMPILE.f90) $(abspath $<) -o $@
 
+$(OBJDIR)/%.o: %.cu | $$(@D)/.DIR
+	$(TATIN_COMPILE.cu) $(abspath $<) -o $@
+
 %/.DIR :
 	@mkdir -p $(@D)
 	@touch $@
 
 .PRECIOUS: %/.DIR
-.SUFFIXES: # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:               # Delete likely-corrupt target file if rule fails
+.SUFFIXES:                 # Clear .SUFFIXES because we don't use implicit rules
+.DELETE_ON_ERROR:          # Delete likely-corrupt target file if rule fails
 
 .PHONY: clean all print
 
@@ -171,9 +233,10 @@ print:
 	@echo $($(VAR))
 
 srcs.c := $(libptatin3d-y.c) $(libptatin3dmodels-y.c) $(ptatin-tests-y.c) $(ptatin-drivers-y.c)
+srcs.cu := $(libptatin3d-y.cu)
 # Bundle in objects from external packages
-%srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o)
-srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
+%srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(srcs.cu:%.cu=$(OBJDIR)/%.o)
+srcs.o := $(srcs.c:%.c=$(OBJDIR)/%.o) $(srcs.cu:%.cu=$(OBJDIR)/%.o) $(ptatin-externals-y.o)
 srcs.d := $(srcs.o:%.o=%.d)
 # Tell make that srcs.d are all up to date.  Without this, the include
 # below has quadratic complexity, taking more than one second for a

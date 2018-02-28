@@ -52,6 +52,7 @@
 
 
 #define PBASIS_P1_GLOBAL_RELATIVE
+//#define PBASIS_P1_GLOBAL_RELATIVE_VERTEX
 //#define PBASIS_P0
 
 /* choose a default pressure space if nothing is already defined */
@@ -59,7 +60,9 @@
 #ifndef PBASIS_P1_GLOBAL
 #ifndef PBASIS_P1_LOCAL
 #ifndef PBASIS_P1_GLOBAL_RELATIVE
+#ifndef PBASIS_P1_GLOBAL_RELATIVE_VERTEX
 #define PBASIS_P0
+#endif
 #endif
 #endif
 #endif
@@ -81,6 +84,9 @@
 #define P_BASIS_FUNCTIONS 4
 #define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P1GRel_3D(_xi,coords,Ni)
 #endif
-
+#ifdef PBASIS_P1_GLOBAL_RELATIVE_VERTEX
+#define P_BASIS_FUNCTIONS 4
+#define ConstructNi_pressure(_xi,coords,Ni) P3D_ConstructNi_P1GRel_VertexBased_3D(_xi,coords,Ni)
+#endif
 #endif
 

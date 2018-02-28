@@ -30,23 +30,44 @@
 #ifndef __ptatin3d_stokes_operators_mf_h__
 #define __ptatin3d_stokes_operators_mf_h__
 
+#include "stokes_operators.h"
+
 /* MatMult wrappers */
-PetscErrorCode MFStokesWrapper_A11(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
-PetscErrorCode MFStokesWrapper_A11_Tensor(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
-PetscErrorCode MFStokesWrapper_A11_AVX(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf);
+PetscErrorCode MFA11Destroy_OpenCL(MatA11MF mf);
 PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dax,PetscScalar xfield[],PetscScalar Yu[]);
 
 PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Yu[],PetscScalar Yp[]);
+PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Yu[],PetscScalar Yp[]);
 PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM dax,PetscScalar xfield[],PetscScalar Yu[],PetscScalar Yp[]);
 
 PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[],PetscScalar Yu[]);
+PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar pfield[],PetscScalar Yu[]);
 PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar pfield[],DM dax,PetscScalar xfield[],PetscScalar Yu[]);
 
 PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[],PetscScalar Yp[]);
 PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,DM dax,PetscScalar xfield[],PetscScalar Yp[]);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf);
+PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf);
+#ifdef __cplusplus
+}
+#endif
+
+PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[]);
+PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf);
+PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf);
 
 /* MatGetDiagonal wrappers */
 PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[]);

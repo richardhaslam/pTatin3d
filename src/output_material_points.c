@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d_defs.h"
@@ -60,7 +59,7 @@ const char *MaterialPointVariableName[] =  {
   "plastic_strain", 
   "yield_indicator", 
   "diffusivity", 
-  "heat_source", 
+  "energy_source", 
   0 
 };
 

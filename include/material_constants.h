@@ -30,7 +30,7 @@
 #ifndef __material_constants_h__
 #define __material_constants_h__
 
-/* add auto geneterated classes here */
+/* add auto generated classes here */
 #include "material_constants/MaterialConst_MaterialType_def.h"
 #include "material_constants/MaterialConst_ViscosityConst_def.h"
 #include "material_constants/MaterialConst_DensityConst_def.h"
@@ -70,7 +70,8 @@ typedef enum {
 	DENSITY_BOUSSINESQ
 } DensityType;
 
-PetscErrorCode MaterialConstantsInitialize(DataBucket *_db);
+PetscErrorCode MaterialConstantsCreate(DataBucket *_db);
+PetscErrorCode MaterialConstantsInitialize(DataBucket db);
 PetscErrorCode MaterialConstantsSetDefaults(DataBucket db);
 
 PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const char model_name[],const int region_id,PetscBool essential);

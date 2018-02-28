@@ -33,9 +33,11 @@ def write_out_c_class_externdefs( ParticleClass, ParticleClassShortName, variabl
 	print '#include <petsc.h>\n'
 	print '#include "'+ParticleClass+'_def.h"\n\n'
 
+	# function prototype
+	print 'PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);\n\n'
+
 	# generate classname
 	print 'const char '+ParticleClass+'_classname[] = "'+ParticleClass+'";\n'
-	
 
 	# strings and constant stuff #
 	print 'const int ' + ParticleClass +'_nmembers = ' + str(L) + ';\n'
@@ -86,7 +88,7 @@ def write_out_getters( prototype, ParticleClass, ParticleClassShortName, variabl
 				continue
 			
 
-			l = 'void '+ ParticleClass +'GetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' *data) \n{'
+			l = 'void '+ ParticleClass +'GetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' *data)\n{'
 			print l
 
 			l = '  *data = point->'+variable_name_list[f]+';'
@@ -99,7 +101,7 @@ def write_out_getters( prototype, ParticleClass, ParticleClassShortName, variabl
 				print 'void '+ ParticleClass +'GetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' *data[]);'
 				continue
 
-			l = 'void '+ ParticleClass +'GetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' *data[]) \n{'
+			l = 'void '+ ParticleClass +'GetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' *data[])\n{'
 			print l
 
 
@@ -125,7 +127,7 @@ def write_out_setters( protoype, ParticleClass, ParticleClassShortName, variable
 				print 'void '+ ParticleClass +'SetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' data);'
 				continue
 
-			l = 'void '+ ParticleClass +'SetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' data) \n{'
+			l = 'void '+ ParticleClass +'SetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' data)\n{'
 			print l
 
 			l = '  point->'+variable_name_list[f]+' = data;'
@@ -135,9 +137,16 @@ def write_out_setters( protoype, ParticleClass, ParticleClassShortName, variable
 		else:
 			if protoype == 'True':
 				print 'void '+ ParticleClass +'SetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' data[]);'
+        
+				l = 'void '+ ParticleClass +'SetFieldByIndex_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,int index,'+variable_type_list[f]+' value);'
+				print l
+        
+				l = 'void '+ ParticleClass +'SetFieldAll_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' value);'
+				print l
+
 				continue
 
-			l = 'void '+ ParticleClass +'SetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' data[]) \n{'
+			l = 'void '+ ParticleClass +'SetField_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' data[])\n{'
 			print l
 
 
@@ -146,6 +155,19 @@ def write_out_setters( protoype, ParticleClass, ParticleClassShortName, variable
 			
 			print '}\n'
 
+
+			l = 'void '+ ParticleClass +'SetFieldByIndex_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,int index,'+variable_type_list[f]+' value)\n{'
+			print l
+			l = '  point->'+variable_name_list[f]+'[index] = value;'
+			print l
+			print '}\n'
+
+			l = 'void '+ ParticleClass +'SetFieldAll_'+variable_textural_name_list[f]+'('+ParticleClass+' *point,'+variable_type_list[f]+' value)\n{'
+			print l
+			for k in range(0,variable_extend_list[f]):
+				l = '  point->'+variable_name_list[f]+'[' + str(k) + '] = value;'
+				print l
+			print '}\n'
 
 
 # -------------------------------------------------------------------
@@ -204,21 +226,36 @@ def write_out_SetDefaultAll( protoype, ClassName, ClassNameShort, variable_name_
 
 	for f in xrange(L):
 		if variable_type_list[f] == 'float':
-			print '    { double float;'
+			print '    { float value;'
 			print '      ' + ClassName + 'GetDefault_' + variable_textural_name_list[f] + '((float*)&value);'
-			print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(float)value);'
+			if variable_extend_list[f] == 1:
+				print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(float)value);'
+			else:
+				for ii in xrange(variable_extend_list[f]):
+					print '      _data[r].' + variable_name_list[f] + '[' + str(ii) + ']' + ' = value;'
+
 			print '    }\n'
 
 		if variable_type_list[f] == 'double':
 			print '    { double value;'
 			print '      ' + ClassName + 'GetDefault_' + variable_textural_name_list[f] + '((double*)&value);'
-			print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(double)value);'
+			if variable_extend_list[f] == 1:
+				print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(double)value);'
+			else:
+				for ii in xrange(variable_extend_list[f]):
+					print '      _data[r].' + variable_name_list[f] + '[' + str(ii) + ']' + ' = value;'
+
 			print '    }\n'
 
 		if variable_type_list[f] == 'int':
 			print '    { int value;'
 			print '      ' + ClassName + 'GetDefault_' + variable_textural_name_list[f] + '((int*)&value);'
-			print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(int)value);'
+			if variable_extend_list[f] == 1:
+				print '      ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(&_data[r],(int)value);'
+			else:
+				for ii in xrange(variable_extend_list[f]):
+					print '      _data[r].' + variable_name_list[f] + '[' + str(ii) + ']' + ' = value;'
+
 			print '    }\n'
 
 	
@@ -246,7 +283,7 @@ def write_out_GetDefault( prototype, ParticleClass, ParticleClassShortName, vari
 				continue
 			
 
-			l = 'void '+ ParticleClass +'GetDefault_'+variable_textural_name_list[f]+'('+variable_type_list[f]+' *data) \n{'
+			l = 'void '+ ParticleClass +'GetDefault_'+variable_textural_name_list[f]+'('+variable_type_list[f]+' *data)\n{'
 			print l
 
 			l = '  *data = ' + '(' + variable_type_list[f] + ')' +str(variable_defaults[f])+';'
@@ -256,10 +293,10 @@ def write_out_GetDefault( prototype, ParticleClass, ParticleClassShortName, vari
 		else:
 
 			if prototype == 'True':
-				print 'void '+ ParticleClass +'GetDefault_'+variable_textural_name_list[f]+'('+variable_type_list[f]+' *data[]);'
+				print 'void '+ ParticleClass +'GetDefault_'+variable_textural_name_list[f]+'('+variable_type_list[f]+' *data);'
 				continue
 
-			l = 'void '+ ParticleClass +'GetDefault_'+variable_textural_name_list[f]+'('+variable_type_list[f]+' *data[]) \n{'
+			l = 'void '+ ParticleClass +'GetDefault_'+variable_textural_name_list[f]+'('+variable_type_list[f]+' *data)\n{'
 			print l
 
 
@@ -277,8 +314,16 @@ def write_out_SetValues( protoype, ClassName, ClassNameShort, variable_name_list
 	if protoype == 'True':
 		l = 'PetscErrorCode MaterialConstantsSetValues_'+ ClassNameShort +'(const int region_id,'+ ClassName +' _data[],'
 		for f in xrange(L-1):
-			l = l + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
-		l = l + variable_type_list[L-1] + ' ' +  variable_name_list[L-1] + ');'
+			if variable_extend_list[f] == 1:
+				l = l + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
+			else:
+				l = l + variable_type_list[f] + ' *' +  variable_name_list[f] + ','
+
+		if variable_extend_list[L-1] == 1:
+			l = l + variable_type_list[L-1] + ' ' +  variable_name_list[L-1] + ');'
+		else:
+			l = l + variable_type_list[L-1] + ' *' +  variable_name_list[L-1] + ');'
+
 		print(l)
 		return
 
@@ -287,14 +332,25 @@ def write_out_SetValues( protoype, ClassName, ClassNameShort, variable_name_list
 	print '#define __FUNCT__ \"MaterialConstantsSetValues_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsSetValues_'+ ClassNameShort +'(const int region_id,'+ ClassName +' _data[],'
 	for f in xrange(L-1):
-		print '    ' + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
-	print '    ' + variable_type_list[L-1] + ' ' +  variable_name_list[L-1] + ')\n{'
+		if variable_extend_list[f] == 1:
+			print '    ' + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
+		else:
+			print '    ' + variable_type_list[f] + ' *' +  variable_name_list[f] + ','
+
+	if variable_extend_list[L-1] == 1:
+		print '    ' + variable_type_list[L-1] + ' ' +  variable_name_list[L-1] + ')\n{'
+	else:
+		print '    ' + variable_type_list[L-1] + ' *' +  variable_name_list[L-1] + ')\n{'
 
 	print '  ' + ClassName + ' *data = &_data[region_id];'
 
 	for f in xrange(L):
-		print '  data->' + variable_name_list[f] + ' =  ' + variable_name_list[f] + ';'
-	
+		if variable_extend_list[f] == 1:
+			print '  data->' + variable_name_list[f] + ' =  ' + variable_name_list[f] + ';'
+		else:	
+			print('  if (' + variable_name_list[f] +') {')
+			print '    memcpy(data->' + variable_name_list[f] + ',' + variable_name_list[f] + ',' + str(variable_extend_list[f]) + '*sizeof(' + variable_type_list[f] +')' +');'
+			print('  }')
 
 	print '  PetscFunctionReturn(0);'
 	print '} \n'
@@ -302,13 +358,22 @@ def write_out_SetValues( protoype, ClassName, ClassNameShort, variable_name_list
 def write_out_ScaleValues( protoype, ClassName, ClassNameShort, variable_name_list, variable_type_list, variable_extend_list, variable_textural_name_list ):
 
 	#check length
-	L = len(variable_name_list);
+
+	floatlist = []
+	floatvarlist = []
+	for item in xrange(len(variable_type_list)):
+		if variable_type_list[item] != 'int':
+			floatlist.append(variable_type_list[item])
+			floatvarlist.append(variable_name_list[item])
+	L = len(floatlist);
+	
 
 	if protoype == 'True':
 		l = 'PetscErrorCode MaterialConstantsScaleValues_'+ ClassNameShort +'(const int region_id,'+ ClassName +' _data[],'
 		for f in xrange(L-1):
-			l = l + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
-		l = l + variable_type_list[L-1] + ' ' +  variable_name_list[L-1] + ');\n'
+			l = l + floatlist[f] + ' ' +  floatvarlist[f] + ','
+		l = l + floatlist[L-1] + ' ' +  floatvarlist[L-1] + ');\n'
+
 		print(l)
 		return
 
@@ -316,15 +381,17 @@ def write_out_ScaleValues( protoype, ClassName, ClassNameShort, variable_name_li
 	print '#define __FUNCT__ \"MaterialConstantsScaleValues_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsScaleValues_'+ ClassNameShort +'(const int region_id,'+ ClassName +' _data[],'
 	for f in xrange(L-1):
-		print '    ' + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
-	print '    ' + variable_type_list[L-1] + ' ' +  variable_name_list[L-1] + ')\n{'
+		print '    ' + floatlist[f] + ' ' +  floatvarlist[f] + ','
+	print '    ' + floatlist[L-1] + ' ' +  floatvarlist[L-1] + ')\n{'
+
 
 	print '  ' + ClassName + ' *data = &_data[region_id];\n'
 
+	L = len(variable_name_list);
 	for f in xrange(L):
 
 		if variable_type_list[f] == 'float':
-			print '  { double float;'
+			print '  { float value;'
 			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f] + '(data,(float*)&value);'
 			print '    value = value / ' +  variable_name_list[f] + ';'
 			print '    ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(float)value);'
@@ -335,13 +402,6 @@ def write_out_ScaleValues( protoype, ClassName, ClassNameShort, variable_name_li
 			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f] + '(data,(double*)&value);'
 			print '    value = value / ' +  variable_name_list[f] + ';'
 			print '    ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(double)value);'
-			print '  }\n'
-
-		if variable_type_list[f] == 'int':
-			print '  { int value;'
-			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f] + '(data,(int*)&value);'
-			print '    value = value / ' +  variable_name_list[f] + ';'
-			print '    ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(int)value);'
 			print '  }\n'
 
 	
@@ -376,25 +436,58 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 		print '  sprintf(opt_name,"-' + variable_textural_name_list[f] + '_%d",region_id);'
 
 		if variable_type_list[f] == 'float':
-			print '  { PetscReal value;'
-			print '    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
-			print '    if (found) { ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(float)value); }'
+			if variable_extend_list[f] == 1:
+				print '  { PetscReal value;'
+				print '    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);'
+				print '    if (found) {'
+				print '      data->' + variable_name_list[f] + ' = (float)value;'
+			else:
+				print '  { PetscReal value['+ str(variable_extend_list[f]) + '];'
+				print '    PetscInt nv;'
+				print '    ierr = PetscOptionsGetRealArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
+				print '    if (found) {'
+				for ii in xrange(variable_extend_list[f]):
+					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (float)value[' + str(ii) + '];'
+			print '    }'
+
 			print '    else if ( (!found)  && (essential) ) {'
 			print '      ierr = MaterialConstantsReportParseError(model_name,"' + variable_textural_name_list[f] + '",region_id);CHKERRQ(ierr);'
 			print '  }}\n'
 
 		if variable_type_list[f] == 'double':
-			print '  { PetscReal value;'
-			print '    ierr = PetscOptionsGetReal(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
-			print '    if (found) { ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(double)value); }'
+			if variable_extend_list[f] == 1:
+				print '  { PetscReal value;'
+				print '    ierr = PetscOptionsGetReal(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);'
+				print '    if (found) {'
+				print '      data->' + variable_name_list[f] + ' = (double)value;'
+			else:
+				print '  { PetscReal value['+ str(variable_extend_list[f]) + '];'
+				print '    PetscInt nv;'
+				print '    ierr = PetscOptionsGetRealArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
+				print '    if (found) {'
+				for ii in xrange(variable_extend_list[f]):
+					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (double)value[' + str(ii) + '];'
+			print '    }'
+
 			print '    else if ( (!found)  && (essential) ) {'
 			print '      ierr = MaterialConstantsReportParseError(model_name,"' + variable_textural_name_list[f] + '",region_id);CHKERRQ(ierr);'
 			print '  }}\n'
 
 		if variable_type_list[f] == 'int':
-			print '  { PetscInt value;'
-			print '    ierr = PetscOptionsGetInt(model_name,opt_name,&value,&found);CHKERRQ(ierr);'
-			print '    if (found) { ' + ClassName + 'SetField_' + variable_textural_name_list[f] + '(data,(int)value); }'
+			if variable_extend_list[f] == 1:
+				print '  { PetscInt value;'
+				print '    ierr = PetscOptionsGetInt(NULL,model_name,opt_name,&value,&found);CHKERRQ(ierr);'
+				print '    if (found) {'
+				print '      data->' + variable_name_list[f] + ' = (int)value;'
+			else:
+				print '  { PetscInt value['+ str(variable_extend_list[f]) + '];'
+				print '    PetscInt nv;'
+				print '    ierr = PetscOptionsGetIntArray(NULL,model_name,opt_name,value,&nv,&found);CHKERRQ(ierr);'
+				print '    if (found) {'
+				for ii in xrange(variable_extend_list[f]):
+					print '      data->' + variable_name_list[f] + '[' + str(ii) + ']' + ' = (int)value[' + str(ii) + '];'
+			print '    }'
+
 			print '    else if ( (!found)  && (essential) ) {'
 			print '      ierr = MaterialConstantsReportParseError(model_name,"' + variable_textural_name_list[f] + '",region_id);CHKERRQ(ierr);'
 			print '  }}\n'
@@ -418,7 +511,7 @@ def write_out_PrintValues( protoype, ClassName, ClassNameShort, variable_name_li
 
 	print '#undef __FUNCT__'
 	print '#define __FUNCT__ \"MaterialConstantsPrintValues_'+ ClassNameShort+'\"'
-	print 'PetscErrorCode MaterialConstantsPrintValues_'+ ClassNameShort +'(const char model_name[],const int region_id,' + ClassName +' _data[]) \n{'
+	print 'PetscErrorCode MaterialConstantsPrintValues_'+ ClassNameShort +'(const char model_name[],const int region_id,' + ClassName +' _data[])\n{'
 	print '  ' + ClassName + ' *data = &_data[region_id];'
 	print '  char   opt_name[PETSC_MAX_PATH_LEN];\n'
 
@@ -429,20 +522,22 @@ def write_out_PrintValues( protoype, ClassName, ClassNameShort, variable_name_li
 		print '  /* options for ' + variable_textural_name_list[f] + ' ==>> ' + variable_name_list[f] + ' */'
 		print '  sprintf(opt_name,"-%s_'+variable_textural_name_list[f]+'_%d", model_name,region_id);'
 
-		if variable_type_list[f] == 'float':
-			print '  { float value;'
-			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f]+ '(data,(float*)&value);'
-			print '    PetscPrintf(PETSC_COMM_WORLD,"    ' + variable_textural_name_list[f] + ' = %1.4e (%s) \\n", value,opt_name); \n  }\n'
+		if variable_extend_list[f] == 1:
 
-		if variable_type_list[f] == 'double':
-			print '  { double value;'
-			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f]+ '(data,(double*)&value);'
-			print '    PetscPrintf(PETSC_COMM_WORLD,"    ' + variable_textural_name_list[f] + ' = %1.4e (%s) \\n", value,opt_name); \n  }\n'
+			if variable_type_list[f] == 'float':
+				print '  { float value;'
+				print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f]+ '(data,(float*)&value);'
+				print '    PetscPrintf(PETSC_COMM_WORLD,"    ' + variable_textural_name_list[f] + ' = %1.4e (%s) \\n", value,opt_name); \n  }\n'
 
-		if variable_type_list[f] == 'int':
-			print '  { int value;'
-			print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f]+ '(data,(int*)&value);'
-			print '    PetscPrintf(PETSC_COMM_WORLD,"    ' + variable_textural_name_list[f] + ' = %d (%s) \\n", value,opt_name); \n  }\n'
+			if variable_type_list[f] == 'double':
+				print '  { double value;'
+				print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f]+ '(data,(double*)&value);'
+				print '    PetscPrintf(PETSC_COMM_WORLD,"    ' + variable_textural_name_list[f] + ' = %1.4e (%s) \\n", value,opt_name); \n  }\n'
+
+			if variable_type_list[f] == 'int':
+				print '  { int value;'
+				print '    ' + ClassName + 'GetField_' + variable_textural_name_list[f]+ '(data,(int*)&value);'
+				print '    PetscPrintf(PETSC_COMM_WORLD,"    ' + variable_textural_name_list[f] + ' = %d (%s) \\n", value,opt_name); \n  }\n'
 
 	
 	print '  PetscFunctionReturn(0);'
@@ -629,60 +724,151 @@ def MATERIALPROP_CLASS_GENERATOR( ParticleClass, ParticleClassShort, variable_na
 
 
 def Generate_pTatin_MaterialConst_ViscosityArrh():
-	ClassName      = 'MaterialConst_ViscosityArrh'
-	ClassNameShort = 'ViscosityArrh'
-	variable_names =          [ 'preexpA','Ascale' ,'entalpy' , 'Vmol'   ,'nexp'    ,'Tref'    ,'Eta_scale','P_scale']       
-	variable_types =          [ 'double' ,'double' , 'double' , 'double' , 'int' , 'double' ,'double'   ,'int' ]
-	variable_extents        = [ 1        ,      1  ,       1  , 1        , 1        ,  1       , 1         ,    1    ]
-	variable_textural_names = [ 'WORDYpreexpA','WORDYAscale' ,'WORDYentalpy' , 'WORDYVmol'   ,'WORDYnexp'    ,'WORDYTref'    ,'WORDYEta_scale','WORDYP_scale']       
-	variable_defaults       = [ 1.0      , 1.0     , 0.0      , 0.0      , 0        ,  0.0     , 1.0       , 1.0     ]
+  ClassName      = 'MaterialConst_ViscosityArrh'
+  ClassNameShort = 'ViscosityArrh'
+  variable_names =          [ 'preexpA','Ascale' ,'entalpy' , 'Vmol'   ,'nexp'    ,'Tref'    ,'Eta_scale','P_scale']
+  variable_types =          [ 'double' ,'double' , 'double' , 'double' , 'double' , 'double' ,'double'   , 'double' ]
+  variable_extents        = [ 1        ,      1  ,       1  , 1        , 1        ,  1       , 1         ,    1    ]
+  variable_textural_names = [ 'preexpA','Ascale' ,'entalpy' , 'Vmol'   ,'nexp'    ,'Tref'    ,'Eta_scale','P_scale']
+  variable_defaults       = [ 1.0      , 1.0     , 0.0      , 0.0      , 0        ,  0.0     , 1.0       , 1.0     ]
 
-	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
 
 def Generate_pTatin_MaterialConst_DiffusivityConst():
-	ClassName      = 'MaterialConst_DiffusivityConst'
-	ClassNameShort = 'DiffusivityConst'
-	variable_names =          [ 'k',      'Cp',     'rho_t'  ]       
-	variable_types =          [ 'double', 'double', 'double' ]
-	variable_extents        = [ 1,         1,       1        ]
-	variable_textural_names = [ 'conductivity','heat_capacity' ,'thermal_density' ]       
-	variable_defaults       = [ 1.0,       1.0,      1.0     ]
+  ClassName      = 'MaterialConst_DiffusivityConst'
+  ClassNameShort = 'DiffusivityConst'
+  variable_names =          [ 'k',      'Cp',     'rho_t'  ]
+  variable_types =          [ 'double', 'double', 'double' ]
+  variable_extents        = [ 1,         1,       1        ]
+  variable_textural_names = [ 'conductivity','heat_capacity' ,'thermal_density' ]
+  variable_defaults       = [ 1.0,       1.0,      1.0     ]
 
-	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
 def Generate_pTatin_MaterialConst_VolumetricHeatingConst():
-	ClassName      = 'MaterialConst_VolumetricHeatingConst'
-	ClassNameShort = 'VolumetricHeatingConst'
-	variable_names =          [ 'H',     ]       
-	variable_types =          [ 'double' ]
-	variable_extents        = [ 1        ]
-	variable_textural_names = [ 'heat_source' ]       
-	variable_defaults       = [ 0.0   ]
+  ClassName      = 'MaterialConst_VolumetricHeatingConst'
+  ClassNameShort = 'VolumetricHeatingConst'
+  variable_names =          [ 'H',     ]
+  variable_types =          [ 'double' ]
+  variable_extents        = [ 1        ]
+  variable_textural_names = [ 'heat_source' ]
+  variable_defaults       = [ 0.0   ]
 
-	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
 
 def Generate_pTatin_MaterialConst_PowerLaw():
-	ClassName      = 'MaterialConst_PowerLaw'
-	ClassNameShort = 'PowerLaw'
-	variable_names =          [ 'A'        , 'n'      ]       
-	variable_types =          [ 'double'   , 'double' ]
-	variable_extents        = [ 1          , 1        ]
-	variable_textural_names = [ 'prefactor', 'n'      ]
-	variable_defaults       = [ 0.0        , 0.0      ]
+  ClassName      = 'MaterialConst_PowerLaw'
+  ClassNameShort = 'PowerLaw'
+  variable_names =          [ 'A'        , 'n'      ]
+  variable_types =          [ 'double'   , 'double' ]
+  variable_extents        = [ 1          , 1        ]
+  variable_textural_names = [ 'prefactor', 'n'      ]
+  variable_defaults       = [ 0.0        , 0.0      ]
 
-	MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+# Material constants for energy equation
+def Generate_EnergyMaterialConstants():
+  ClassName      = 'EnergyMaterialConstants'
+  ClassNameShort = 'EnergyMaterialConstants'
+  variable_names =          [ 'alpha', 'beta', 'rho_ref', 'Cp', 'density_type', 'conductivity_type', 'source_type'   ]
+  variable_types =          [ 'double', 'double', 'double', 'double', 'int', 'int', 'int' ]
+  variable_extents        = [  1,       1,         1,        1,        1,1,7    ]
+  variable_textural_names = [ 'ThermalExpansivity', 'Compressibility', 'ReferenceDensity', 'SpecificHeat', 'DensityMethod', 'ConductivityMethod', 'SourceMethod' ]
+  variable_defaults       = [ 0.0, 0.0, 0.0, 1.0, 0,0,0 ]
+
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+def Generate_EnergySourceConst():
+  ClassName      = 'EnergySourceConst'
+  ClassNameShort = 'SourceConst'
+  variable_names =          [ 'H'          ]
+  variable_types =          [ 'double'     ]
+  variable_extents        = [ 1            ]
+  variable_textural_names = [ 'HeatSource' ]
+  variable_defaults       = [ 0.0          ]
+
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+def Generate_EnergySourceDecay():
+  ClassName      = 'EnergySourceDecay'
+  ClassNameShort = 'SourceDecay'
+  variable_names =          [ 'H0', 'lambda'      ]
+  variable_types =          [ 'double' , 'double' ]
+  variable_extents        = [ 1, 1           ]
+  variable_textural_names = [ 'HeatSourceRef', 'HalfLife' ]
+  variable_defaults       = [ 0.0, 0.0 ]
+
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+def Generate_EnergySourceAdiabaticAdvection():
+  ClassName      = 'EnergySourceAdiabaticAdvection'
+  ClassNameShort = 'SourceAdiabaticAdv'
+  variable_names =          [ 'dTdy'   ]
+  variable_types =          [ 'double' ]
+  variable_extents        = [ 1        ]
+  variable_textural_names = [ 'VerticalThermalGradient' ]
+  variable_defaults       = [ 0.0 ]
+
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+def Generate_EnergyConductivityConst():
+  ClassName      = 'EnergyConductivityConst'
+  ClassNameShort = 'ConductivityConst'
+  variable_names =          [ 'k0' ]
+  variable_types =          [ 'double' ]
+  variable_extents        = [ 1 ]
+  variable_textural_names = [ 'k0' ]
+  variable_defaults       = [ 0.0 ]
+
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+def Generate_EnergyConductivityThreshold():
+  ClassName      = 'EnergyConductivityThreshold'
+  ClassNameShort = 'ConductivityThreshold'
+  variable_names =          [ 'k0', 'k1', 'T_threshold', 'dT'     ]
+  variable_types =          [ 'double' , 'double', 'double', 'double' ]
+  variable_extents        = [ 1, 1, 1, 1           ]
+  variable_textural_names = [ 'k0', 'k1', 'ThresholdTemperature', 'DeltaT' ]
+  variable_defaults       = [ 0.0, 0.0, 0.0, 0.0 ]
+
+  MATERIALPROP_CLASS_GENERATOR( ClassName, ClassNameShort, variable_names, variable_types, variable_extents, variable_textural_names, variable_defaults )
+
+
+
+
+
+
+
 
 
 
 # Call all functions to generate all data types
 def main():
-	
-	## material constants ##
-	Generate_pTatin_MaterialConst_ViscosityArrh()
-	Generate_pTatin_MaterialConst_DiffusivityConst()
-	Generate_pTatin_MaterialConst_VolumetricHeatingConst()
-	Generate_pTatin_MaterialConst_PowerLaw()
+
+  ## material constants ##
+  Generate_pTatin_MaterialConst_ViscosityArrh()
+  Generate_pTatin_MaterialConst_DiffusivityConst()
+  Generate_pTatin_MaterialConst_VolumetricHeatingConst()
+  Generate_pTatin_MaterialConst_PowerLaw()
+
+  ## Material metadata for energy equations
+  Generate_EnergyMaterialConstants()
+  Generate_EnergySourceConst()
+  Generate_EnergySourceDecay()
+  Generate_EnergySourceAdiabaticAdvection()
+
+  Generate_EnergyConductivityConst()
+  Generate_EnergyConductivityThreshold()
+
+
 
 if __name__ == "__main__":
 	main()

@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -214,6 +213,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void 
     Ly = 30.0 * 1.0e3; /* km */
     Lz = 35.0 * 1.0e3; /* km */
 	ierr = DMDASetUniformCoordinates(dav,0.0,Lx/modeldata->L_bar, 0.0,Ly/modeldata->L_bar, 0.0,Lz/modeldata->L_bar);CHKERRQ(ierr);
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }

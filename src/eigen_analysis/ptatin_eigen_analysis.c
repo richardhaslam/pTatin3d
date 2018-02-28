@@ -33,7 +33,7 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 #include "slepceps.h"
 
-#include "petsc-private/dmdaimpl.h" 
+#include "petsc/private/dmdaimpl.h" 
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -455,7 +455,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
   }
   
   max = nlevels;
-  ierr = PetscOptionsGetIntArray(NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetIntArray(NULL,NULL,"-A11_operator_type",(PetscInt*)level_type,&max,&flg);CHKERRQ(ierr);
   for (k=nlevels-1; k>=0; k--) {
     
     switch (level_type[k]) {
@@ -506,11 +506,11 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         {
           PetscBool use_low_order_geometry = PETSC_FALSE;
           
-          ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
           if (use_low_order_geometry==PETSC_TRUE) {
             Mat Buu;
             
-            if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Activiting low order A11 operator \n");
+            if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Activating low order A11 operator \n");
             ierr = StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(A11Ctx,&Buu);CHKERRQ(ierr);
             ierr = MatShellGetMatA11MF(Buu,&mf);CHKERRQ(ierr);
             ierr = DMDestroy(&mf->daU);CHKERRQ(ierr);
@@ -596,7 +596,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
     ierr = PCMGGetSmoother(pc_i,k,&ksp_smoother);CHKERRQ(ierr);
     
     // use A for smoother, B for residual
-    ierr = PetscOptionsGetBool(NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-use_low_order_geometry",&use_low_order_geometry,NULL);CHKERRQ(ierr);
     if (use_low_order_geometry==PETSC_TRUE) {
       ierr = KSPSetOperators(ksp_smoother,operatorB11[k],operatorB11[k]);CHKERRQ(ierr);
       //ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorB11[k]);CHKERRQ(ierr);
@@ -644,7 +644,7 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
 	ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
 	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
 	ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4G, maxit=%D\n",tol,maxit);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",(double)tol,maxit);CHKERRQ(ierr);
 	
 	ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
 	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
@@ -1137,8 +1137,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   PetscFunctionBegin;
   
   /* PS: collect new flags for custom dumps */
-  ierr = PetscOptionsGetBool(NULL,"-asm_dump",&asm_dump,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,"-block_dump",&block_dump,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-asm_dump",&asm_dump,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-block_dump",&block_dump,NULL);CHKERRQ(ierr);
   
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -1200,7 +1200,7 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   
   /* setup mg */
   nlevels = 1;
-  PetscOptionsGetInt(NULL,"-dau_nlevels",&nlevels,0);
+  PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,0);
   PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%d x %d x %d) : MG levels %d  \n", user->mx,user->my,user->mz,nlevels );
   ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
   ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -1330,8 +1330,8 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
     PetscInt eigen_anal = 0;
     PetscBool view = PETSC_FALSE;
     
-    ierr = PetscOptionsGetInt(NULL,"-eigen_anal",&eigen_anal,NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsGetBool(NULL,"-eigen_anal_view_operators",&view,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(NULL,NULL,"-eigen_anal",&eigen_anal,NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetBool(NULL,NULL,"-eigen_anal_view_operators",&view,NULL);CHKERRQ(ierr);
 
     switch (eigen_anal) {
       case 0:
@@ -1418,6 +1418,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   
   ierr = SlepcInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
 
   ierr = pTatin3d_linear_viscous_forward_model_driver(argc,argv);CHKERRQ(ierr);
   

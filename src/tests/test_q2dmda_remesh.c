@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#define _GNU_SOURCE
 
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"

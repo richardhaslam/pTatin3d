@@ -287,38 +287,3 @@ PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
 	
 	PetscFunctionReturn(0);
 }
-
-
-# if 0
-
-#undef __FUNCT__
-#define __FUNCT__ "pTatinWriteRevision"
-PetscErrorCode pTatinWriteRevision(const char output_path[])
-{
-	int            svn;
-	PetscMPIInt    rank;
-	char           cmd[256];
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	
-	if (rank == 0) {
-
-		/* subversion */
-		if (svn) {
-			/* svn info svn+ssh://dmay@musashi.ethz.ch/var/svn/davemay/Codes/tatin/ptatin3d : requires password */
-			
-			/* this will only work if run from the current directory */
-			sprintf(cmd,"svn info > %s/ptatin.revision",output_path);
-			system(cmd);
-		}
-		
-	}
-	
-	ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
-}
-
-#endif
-

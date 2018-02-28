@@ -27,13 +27,14 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
 #include "ptatin_models.h"
 
 pTatinModel *registered_model_list = NULL;
+PetscFunctionList ptatin_registered_model_flist = NULL;
+
 
 PetscLogEvent PTATIN_ModelInitialize;
 PetscLogEvent PTATIN_ModelApplyInitialSolution;
@@ -292,8 +293,31 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatinModelGetByName"
-PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
+#define __FUNCT__ "pTatinModelDynamicRegister"
+PetscErrorCode pTatinModelDynamicRegister(const char modelname[],PetscErrorCode (*create)(pTatinModel))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* check model not already loaded with same name */
+  if (ptatin_registered_model_flist) {
+    PetscErrorCode (*methodexists)(pTatinModel);
+    
+    ierr = PetscFunctionListFind(ptatin_registered_model_flist,modelname,&methodexists);CHKERRQ(ierr);
+    if (methodexists) {
+      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"  [pTatinModelDynamic]: Model with name \"%s\" has already been registered",modelname );
+    }
+  }
+
+  PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModelDynamic]: Dynamically registering model with name \"%s\"\n",modelname );
+  ierr = PetscFunctionListAdd(&ptatin_registered_model_flist,modelname,create);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModelStaticGetByName"
+PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
 {	
 	PetscErrorCode ierr;
 	PetscInt index;
@@ -302,11 +326,58 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
 	*model = NULL;
 	ierr = ptatin_match_model_index(name,&index);CHKERRQ(ierr);
 	if ( index==-1 ) {
-		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't identified in list registered_model_list[]",name );
+		//SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't identified in list registered_model_list[]",name );
+    PetscFunctionReturn(0);
 	}
 	(*model) = registered_model_list[index];
 	
 	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModelDynamicGetByName"
+PetscErrorCode pTatinModelDynamicGetByName(const char modelname[],pTatinModel *model)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*create)(pTatinModel);
+
+  PetscFunctionBegin;
+  *model = NULL;
+  ierr = PetscFunctionListFind(ptatin_registered_model_flist,modelname,&create);CHKERRQ(ierr);
+  if (!create) {
+    //SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModelDynamic]: -ptatin_model \"%s\" wasn't identified in function pointer list ptatin_registered_model_flist[]",modelname );
+    PetscFunctionReturn(0);
+  }
+  ierr = pTatinModelCreate(model);CHKERRQ(ierr);
+  ierr = pTatinModelSetName(*model,modelname);CHKERRQ(ierr);
+  ierr = create(*model);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinModelGetByName"
+PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = pTatinModelDynamicGetByName(name,model);CHKERRQ(ierr);
+  if ((*model)) {
+    /* Calling this allows us to free the models by traversing registered_model_list[], */
+    /* as opposed to having the drivers call pTatinModelDestroy() */
+    /* This function call should be removed as soon as the static models are removed */
+    ierr = pTatinModelRegister(*model);CHKERRQ(ierr);
+  }
+  if (!(*model)) {
+    ierr = pTatinModelStaticGetByName(name,model);CHKERRQ(ierr);
+  }
+  if (!(*model)) {
+    SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel(Static/Dynamic)]: -ptatin_model \"%s\" wasn't identified as a registered model",name );
+  }
+  
+  PetscFunctionReturn(0);
 }
 
 /* wrappers */
@@ -526,6 +597,10 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
     item = registered_model_list[i];
   }
   free(registered_model_list);
+  
+  if (ptatin_registered_model_flist) {
+    ierr = PetscFunctionListDestroy(&ptatin_registered_model_flist);CHKERRQ(ierr);
+  }
   
 	PetscFunctionReturn(0);
 }

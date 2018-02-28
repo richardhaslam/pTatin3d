@@ -58,6 +58,7 @@ PetscErrorCode pTatinModelDestroy(pTatinModel *m);
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[]);
 PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperation type,void(*func)(void));
 PetscErrorCode pTatinModelRegister(pTatinModel model);
+PetscErrorCode pTatinModelDynamicRegister(const char modelname[],PetscErrorCode (*create)(pTatinModel));
 PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model);
 
 PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data);

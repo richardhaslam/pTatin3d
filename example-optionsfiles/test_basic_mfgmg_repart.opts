@@ -20,6 +20,7 @@
 -fieldsplit_u_ksp_monitor
 -fieldsplit_u_ksp_norm_type NONE
 -fieldsplit_u_ksp_type fgmres
+-fieldsplit_u_pc_type mg
 -fieldsplit_u_mg_coarse_dmdarepart_ksp_max_it 20
 -fieldsplit_u_mg_coarse_dmdarepart_ksp_monitor
 -fieldsplit_u_mg_coarse_dmdarepart_ksp_norm_type UNPRECONDITIONED

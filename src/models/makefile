@@ -4,14 +4,12 @@ TATIN_MODEL_DIR = \
 	template \
 	viscous_sinker \
 	indentor \
-	rift3D \
 	rift3D_T \
 	gene3d \
-	gene3d_nueve \
-	sierra \
 	advdiff_example\
 	delamination \
 	riftrh \
+	rift_oblique3d \
 	geomod2008 \
 	multilayer_folding \
 	submarinelavaflow \

@@ -36,6 +36,9 @@
 #include "QPntSurfCoefStokes_def.h"
 #include "dmda_bcs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 PetscErrorCode StokesVelocity_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[]);
 PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[]);
@@ -94,5 +97,8 @@ PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stoke
 PetscErrorCode PhysCompStokesGetSurfaceQuadrature(PhysCompStokes stokes,HexElementFace fid,SurfaceQuadrature *sq);
 PetscErrorCode PhysCompStokesGetSurfaceQuadratureAllCellData(PhysCompStokes stokes,HexElementFace fid,QPntSurfCoefStokes *coeffs[]);
 
+#ifdef __cplusplus
+}
+#endif
 #endif
 

@@ -28,7 +28,6 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
 
-#define _GNU_SOURCE
 #include "petsc.h"
 #include "ptatin3d.h"
 #include "private/ptatin_impl.h"
@@ -439,7 +438,7 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 		HPctx.surface_pressure = 0.0;
 		HPctx.ref_height = height;
 		HPctx.ref_N      = c->stokes_ctx->my-1;
-		HPctx.grav       = 10.0;
+		HPctx.grav       = 9.8;
 		HPctx.rho        = data->rhom;
 		ierr = DMDAVecTraverseIJK(dap,pressure,0,DMDAVecTraverseIJK_HydroStaticPressure_v2,     (void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify P0 (idx=0) */
 		ierr = DMDAVecTraverseIJK(dap,pressure,2,DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2,(void*)&HPctx);CHKERRQ(ierr); /* P = P0 + a.x + b.y + c.z, modify b  (idx=2) */
@@ -718,6 +717,10 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 	
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	PetscPrintf(PETSC_COMM_WORLD,"[riftrh] Lx = %1.4e \n", data->Lx );
+  {
+    PetscReal gvec[] = { 0.0, -9.81, 0.0 };
+    ierr = PhysCompStokesSetGravityVector(c->stokes_ctx,gvec);CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }

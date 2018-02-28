@@ -1,5 +1,5 @@
 libptatin3d-y.c += $(call thisdir, \
-            pswarm.c \
+			pswarm.c \
 			dmda_update_coords.c \
 			dmda_project_coords.c \
 			dmda_compare.c \
@@ -19,7 +19,7 @@ libptatin3d-y.c += $(call thisdir, \
 			element_type_Q2.c \
 			dmda_element_q1macrop1.c \
 			data_bucket.c \
-            data_bucket_view.c \
+			data_bucket_view.c \
 			data_exchanger.c \
 			sub_comm.c \
 			MPntStd_def.c \
@@ -32,6 +32,7 @@ libptatin3d-y.c += $(call thisdir, \
 			output_paraview.c \
 			xdmf_writer.c \
 			output_material_points.c \
+			output_material_points_p0.c \
 			material_point_utils.c \
 			material_point_std_utils.c \
 			material_point_point_location.c \
@@ -46,12 +47,14 @@ libptatin3d-y.c += $(call thisdir, \
 			phys_comp_energy.c \
 			energy_assembly.c \
 			energy_output.c \
+			energy_coefficients.c \
 			ptatin3d_stokes_q1macrop1.c \
 			ptatin3d.c \
 			ptatin_std_dirichlet_boundary_conditions.c \
 			ptatin_models.c \
 			rheology.c \
 			material_constants.c \
+			material_constants_energy.c \
 			stokes_rheology_viscous.c \
 			stokes_rheology_vp_std.c \
 			stokes_rheology_lava.c \
@@ -80,13 +83,25 @@ libptatin3d-y.c += $(call thisdir, \
 			geometry_object_parse.c \
 			spm_utils.c \
 			petsc_utils.c \
-            mpiio_blocking.c \
-            quantity.c \
+			mpiio_blocking.c \
+			inorms.c \
+	)
+
+libptatin3d-$(CONFIG_CUDA).cu += $(call thisdir, \
+			stokes_operators_cuda.cu \
 	)
 
 libptatin3d-$(CONFIG_AVX).c += $(call thisdir, \
 			stokes_operators_avx.c \
 	)
+libptatin3d-$(CONFIG_AVX_CUDA).c += $(call thisdir, \
+			stokes_operators_subrepart.c \
+	)
+
+libptatin3d-$(CONFIG_OPENCL).c += $(call thisdir, \
+			stokes_operators_opencl.c \
+	)
+
 # One file needs special flags.
 $(OBJDIR)/$(call thisdir,ptatin_init.o) : CFLAGS += -DCOMPFLAGS='$(TATIN_CFLAGS)'
 

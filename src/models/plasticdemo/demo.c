@@ -26,7 +26,6 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-#define _GNU_SOURCE
 #include "petsc.h"
 
 #include "ptatin3d.h"
@@ -156,7 +155,7 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     
     ierr = MaterialConstantsSetValues_ViscosityConst(materialconstants,regionidx,1.0e21);CHKERRQ(ierr);
     
-    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,2.700000e+03/(-10.0));
+    MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,2.700000e+03);
     
     /* layer */
     for (midx=1; midx<=(PetscInt)C_IDX; midx++) {
@@ -169,7 +168,7 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
         
         ierr = MaterialConstantsSetValues_PlasticDP(materialconstants,regionidx,30.0*M_PI/180.0,30.0*M_PI/180.0,1.000000e+08,1.000000e+08,1.000000e+07,1.000000e+10);CHKERRQ(ierr);
         
-        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,2.700000e+03/(-10.0));
+        MaterialConstantsSetValues_DensityConst(materialconstants,regionidx,2.700000e+03);
     }
     
     /* Material constant */
@@ -525,7 +524,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
         DataFieldAccessPoint(PField_dens_const,ridx,(void**)&mc_density);
         DataFieldAccessPoint(PField_visc_const,ridx,(void**)&mc_visc);
         
-        ierr = MaterialPointSet_density(mpX,    p, mc_density->density*(-10.0));CHKERRQ(ierr);
+        ierr = MaterialPointSet_density(mpX,    p, mc_density->density);CHKERRQ(ierr);
         ierr = MaterialPointSet_viscosity(mpX,  p, mc_visc->eta0);CHKERRQ(ierr);
     }
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
