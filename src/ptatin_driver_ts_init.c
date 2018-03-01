@@ -12,6 +12,7 @@ static const char help[] = "pTatin3d 1.0.0: Generate an initial condition \n\n";
 #include "ptatin_log.h"
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
+#include "energy_assembly.h"
 #include "dmda_checkpoint.h"
 #include "dmda_element_q2p1.h"
 #include "dmda_element_q1.h"
@@ -23,6 +24,7 @@ static const char help[] = "pTatin3d 1.0.0: Generate an initial condition \n\n";
 #include "monitors.h"
 #include "mp_advection.h"
 #include "mesh_update.h"
+#include "material_point_popcontrol.h"
 
 #define MAX_MG_LEVELS 20
 
@@ -1320,37 +1322,52 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
 PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
 {
   PetscInt k,step0;
-  Vec Xs = NULL,Xe = NULL;
+  Vec X_s = NULL,X_e = NULL, velocity,pressure;
+  Vec F_s = NULL,F_e = NULL;
   PetscBool energy_activated;
   PhysCompStokes  stokes = NULL;
   PhysCompEnergy  energy = NULL;
-  DM dmstokes,dmenergy = NULL;
+  DM dmstokes,dmv,dmp,dmenergy = NULL;
   PetscErrorCode ierr;
   pTatinModel     model = NULL;
-
+  PetscReal       surface_displacement_max = 1.0e32;
+  PetscLogDouble  time[4];
+  AuuMultiLevelCtx mgctx;
+  PetscReal        timestep,dt_factor = 10.0;
+  Mat              J_e;
+  
+  /* driver specific options parsed here */
+  ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+  
   ierr = pTatinGetModel(pctx,&model);CHKERRQ(ierr);
-
   ierr = pTatinGetStokesContext(pctx,&stokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
 
   if (v1) {
-    Xs = v1;
+    X_s = v1;
   } else {
-    ierr = DMCreateGlobalVector(dmstokes,&Xs);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dmstokes,&X_s);CHKERRQ(ierr);
   }
-
+  ierr = VecDuplicate(X_s,&F_s);CHKERRQ(ierr);
+  
   ierr = pTatinContextValid_Energy(pctx,&energy_activated);CHKERRQ(ierr);
   if (energy_activated) {
     ierr = pTatinGetContext_Energy(pctx,&energy);CHKERRQ(ierr);
     dmenergy = energy->daT;
-    ierr = DMCreateGlobalVector(dmenergy,&Xe);CHKERRQ(ierr);
-    
     if (v2) {
-      Xe = v2;
+      X_e = v2;
     } else {
-      ierr = DMCreateGlobalVector(dmenergy,&Xe);CHKERRQ(ierr);
+      ierr = DMCreateGlobalVector(dmenergy,&X_e);CHKERRQ(ierr);
     }
+    ierr = VecDuplicate(X_e,&F_e);CHKERRQ(ierr);
+    ierr = DMSetMatType(dmenergy,MATAIJ);CHKERRQ(ierr);
+    ierr = DMCreateMatrix(dmenergy,&J_e);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(J_e);CHKERRQ(ierr);
   }
+  
+  
+  ierr = HMG_SetUp(&mgctx,pctx);CHKERRQ(ierr);
   
   step0 = pctx->step + 1;
   for (k=step0; k<=pctx->nsteps; k++) {
@@ -1360,27 +1377,152 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     dt_curr = pctx->dt;
     
     printf("  [executing time step %3d] : curr time %+1.4e : advancing time by dt %+1.8e \n",k,pctx->time,dt_curr);
+
+    /* <<<------------------------------------------------------- >>> */
+    /* <<<------------------------------------------------------- >>> */
+    /* <<<------------------------------------------------------- >>> */
+
+    ierr = pTatinLogBasic(pctx);CHKERRQ(ierr);
+
+    
+    /* update marker time dependent terms */
+    /* e.g. e_plastic^1 = e_plastic^0 + dt * [ strain_rate_inv(u^0) ] */
+    /*
+     NOTE: for a consistent forward difference time integration we evaluate u^0 at x^0
+     - thus this update is performed BEFORE we advect the markers
+     */
+    ierr = pTatin_UpdateCoefficientTemporalDependence_Stokes(pctx,X_s);CHKERRQ(ierr);
+    
+    /* update marker positions */
+    ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = MaterialPointStd_UpdateGlobalCoordinates(pctx->materialpoint_db,dmv,velocity,pctx->dt);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+    
+    /* update mesh */
+    ierr = pTatinModel_UpdateMeshGeometry(model,pctx,X_s);CHKERRQ(ierr);
+    
+    /* update mesh coordinate hierarchy */
+    //todo//ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
+    
+    /* 3 Update local coordinates and communicate */
+    ierr = MaterialPointStd_UpdateCoordinates(pctx->materialpoint_db,dmv,pctx->materialpoint_ex);CHKERRQ(ierr);
+    
+    /* 3a - Add material */
+    ierr = pTatinModel_ApplyMaterialBoundaryCondition(model,pctx);CHKERRQ(ierr);
+    
+    /* add / remove points if cells are over populated or depleted of points */
+    ierr = MaterialPointPopulationControl_v1(pctx);CHKERRQ(ierr);
+    
+    
+    /* update markers = >> gauss points */
+    {
+      int               npoints;
+      DataField         PField_std;
+      DataField         PField_stokes;
+      MPntStd           *mp_std;
+      MPntPStokes       *mp_stokes;
+      
+      DataBucketGetDataFieldByName(pctx->materialpoint_db, MPntStd_classname     , &PField_std);
+      DataBucketGetDataFieldByName(pctx->materialpoint_db, MPntPStokes_classname , &PField_stokes);
+      
+      DataBucketGetSizes(pctx->materialpoint_db,&npoints,NULL,NULL);
+      mp_std    = PField_std->data; /* should write a function to do this */
+      mp_stokes = PField_stokes->data; /* should write a function to do this */
+      
+      ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(pctx->coefficient_projection_type,npoints,mp_std,mp_stokes,mgctx.nlevels,mgctx.interpolation_eta,mgctx.dav_hierarchy,mgctx.volQ);CHKERRQ(ierr);
+    }
+    if (energy_activated) {
+      /* copy current (undeformed) energy mesh coords, update energy mesh geometry */
+      ierr = pTatinPhysCompEnergy_Update(energy,dmv,X_e);CHKERRQ(ierr);
+      
+      /* update v-V using new mesh coords and the previous mesh coords */
+      ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X_s,energy,energy->dt);CHKERRQ(ierr);
+      
+      /* update marker props on new mesh configuration */
+      ierr = pTatinPhysCompEnergy_MPProjectionQ1(pctx);CHKERRQ(ierr);
+    }
+    
+    /* Update boundary conditions */
+    /* Fine level setup */
+    ierr = pTatinModel_ApplyBoundaryCondition(model,pctx);CHKERRQ(ierr);
+    /* Coarse grid setup: Configure boundary conditions */
+    ierr = pTatinModel_ApplyBoundaryConditionMG(mgctx.nlevels,mgctx.u_bclist,mgctx.dav_hierarchy,model,pctx);CHKERRQ(ierr);
+    
     
     /* solve mechanics + energy */
+    /* solve energy equation */
+    //
+    if (energy_activated) {
+      SNES snesT;
+      
+      ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
+      ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
+      ierr = SNESSetFunction(snesT,F_e,  SNES_FormFunctionEnergy,(void*)pctx);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snesT,J_e,J_e,SNES_FormJacobianEnergy,(void*)pctx);CHKERRQ(ierr);
+      ierr = SNESSetType(snesT,SNESKSPONLY);
+      ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
+      
+      PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", k );
+      
+      PetscTime(&time[0]);
+      ierr = SNESSolve(snesT,NULL,X_e);CHKERRQ(ierr);
+      PetscTime(&time[1]);
+      ierr = pTatinLogBasicSNES(pctx,"Energy",snesT);CHKERRQ(ierr);
+      ierr = pTatinLogBasicCPUtime(pctx,"Energy",time[1]-time[0]);CHKERRQ(ierr);
+      ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
+    }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    /* solve stokes */
+    {
+      SNES snes;
+      Mat A,B;
+      
+      ierr = HMGOperator_SetUp(&mgctx,pctx,&A,&B);CHKERRQ(ierr);
+      ierr = pTatinNonlinearStokesSolveCreate(pctx,A,B,F_s,&mgctx,&snes);CHKERRQ(ierr);
+      
+      PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", k );
+      ierr = pTatinNonlinearStokesSolve(pctx,snes,X_s,"-");CHKERRQ(ierr);
+      
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+      ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
+      ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+      ierr = HMGOperator_Destroy(&mgctx);CHKERRQ(ierr);
+    }
     
     /* compute new time step */
     dt_next = 0.0;
     //dt_next = 200.0 * rand()/((PetscReal)RAND_MAX);
     dt_next = 0.001245 * ((PetscReal)k) + 1.0e-4;
     
+
+    /* compute timestep */
+    ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = SwarmUpdatePosition_ComputeCourantStep(dmv,velocity,&timestep);CHKERRQ(ierr);
+    timestep = timestep/dt_factor;
+    ierr = pTatin_SetTimestep(pctx,"StkCourant",timestep);CHKERRQ(ierr);
+    dt_next = pctx->dt;
+    
+    ierr = UpdateMeshGeometry_ComputeSurfaceCourantTimestep(dmv,velocity,surface_displacement_max,&timestep);CHKERRQ(ierr);
+    ierr = pTatin_SetTimestep(pctx,"StkSurfaceCourant",timestep);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+    dt_next = pctx->dt;
+    
+    PetscPrintf(PETSC_COMM_WORLD,"  timestep_stokes[%D] dt_courant = %1.4e \n", k,pctx->dt );
+    if (energy_activated) {
+      ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,X_e,&timestep);CHKERRQ(ierr);
+      ierr = pTatin_SetTimestep(pctx,"AdvDiffCourant",timestep);CHKERRQ(ierr);
+      dt_next = pctx->dt;
+      PetscPrintf(PETSC_COMM_WORLD,"  timestep_advdiff[%D] dt_courant = %1.4e \n", k,pctx->dt );
+    }
+    
+    
+    /* <<<------------------------------------------------------- >>> */
+    /* <<<------------------------------------------------------- >>> */
+    /* <<<------------------------------------------------------- >>> */
+    
+    
+    // probably dont need this
     if (dt_next > pctx->dt_max) { dt_next = pctx->dt_max; }
     if (dt_next < pctx->dt_min) { dt_next = pctx->dt_min; }
     
@@ -1402,7 +1544,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = pTatinCreateDirectory(io_path);CHKERRQ(ierr);
 
       ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",io_path);CHKERRQ(ierr);
-      ierr = pTatinModel_Output(model,pctx,Xs,NULL);CHKERRQ(ierr);
+      ierr = pTatinModel_Output(model,pctx,X_s,NULL);CHKERRQ(ierr);
 
       ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",op);CHKERRQ(ierr);
     }
@@ -1418,7 +1560,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
       
       ierr = pTatinCtxCheckpointWrite(pctx,checkpoint_path,NULL,
-                                      dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
+                                      dmstokes,dmenergy,0,NULL,NULL,X_s,X_e,NULL,NULL);CHKERRQ(ierr);
     }
 
     /* write out a default string for restarting the job */
@@ -1441,6 +1583,12 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     
     if (pctx->time > pctx->time_max) break;
   }
+  
+  ierr = MatDestroy(&J_e);CHKERRQ(ierr);
+  ierr = VecDestroy(&F_s);CHKERRQ(ierr);
+  ierr = VecDestroy(&F_e);CHKERRQ(ierr);
+  ierr = HMG_Destroy(&mgctx);CHKERRQ(ierr);
+  
   
   PetscFunctionReturn(0);
 }
