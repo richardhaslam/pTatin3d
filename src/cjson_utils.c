@@ -285,7 +285,7 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
     ierr = MPI_Bcast(&nvals,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
     *nvalues = (PetscInt)nvals;
-    ierr = PetscMalloc(*nvalues,&_values);CHKERRQ(ierr);
+    ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
 
     if (commrank == 0) {
       for (k=0; k<nvals; k++) {
