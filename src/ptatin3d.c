@@ -1619,13 +1619,15 @@ PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const ch
     content = cJSON_CreateInt((int)ctx->output_frequency);  cJSON_AddItemToObject(jso_ptat,"outputFrequency",content);
     
     /* references to data files */
-    /* stokes */
+    /* PhysCompStokes */
     jso_object = cJSON_CreateObject();
     cJSON_AddItemToObject(jso_ptat,"stokes->gravity_vector",jso_object);
     content = cJSON_CreateString("double");          cJSON_AddItemToObject(jso_object,"ctype",content);
     content = cJSON_CreateInt((int)3);               cJSON_AddItemToObject(jso_object,"length",content);
+    /* todo - change this to base64 encoded */
     content = cJSON_CreateString("ascii");           cJSON_AddItemToObject(jso_object,"dataFormat",content);
     content = cJSON_CreateDoubleArray(stokes->gravity_vector,3);   cJSON_AddItemToObject(jso_object,"data",content);
+    content = cJSON_CreateDoubleArray(stokes->gravity_vector,3);   cJSON_AddItemToObject(jso_object,"data[ascii]",content);
 
     /* DMDA for velocity */
     jso_object = cJSON_CreateObject();
@@ -1928,6 +1930,7 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
     char field_string[PETSC_MAX_PATH_LEN];
     PetscReal *gravity_vec;
     PetscInt length;
+    PetscBool is_ascii,is_base64;
     
     jobj = NULL;
     if (commrank == 0) {
@@ -1942,9 +1945,17 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
     if (!found) SETERRQ_JSONKEY(comm,"dataFormat");
     
     /* check dataFormat type */
-    
-    ierr = cJSONGetPetscRealArray(comm,jobj,"data",&length,&gravity_vec,&found);CHKERRQ(ierr);
-    if (!found) SETERRQ_JSONKEY(comm,"stokes->gravity_vector::data");
+    found = PETSC_FALSE;
+    ierr = PetscStrncmp(field_string, "ascii",    5, &is_ascii);CHKERRQ(ierr);
+    ierr = PetscStrncmp(field_string, "base64",    5, &is_base64);CHKERRQ(ierr);
+    if (is_ascii) {
+      ierr = cJSONGetPetscRealArray(comm,jobj,"data",&length,&gravity_vec,&found);CHKERRQ(ierr);
+      if (!found) SETERRQ_JSONKEY(comm,"stokes->gravity_vector::data");
+    } else if (is_base64) {
+      SETERRQ(comm,PETSC_ERR_SUP,"Only support for reading ascii data");
+    } else {
+      SETERRQ(comm,PETSC_ERR_SUP,"Only support for reading ascii or base64 encoded data");
+    }
     
     grav[0] = gravity_vec[0];
     grav[1] = gravity_vec[1];
