@@ -38,6 +38,7 @@ OBJDIR ?= $(PETSC_ARCH)/obj
 LIBDIR ?= $(PETSC_ARCH)/lib
 BINDIR ?= $(PETSC_ARCH)/bin
 
+# Configuration option defaults
 CONFIG_SPMA      ?= n
 CONFIG_FASTSCAPE ?= n
 
@@ -52,6 +53,8 @@ else
 CONFIG_AVX_CUDA = n
 endif
 
+# Populate includes, libraries, and compiler flags
+TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
 TATIN_LIB +=  $(LIBZ_LIB)
 
 ifeq ($(CONFIG_CUDA),y)
@@ -82,7 +85,6 @@ libptatin3dmodels-y.f :=
 ptatin-tests-y.c :=
 ptatin-drivers-y.c :=
 ptatin-externals-y.o :=
-TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
 
 # Recursively include files for all targets
 include local.mk

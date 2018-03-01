@@ -27,7 +27,6 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-
 void MatMultMF_Stokes_MixedFEM3d_diagB(const double FAC,const double eta_gp,const double Nu[],const double dNudx[],const double dNudy[],const double dNudz[],const double Np[],double Y[])
 {
   Y[0] += FAC*(eta_gp*pow(dNudy[0],2) + eta_gp*pow(dNudz[0],2) + 2.0*eta_gp*pow(dNudx[0],2));
