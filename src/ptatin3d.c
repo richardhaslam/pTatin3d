@@ -95,6 +95,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	PetscFunctionBegin;
 
 	if (user->restart_from_file) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Classic checkpoint is depreciated");
 		/* load from file */
 		char vname[PETSC_MAX_PATH_LEN];
 		char pname[PETSC_MAX_PATH_LEN];		
