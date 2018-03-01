@@ -1619,6 +1619,14 @@ PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const ch
     content = cJSON_CreateInt((int)ctx->output_frequency);  cJSON_AddItemToObject(jso_ptat,"outputFrequency",content);
     
     /* references to data files */
+    /* stokes */
+    jso_object = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"stokes->gravity_vector",jso_object);
+    content = cJSON_CreateString("double");          cJSON_AddItemToObject(jso_object,"ctype",content);
+    content = cJSON_CreateInt((int)3);               cJSON_AddItemToObject(jso_object,"length",content);
+    content = cJSON_CreateString("ascii");           cJSON_AddItemToObject(jso_object,"dataFormat",content);
+    content = cJSON_CreateDoubleArray(stokes->gravity_vector,3);   cJSON_AddItemToObject(jso_object,"data",content);
+
     /* DMDA for velocity */
     jso_object = cJSON_CreateObject();
     cJSON_AddItemToObject(jso_ptat,"stokes->dmv",jso_object);
@@ -1864,7 +1872,11 @@ PetscErrorCode pTatin3dLoadState_FromFile(pTatinCtx ctx,DM dmstokes,DM dmenergy,
     
     ierr = VecLoadFromFile(Xt,field_string_t);CHKERRQ(ierr);
   }
-  
+
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -1905,6 +1917,45 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
     
     ierr = DMDACheckpointLoad(comm,field_string,&dmv);CHKERRQ(ierr);
   }
+
+  /* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
+  /* Model initialize function can overload the gravity value */
+  grav[0] = 0.0;
+  grav[1] = 1.0;
+  grav[2] = 0.0;
+
+  {
+    char field_string[PETSC_MAX_PATH_LEN];
+    PetscReal *gravity_vec;
+    PetscInt length;
+    
+    jobj = NULL;
+    if (commrank == 0) {
+      jobj = cJSON_GetObjectItem(jptat,"stokes->gravity_vector");
+      if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"stokes->gravity_vector");
+    }
+
+    ierr = cJSONGetPetscInt(comm,jobj,"length",&length,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"length");
+
+    ierr = cJSONGetPetscString(comm,jobj,"dataFormat",field_string,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"dataFormat");
+    
+    /* check dataFormat type */
+    
+    ierr = cJSONGetPetscRealArray(comm,jobj,"data",&length,&gravity_vec,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"stokes->gravity_vector::data");
+    
+    grav[0] = gravity_vec[0];
+    grav[1] = gravity_vec[1];
+    grav[2] = gravity_vec[2];
+    
+    ierr = PetscFree(gravity_vec);CHKERRQ(ierr);
+  }
+  
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
   
   ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
   stokes->use_mf_stokes = ctx->use_mf_stokes;
@@ -1916,13 +1967,14 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
   
   /* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
   /* Model initialize function can overload the gravity value */
-  grav[0] = 0.0;
-  grav[1] = 1.0;
-  grav[2] = 0.0;
+  ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
+
   ncomponents = 3;
   found = PETSC_FALSE;
   PetscOptionsGetRealArray(NULL,NULL,"-stokes_gravity_vector",grav,&ncomponents,&found);
-  ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
+  if (found) {
+    ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
+  }
 
   ctx->stokes_ctx = stokes;
 
@@ -2003,6 +2055,10 @@ PetscErrorCode pTatin3dLoadMaterialPoints_FromFile(pTatinCtx ctx,DM dmv)
       break;
   }
   
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+
   /* register marker structures here */
   PetscTime(&t0);
   DataBucketLoad_NATIVE(comm,field_string,&db);
@@ -2058,6 +2114,10 @@ PetscErrorCode pTatinPhysCompActivate_Energy_FromFile(pTatinCtx ctx)
     ierr = PhysCompAddMaterialPointCoefficients_Energy(ctx->materialpoint_db);CHKERRQ(ierr);
   }
   */
+  
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
   
   ctx->energy_ctx = energy;
   
