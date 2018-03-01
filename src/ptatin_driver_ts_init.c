@@ -21,6 +21,8 @@ static const char help[] = "pTatin3d 1.0.0: Generate an initial condition \n\n";
 #include "stokes_assembly.h"
 #include "stokes_form_function.h"
 #include "monitors.h"
+#include "mp_advection.h"
+#include "mesh_update.h"
 
 #define MAX_MG_LEVELS 20
 
@@ -266,7 +268,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         }
         /* should move assembly into jacobian */
         ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
-        ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
+        //ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
         
         operatorA11[k] = Auu;
         operatorB11[k] = Auu;
@@ -424,6 +426,11 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
   ierr = PetscMalloc1(nlevels,&mlctx->interpolation_eta);CHKERRQ(ierr);
   ierr = PetscMalloc1(nlevels,&mlctx->volQ);CHKERRQ(ierr);
   ierr = PetscMalloc1(nlevels,&mlctx->u_bclist);CHKERRQ(ierr);
+  
+  ierr = PetscMalloc1(nlevels,&mlctx->level_type);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&mlctx->operatorA11);CHKERRQ(ierr);
+  ierr = PetscMalloc1(nlevels,&mlctx->operatorB11);CHKERRQ(ierr);
+  
   mlctx->nlevels                  = nlevels;
   for (k=0; k<nlevels; k++) {
     mlctx->dav_hierarchy[k]       = dav_hierarchy[k];
@@ -470,6 +477,23 @@ PetscErrorCode HMG_Destroy(AuuMultiLevelCtx *mlctx)
   
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "HMGOperator_Destroy"
+PetscErrorCode HMGOperator_Destroy(AuuMultiLevelCtx *mlctx)
+{
+  PetscInt       k,nlevels;
+  PetscErrorCode ierr;
+  
+  
+  PetscFunctionBegin;
+  nlevels = mlctx->nlevels;
+  for (k=0; k<nlevels; k++) {
+    ierr = MatDestroy(&mlctx->operatorA11[k]);CHKERRQ(ierr);
+    ierr = MatDestroy(&mlctx->operatorB11[k]);CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "HMGOperator_SetUp"
@@ -496,9 +520,6 @@ PetscErrorCode HMGOperator_SetUp(AuuMultiLevelCtx *mlctx,pTatinCtx user,Mat *A,M
                                        A,operatorA11,B,operatorB11);CHKERRQ(ierr);
 
   nlevels = mlctx->nlevels;
-  ierr = PetscMalloc1(nlevels,&mlctx->level_type);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nlevels,&mlctx->operatorA11);CHKERRQ(ierr);
-  ierr = PetscMalloc1(nlevels,&mlctx->operatorB11);CHKERRQ(ierr);
   for (k=0; k<nlevels; k++) {
     mlctx->level_type[k]  = level_type[k];
     mlctx->operatorA11[k] = operatorA11[k];
@@ -848,6 +869,8 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinNonlinearStokesSolveCreate"
 PetscErrorCode pTatinNonlinearStokesSolveCreate(pTatinCtx user,Mat A,Mat B,Vec F,AuuMultiLevelCtx *mgctx,SNES *s)
 {
   SNES snes;
@@ -878,6 +901,8 @@ PetscErrorCode pTatinNonlinearStokesSolveCreate(pTatinCtx user,Mat A,Mat B,Vec F
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinNonlinearStokesSolve"
 PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const char stagename[])
 {
   PetscLogDouble time[2];
@@ -916,17 +941,15 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   Vec             velocity,pressure;
   PetscBool       activate_energy = PETSC_FALSE;
   DataBucket      materialpoint_db,material_constants_db;
+  PetscReal       surface_displacement_max = 1.0e32;
   PetscErrorCode  ierr;
   
   PetscFunctionBegin;
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
-  {
-    
-  }
-  
   /* driver specific options parsed here */
+  ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
 
   /* Register all models */
   ierr = pTatinModelLoad(user);CHKERRQ(ierr);
@@ -1071,34 +1094,97 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
     SNES snes;
     SNESLineSearch linesearch;
     KSP  ksp;
-    
-    ierr = HMG_SetUp(&mgctx,user);CHKERRQ(ierr);
-    ierr = HMGOperator_SetUp(&mgctx,user,&A,&B);CHKERRQ(ierr);
+    RheologyType     init_rheology_type;
+
     
     ierr = VecDuplicate(X_s,&F);CHKERRQ(ierr);
-
+    ierr = HMG_SetUp(&mgctx,user);CHKERRQ(ierr);
+    
+    /* linear stage */
+    ierr = HMGOperator_SetUp(&mgctx,user,&A,&B);CHKERRQ(ierr);
     ierr = pTatinNonlinearStokesSolveCreate(user,A,B,F,&mgctx,&snes);CHKERRQ(ierr);
     
     /* configure as a linear solve */
-    //ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);CHKERRQ(ierr);
+    init_rheology_type = user->rheology_constants.rheology_type;
+    user->rheology_constants.rheology_type = RHEOLOGY_VISCOUS;
+    ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);CHKERRQ(ierr);
+    
     ierr = SNESSetType(snes,SNESNEWTONLS);CHKERRQ(ierr);
     ierr = SNESGetLineSearch(snes,&linesearch);CHKERRQ(ierr);
     ierr = SNESLineSearchSetType(linesearch,SNESLINESEARCHBASIC);CHKERRQ(ierr);
-    ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
+    //ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
+    //ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     //ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     //ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
     ierr = pTatinNonlinearStokesSolve(user,snes,X_s,"Linear Stage");CHKERRQ(ierr);
     
-    ierr = HMG_Destroy(&mgctx);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
+    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+    ierr = HMGOperator_Destroy(&mgctx);CHKERRQ(ierr);
+
+    
+    /* picard stage */
+    ierr = HMGOperator_SetUp(&mgctx,user,&A,&B);CHKERRQ(ierr);
+    ierr = pTatinNonlinearStokesSolveCreate(user,A,B,F,&mgctx,&snes);CHKERRQ(ierr);
+    
+    user->rheology_constants.rheology_type = init_rheology_type;
+    ierr = pTatinNonlinearStokesSolve(user,snes,X_s,"Picard Stage");CHKERRQ(ierr);
     
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
-    ierr = VecDestroy(&F);CHKERRQ(ierr);
     ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
     ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+    ierr = HMGOperator_Destroy(&mgctx);CHKERRQ(ierr);
+    
+    ierr = HMG_Destroy(&mgctx);CHKERRQ(ierr);
+    ierr = VecDestroy(&F);CHKERRQ(ierr);
+    
   }
 #endif
+  
+  
+  /* compute timestep */
+  user->dt = 1.0e32;
+  {
+    Vec       velocity,pressure;
+    PetscReal timestep;
+    
+    ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = SwarmUpdatePosition_ComputeCourantStep(dmv,velocity,&timestep);CHKERRQ(ierr);
+    ierr = pTatin_SetTimestep(user,"StkCourant",timestep);CHKERRQ(ierr);
+    
+    ierr = UpdateMeshGeometry_ComputeSurfaceCourantTimestep(dmv,velocity,surface_displacement_max,&timestep);CHKERRQ(ierr);
+    ierr = pTatin_SetTimestep(user,"StkSurfaceCourant",timestep);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
+    
+    PetscPrintf(PETSC_COMM_WORLD,"  timestep[stokes] dt_courant = %1.4e \n", user->dt );
+    
+  }
+  /* first time step, enforce to be super small */
+  user->dt = user->dt * 1.0e-10;
+  
+  /* initialise the energy solver */
+  if (activate_energy) {
+    PetscReal timestep;
+    
+    ierr = pTatinPhysCompEnergy_Initialise(energy,X_e);CHKERRQ(ierr);
+    
+    /* first time this is called we REQUIRE that a valid time step is chosen */
+    energy->dt = user->dt;
+    ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X_e,energy,energy->dt);CHKERRQ(ierr);
+    ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,energy->Told,&timestep);CHKERRQ(ierr);
+    
+    /*
+     Note - we cannot use the time step for energy equation here.
+     It seems silly, but to compute the adf-diff time step, we need to the ALE velocity,
+     however to compute the ALE velocity we need to know the timestep.
+     */
+    PetscPrintf(PETSC_COMM_WORLD,"  timestep[adv-diff] dt_courant = %1.4e \n", timestep );
+    energy->dt   = user->dt;
+  }
   
   
   
@@ -1115,58 +1201,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 
     ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path);CHKERRQ(ierr);
   }
-
-#if 0
-  /* probably this should be in a stand alone function */
-  {
-    char g_checkpoint_path[PETSC_MAX_PATH_LEN];
-    char checkpoint_path[PETSC_MAX_PATH_LEN];
-    char checkpoint_prefix[PETSC_MAX_PATH_LEN];
-    
-    ierr = PetscSNPrintf(g_checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",user->outputpath);CHKERRQ(ierr);
-    ierr = pTatinCreateDirectory(g_checkpoint_path);CHKERRQ(ierr);
-
-    ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints/intitial_condition",user->outputpath);CHKERRQ(ierr);
-    ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
-
-    ierr = PetscSNPrintf(checkpoint_prefix,PETSC_MAX_PATH_LEN-1,"%s/stokes_v",checkpoint_path);CHKERRQ(ierr);
-    ierr = DMDACheckpointWrite(dmv,checkpoint_prefix);CHKERRQ(ierr);
-
-    ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(checkpoint_prefix,PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_stokes_Xv.pbvec",checkpoint_path);CHKERRQ(ierr);
-    ierr = DMDAWriteVectorToFile(velocity,checkpoint_prefix,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(checkpoint_prefix,PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_stokes_Xp.pbvec",checkpoint_path);CHKERRQ(ierr);
-    ierr = DMDAWriteVectorToFile(pressure,checkpoint_prefix,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
-
-    
-    if (activate_energy) {
-      ierr = PhysCompCheckpointWrite_Energy(energy,PETSC_TRUE,checkpoint_path,NULL);CHKERRQ(ierr);
-
-      ierr = PetscSNPrintf(checkpoint_prefix,PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_energy_Xt.pbvec",checkpoint_path);CHKERRQ(ierr);
-      ierr = DMDAWriteVectorToFile(X_e,checkpoint_prefix,PETSC_FALSE);CHKERRQ(ierr);
-    }
-    
-    ierr = PetscSNPrintf(checkpoint_prefix,PETSC_MAX_PATH_LEN-1,"%s/materialpoint",checkpoint_path);CHKERRQ(ierr);
-    DataBucketView(PETSC_COMM_WORLD,materialpoint_db,checkpoint_prefix,DATABUCKET_VIEW_NATIVE);
-
-    ierr = PetscSNPrintf(checkpoint_prefix,PETSC_MAX_PATH_LEN-1,"%s/materialconstants",checkpoint_path);CHKERRQ(ierr);
-    
-    /* material_constants_db is a redundant object, e.g. it is identical on all ranks */
-    /* Hence, we let only 1 rank write out the data file during checkpoint.write() */
-    PetscMPIInt rank;
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-    
-    if (rank == 0) {
-      DataBucketView(PETSC_COMM_SELF,material_constants_db,checkpoint_prefix,DATABUCKET_VIEW_NATIVE);
-    }
-    
-    /* For checkpoint.read() we do a redundant read */
-    DataBucket newdb;
-    DataBucketLoadRedundant_NATIVE(PETSC_COMM_WORLD,checkpoint_prefix,&newdb);
-    DataBucketView(PETSC_COMM_SELF,newdb,"mat-constants-red",DATABUCKET_VIEW_STDOUT);
-  }
-#endif
 
   
   /* last thing we do */
