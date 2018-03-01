@@ -28,7 +28,7 @@ static const char help[] = "pTatin3d 1.0.0: Generate an initial condition \n\n";
 
 #define MAX_MG_LEVELS 20
 
-typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
+typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN, OP_TYPE_UDEF } OperatorType;
 
 typedef struct {
   PetscInt     nlevels;
@@ -105,20 +105,20 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
     PetscPrintf(PETSC_COMM_WORLD,"level [%2D]: [total cores %4D]: np-I [%4D]: element range I [ ", k,size,mp );
     for (ii=0; ii<mp; ii++) {
       PetscPrintf(PETSC_COMM_WORLD,"%4D", _mx[ii] );
-      if (ii != mp-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
-    }PetscPrintf(PETSC_COMM_WORLD," ]\n");
+      if (ii != (mp-1)) { PetscPrintf(PETSC_COMM_WORLD,", "); }
+    } PetscPrintf(PETSC_COMM_WORLD," ]\n");
     
     PetscPrintf(PETSC_COMM_WORLD,"                                np-J [%4D]: element range J [ ",np);
     for (jj=0; jj<np; jj++) {
       PetscPrintf(PETSC_COMM_WORLD,"%4D", _my[jj] );
-      if (jj != np-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
-    }PetscPrintf(PETSC_COMM_WORLD," ]\n");
+      if (jj != (np-1)) { PetscPrintf(PETSC_COMM_WORLD,", "); }
+    } PetscPrintf(PETSC_COMM_WORLD," ]\n");
     
     PetscPrintf(PETSC_COMM_WORLD,"                                np-K [%4D]: element range K [ ",pp);
     for (kk=0; kk<pp; kk++) {
       PetscPrintf(PETSC_COMM_WORLD,"%4D", _mz[kk] );
-      if (kk != pp-1) { PetscPrintf(PETSC_COMM_WORLD,", "); }
-    }PetscPrintf(PETSC_COMM_WORLD," ]\n");
+      if (kk != (pp-1)) { PetscPrintf(PETSC_COMM_WORLD,", "); }
+    } PetscPrintf(PETSC_COMM_WORLD," ]\n");
     
     ierr = PetscFree(_mx);CHKERRQ(ierr);
     ierr = PetscFree(_my);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
     
     /* nest */
     bA[0][0] = NULL; bA[0][1] = Aup;
-    bA[1][0] = Apu;        bA[1][1] = Spp;
+    bA[1][0] = Apu;  bA[1][1] = Spp;
     
     ierr = MatCreateNest(PETSC_COMM_WORLD,2,is_stokes_field,2,is_stokes_field,&bA[0][0],&B);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         MatNullSpace nullsp;
         
         /* use -stk_velocity_da_mat_type sbaij or -Buu_da_mat_type sbaij */
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n", k);
+        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: assembled operator \n",k);
         //ierr = DMSetMatType(dav_hierarchy[k],MATSBAIJ);CHKERRQ(ierr);
         ierr = DMCreateMatrix(dav_hierarchy[k],&Auu);CHKERRQ(ierr);
         ierr = MatSetOptionsPrefix(Auu,"Buu_");CHKERRQ(ierr);
@@ -267,7 +267,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
           ierr = MatSetOption(Auu,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
         }
         /* should move assembly into jacobian */
-        ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
+        //ierr = MatZeroEntries(Auu);CHKERRQ(ierr);
         //ierr = MatAssemble_StokesA_AUU(Auu,dav_hierarchy[k],u_bclist[k],volQ[k]);CHKERRQ(ierr);
         
         operatorA11[k] = Auu;
@@ -285,7 +285,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         Mat      Auu;
         MatA11MF mf,A11Ctx;
         
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n", k);
+        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Re-discretisation :: matrix free operator \n",k);
         ierr = MatA11MFCreate(&A11Ctx);CHKERRQ(ierr);
         ierr = MatA11MFSetup(A11Ctx,dav_hierarchy[k],volQ[k],u_bclist[k]);CHKERRQ(ierr);
         
@@ -299,7 +299,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         ierr = ISDestroy(&mf->isW);CHKERRQ(ierr);
         /* --- */
         operatorA11[k] = Auu;
-        
         operatorB11[k] = Auu;
         ierr = PetscObjectReference((PetscObject)Auu);CHKERRQ(ierr);
         
@@ -314,7 +313,7 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         MatNullSpace nullsp;
         
         if (k == (nlevels-1)) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_OUTOFRANGE,"Cannot use galerkin coarse grid on the finest level");
-        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n", k);
+        if (!been_here) PetscPrintf(PETSC_COMM_WORLD,"Level [%D]: Coarse grid type :: Galerkin :: assembled operator \n",k);
         
         /* should move coarse grid assembly into jacobian */
         ierr = MatPtAP(operatorA11[k+1],interpolation_v[k+1],MAT_INITIAL_MATRIX,1.0,&Auu);CHKERRQ(ierr);
@@ -370,6 +369,8 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
 
   nlevels = 1;
   ierr = PetscOptionsGetInt(NULL,NULL,"-dau_nlevels",&nlevels,NULL);CHKERRQ(ierr);
+  if (nlevels >= MAX_MG_LEVELS) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Maximum number of multi-grid levels is set by #define MAX_MG_LEVELS %D",MAX_MG_LEVELS);
+  
   PetscPrintf(PETSC_COMM_WORLD,"Mesh size (%D x %D x %D) : MG levels %D  \n",user->mx,user->my,user->mz,nlevels);
   ierr = pTatin3dStokesBuildMeshHierarchy(dav,nlevels,dav_hierarchy);CHKERRQ(ierr);
   ierr = pTatin3dStokesReportMeshHierarchy(nlevels,dav_hierarchy);CHKERRQ(ierr);
@@ -430,6 +431,18 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
   ierr = PetscMalloc1(nlevels,&mlctx->level_type);CHKERRQ(ierr);
   ierr = PetscMalloc1(nlevels,&mlctx->operatorA11);CHKERRQ(ierr);
   ierr = PetscMalloc1(nlevels,&mlctx->operatorB11);CHKERRQ(ierr);
+
+  for (k=0; k<nlevels; k++) {
+    mlctx->dav_hierarchy[k]       = NULL;
+    mlctx->interpolation_v[k]     = NULL;
+    mlctx->interpolation_eta[k]   = NULL;
+    mlctx->volQ[k]                = NULL;
+    mlctx->u_bclist[k]            = NULL;
+
+    mlctx->level_type[k]          = OP_TYPE_UDEF;
+    mlctx->operatorA11[k]         = NULL;
+    mlctx->operatorB11[k]         = NULL;
+  }
   
   mlctx->nlevels                  = nlevels;
   for (k=0; k<nlevels; k++) {
@@ -536,7 +549,6 @@ PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
   ierr = PetscContainerCreate(PetscObjectComm((PetscObject)snes),&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,(void*)mgctx);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)snes,"AuuMultiLevelCtx",(PetscObject)container);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -837,12 +849,12 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
     
     if (mg_dump_coarse) {
       if (mlctx->level_type[0] != OP_TYPE_REDISC_MF) {
-        PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mg_coarse_operatorA_step%D_snes%D.mat",user->outputpath,user->step,snes_it);
+        ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mg_coarse_operatorA_step%D_snes%D.mat",user->outputpath,user->step,snes_it);CHKERRQ(ierr);
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
         ierr = MatView(mlctx->operatorA11[0],viewer);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         if (mlctx->operatorA11[0] != mlctx->operatorB11[0]) {
-          PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mg_coarse_operatorB_step%D_snes%D.mat",user->outputpath,user->step,snes_it);
+          ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mg_coarse_operatorB_step%D_snes%D.mat",user->outputpath,user->step,snes_it);CHKERRQ(ierr);
           ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
           ierr = MatView(mlctx->operatorB11[0],viewer);CHKERRQ(ierr);
           ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -909,7 +921,7 @@ PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const c
   PetscTime(&time[0]);
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   PetscTime(&time[1]);
-  PetscSNPrintf(title,PETSC_MAX_PATH_LEN-1,"Stokes[%s]",stagename);
+  ierr = PetscSNPrintf(title,PETSC_MAX_PATH_LEN-1,"Stokes[%s]",stagename);CHKERRQ(ierr);
   ierr = pTatinLogBasicSNES(user,   title,snes);CHKERRQ(ierr);
   ierr = pTatinLogBasicCPUtime(user,title,time[1]-time[0]);CHKERRQ(ierr);
   ierr = pTatinLogBasicStokesSolution(user,dmstokes,X);CHKERRQ(ierr);
@@ -941,13 +953,13 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 
   /* driver specific options parsed here */
   ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-activate_energy",&activate_energy,NULL);CHKERRQ(ierr);
 
   /* Register all models */
   ierr = pTatinModelLoad(user);CHKERRQ(ierr);
   ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
 
   ierr = pTatinModel_Initialize(model,user);CHKERRQ(ierr);
-  PetscOptionsGetBool(NULL,NULL,"-activate_energy",&activate_energy,NULL);
 
   /* Create Stokes context */
   ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
@@ -957,6 +969,7 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   
   { /* IF I DON'T DO THIS, THE IS's OBTAINED FROM DMCompositeGetGlobalISs() are wrong !! */
     Vec X;
+    
     ierr = DMGetGlobalVector(dmstokes,&X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dmstokes,&X);CHKERRQ(ierr);
   }
@@ -1149,13 +1162,13 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   
   /* write out a default string for restarting the job */
   {
-    char restartfile[PETSC_MAX_PATH_LEN];
-    char restartstring[PETSC_MAX_PATH_LEN];
+    char        restartfile[PETSC_MAX_PATH_LEN];
+    char        restartstring[PETSC_MAX_PATH_LEN];
     PetscMPIInt rank;
     
     ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",user->outputpath);CHKERRQ(ierr);
     ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/intitial_condition",user->outputpath);CHKERRQ(ierr);
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     if (rank == 0) {
       FILE *fp;
       
@@ -1544,13 +1557,13 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
 
     /* write out a default string for restarting the job */
     {
-      char restartfile[PETSC_MAX_PATH_LEN];
-      char restartstring[PETSC_MAX_PATH_LEN];
+      char        restartfile[PETSC_MAX_PATH_LEN];
+      char        restartstring[PETSC_MAX_PATH_LEN];
       PetscMPIInt rank;
       
       ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",pctx->outputpath);CHKERRQ(ierr);
       ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/step%d",pctx->outputpath,k);CHKERRQ(ierr);
-      MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
       if (rank == 0) {
         FILE *fp;
         
@@ -1607,17 +1620,17 @@ int main(int argc,char *argv[])
   // non-linear with picard
   // isoastasy
 
-  PetscOptionsGetBool(NULL,NULL,"-init",&init,NULL);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-init",&init,NULL);CHKERRQ(ierr);
   if (init) {
     ierr = GenerateICStateFromModelDefinition(&pctx);CHKERRQ(ierr);
   }
   
-  PetscOptionsGetBool(NULL,NULL,"-load",&load,NULL);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-load",&load,NULL);CHKERRQ(ierr);
   if (load) {
     ierr = LoadICStateFromModelDefinition(&pctx,NULL,NULL,PETSC_TRUE);CHKERRQ(ierr);
   }
 
-  PetscOptionsGetBool(NULL,NULL,"-run",&run,NULL);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-run",&run,NULL);CHKERRQ(ierr);
   if (run) {
     Vec Xup,Xt;
     
