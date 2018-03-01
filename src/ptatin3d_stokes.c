@@ -507,6 +507,7 @@ PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
   
   /* velocity */
   ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+  ierr = DMSetMatType(dav,MATSBAIJ);CHKERRQ(ierr);
   
   ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
@@ -521,6 +522,7 @@ PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
   pbasis_dofs = P_BASIS_FUNCTIONS;
   ierr = DMDACreate3d( comm, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
   ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
+  ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
   
   ierr = PetscFree(lxv);CHKERRQ(ierr);
@@ -553,7 +555,10 @@ PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dav,"stk_velocity_");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)dap,"stk_pressure_");CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)multipys_pack,"stk_pack_");CHKERRQ(ierr);
-  
+
+  ierr = DMSetFromOptions(dav);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dap);CHKERRQ(ierr);
+
   ctx->dav  = dav;
   ctx->dap  = dap;
   ctx->stokes_pack = multipys_pack;
