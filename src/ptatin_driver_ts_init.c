@@ -437,6 +437,41 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "HMG_Destroy"
+PetscErrorCode HMG_Destroy(AuuMultiLevelCtx *mlctx)
+{
+  PetscInt k;
+  PetscErrorCode ierr;
+
+  for (k=0; k<mlctx->nlevels-1; k++) {
+    BCListDestroy(&mlctx->u_bclist[k]);
+    QuadratureDestroy(&mlctx->volQ[k]);
+  }
+  for (k=0; k<mlctx->nlevels; k++) {
+    ierr = MatDestroy(&mlctx->operatorA11[k]);CHKERRQ(ierr);
+    ierr = MatDestroy(&mlctx->operatorB11[k]);CHKERRQ(ierr);
+    ierr = MatDestroy(&mlctx->interpolation_v[k]);CHKERRQ(ierr);
+    ierr = MatDestroy(&mlctx->interpolation_eta[k]);CHKERRQ(ierr);
+    ierr = DMDestroy(&mlctx->dav_hierarchy[k]);CHKERRQ(ierr);
+  }
+  
+  ISDestroy(&mlctx->is_stokes_field[0]);
+  ISDestroy(&mlctx->is_stokes_field[1]);
+  PetscFree(mlctx->is_stokes_field);
+  
+  PetscFree(mlctx->level_type);
+  PetscFree(mlctx->operatorB11);
+  PetscFree(mlctx->operatorA11);
+  PetscFree(mlctx->dav_hierarchy);
+  PetscFree(mlctx->interpolation_v);
+  PetscFree(mlctx->interpolation_eta);
+  PetscFree(mlctx->volQ);
+  PetscFree(mlctx->u_bclist);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "HMGOperator_SetUp"
 PetscErrorCode HMGOperator_SetUp(AuuMultiLevelCtx *mlctx,pTatinCtx user,Mat *A,Mat *B)
 {
@@ -870,7 +905,7 @@ PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const c
 
 #undef __FUNCT__
 #define __FUNCT__ "GenerateICStateFromModelDefinition"
-PetscErrorCode GenerateICStateFromModelDefinition(void)
+PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 {
   pTatinCtx       user;
   pTatinModel     model = NULL;
@@ -887,6 +922,10 @@ PetscErrorCode GenerateICStateFromModelDefinition(void)
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
+  {
+    
+  }
+  
   /* driver specific options parsed here */
 
   /* Register all models */
@@ -1050,6 +1089,14 @@ PetscErrorCode GenerateICStateFromModelDefinition(void)
     //ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
 
     ierr = pTatinNonlinearStokesSolve(user,snes,X_s,"Linear Stage");CHKERRQ(ierr);
+    
+    ierr = HMG_Destroy(&mgctx);CHKERRQ(ierr);
+    
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = VecDestroy(&F);CHKERRQ(ierr);
+    ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
+    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   }
 #endif
   
@@ -1122,9 +1169,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(void)
 #endif
 
   
-  
-  
-  
   /* last thing we do */
   {
     char checkpoints_path[PETSC_MAX_PATH_LEN];
@@ -1140,12 +1184,31 @@ PetscErrorCode GenerateICStateFromModelDefinition(void)
                                     dmstokes,dmenergy,
                                     0,NULL,NULL,
                                     X_s,X_e,NULL,NULL);CHKERRQ(ierr);
-    
   }
+  /* write out a default string for restarting the job */
+  {
+    char restartfile[PETSC_MAX_PATH_LEN];
+    char restartstring[PETSC_MAX_PATH_LEN];
+    PetscMPIInt rank;
+    
+    ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",user->outputpath);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/intitial_condition",user->outputpath);CHKERRQ(ierr);
+    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    if (rank == 0) {
+      FILE *fp;
+      
+      fp = fopen(restartfile,"w");
+      fprintf(fp,"%s",restartstring);
+      fclose(fp);
+    }
+  }
+  
+  
   
   ierr = VecDestroy(&X_e);CHKERRQ(ierr);
   ierr = VecDestroy(&X_s);CHKERRQ(ierr);
-  ierr = pTatin3dDestroyContext(&user);
+
+  *pctx = user;
 
   PetscFunctionReturn(0);
 }
@@ -1165,6 +1228,7 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
   PetscErrorCode  ierr;
   
   PetscFunctionBegin;
+  
   ierr = pTatin3dLoadContext_FromFile(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
   
@@ -1384,6 +1448,24 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = pTatinCtxCheckpointWrite(pctx,checkpoint_path,NULL,
                                       dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
     }
+
+    /* write out a default string for restarting the job */
+    {
+      char restartfile[PETSC_MAX_PATH_LEN];
+      char restartstring[PETSC_MAX_PATH_LEN];
+      PetscMPIInt rank;
+      
+      ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",pctx->outputpath);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/step%d",pctx->outputpath,k);CHKERRQ(ierr);
+      MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+      if (rank == 0) {
+        FILE *fp;
+        
+        fp = fopen(restartfile,"w");
+        fprintf(fp,"%s",restartstring);
+        fclose(fp);
+      }
+    }
     
     if (pctx->time > pctx->time_max) break;
   }
@@ -1400,6 +1482,27 @@ int main(int argc,char *argv[])
   pTatinCtx pctx = NULL;
   
   ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  
+  /* look for a default restart file */
+  {
+    PetscBool restart_string_found = PETSC_FALSE,flg = PETSC_FALSE;
+    char outputpath[PETSC_MAX_PATH_LEN];
+    
+    ierr = PetscOptionsGetString(NULL,NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+    if (flg) {
+      char fname[PETSC_MAX_PATH_LEN];
+      
+      printf("found output path\n");
+      ierr = PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s/restart.default",outputpath);CHKERRQ(ierr);
+      ierr = PetscTestFile(fname,'r',&restart_string_found);CHKERRQ(ierr);
+      if (restart_string_found) {
+        printf("found restart file\n");
+        //ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,NULL,fname,PETSC_TRUE);CHKERRQ(ierr);
+        ierr = PetscOptionsInsert(NULL,&argc,&argv,fname);CHKERRQ(ierr);
+      }
+    }
+  }
+  
   ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 
   // linear only
@@ -1408,7 +1511,7 @@ int main(int argc,char *argv[])
 
   PetscOptionsGetBool(NULL,NULL,"-init",&init,NULL);
   if (init) {
-    ierr = GenerateICStateFromModelDefinition();CHKERRQ(ierr);
+    ierr = GenerateICStateFromModelDefinition(&pctx);CHKERRQ(ierr);
   }
   
   PetscOptionsGetBool(NULL,NULL,"-load",&load,NULL);
@@ -1420,7 +1523,9 @@ int main(int argc,char *argv[])
   if (run) {
     Vec Xup,Xt;
     ierr = LoadICStateFromModelDefinition(&pctx,&Xup,&Xt,PETSC_FALSE);CHKERRQ(ierr);
+    
     ierr = DummyRun(pctx,Xup,Xt);CHKERRQ(ierr);
+    
     ierr = VecDestroy(&Xup);CHKERRQ(ierr);
     ierr = VecDestroy(&Xt);CHKERRQ(ierr);
   }
