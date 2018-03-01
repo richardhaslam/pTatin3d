@@ -953,13 +953,13 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 
   /* driver specific options parsed here */
   ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(NULL,NULL,"-activate_energy",&activate_energy,NULL);CHKERRQ(ierr);
 
   /* Register all models */
   ierr = pTatinModelLoad(user);CHKERRQ(ierr);
   ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
 
   ierr = pTatinModel_Initialize(model,user);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-activate_energy",&activate_energy,NULL);CHKERRQ(ierr);
 
   /* Create Stokes context */
   ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
