@@ -1031,62 +1031,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   user->time = 0.0;
   user->dt = 1.0e-10;
   
-#if 0
-  {
-    AuuMultiLevelCtx mgctx;
-    Mat A,B;
-    Vec F;
-    SNES snes;
-    KSP  ksp;
-    PC pc;
-    PetscInt snes_its;
-    PetscLogDouble time[2];
-    
-    ierr = HMG_SetUp(&mgctx,user);CHKERRQ(ierr);
-    ierr = HMGOperator_SetUp(&mgctx,user,&A,&B);CHKERRQ(ierr);
-    
-    ierr = VecDuplicate(X_s,&F);CHKERRQ(ierr);
-    
-    ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,A,B,FormJacobian_StokesMGAuu,user);CHKERRQ(ierr);
-
-    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-    ierr = SNESComposeWithMGCtx(snes,&mgctx);CHKERRQ(ierr);
-    ierr = pTatin_Stokes_ActivateMonitors(user,snes);CHKERRQ(ierr);
-
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCFIELDSPLIT);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetIS(pc,"u",mgctx.is_stokes_field[0]);CHKERRQ(ierr);
-    ierr = PCFieldSplitSetIS(pc,"p",mgctx.is_stokes_field[1]);CHKERRQ(ierr);
-    
-    /* configure uu split for galerkin multi-grid */
-    ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,mgctx.nlevels,mgctx.operatorA11,mgctx.operatorB11,mgctx.interpolation_v,mgctx.dav_hierarchy);CHKERRQ(ierr);
-    ierr = pTatinLogBasic(user);CHKERRQ(ierr);
-
-    ierr = SNESGetTolerances(snes,0,0,0,&snes_its,0);CHKERRQ(ierr);
-    ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT);CHKERRQ(ierr);
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
-    
-    PetscPrintf(PETSC_COMM_WORLD,"   --------- LINEAR STAGE ---------\n");
-    PetscTime(&time[0]);
-    ierr = SNESSolve(snes,NULL,X_s);CHKERRQ(ierr);
-    PetscTime(&time[1]);
-    ierr = pTatinLogBasicSNES(user,   "Stokes[LinearStage]",snes);CHKERRQ(ierr);
-    ierr = pTatinLogBasicCPUtime(user,"Stokes[LinearStage]",time[1]-time[0]);CHKERRQ(ierr);
-    ierr = pTatinLogBasicStokesSolution(user,dmstokes,X_s);CHKERRQ(ierr);
-    ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,dmstokes,X_s);CHKERRQ(ierr);
-    ierr = pTatinLogPetscLog(user,    "Stokes[LinearStage]");CHKERRQ(ierr);
-    
-    ierr = VecDestroy(&F);CHKERRQ(ierr);
-    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  }
-#endif
-  
-  
-#if 1
   {
     AuuMultiLevelCtx mgctx;
     Mat A,B;
@@ -1143,8 +1087,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
     ierr = VecDestroy(&F);CHKERRQ(ierr);
     
   }
-#endif
-  
   
   /* compute timestep */
   user->dt = 1.0e32;
@@ -1186,8 +1128,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
     energy->dt   = user->dt;
   }
   
-  
-  
   {
     char output_path[PETSC_MAX_PATH_LEN];
     char output_path_ic[PETSC_MAX_PATH_LEN];
@@ -1201,7 +1141,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 
     ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path);CHKERRQ(ierr);
   }
-
   
   /* last thing we do */
   {
@@ -1219,6 +1158,7 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
                                     0,NULL,NULL,
                                     X_s,X_e,NULL,NULL);CHKERRQ(ierr);
   }
+  
   /* write out a default string for restarting the job */
   {
     char restartfile[PETSC_MAX_PATH_LEN];
@@ -1236,8 +1176,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
       fclose(fp);
     }
   }
-  
-  
   
   ierr = VecDestroy(&X_e);CHKERRQ(ierr);
   ierr = VecDestroy(&X_s);CHKERRQ(ierr);
