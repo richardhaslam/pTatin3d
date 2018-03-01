@@ -260,6 +260,49 @@ PetscErrorCode cJSONGetPetscReal(MPI_Comm comm,cJSON *cj,const char name[],Petsc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "cJSONGetPetscRealArray"
+PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *nvalues,PetscReal **values,PetscBool *found)
+{
+  PetscMPIInt commsize,commrank;
+  int cfound = cJSON_False;
+  int k,nvals;
+  double *dvals = NULL;
+  PetscReal *_values = NULL;
+  PetscErrorCode ierr;
+  
+  ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
+  *found = PETSC_FALSE;
+  if (commrank == 0) {
+    
+    cJSON_GetObjectValue_arraylength(cj,name,&cfound,&nvals);
+    dvals = (double*)malloc(sizeof(double)*(nvals + 1));
+    
+    cJSON_GetObjectValue_doublearray(cj,name,&cfound,&nvals,dvals);
+  }
+
+  /* broadcast nvals,ivals, and found */
+  ierr = MPI_Bcast(&nvals,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  *nvalues = (PetscInt)nvals;
+  
+  ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
+  
+  if (commrank == 0) {
+    for (k=0; k<nvals; k++) {
+      _values[k] = (PetscReal)dvals[k];
+    }
+  }
+  ierr = MPI_Bcast(_values,*nvalues,MPIU_REAL,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&cfound,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  
+  *values = _values;
+  if (cfound == cJSON_True) { *found  = PETSC_TRUE; }
+  if (dvals) { free(dvals); }
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "cJSONGetPetscIntArray"
 PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *nvalues,PetscInt **values,PetscBool *found)
 {
@@ -280,22 +323,20 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
     
     cJSON_GetObjectValue_intarray(cj,name,&cfound,&nvals,ivals);
   }
-  if (commsize > 1) {
-    /* broadcast nvals,ivals, and found */
-    ierr = MPI_Bcast(&nvals,1,MPI_INT,0,comm);CHKERRQ(ierr);
 
-    *nvalues = (PetscInt)nvals;
-    ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
+  /* broadcast nvals,ivals, and found */
+  ierr = MPI_Bcast(&nvals,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  *nvalues = (PetscInt)nvals;
 
-    if (commrank == 0) {
-      for (k=0; k<nvals; k++) {
-        _values[k] = (PetscInt)ivals[k];
-      }
+  ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
+
+  if (commrank == 0) {
+    for (k=0; k<nvals; k++) {
+      _values[k] = (PetscInt)ivals[k];
     }
-    ierr = MPI_Bcast(_values,*nvalues,MPIU_INT,0,comm);CHKERRQ(ierr);
-    
-    ierr = MPI_Bcast(&cfound,1,MPI_INT,0,comm);CHKERRQ(ierr);
   }
+  ierr = MPI_Bcast(_values,*nvalues,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&cfound,1,MPI_INT,0,comm);CHKERRQ(ierr);
   
   *values = _values;
   if (cfound == cJSON_True) { *found  = PETSC_TRUE; }

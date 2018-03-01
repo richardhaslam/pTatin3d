@@ -24,6 +24,7 @@ void cJSON_GetObjectValue_arraylength(cJSON *cj,const char name[],int *found,int
 PetscErrorCode cJSONGetPetscInt(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *val,PetscBool *found);
 PetscErrorCode cJSONGetPetscReal(MPI_Comm comm,cJSON *cj,const char name[],PetscReal *val,PetscBool *found);
 PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *nvalues,PetscInt **values,PetscBool *found);
+PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *nvalues,PetscReal **values,PetscBool *found);
 PetscErrorCode cJSONGetPetscString(MPI_Comm comm,cJSON *cj,const char name[],char val[],PetscBool *found);
 PetscErrorCode cJSONGetPetscBool(MPI_Comm comm,cJSON *cj,const char name[],PetscBool *val,PetscBool *found);
 /*
