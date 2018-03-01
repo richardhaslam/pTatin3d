@@ -1151,7 +1151,7 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
     ierr = PetscSNPrintf(checkpoints_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",user->outputpath);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(checkpoints_path);CHKERRQ(ierr);
     
-    ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/intitial_condition",checkpoints_path);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/initial_condition",checkpoints_path);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
     
     ierr = pTatinCtxCheckpointWrite(user,checkpoint_path,NULL,
@@ -1167,7 +1167,7 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
     PetscMPIInt rank;
     
     ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",user->outputpath);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/intitial_condition",user->outputpath);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/initial_condition",user->outputpath);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     if (rank == 0) {
       FILE *fp;
@@ -1297,7 +1297,7 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
     ierr = PetscSNPrintf(checkpoints_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",user->outputpath);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(checkpoints_path);CHKERRQ(ierr);
     
-    ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/intitial_condition",checkpoints_path);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/initial_condition",checkpoints_path);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
     
     ierr = pTatinCtxCheckpointWrite(user,checkpoint_path,NULL,
