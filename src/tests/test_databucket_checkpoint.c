@@ -154,9 +154,9 @@ PetscErrorCode ptatin_db_checkpoint(void)
   
   {
     DataBucket dbload;
-    int rank;
+    PetscMPIInt rank;
     
-    MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     
     ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mp-native_db.json",user->outputpath);CHKERRQ(ierr);
     PetscTime(&time[2]);
