@@ -85,9 +85,9 @@ PetscErrorCode ptatin_db_checkpoint(void)
   PetscLogDouble time[4];
   PetscReal      statsOrig[9],statsCP[9];
   PetscInt       k;
+  char           filename[PETSC_MAX_PATH_LEN];
   
   PetscFunctionBegin;
-  ierr = PetscOptionsInsertString(NULL,"-output_path cptest");CHKERRQ(ierr);
   
   ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
@@ -132,20 +132,24 @@ PetscErrorCode ptatin_db_checkpoint(void)
   {
     DM dms;
     
-    ierr = DMDACheckpointWrite(dav,"./cptest/stokes");CHKERRQ(ierr);
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/stokes",user->outputpath);CHKERRQ(ierr);
+    ierr = DMDACheckpointWrite(dav,filename);CHKERRQ(ierr);
 
-    ierr = DMDACheckpointLoad(PETSC_COMM_WORLD,"./cptest/stokes_dmda.json",&dms);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/stokes_dmda.json",user->outputpath);CHKERRQ(ierr);
+    ierr = DMDACheckpointLoad(PETSC_COMM_WORLD,filename,&dms);CHKERRQ(ierr);
     ierr = DMView(dms,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
     //ierr = DMDACheckpointLoad(PETSC_COMM_SELF,"./cptest/stokes_dmda.json",&dms);CHKERRQ(ierr);
     //ierr = DMView(dms,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = DMDestroy(&dms);CHKERRQ(ierr);
   }
   
   // Write databucket
   //DataBucketView(PETSC_COMM_WORLD,material_points,"mp-ascii",DATABUCKET_VIEW_STDOUT);
   //DataBucketView(PETSC_COMM_WORLD,material_points,"mp-binary",DATABUCKET_VIEW_BINARY);
+  ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mp-native",user->outputpath);CHKERRQ(ierr);
   PetscTime(&time[0]);
-  DataBucketView(PETSC_COMM_WORLD,material_points,"./cptest/mp-native",DATABUCKET_VIEW_NATIVE);
+  DataBucketView(PETSC_COMM_WORLD,material_points,filename,DATABUCKET_VIEW_NATIVE);
   PetscTime(&time[1]);
   
   {
@@ -154,8 +158,9 @@ PetscErrorCode ptatin_db_checkpoint(void)
     
     MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
     
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/mp-native_db.json",user->outputpath);CHKERRQ(ierr);
     PetscTime(&time[2]);
-    DataBucketLoad_NATIVE(PETSC_COMM_WORLD,"./cptest/mp-native_db.json",&dbload);
+    DataBucketLoad_NATIVE(PETSC_COMM_WORLD,filename,&dbload);
     PetscTime(&time[3]);
     
     DataBucketView(PETSC_COMM_WORLD,dbload,"mp-ascii",DATABUCKET_VIEW_STDOUT);
