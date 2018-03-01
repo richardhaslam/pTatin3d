@@ -34,7 +34,6 @@
 
 pTatinModel *registered_model_list = NULL;
 PetscFunctionList ptatin_registered_model_flist = NULL;
-PetscBool ptatin_registered_model_setup = PETSC_FALSE;
 
 
 PetscLogEvent PTATIN_ModelInitialize;
@@ -361,26 +360,19 @@ PetscErrorCode pTatinModelDynamicGetByName(const char modelname[],pTatinModel *m
 PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
 {
   PetscErrorCode ierr;
-  pTatinModel model_s = NULL;
-  pTatinModel model_d = NULL;
-  
+
   PetscFunctionBegin;
 
-  ierr = pTatinModelStaticGetByName(name,&model_s);CHKERRQ(ierr);
-  if (model_s) {
-    *model = model_s;
-    PetscFunctionReturn(0);
-  }
-  
-  ierr = pTatinModelDynamicGetByName(name,&model_d);CHKERRQ(ierr);
-  if (model_d) {
+  ierr = pTatinModelDynamicGetByName(name,model);CHKERRQ(ierr);
+  if ((*model)) {
     /* Calling this allows us to free the models by traversing registered_model_list[], */
     /* as opposed to having the drivers call pTatinModelDestroy() */
     /* This function call should be removed as soon as the static models are removed */
-    ierr = pTatinModelRegister(model_d);CHKERRQ(ierr);
-    *model = model_d;
+    ierr = pTatinModelRegister(*model);CHKERRQ(ierr);
   }
-  
+  if (!(*model)) {
+    ierr = pTatinModelStaticGetByName(name,model);CHKERRQ(ierr);
+  }
   if (!(*model)) {
     SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel(Static/Dynamic)]: -ptatin_model \"%s\" wasn't identified as a registered model",name );
   }
@@ -588,21 +580,6 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 	PetscFunctionReturn(0);
 }
 
-PetscErrorCode pTatinModelDefinitionList(void);
-
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegisterAll"
-PetscErrorCode pTatinModelRegisterAll(void)
-{
-  PetscErrorCode ierr;
-  
-  if (ptatin_registered_model_setup) PetscFunctionReturn(0);
-  
-  ierr = pTatinModelDefinitionList();
-  ptatin_registered_model_setup = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelDeRegisterAll"
 PetscErrorCode pTatinModelDeRegisterAll(void)
@@ -620,7 +597,6 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
     item = registered_model_list[i];
   }
   free(registered_model_list);
-  registered_model_list = NULL;
   
   if (ptatin_registered_model_flist) {
     ierr = PetscFunctionListDestroy(&ptatin_registered_model_flist);CHKERRQ(ierr);

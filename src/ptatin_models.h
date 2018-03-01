@@ -52,7 +52,6 @@ typedef enum {
 
 
 extern pTatinModel *registered_model_list;
-extern PetscBool ptatin_registered_model_setup;
 
 PetscErrorCode pTatinModelCreate(pTatinModel *model);
 PetscErrorCode pTatinModelDestroy(pTatinModel *m);
