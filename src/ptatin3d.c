@@ -181,7 +181,7 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 		asprintf(&name,"vp");
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
@@ -1740,9 +1740,11 @@ PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx)
   restart_dir[0] = '\0';
   ierr = PetscOptionsGetString(NULL,NULL,"-restart_directory",restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate essential option -restart_directory");
+  PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Found -restart_directory: %s\n",restart_dir);
   
   /* populate context with content from JSON file */
   PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",restart_dir);
+  PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Using checkpoint file: %s\n",jfilename);
   if (commrank == 0) {
     cJSON_FileView(jfilename,&jfile);
     if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open JSON file \"%s\"",jfilename);
