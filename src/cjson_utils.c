@@ -354,12 +354,15 @@ PetscErrorCode cJSONGetPetscString(MPI_Comm comm,cJSON *cj,const char name[],cha
 {
   PetscMPIInt commsize,commrank;
   int cfound = cJSON_False;
+  PetscInt k;
   PetscErrorCode ierr;
   
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
   *found = PETSC_FALSE;
-  val[0] = '\0';
+  for (k=0; k<PETSC_MAX_PATH_LEN; k++) {
+    val[k] = '\0';
+  }
   if (commrank == 0) {
     char *cval;
 

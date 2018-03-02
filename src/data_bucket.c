@@ -1239,8 +1239,13 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
   for (k=0; k<nf; k++) {
     char string_f[2048];
     char string_r[2048];
-    int asize = 0;
+    int i,asize = 0;
     size_t size;
+    
+    for (i=0; i<2048; i++) {
+      string_f[i] = '\0';
+      string_r[i] = '\0';
+    }
     
     if (rank == 0) { sprintf(string_f,"%s",db->field[k]->name); }
     ierr = MPI_Bcast(string_f,2048,MPI_CHAR,0,comm);
