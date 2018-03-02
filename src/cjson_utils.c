@@ -215,7 +215,7 @@ PetscErrorCode cJSONGetPetscInt(MPI_Comm comm,cJSON *cj,const char name[],PetscI
 {
   PetscMPIInt commsize,commrank;
   int cfound = cJSON_False;
-  int ival;
+  int ival = 0;
   PetscErrorCode ierr;
   
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
@@ -240,7 +240,7 @@ PetscErrorCode cJSONGetPetscReal(MPI_Comm comm,cJSON *cj,const char name[],Petsc
 {
   PetscMPIInt commsize,commrank;
   int cfound = cJSON_False;
-  double dval;
+  double dval = 0.0;
   PetscErrorCode ierr;
   
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
@@ -265,7 +265,7 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
 {
   PetscMPIInt commsize,commrank;
   int cfound = cJSON_False;
-  int k,nvals;
+  int k,nvals = 0;
   double *dvals = NULL;
   PetscReal *_values = NULL;
   PetscErrorCode ierr;
@@ -277,8 +277,9 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
     
     cJSON_GetObjectValue_arraylength(cj,name,&cfound,&nvals);
     dvals = (double*)malloc(sizeof(double)*(nvals + 1));
-    
-    cJSON_GetObjectValue_doublearray(cj,name,&cfound,&nvals,dvals);
+    if (cfound == cJSON_True) {
+      cJSON_GetObjectValue_doublearray(cj,name,&cfound,&nvals,dvals);
+    }
   }
 
   /* broadcast nvals,ivals, and found */
@@ -286,6 +287,7 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
   *nvalues = (PetscInt)nvals;
   
   ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
+  ierr = PetscMemzero(_values,sizeof(PetscReal)*(*nvalues));CHKERRQ(ierr);
   
   if (commrank == 0) {
     for (k=0; k<nvals; k++) {
@@ -308,7 +310,7 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
 {
   PetscMPIInt commsize,commrank;
   int cfound = cJSON_False;
-  int k,nvals;
+  int k,nvals = 0;
   int *ivals = NULL;
   PetscInt *_values = NULL;
   PetscErrorCode ierr;
@@ -321,7 +323,9 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
     cJSON_GetObjectValue_arraylength(cj,name,&cfound,&nvals);
     ivals = (int*)malloc(sizeof(int)*(nvals + 1));
     
-    cJSON_GetObjectValue_intarray(cj,name,&cfound,&nvals,ivals);
+    if (cfound == cJSON_True) {
+      cJSON_GetObjectValue_intarray(cj,name,&cfound,&nvals,ivals);
+    }
   }
 
   /* broadcast nvals,ivals, and found */
@@ -329,6 +333,7 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
   *nvalues = (PetscInt)nvals;
 
   ierr = PetscMalloc1(*nvalues,&_values);CHKERRQ(ierr);
+  ierr = PetscMemzero(_values,sizeof(PetscInt)*(*nvalues));CHKERRQ(ierr);
 
   if (commrank == 0) {
     for (k=0; k<nvals; k++) {
@@ -386,7 +391,7 @@ PetscErrorCode cJSONGetPetscBool(MPI_Comm comm,cJSON *cj,const char name[],Petsc
 {
   PetscMPIInt commsize,commrank;
   int cfound = cJSON_False;
-  int ival;
+  int ival = 0;
   PetscErrorCode ierr;
   
   ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
