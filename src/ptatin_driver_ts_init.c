@@ -1355,9 +1355,11 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
   AuuMultiLevelCtx mgctx;
   PetscReal        timestep,dt_factor = 10.0;
   Mat              J_e;
+  PetscMPIInt      rank;
   
   PetscFunctionBegin;
   ierr = pTatinLogNote(pctx,"  [ptatin_driver.Execute]");CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   /* driver specific options parsed here */
   ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
   
@@ -1400,6 +1402,13 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     PetscPrintf(PETSC_COMM_WORLD,"<<----------------------------------------------------------------------------------------------->>\n");
     PetscPrintf(PETSC_COMM_WORLD,"  [[ Executing time step %D ]] : current time %+1.4e : advancing time by dt %+1.4e \n",k,pctx->time,dt_curr);
 
+    pctx->step = k;
+    pctx->time += dt_curr;
+    if (energy_activated) {
+      energy->time = pctx->time;
+      energy->dt = pctx->dt;
+    }
+    
     /* <<<------------------------------------------------------- >>> */
     /* <<<------------------------------------------------------- >>> */
     /* <<<------------------------------------------------------- >>> */
@@ -1516,6 +1525,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     dt_next = 0.001245 * ((PetscReal)k) + 1.0e-4;
 
     /* compute timestep */
+    pctx->dt = 1.0e32;
     ierr = DMCompositeGetAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
     ierr = SwarmUpdatePosition_ComputeCourantStep(dmv,velocity,&timestep);CHKERRQ(ierr);
     timestep = timestep/dt_factor;
@@ -1543,15 +1553,9 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     if (dt_next > pctx->dt_max) { dt_next = pctx->dt_max; }
     if (dt_next < pctx->dt_min) { dt_next = pctx->dt_min; }
     
-    pctx->step = k;
-    pctx->time += dt_curr;
     pctx->dt = dt_next;
-    if (energy_activated) {
-      energy->time = pctx->time;
-      energy->dt = pctx->dt;
-    }
     
-    {
+    if (k%pctx->output_frequency == 0){
       char io_path[PETSC_MAX_PATH_LEN],op[PETSC_MAX_PATH_LEN];
       
       ierr = PetscSNPrintf(op,PETSC_MAX_PATH_LEN-1,"%s",pctx->outputpath);CHKERRQ(ierr);
@@ -1568,9 +1572,11 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",op);CHKERRQ(ierr);
     }
     
-    {
+    if (k%pctx->checkpoint_every_nsteps == 0) {
       char checkpoints_path[PETSC_MAX_PATH_LEN];
       char checkpoint_path[PETSC_MAX_PATH_LEN];
+      char restartfile[PETSC_MAX_PATH_LEN];
+      char restartstring[PETSC_MAX_PATH_LEN];
       
       ierr = PetscSNPrintf(checkpoints_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",pctx->outputpath);CHKERRQ(ierr);
       ierr = pTatinCreateDirectory(checkpoints_path);CHKERRQ(ierr);
@@ -1583,20 +1589,12 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
                                       dmstokes,dmenergy,0,NULL,NULL,X_s,X_e,NULL,NULL);CHKERRQ(ierr);
       PetscTime(&time[1]);
       ierr = pTatinLogBasicCPUtime(pctx,"Checkpoint.write()",time[1]-time[0]);CHKERRQ(ierr);
-    }
 
-    /* write out a default string for restarting the job */
-    {
-      char        restartfile[PETSC_MAX_PATH_LEN];
-      char        restartstring[PETSC_MAX_PATH_LEN];
-      PetscMPIInt rank;
-      
+      /* write out a default string for restarting the job */
       ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",pctx->outputpath);CHKERRQ(ierr);
       ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/step%d",pctx->outputpath,k);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
       if (rank == 0) {
         FILE *fp;
-        
         fp = fopen(restartfile,"w");
         fprintf(fp,"%s",restartstring);
         fclose(fp);
