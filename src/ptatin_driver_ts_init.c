@@ -393,8 +393,10 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
   for (k=1; k<nlevels; k++) {
     ierr = MatMAIJRedimension(interpolation_v[k],1,&interpolation_eta[k]);CHKERRQ(ierr);
   }
+  /*
   PetscPrintf(PETSC_COMM_WORLD,"Generated velocity mesh hierarchy --> ");
   pTatinGetRangeCurrentMemoryUsage(NULL);
+  */
   
   /* Coarse grid setup: Define material properties on gauss points */
   for (k=0; k<nlevels-1; k++) {
@@ -407,9 +409,11 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
     ierr = VolumeQuadratureCreate_GaussLegendreStokes(3,np_per_dim,ncells,&volQ[k]);CHKERRQ(ierr);
   }
   volQ[nlevels-1] = stokes->volQ;
+  /*
   PetscPrintf(PETSC_COMM_WORLD,"Generated quadrature point hierarchy --> ");
   pTatinGetRangeCurrentMemoryUsage(NULL);
-  
+  */
+   
   /* Coarse grid setup: Define boundary conditions */
   for (k=0; k<nlevels-1; k++) {
     ierr = DMDABCListCreate(dav_hierarchy[k],&u_bclist[k]);CHKERRQ(ierr);
