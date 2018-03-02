@@ -125,15 +125,22 @@ PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_loca
 	list->blocksize = bs;
 	list->N  = N;
 	list->L  = bs * N;
-	ierr = PetscMalloc( sizeof(PetscInt)*list->L,    &list->dofidx_global);CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscInt)*list->L);
-	ierr = PetscMalloc( sizeof(PetscScalar)*list->L, &list->vals_global);CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L);
-	ierr = PetscMalloc( sizeof(PetscScalar)*list->L, &list->scale_global); CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L);
-	
+	ierr = PetscMalloc1( list->L, &list->dofidx_global);CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscInt)*list->L);
+	ierr = PetscMalloc1( list->L, &list->vals_global);CHKERRQ(ierr);     mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L);
+	ierr = PetscMalloc1( list->L, &list->scale_global); CHKERRQ(ierr);   mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L);
+
+  ierr = PetscMemzero(list->dofidx_global,sizeof(PetscInt)*list->L);CHKERRQ(ierr);
+  ierr = PetscMemzero(list->vals_global,sizeof(PetscScalar)*list->L);CHKERRQ(ierr);
+  ierr = PetscMemzero(list->scale_global,sizeof(PetscScalar)*list->L);CHKERRQ(ierr);
+  
 	list->N_local  = N_local;
 	list->L_local  = bs * N_local;
-	ierr = PetscMalloc( sizeof(PetscInt)*list->L_local,    &list->dofidx_local);CHKERRQ(ierr);  mem_usage += (PetscReal)(sizeof(PetscInt)*list->L_local);
-	ierr = PetscMalloc( sizeof(PetscScalar)*list->L_local, &list->vals_local);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L_local);
-	
+	ierr = PetscMalloc1( list->L_local, &list->dofidx_local);CHKERRQ(ierr);  mem_usage += (PetscReal)(sizeof(PetscInt)*list->L_local);
+	ierr = PetscMalloc1( list->L_local, &list->vals_local);CHKERRQ(ierr);    mem_usage += (PetscReal)(sizeof(PetscScalar)*list->L_local);
+
+  ierr = PetscMemzero(list->dofidx_local,sizeof(PetscInt)*list->L_local);CHKERRQ(ierr);
+  ierr = PetscMemzero(list->vals_local,sizeof(PetscScalar)*list->L_local);CHKERRQ(ierr);
+
 	ierr = BCListInitialize(list);CHKERRQ(ierr);
 	
 	mem_usage = mem_usage * 1.0e-6;
