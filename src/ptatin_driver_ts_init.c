@@ -1438,14 +1438,16 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       MPntStd           *mp_std;
       MPntPStokes       *mp_stokes;
       
+      DataBucketGetSizes(pctx->materialpoint_db,&npoints,NULL,NULL);
       DataBucketGetDataFieldByName(pctx->materialpoint_db, MPntStd_classname     , &PField_std);
       DataBucketGetDataFieldByName(pctx->materialpoint_db, MPntPStokes_classname , &PField_stokes);
-      
-      DataBucketGetSizes(pctx->materialpoint_db,&npoints,NULL,NULL);
-      mp_std    = PField_std->data; /* should write a function to do this */
-      mp_stokes = PField_stokes->data; /* should write a function to do this */
+      DataFieldGetEntries(PField_std,(void**)&mp_std);
+      DataFieldGetEntries(PField_stokes,(void**)&mp_stokes);
       
       ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(pctx->coefficient_projection_type,npoints,mp_std,mp_stokes,mgctx.nlevels,mgctx.interpolation_eta,mgctx.dav_hierarchy,mgctx.volQ);CHKERRQ(ierr);
+
+      DataFieldRestoreEntries(PField_stokes,(void**)&mp_stokes);
+      DataFieldRestoreEntries(PField_std,(void**)&mp_std);
     }
     if (energy_activated) {
       /* copy current (undeformed) energy mesh coords, update energy mesh geometry */
