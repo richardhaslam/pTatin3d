@@ -1975,7 +1975,7 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
   ierr = PhysCompSetup_Stokes(stokes,dmv);CHKERRQ(ierr);
   ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
   ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
-//ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
   
   /* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
   /* Model initialize function can overload the gravity value */
