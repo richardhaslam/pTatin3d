@@ -897,7 +897,6 @@ PetscErrorCode pTatinNonlinearStokesSolveCreate(pTatinCtx user,Mat A,Mat B,Vec F
   
   /* configure uu split for galerkin multi-grid */
   ierr = pTatin3dStokesKSPConfigureFSGMG(ksp,mgctx->nlevels,mgctx->operatorA11,mgctx->operatorB11,mgctx->interpolation_v,mgctx->dav_hierarchy);CHKERRQ(ierr);
-  ierr = pTatinLogBasic(user);CHKERRQ(ierr);
 
   *s = snes;
   PetscFunctionReturn(0);
@@ -917,16 +916,22 @@ PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const c
   ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
 
-  PetscPrintf(PETSC_COMM_WORLD,"   --------- Stokes[%s] ---------\n",stagename);
+  if (stagename) {
+    PetscPrintf(PETSC_COMM_WORLD,"   --------- Stokes[%s] ---------\n",stagename);
+  }
   PetscTime(&time[0]);
   ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
   PetscTime(&time[1]);
-  ierr = PetscSNPrintf(title,PETSC_MAX_PATH_LEN-1,"Stokes[%s]",stagename);CHKERRQ(ierr);
+  if (stagename) {
+    ierr = PetscSNPrintf(title,PETSC_MAX_PATH_LEN-1,"Stokes[%s]",stagename);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSNPrintf(title,PETSC_MAX_PATH_LEN-1,"Stokes");CHKERRQ(ierr);
+  }
   ierr = pTatinLogBasicSNES(user,   title,snes);CHKERRQ(ierr);
   ierr = pTatinLogBasicCPUtime(user,title,time[1]-time[0]);CHKERRQ(ierr);
   ierr = pTatinLogBasicStokesSolution(user,dmstokes,X);CHKERRQ(ierr);
   ierr = pTatinLogBasicStokesSolutionResiduals(user,snes,dmstokes,X);CHKERRQ(ierr);
-  ierr = pTatinLogPetscLog(user,    title);CHKERRQ(ierr);
+  //ierr = pTatinLogPetscLog(user,    title);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -1145,8 +1150,10 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   
   /* last thing we do */
   {
-    char checkpoints_path[PETSC_MAX_PATH_LEN];
-    char checkpoint_path[PETSC_MAX_PATH_LEN];
+    char           checkpoints_path[PETSC_MAX_PATH_LEN];
+    char           checkpoint_path[PETSC_MAX_PATH_LEN];
+    char           filename[PETSC_MAX_PATH_LEN];
+    PetscLogDouble time[2];
     
     ierr = PetscSNPrintf(checkpoints_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",user->outputpath);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(checkpoints_path);CHKERRQ(ierr);
@@ -1154,10 +1161,16 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
     ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/initial_condition",checkpoints_path);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
     
+    PetscTime(&time[0]);
     ierr = pTatinCtxCheckpointWrite(user,checkpoint_path,NULL,
                                     dmstokes,dmenergy,
                                     0,NULL,NULL,
                                     X_s,X_e,NULL,NULL);CHKERRQ(ierr);
+    PetscTime(&time[1]);
+    ierr = pTatinLogBasicCPUtime(user,"Checkpoint.write()",time[1]-time[0]);CHKERRQ(ierr);
+    
+    ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/initial_condition/ptatin.options",checkpoints_path);CHKERRQ(ierr);
+    ierr = pTatinWriteOptionsFile(filename);CHKERRQ(ierr);
   }
   
   /* write out a default string for restarting the job */
@@ -1197,10 +1210,15 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
   Vec             X_s,X_e = NULL;
   PetscBool       activate_energy = PETSC_FALSE;
   DataBucket      materialpoint_db,material_constants_db;
+  PetscLogDouble  time[2];
   PetscErrorCode  ierr;
   
   PetscFunctionBegin;
+  PetscTime(&time[0]);
   ierr = pTatin3dLoadContext_FromFile(&user);CHKERRQ(ierr);
+  PetscTime(&time[1]);
+  ierr = pTatinLogNote(user,"  [ptatin_driver.Load]");CHKERRQ(ierr);
+  ierr = pTatinLogBasicCPUtime(user,"Checkpoint.read()",time[1]-time[0]);CHKERRQ(ierr);
   ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
   
   /* driver specific options parsed here */
@@ -1335,6 +1353,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
   Mat              J_e;
   
   PetscFunctionBegin;
+  ierr = pTatinLogNote(pctx,"  [ptatin_driver.Execute]");CHKERRQ(ierr);
   /* driver specific options parsed here */
   ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max_surface_displacement",&surface_displacement_max,NULL);CHKERRQ(ierr);
   
@@ -1374,7 +1393,8 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     /* use last saved time step for any calculations, e.g. update particles */
     dt_curr = pctx->dt;
     
-    printf("  [executing time step %3d] : curr time %+1.4e : advancing time by dt %+1.8e \n",k,pctx->time,dt_curr);
+    PetscPrintf(PETSC_COMM_WORLD,"<<----------------------------------------------------------------------------------------------->>\n");
+    PetscPrintf(PETSC_COMM_WORLD,"  [[ Executing time step %D ]] : current time %+1.4e : advancing time by dt %+1.4e \n",k,pctx->time,dt_curr);
 
     /* <<<------------------------------------------------------- >>> */
     /* <<<------------------------------------------------------- >>> */
@@ -1457,7 +1477,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = SNESSetType(snesT,SNESKSPONLY);
       ierr = SNESSetFromOptions(snesT);CHKERRQ(ierr);
       
-      PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n", k );
+      PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING THERMAL FIELD FOR STEP : %D ]]\n",k);
       
       PetscTime(&time[0]);
       ierr = SNESSolve(snesT,NULL,X_e);CHKERRQ(ierr);
@@ -1475,8 +1495,8 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = HMGOperator_SetUp(&mgctx,pctx,&A,&B);CHKERRQ(ierr);
       ierr = pTatinNonlinearStokesSolveCreate(pctx,A,B,F_s,&mgctx,&snes);CHKERRQ(ierr);
       
-      PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", k );
-      ierr = pTatinNonlinearStokesSolve(pctx,snes,X_s,"-");CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n",k);
+      ierr = pTatinNonlinearStokesSolve(pctx,snes,X_s,NULL);CHKERRQ(ierr);
       
       ierr = MatDestroy(&A);CHKERRQ(ierr);
       ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -1502,12 +1522,12 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     ierr = DMCompositeRestoreAccess(dmstokes,X_s,&velocity,&pressure);CHKERRQ(ierr);
     dt_next = pctx->dt;
     
-    PetscPrintf(PETSC_COMM_WORLD,"  timestep_stokes[%D] dt_courant = %1.4e \n", k,pctx->dt );
+    //PetscPrintf(PETSC_COMM_WORLD,"  timestep_stokes[%D] dt_courant = %1.4e \n", k,pctx->dt );
     if (energy_activated) {
       ierr = pTatinPhysCompEnergy_ComputeTimestep(energy,X_e,&timestep);CHKERRQ(ierr);
       ierr = pTatin_SetTimestep(pctx,"AdvDiffCourant",timestep);CHKERRQ(ierr);
       dt_next = pctx->dt;
-      PetscPrintf(PETSC_COMM_WORLD,"  timestep_advdiff[%D] dt_courant = %1.4e \n", k,pctx->dt );
+      //PetscPrintf(PETSC_COMM_WORLD,"  timestep_advdiff[%D] dt_courant = %1.4e \n", k,pctx->dt );
     }
     
     /* <<<------------------------------------------------------- >>> */
@@ -1525,7 +1545,6 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       energy->time = pctx->time;
       energy->dt = pctx->dt;
     }
-    ierr = pTatinLogBasic(pctx);CHKERRQ(ierr);
     
     {
       char io_path[PETSC_MAX_PATH_LEN],op[PETSC_MAX_PATH_LEN];
@@ -1536,7 +1555,10 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = pTatinCreateDirectory(io_path);CHKERRQ(ierr);
 
       ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",io_path);CHKERRQ(ierr);
+      PetscTime(&time[0]);
       ierr = pTatinModel_Output(model,pctx,X_s,NULL);CHKERRQ(ierr);
+      PetscTime(&time[1]);
+      ierr = pTatinLogBasicCPUtime(pctx,"Output.write()",time[1]-time[0]);CHKERRQ(ierr);
 
       ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",op);CHKERRQ(ierr);
     }
@@ -1551,8 +1573,11 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/step%d",checkpoints_path,k);CHKERRQ(ierr);
       ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
       
+      PetscTime(&time[0]);
       ierr = pTatinCtxCheckpointWrite(pctx,checkpoint_path,NULL,
                                       dmstokes,dmenergy,0,NULL,NULL,X_s,X_e,NULL,NULL);CHKERRQ(ierr);
+      PetscTime(&time[1]);
+      ierr = pTatinLogBasicCPUtime(pctx,"Checkpoint.write()",time[1]-time[0]);CHKERRQ(ierr);
     }
 
     /* write out a default string for restarting the job */
@@ -1603,11 +1628,10 @@ int main(int argc,char *argv[])
     if (flg) {
       char fname[PETSC_MAX_PATH_LEN];
       
-      printf("found output path\n");
       ierr = PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s/restart.default",outputpath);CHKERRQ(ierr);
       ierr = PetscTestFile(fname,'r',&restart_string_found);CHKERRQ(ierr);
       if (restart_string_found) {
-        printf("found restart file\n");
+        PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Detected default restart option file helper: %s\n",fname);
         //ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,NULL,fname,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscOptionsInsert(NULL,&argc,&argv,fname);CHKERRQ(ierr);
       }
@@ -1615,10 +1639,6 @@ int main(int argc,char *argv[])
   }
   
   ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
-
-  // linear only
-  // non-linear with picard
-  // isoastasy
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-init",&init,NULL);CHKERRQ(ierr);
   if (init) {
@@ -1631,7 +1651,7 @@ int main(int argc,char *argv[])
   }
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-run",&run,NULL);CHKERRQ(ierr);
-  if (run) {
+  if (run || (!init && !load)) {
     Vec Xup,Xt;
     
     ierr = LoadICStateFromModelDefinition(&pctx,&Xup,&Xt,PETSC_FALSE);CHKERRQ(ierr);
@@ -1641,12 +1661,6 @@ int main(int argc,char *argv[])
     ierr = VecDestroy(&Xup);CHKERRQ(ierr);
     ierr = VecDestroy(&Xt);CHKERRQ(ierr);
   }
-  
-  ///ierr = linearSolve();CHKERRQ(ierr);
-
-  //ierr = picardSolve();CHKERRQ(ierr);
-
-  //ierr = dumpState();CHKERRQ(ierr);
 
   if (pctx) { ierr = pTatin3dDestroyContext(&pctx); }
   
