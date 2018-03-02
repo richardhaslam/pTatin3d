@@ -572,10 +572,11 @@ PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,
   ierr = MPI_Allreduce(&min_dt_diff,&g_dt_diff,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
 
 	ierr = MPI_Allreduce(&c,&cg,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)da));CHKERRQ(ierr);
+  /*
 	PetscPrintf(PETSC_COMM_WORLD,"Diffusion dt = %1.12e \n", g_dt_diff );
 	PetscPrintf(PETSC_COMM_WORLD,"Advective dt = %1.12e \n", g_dt_adv );
 	PetscPrintf(PETSC_COMM_WORLD,"\\int \\phi dV = %1.12e \n", cg );
-	
+	*/
 	*timestep = g_dt_adv;
 	if (g_dt_diff < g_dt_adv) {
 		*timestep = g_dt_diff;

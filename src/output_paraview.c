@@ -282,7 +282,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -414,7 +414,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const
 		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -721,7 +721,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,co
 		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"gzerror: Cannot open file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
