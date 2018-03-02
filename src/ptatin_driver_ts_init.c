@@ -1419,7 +1419,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     ierr = pTatinModel_UpdateMeshGeometry(model,pctx,X_s);CHKERRQ(ierr);
     
     /* update mesh coordinate hierarchy */
-    //todo//ierr = DMDARestrictCoordinatesHierarchy(dav_hierarchy,nlevels);CHKERRQ(ierr);
+    ierr = DMDARestrictCoordinatesHierarchy(mgctx.dav_hierarchy,mgctx.nlevels);CHKERRQ(ierr);
     
     /* 3 Update local coordinates and communicate */
     ierr = MaterialPointStd_UpdateCoordinates(pctx->materialpoint_db,dmv,pctx->materialpoint_ex);CHKERRQ(ierr);
@@ -1464,9 +1464,8 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     /* Coarse grid setup: Configure boundary conditions */
     ierr = pTatinModel_ApplyBoundaryConditionMG(mgctx.nlevels,mgctx.u_bclist,mgctx.dav_hierarchy,model,pctx);CHKERRQ(ierr);
     
-    /* solve mechanics + energy */
-    /* solve energy equation */
-    //
+    /* solve energy + mechanics */
+    /* (i) solve energy equation */
     if (energy_activated) {
       SNES snesT;
       
@@ -1487,7 +1486,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
     }
     
-    /* solve stokes */
+    /* (ii) solve stokes */
     {
       SNES snes;
       Mat  A,B;
