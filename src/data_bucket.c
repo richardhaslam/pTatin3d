@@ -116,7 +116,7 @@ void StringFindInList( const char name[], const int N, const DataField gfield[],
 	}
 }
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF )
+void DataFieldCreate( const char registration_function[], const char name[], const size_t size, const int L, DataField *DF )
 {
 	DataField df;
 	
@@ -124,7 +124,7 @@ void DataFieldCreate( const char registeration_function[], const char name[], co
 	memset( df, 0, sizeof(struct _p_DataField) ); 
 	
 	
-	asprintf( &df->registeration_function, "%s", registeration_function );
+	asprintf( &df->registration_function, "%s", registration_function );
 	asprintf( &df->name, "%s", name );
 	df->atomic_size = size;
 	df->L = L;
@@ -139,7 +139,7 @@ void DataFieldDestroy( DataField *DF )
 {
 	DataField df = *DF;
 	
-	free( df->registeration_function );
+	free( df->registration_function );
 	free( df->name );
 	free( df->data );
 	free(df);
@@ -191,7 +191,7 @@ void DataBucketDestroy( DataBucket *DB )
 
 void _DataBucketRegisterField(
 						DataBucket db,
-						const char registeration_function[],
+						const char registration_function[],
 						const char field_name[],
 						size_t atomic_size, DataField *_gfield )
 {
@@ -218,7 +218,7 @@ void _DataBucketRegisterField(
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, db->allocated, &fp );
+	DataFieldCreate( registration_function, field_name, atomic_size, db->allocated, &fp );
 	db->field[ db->nfields ] = fp;
 	
 	db->nfields++;
@@ -688,7 +688,7 @@ void _DataFieldViewBinary(DataField field, FILE *fp )
 	fprintf(fp,"<DataField>\n");
 	fprintf(fp,"%d\n", field->L);
 	fprintf(fp,"%zu\n",field->atomic_size);
-	fprintf(fp,"%s\n", field->registeration_function);
+	fprintf(fp,"%s\n", field->registration_function);
 	fprintf(fp,"%s\n", field->name);
 	
 	fwrite(field->data, field->atomic_size, field->L, fp);
@@ -705,7 +705,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 
 	DataField gfield;
 	char dummy[100];
-	char registeration_function[5000];
+	char registration_function[5000];
 	char field_name[5000];
 	int L;
 	size_t atomic_size,strL;
@@ -727,10 +727,10 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	
 	fscanf( fp, "%zu\n",&atomic_size); //printf("read(size): %zu\n",atomic_size);
 	
-	fgets(registeration_function,4999,fp); //printf("read(reg func): %s", registeration_function );
-	strL = strlen(registeration_function);
+	fgets(registration_function,4999,fp); //printf("read(reg func): %s", registration_function );
+	strL = strlen(registration_function);
 	if(strL>1){ 
-		registeration_function[strL-1] = 0;
+		registration_function[strL-1] = 0;
 	}
 	
 	fgets(field_name,4999,fp); //printf("read(name): %s", field_name );
@@ -740,7 +740,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	}
 
 #ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registeration_function,field_name);
+	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registration_function,field_name);
 #endif
 	
 	
@@ -756,7 +756,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	db->field     = field;
 	
 	/* add field */
-	DataFieldCreate( registeration_function, field_name, atomic_size, L, &gfield );
+	DataFieldCreate( registration_function, field_name, atomic_size, L, &gfield );
 
 	/* copy contents of file */
 	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
@@ -1147,7 +1147,7 @@ void DataBucketView_NATIVE(MPI_Comm comm,DataBucket db,const char prefix[])
       field = cJSON_CreateObject();
       content = cJSON_CreateString(db->field[f]->name);         cJSON_AddItemToObject(field,"fieldName",content);
       content = cJSON_CreateInt(db->field[f]->atomic_size);     cJSON_AddItemToObject(field,"atomicSize",content);
-      content = cJSON_CreateString(db->field[f]->registeration_function);     cJSON_AddItemToObject(field,"registerationFunction",content);
+      content = cJSON_CreateString(db->field[f]->registration_function);     cJSON_AddItemToObject(field,"registrationFunction",content);
       content = cJSON_CreateString("nativeBinary");            cJSON_AddItemToObject(field,"dataFormat",content);
       
       content = cJSON_CreateString(fieldfilename);              cJSON_AddItemToObject(field,"fileName",content);
@@ -1216,7 +1216,7 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
       char *field_name;
       int _atomic_size;
       size_t atomic_size;
-      char *registeration_function;
+      char *registration_function;
       
       cJSON_GetObjectValue_char(f_k,"fieldName",&found,&field_name);
       if (found == cJSON_False) { printf("<error> failed to locate key \"fieldName\"\n");  return(1); }
@@ -1225,10 +1225,10 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
       if (found == cJSON_False) { printf("<error> failed to locate key \"atomicSize\"\n");  return(1); }
       atomic_size = (size_t)_atomic_size;
       
-      cJSON_GetObjectValue_char(f_k,"registerationFunction",&found,&registeration_function);
-      if (found == cJSON_False) { printf("<error> failed to locate key \"registerationFunction\"\n");  return(1); }
+      cJSON_GetObjectValue_char(f_k,"registrationFunction",&found,&registration_function);
+      if (found == cJSON_False) { printf("<error> failed to locate key \"registrationFunction\"\n");  return(1); }
       
-      _DataBucketRegisterField(db,(const char*)registeration_function,(const char*)field_name,atomic_size,NULL);
+      _DataBucketRegisterField(db,(const char*)registration_function,(const char*)field_name,atomic_size,NULL);
 
       f_k = cJSON_GetArrayItemNext(f_k);
     }
@@ -1249,8 +1249,8 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
     ierr = MPI_Bcast(&asize,1,MPI_INT,0,comm);
     size = (size_t)asize;
 
-    //ierr = MPI_Bcast(db->field[k]->registeration_function,1,MPI_CHAR,0,comm);
-    if (rank == 0) { sprintf(string_r,"%s",db->field[k]->registeration_function); }
+    //ierr = MPI_Bcast(db->field[k]->registration_function,1,MPI_CHAR,0,comm);
+    if (rank == 0) { sprintf(string_r,"%s",db->field[k]->registration_function); }
     ierr = MPI_Bcast(string_r,2048,MPI_CHAR,0,comm);
     
     if (rank != 0) {
