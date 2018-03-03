@@ -44,22 +44,17 @@
 
 #include "stokes_operators.h"
 
-#define ELEMENT_MF_STANDARD
-//#define ELEMENT_MF_OPTIMIZED
-
-#ifdef ELEMENT_MF_STANDARD
-  #include "stokes_q2p1_mf_operators_def.c"
-  #include "stokes_q2p1_mf_operators_diag_def.c"
-#endif
-#ifdef ELEMENT_MF_OPTIMIZED
-  #include "stokes_q2p1_mf_operators_def_rolled.c"
-  #include "stokes_q2p1_mf_operators_diag_def.c"
+#define PTAT3D_ELEMENT_MF_STANDARD
+//#define PTAT3D_ELEMENT_MF_OPTIMIZED
+#if defined(PTAT3D_ELEMENT_MF_STANDARD) && defined(PTAT3D_ELEMENT_MF_OPTIMIZED)
+#error Only one of PTAT3D_ELEMENT_MF_STANDARD and PTAT3D_ELEMENT_MF_OPTIMIZED may be defined
 #endif
 
-//
+#include "stokes_q2p1_mf_operators_def.c"
+#include "stokes_q2p1_mf_operators_def_rolled.c"
+#include "stokes_q2p1_mf_operators_diag_def.c"
+
 //#define PTAT3D_USE_FORTRAN_MF_KERNELS
-//
-//
 //#define PTAT3D_LOG_MF_OP
 
 //#define NO_LOWORDER_OPERATORS
@@ -67,9 +62,6 @@
 //#define ONEPOINTQ_DIAG_LOWORDER_OPERATORS
 //#define Q1GEOM_LOWORDER_OPERATORS
 //#define AFFINEGEOM_LOWORDER_OPERATORS
-//
-
-
 
 /* --- A11 --- */
 #undef __FUNCT__
@@ -305,7 +297,7 @@ PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScala
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
 		
 		
-#ifdef ELEMENT_MF_STANDARD
+#ifdef PTAT3D_ELEMENT_MF_STANDARD
 		for (p=0; p<ngp; p++) {
 			//printf("[e=%4d,p=%d] %1.4e \n", e,p,cell_gausspoints[p].eta);
 			el_eta[p] = cell_gausspoints[p].eta;
@@ -318,7 +310,7 @@ PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScala
       #endif
 		}
 #endif
-#ifdef ELEMENT_MF_OPTIMIZED
+#ifdef PTAT3D_ELEMENT_MF_OPTIMIZED
 		for (p=0; p<ngp; p++) {
 			fac = 1.0;
 			el_eta[p] = cell_gausspoints[p].eta * WEIGHT[p] * detJ[p];

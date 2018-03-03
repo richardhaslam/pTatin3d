@@ -112,7 +112,8 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     modeldata->model_type = CASE_1A;
     modeldata->slab_length = 250.0;
     
-    PetscOptionsGetInt(NULL,NULL,"-model_sd3d_mtype",&mtype,0);
+    mtype = 0;
+    PetscOptionsGetInt(NULL,NULL,"-model_sd3d_mtype",&mtype,NULL);
     switch (mtype) {
         case 0:
             modeldata->model_type = CASE_1A;

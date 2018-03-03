@@ -4,9 +4,9 @@
 #    Compiler: clang,gfortran
 #
 
-export TATIN_CFLAGS_DEBUG	= -std=gnu99 -O0 -g  -Wall -Wno-unused-variable
-export TATIN_CFLAGS_OPT_a	= -std=gnu99 -O2 -Wno-unused-variable -Wstrict-aliasing -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_OPT_b	= -std=gnu99 -O3 -fast -ftree-vectorize -ftree-vectorizer-verbose=4  -Wstrict-aliasing -Wno-unused-variable -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_DEBUG	= -std=gnu99 -O0 -Wall -g
+export TATIN_CFLAGS_OPT_a	= -std=gnu99 -O2 -Wall -fstrict-aliasing -funroll-loops
+export TATIN_CFLAGS_OPT_b	= -std=gnu99 -O3 -Wall -fast -ftree-vectorize -ftree-vectorizer-verbose=4 -fstrict-aliasing -funroll-loops
 
 export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
 export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
@@ -21,13 +21,10 @@ export LIBZ_LIB = -lz
 # export LIBZ_INC = -I/usr/include
 
 #
-#
 #  -- pTatin external packages --
 #  User should select which packages are present
 #    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
 #    ** please compile external packages using the PETSc compiler          **
 #
-#
 PTATIN_CONTAINS_SPMA = 0
 PTATIN_CONTAINS_FASTSCAPE_V3 = 0
-
