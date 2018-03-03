@@ -1221,9 +1221,9 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
   PetscTime(&time[0]);
   ierr = pTatin3dLoadContext_FromFile(&user);CHKERRQ(ierr);
   PetscTime(&time[1]);
+  ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
   ierr = pTatinLogNote(user,"  [ptatin_driver.Load]");CHKERRQ(ierr);
   ierr = pTatinLogBasicCPUtime(user,"Checkpoint.read()",time[1]-time[0]);CHKERRQ(ierr);
-  ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
   
   /* driver specific options parsed here */
   
