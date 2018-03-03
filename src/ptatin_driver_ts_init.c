@@ -1621,12 +1621,30 @@ int main(int argc,char *argv[])
   pTatinCtx      pctx = NULL;
   
   ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  
-  /* look for a default restart file */
-  {
+  ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-init",&init,NULL);CHKERRQ(ierr);
+  if (init) {
+    ierr = GenerateICStateFromModelDefinition(&pctx);CHKERRQ(ierr);
+    if (pctx) { ierr = pTatin3dDestroyContext(&pctx); }
+    pctx = NULL;
+  }
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-load",&load,NULL);CHKERRQ(ierr);
+  if (load) {
+    ierr = LoadICStateFromModelDefinition(&pctx,NULL,NULL,PETSC_TRUE);CHKERRQ(ierr);
+    /* do something */
+    if (pctx) { ierr = pTatin3dDestroyContext(&pctx); }
+    pctx = NULL;
+  }
+
+  ierr = PetscOptionsGetBool(NULL,NULL,"-run",&run,NULL);CHKERRQ(ierr);
+  if (run || (!init && !load)) {
+    Vec       Xup,Xt;
     PetscBool restart_string_found = PETSC_FALSE,flg = PETSC_FALSE;
-    char outputpath[PETSC_MAX_PATH_LEN];
+    char      outputpath[PETSC_MAX_PATH_LEN];
     
+    /* look for a default restart file */
     ierr = PetscOptionsGetString(NULL,NULL,"-output_path",outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
     if (flg) {
       char fname[PETSC_MAX_PATH_LEN];
@@ -1639,23 +1657,6 @@ int main(int argc,char *argv[])
         ierr = PetscOptionsInsert(NULL,&argc,&argv,fname);CHKERRQ(ierr);
       }
     }
-  }
-  
-  ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
-
-  ierr = PetscOptionsGetBool(NULL,NULL,"-init",&init,NULL);CHKERRQ(ierr);
-  if (init) {
-    ierr = GenerateICStateFromModelDefinition(&pctx);CHKERRQ(ierr);
-  }
-  
-  ierr = PetscOptionsGetBool(NULL,NULL,"-load",&load,NULL);CHKERRQ(ierr);
-  if (load) {
-    ierr = LoadICStateFromModelDefinition(&pctx,NULL,NULL,PETSC_TRUE);CHKERRQ(ierr);
-  }
-
-  ierr = PetscOptionsGetBool(NULL,NULL,"-run",&run,NULL);CHKERRQ(ierr);
-  if (run || (!init && !load)) {
-    Vec Xup,Xt;
     
     ierr = LoadICStateFromModelDefinition(&pctx,&Xup,&Xt,PETSC_FALSE);CHKERRQ(ierr);
     
