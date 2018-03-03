@@ -618,7 +618,6 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {
 	pTatinCtx      user;
 	PetscMPIInt    rank;
-	PetscBool      flg;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -668,24 +667,11 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	if (rank==0) {
+	if (rank == 0) {
 		pTatinGenerateFormattedTimestamp(user->formatted_timestamp);	
 	}
 	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
-	/* create output directory */
-	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_FALSE) { 
-		sprintf(user->outputpath,"./output");
-	}
-	ierr = pTatinCreateDirectory(user->outputpath);CHKERRQ(ierr);
-
-	/* open log file */
-	ierr = pTatinLogOpenFile(user);CHKERRQ(ierr);
-	ierr = pTatinLogHeader(user);CHKERRQ(ierr);
-	
-	
+		
 	*ctx = user;
 	
 	PetscFunctionReturn(0);
@@ -826,7 +812,12 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 			ctx->constant_dt     = constant_dt;
 		}
 	}
-	sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
+
+  /* open log file */
+  ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
+  ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
+		
+  sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
 	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
 	sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
@@ -1766,7 +1757,7 @@ PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx)
 
   ierr = cJSONGetPetscBool(comm,jptat,"useMFStokes",&ctx->use_mf_stokes,&found);CHKERRQ(ierr);
 
-  ierr = cJSONGetPetscString(comm,jptat,"formattedTimestamp",ctx->formatted_timestamp,&found);CHKERRQ(ierr);
+  /*ierr = cJSONGetPetscString(comm,jptat,"formattedTimestamp",ctx->formatted_timestamp,&found);CHKERRQ(ierr);*/
   ierr = cJSONGetPetscString(comm,jptat,"outputPath",ctx->outputpath,&found);CHKERRQ(ierr);
   ierr = cJSONGetPetscInt(comm,jptat,"coefficientProjectionType",&ctx->coefficient_projection_type,&found);CHKERRQ(ierr);
 
