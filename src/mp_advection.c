@@ -360,7 +360,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	
     
 	PetscFunctionBegin;
-	/* communucate */
+	/* communicate */
 	ierr = MPI_Comm_size(PetscObjectComm((PetscObject)da),&size);CHKERRQ(ierr);
 	if (size == 1) {
 		PetscFunctionReturn(0);
@@ -415,7 +415,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	
 	ierr = DataExPackInitialize(de,sizeof_marker_contents);CHKERRQ(ierr);
 	
-	/* allocate a temporary buffer whihc is large enough to store all marker fields from an individual point,p */
+	/* allocate a temporary buffer which is large enough to store all marker fields from an individual point,p */
 	ierr = PetscMalloc(sizeof_marker_contents,&data_p);CHKERRQ(ierr);
 	
 	for (p=0; p<npoints; p++) {
@@ -493,7 +493,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		PetscPrintf(PETSC_COMM_WORLD,"  DataEx: total points sent = %D \n", totalsent);
 	}
 	*/
-	/* update the local coordinates and cell owner for all recieved points */
+	/* update the local coordinates and cell owner for all received points */
 	{
 		DM cda;
 		Vec gcoords;
@@ -544,7 +544,7 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 		ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 	}
 	
-	/* accepte all points living locally */
+	/* accept all points living locally */
 	npoints_accepted = 0;
 	for (p=0; p<recv_length; p++) {
 		PetscBool   onproc;
