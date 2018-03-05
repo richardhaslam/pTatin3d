@@ -171,7 +171,9 @@ void cJSON_FileView(const char filename[],cJSON **jf)
     fseek(fp,0,SEEK_SET);
 	
     data = malloc(sizeof(char)*(len+1));
-    fread(data,1,len,fp);
+    if (fread(data,1,(size_t)len,fp) != (size_t) len) {
+      printf("ERROR: fread() error in %s",__FUNCTION__);
+    }
     fclose(fp);
 
     jfile = NULL;

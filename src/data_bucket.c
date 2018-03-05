@@ -753,7 +753,10 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	DataFieldCreate( registration_function, field_name, atomic_size, L, &gfield );
 
 	/* copy contents of file */
-	fread(gfield->data, gfield->atomic_size, gfield->L, fp);
+	if (fread(gfield->data, gfield->atomic_size, (size_t)gfield->L, fp) != (size_t)gfield->L) {
+    printf("fread() error");
+    ERROR();
+  }
 #ifdef PTAT3D_LOG_DATA_BUCKET
 	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
 #endif	

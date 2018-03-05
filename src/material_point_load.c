@@ -75,7 +75,7 @@ PetscErrorCode MarkerCoordinatesLoadFromFile(const char name[],long int *length,
 	memset(data,0,sizeof(double)*3*n_markers);
 
 	for (p=0; p<n_markers; p++) {
-		fread(&data[3*p],sizeof(double),3,fp);
+		if (fread(&data[3*p],sizeof(double),3,fp) != 3) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
 		//printf("%1.4e %1.4e %1.4e \n", data[3*p],data[3*p+1],data[3*p+2]);
 	}	
 	
@@ -169,7 +169,7 @@ PetscErrorCode MarkerScalarFieldLoadFromFile(const char name[],long int *length,
 	data = malloc( datasize*n_markers );
 	memset(data,0,datasize*n_markers);
 	
-	fread(data,datasize,n_markers,fp);
+	if (fread(data,datasize,(size_t)n_markers,fp) != (size_t)n_markers) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() error");
 	
 	fclose(fp);
 	
