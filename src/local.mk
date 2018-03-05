@@ -78,7 +78,7 @@ libptatin3d-y.c += $(call thisdir, \
 			pc_dmdarepart.c \
 			geometry_object.c \
 			geometry_object_evaluator.c \
-			cJSON.c \
+			cJSON.c cjson_utils.c \
 			geometry_object_parse.c \
 			spm_utils.c \
 			petsc_utils.c \
@@ -114,6 +114,7 @@ ptatin-drivers-y.c += $(call thisdir, \
 			ptatin_driver_energy.c \
 			ptatin_driver_linear_ts.c \
 			ptatin_driver_nonlinear_ts.c \
+			ptatin_driver_ts_init.c \
 	)
 
 TATIN_INC += -I$(abspath $(call thisdir,.))

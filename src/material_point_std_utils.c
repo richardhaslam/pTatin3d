@@ -77,7 +77,7 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 		}
 	}
 	ierr = MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );CHKERRQ(ierr);
-	PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);
+	/*PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);*/
 	max = max + 1;
 	
 	/* give particles a unique identifier */

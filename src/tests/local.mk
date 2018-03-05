@@ -24,4 +24,5 @@ ptatin-tests-y.c += $(call thisdir, \
 			ptatin_driver_basic.c \
 			ptatin_driver_ic_spm.c \
 			test_mpiiob.c \
+			test_databucket_checkpoint.c \
     )

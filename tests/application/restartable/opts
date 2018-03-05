@@ -1,0 +1,41 @@
+-A11_operator_type 2,0,1
+-checkpoint_every_nsteps 2
+-dau_nlevels 3
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+#-fieldsplit_u_ksp_monitor
+#-fieldsplit_u_ksp_rtol 1.0e-2
+-fieldsplit_u_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type redundant
+-fieldsplit_u_mg_levels_ksp_max_it 4
+-fieldsplit_u_mg_levels_ksp_richardson_scale 0.3
+-fieldsplit_u_mg_levels_ksp_type richardson
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_pc_type mg
+-gbump_amp 0.05
+-ksp_atol 1.0e-6
+-ksp_converged_reason
+-ksp_divtol 1.0e20
+-ksp_rtol 1.0e-3
+-ksp_max_it 10
+-ksp_type gcr
+-lattice_layout_perturb 0.0
+-model_viscous_sinker_eta0 1.0
+-model_viscous_sinker_eta1 2.0
+-model_viscous_sinker_rho0 1.0
+-model_viscous_sinker_rho1 1.2
+-mx3 8
+-nsteps 4
+-options_left
+-output_path output
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model viscous_sinker
+-ptatin_model_output_disable
+-snes_converged_reason
+-snes_max_it 20
+-snes_monitor
+-snes_type ksponly
+-stk_velocity_dm_mat_type aij

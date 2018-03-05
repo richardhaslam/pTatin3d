@@ -45,14 +45,14 @@
 
 
 typedef enum { BFALSE=0, BTRUE } BTruth;
-typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5 } DataBucketViewType;
+typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5, DATABUCKET_VIEW_NATIVE } DataBucketViewType;
 
 typedef struct _p_DataField* DataField;
 typedef struct _p_DataBucket* DataBucket;
 
 
 struct _p_DataField {
-	char   *registeration_function;
+	char   *registration_function;
 	int    L;
 	BTruth active;
 	size_t atomic_size;
@@ -82,13 +82,13 @@ exit(EXIT_FAILURE);\
 void StringInList( const char name[], const int N, const DataField gfield[], BTruth *val );
 void StringFindInList( const char name[], const int N, const DataField gfield[], int *index );
 
-void DataFieldCreate( const char registeration_function[], const char name[], const size_t size, const int L, DataField *DF );
+void DataFieldCreate( const char registration_function[], const char name[], const size_t size, const int L, DataField *DF );
 void DataFieldDestroy( DataField *DF );
 void DataBucketCreate( DataBucket *DB );
 void DataBucketDestroy( DataBucket *DB );
 void _DataBucketRegisterField(
 															DataBucket db,
-															const char registeration_function[],
+															const char registration_function[],
 															const char field_name[],
 															size_t atomic_size, DataField *_gfield );
 
@@ -150,6 +150,9 @@ void DataBucketDestroyPackedArray(DataBucket db,void **buf);
 void DataBucketFillPackedArray(DataBucket db,const int index,void *buf);
 void DataBucketInsertPackedArray(DataBucket db,const int idx,void *data);
 
+void DataBucketView_NATIVE(MPI_Comm comm,DataBucket db,const char prefix[]);
+void DataBucketLoad_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db);
+void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db);
 
 #endif
 

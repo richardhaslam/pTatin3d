@@ -49,6 +49,8 @@
 #include "dmda_checkpoint.h"
 #include "ptatin_log.h"
 #include "dmda_project_coords.h"
+#include "cJSON.h"
+#include "cjson_utils.h"
 
 #include "private/ptatin_impl.h"
 
@@ -93,6 +95,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	PetscFunctionBegin;
 
 	if (user->restart_from_file) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Classic checkpoint is depreciated");
 		/* load from file */
 		char vname[PETSC_MAX_PATH_LEN];
 		char pname[PETSC_MAX_PATH_LEN];		
@@ -178,14 +181,14 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 		asprintf(&name,"vp");
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
 	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -245,7 +248,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -332,10 +335,9 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		
 		ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 	}	
-	
-	
+		
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -605,7 +607,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	free(name);
 	
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 
 	PetscFunctionReturn(0);
 }
@@ -616,7 +618,6 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {
 	pTatinCtx      user;
 	PetscMPIInt    rank;
-	PetscBool      flg;
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
@@ -666,24 +667,11 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
   
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	if (rank==0) {
+	if (rank == 0) {
 		pTatinGenerateFormattedTimestamp(user->formatted_timestamp);	
 	}
 	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
-	/* create output directory */
-	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-output_path",user->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_FALSE) { 
-		sprintf(user->outputpath,"./output");
-	}
-	ierr = pTatinCreateDirectory(user->outputpath);CHKERRQ(ierr);
-
-	/* open log file */
-	ierr = pTatinLogOpenFile(user);CHKERRQ(ierr);
-	ierr = pTatinLogHeader(user);CHKERRQ(ierr);
-	
-	
+		
 	*ctx = user;
 	
 	PetscFunctionReturn(0);
@@ -824,7 +812,12 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 			ctx->constant_dt     = constant_dt;
 		}
 	}
-	sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
+
+  /* open log file */
+  ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
+  ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
+		
+  sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
 	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
 	sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
@@ -1475,4 +1468,661 @@ PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],Pets
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "pTatinCtxCheckpointWrite"
+PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const char prefix[],
+                                        DM dms,DM dme,
+                                        PetscInt nfields,const char *dmnames[],DM dmlist[],
+                                        Vec Xs,Vec Xe,const char *fieldnames[],Vec veclist[])
+{
+  PetscErrorCode ierr;
+  MPI_Comm comm;
+  PetscMPIInt commsize,commrank;
+  char jfilename[PETSC_MAX_PATH_LEN];
+  char vfilename[3][PETSC_MAX_PATH_LEN],checkpoint_prefix[3][PETSC_MAX_PATH_LEN];
+  PetscBool energy_activated;
+  PhysCompStokes stokes = NULL;
+  PhysCompEnergy energy = NULL;
+  DM dmv,dmp;
+  DataBucket materialpoint_db = NULL,material_constants_db = NULL;
+  
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)ctx->pack,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&commsize);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
 
+  if (path && prefix) SETERRQ(comm,PETSC_ERR_SUP,"Intended support for either ${path}/FILENAME or ${prefix}_FILENAME");
+  if (prefix) SETERRQ(comm,PETSC_ERR_SUP,"Current implementation only supports ${path}/FILENAME format");
+  if (nfields > 0) SETERRQ(comm,PETSC_ERR_SUP,"Only support for stokes + energy");
+
+  if (path) {
+    PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",path);
+
+    PetscSNPrintf(vfilename[0],PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_stokes_Xv.pbvec",path);
+    PetscSNPrintf(vfilename[1],PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_stokes_Xp.pbvec",path);
+    PetscSNPrintf(vfilename[2],PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_energy_Xt.pbvec",path);
+
+    PetscSNPrintf(checkpoint_prefix[0],PETSC_MAX_PATH_LEN-1,"%s/stokes_v",path);
+    PetscSNPrintf(checkpoint_prefix[1],PETSC_MAX_PATH_LEN-1,"%s/materialpoint",path);
+    PetscSNPrintf(checkpoint_prefix[2],PETSC_MAX_PATH_LEN-1,"%s/materialconstants",path);
+  } else {
+    SETERRQ(comm,PETSC_ERR_SUP,"Current implementation only supports ${path}/FILENAME format");
+  }
+
+  /* stokes */
+  ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
+  
+  ierr = DMDACheckpointWrite(dmv,checkpoint_prefix[0]);CHKERRQ(ierr);
+  {
+    Vec velocity,pressure;
+    
+    ierr = DMCompositeGetAccess(dms,Xs,&velocity,&pressure);CHKERRQ(ierr);
+    
+    ierr = DMDAWriteVectorToFile(velocity,vfilename[0],PETSC_FALSE);CHKERRQ(ierr);
+    ierr = DMDAWriteVectorToFile(pressure,vfilename[1],PETSC_FALSE);CHKERRQ(ierr);
+
+    ierr = DMCompositeRestoreAccess(dms,Xs,&velocity,&pressure);CHKERRQ(ierr);
+  }
+
+  /* energy */
+  ierr = pTatinContextValid_Energy(ctx,&energy_activated);CHKERRQ(ierr);
+  if (energy_activated) {
+    ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+    ierr = PhysCompCheckpointWrite_Energy(energy,PETSC_FALSE,path,NULL);CHKERRQ(ierr);
+
+    ierr = DMDAWriteVectorToFile(Xe,vfilename[2],PETSC_FALSE);CHKERRQ(ierr);
+  }
+  
+  /* material points */
+  ierr = pTatinGetMaterialPoints(ctx,&materialpoint_db,NULL);CHKERRQ(ierr);
+  DataBucketView(PETSC_COMM_WORLD,materialpoint_db,checkpoint_prefix[1],DATABUCKET_VIEW_NATIVE);
+
+  /* material constants */
+  /* material_constants_db is a redundant object, e.g. it is identical on all ranks */
+  /* Hence, we let only 1 rank write out the data file during checkpoint.write() */
+  ierr = pTatinGetMaterialConstants(ctx,&material_constants_db);CHKERRQ(ierr);
+  if (commrank == 0) {
+    DataBucketView(PETSC_COMM_SELF,material_constants_db,checkpoint_prefix[2],DATABUCKET_VIEW_NATIVE);
+  }
+
+  /* user state */
+  /*
+  for (f=0; f<nfields; f++) {
+    char uprefix[PETSC_MAX_PATH_LEN];
+    char fprefix[PETSC_MAX_PATH_LEN];
+    
+    PetscSNPrintf(uprefix,PETSC_MAX_PATH_LEN-1,"%s/%s",path,dmnames[f]);
+    ierr = DMDACheckpointWrite(dmlist[f],uprefix);CHKERRQ(ierr);
+
+    PetscSNPrintf(fprefix,PETSC_MAX_PATH_LEN-1,"%s/ptatinstate_%s_%s.pbvec",path,dmnames[f],fieldnames[f]);
+    ierr = DMDAWriteVectorToFile(veclist[f],fprefix,PETSC_FALSE);CHKERRQ(ierr);
+  }
+  */
+  
+  if (commrank == 0) {
+    cJSON *jso_file = NULL,*jso_ptat = NULL,*jso_state,*jso_object,*content;
+    char relpathtofile[PETSC_MAX_PATH_LEN];
+    
+    /* create json meta data file */
+    jso_file = cJSON_CreateObject();
+    
+    jso_ptat = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_file,"pTatinCtx",jso_ptat);
+
+    content = cJSON_CreateInt((int)commsize);  cJSON_AddItemToObject(jso_ptat,"commSize",content);
+    content = cJSON_CreateInt((int)ctx->mx);  cJSON_AddItemToObject(jso_ptat,"mx",content);
+    content = cJSON_CreateInt((int)ctx->my);  cJSON_AddItemToObject(jso_ptat,"my",content);
+    content = cJSON_CreateInt((int)ctx->mz);  cJSON_AddItemToObject(jso_ptat,"mz",content);
+
+    content = cJSON_CreateBool((int)ctx->restart_from_file);        cJSON_AddItemToObject(jso_ptat,"restartFromFile",content);
+    content = cJSON_CreateString(ctx->restart_prefix);              cJSON_AddItemToObject(jso_ptat,"restartPrefix",content);
+    content = cJSON_CreateString(ctx->restart_dir);                 cJSON_AddItemToObject(jso_ptat,"restartPath",content);
+    content = cJSON_CreateInt((int)ctx->checkpoint_every);          cJSON_AddItemToObject(jso_ptat,"checkpointEvery",content);
+    content = cJSON_CreateInt((int)ctx->checkpoint_every_nsteps);   cJSON_AddItemToObject(jso_ptat,"checkpointEveryNSteps",content);
+    content = cJSON_CreateDouble(ctx->checkpoint_every_ncpumins);   cJSON_AddItemToObject(jso_ptat,"checkpointEveryNCPUMins",content);
+
+    content = cJSON_CreateBool((int)ctx->use_mf_stokes);  cJSON_AddItemToObject(jso_ptat,"useMFStokes",content);
+
+    content = cJSON_CreateString(ctx->formatted_timestamp);            cJSON_AddItemToObject(jso_ptat,"formattedTimestamp",content);
+    content = cJSON_CreateString(ctx->outputpath);                     cJSON_AddItemToObject(jso_ptat,"outputPath",content);
+    content = cJSON_CreateInt((int)ctx->coefficient_projection_type);  cJSON_AddItemToObject(jso_ptat,"coefficientProjectionType",content);
+    
+    content = cJSON_CreateBool((int)ctx->solverstatistics);  cJSON_AddItemToObject(jso_ptat,"solverStatistics",content);
+    content = cJSON_CreateInt((int)ctx->continuation_m);     cJSON_AddItemToObject(jso_ptat,"continuation_m",content);
+    content = cJSON_CreateInt((int)ctx->continuation_M);     cJSON_AddItemToObject(jso_ptat,"continuation_M",content);
+
+    content = cJSON_CreateInt((int)ctx->step);     cJSON_AddItemToObject(jso_ptat,"timeStep",content);
+    content = cJSON_CreateInt((int)ctx->nsteps);   cJSON_AddItemToObject(jso_ptat,"timeStepMax",content);
+
+    content = cJSON_CreateDouble(ctx->dt);          cJSON_AddItemToObject(jso_ptat,"timeStepSize",content);
+    content = cJSON_CreateDouble(ctx->dt_max);      cJSON_AddItemToObject(jso_ptat,"timeStepSizeMax",content);
+    content = cJSON_CreateDouble(ctx->dt_min);      cJSON_AddItemToObject(jso_ptat,"timeStepSizeMin",content);
+    content = cJSON_CreateDouble(ctx->dt_adv);      cJSON_AddItemToObject(jso_ptat,"timeStepSizeAdv",content);
+    content = cJSON_CreateDouble(ctx->constant_dt); cJSON_AddItemToObject(jso_ptat,"constantTimeStepSize",content);
+    content = cJSON_CreateBool((int)ctx->use_constant_dt);  cJSON_AddItemToObject(jso_ptat,"useConstantTimeStepSize",content);
+
+    content = cJSON_CreateDouble(ctx->time);                cJSON_AddItemToObject(jso_ptat,"time",content);
+    content = cJSON_CreateDouble(ctx->time_max);            cJSON_AddItemToObject(jso_ptat,"timeMax",content);
+    
+    content = cJSON_CreateInt((int)ctx->output_frequency);  cJSON_AddItemToObject(jso_ptat,"outputFrequency",content);
+    
+    /* references to data files */
+    /* PhysCompStokes */
+    jso_object = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"stokes->gravity_vector",jso_object);
+    content = cJSON_CreateString("double");          cJSON_AddItemToObject(jso_object,"ctype",content);
+    content = cJSON_CreateInt((int)3);               cJSON_AddItemToObject(jso_object,"length",content);
+    /* todo - change this to base64 encoded */
+    content = cJSON_CreateString("ascii");           cJSON_AddItemToObject(jso_object,"dataFormat",content);
+    content = cJSON_CreateDoubleArray(stokes->gravity_vector,3);   cJSON_AddItemToObject(jso_object,"data",content);
+    content = cJSON_CreateDoubleArray(stokes->gravity_vector,3);   cJSON_AddItemToObject(jso_object,"data[ascii]",content);
+
+    /* DMDA for velocity */
+    jso_object = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"stokes->dmv",jso_object);
+    content = cJSON_CreateString("DMDA");                cJSON_AddItemToObject(jso_object,"ctype",content);
+    content = cJSON_CreateString("json-meta");           cJSON_AddItemToObject(jso_object,"dataFormat",content);
+    //content = cJSON_CreateString(checkpoint_prefix[0]);  cJSON_AddItemToObject(jso_object,"prefix",content);
+    PetscSNPrintf(relpathtofile,PETSC_MAX_PATH_LEN-1,"%s_dmda.json",checkpoint_prefix[0]);
+    content = cJSON_CreateString(relpathtofile);         cJSON_AddItemToObject(jso_object,"fileName",content);
+
+    /* PhysCompEnergy */
+    if (energy_activated) {
+      jso_object = cJSON_CreateObject();
+      cJSON_AddItemToObject(jso_ptat,"energy",jso_object);
+      content = cJSON_CreateString("PhysCompEnergy");      cJSON_AddItemToObject(jso_object,"ctype",content);
+      content = cJSON_CreateString("json-meta");           cJSON_AddItemToObject(jso_object,"dataFormat",content);
+      //content = cJSON_CreateString(path);  cJSON_AddItemToObject(jso_object,"prefix",content);
+      PetscSNPrintf(relpathtofile,PETSC_MAX_PATH_LEN-1,"%s/physcomp_energy.json",path);
+      content = cJSON_CreateString(relpathtofile);         cJSON_AddItemToObject(jso_object,"fileName",content);
+    }
+    
+    /* Material points */
+    jso_object = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"materialpoint_db",jso_object);
+    content = cJSON_CreateString("DataBucket");          cJSON_AddItemToObject(jso_object,"ctype",content);
+    content = cJSON_CreateString("native");              cJSON_AddItemToObject(jso_object,"dataFormat",content);
+    //content = cJSON_CreateString(checkpoint_prefix[1]);  cJSON_AddItemToObject(jso_object,"prefix",content);
+    PetscSNPrintf(relpathtofile,PETSC_MAX_PATH_LEN-1,"%s_db.json",checkpoint_prefix[1]);
+    content = cJSON_CreateString(relpathtofile);         cJSON_AddItemToObject(jso_object,"fileName",content);
+    
+    /* Material constants */
+    jso_object = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"material_constants",jso_object);
+    content = cJSON_CreateString("DataBucket");          cJSON_AddItemToObject(jso_object,"ctype",content);
+    content = cJSON_CreateString("native");              cJSON_AddItemToObject(jso_object,"dataFormat",content);
+    //content = cJSON_CreateString(checkpoint_prefix[2]);  cJSON_AddItemToObject(jso_object,"prefix",content);
+    PetscSNPrintf(relpathtofile,PETSC_MAX_PATH_LEN-1,"%s_db.json",checkpoint_prefix[2]);
+    content = cJSON_CreateString(relpathtofile);         cJSON_AddItemToObject(jso_object,"fileName",content);
+
+    /* State vectors */
+    jso_state = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"stokes.Xs->Xv",jso_state);
+    content = cJSON_CreateString("Vec");                      cJSON_AddItemToObject(jso_state,"ctype",content);
+    content = cJSON_CreateString("petsc-binary");             cJSON_AddItemToObject(jso_state,"dataFormat",content);
+    content = cJSON_CreateString(vfilename[0]);               cJSON_AddItemToObject(jso_state,"fileName",content);
+
+    jso_state = cJSON_CreateObject();
+    cJSON_AddItemToObject(jso_ptat,"stokes.Xs->Xp",jso_state);
+    content = cJSON_CreateString("Vec");                      cJSON_AddItemToObject(jso_state,"ctype",content);
+    content = cJSON_CreateString("petsc-binary");             cJSON_AddItemToObject(jso_state,"dataFormat",content);
+    content = cJSON_CreateString(vfilename[1]);               cJSON_AddItemToObject(jso_state,"fileName",content);
+
+    if (energy_activated) {
+      jso_state = cJSON_CreateObject();
+      cJSON_AddItemToObject(jso_ptat,"energy.Xt",jso_state);
+      content = cJSON_CreateString("Vec");                    cJSON_AddItemToObject(jso_state,"ctype",content);
+      content = cJSON_CreateString("petsc-binary");           cJSON_AddItemToObject(jso_state,"dataFormat",content);
+      content = cJSON_CreateString(vfilename[2]);             cJSON_AddItemToObject(jso_state,"fileName",content);
+    }
+
+    /*
+    jso_state = cJSON_CreateArray();
+    cJSON_AddItemToObject(jso_ptat,"userstate",jso_state);
+
+    jso_object = cJSON_CreateObject();
+    content = cJSON_CreateString();            cJSON_AddItemToObject(jso_object,"points",content);
+    cJSON_AddItemToArray(jso_state,jso_object);
+    */
+    
+    /* write json meta data file */
+    {
+      FILE *fp;
+      char *jbuff = cJSON_Print(jso_file);
+      
+      fp = fopen(jfilename,"w");
+      if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Unable to open file %s",jfilename);
+      fprintf(fp,"%s\n",jbuff);
+      fclose(fp);
+      free(jbuff);
+    }
+
+    cJSON_Delete(jso_file);
+  }
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3dLoadContext_FromFile"
+PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx)
+{
+  pTatinCtx ctx;
+  PetscErrorCode  ierr;
+  char restart_dir[PETSC_MAX_PATH_LEN];
+  PetscBool flg,found;
+  PetscMPIInt commrank;
+  char jfilename[PETSC_MAX_PATH_LEN];
+  cJSON *jfile = NULL,*jptat = NULL,*jobj = NULL;
+  MPI_Comm comm;
+  PetscInt csize;
+  char field_string[PETSC_MAX_PATH_LEN];
+  
+  
+  PetscFunctionBegin;
+  comm = PETSC_COMM_WORLD;
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
+
+  ierr = pTatin3dCreateContext(&ctx);CHKERRQ(ierr);
+  
+  restart_dir[0] = '\0';
+  ierr = PetscOptionsGetString(NULL,NULL,"-restart_directory",restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate essential option -restart_directory");
+  PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Found -restart_directory: %s\n",restart_dir);
+  
+  /* populate context with content from JSON file */
+  PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",restart_dir);
+  PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Using checkpoint file: %s\n",jfilename);
+  if (commrank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open JSON file \"%s\"",jfilename);
+    jptat = cJSON_GetObjectItem(jfile,"pTatinCtx");
+  }
+  
+  ierr = cJSONGetPetscInt(comm,jptat,"commSize",&csize,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscInt(comm,jptat,"mx",&ctx->mx,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"my",&ctx->my,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"mz",&ctx->mz,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscBool(comm,jptat,"restartFromFile",&ctx->restart_from_file,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscString(comm,jptat,"restartPrefix",ctx->restart_prefix,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscString(comm,jptat,"restartPath",ctx->restart_dir,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscInt(comm,jptat,"checkpointEvery",&ctx->checkpoint_every,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"checkpointEveryNSteps",&ctx->checkpoint_every_nsteps,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscReal(comm,jptat,"checkpointEveryNCPUMins",&ctx->checkpoint_every_ncpumins,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscBool(comm,jptat,"useMFStokes",&ctx->use_mf_stokes,&found);CHKERRQ(ierr);
+
+  /*ierr = cJSONGetPetscString(comm,jptat,"formattedTimestamp",ctx->formatted_timestamp,&found);CHKERRQ(ierr);*/
+  ierr = cJSONGetPetscString(comm,jptat,"outputPath",ctx->outputpath,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"coefficientProjectionType",&ctx->coefficient_projection_type,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscBool(comm,jptat,"solverStatistics",&ctx->solverstatistics,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"continuation_m",&ctx->continuation_m,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"continuation_M",&ctx->continuation_M,&found);CHKERRQ(ierr);
+  
+  ierr = cJSONGetPetscInt(comm,jptat,"timeStep",&ctx->step,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscInt(comm,jptat,"timeStepMax",&ctx->nsteps,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscReal(comm,jptat,"timeStepSize",&ctx->dt,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscReal(comm,jptat,"timeStepSizeMax",&ctx->dt_max,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscReal(comm,jptat,"timeStepSizeMin",&ctx->dt_min,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscReal(comm,jptat,"timeStepSizeAdv",&ctx->dt_adv,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscReal(comm,jptat,"constantTimeStepSize",&ctx->constant_dt,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscBool(comm,jptat,"useConstantTimeStepSize",&ctx->use_constant_dt,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscReal(comm,jptat,"time",&ctx->time,&found);CHKERRQ(ierr);
+  ierr = cJSONGetPetscReal(comm,jptat,"timeMax",&ctx->time_max,&found);CHKERRQ(ierr);
+
+  ierr = cJSONGetPetscInt(comm,jptat,"outputFrequency",&ctx->output_frequency,&found);CHKERRQ(ierr);
+
+  /* load material constants from JSON file */
+  if (ctx->material_constants) { DataBucketDestroy(&ctx->material_constants); }
+  jobj = NULL;
+  if (commrank == 0) {
+    jobj = cJSON_GetObjectItem(jptat,"material_constants");
+    if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"material_constants");
+  }
+  ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string,&found);CHKERRQ(ierr);
+  DataBucketLoadRedundant_NATIVE(comm,field_string,&ctx->material_constants);
+
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+  
+  /* force these values */
+  ctx->restart_from_file = PETSC_TRUE;
+  PetscSNPrintf(ctx->restart_dir,PETSC_MAX_PATH_LEN-1,"%s",restart_dir);CHKERRQ(ierr);
+
+  ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
+  
+  /* Over function pointers for loading model */
+  //ctx->model->FP_pTatinModel_ApplyInitialSolution         = pTatinRestart_ApplyInitialSolution; /* could call users function and afterwards clobber */
+  //ctx->model->FP_pTatinModel_ApplyInitialMeshGeometry     = pTatinRestart_ApplyInitialMeshGeometry; /* could call users function and afterwards clobber */
+  //ctx->model->FP_pTatinModel_ApplyInitialMaterialGeometry = pTatinRestart_ApplyInitialMaterialGeometry; /* calling users function and afterwards clobbering would be expensive - avoid this */
+ 
+  *_ctx = ctx;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3dLoadState_FromFile"
+PetscErrorCode pTatin3dLoadState_FromFile(pTatinCtx ctx,DM dmstokes,DM dmenergy,Vec Xs,Vec Xt)
+{
+  PetscErrorCode ierr;
+  MPI_Comm comm;
+  PetscMPIInt commrank;
+  char jfilename[PETSC_MAX_PATH_LEN];
+  cJSON *jfile = NULL,*jptat = NULL,*jobj;
+  PetscBool found,energy_activated;
+  
+  
+  PetscFunctionBegin;
+  comm = PETSC_COMM_WORLD;
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
+  PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",ctx->restart_dir);
+  if (commrank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open JSON file \"%s\"",jfilename);
+    jptat = cJSON_GetObjectItem(jfile,"pTatinCtx");
+  }
+
+  {
+    char field_string_v[PETSC_MAX_PATH_LEN];
+    char field_string_p[PETSC_MAX_PATH_LEN];
+    Vec velocity,pressure;
+    
+    jobj = NULL;
+    if (commrank == 0) { jobj = cJSON_GetObjectItem(jptat,"stokes.Xs->Xv"); if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"stokes.Xs->Xv"); }
+    ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string_v,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"fileName");
+
+    jobj = NULL;
+    if (commrank == 0) { jobj = cJSON_GetObjectItem(jptat,"stokes.Xs->Xp"); if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"stokes.Xs->Xp");}
+    ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string_p,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"fileName");
+
+    ierr = DMCompositeGetAccess(dmstokes,Xs,&velocity,&pressure);CHKERRQ(ierr);
+    
+    ierr = VecLoadFromFile(velocity,field_string_v);CHKERRQ(ierr);
+    ierr = VecLoadFromFile(pressure,field_string_p);CHKERRQ(ierr);
+    
+    ierr = DMCompositeRestoreAccess(dmstokes,Xs,&velocity,&pressure);CHKERRQ(ierr);
+  }
+  
+  ierr = pTatinContextValid_Energy(ctx,&energy_activated);CHKERRQ(ierr);
+  if (energy_activated) {
+    char field_string_t[PETSC_MAX_PATH_LEN];
+    
+    jobj = NULL;
+    if (commrank == 0) { jobj = cJSON_GetObjectItem(jptat,"energy.Xt"); if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"energy.Xt");}
+    ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string_t,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"fileName");
+    
+    ierr = VecLoadFromFile(Xt,field_string_t);CHKERRQ(ierr);
+  }
+
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_PhysCompStokesLoad_FromFile"
+PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
+{
+  
+  PetscErrorCode  ierr;
+  PhysCompStokes  stokes;
+  PetscReal       grav[3];
+  PetscInt        ncomponents;
+  PetscBool       found;
+  DM              dmv;
+  MPI_Comm        comm;
+  PetscMPIInt     commrank;
+  char            jfilename[PETSC_MAX_PATH_LEN];
+  cJSON           *jfile = NULL,*jptat = NULL,*jobj;
+  
+  
+  PetscFunctionBegin;
+  comm = PETSC_COMM_WORLD;
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
+  PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",ctx->restart_dir);
+  if (commrank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open JSON file \"%s\"",jfilename);
+    jptat = cJSON_GetObjectItem(jfile,"pTatinCtx");
+  }
+  
+  {
+    char field_string[PETSC_MAX_PATH_LEN];
+    
+    jobj = NULL;
+    if (commrank == 0) { jobj = cJSON_GetObjectItem(jptat,"stokes->dmv"); if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"stokes->dmv"); }
+    ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"fileName");
+    
+    ierr = DMDACheckpointLoad(comm,field_string,&dmv);CHKERRQ(ierr);
+  }
+
+  /* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
+  /* Model initialize function can overload the gravity value */
+  grav[0] = 0.0;
+  grav[1] = 1.0;
+  grav[2] = 0.0;
+
+  {
+    char field_string[PETSC_MAX_PATH_LEN];
+    PetscReal *gravity_vec;
+    PetscInt length;
+    PetscBool is_ascii,is_base64;
+    
+    jobj = NULL;
+    if (commrank == 0) {
+      jobj = cJSON_GetObjectItem(jptat,"stokes->gravity_vector");
+      if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"stokes->gravity_vector");
+    }
+
+    ierr = cJSONGetPetscInt(comm,jobj,"length",&length,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"length");
+
+    ierr = cJSONGetPetscString(comm,jobj,"dataFormat",field_string,&found);CHKERRQ(ierr);
+    if (!found) SETERRQ_JSONKEY(comm,"dataFormat");
+    
+    /* check dataFormat type */
+    found = PETSC_FALSE;
+    ierr = PetscStrncmp(field_string, "ascii",    5, &is_ascii);CHKERRQ(ierr);
+    ierr = PetscStrncmp(field_string, "base64",    5, &is_base64);CHKERRQ(ierr);
+    if (is_ascii) {
+      ierr = cJSONGetPetscRealArray(comm,jobj,"data",&length,&gravity_vec,&found);CHKERRQ(ierr);
+      if (!found) SETERRQ_JSONKEY(comm,"stokes->gravity_vector::data");
+    } else if (is_base64) {
+      SETERRQ(comm,PETSC_ERR_SUP,"Only support for reading ascii data");
+    } else {
+      SETERRQ(comm,PETSC_ERR_SUP,"Only support for reading ascii or base64 encoded data");
+    }
+    
+    grav[0] = gravity_vec[0];
+    grav[1] = gravity_vec[1];
+    grav[2] = gravity_vec[2];
+    
+    ierr = PetscFree(gravity_vec);CHKERRQ(ierr);
+  }
+  
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+  
+  ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
+  stokes->use_mf_stokes = ctx->use_mf_stokes;
+  
+  ierr = PhysCompSetup_Stokes(stokes,dmv);CHKERRQ(ierr);
+  ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
+  
+  /* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
+  /* Model initialize function can overload the gravity value */
+  ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
+
+  ncomponents = 3;
+  found = PETSC_FALSE;
+  PetscOptionsGetRealArray(NULL,NULL,"-stokes_gravity_vector",grav,&ncomponents,&found);
+  if (found) {
+    ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
+  }
+
+  ctx->stokes_ctx = stokes;
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3dLoadMaterialPoints_FromFile"
+PetscErrorCode pTatin3dLoadMaterialPoints_FromFile(pTatinCtx ctx,DM dmv)
+{
+  DataBucket     db;
+  DataEx         ex;
+  PetscLogDouble t0,t1;
+  PetscBool      found;
+  PetscErrorCode ierr;
+  MPI_Comm comm;
+  PetscMPIInt commrank;
+  char jfilename[PETSC_MAX_PATH_LEN],field_string[PETSC_MAX_PATH_LEN];
+  cJSON *jfile = NULL,*jptat = NULL,*jobj;
+  
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dmv,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
+  PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",ctx->restart_dir);
+  if (commrank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open JSON file \"%s\"",jfilename);
+    jptat = cJSON_GetObjectItem(jfile,"pTatinCtx");
+  }
+  
+  jobj = NULL;
+  if (commrank == 0) { jobj = cJSON_GetObjectItem(jptat,"materialpoint_db"); if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"materialpoint_db"); }
+  ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string,&found);CHKERRQ(ierr);
+  if (!found) SETERRQ_JSONKEY(comm,"fileName");
+  
+  /* Choose type of projection (for eta and rho) */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&found);CHKERRQ(ierr);
+  switch (ctx->coefficient_projection_type) {
+    case -1:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using null projection\n");
+      break;
+      
+      /* P0 variants */
+    case 0:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [arithmetic avg]\n");
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [arithmetic avg] not implemented");
+      break;
+    case 10:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [harmonic avg]\n");
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [harmonic avg] not implemented");
+      break;
+    case 20:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [geometric avg]\n");
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [geometric avg] not implemented");
+      break;
+    case 30:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [dominant phase]\n");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [dominant phase] not implemented");
+      break;
+      
+    case 1:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q1 projection\n");
+      break;
+    case 2:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q2 projection\n");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = Q2 not implemented");
+      break;
+    case 3:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P1 projection\n");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P1 not implemented");
+      break;
+    case 4:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using one2one projection\n");
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER," -coefficient_projection_type = {0,1,2,4} implying {P0,Q1,Q2,one2on}");
+      break;
+  }
+  
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+
+  /* register marker structures here */
+  PetscTime(&t0);
+  DataBucketLoad_NATIVE(comm,field_string,&db);
+  PetscTime(&t1);
+  PetscPrintf(PETSC_COMM_WORLD,"[[Swarm initialization from file: %1.4lf (sec)]]\n",t1-t0);
+  
+  /* create the data exchanger need for parallel particle movement */
+  ierr = SwarmDMDA3dDataExchangerCreate(dmv,&ex);CHKERRQ(ierr);
+  
+  ctx->materialpoint_db = db;
+  ctx->materialpoint_ex = ex;
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinPhysCompActivate_Energy_FromFile"
+PetscErrorCode pTatinPhysCompActivate_Energy_FromFile(pTatinCtx ctx)
+{
+  PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  PhysCompEnergy energy;
+  MPI_Comm       comm;
+  PetscMPIInt    commrank;
+  char           jfilename[PETSC_MAX_PATH_LEN],field_string[PETSC_MAX_PATH_LEN];
+  cJSON          *jfile = NULL,*jptat = NULL,*jobj;
+  PetscBool      found;
+  
+  PetscFunctionBegin;
+  comm = PETSC_COMM_WORLD;
+  ierr = MPI_Comm_rank(comm,&commrank);CHKERRQ(ierr);
+  PetscSNPrintf(jfilename,PETSC_MAX_PATH_LEN-1,"%s/ptatin3dctx.json",ctx->restart_dir);
+  if (commrank == 0) {
+    cJSON_FileView(jfilename,&jfile);
+    if (!jfile) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open JSON file \"%s\"",jfilename);
+    jptat = cJSON_GetObjectItem(jfile,"pTatinCtx");
+  }
+  
+  jobj = NULL;
+  if (commrank == 0) { jobj = cJSON_GetObjectItem(jptat,"energy"); if (!jobj) SETERRQ_JSONKEY(PETSC_COMM_SELF,"energy"); }
+  ierr = cJSONGetPetscString(comm,jobj,"fileName",field_string,&found);CHKERRQ(ierr);
+  if (!found) SETERRQ_JSONKEY(comm,"fileName");
+  
+  stokes = ctx->stokes_ctx;
+  ierr = PhysCompLoad2_Energy(stokes->dav,field_string,&energy);CHKERRQ(ierr);
+  
+  /* Since this method is only called when restarting a job,
+     the material point coefficients will have been registered when the data bucket was loaded 
+  */
+  /*
+  if (user->restart_from_file) {
+  } else {
+    ierr = PhysCompAddMaterialPointCoefficients_Energy(ctx->materialpoint_db);CHKERRQ(ierr);
+  }
+  */
+  
+  if (commrank == 0) {
+    cJSON_Delete(jfile);
+  }
+  
+  ctx->energy_ctx = energy;
+  
+  PetscFunctionReturn(0);
+}

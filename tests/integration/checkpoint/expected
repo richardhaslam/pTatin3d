@@ -1,0 +1,211 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-unused-variable
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** ====================================================================================== 
+RheologyConstantsInitialise: global viscosity cut-off, min= 1.000000e-100, max = 1.000000e+100  
+DataBucketView <Material Constants>:
+  L                  = 800 
+  buffer (max)       = 0 
+  allocated          = 800 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 3.20e-01 (MB) : <collective over 4 ranks>
+[pTatin] Writing output to existing directory: ./output 
+[pTatin] Created log file: ./output/ptatin.log-2018.03.01_14:31:32 
+[pTatin] Writing output to existing directory: ./output 
+[pTatin] Created options file: ./output/ptatin.options-2018.03.01_14:31:32 
+[pTatin] Created options file: ./output/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+BCList: Mem. usage (min,max) = 8.92e-01,1.00e+00 (MB) 
+VolumeQuadratureCreate_GaussLegendreStokes:
+	Using 3x3 pnt Gauss Legendre quadrature
+DataBucketView <GaussLegendre StokesCoefficients>:
+  L                  = 110592 
+  buffer (max)       = 4 
+  allocated          = 110596 
+  nfields registered = 1 
+    [  0]: field name  ==>>              QPntVolCoefStokes : Mem. usage = 1.33e+00 (MB) : rank0
+  Total mem. usage                                                      = 5.31e+00 (MB) : <collective over 4 ranks>
+DataBucketView <SurfaceGaussLegendre StokesCoefficients[face 0]>:
+  L                  = 2304 
+  buffer (max)       = 4 
+  allocated          = 2308 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) : rank0
+  Total mem. usage                                                      = 2.58e-01 (MB) : <collective over 4 ranks>
+DataBucketView <SurfaceGaussLegendre StokesCoefficients[face 1]>:
+  L                  = 2304 
+  buffer (max)       = 4 
+  allocated          = 2308 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 6.46e-02 (MB) : rank0
+  Total mem. usage                                                      = 2.58e-01 (MB) : <collective over 4 ranks>
+DataBucketView <SurfaceGaussLegendre StokesCoefficients[face 2]>:
+  L                  = 2304 
+  buffer (max)       = 4 
+  allocated          = 2310 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 2.59e-01 (MB) : <collective over 4 ranks>
+DataBucketView <SurfaceGaussLegendre StokesCoefficients[face 3]>:
+  L                  = 2304 
+  buffer (max)       = 4 
+  allocated          = 2310 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.29e-01 (MB) : rank0
+  Total mem. usage                                                      = 2.59e-01 (MB) : <collective over 4 ranks>
+DataBucketView <SurfaceGaussLegendre StokesCoefficients[face 4]>:
+  L                  = 2304 
+  buffer (max)       = 4 
+  allocated          = 2310 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 2.24e-04 (MB) : rank0
+  Total mem. usage                                                      = 2.59e-01 (MB) : <collective over 4 ranks>
+DataBucketView <SurfaceGaussLegendre StokesCoefficients[face 5]>:
+  L                  = 2304 
+  buffer (max)       = 4 
+  allocated          = 2310 
+  nfields registered = 1 
+    [  0]: field name  ==>>             QPntSurfCoefStokes : Mem. usage = 1.29e-01 (MB) : rank0
+  Total mem. usage                                                      = 2.59e-01 (MB) : <collective over 4 ranks>
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0004 (sec)]]
+SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = 0 
+[[Swarm->coordinate assignment: 8192 points : 0.0043 (sec)]]
+************************** Starting _DataExCompleteCommunicationMap ************************** 
+max_nnz = 3 
+Mat Object: 4 MPI processes
+  type: mpiaij
+  rows=4, cols=4
+  total: nonzeros=12, allocated nonzeros=16
+  total number of mallocs used during MatSetValues calls =0
+    not using I-node (on process 0) routines
+************************** Ending _DataExCompleteCommunicationMap [setup time: 1.1239e-03 (sec)] ************************** 
+[[SwarmDMDA3dDataExchangerCreate: time = 1.2994e-03 (sec)]]
+[[ModelApplyInitialMeshGeometry_ViscousSinker]]
+RUNNING DEFORMED MESH EXAMPLE 
+[[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
+DM Object:(stk_velocity_) 4 MPI processes
+  type: da
+Processor [0] M 33 N 33 P 33 m 1 n 2 p 2 w 3 s 2
+X range of indices: 0 33, Y range of indices: 0 17, Z range of indices: 0 17
+Lower left corner 0. 0. 0. : Upper right 1. 0.499723 0.5
+Processor [1] M 33 N 33 P 33 m 1 n 2 p 2 w 3 s 2
+X range of indices: 0 33, Y range of indices: 17 33, Z range of indices: 0 17
+Lower left corner 0. 0.531249 0. : Upper right 1. 0.999445 0.5
+Processor [2] M 33 N 33 P 33 m 1 n 2 p 2 w 3 s 2
+X range of indices: 0 33, Y range of indices: 0 17, Z range of indices: 17 33
+Lower left corner 0. 0. 0.53125 : Upper right 1. 0.499999 1.
+Processor [3] M 33 N 33 P 33 m 1 n 2 p 2 w 3 s 2
+X range of indices: 0 33, Y range of indices: 17 33, Z range of indices: 17 33
+Lower left corner 0. 0.530962 0.53125 : Upper right 1. 0.999998 1.
+DataBucketView <mp-ascii>:
+  L                  = 32768 
+  buffer (max)       = 4000 
+  allocated          = 36768 
+  nfields registered = 3 
+    [  0]: field name  ==>>                        MPntStd : Mem. usage = 5.88e-01 (MB) : rank0
+    [  1]: field name  ==>>                    MPntPStokes : Mem. usage = 1.47e-01 (MB) : rank0
+    [  2]: field name  ==>>                  MPntPStokesPl : Mem. usage = 7.35e-02 (MB) : rank0
+  Total mem. usage                                                      = 3.24e+00 (MB) : <collective over 4 ranks>
+DataBucket checkpoint write +2.8298e-03 (sec)
+DataBucket checkpoint load  +1.6413e-03 (sec)
+  [Orig] x-coor range +1.409188216348e-02 , +9.859232094517e-01
+  [Orig] y-coor range +1.199242872237e-02 , +9.858400733359e-01
+  [Orig] z-coor range +1.406489904184e-02 , +9.859373988540e-01
+  [Orig] coor avg     +4.999923327408e-01 , +4.894902307613e-01 , +5.000007766065e-01
+  [  CP] x-coor range +1.409188216348e-02 , +9.859232094517e-01
+  [  CP] y-coor range +1.199242872237e-02 , +9.858400733359e-01
+  [  CP] z-coor range +1.406489904184e-02 , +9.859373988540e-01
+  [  CP] coor avg     +4.999923327408e-01 , +4.894902307613e-01 , +5.000007766065e-01
+  coord statistic 0 PASSED
+  coord statistic 1 PASSED
+  coord statistic 2 PASSED
+  coord statistic 3 PASSED
+  coord statistic 4 PASSED
+  coord statistic 5 PASSED
+  coord statistic 6 PASSED
+  coord statistic 7 PASSED
+  coord statistic 8 PASSED
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Gene3DNueve]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_Sierra]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]

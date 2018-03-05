@@ -660,7 +660,7 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,con
 	ierr = MarkerCellFieldsP0Write_ParaView(stokes_pack,material_points,NULL,nvars,vars,low_precision,ctx->outputpath,name);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -803,7 +803,7 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
   }
   
   PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(vec): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(vec): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);*/
 
   ierr = VecDestroy(&cellconstant);CHKERRQ(ierr);
   ierr = VecDestroy(&pointcounts);CHKERRQ(ierr);
