@@ -1354,7 +1354,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
   PetscLogDouble   time[4];
   AuuMultiLevelCtx mgctx;
   PetscReal        timestep,dt_factor = 10.0;
-  Mat              J_e;
+  Mat              J_e = NULL;
   PetscMPIInt      rank;
   
   PetscFunctionBegin;
