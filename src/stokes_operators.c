@@ -108,7 +108,7 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	PetscFunctionList Destroy_flist = NULL;
 	PetscErrorCode ierr;
 	MatA11MF A11;
-	char optype[64] = "ref";
+	char optype[64];
 	PetscFunctionBegin;
 	
 	ierr = PetscMalloc(sizeof(struct _p_MatA11MF),&A11);CHKERRQ(ierr);
@@ -139,6 +139,13 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	ierr = PetscFunctionListAdd(&MatMult_flist,"subrepart",MFStokesWrapper_A11_SubRepart);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&SetUp_flist,"subrepart",MFA11SetUp_SubRepart);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&Destroy_flist,"subrepart",MFA11Destroy_SubRepart);CHKERRQ(ierr);
+#endif
+
+	/* Set A11 operator type, defaulting to AVX if available, otherwise tensor */
+#ifdef TATIN_HAVE_AVX
+	ierr = PetscStrcpy(optype,"avx");CHKERRQ(ierr);
+#else
+	ierr = PetscStrcpy(optype,"tensor");CHKERRQ(ierr);
 #endif
 	ierr = PetscOptionsGetString(NULL,NULL,"-a11_op",optype,sizeof optype,NULL);CHKERRQ(ierr);
 	ierr = PetscFunctionListFind(MatMult_flist,optype,&A11->SpMVOp_MatMult);CHKERRQ(ierr);
