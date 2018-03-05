@@ -257,7 +257,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (registered_model_list==NULL) {
+	if (registered_model_list == NULL) {
 		registered_model_list = malloc( sizeof(pTatinModel) );
 		registered_model_list[0] = NULL;
 	} 
@@ -325,7 +325,7 @@ PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
 	
 	*model = NULL;
 	ierr = ptatin_match_model_index(name,&index);CHKERRQ(ierr);
-	if ( index==-1 ) {
+	if (index == -1) {
 		//SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't identified in list registered_model_list[]",name );
     PetscFunctionReturn(0);
 	}
