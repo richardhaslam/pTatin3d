@@ -34,7 +34,6 @@
 
 pTatinModel *registered_model_list = NULL;
 PetscFunctionList ptatin_registered_model_flist = NULL;
-PetscBool ptatin_registered_model_setup = PETSC_FALSE;
 
 
 PetscLogEvent PTATIN_ModelInitialize;
@@ -233,18 +232,19 @@ PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 	
 	*index = -1;
 	cnt = 0;
-	item = registered_model_list[0];
-	while (item!=NULL) {
-		match = PETSC_FALSE;
-		PetscStrcmp(modelname,item->model_name,&match);
-		if (match) {
-			*index = cnt;
-			break;
-		}
-		cnt++;
-		item = registered_model_list[cnt];
-	}
-	
+  if (registered_model_list) {
+    item = registered_model_list[0];
+    while (item != NULL) {
+      match = PETSC_FALSE;
+      PetscStrcmp(modelname,item->model_name,&match);
+      if (match) {
+        *index = cnt;
+        break;
+      }
+      cnt++;
+      item = registered_model_list[cnt];
+    }
+  }
 	PetscFunctionReturn(0);
 }
 
@@ -258,7 +258,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if (registered_model_list==NULL) {
+	if (registered_model_list == NULL) {
 		registered_model_list = malloc( sizeof(pTatinModel) );
 		registered_model_list[0] = NULL;
 	} 
@@ -266,7 +266,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	/* find list size */
 	cnt = 0;
 	ii = registered_model_list[0];
-	while (ii!=NULL) {
+	while (ii != NULL) {
 		cnt++;
 		ii = registered_model_list[cnt];
 	}
@@ -274,7 +274,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	
 	/* check model not already loaded with same name */
 	ierr = ptatin_match_model_index(model->model_name,&index);CHKERRQ(ierr);
-	if (index!=-1) {
+	if (index != -1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"  [pTatinModel]: Model with name \"%s\" has already been registered",model->model_name );
 	} else {
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Registering model [%D] with name \"%s\"\n",list_length, model->model_name );		
@@ -326,7 +326,7 @@ PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
 	
 	*model = NULL;
 	ierr = ptatin_match_model_index(name,&index);CHKERRQ(ierr);
-	if ( index==-1 ) {
+	if (index == -1) {
 		//SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: -ptatin_model \"%s\" wasn't identified in list registered_model_list[]",name );
     PetscFunctionReturn(0);
 	}
@@ -361,15 +361,18 @@ PetscErrorCode pTatinModelDynamicGetByName(const char modelname[],pTatinModel *m
 PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
 {
   PetscErrorCode ierr;
-  pTatinModel model_s = NULL;
-  pTatinModel model_d = NULL;
+  pTatinModel model_s = NULL, model_d = NULL;
   
   PetscFunctionBegin;
 
+  if (!registered_model_list && !ptatin_registered_model_flist) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel]: No pTatin models have been registered");
+  
+  *model = NULL;
+
+  /* Check for models in the static list first as a request for a dynamic model will also register it in the static list */
   ierr = pTatinModelStaticGetByName(name,&model_s);CHKERRQ(ierr);
   if (model_s) {
     *model = model_s;
-    PetscFunctionReturn(0);
   }
   
   ierr = pTatinModelDynamicGetByName(name,&model_d);CHKERRQ(ierr);
@@ -380,7 +383,7 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
     ierr = pTatinModelRegister(model_d);CHKERRQ(ierr);
     *model = model_d;
   }
-  
+  /* If a model of either static or dynamic was not found - error */
   if (!(*model)) {
     SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"  [pTatinModel(Static/Dynamic)]: -ptatin_model \"%s\" wasn't identified as a registered model",name );
   }
@@ -404,6 +407,7 @@ PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx)
 	if (model->FP_pTatinModel_Destroy) {
 		ierr = model->FP_pTatinModel_Destroy(ctx,model->model_data);CHKERRQ(ierr);
 	}
+  model->model_data = NULL;
 	
 	PetscFunctionReturn(0);
 }
@@ -588,21 +592,6 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 	PetscFunctionReturn(0);
 }
 
-PetscErrorCode pTatinModelDefinitionList(void);
-
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegisterAll"
-PetscErrorCode pTatinModelRegisterAll(void)
-{
-  PetscErrorCode ierr;
-  
-  if (ptatin_registered_model_setup) PetscFunctionReturn(0);
-  
-  ierr = pTatinModelDefinitionList();
-  ptatin_registered_model_setup = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "pTatinModelDeRegisterAll"
 PetscErrorCode pTatinModelDeRegisterAll(void)
@@ -611,19 +600,21 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
   PetscInt i;
   pTatinModel item;
   
-  if (!registered_model_list) PetscFunctionReturn(0);
-  i = 0;
-  item = registered_model_list[0];
-  while (item) {
-    ierr = pTatinModelDestroy(&item);CHKERRQ(ierr);
-    i++;
-    item = registered_model_list[i];
+  if (!registered_model_list) {
+    i = 0;
+    item = registered_model_list[0];
+    while (item) {
+      ierr = pTatinModelDestroy(&item);CHKERRQ(ierr);
+      i++;
+      item = registered_model_list[i];
+    }
+    free(registered_model_list);
+    registered_model_list = NULL;
   }
-  free(registered_model_list);
-  registered_model_list = NULL;
   
   if (ptatin_registered_model_flist) {
     ierr = PetscFunctionListDestroy(&ptatin_registered_model_flist);CHKERRQ(ierr);
+    ptatin_registered_model_flist = NULL;
   }
   
 	PetscFunctionReturn(0);

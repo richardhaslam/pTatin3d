@@ -57,8 +57,8 @@ extern PetscErrorCode pTatinModelCreate_StaticBoxTM(pTatinModel);
 extern PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m);
 
 #undef __FUNCT__
-#define __FUNCT__ "pTatinModelDefinitionList"
-PetscErrorCode pTatinModelDefinitionList(void)
+#define __FUNCT__ "pTatinModelRegisterAll"
+PetscErrorCode pTatinModelRegisterAll(void)
 {
 	PetscErrorCode ierr;
 
