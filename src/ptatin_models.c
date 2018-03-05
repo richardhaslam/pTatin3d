@@ -600,7 +600,7 @@ PetscErrorCode pTatinModelDeRegisterAll(void)
   PetscInt i;
   pTatinModel item;
   
-  if (!registered_model_list) {
+  if (registered_model_list) {
     i = 0;
     item = registered_model_list[0];
     while (item) {
