@@ -233,7 +233,7 @@ PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 	*index = -1;
 	cnt = 0;
 	item = registered_model_list[0];
-	while (item!=NULL) {
+	while (item != NULL) {
 		match = PETSC_FALSE;
 		PetscStrcmp(modelname,item->model_name,&match);
 		if (match) {
@@ -265,7 +265,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	/* find list size */
 	cnt = 0;
 	ii = registered_model_list[0];
-	while (ii!=NULL) {
+	while (ii != NULL) {
 		cnt++;
 		ii = registered_model_list[cnt];
 	}
@@ -273,7 +273,7 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	
 	/* check model not already loaded with same name */
 	ierr = ptatin_match_model_index(model->model_name,&index);CHKERRQ(ierr);
-	if (index!=-1) {
+	if (index != -1) {
 		SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_USER,"  [pTatinModel]: Model with name \"%s\" has already been registered",model->model_name );
 	} else {
 		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: Registering model [%D] with name \"%s\"\n",list_length, model->model_name );		
