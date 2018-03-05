@@ -232,7 +232,7 @@ PetscErrorCode CartGridSetUp_InMem(CartGrid map)
     
     fp_data = fopen(map->datafile_name,"r");
     if (!fp_data) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->datafile_name);
-    if (fread(map->data,map->bytes,map->mx * map->my * map->mz,fp_data) < (size_t)(map->mx * map->my * map->mz)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
+    fread(map->data,map->bytes,map->mx * map->my * map->mz,fp_data);
     fclose(fp_data);
     
     PetscFunctionReturn(0);
@@ -437,7 +437,7 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
     fseek(map->data_fp,offset,SEEK_CUR);
     
     /* fread */
-    if (fread(value,map->bytes,1,map->data_fp) < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
+    fread(value,map->bytes,1,map->data_fp);
  
     PetscFunctionReturn(0);
 }
@@ -759,8 +759,8 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
                 for (j=0; j<map->my; j++) {
                     for (i=0; i<map->mx; i++) {
 
-                      /* fread */
-                      if (fread(data_i,map->bytes,1,map->data_fp) < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
+                        /* fread */
+                        fread(data_i,map->bytes,1,map->data_fp);
 
                         switch (map->data_type) {
                             case CARTGRID_INT:
