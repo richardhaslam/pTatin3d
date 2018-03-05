@@ -31,7 +31,7 @@
 #define __private_ptatin3d_stokes_impl_h__
 
 #include <petscdm.h>
-#include "../dmda_bcs.h"
+#include "dmda_bcs.h"
 
 
 struct _p_PhysCompStokes {

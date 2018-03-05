@@ -31,7 +31,7 @@
 #define __private_ptatin_quadrature_impl_h__
 
 #include "petsc.h"
-#include "../element_type_Q2.h"
+#include "element_type_Q2.h"
 
 struct _p_Quadrature {
 	PetscInt       dim;
