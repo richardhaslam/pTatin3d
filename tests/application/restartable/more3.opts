@@ -1,0 +1,2 @@
+-output_path output-3to4
+-restart_directory output/checkpoints/step2
