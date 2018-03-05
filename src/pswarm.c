@@ -36,7 +36,7 @@
 #include <ptatin3d_stokes.h>
 #include <ptatin3d_energy.h>
 #include <pswarm.h>
-#include <pswarm_impl.h>
+#include <private/pswarm_impl.h>
 #include <mpiio_blocking.h>
 #include <model_utils.h>
 #include <element_utils_q2.h>

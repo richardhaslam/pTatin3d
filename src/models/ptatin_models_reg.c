@@ -26,7 +26,7 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-#include "../ptatin_models.h"
+#include "ptatin_models.h"
 
 /* Users add prototypes here */
 extern PetscErrorCode pTatinModelRegister_Template(void);
