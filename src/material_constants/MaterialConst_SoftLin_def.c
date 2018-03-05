@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_SoftLin_def.h"
+#include "material_constants/MaterialConst_SoftLin_def.h"
 
 
 const char MaterialConst_SoftLin_classname[] = "MaterialConst_SoftLin";
