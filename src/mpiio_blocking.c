@@ -184,11 +184,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
   if (rank == root) {
     if (!skip_header) {
       /* read header */
-      {
-        size_t nread;
-        nread =  fread(&len_total_bytes,sizeof(long int),1,fp);
-        if (nread != 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
-      }
+      if (fread(&len_total_bytes,sizeof(long int),1,fp) < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
       /*printf("[read] total bytes = %ld\n",len_total_bytes);*/
     }
     //printf("[read] total len = %ld\n",len_total_bytes/size);
@@ -227,11 +223,9 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
         ipackr[0] = ipack[0];
         ipackr[1] = ipack[1];
         //printf("r[%d] requested [%ld,%ld] \n",r,ipackr[0],ipackr[0]+ipackr[1]);
-        {
-          size_t nread;
-          nread = fread(buffer,size,ipackr[1],fp);
-          if (nread != (size_t) ipackr[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
-        }
+
+        if (fread(sbuffer,size,ipackr[1],fp) < (size_t)ipackr[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
+
       } else {
         /* get size */
         tagI = 2*r;
@@ -245,11 +239,7 @@ PetscErrorCode MPIRead_Blocking(FILE *fp,void **data,long int len,size_t size,in
         memset(sbuffer,0,size*ipackr[1]);
 
         /* read */
-        {
-          size_t nread;
-          nread =  fread(sbuffer,size,ipackr[1],fp);
-          if (nread != (size_t) ipackr[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
-        }
+        if (fread(sbuffer,size,ipackr[1],fp) < (size_t)ipackr[1]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_READ,"fread() failure.");
         
         /* send - must wait until MPI_Isend is finished before it is safe to free sbuffer */
         tagD = 2*r + 1;
