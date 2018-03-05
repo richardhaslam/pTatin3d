@@ -119,8 +119,8 @@ info:
 
 releaseinfo:
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
-	-@echo "  Updating the contents of src/ptatin_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
-	-@echo "  pTatin3D version info appears in: stdout; ptat3d log; generated PETSc summary/options files"
+	-@echo "  Updating the contents of include/ptatin_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "  pTatin3D version info appears in: stdout; ptatin3d log files; generated PETSc summary/options files"
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
 	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
 	$(shell mv ptatin_version_info.h include/ptatin_version_info.h)
