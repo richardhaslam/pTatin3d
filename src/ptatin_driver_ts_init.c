@@ -328,7 +328,10 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
         ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
       }
         break;
-        
+
+      case OP_TYPE_UDEF:    
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported operator type OP_TYPE_UDEF");
+
       default:
         break;
     }
@@ -791,6 +794,9 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
           mlctx->operatorB11[k] = Auu_k;
         }
           break;
+
+        case OP_TYPE_UDEF:    
+          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported operator type OP_TYPE_UDEF");
           
         default:
           break;
@@ -832,6 +838,9 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
         case OP_TYPE_REDISC_MF:
           ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k]);CHKERRQ(ierr);
           break;
+
+        case OP_TYPE_UDEF:    
+          SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Unsupported operator type OP_TYPE_UDEF");
           
         case OP_TYPE_GALERKIN:
           ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorB11[k]);CHKERRQ(ierr);
