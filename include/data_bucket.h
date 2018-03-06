@@ -139,9 +139,7 @@ void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
 void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[], DataBucket *DB );
 void DataBucketZeroPoint( const DataBucket db, const int index );
 
-//void DataBucketLoadFromFile(const char filename[], DataBucketViewType type, DataBucket *db);
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
-//void DataBucketView(DataBucket db,const char filename[],DataBucketViewType type);
 void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type);
 
 void DataBucketAddPoint( DataBucket db );

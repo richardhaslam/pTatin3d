@@ -679,200 +679,6 @@ void DataBucketRemovePoint( DataBucket db )
 	DataBucketSetSizes( db, db->L-1, -1 );
 }
 
-void _DataFieldViewBinary(DataField field, FILE *fp )
-{
-	fprintf(fp,"<DataField>\n");
-	fprintf(fp,"%d\n", field->L);
-	fprintf(fp,"%zu\n",field->atomic_size);
-	fprintf(fp,"%s\n", field->registration_function);
-	fprintf(fp,"%s\n", field->name);
-	
-	fwrite(field->data, field->atomic_size, field->L, fp);
-/*
-	printf("  ** wrote %zu bytes for DataField \"%s\" \n", field->atomic_size * field->L, field->name );
-*/
-	fprintf(fp,"\n</DataField>\n");
-}
-
-void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
-{
-	BTruth val;
-	DataField *field;
-
-	DataField gfield;
-	char dummy[100];
-	char registration_function[5000];
-	char field_name[5000];
-	int L;
-	size_t atomic_size,strL;
-	
-	
-	/* check we haven't finalised the registration of fields */
-	/*
-	if(db->finalised==BTRUE) {
-		printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
-		ERROR();
-	}
-	*/
-	
-	
-	/* read file contents */
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-	
-	if (fscanf( fp, "%d\n",&L) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(L): %d\n", L);
-	
-	if (fscanf( fp, "%zu\n",&atomic_size) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(size): %zu\n",atomic_size);
-	
-	if (!fgets(registration_function,4999,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-//printf("read(reg func): %s", registration_function );
-	strL = strlen(registration_function);
-	if(strL>1){ 
-		registration_function[strL-1] = 0;
-	}
-	
-	if (!fgets(field_name,4999,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(name): %s", field_name );
-	strL = strlen(field_name);
-	if(strL>1){ 
-		field_name[strL-1] = 0;
-	}
-
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("  ** read L=%d; atomic_size=%zu; reg_func=\"%s\"; name=\"%s\" \n", L,atomic_size,registration_function,field_name);
-#endif
-	
-	
-	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
-	if(val == BTRUE ) {
-		printf("ERROR: Cannot add same field twice\n");
-		ERROR();
-	}
-	
-	/* create new space for data */
-	field = realloc( db->field,     sizeof(DataField)*(db->nfields+1));
-	db->field     = field;
-	
-	/* add field */
-	DataFieldCreate( registration_function, field_name, atomic_size, L, &gfield );
-
-	/* copy contents of file */
-	if (fread(gfield->data, gfield->atomic_size, (size_t)gfield->L, fp) != (size_t)gfield->L) {
-    printf("fread() error");
-    ERROR();
-  }
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("  ** read %zu bytes for DataField \"%s\" \n", gfield->atomic_size * gfield->L, field_name );
-#endif	
-	/* finish reading meta data */
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-	
-	db->field[ db->nfields ] = gfield;
-	
-	db->nfields++;
-	
-}
-
-void _DataBucketViewAscii_HeaderWrite_v00(FILE *fp)
-{
-	fprintf(fp,"<DataBucketHeader>\n");
-	fprintf(fp,"type=DataBucket\n");
-	fprintf(fp,"format=ascii\n");
-	fprintf(fp,"version=0.0\n");
-	fprintf(fp,"options=\n");
-	fprintf(fp,"</DataBucketHeader>\n");
-}
-void _DataBucketViewAscii_HeaderRead_v00(FILE *fp)
-{	
-	char dummy[100];
-	size_t strL;
-
-	// header open
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-
-	// type
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-	strL = strlen(dummy);
-	if(strL>1) { dummy[strL-1] = 0; }
-	if(strcmp(dummy,"type=DataBucket")!=0) {
-		printf("ERROR: Data file doesn't contain a DataBucket type\n");
-		ERROR();
-	}
-
-	// format
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-
-	// version
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-	strL = strlen(dummy);
-	if(strL>1) { dummy[strL-1] = 0; }
-	if(strcmp(dummy,"version=0.0")!=0) {
-		printf("ERROR: DataBucket file must be parsed with version=0.0 : You tried %s \n", dummy);
-		ERROR();
-	}
-	
-	// options
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-	// header close
-	if (!fgets(dummy,99,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
-  //printf("read(header): %s", dummy );
-}
-
-
-void _DataBucketLoadFromFileBinary_SEQ(const char filename[], DataBucket *_db)
-{
-	DataBucket db;
-	FILE *fp;
-	int L,buffer,f,nfields;
-	
-	
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("** DataBucketLoadFromFile **\n");
-#endif
-	
-	/* open file */
-	fp = fopen(filename,"rb");
-	if(fp==NULL){
-		printf("ERROR: Cannot open file with name %s \n", filename);
-		ERROR();
-	}
-
-	/* read header */
-	_DataBucketViewAscii_HeaderRead_v00(fp);
-	
-	if (fscanf(fp,"%d\n%d\n%d\n",&L,&buffer,&nfields) < 3) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
-	
-	DataBucketCreate(&db);
-	
-	for( f=0; f<nfields; f++ ) {
-		_DataBucketRegisterFieldFromFile(fp,db);
-	}
-	fclose(fp);
-	
-	DataBucketFinalize(db);
-
-	
-/*	
-  DataBucketSetSizes(db,L,buffer);
-*/
-	db->L = L;
-	db->buffer = buffer;
-	db->allocated = L + buffer;
-	
-	*_db = db;
-}
-
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
 {
 	int nproc,rank;
@@ -880,54 +686,18 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
 	MPI_Comm_size(comm,&nproc);
 	MPI_Comm_rank(comm,&rank);
 		
-#ifdef PTAT3D_LOG_DATA_BUCKET
-	printf("** DataBucketLoadFromFile **\n");
-#endif
 	if(type==DATABUCKET_VIEW_STDOUT) {
 		
 	} else if(type==DATABUCKET_VIEW_ASCII) {
 		printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
 		ERROR();
 	} else if(type==DATABUCKET_VIEW_BINARY) {
-		if (nproc==1) {
-			_DataBucketLoadFromFileBinary_SEQ(filename,db);
-		} else {
-			char *name;
-			
-			if (asprintf(&name,"%s_p%1.5d",filename, rank ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
-			_DataBucketLoadFromFileBinary_SEQ(name,db);
-			free(name);
-		}
-	} else {
+    printf("ERROR: Binary output not implemented\n");
+    ERROR();
+  } else {
 		printf("ERROR: Not implemented\n");
 		ERROR();
 	}
-}
-
-
-void _DataBucketViewBinary(DataBucket db,const char filename[])
-{
-	FILE *fp = NULL;
-	int f;
-
-	fp = fopen(filename,"wb");
-	if(fp==NULL){
-		printf("ERROR: Cannot open file with name %s \n", filename);
-		ERROR();
-	}
-	
-	/* db header */
-	_DataBucketViewAscii_HeaderWrite_v00(fp);
-	
-	/* meta-data */
-	fprintf(fp,"%d\n%d\n%d\n", db->L,db->buffer,db->nfields);
-
-	for( f=0; f<db->nfields; f++ ) {
-			/* load datafields */
-		_DataFieldViewBinary(db->field[f],fp);
-	}
-	
-	fclose(fp);
 }
 
 void DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
@@ -963,13 +733,14 @@ void DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType t
 			
 		case DATABUCKET_VIEW_BINARY:
 		{
-			_DataBucketViewBinary(db,filename);
+      printf("ERROR: Binary output not implemented\n");
+      ERROR();
 		}
 			break;
 			
 		case DATABUCKET_VIEW_HDF5:
 		{
-			printf("ERROR: Has not been implemented \n");
+			printf("ERROR: HDF5 output not implemented\n");
 			ERROR();
 		}
 			break;
@@ -1030,22 +801,13 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 			
 		case DATABUCKET_VIEW_BINARY:
 		{
-			char *name;
-			int rank;
-			
-			/* create correct extension */
-			MPI_Comm_rank(comm,&rank);
-			if (asprintf(&name,"%s_p%1.5d",filename, rank ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
-
-			_DataBucketViewBinary(db,name);
-			
-			free(name);
+      printf("ERROR: Binary output not implemented\n");
 		}
 			break;
 			
 		case DATABUCKET_VIEW_HDF5:
 		{
-			printf("ERROR: Has not been implemented \n");
+      printf("ERROR: HDF5 output not implemented\n");
 			ERROR();
 		}
 			break;
@@ -1055,18 +817,6 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 			ERROR();
 			break;
 	}
-}
-
-void DataBucketView_BINARY(MPI_Comm comm,DataBucket db,const char filename[])
-{
-  char name[1024];
-  int rank;
-  int ierr;
-  
-  /* create correct extension */
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
-  sprintf(name,"%s_p%1.5d",filename,rank);
-  _DataBucketViewBinary(db,name);
 }
 
 void DataBucketView_STDOUT(MPI_Comm comm,DataBucket db,const char prefix[])
@@ -1591,7 +1341,8 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
       break;
 
     case DATABUCKET_VIEW_BINARY:
-      DataBucketView_BINARY(comm,db,prefix);
+      printf("ERROR: Binary viewer is not implemented\n");
+      ERROR();
       break;
 
     case DATABUCKET_VIEW_NATIVE:
