@@ -74,6 +74,8 @@ printf("ERROR: %s() from line %d in %s !!\n", __FUNCTION__, __LINE__, __FILE__);
 exit(EXIT_FAILURE);\
 }
 
+#define MPI_ERROR_CHECK(ierr) if (ierr != MPI_SUCCESS) ERROR();
+
 #define __DATATFIELD_point_access(data,index,atomic_size) (void*)((char*)(data) + (index)*(atomic_size))
 #define __DATATFIELD_point_access_offset(data,index,atomic_size,offset) (void*)((char*)(data) + (index)*(atomic_size) + (offset))
 
