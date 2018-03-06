@@ -391,13 +391,13 @@ void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long in
 	_allocated = (long int)db->allocated;
 	
 	if (L) {         
-    ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   }
 	if (buffer) {    
-    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   }
 	if (allocated) { 
-    ierr =  MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(ierr);
+    ierr =  MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   }
 }
 
@@ -1000,7 +1000,7 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 				
 				memory_usage_total_local += memory_usage_f;
 			}
-			ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);MPI_ERROR_CHECK(ierr);
+			ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
 
 			if (rank==0) {
 				printf("DataBucketView(MPI): (\"%s\")\n",filename);
@@ -1064,7 +1064,7 @@ void DataBucketView_BINARY(MPI_Comm comm,DataBucket db,const char filename[])
   int ierr;
   
   /* create correct extension */
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   sprintf(name,"%s_p%1.5d",filename,rank);
   _DataBucketViewBinary(db,name);
 }
@@ -1077,8 +1077,8 @@ void DataBucketView_STDOUT(MPI_Comm comm,DataBucket db,const char prefix[])
   int rank,commsize;
   int ierr;
 
-  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   
   DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
   
@@ -1087,7 +1087,7 @@ void DataBucketView_STDOUT(MPI_Comm comm,DataBucket db,const char prefix[])
     
     memory_usage_total_local += memory_usage_f;
   }
-  ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   
   if (rank == 0) {
     if (prefix) printf("DataBucketView <%s>:\n",prefix);
@@ -1120,8 +1120,8 @@ void DataBucketView_NATIVE(MPI_Comm comm,DataBucket db,const char prefix[])
   char fieldfilename[2048];
   FILE *fpbin = NULL;
   
-  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
 
   if (rank == 0) {
     pcount = (int*)malloc(sizeof(int)*commsize);
@@ -1132,9 +1132,9 @@ void DataBucketView_NATIVE(MPI_Comm comm,DataBucket db,const char prefix[])
   /* create size array */
   DataBucketGetSizes(db,&L,&buffer,&allocated);
   
-  ierr = MPI_Gather(&L,1,MPI_INT,pcount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Gather(&buffer,1,MPI_INT,bcount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Gather(&allocated,1,MPI_INT,acount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Gather(&L,1,MPI_INT,pcount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Gather(&buffer,1,MPI_INT,bcount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Gather(&allocated,1,MPI_INT,acount,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
   
   sprintf(jfilename,"%s_db.json",prefix);
   sprintf(fieldfilename,"%s_db_data.bin",prefix);
@@ -1212,7 +1212,7 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
   int k,nf;
   cJSON *flist,*f_k;
   
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   flist = NULL;
   nf = 0;
   if (jso_root) {
@@ -1245,7 +1245,7 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
   }
   
   /* broadcast from root */
-  ierr = MPI_Bcast(&nf,1,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Bcast(&nf,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
   for (k=0; k<nf; k++) {
     char string_f[2048];
     char string_r[2048];
@@ -1258,15 +1258,15 @@ int _DataBucketRegisterFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *
     }
     
     if (rank == 0) { sprintf(string_f,"%s",db->field[k]->name); }
-    ierr = MPI_Bcast(string_f,2048,MPI_CHAR,0,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Bcast(string_f,2048,MPI_CHAR,0,comm);MPI_ERROR_CHECK(comm,ierr);
     
     if (rank == 0) { asize = (int)db->field[k]->atomic_size; }
-    ierr = MPI_Bcast(&asize,1,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Bcast(&asize,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
     size = (size_t)asize;
 
-    //ierr = MPI_Bcast(db->field[k]->registration_function,1,MPI_CHAR,0,comm);MPI_ERROR_CHECK(ierr);
+    //ierr = MPI_Bcast(db->field[k]->registration_function,1,MPI_CHAR,0,comm);MPI_ERROR_CHECK(comm,ierr);
     if (rank == 0) { sprintf(string_r,"%s",db->field[k]->registration_function); }
-    ierr = MPI_Bcast(string_r,2048,MPI_CHAR,0,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Bcast(string_r,2048,MPI_CHAR,0,comm);MPI_ERROR_CHECK(comm,ierr);
     
     if (rank != 0) {
       _DataBucketRegisterField(db,(const char*)string_r,(const char*)string_f,size,NULL);
@@ -1287,8 +1287,8 @@ int _DataBuckeLoadFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_r
   int L_total,B_max;
   MPI_Status status;
   
-  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   flist = NULL;
   nf = 0;
   if (jso_root) {
@@ -1331,12 +1331,12 @@ int _DataBuckeLoadFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_r
       printf("[ERROR][_DataBuckeLoadFieldsFromFile_NATIVE] It is only valid to load the data file on the same comm size as that which generated it, or on comm size = 1. Current comm size = %d : Input data generated with comm size = %d.\n",(int)commsize,(int)commsize_file);
     }
   }
-  ierr = MPI_Bcast(&one2one,1,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Bcast(&one2one,1,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
   if (one2one < 0) return(2);
   
   /* post receives - rank 0 will post sends for length and buffer next */
   if ((one2one == 1) && (rank != 0)) {
-    ierr = MPI_Recv(LBA,3,MPI_INT,0,rank,comm,&status);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Recv(LBA,3,MPI_INT,0,rank,comm,&status);MPI_ERROR_CHECK(comm,ierr);
   }
 
   L_total = 0;
@@ -1373,7 +1373,7 @@ int _DataBuckeLoadFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_r
         LBA[0] = L_file[r];
         LBA[1] = B_file[r];
         LBA[2] = 0;
-        ierr = MPI_Send(LBA,3,MPI_INT,r,r,comm);MPI_ERROR_CHECK(ierr);
+        ierr = MPI_Send(LBA,3,MPI_INT,r,r,comm);MPI_ERROR_CHECK(comm,ierr);
       }
     }
     
@@ -1400,7 +1400,7 @@ int _DataBuckeLoadFieldsFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJSON *jso_r
 
   /* load data from file */
   for (k=0; k<db->nfields; k++) {
-    ierr = MPIRead_Blocking(fpdata,(void**)&db->field[k]->data,db->L,db->field[k]->atomic_size,0,PETSC_FALSE,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPIRead_Blocking(fpdata,(void**)&db->field[k]->data,db->L,db->field[k]->atomic_size,0,PETSC_FALSE,comm);MPI_ERROR_CHECK(comm,ierr);
   }
   
   if (fpdata) { fclose(fpdata); }
@@ -1413,8 +1413,8 @@ void DataBucketLoad_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db)
   DataBucket db;
   cJSON *jfile = NULL,*jdb = NULL;
   
-  ierr = MPI_Comm_size(comm,&nproc);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_size(comm,&nproc);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   
   if (rank == 0) {
     cJSON_FileView(jfilename,&jfile);
@@ -1430,14 +1430,14 @@ void DataBucketLoad_NATIVE(MPI_Comm comm,const char jfilename[],DataBucket *_db)
   
   /* load meta data */
   ierr_l = _DataBucketRegisterFieldsFromFile_NATIVE(comm,db,jdb);
-  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
   if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
 
   DataBucketFinalize(db);
 
   /* load binary data */
   ierr_l = _DataBuckeLoadFieldsFromFile_NATIVE(comm,db,jdb);
-  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
   if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
   
   if (jfile) { cJSON_Delete(jfile); }
@@ -1455,8 +1455,8 @@ int _DataBuckeLoadFieldsRedundantFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJS
   int LBA[3];
   int L_total,B_max;
   
-  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_size(comm,&commsize);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   flist = NULL;
   nf = 0;
   if (jso_root) {
@@ -1514,7 +1514,7 @@ int _DataBuckeLoadFieldsRedundantFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJS
   LBA[0] = L_total;
   LBA[1] = B_max;
   LBA[2] = 0;
-  ierr = MPI_Bcast(LBA,3,MPI_INT,0,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Bcast(LBA,3,MPI_INT,0,comm);MPI_ERROR_CHECK(comm,ierr);
   
   /* allocate space */
   DataBucketSetSizes(db,LBA[0],LBA[1]);
@@ -1531,9 +1531,9 @@ int _DataBuckeLoadFieldsRedundantFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJS
   LBA[1] = B_max;
   LBA[2] = 0;
   for (k=0; k<db->nfields; k++) {
-    ierr = MPIRead_Blocking(fpdata,(void**)&db->field[k]->data,LBA[0],db->field[k]->atomic_size,0,PETSC_FALSE,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPIRead_Blocking(fpdata,(void**)&db->field[k]->data,LBA[0],db->field[k]->atomic_size,0,PETSC_FALSE,comm);MPI_ERROR_CHECK(comm,ierr);
 
-    ierr = MPI_Bcast(db->field[k]->data,db->L*db->field[k]->atomic_size,MPI_BYTE,0,comm);MPI_ERROR_CHECK(ierr);
+    ierr = MPI_Bcast(db->field[k]->data,db->L*db->field[k]->atomic_size,MPI_BYTE,0,comm);MPI_ERROR_CHECK(comm,ierr);
   }
   
   if (fpdata) { fclose(fpdata); }
@@ -1546,8 +1546,8 @@ void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBuc
   DataBucket db;
   cJSON *jfile = NULL,*jdb = NULL;
   
-  ierr = MPI_Comm_size(comm,&nproc);MPI_ERROR_CHECK(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Comm_size(comm,&nproc);MPI_ERROR_CHECK(comm,ierr);
+  ierr = MPI_Comm_rank(comm,&rank);MPI_ERROR_CHECK(comm,ierr);
   
   if (rank == 0) {
     cJSON_FileView(jfilename,&jfile);
@@ -1563,14 +1563,14 @@ void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBuc
   
   /* load meta data */
   ierr_l = _DataBucketRegisterFieldsFromFile_NATIVE(comm,db,jdb);
-  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
   if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
   
   DataBucketFinalize(db);
   
   /* load binary data */
   ierr_l = _DataBuckeLoadFieldsRedundantFromFile_NATIVE(comm,db,jdb);
-  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(ierr);
+  ierr = MPI_Allreduce(&ierr_l,&ierr_g,1,MPI_INT,MPI_MAX,comm);MPI_ERROR_CHECK(comm,ierr);
   if (ierr_g != 0) { MPI_Abort(comm,ierr_g); }
   
   if (jfile) { cJSON_Delete(jfile); }
