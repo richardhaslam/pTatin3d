@@ -46,7 +46,6 @@ struct _p_pTatinCtx {
 	//	PhysCompCoords coords_ctx;
 
 	PetscBool  restart_from_file;
-	char       restart_prefix[PETSC_MAX_PATH_LEN];
 	char			 restart_dir[PETSC_MAX_PATH_LEN];
 	PetscInt   checkpoint_every, checkpoint_every_nsteps;
 	PetscReal  checkpoint_every_ncpumins;

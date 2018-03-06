@@ -367,8 +367,6 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
-	/* Check if model is being restarted from a checkpointed file */
-	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
 	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
 	
