@@ -700,125 +700,6 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
 	}
 }
 
-void DataBucketView_SEQ(DataBucket db,const char filename[],DataBucketViewType type)
-{
-	switch (type) {
-		case DATABUCKET_VIEW_STDOUT:
-		{
-			int f;
-			double memory_usage_total = 0.0;
-			
-			printf("DataBucketView(SEQ): (\"%s\")\n",filename);
-			printf("  L                  = %d \n", db->L );
-			printf("  buffer             = %d \n", db->buffer );
-			printf("  allocated          = %d \n", db->allocated );
-			
-			printf("  nfields registered = %d \n", db->nfields );
-			for( f=0; f<db->nfields; f++ ) {
-				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-				
-				printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) \n", f, db->field[f]->name, memory_usage_f  );
-				memory_usage_total += memory_usage_f;
-			}
-			printf("  Total mem. usage                                                      = %1.2e (MB) \n", memory_usage_total );
-		}
-			break;
-
-		case DATABUCKET_VIEW_ASCII:
-		{
-			printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-			ERROR();
-		}
-			break;
-			
-		case DATABUCKET_VIEW_BINARY:
-		{
-      printf("ERROR: Binary output not implemented\n");
-      ERROR();
-		}
-			break;
-			
-		case DATABUCKET_VIEW_HDF5:
-		{
-			printf("ERROR: HDF5 output not implemented\n");
-			ERROR();
-		}
-			break;
-
-		default:
-			printf("ERROR: Unknown method requested \n");
-			ERROR();
-			break;
-	}
-}
-
-void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type)
-{
-	switch (type) {
-		case DATABUCKET_VIEW_STDOUT:
-		{
-			int f;
-			long int L,buffer,allocated;
-			double memory_usage_total,memory_usage_total_local = 0.0;
-			int rank,ierr;
-			
-			MPI_Comm_rank(comm,&rank);
-			
-			DataBucketGetGlobalSizes(comm,db,&L,&buffer,&allocated);
-			
-			for( f=0; f<db->nfields; f++ ) {
-				double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-				
-				memory_usage_total_local += memory_usage_f;
-			}
-			ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
-
-			if (rank==0) {
-				printf("DataBucketView(MPI): (\"%s\")\n",filename);
-				printf("  L                  = %ld \n", L );
-				printf("  buffer (max)       = %ld \n", buffer );
-				printf("  allocated          = %ld \n", allocated );
-				
-				printf("  nfields registered = %d \n", db->nfields );
-				for( f=0; f<db->nfields; f++ ) {
-					double memory_usage_f = (double)(db->field[f]->atomic_size * db->allocated) * 1.0e-6;
-					
-					printf("    [%3d]: field name  ==>> %30s : Mem. usage = %1.2e (MB) : rank0\n", f, db->field[f]->name, memory_usage_f  );
-				}
-				
-				printf("  Total mem. usage                                                      = %1.2e (MB) : collective\n", memory_usage_total );
-			}			
-			
-		}
-			break;
-			
-		case DATABUCKET_VIEW_ASCII:
-		{
-			printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-			ERROR();
-		}
-			break;
-			
-		case DATABUCKET_VIEW_BINARY:
-		{
-      printf("ERROR: Binary output not implemented\n");
-		}
-			break;
-			
-		case DATABUCKET_VIEW_HDF5:
-		{
-      printf("ERROR: HDF5 output not implemented\n");
-			ERROR();
-		}
-			break;
-			
-		default:
-			printf("ERROR: Unknown method requested \n");
-			ERROR();
-			break;
-	}
-}
-
 void DataBucketView_STDOUT(MPI_Comm comm,DataBucket db,const char prefix[])
 {
   int f;
@@ -1330,7 +1211,6 @@ void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBuc
 
 void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketViewType type)
 {
-
   switch (type) {
     case DATABUCKET_VIEW_STDOUT:
       DataBucketView_STDOUT(comm,db,prefix);
@@ -1353,7 +1233,6 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
       printf("ERROR: HDF5 viewer is not implemented\n");
       ERROR();
       break;
-
   }
 }
 
