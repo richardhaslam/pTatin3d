@@ -1,0 +1,766 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-unused-variable -march=native -Wextra -Wno-unused-parameter
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. 
+** For significant performance gains, set CONFIG_AVX=y in makefile.arch
+**                                                                     
+** ====================================================================================== 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Output functionality for "template" has been deactivated
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Output functionality for "viscous_sinker" has been deactivated
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Output functionality for "Gene3D" has been deactivated
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Output functionality for "Gene3DNueve" has been deactivated
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Output functionality for "indentor" has been deactivated
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Output functionality for "rift3D" has been deactivated
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Output functionality for "rift3D_T" has been deactivated
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Output functionality for "sierra" has been deactivated
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Output functionality for "advdiff_example" has been deactivated
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Output functionality for "delamination" has been deactivated
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Output functionality for "Riftrh" has been deactivated
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Output functionality for "Rift_oblique3d" has been deactivated
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Output functionality for "geomod2008" has been deactivated
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Output functionality for "multilayer_folding" has been deactivated
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Output functionality for "submarinelavaflow" has been deactivated
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Output functionality for "ex_subduction" has been deactivated
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Output functionality for "iplus" has been deactivated
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Output functionality for "subduction_initiation2d" has been deactivated
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Output functionality for "convection2d" has been deactivated
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Output functionality for "thermal_sb" has been deactivated
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Output functionality for "sd3d" has been deactivated
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Output functionality for "pas" has been deactivated
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModel]: Output functionality for "pd" has been deactivated
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+DataBucketView <Material Constants>:
+  L                  = 800 
+  buffer (max)       = 0 
+  allocated          = 800 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 3.20e-01 (MB) : <collective over 4 ranks>
+[pTatin] Created output directory: output 
+[pTatin] Created log file: output/ptatin.log-2018.03.05_16:33:04 
+[pTatin] Created options file: output/ptatin.options-2018.03.05_16:33:04 
+[pTatin] Created options file: output/ptatin.options 
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0001 (sec)]]
+[[Swarm->coordinate assignment: 1024 points : 0.0007 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 3.5975e-03 (sec)]]
+[[ModelApplyInitialMeshGeometry_ViscousSinker]]
+RUNNING DEFORMED MESH EXAMPLE 
+[[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
+[[ModelInitialCondition_ViscousSinker]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+Mesh size (8 x 8 x 8) : MG levels 3  
+         level [ 0]: global Q2 elements (2 x 2 x 2) 
+         level [ 1]: global Q2 elements (4 x 4 x 4) 
+         level [ 2]: global Q2 elements (8 x 8 x 8) 
+level [ 0]: [total cores    4]: np-I [   1]: element range I [    2 ]
+                                np-J [   2]: element range J [    1,    1 ]
+                                np-K [   2]: element range K [    1,    1 ]
+level [ 1]: [total cores    4]: np-I [   1]: element range I [    4 ]
+                                np-J [   2]: element range J [    2,    2 ]
+                                np-K [   2]: element range K [    2,    2 ]
+level [ 2]: [total cores    4]: np-I [   1]: element range I [    8 ]
+                                np-J [   2]: element range J [    4,    4 ]
+                                np-K [   2]: element range K [    4,    4 ]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+Level [2]: Coarse grid type :: Re-discretisation :: matrix free operator 
+Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+   --------- Stokes[Linear Stage] ---------
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.01e-04 (sec)
+  0 SNES Function norm 1.823085304070e-02 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.75e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 1.823085304070e-02, 0.000000000000e+00, 0.000000000000e+00 ]
+  1 KSP Component U,V,W,P residual norm [ 2.107847324160e-04, 8.721124224428e-03, 2.107847324160e-04, 7.705800592897e-03 ]
+  2 KSP Component U,V,W,P residual norm [ 6.375680687378e-04, 4.099058570462e-03, 6.375680687378e-04, 5.230761068375e-03 ]
+  3 KSP Component U,V,W,P residual norm [ 5.507456354569e-04, 2.327125671606e-03, 5.507456354569e-04, 1.345137356705e-03 ]
+  4 KSP Component U,V,W,P residual norm [ 3.437797474544e-04, 6.169303873614e-04, 3.437797474544e-04, 2.542500126249e-04 ]
+  5 KSP Component U,V,W,P residual norm [ 1.300217621239e-04, 2.230972572997e-04, 1.300217621239e-04, 7.167692098856e-05 ]
+  6 KSP Component U,V,W,P residual norm [ 3.908258201659e-05, 7.680760113751e-05, 3.908258201659e-05, 1.893593764320e-05 ]
+  7 KSP Component U,V,W,P residual norm [ 1.488020640103e-05, 2.324815791626e-05, 1.488020640103e-05, 6.583467858067e-06 ]
+  8 KSP Component U,V,W,P residual norm [ 5.487799439154e-06, 7.374326493195e-06, 5.487799439154e-06, 2.724614131405e-06 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 8
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.96e-05 (sec)
+  1 SNES Function norm 1.104699501050e-05 
+Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.03e-05 (sec)
+   --------- Stokes[Picard Stage] ---------
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.55e-04 (sec)
+  0 SNES Function norm 1.104699501050e-05 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.38e-04 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 5.487799439154e-06, 7.374326493186e-06, 5.487799439153e-06, 2.724614131405e-06 ]
+  1 KSP Component U,V,W,P residual norm [ 1.743000382160e-06, 4.226624163066e-06, 1.743000382160e-06, 1.045379802267e-06 ]
+  2 KSP Component U,V,W,P residual norm [ 6.906560877572e-07, 1.627716378531e-06, 6.906560877573e-07, 2.995641971454e-07 ]
+  3 KSP Component U,V,W,P residual norm [ 2.693801526673e-07, 4.012339350674e-07, 2.693801526673e-07, 1.682263141580e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 3
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.03e-04 (sec)
+  1 SNES Function norm 5.782906680271e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.04e-04 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.2731e+01 [accepted] | ==>> dt used = 9.2731e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 9.2731e+01 : trial = 1.0000e+32 | ==>> dt used = 9.2731e+01 |
+  timestep[stokes] dt_courant = 9.2731e+01 
+[pTatin] Created output directory: output/step0 
+[pTatin] Created output directory: output/checkpoints 
+[pTatin] Created output directory: output/checkpoints/initial_condition 
+[pTatin] Created options file: output/checkpoints/initial_condition/ptatin.options 
+#PETSc Option Table entries:
+-A11_operator_type 2,0,1
+-checkpoint_every_nsteps 2
+-dau_nlevels 3
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type redundant
+-fieldsplit_u_mg_levels_ksp_max_it 4
+-fieldsplit_u_mg_levels_ksp_richardson_scale 0.3
+-fieldsplit_u_mg_levels_ksp_type richardson
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_pc_type mg
+-gbump_amp 0.05
+-init
+-ksp_atol 1.0e-6
+-ksp_converged_reason
+-ksp_divtol 1.0e20
+-ksp_max_it 10
+-ksp_rtol 1.0e-3
+-ksp_type gcr
+-lattice_layout_perturb 0.0
+-model_viscous_sinker_eta0 1.0
+-model_viscous_sinker_eta1 2.0
+-model_viscous_sinker_rho0 1.0
+-model_viscous_sinker_rho1 1.2
+-mx3 8
+-nsteps 4
+-options_left
+-output_path output
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model viscous_sinker
+-ptatin_model_output_disable
+-snes_converged_reason
+-snes_max_it 20
+-snes_monitor
+-snes_type ksponly
+-stk_velocity_dm_mat_type aij
+#End of PETSc Option Table entries
+There are no unused options.
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-unused-variable -march=native -Wextra -Wno-unused-parameter
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. 
+** For significant performance gains, set CONFIG_AVX=y in makefile.arch
+**                                                                     
+** ====================================================================================== 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Output functionality for "template" has been deactivated
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Output functionality for "viscous_sinker" has been deactivated
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Output functionality for "Gene3D" has been deactivated
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Output functionality for "Gene3DNueve" has been deactivated
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Output functionality for "indentor" has been deactivated
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Output functionality for "rift3D" has been deactivated
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Output functionality for "rift3D_T" has been deactivated
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Output functionality for "sierra" has been deactivated
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Output functionality for "advdiff_example" has been deactivated
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Output functionality for "delamination" has been deactivated
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Output functionality for "Riftrh" has been deactivated
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Output functionality for "Rift_oblique3d" has been deactivated
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Output functionality for "geomod2008" has been deactivated
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Output functionality for "multilayer_folding" has been deactivated
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Output functionality for "submarinelavaflow" has been deactivated
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Output functionality for "ex_subduction" has been deactivated
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Output functionality for "iplus" has been deactivated
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Output functionality for "subduction_initiation2d" has been deactivated
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Output functionality for "convection2d" has been deactivated
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Output functionality for "thermal_sb" has been deactivated
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Output functionality for "sd3d" has been deactivated
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Output functionality for "pas" has been deactivated
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModel]: Output functionality for "pd" has been deactivated
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+[pTatin] Detected default restart option file helper: output/restart.default
+DataBucketView <Material Constants>:
+  L                  = 800 
+  buffer (max)       = 0 
+  allocated          = 800 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 3.20e-01 (MB) : <collective over 4 ranks>
+[pTatin] Found -restart_directory: output/checkpoints/initial_condition
+[pTatin] Using checkpoint file: output/checkpoints/initial_condition/ptatin3dctx.json
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[pTatin] Writing output to existing directory: output 
+[pTatin] Created log file: output/ptatin.log-2018.03.05_16:33:06 
+[pTatin] Created options file: output/ptatin.options-2018.03.05_16:33:06 
+[pTatin] Created options file: output/ptatin.options 
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization from file: 0.0008 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 3.7305e-03 (sec)]]
+[[ModelInitialCondition_ViscousSinker]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[pTatin] Writing output to existing directory: output/fromfile 
+Mesh size (8 x 8 x 8) : MG levels 3  
+         level [ 0]: global Q2 elements (2 x 2 x 2) 
+         level [ 1]: global Q2 elements (4 x 4 x 4) 
+         level [ 2]: global Q2 elements (8 x 8 x 8) 
+level [ 0]: [total cores    4]: np-I [   1]: element range I [    2 ]
+                                np-J [   2]: element range J [    1,    1 ]
+                                np-K [   2]: element range K [    1,    1 ]
+level [ 1]: [total cores    4]: np-I [   1]: element range I [    4 ]
+                                np-J [   2]: element range J [    2,    2 ]
+                                np-K [   2]: element range K [    2,    2 ]
+level [ 2]: [total cores    4]: np-I [   1]: element range I [    8 ]
+                                np-J [   2]: element range J [    4,    4 ]
+                                np-K [   2]: element range K [    4,    4 ]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+<<----------------------------------------------------------------------------------------------->>
+  [[ Executing time step 1 ]] : current time +0.0000e+00 : advancing time by dt +9.2731e-09 
+*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***
+[[ModelApplyUpdateMeshGeometry_ViscousSinker]]
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     4096 (init) / 4096 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     5.35e-04 (sec) efficiency 98.0%
+    	SwarmUpdatePosition_Communication_Generic   1.41e-04 (sec) efficiency 90.9%
+    	MaterialPointStd_Removal                    7.63e-06 (sec) efficiency 93.8%
+=========== ================================== ============= 
+[[ModelApplyMaterialBoundaryCondition_ViscousSinker]]
+  NOT IMPLEMENTED 
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+Level [2]: Coarse grid type :: Re-discretisation :: matrix free operator 
+Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+   [[ COMPUTING FLOW FIELD FOR STEP : 1 ]]
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.94e-05 (sec)
+  0 SNES Function norm 5.782906633131e-07 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.06e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 2.693801596439e-07, 4.012339190771e-07, 2.693801596478e-07, 1.682263137427e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 0
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.11e-04 (sec)
+  1 SNES Function norm 5.782906633131e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.18e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.2731e+00 [accepted] | ==>> dt used = 9.2731e+00 |
+  TimeStep control(StkSurfaceCourant): | current = 9.2731e+00 : trial = 1.0000e+32 | ==>> dt used = 9.2731e+00 |
+[pTatin] Writing output to existing directory: output/step1 
+<<----------------------------------------------------------------------------------------------->>
+  [[ Executing time step 2 ]] : current time +9.2731e-09 : advancing time by dt +9.2731e+00 
+[[ModelApplyUpdateMeshGeometry_ViscousSinker]]
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     4096 (init) / 4096 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     2.64e-03 (sec) efficiency 97.9%
+    	SwarmUpdatePosition_Communication_Generic   1.87e-04 (sec) efficiency 70.4%
+    	MaterialPointStd_Removal                    7.87e-06 (sec) efficiency 93.9%
+=========== ================================== ============= 
+[[ModelApplyMaterialBoundaryCondition_ViscousSinker]]
+  NOT IMPLEMENTED 
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 2 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.96e-05 (sec)
+  0 SNES Function norm 5.227790809068e-04 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 7.99e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 3.610905186156e-04, 1.119077350314e-04, 3.610905186156e-04, 1.378769615584e-06 ]
+  1 KSP Component U,V,W,P residual norm [ 8.477477666624e-05, 4.511756627400e-05, 8.477477666624e-05, 5.092708345837e-05 ]
+  2 KSP Component U,V,W,P residual norm [ 1.964053138674e-05, 4.586044381950e-05, 1.964053138674e-05, 2.688630751694e-05 ]
+  3 KSP Component U,V,W,P residual norm [ 1.382476009596e-05, 2.025470730456e-05, 1.382476009596e-05, 6.534723344497e-06 ]
+  4 KSP Component U,V,W,P residual norm [ 4.956485532857e-06, 7.478585595117e-06, 4.956485532857e-06, 1.345774840267e-06 ]
+  5 KSP Component U,V,W,P residual norm [ 1.236768514678e-06, 1.688942343255e-06, 1.236768514678e-06, 9.131109372808e-07 ]
+  6 KSP Component U,V,W,P residual norm [ 3.625531674235e-07, 4.641559280851e-07, 3.625531674235e-07, 1.880335141419e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 6
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.96e-05 (sec)
+  1 SNES Function norm 7.167195591268e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.12e-04 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 1.0245e+01 [accepted] | ==>> dt used = 1.0245e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 1.0245e+01 : trial = 1.0000e+32 | ==>> dt used = 1.0245e+01 |
+[pTatin] Writing output to existing directory: output/step2 
+[pTatin] Writing output to existing directory: output/checkpoints 
+[pTatin] Writing output to existing directory: output/checkpoints/step2 
+<<----------------------------------------------------------------------------------------------->>
+  [[ Executing time step 3 ]] : current time +9.2731e+00 : advancing time by dt +1.0245e+01 
+[[ModelApplyUpdateMeshGeometry_ViscousSinker]]
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     4096 (init) / 4096 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     2.69e-03 (sec) efficiency 98.8%
+    	SwarmUpdatePosition_Communication_Generic   1.65e-04 (sec) efficiency 81.0%
+    	MaterialPointStd_Removal                    7.63e-06 (sec) efficiency 93.8%
+=========== ================================== ============= 
+[[ModelApplyMaterialBoundaryCondition_ViscousSinker]]
+  NOT IMPLEMENTED 
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 3 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.58e-05 (sec)
+  0 SNES Function norm 2.075858829072e-04 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.03e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 1.427025506280e-04, 4.861726164217e-05, 1.427025506280e-04, 4.740688608508e-07 ]
+  1 KSP Component U,V,W,P residual norm [ 3.155056757735e-05, 1.806462172374e-05, 3.155056757735e-05, 1.825173559610e-05 ]
+  2 KSP Component U,V,W,P residual norm [ 7.439985348481e-06, 1.728806544073e-05, 7.439985348481e-06, 9.520691421093e-06 ]
+  3 KSP Component U,V,W,P residual norm [ 5.112249152561e-06, 7.782690107271e-06, 5.112249152561e-06, 2.463543187483e-06 ]
+  4 KSP Component U,V,W,P residual norm [ 1.785309371176e-06, 2.738345915241e-06, 1.785309371176e-06, 5.516959726793e-07 ]
+  5 KSP Component U,V,W,P residual norm [ 4.720196604048e-07, 6.423829789905e-07, 4.720196604048e-07, 3.354545678015e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 5
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 5.89e-05 (sec)
+  1 SNES Function norm 9.852871552871e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 5.94e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 1.0413e+01 [accepted] | ==>> dt used = 1.0413e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 1.0413e+01 : trial = 1.0000e+32 | ==>> dt used = 1.0413e+01 |
+[pTatin] Writing output to existing directory: output/step3 
+<<----------------------------------------------------------------------------------------------->>
+  [[ Executing time step 4 ]] : current time +1.9518e+01 : advancing time by dt +1.0413e+01 
+[[ModelApplyUpdateMeshGeometry_ViscousSinker]]
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     4096 (init) / 4096 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     2.70e-03 (sec) efficiency 98.4%
+    	SwarmUpdatePosition_Communication_Generic   1.72e-04 (sec) efficiency 71.5%
+    	MaterialPointStd_Removal                    7.87e-06 (sec) efficiency 93.9%
+=========== ================================== ============= 
+[[ModelApplyMaterialBoundaryCondition_ViscousSinker]]
+  NOT IMPLEMENTED 
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 4 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.72e-05 (sec)
+  0 SNES Function norm 8.370052117842e-05 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.89e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 5.431354890821e-05, 3.325278267864e-05, 5.431354890822e-05, 3.263428499160e-07 ]
+  1 KSP Component U,V,W,P residual norm [ 1.086853511466e-05, 1.043614582534e-05, 1.086853511466e-05, 6.818702186320e-06 ]
+  2 KSP Component U,V,W,P residual norm [ 2.730558942325e-06, 6.536991485975e-06, 2.730558942326e-06, 3.643982770623e-06 ]
+  3 KSP Component U,V,W,P residual norm [ 1.938893994491e-06, 2.936692763579e-06, 1.938893994491e-06, 1.183418038339e-06 ]
+  4 KSP Component U,V,W,P residual norm [ 6.820397488533e-07, 9.667205855913e-07, 6.820397488535e-07, 2.871224804853e-07 ]
+  5 KSP Component U,V,W,P residual norm [ 1.902328545615e-07, 2.616794630130e-07, 1.902328545615e-07, 1.293247766494e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 5
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.08e-05 (sec)
+  1 SNES Function norm 3.969611027902e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.03e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 1.0431e+01 [accepted] | ==>> dt used = 1.0431e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 1.0431e+01 : trial = 1.0000e+32 | ==>> dt used = 1.0431e+01 |
+[pTatin] Writing output to existing directory: output/step4 
+[pTatin] Writing output to existing directory: output/checkpoints 
+[pTatin] Writing output to existing directory: output/checkpoints/step4 
+#PETSc Option Table entries:
+-A11_operator_type 2,0,1
+-checkpoint_every_nsteps 2
+-dau_nlevels 3
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type redundant
+-fieldsplit_u_mg_levels_ksp_max_it 4
+-fieldsplit_u_mg_levels_ksp_richardson_scale 0.3
+-fieldsplit_u_mg_levels_ksp_type richardson
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_pc_type mg
+-gbump_amp 0.05
+-ksp_atol 1.0e-6
+-ksp_converged_reason
+-ksp_divtol 1.0e20
+-ksp_max_it 10
+-ksp_rtol 1.0e-3
+-ksp_type gcr
+-lattice_layout_perturb 0.0
+-model_viscous_sinker_eta0 1.0
+-model_viscous_sinker_eta1 2.0
+-model_viscous_sinker_rho0 1.0
+-model_viscous_sinker_rho1 1.2
+-mx3 8
+-nsteps 4
+-options_left
+-output_path output
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model viscous_sinker
+-ptatin_model_output_disable
+-restart_directory output/checkpoints/initial_condition
+-snes_converged_reason
+-snes_max_it 20
+-snes_monitor
+-snes_type ksponly
+-stk_velocity_dm_mat_type aij
+#End of PETSc Option Table entries
+There are 2 unused database options. They are:
+Option left: name:-gbump_amp value: 0.05
+Option left: name:-lattice_layout_perturb value: 0.0
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+** log: [out-of-date] Execute "make releaseinfo" to update to the most recent revision 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -g -Wall -Wno-unused-variable -march=native -Wextra -Wno-unused-parameter
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. 
+** For significant performance gains, set CONFIG_AVX=y in makefile.arch
+**                                                                     
+** ====================================================================================== 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Output functionality for "template" has been deactivated
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Output functionality for "viscous_sinker" has been deactivated
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Output functionality for "Gene3D" has been deactivated
+  [pTatinModel]: Registering model [3] with name "Gene3DNueve"
+  [pTatinModel]: Output functionality for "Gene3DNueve" has been deactivated
+  [pTatinModel]: Registering model [4] with name "indentor"
+  [pTatinModel]: Output functionality for "indentor" has been deactivated
+  [pTatinModel]: Registering model [5] with name "rift3D"
+  [pTatinModel]: Output functionality for "rift3D" has been deactivated
+  [pTatinModel]: Registering model [6] with name "rift3D_T"
+  [pTatinModel]: Output functionality for "rift3D_T" has been deactivated
+  [pTatinModel]: Registering model [7] with name "sierra"
+  [pTatinModel]: Output functionality for "sierra" has been deactivated
+  [pTatinModel]: Registering model [8] with name "advdiff_example"
+  [pTatinModel]: Output functionality for "advdiff_example" has been deactivated
+  [pTatinModel]: Registering model [9] with name "delamination"
+  [pTatinModel]: Output functionality for "delamination" has been deactivated
+  [pTatinModel]: Registering model [10] with name "Riftrh"
+  [pTatinModel]: Output functionality for "Riftrh" has been deactivated
+  [pTatinModel]: Registering model [11] with name "Rift_oblique3d"
+  [pTatinModel]: Output functionality for "Rift_oblique3d" has been deactivated
+  [pTatinModel]: Registering model [12] with name "geomod2008"
+  [pTatinModel]: Output functionality for "geomod2008" has been deactivated
+  [pTatinModel]: Registering model [13] with name "multilayer_folding"
+  [pTatinModel]: Output functionality for "multilayer_folding" has been deactivated
+  [pTatinModel]: Registering model [14] with name "submarinelavaflow"
+  [pTatinModel]: Output functionality for "submarinelavaflow" has been deactivated
+  [pTatinModel]: Registering model [15] with name "ex_subduction"
+  [pTatinModel]: Output functionality for "ex_subduction" has been deactivated
+  [pTatinModel]: Registering model [16] with name "iplus"
+  [pTatinModel]: Output functionality for "iplus" has been deactivated
+  [pTatinModel]: Registering model [17] with name "subduction_initiation2d"
+  [pTatinModel]: Output functionality for "subduction_initiation2d" has been deactivated
+  [pTatinModel]: Registering model [18] with name "convection2d"
+  [pTatinModel]: Output functionality for "convection2d" has been deactivated
+  [pTatinModel]: Registering model [19] with name "thermal_sb"
+  [pTatinModel]: Output functionality for "thermal_sb" has been deactivated
+  [pTatinModel]: Registering model [20] with name "sd3d"
+  [pTatinModel]: Output functionality for "sd3d" has been deactivated
+  [pTatinModel]: Registering model [21] with name "pas"
+  [pTatinModel]: Output functionality for "pas" has been deactivated
+  [pTatinModel]: Registering model [22] with name "pd"
+  [pTatinModel]: Output functionality for "pd" has been deactivated
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+DataBucketView <Material Constants>:
+  L                  = 800 
+  buffer (max)       = 0 
+  allocated          = 800 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 3.20e-01 (MB) : <collective over 4 ranks>
+[pTatin] Found -restart_directory: output/checkpoints/step2
+[pTatin] Using checkpoint file: output/checkpoints/step2/ptatin3dctx.json
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[pTatin] Created output directory: output-3to4 
+[pTatin] Created log file: output-3to4/ptatin.log-2018.03.05_16:33:09 
+[pTatin] Created options file: output-3to4/ptatin.options-2018.03.05_16:33:09 
+[pTatin] Created options file: output-3to4/ptatin.options 
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization from file: 0.0008 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 3.3557e-03 (sec)]]
+[[ModelInitialCondition_ViscousSinker]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[pTatin] Created output directory: output-3to4/fromfile 
+Mesh size (8 x 8 x 8) : MG levels 3  
+         level [ 0]: global Q2 elements (2 x 2 x 2) 
+         level [ 1]: global Q2 elements (4 x 4 x 4) 
+         level [ 2]: global Q2 elements (8 x 8 x 8) 
+level [ 0]: [total cores    4]: np-I [   1]: element range I [    2 ]
+                                np-J [   2]: element range J [    1,    1 ]
+                                np-K [   2]: element range K [    1,    1 ]
+level [ 1]: [total cores    4]: np-I [   1]: element range I [    4 ]
+                                np-J [   2]: element range J [    2,    2 ]
+                                np-K [   2]: element range K [    2,    2 ]
+level [ 2]: [total cores    4]: np-I [   1]: element range I [    8 ]
+                                np-J [   2]: element range J [    4,    4 ]
+                                np-K [   2]: element range K [    4,    4 ]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+<<----------------------------------------------------------------------------------------------->>
+  [[ Executing time step 3 ]] : current time +9.2731e+00 : advancing time by dt +1.0245e+01 
+*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***
+[[ModelApplyUpdateMeshGeometry_ViscousSinker]]
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     4096 (init) / 4096 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     2.65e-03 (sec) efficiency 99.8%
+    	SwarmUpdatePosition_Communication_Generic   1.49e-04 (sec) efficiency 94.7%
+    	MaterialPointStd_Removal                    7.87e-06 (sec) efficiency 93.9%
+=========== ================================== ============= 
+[[ModelApplyMaterialBoundaryCondition_ViscousSinker]]
+  NOT IMPLEMENTED 
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+Level [2]: Coarse grid type :: Re-discretisation :: matrix free operator 
+Level [1]: Coarse grid type :: Re-discretisation :: assembled operator 
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+   [[ COMPUTING FLOW FIELD FOR STEP : 3 ]]
+*** Rheology update for RHEOLOGY_VISCOUS selected ***
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.94e-05 (sec)
+  0 SNES Function norm 2.075858809551e-04 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.13e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 1.427025492863e-04, 4.861726118386e-05, 1.427025492863e-04, 4.740688577374e-07 ]
+  1 KSP Component U,V,W,P residual norm [ 3.155056728131e-05, 1.806462155443e-05, 3.155056728131e-05, 1.825173542422e-05 ]
+  2 KSP Component U,V,W,P residual norm [ 7.439985278618e-06, 1.728806527817e-05, 7.439985278618e-06, 9.520691330855e-06 ]
+  3 KSP Component U,V,W,P residual norm [ 5.112249104280e-06, 7.782690032508e-06, 5.112249104280e-06, 2.463543164224e-06 ]
+  4 KSP Component U,V,W,P residual norm [ 1.785309354190e-06, 2.738345889494e-06, 1.785309354190e-06, 5.516959677336e-07 ]
+  5 KSP Component U,V,W,P residual norm [ 4.720196558793e-07, 6.423829727568e-07, 4.720196558793e-07, 3.354545647176e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 5
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.14e-04 (sec)
+  1 SNES Function norm 9.852871458372e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 1.08e-04 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 1.0413e+01 [accepted] | ==>> dt used = 1.0413e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 1.0413e+01 : trial = 1.0000e+32 | ==>> dt used = 1.0413e+01 |
+[pTatin] Created output directory: output-3to4/step3 
+<<----------------------------------------------------------------------------------------------->>
+  [[ Executing time step 4 ]] : current time +1.9518e+01 : advancing time by dt +1.0413e+01 
+[[ModelApplyUpdateMeshGeometry_ViscousSinker]]
+=========== MaterialPointStd_UpdateCoordinates ============= 
+      Number of material points                     4096 (init) / 4096 (final)
+    	MaterialPointStd_UpdateLocalCoordinates     2.73e-03 (sec) efficiency 97.3%
+    	SwarmUpdatePosition_Communication_Generic   2.12e-04 (sec) efficiency 64.2%
+    	MaterialPointStd_Removal                    7.87e-06 (sec) efficiency 93.9%
+=========== ================================== ============= 
+[[ModelApplyMaterialBoundaryCondition_ViscousSinker]]
+  NOT IMPLEMENTED 
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+[[ModelApplyBoundaryConditionMG_ViscousSinker]]
+   [[ COMPUTING FLOW FIELD FOR STEP : 4 ]]
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.96e-05 (sec)
+  0 SNES Function norm 8.370052211166e-05 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 5.91e-05 (sec)
+Level [0]: Coarse grid type :: Galerkin :: assembled operator 
+  0 KSP Component U,V,W,P residual norm [ 5.431354960874e-05, 3.325278273932e-05, 5.431354960874e-05, 3.263428474175e-07 ]
+  1 KSP Component U,V,W,P residual norm [ 1.086853527316e-05, 1.043614586819e-05, 1.086853527316e-05, 6.818702257614e-06 ]
+  2 KSP Component U,V,W,P residual norm [ 2.730558976754e-06, 6.536991573737e-06, 2.730558976754e-06, 3.643982805998e-06 ]
+  3 KSP Component U,V,W,P residual norm [ 1.938894018847e-06, 2.936692799831e-06, 1.938894018847e-06, 1.183418045436e-06 ]
+  4 KSP Component U,V,W,P residual norm [ 6.820397563637e-07, 9.667205991885e-07, 6.820397563636e-07, 2.871224830847e-07 ]
+  5 KSP Component U,V,W,P residual norm [ 1.902328565732e-07, 2.616794655156e-07, 1.902328565732e-07, 1.293247782921e-07 ]
+  Linear solve converged due to CONVERGED_ATOL iterations 5
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.60e-05 (sec)
+  1 SNES Function norm 3.969611069015e-07 
+Nonlinear solve converged due to CONVERGED_ITS iterations 1
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+00,2.00e+00; log10(max/min) 3.01e-01; cpu time 6.03e-05 (sec)
+  TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 1.0431e+01 [accepted] | ==>> dt used = 1.0431e+01 |
+  TimeStep control(StkSurfaceCourant): | current = 1.0431e+01 : trial = 1.0000e+32 | ==>> dt used = 1.0431e+01 |
+[pTatin] Created output directory: output-3to4/step4 
+[pTatin] Created output directory: output-3to4/checkpoints 
+[pTatin] Created output directory: output-3to4/checkpoints/step4 
+#PETSc Option Table entries:
+-A11_operator_type 2,0,1
+-checkpoint_every_nsteps 2
+-dau_nlevels 3
+-fieldsplit_p_ksp_type preonly
+-fieldsplit_p_pc_type jacobi
+-fieldsplit_u_ksp_type preonly
+-fieldsplit_u_mg_coarse_pc_type redundant
+-fieldsplit_u_mg_levels_ksp_max_it 4
+-fieldsplit_u_mg_levels_ksp_richardson_scale 0.3
+-fieldsplit_u_mg_levels_ksp_type richardson
+-fieldsplit_u_mg_levels_pc_type jacobi
+-fieldsplit_u_pc_mg_levels 3
+-fieldsplit_u_pc_type mg
+-gbump_amp 0.05
+-ksp_atol 1.0e-6
+-ksp_converged_reason
+-ksp_divtol 1.0e20
+-ksp_max_it 10
+-ksp_rtol 1.0e-3
+-ksp_type gcr
+-lattice_layout_perturb 0.0
+-model_viscous_sinker_eta0 1.0
+-model_viscous_sinker_eta1 2.0
+-model_viscous_sinker_rho0 1.0
+-model_viscous_sinker_rho1 1.2
+-mx3 8
+-nsteps 4
+-options_left
+-output_path output-3to4
+-pc_fieldsplit_schur_fact_type upper
+-pc_fieldsplit_type schur
+-pc_type fieldsplit
+-ptatin_model viscous_sinker
+-ptatin_model_output_disable
+-restart_directory output/checkpoints/step2
+-snes_converged_reason
+-snes_max_it 20
+-snes_monitor
+-snes_type ksponly
+-stk_velocity_dm_mat_type aij
+#End of PETSc Option Table entries
+There are 2 unused database options. They are:
+Option left: name:-gbump_amp value: 0.05
+Option left: name:-lattice_layout_perturb value: 0.0

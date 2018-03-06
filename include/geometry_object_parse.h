@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   ptatin3d_energy_impl.h
+ **    filename:   geometry_object_parse.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,24 +27,20 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#ifndef __private_ptatin3d_energy_impl_h__
-#define __private_ptatin3d_energy_impl_h__
+#ifndef __geometry_object_parse_h__
+#define __geometry_object_parse_h__
 
-#include <petscdm.h>
-#include "../dmda_bcs.h"
+#include "petsc.h"
+#include "geometry_object.h"
+#include "cJSON.h"
 
-struct _p_PhysCompEnergy {
-	PetscReal               time,dt;
-	PetscInt                energy_mesh_type; /* 0-std dmda, 1-overlap, 2-nested */
-	PetscInt                mx,my,mz; /* global mesh size */
-	DM                      daT;
-	BCList                  T_bclist;
-	Vec                     u_minus_V;
-	Quadrature              volQ;
-	//	SurfaceQuadratureEnergy surfQ[QUAD_EDGES]; /* four edges */
-	/* SUPG DATA */
-	Vec                     Told; /* old temperature solution vector */
-	Vec                     Xold; /* old coordinate vector */
-};
+PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,GeometryObject **golist);
+PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObject **_list);
+PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *isset);
+PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g);
+
+PetscErrorCode GeometryObjectParseDetermineAxis(const char axisname[],GeomRotateAxis *a);
+PetscErrorCode GeometryObjectParseDetermineSign(const char name[],GeomSign *a);
+PetscErrorCode GeometryObjectParseDetermineSetOperatorType(const char name[],GeomSetOperatorType *a);
 
 #endif

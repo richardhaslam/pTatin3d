@@ -97,6 +97,7 @@ PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 	if(rank != 0) { PetscFunctionReturn(0); }
 	
 	fp = fopen(pvdfilename,"w");
+  if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new PVD file %s",pvdfilename);
 	fprintf(fp,"<?xml version=\"1.0\"?>\n");
 #ifdef WORDSIZE_BIGENDIAN
 	fprintf(fp,"<VTKFile type=\"Collection\" version=\"0.1\" byte_order=\"BigEndian\">\n");
@@ -129,6 +130,7 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	if (rank != 0) { PetscFunctionReturn(0); }
 	
 	fp = fopen(pvdfilename,"r+");
+  if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open existing PVD file %s",pvdfilename);
 	/* reset to start of file */
 	rewind(fp);
 	
@@ -279,10 +281,10 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -411,10 +413,10 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -570,7 +572,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 	
 	PetscFunctionBegin;
 	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new VTS file %s",name );
 	}
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
@@ -721,7 +723,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary_gz(DM pack,Vec X,co
 		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"gzerror: Cannot open file %s",name );
 	}
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: only printing P0 component of pressure field \n", __FUNCT__ );
 	
 	ierr = DMCompositeGetEntries(pack,&dau,&dap);CHKERRQ(ierr);
 	
@@ -891,7 +893,7 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new PVTS file %s",name );
 		}
 	}
 	
@@ -955,7 +957,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char prefix[],cons
 	vtk_fp = NULL;
 	if (rank==0) {
 		if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+			SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new PVTS file %s",name );
 		}
 	}
 	
@@ -1204,7 +1206,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 
 			vtk_fp = NULL;
 			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new sliced PVTS file %s",filename );
 			}
 			
 			processor_I[0] = i;
@@ -1242,7 +1244,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			
 			vtk_fp = NULL;
 			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new sliced PVTS file %s",filename );
 			}
 			
 			processor_I[0] = 0;
@@ -1280,7 +1282,7 @@ PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],
 			
 			vtk_fp = NULL;
 			if ((vtk_fp = fopen ( filename, "w")) == NULL)  {
-				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename );
+				SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open new sliced PVTS file %s",filename );
 			}
 			
 			processor_I[0] = 0;

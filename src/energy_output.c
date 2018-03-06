@@ -642,7 +642,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	ierr = pTatinOutputParaViewMeshEnergy(daT,volQ,X,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -717,7 +717,7 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
 	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(vec): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(vec): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }

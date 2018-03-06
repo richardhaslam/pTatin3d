@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <petsc.h>
 
-#include "EnergySourceConst_def.h"
+#include "material_constants/EnergySourceConst_def.h"
 
 
 PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region);

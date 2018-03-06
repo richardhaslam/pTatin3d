@@ -121,7 +121,7 @@ PetscErrorCode BCListDestroy(BCList *list)
 #define __FUNCT__ "BCListSetSizes"
 PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_local)
 {
-	PetscReal mem_usage_min,mem_usage_max,mem_usage = 0.0;
+	PetscReal mem_usage = 0.0;
 	PetscErrorCode ierr;
 	
 	list->blocksize = bs;
@@ -146,10 +146,14 @@ PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_loca
 	ierr = BCListInitialize(list);CHKERRQ(ierr);
 	
 	mem_usage = mem_usage * 1.0e-6;
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
-	PetscPrintf(PetscObjectComm((PetscObject)list->dm),"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
-	
+  /*
+  {
+    PetscReal mem_usage_min,mem_usage_max;
+    ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
+    ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)list->dm));CHKERRQ(ierr);
+    PetscPrintf(PetscObjectComm((PetscObject)list->dm),"BCList: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
+  }
+  */
 	PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -846,11 +850,10 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	BCList F;
 	PetscMPIInt nproc;
 	PetscInt count,k;
-	PetscReal mem_usage_min,mem_usage_max,mem_usage = 0.0;
+	PetscReal mem_usage = 0.0;
 	
 	PetscFunctionBegin;
-	
-	
+		
 	ierr = BCListCreate(&F);CHKERRQ(ierr);
 	F->dm = std->dm;
 	ierr = PetscObjectReference((PetscObject)F->dm);CHKERRQ(ierr);
@@ -914,11 +917,14 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 	}
 	
 	mem_usage = mem_usage * 1.0e-6;
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
-	ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
-	PetscPrintf(PetscObjectComm((PetscObject)std->dm),"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
-	
-	
+  /*
+  {
+    PetscReal mem_usage_min,mem_usage_max;
+    ierr = MPI_Allreduce( &mem_usage,&mem_usage_min,1,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
+    ierr = MPI_Allreduce( &mem_usage,&mem_usage_max,1,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)std->dm));CHKERRQ(ierr);
+    PetscPrintf(PetscObjectComm((PetscObject)std->dm),"BCListFlat: Mem. usage (min,max) = %1.2e,%1.2e (MB) \n", mem_usage_min, mem_usage_max );
+  }
+  */
 	*flat = F;
 	
 	PetscFunctionReturn(0);

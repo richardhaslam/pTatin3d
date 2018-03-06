@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   ptatin_version_info.h
+ **    filename:   dmda_checkpoint.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -26,16 +26,25 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
+#ifndef __PTATIN3d_DMDA_CHECKPOINT_H__
+#define __PTATIN3d_DMDA_CHECKPOINT_H__
 
-#ifndef __ptatin_version_info_h__
-#define __ptatin_version_info_h__
+#include <petsc.h>
+#include <petscvec.h>
+#include <petscdm.h>
 
-#define PTATIN_VERSION_INFO 1
+//#define PTATIN_USE_MPIIO
 
 
-#define PTATIN_VERSION_CNTR_REPO "git url: https://bitbucket.org/jedbrown/ptatin3d.git"
-#define PTATIN_VERSION_CNTR_REVISION "commit hash: [out-of-date] Execute \"make releaseinfo\" to update to the most recent revision"
-#define PTATIN_VERSION_CNTR_LOG "log: [out-of-date] Execute \"make releaseinfo\" to update to the most recent revision"
+PetscErrorCode DMDAPackDataToFile(DM da,const char name[]);
+PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *da);
+PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x);
+PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[]);
+PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file);
+PetscErrorCode VecLoadFromFile(Vec x,const char name[]);
+
+PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[]);
+PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da);
 
 #endif
 

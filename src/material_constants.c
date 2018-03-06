@@ -86,7 +86,7 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket db)
 	
 	DataBucketSetInitialSizes(db,200,0);
 	
-	DataBucketView(MPI_COMM_SELF,db,"Material Constants",DATABUCKET_VIEW_STDOUT);
+	DataBucketView(PETSC_COMM_WORLD,db,"Material Constants",DATABUCKET_VIEW_STDOUT);
 	
 	ierr = MaterialConstantsSetDefaults(db);CHKERRQ(ierr);
 	ierr = MaterialConstantsEnergySetDefaults(db);CHKERRQ(ierr);

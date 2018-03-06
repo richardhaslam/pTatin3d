@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   dmda_checkpoint.h
+ **    filename:   quadrature_impl.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -26,22 +26,34 @@
  **    along with pTatin3d. If not, see <http://www.gnu.org/licenses/>.
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
-#ifndef __PTATIN3d_DMDA_CHECKPOINT_H__
-#define __PTATIN3d_DMDA_CHECKPOINT_H__
 
-#include <petsc.h>
-#include <petscvec.h>
-#include <petscdm.h>
+#ifndef __private_ptatin_quadrature_impl_h__
+#define __private_ptatin_quadrature_impl_h__
 
-//#define PTATIN_USE_MPIIO
+#include "petsc.h"
+#include "element_type_Q2.h"
 
+struct _p_Quadrature {
+	PetscInt       dim;
+	QuadratureType type; /* line (dim=2), surface(dim=3), vol(dim=2,3) */
+	PetscInt    npoints;
+	PetscReal  *q_xi_coor;
+	PetscReal  *q_weight;
+	PetscInt   n_elements;
+	DataBucket properties_db;
+};
 
-PetscErrorCode DMDAPackDataToFile(DM da,const char name[]);
-PetscErrorCode DMDACreateFromPackDataToFile(MPI_Comm comm,const char name[],DM *da);
-PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x);
-PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[]);
-PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file);
-PetscErrorCode VecLoadFromFile(Vec x,const char name[]);
+struct _p_SurfaceQuadrature {
+	ConformingElementFamily e;
+	HexElementFace face_id;
+	/* quadrature */
+	PetscInt    ngp;
+	QPoint2d    gp2[9]; /* s,t coordinates */
+	QPoint3d    gp3[9]; /* xi,eta,zeta coordinates */
+	PetscInt    nfaces;
+	PetscInt    *element_list; /* list of cells connected to the face */
+	DataBucket  properties_db;
+};	
+
 
 #endif
-

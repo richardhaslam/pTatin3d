@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   ptatin3d_stokes_impl.h
+ **    filename:   ptatin3d_energy_impl.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,22 +27,24 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#ifndef __private_ptatin3d_stokes_impl_h__
-#define __private_ptatin3d_stokes_impl_h__
+#ifndef __private_ptatin3d_energy_impl_h__
+#define __private_ptatin3d_energy_impl_h__
 
 #include <petscdm.h>
-#include "../dmda_bcs.h"
+#include "dmda_bcs.h"
 
-
-struct _p_PhysCompStokes {
+struct _p_PhysCompEnergy {
+	PetscReal               time,dt;
+	PetscInt                energy_mesh_type; /* 0-std dmda, 1-overlap, 2-nested */
 	PetscInt                mx,my,mz; /* global mesh size */
-	DM                      dav,dap;
-  DM                      stokes_pack;
-	BCList                  u_bclist,p_bclist;
+	DM                      daT;
+	BCList                  T_bclist;
+	Vec                     u_minus_V;
 	Quadrature              volQ;
-	SurfaceQuadrature       *surfQ; /* eight faces - one for each hex */
-	PetscBool               use_mf_stokes;
-	PetscReal               gravity_vector[3];
+	//	SurfaceQuadratureEnergy surfQ[QUAD_EDGES]; /* four edges */
+	/* SUPG DATA */
+	Vec                     Told; /* old temperature solution vector */
+	Vec                     Xold; /* old coordinate vector */
 };
 
 #endif

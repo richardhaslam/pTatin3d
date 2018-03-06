@@ -116,4 +116,14 @@ PetscErrorCode DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[]);
 
 PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial);
 
+PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const char prefix[],
+                                        DM dms,DM dme,
+                                        PetscInt nfields,const char *dmnames[],DM dmlist[],
+                                        Vec Xs,Vec Xe,const char *fieldnames[],Vec veclist[]);
+PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx);
+PetscErrorCode pTatin3dLoadState_FromFile(pTatinCtx ctx,DM dmstokes,DM dmenergy,Vec Xs,Vec Xt);
+PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx);
+PetscErrorCode pTatin3dLoadMaterialPoints_FromFile(pTatinCtx ctx,DM dmv);
+PetscErrorCode pTatinPhysCompActivate_Energy_FromFile(pTatinCtx ctx);
+
 #endif

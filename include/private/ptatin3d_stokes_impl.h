@@ -9,7 +9,7 @@
  **        Switzerland
  **
  **    project:    pTatin3d
- **    filename:   quadrature_impl.h
+ **    filename:   ptatin3d_stokes_impl.h
  **
  **
  **    pTatin3d is free software: you can redistribute it and/or modify
@@ -27,33 +27,22 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#ifndef __private_ptatin_quadrature_impl_h__
-#define __private_ptatin_quadrature_impl_h__
+#ifndef __private_ptatin3d_stokes_impl_h__
+#define __private_ptatin3d_stokes_impl_h__
 
-#include "petsc.h"
-#include "../element_type_Q2.h"
+#include <petscdm.h>
+#include "dmda_bcs.h"
 
-struct _p_Quadrature {
-	PetscInt       dim;
-	QuadratureType type; /* line (dim=2), surface(dim=3), vol(dim=2,3) */
-	PetscInt    npoints;
-	PetscReal  *q_xi_coor;
-	PetscReal  *q_weight;
-	PetscInt   n_elements;
-	DataBucket properties_db;
+
+struct _p_PhysCompStokes {
+	PetscInt                mx,my,mz; /* global mesh size */
+	DM                      dav,dap;
+  DM                      stokes_pack;
+	BCList                  u_bclist,p_bclist;
+	Quadrature              volQ;
+	SurfaceQuadrature       *surfQ; /* eight faces - one for each hex */
+	PetscBool               use_mf_stokes;
+	PetscReal               gravity_vector[3];
 };
-
-struct _p_SurfaceQuadrature {
-	ConformingElementFamily e;
-	HexElementFace face_id;
-	/* quadrature */
-	PetscInt    ngp;
-	QPoint2d    gp2[9]; /* s,t coordinates */
-	QPoint3d    gp3[9]; /* xi,eta,zeta coordinates */
-	PetscInt    nfaces;
-	PetscInt    *element_list; /* list of cells connected to the face */
-	DataBucket  properties_db;
-};	
-
 
 #endif

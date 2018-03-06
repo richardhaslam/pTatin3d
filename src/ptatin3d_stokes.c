@@ -493,6 +493,81 @@ PetscErrorCode PhysCompLoadMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PhysCompSetup_Stokes"
+PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
+{
+  DM dap,multipys_pack;
+  PetscInt pbasis_dofs;
+  PetscInt Mp,Np,Pp,*lxv,*lyv,*lzv,MX,MY,MZ;
+  const PetscInt *lxp,*lyp,*lzp;
+  MPI_Comm comm;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)dav,&comm);CHKERRQ(ierr);
+  
+  /* velocity */
+  ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
+  ierr = DMSetMatType(dav,MATSBAIJ);CHKERRQ(ierr);
+  
+  ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRangesElementQ2(dav, 0,0,0, 0,0,0, &lxv,&lyv,&lzv);CHKERRQ(ierr);
+  
+  ierr = DMDAGetSizeElementQ2(dav,&ctx->mx,&ctx->my,&ctx->mz);CHKERRQ(ierr);
+  
+  /* pressure */
+  MX = ctx->mx;
+  MY = ctx->my;
+  MZ = ctx->mz;
+  
+  pbasis_dofs = P_BASIS_FUNCTIONS;
+  ierr = DMDACreate3d( comm, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+  ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
+  ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
+  ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
+  
+  ierr = PetscFree(lxv);CHKERRQ(ierr);
+  ierr = PetscFree(lyv);CHKERRQ(ierr);
+  ierr = PetscFree(lzv);CHKERRQ(ierr);
+  
+  
+  /* stokes */
+  ierr = DMCompositeCreate(comm,&multipys_pack);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(multipys_pack,dav);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(multipys_pack,dap);CHKERRQ(ierr);
+  
+  ierr = DMDASetFieldName(dav,0,"ux");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(dav,1,"uy");CHKERRQ(ierr);
+  ierr = DMDASetFieldName(dav,2,"uz");CHKERRQ(ierr);
+  switch (P_BASIS_FUNCTIONS) {
+    case 1:
+      ierr = DMDASetFieldName(dap,0,"P0_p");CHKERRQ(ierr);
+      break;
+    case 4:
+      ierr = DMDASetFieldName(dap,0,"P1_p");CHKERRQ(ierr);
+      ierr = DMDASetFieldName(dap,1,"P1_dpdx");CHKERRQ(ierr);
+      ierr = DMDASetFieldName(dap,2,"P1_dpdy");CHKERRQ(ierr);
+      ierr = DMDASetFieldName(dap,3,"P1_dpdz");CHKERRQ(ierr);
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Pressure space may ONLY contain 1 or 4 basis functions");
+      break;
+  }
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)dav,"stk_velocity_");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)dap,"stk_pressure_");CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)multipys_pack,"stk_pack_");CHKERRQ(ierr);
+
+  ierr = DMSetFromOptions(dav);CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dap);CHKERRQ(ierr);
+
+  ctx->dav  = dav;
+  ctx->dap  = dap;
+  ctx->stokes_pack = multipys_pack;
+  
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PhysCompSaveMesh_Stokes3d"
 PetscErrorCode PhysCompSaveMesh_Stokes3d(PhysCompStokes ctx,const char fname_vel[],const char fname_p[],const char fname_coors[])
@@ -570,31 +645,32 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 	Q->dim  = nsd;
 	Q->type = VOLUME_QUAD;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"VolumeQuadratureCreate_GaussLegendreStokes:\n");
+	/*PetscPrintf(PETSC_COMM_WORLD,"VolumeQuadratureCreate_GaussLegendreStokes:\n");*/
 	switch (np_per_dim) {
 		case 1:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 1 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 1 pnt Gauss Legendre quadrature\n");*/
 			//QuadratureCreateGauss_1pnt_3D(&ngp,gp_xi,gp_weight);
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"This will result in a rank-deficient operator");
 			break;
 			
 		case 2:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");*/
 			QuadratureCreateGauss_2pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 			
 		case 3:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
 			QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 			
 		default:
-			PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");
+			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
 			QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
 			break;
 	}
 	
 	Q->n_elements = ncells;
-	if (ncells!=0) {
+	if (ncells != 0) {
 		
 		DataBucketCreate(&Q->properties_db);
 		DataBucketRegisterField(Q->properties_db,QPntVolCoefStokes_classname, sizeof(QPntVolCoefStokes),NULL);
@@ -602,7 +678,10 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
 		
 		DataBucketSetInitialSizes(Q->properties_db,Q->npoints*ncells,1);
 		
+    /*
+    // Note: This call will hang if any rank contained zero elements
 		DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"GaussLegendre StokesCoefficients",DATABUCKET_VIEW_STDOUT);
+    */
 	}
 	
 	*quadrature = Q;
@@ -971,15 +1050,15 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 		
 		ctx->surfQ[face_index] = surfQ;
 	}
-
-	
+  
+  /*
 	for (face_index=0; face_index<HEX_EDGES; face_index++) {
 		char name[PETSC_MAX_PATH_LEN];
 
 		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"SurfaceGaussLegendre StokesCoefficients[face %D]",face_index);
     DataBucketView(PetscObjectComm((PetscObject)dav), ctx->surfQ[face_index]->properties_db,name,DATABUCKET_VIEW_STDOUT);
 	}
-	
+	*/
     
 	PetscFunctionReturn(0);
 }

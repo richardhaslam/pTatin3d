@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "MaterialConst_MaterialType_def.h"
+#include "material_constants/MaterialConst_MaterialType_def.h"
 
 
 const char MaterialConst_MaterialType_classname[] = "MaterialConst_MaterialType";
