@@ -687,11 +687,6 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
       MPI_ERROR_CHECK(comm,1);
       break;
       
-    case DATABUCKET_VIEW_ASCII:
-      printf("ERROR: Cannot load using viewer type = ascii\n");
-      MPI_ERROR_CHECK(comm,1);
-      break;
-      
     case DATABUCKET_VIEW_BINARY:
       printf("ERROR: Cannot load using viewer type = binary\n");
       MPI_ERROR_CHECK(comm,1);
@@ -699,11 +694,6 @@ void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewT
       
     case DATABUCKET_VIEW_NATIVE:
       DataBucketLoad_NATIVE(comm,filename,db);
-      break;
-      
-    case DATABUCKET_VIEW_HDF5:
-      printf("ERROR: HDF5 load is not implemented\n");
-      MPI_ERROR_CHECK(comm,1);
       break;
       
     default:
@@ -1230,11 +1220,6 @@ void DataBucketLoadRedundantFromFile(MPI_Comm comm,const char filename[], DataBu
       MPI_ERROR_CHECK(comm,1);
       break;
       
-    case DATABUCKET_VIEW_ASCII:
-      printf("ERROR: Cannot load (redundant) using viewer type = ascii\n");
-      MPI_ERROR_CHECK(comm,1);
-      break;
-      
     case DATABUCKET_VIEW_BINARY:
       printf("ERROR: Cannot load (redundant) using viewer type = binary\n");
       MPI_ERROR_CHECK(comm,1);
@@ -1242,11 +1227,6 @@ void DataBucketLoadRedundantFromFile(MPI_Comm comm,const char filename[], DataBu
       
     case DATABUCKET_VIEW_NATIVE:
       DataBucketLoadRedundant_NATIVE(comm,filename,db);
-      break;
-      
-    case DATABUCKET_VIEW_HDF5:
-      printf("ERROR: HDF5 load (redundant) is not implemented\n");
-      MPI_ERROR_CHECK(comm,1);
       break;
       
     default:
@@ -1263,10 +1243,6 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
       DataBucketView_STDOUT(comm,db,prefix);
       break;
       
-    case DATABUCKET_VIEW_ASCII:
-      DataBucketView_STDOUT(comm,db,prefix);
-      break;
-
     case DATABUCKET_VIEW_BINARY:
       printf("ERROR: Binary viewer is not implemented\n");
       MPI_ERROR_CHECK(comm,1);
@@ -1274,11 +1250,6 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
 
     case DATABUCKET_VIEW_NATIVE:
       DataBucketView_NATIVE(comm,db,prefix);
-      break;
-      
-    case DATABUCKET_VIEW_HDF5:
-      printf("ERROR: HDF5 viewer is not implemented\n");
-      MPI_ERROR_CHECK(comm,1);
       break;
       
     default:
