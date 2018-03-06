@@ -1511,23 +1511,23 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 #define __FUNCT__ "_compute_memory_offsets"
 PetscErrorCode _compute_memory_offsets(void *ref,void *target,size_t *size)
 {
-	int i;
-	size_t len;
-	void *stride;
+	int       i;
+	size_t    len;
+	void      *stride;
+	PetscBool found;
 	
 	PetscFunctionBegin;
-	*size = -1;
+	found = PETSC_FALSE;
 	len = 0;
 	for (i=0; i<64; i++) {
 		stride = (char*)ref + len;
 		if (stride == target) {
 			*size = len;
+			found = PETSC_TRUE;
 		}
 		len = len + sizeof(char);
 	}
-	if ( (*size) == -1 ) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot determine memory offset");
-	}	
+	if (!found) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Cannot determine memory offset");
 	PetscFunctionReturn(0);
 }
 
