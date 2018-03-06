@@ -993,7 +993,7 @@ void DataBucketView_MPI(MPI_Comm comm,DataBucket db,const char filename[],DataBu
 				
 				memory_usage_total_local += memory_usage_f;
 			}
-			ierr = MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);
+			MPI_Allreduce(&memory_usage_total_local,&memory_usage_total,1,MPI_DOUBLE,MPI_SUM,comm);
 
 			if (rank==0) {
 				printf("DataBucketView(MPI): (\"%s\")\n",filename);
