@@ -1448,7 +1448,6 @@ int _DataBuckeLoadFieldsRedundantFromFile_NATIVE(MPI_Comm comm,DataBucket db,cJS
   FILE *fpdata;
   int LBA[3];
   int L_total,B_max;
-  MPI_Status status;
   
   ierr = MPI_Comm_size(comm,&commsize);
   ierr = MPI_Comm_rank(comm,&rank);
