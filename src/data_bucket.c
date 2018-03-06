@@ -681,23 +681,36 @@ void DataBucketRemovePoint( DataBucket db )
 
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
 {
-	int nproc,rank;
-	
-	MPI_Comm_size(comm,&nproc);
-	MPI_Comm_rank(comm,&rank);
-		
-	if(type==DATABUCKET_VIEW_STDOUT) {
-		
-	} else if(type==DATABUCKET_VIEW_ASCII) {
-		printf("ERROR: Cannot be implemented as we don't know the underlying particle data structure\n");
-		ERROR();
-	} else if(type==DATABUCKET_VIEW_BINARY) {
-    printf("ERROR: Binary output not implemented\n");
-    ERROR();
-  } else {
-		printf("ERROR: Not implemented\n");
-		ERROR();
-	}
+  switch (type) {
+    case DATABUCKET_VIEW_STDOUT:
+      printf("ERROR: Cannot load using viewer type = stdout\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_ASCII:
+      printf("ERROR: Cannot load using viewer type = ascii\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_BINARY:
+      printf("ERROR: Cannot load using viewer type = binary\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_NATIVE:
+      DataBucketLoad_NATIVE(comm,filename,db);
+      break;
+      
+    case DATABUCKET_VIEW_HDF5:
+      printf("ERROR: HDF5 load is not implemented\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    default:
+      printf("ERROR: Unknown viewer type\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+  }
 }
 
 void DataBucketView_STDOUT(MPI_Comm comm,DataBucket db,const char prefix[])
@@ -1209,6 +1222,40 @@ void DataBucketLoadRedundant_NATIVE(MPI_Comm comm,const char jfilename[],DataBuc
   *_db = db;
 }
 
+void DataBucketLoadRedundantFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
+{
+  switch (type) {
+    case DATABUCKET_VIEW_STDOUT:
+      printf("ERROR: Cannot load (redundant) using viewer type = stdout\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_ASCII:
+      printf("ERROR: Cannot load (redundant) using viewer type = ascii\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_BINARY:
+      printf("ERROR: Cannot load (redundant) using viewer type = binary\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    case DATABUCKET_VIEW_NATIVE:
+      DataBucketLoadRedundant_NATIVE(comm,filename,db);
+      break;
+      
+    case DATABUCKET_VIEW_HDF5:
+      printf("ERROR: HDF5 load (redundant) is not implemented\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    default:
+      printf("ERROR: Unknown viewer type\n");
+      MPI_ERROR_CHECK(comm,1);
+      break;
+  }
+}
+
 void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketViewType type)
 {
   switch (type) {
@@ -1222,7 +1269,7 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
 
     case DATABUCKET_VIEW_BINARY:
       printf("ERROR: Binary viewer is not implemented\n");
-      ERROR();
+      MPI_ERROR_CHECK(comm,1);
       break;
 
     case DATABUCKET_VIEW_NATIVE:
@@ -1231,7 +1278,12 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
       
     case DATABUCKET_VIEW_HDF5:
       printf("ERROR: HDF5 viewer is not implemented\n");
-      ERROR();
+      MPI_ERROR_CHECK(comm,1);
+      break;
+      
+    default:
+      printf("ERROR: Unknown viewer type\n");
+      MPI_ERROR_CHECK(comm,1);
       break;
   }
 }

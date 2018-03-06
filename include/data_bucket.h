@@ -141,6 +141,7 @@ void DataBucketZeroPoint( const DataBucket db, const int index );
 
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
 void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type);
+void DataBucketLoadRedundantFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
 
 void DataBucketAddPoint( DataBucket db );
 void DataBucketRemovePoint( DataBucket db );
