@@ -719,7 +719,7 @@ void _DataBucketRegisterFieldFromFile( FILE *fp, DataBucket db )
 	if (fscanf( fp, "%zu\n",&atomic_size) < 1) {printf("fscanf() failed. Exiting ungracefully.\n");exit(1);}
   //printf("read(size): %zu\n",atomic_size);
 	
-	if (!fgets(registration_function,4999,fp)); {printf("fgets() failed. Exiting ungracefully.\n");exit(1);} 
+	if (!fgets(registration_function,4999,fp)) {printf("fgets() failed. Exiting ungracefully.\n");exit(1);}
 //printf("read(reg func): %s", registration_function );
 	strL = strlen(registration_function);
 	if(strL>1){ 
