@@ -1378,9 +1378,15 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
  Notes: 
    - This function will identify the material point (index and rank) within "tolerance" distance of coord[].
    - The user can optionally mask out coordinates of the material point from the distance test.
-   - If multiple material points on a given sub-domain (rank) are within "tolerance" distance of coord[], the last point encountered will be taken as being the "closest".
-   - If multiple material points over the entire domain are within "tolerance" distance of coord[], the point contained on the sub-domain with the largest rank will be taken as "closest".
+   - If multiple material points on a given sub-domain (rank) are within "tolerance" distance of coord[], the point returned will be  the "closest" to the target (coord[]).
+   - If no coordinate is within tol of target (coor[]), the returned values are _pidx = -1, _rank = -1
 */
+
+struct MPI_PairedValueRank {
+  double distance;
+  int    rank;
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "MPntStdIdentifyFromPosition"
 PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal coord[],PetscBool mask[],PetscInt region_idx,PetscReal tolerance,int *_pidx,PetscMPIInt *_rank)
@@ -1389,19 +1395,20 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
 	int              p,n_mpoints;
 	double           *pos_p;
 	int              region_p;
-    PetscReal        sep2,tol2;
-    int              p_mine,p_found,p_onrank,rank,pack[2],gpack[2];
+    PetscReal        sep2,tol2,min2;
+    int              p_mine,p_found,rank;
+  struct MPI_PairedValueRank input,output;
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
 	
     tol2 = tolerance*tolerance;
-    
+    min2 = 1.0e32;
+  
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     
     p_found  = 0;
     p_mine   = -1;
-    p_onrank = -1;
 	
     //if (mask[0]) { printf("coordX %1.4e \n",coord[0]); }
     //if (mask[1]) { printf("coordY %1.4e \n",coord[1]); }
@@ -1431,26 +1438,51 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
             sep2 += (pos_p[2]-coord[2])*(pos_p[2]-coord[2]);
         }
      
-        if (sep2 < tol2) {
+        if (sep2 < min2) {
             //printf("  p %d : %1.4e %1.4e %1.4e \n",p,pos_p[0],pos_p[1],pos_p[2]);
             p_mine   = p;
-            p_onrank = rank;
             p_found++;
+            min2 = sep2;
         }
 	}
 	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
     //if (p_found == 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate point within tolerance specified"); }
     //if (p_found > 1) {  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Located more than 1 point within tolerance specified"); }
-    
+ 
+  /*
     pack[0] = p_mine;
     pack[1] = p_onrank;
 	ierr = MPI_Allreduce(pack,gpack,2,MPI_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 	
     *_pidx = gpack[0];
     *_rank = (PetscMPIInt)gpack[1];
-    
-    
+  */
+  
+  /*
+   http://mpi-forum.org/docs/mpi-1.1/mpi-11-html/node79.html
+  */
+  input.distance = min2;
+  input.rank     = rank;
+  ierr = MPI_Reduce( &input, &output, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, PETSC_COMM_WORLD );CHKERRQ(ierr);
+
+  /* Answer resides on process root - broadcast rank with the minimum value */
+  ierr = MPI_Bcast(&output.rank,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&output.distance,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  min2 = output.distance;
+  
+  /* broadcast p_mine from the root = output.rank (that with the minimum value) */
+  ierr = MPI_Bcast(&p_mine,1,MPI_INT,output.rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  if (min2 > tol2) {
+    *_pidx = -1;
+    *_rank = -1;
+  } else {
+    *_pidx = p_mine;
+    *_rank = (PetscMPIInt)output.rank;
+  }
+
+  
 	PetscFunctionReturn(0);
 }
 
