@@ -903,39 +903,62 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3dCheckpointManager"
-PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
+PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
 {
-  PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpointManager is deprecated");
-#if 0
-	PetscErrorCode ierr;
-	PetscInt       checkpoint_every;
-	PetscInt       checkpoint_every_nsteps,step;
-	double         checkpoint_every_ncpumins, max_current_cpu_time, current_cpu_time;
-	static double  last_cpu_time = 0.0;
-	int            exists;
-	char           prefix[PETSC_MAX_PATH_LEN],filetocheck[PETSC_MAX_PATH_LEN];
-	PetscBool      skip_existence_test = PETSC_TRUE;
-	
-	PetscFunctionBegin;
+  PetscErrorCode   ierr;
+  PetscInt         checkpoint_every;
+  PetscInt         checkpoint_every_nsteps,step;
+  double           checkpoint_every_ncpumins, max_current_cpu_time, current_cpu_time;
+  static double    last_cpu_time = 0.0;
+  /*PetscBool      skip_existence_test = PETSC_TRUE;*/
+  PhysCompStokes   stokes = NULL;
+  PetscBool        energy_activated;
+  PhysCompEnergy   energy = NULL;
+  Vec              Xe = NULL;
+  DM               dmv,dmp,dmstokes = NULL,dmenergy = NULL;
+  PetscBool        exists,write_step_checkpoint;
+  char             checkpoints_basedir[PETSC_MAX_PATH_LEN];
+  char             test_dir[PETSC_MAX_PATH_LEN];
 
+  PetscFunctionBegin;
+  ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
+  ierr = pTatinContextValid_Energy(ctx,&energy_activated);CHKERRQ(ierr);
+  if (energy_activated) {
+    ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+    dmenergy = energy->daT;
+    ierr = pTatinPhysCompGetData_Energy(ctx,&Xe,NULL);CHKERRQ(ierr);
+  }
+  
+  ierr = PetscSNPrintf(checkpoints_basedir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",ctx->outputpath);CHKERRQ(ierr);
+  ierr = PetscTestDirectory(checkpoints_basedir,'w',&exists);CHKERRQ(ierr);
+  if (!exists) {
+    ierr = pTatinCreateDirectory(checkpoints_basedir);CHKERRQ(ierr);
+  }
+  
 	step                      = ctx->step;
 	checkpoint_every          = ctx->checkpoint_every;
 	checkpoint_every_nsteps   = ctx->checkpoint_every_nsteps;
 	checkpoint_every_ncpumins = ctx->checkpoint_every_ncpumins;
 	
-	PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
-
 	/* -------------------------------------- */
 	/* check one - this file has a fixed name */
-	if (step%checkpoint_every==0) {
+	if (step%checkpoint_every == 0) {
 
-		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+    ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints/default",ctx->outputpath);CHKERRQ(ierr);
+    ierr = PetscTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
+    if (!exists) {
+      ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
+    }
+		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[every]: Writing to dir %s\n",test_dir);
 		// call checkpoint routine //
-		ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
+		//ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
+    ierr = pTatinCtxCheckpointWrite(ctx,test_dir,NULL,dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
 	}
-	
+
+  write_step_checkpoint = PETSC_FALSE;
+  
 	/* -------------------------------------------------------------------- */
 	/* check three - look at cpu time and decide if we need to write or not */
 	PetscTime(&current_cpu_time);
@@ -943,21 +966,9 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 	
 	if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
-		
-		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
 
-		if (!skip_existence_test) {
-			FileExists(filetocheck,&exists);
-			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files %s\n",filetocheck);
-			if (exists == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
-				// call checkpoint routine //
-				ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-			}
-		} else {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
-			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-		}
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Activated\n");
+    write_step_checkpoint = PETSC_TRUE;
 		
 		last_cpu_time = max_current_cpu_time;
 	}
@@ -966,21 +977,41 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	/* check two - these files have a file name related to the time step */
 	if (step%checkpoint_every_nsteps == 0) {
 		
-		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
-		if (!skip_existence_test) {
-			FileExists(filetocheck,&exists);
-			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files %s\n",filetocheck);
-			if (exists == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
-				// call checkpoint routine //
-				ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-			}
-		} else {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
-			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-		}
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Activated\n");
+    write_step_checkpoint = PETSC_TRUE;
 	}
-#endif
+  
+  /* if either the cpu based or step based checks returned true, write a checkpoint file */
+  if (write_step_checkpoint) {
+    PetscLogDouble time[2];
+    char           restartfile[PETSC_MAX_PATH_LEN];
+    char           restartstring[PETSC_MAX_PATH_LEN];
+    PetscMPIInt    rank;
+    
+    ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/step%d",checkpoints_basedir,step);CHKERRQ(ierr);
+    
+    ierr = PetscTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
+    if (!exists) {
+      ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
+    }
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing to dir %s\n",test_dir);
+    PetscTime(&time[0]);
+    ierr = pTatinCtxCheckpointWrite(ctx,test_dir,NULL,dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
+    PetscTime(&time[1]);
+    ierr = pTatinLogBasicCPUtime(ctx,"Checkpoint.write()",time[1]-time[0]);CHKERRQ(ierr);
+    
+    /* write out a default string for restarting the job */
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",ctx->outputpath);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/step%d",ctx->outputpath,step);CHKERRQ(ierr);
+    if (rank == 0) {
+      FILE *fp;
+      fp = fopen(restartfile,"w");
+      fprintf(fp,"%s",restartstring);
+      fclose(fp);
+    }
+  }
+  
 	PetscFunctionReturn(0);
 }
 
