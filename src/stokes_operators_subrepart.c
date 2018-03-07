@@ -105,10 +105,6 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   /* Note: a possible optimization is to delay this until we actually need this data */
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr);
-#if 0
-  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
-  ierr = MPI_Win_sync(win_gaussdata_w_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -137,10 +133,6 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
   /* Note: a possible optimization is to delay this until we actually need this data */
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr);
-#if 0
-  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
-  ierr = MPI_Win_sync(win_LA_gcoords_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -170,10 +162,6 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
 
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
-#if 0
-  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
-  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -189,10 +177,7 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
-#if 0
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
-  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
-#endif
 
   /* Accumulate into Yu on rank_sub 1,2,.. just copy on rank_sub 0*/
   if (ctx->rank_sub > 0) {
@@ -207,7 +192,6 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   /* Synchronize (not sure if this is the optimal set of commands) */
   ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr);
   ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
-  ierr = MPI_Win_sync(ctx->win_ufield_repart);CHKERRQ(ierr); /* apparently required on some systems */
 
   PetscFunctionReturn(0);
 }
@@ -630,10 +614,19 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
   /* Send required ufield data to rank_sub 0 */
   ierr = PetscLogEventBegin(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
   ierr = TransferUfield_A11_SubRepart(ctx,ufield);CHKERRQ(ierr);
+
+    /* Small available optimization? Don't sync any of the windows until after all three TransferX functions are called. It would be cleaner code if all three transfers were
+    in one function, in any case, so that the Barrier could be there, instead
+    of here*/
+
+  /* Barrier - while we have already called MPI_Win_Sync() to ensure memory synchronization,
+     we also need to be sure that all ranks have finished writing and syncing
+     before we proceed to apply the kernel. Note the usual confusion about
+     maybe needing another call to MPI_Win_sync() after the barrier. */
+  ierr = MPI_Barrier(ctx->comm_sub);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_MultMFA11_rto,0,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_sub,0,0,0,0);CHKERRQ(ierr);
-
 #if defined(_OPENMP)
 #define OPENMP_CHKERRQ(x)
 #else
