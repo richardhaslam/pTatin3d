@@ -170,6 +170,7 @@ extern PetscLogEvent PTATIN_ModelOutput;
 PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const char help[])
 {
 	PetscErrorCode ierr;
+  PetscBool      supress = PETSC_FALSE;
 	PetscFunctionBegin;
 	
 	ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
@@ -224,7 +225,10 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MPPCInsert", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlInsert);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MPPCRemove", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlRemove);CHKERRQ(ierr);
 	
-	ierr = pTatinWritePreamble();CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_supress_preamble",&supress,NULL);CHKERRQ(ierr);
+  if (!supress) {
+    ierr = pTatinWritePreamble();CHKERRQ(ierr);
+  }
 	
 	PetscFunctionReturn(0);
 }
