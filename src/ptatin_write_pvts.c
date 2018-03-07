@@ -316,13 +316,22 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysCompStokes *ctx)
 {
 	PhysCompStokes stokes;
+  DM dmv;
+  char json_filename[PETSC_MAX_PATH_LEN];
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);	
-	//ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PhysCompStokesLoad_DM is deprecated :: requires updating");
-	*ctx = stokes;
+
+  ierr = PetscSNPrintf(json_filename,PETSC_MAX_PATH_LEN-1,"%s_dmda.json",vname);CHKERRQ(ierr);
+  ierr = DMDACheckpointLoad(PETSC_COMM_WORLD,json_filename,&dmv);CHKERRQ(ierr);
+  
+  ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
+  ierr = PhysCompSetup_Stokes(stokes,dmv);CHKERRQ(ierr);
+  ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
+
+  *ctx = stokes;
 	
 	PetscFunctionReturn(0);
 }
@@ -616,7 +625,7 @@ int main(int nargs,char *args[])
   PetscOptionsGetBool(NULL,NULL,"-write_mpdata",&write_mp_data,NULL);
   
   if (!write_stokes && !write_cell_data && !write_energy && !write_mp_data) {
-    PetscPrintf(PETSC_COMM_WORLD,"No writer specified. Use one (or several) of the following command line arguments"
+    PetscPrintf(PETSC_COMM_WORLD,"No writer specified. Use one (or several) of the following command line arguments\n"
                 "  -write_stokes\n"
                 "  -write_energy\n"
                 "  -write_markercellp0\n"

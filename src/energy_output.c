@@ -37,6 +37,7 @@
 
 #include "dmdae.h"
 #include "dmda_element_q1.h"
+#include "dmda_checkpoint.h"
 #include "quadrature.h"
 #include "output_paraview.h"
 #include "phys_comp_energy.h"
@@ -695,8 +696,8 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
       PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
     }
     
-    //ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dModelOutput_Energy_PetscVec is deprecated :: requires updating");
+    ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
+    ierr = DMDACheckpointWrite(ctx->stokes_ctx->dap,f2);CHKERRQ(ierr);
   }
 
   {

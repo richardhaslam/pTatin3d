@@ -290,8 +290,8 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
 	}
   
-	//ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,NULL);CHKERRQ(ierr);
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes is deprecated :: requires updating");
+  ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
+  ierr = DMDACheckpointWrite(ctx->stokes_ctx->dap,f3);CHKERRQ(ierr);
 	
 	/* dump the vectors */
 	{

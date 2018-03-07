@@ -759,8 +759,8 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
       PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
       PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
     }
-    //ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec is deprecated :: requires updating");
+    ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
+    ierr = DMDACheckpointWrite(ctx->stokes_ctx->dap,f2);CHKERRQ(ierr);
   }
   
   /* setup dm's */
