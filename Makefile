@@ -148,25 +148,25 @@ TEST_IGNORE+=no_avx_cuda
 endif
 
 test :
-	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke)
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py smoke)
 
 testcheck :
-	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py smoke) --verify
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py smoke) --verify
 
 testall :
-	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallcheck :
-	cd tests && ./runTests.py -s --verify -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+	cd tests && ./runTests.py --verify -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
 
 testallclean :
-	cd tests && ./runTests.py -s -p 
+	cd tests && ./runTests.py -p 
 
 testclassic :
-	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic)
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py classic)
 
 testclassiccheck :
-	cd tests && ./runTests.py -s -t $(shell ./tests/getTestGroup.py classic) --verify
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py classic) --verify
 
 .PHONY: test testall testallcheck testallclean testclassic testclassiccheck
 
