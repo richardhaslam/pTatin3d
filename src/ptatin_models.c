@@ -373,6 +373,7 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
   ierr = pTatinModelStaticGetByName(name,&model_s);CHKERRQ(ierr);
   if (model_s) {
     *model = model_s;
+    PetscFunctionReturn(0);
   }
   
   ierr = pTatinModelDynamicGetByName(name,&model_d);CHKERRQ(ierr);
@@ -382,6 +383,7 @@ PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
     /* This function call should be removed as soon as the static models are removed */
     ierr = pTatinModelRegister(model_d);CHKERRQ(ierr);
     *model = model_d;
+    PetscFunctionReturn(0);
   }
   /* If a model of either static or dynamic was not found - error */
   if (!(*model)) {
