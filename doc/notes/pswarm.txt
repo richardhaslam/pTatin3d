@@ -141,7 +141,7 @@ The default region index is set to 0
 
 
 ________________________________________________________________
-[Section X] Post-processing finite strain with a structured mesh
+[Section 7] Post-processing finite strain with a structured mesh
 
 * Use the coordinate layout option
   -pswarm_coord_layout 2
@@ -166,4 +166,16 @@ deformation_grid_ref.vts
                                                     -o outfilename.vts
 
   This will create the file outfilename.vts which can be loaded into ParaView
+
+___________________________
+[Section 8] Developer notes
+
+* PSwarm does not support JSON checkpointing. This is a current design limitation
+which needs to be addressed. Models using pswarms will not be able to completely
+checkpointed. A restart will simply re-introduce an un-iniitalised set of passive
+particles.
+
+* Only ParaView formats are supported by PSwarm. This should be updated to support
+the native databucket binary output. Introducing this feature will require a python
+tool which can load the native databucket binary output.
 
