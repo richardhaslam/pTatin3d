@@ -289,7 +289,9 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		//sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
 		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
 	}
-	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,NULL);CHKERRQ(ierr);
+  
+	//ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,NULL);CHKERRQ(ierr);
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes is deprecated :: requires updating");
 	
 	/* dump the vectors */
 	{
@@ -895,7 +897,7 @@ PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
 #define __FUNCT__ "pTatin3dCheckpoint"
 PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 {
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpoint is depreciated");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpoint is deprecated");
 	PetscFunctionReturn(0);
 }
 
@@ -904,7 +906,7 @@ PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 {
   PetscFunctionBegin;
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpointManager is depreciated");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpointManager is deprecated");
 #if 0
 	PetscErrorCode ierr;
 	PetscInt       checkpoint_every;
@@ -997,7 +999,7 @@ PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 {
 	PetscFunctionBegin;
   /* load coordinates of the velocity DMDA */
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMeshGeometry is depreciated");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMeshGeometry is deprecated");
 	PetscFunctionReturn(0);
 }
 
@@ -1007,7 +1009,7 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 {
 	PetscFunctionBegin;
 	/* load material points from file */
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMaterialGeometry is depreciated");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMaterialGeometry is deprecated");
 	PetscFunctionReturn(0);
 }
 
@@ -1017,7 +1019,7 @@ PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data
 {
   PetscFunctionBegin;
   /* load state vectors (u,p,T) from file */
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialSolution is depreciated");
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialSolution is deprecated");
   PetscFunctionReturn(0);
 }
 

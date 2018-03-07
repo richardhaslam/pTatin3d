@@ -694,7 +694,9 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
       PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
       PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
     }
-    ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
+    
+    //ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f2,NULL);CHKERRQ(ierr);
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dModelOutput_Energy_PetscVec is deprecated :: requires updating");
   }
 
   {

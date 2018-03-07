@@ -176,112 +176,7 @@ PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_pTatinVecFieldWrite"
-PetscErrorCode test_pTatinVecFieldWrite(void) 
-{
-	DM  da;
-	PetscInt nx,ny,nz;
-	Vec x;
-	PetscReal val;
-	PetscScalar max;
-	PetscReal x0,y0,z0,x1,y1,z1;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-
-	/* create the da */
-	nx = ny = nz = 10;
-	PetscOptionsGetInt(NULL, NULL, "-mx", &nx, 0 );
-	PetscOptionsGetInt(NULL, NULL, "-my", &ny, 0 );
-	PetscOptionsGetInt(NULL, NULL, "-mz", &nz, 0 );
-	
-	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 6,1, 0,0,0,&da);CHKERRQ(ierr);
-	
-	x0 = y0 = z0 = -1.0;
-	x1 = y1 = z1 = 1.0;
-	ierr = DMDASetUniformCoordinates(da, x0,x1, y0,y1, z0,z1);CHKERRQ(ierr);
-	
-	ierr = MeshDeformation_GaussianBump_YMAX(da,-0.3,-5.6);CHKERRQ(ierr);
-	
-	/* create a field */
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-	ierr = VecSetRandom( x, NULL );CHKERRQ(ierr);
-	ierr = VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );CHKERRQ(ierr);
-	ierr = VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );CHKERRQ(ierr);
-	ierr = VecMin( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );CHKERRQ(ierr);
-	ierr = VecMax( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );CHKERRQ(ierr);
-	
-	/* dump field to vtk */
-	ierr = DMDAViewPetscVTK(da, x, "dmda_write.vtk");CHKERRQ(ierr);
-	
-	/* dump field to disk */
-	ierr = pTatinVecFieldWrite(x,"mesh_ufield.ptatinvec",PETSC_TRUE);CHKERRQ(ierr);
-	 
-	/* dump dm to disk */
-	ierr = DMDAPackDataToFile( da, "mesh.ptatindmda" );CHKERRQ(ierr);
-	
-	ierr = DMDestroy(&da);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "test_pTatinVecFieldLoad"
-PetscErrorCode test_pTatinVecFieldLoad( void ) 
-{
-	DM  da;
-	Vec x;
-	PetscReal val;
-	PetscScalar max;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = DMDACreateFromPackDataToFile(PETSC_COMM_WORLD,"mesh.ptatindmda",&da);CHKERRQ(ierr);
-	ierr = DMView(da,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-	
-	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
-//	ierr = pTatinVecFieldRead("mesh_ufield.ptatinvec",PETSC_FALSE,x);CHKERRQ(ierr);
-	ierr = pTatinVecFieldRead("mesh_ufield.ptatinvec",PETSC_TRUE,x);CHKERRQ(ierr);
-
-	ierr = VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );CHKERRQ(ierr);
-	ierr = VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );CHKERRQ(ierr);
-	ierr = VecMin( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );CHKERRQ(ierr);
-	ierr = VecMax( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );CHKERRQ(ierr);
-	
-	/* dump field to vtk */
-	ierr = DMDAViewPetscVTK(da,x,"dmda_write_2.vtk");CHKERRQ(ierr);
-	
-	ierr = DMDestroy(&da);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "test_DMDACheckPoint"
-PetscErrorCode test_DMDACheckPoint(void)
-{
-	PetscErrorCode ierr;
-	PetscBool restart, checkpoint,flg;
-	
-	PetscFunctionBegin;
-	checkpoint = PETSC_FALSE;
-	PetscOptionsGetBool(NULL, NULL, "-checkpoint", &checkpoint, &flg );
-	if( checkpoint == PETSC_TRUE ) {
-		ierr = test_pTatinVecFieldWrite();CHKERRQ(ierr);
-	}
-	
-	restart = PETSC_FALSE;
-	PetscOptionsGetBool(NULL, NULL, "-restart", &restart, &flg );
-	if( restart == PETSC_TRUE ) {
-		ierr = test_pTatinVecFieldLoad();CHKERRQ(ierr);
-	}
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PhysCompOutput_StokesRawVelocityPressure"
 PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X,PetscBool zip_file,const char outputpath[],const char prefix[])
 {
@@ -305,8 +200,8 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
 	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f3 );
 	
-	ierr = PhysCompSaveMesh_Stokes3d(ctx,f1,f3,NULL);CHKERRQ(ierr);
-	
+	//ierr = PhysCompSaveMesh_Stokes3d(ctx,f1,f3,NULL);CHKERRQ(ierr);
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PhysCompOutput_StokesRawVelocityPressure is deprecated :: requires updating");
 	
 	ierr = DMCompositeGetAccess(ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 
@@ -425,7 +320,8 @@ PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysC
 	
 	PetscFunctionBegin;
 	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);	
-	ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
+	//ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"PhysCompStokesLoad_DM is deprecated :: requires updating");
 	*ctx = stokes;
 	
 	PetscFunctionReturn(0);
