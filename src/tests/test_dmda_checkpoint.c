@@ -105,7 +105,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	*/
 	 
 	/* dump dm to disk */
-	ierr = DMDAPackDataToFile( da, "dmda_checkpoint_output.dat" );CHKERRQ(ierr);
+	ierr = DMDACheckpointWrite( da, "checkpoint_output" );CHKERRQ(ierr);
 	
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode test_dmda_checkpoint_load( void )
 	
 	
 	PetscFunctionBegin;
-	ierr = DMDACreateFromPackDataToFile( PETSC_COMM_WORLD, "dmda_checkpoint_output.dat",&da );CHKERRQ(ierr);
+	ierr = DMDACheckpointLoad( PETSC_COMM_WORLD, "checkpoint_output_dmda.json",&da );CHKERRQ(ierr);
 	ierr = DMView( da, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
 	
 	ierr = DMDALoadGlobalVectorFromFile( da, "dmda_checkpoint_stressfield.dat", &x );CHKERRQ(ierr);
