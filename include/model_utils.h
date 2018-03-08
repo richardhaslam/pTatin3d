@@ -72,5 +72,7 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec v,Vec p,Quadrat
 PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal coord[],PetscBool mask[],PetscInt region_idx,PetscReal tolerance,int *_pidx,PetscMPIInt *_rank);
 PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal avg[]);
 PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[]);
+PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_db,int region_idx,int pmin_x[],int pmin_y[],int pmin_z[]);
+PetscErrorCode MPntStdCoordinateMaxIdentifyPointIndex(DataBucket materialpoint_db,int region_idx,int pmax_x[],int pmax_y[],int pmax_z[]);
 
 #endif
