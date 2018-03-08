@@ -679,7 +679,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
     PetscMPIInt    rank,rank_w;
-    double         shared_coord[3];
+    double         shared_coord[] = {0.0,0.0,0.0};
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
@@ -692,7 +692,8 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
     coord[2] = 0.0;
     ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_EDGE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
-
+  if (rank_w == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No point satisfying ||coord[] - mp.coor[]|| < tol was found");
+  
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
     shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
@@ -724,7 +725,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
     PetscMPIInt    rank,rank_w;
-    double         shared_coord[3];
+    double         shared_coord[] = {0.0,0.0,0.0};
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
@@ -737,7 +738,8 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
     coord[2] = 0.0;
     ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_BACK_FACE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
-    
+  if (rank_w == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No point satisfying ||coord[] - mp.coor[]|| < tol was found");
+  
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
     shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
@@ -769,7 +771,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
     PetscReal      gmin[3],gmax[3];
     int            pidx_w;
     PetscMPIInt    rank,rank_w;
-    double         shared_coord[3];
+    double         shared_coord[] = {0.0,0.0,0.0};;
 	MPAccess       mpX;
     PetscErrorCode ierr;
     
@@ -782,7 +784,8 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
     coord[2] = w;
     ierr = MPntStdIdentifyFromPosition(db,coord,coord_mask,SLAB_FRONT_FACE_IDX,1.0e-16,&pidx_w,&rank_w);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) identified: pidx_w,rank_w %d %d\n",pidx_w,rank_w);
-    
+  if (rank_w == -1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"No point satisfying ||coord[] - mp.coor[]|| < tol was found");
+  
 	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     ierr = MaterialPointGetAccess(db,&mpX);CHKERRQ(ierr);
     shared_coord[0] = shared_coord[1] = shared_coord[2] = 1.0e32;
