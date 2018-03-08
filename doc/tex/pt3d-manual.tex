@@ -125,12 +125,12 @@ the source code can be obtained using the following git command
 
 \section{Installation}
 Upon successful installation of PETSc, switch into the root directory of {\ptat}.
-You should provide a file, named \unix{makefile.arch}, which contains specific compiler optimizations for your operating system / compiler.
+You should provide a file, named \unix{makefile.arch}, which contains specific compiler optimizations for your operating system and compiler.
 If you do not provide this, a default, tailored to Mac OS X, will be copied for you.
 If you are trying to install {\ptat} on another system,
 consult the directory
 \unix{config/}
-where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system. The recommendation would be to copy the closest architecture file matching your system, e.g. \unix{cp config/machine.arch.XXX  makefile.arch}, then make any necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6/XC50 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system by copying the closest architecture file matching your system, e.g. \unix{cp config/machine.arch.XXX makefile.arch}, then make any necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
 \\[8pt]
 %
 Once the \unix{makefile.arch} is adjusted for your operating systemtype, type \unix{make} from the root directory of \ptat{}.
