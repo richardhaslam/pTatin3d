@@ -708,8 +708,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
 
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"slab edge range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
-    
+  
     *W = w;
     *Dn = shared_coord[1];
     
@@ -754,8 +753,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
     
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"slab edge (back face) range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
-    
+  
     *W = w;
     *Dn = shared_coord[1];
     
@@ -800,8 +798,7 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
 	ierr = MaterialPointRestoreAccess(db,&mpX);CHKERRQ(ierr);
     
     ierr =  MPI_Bcast(shared_coord,3,MPI_DOUBLE,rank_w,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"slab edge (front face) range: W,Dn %1.4e %1.4e\n",w,shared_coord[1]);
-    
+  
     *W = w;
     *Dn = shared_coord[1];
     
@@ -977,12 +974,16 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
     ierr = SD3DOutput_ComputeDs(materialpoint_db,&Ds);CHKERRQ(ierr);
 
     ierr = SD3DOutput_ComputeWDn_minX(materialpoint_db,&W,&Dn);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge range: W,Dn %1.4e %1.4e\n",ptatinctx->step,W,Dn);
     //Dn = 660.0e3/modeldata->x_bar - Dn;
     //W = 500.0e3/modeldata->x_bar - W;
 
     ierr = SD3DOutput_ComputeWDn_backface_minX(materialpoint_db,&Wx,&Dnx);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge (back face) range: W,Dn %1.4e %1.4e\n",ptatinctx->step,Wx,Dnx);
+  
     ierr = SD3DOutput_ComputeWDn_frontface_minZ(materialpoint_db,&Wz,&Dnz);CHKERRQ(ierr);
-    
+    PetscPrintf(PETSC_COMM_WORLD,"[step %D] slab edge (front face) range: W,Dn %1.4e %1.4e\n",ptatinctx->step,Wz,Dnz);
+  
     
     ierr = SD3DOutput_ComputeZrange(dav,range);CHKERRQ(ierr);
     
