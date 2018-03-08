@@ -1410,10 +1410,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
     p_found  = 0;
     p_mine   = -1;
 	
-    //if (mask[0]) { printf("coordX %1.4e \n",coord[0]); }
-    //if (mask[1]) { printf("coordY %1.4e \n",coord[1]); }
-    //if (mask[2]) { printf("coordZ %1.4e \n",coord[2]); }
-    
     DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mpoints; p++) {
@@ -1439,7 +1435,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
         }
      
         if (sep2 < min2) {
-            //printf("  p %d : %1.4e %1.4e %1.4e \n",p,pos_p[0],pos_p[1],pos_p[2]);
             p_mine   = p;
             p_found++;
             min2 = sep2;
@@ -1447,18 +1442,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
 	}
 	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
-    //if (p_found == 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate point within tolerance specified"); }
-    //if (p_found > 1) {  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Located more than 1 point within tolerance specified"); }
- 
-  /*
-    pack[0] = p_mine;
-    pack[1] = p_onrank;
-	ierr = MPI_Allreduce(pack,gpack,2,MPI_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
-    *_pidx = gpack[0];
-    *_rank = (PetscMPIInt)gpack[1];
-  */
-  
   /*
    http://mpi-forum.org/docs/mpi-1.1/mpi-11-html/node79.html
   */
