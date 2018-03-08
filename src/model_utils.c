@@ -1464,6 +1464,11 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
   */
   input.distance = min2;
   input.rank     = rank;
+
+  /* intialise output struct members */
+  output.distance = 0.0;
+  output.rank     = -1;
+
   ierr = MPI_Reduce( &input, &output, 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, PETSC_COMM_WORLD );CHKERRQ(ierr);
 
   /* Answer resides on process root - broadcast rank with the minimum value */
