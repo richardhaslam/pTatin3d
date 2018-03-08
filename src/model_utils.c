@@ -1403,7 +1403,7 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
 	PetscFunctionBegin;
 	
     tol2 = tolerance*tolerance;
-    min2 = 1.0e32;
+    min2 = PETSC_MAX_REAL;
   
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     
