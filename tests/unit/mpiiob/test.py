@@ -21,6 +21,7 @@ def test() :
 
   # Create Test Object
   t = pthtest.Test(testName,ranks,launch,expectedFile)
+  t.setUseSandbox()
   t.setVerifyMethod(comparefunc)
 
   return(t)

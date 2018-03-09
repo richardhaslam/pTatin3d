@@ -15,6 +15,7 @@ def test() :
     t.compareUnixDiff()
 
   t = pth.pthUnitTest(testName,ranks,launch,expectedFile)
+  t.setUseSandbox()
   t.setVerifyMethod(comparefunc)
   t.setComparisonFile('fat_test_geom.json')
 
