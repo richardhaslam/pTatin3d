@@ -135,40 +135,34 @@ externals:
 	-@echo $(TATIN_CFLAGS)
 
 ifeq ($(CONFIG_AVX),n)
-TEST_IGNORE+=no_avx
+TEST_IGNORE:=$(TEST_IGNORE),avx
 endif
 ifeq ($(CONFIG_CUDA),n)
-TEST_IGNORE+=no_cuda
+TEST_IGNORE:=$(TEST_IGNORE),cuda
 endif
 ifeq ($(CONFIG_OPENCL),n)
-TEST_IGNORE+=no_opencl
+TEST_IGNORE:=$(TEST_IGNORE),opencl
 endif
 ifeq ($(CONFIG_AVX_CUDA),n)
-TEST_IGNORE+=no_avx_cuda
+TEST_IGNORE:=$(TEST_IGNORE),avx_cuda
 endif
 
 test :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py smoke)
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --smoke)
 
 testcheck :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py smoke) --verify
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --smoke) --verify
 
 testall :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --skip $(TEST_IGNORE))
 
 testallcheck :
-	cd tests && ./runTests.py --verify -t $(shell ./tests/getTestGroup.py all $(TEST_IGNORE))
+	cd tests && ./runTests.py --verify -t $(shell ./tests/getTestGroup.py --skip $(TEST_IGNORE))
 
 testallclean :
 	cd tests && ./runTests.py -p 
 
-testclassic :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py classic)
-
-testclassiccheck :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py classic) --verify
-
-.PHONY: test testall testallcheck testallclean testclassic testclassiccheck
+.PHONY: test testall testallcheck testallclean
 
 %.$(AR_LIB_SUFFIX) : | $$(@D)/.DIR
 	$(call quiet,AR) $(AR_FLAGS) $@ $^
