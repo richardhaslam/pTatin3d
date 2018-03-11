@@ -288,7 +288,7 @@ PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if(!B) { PetscFunctionReturn(0); }
+	if(!*B) { PetscFunctionReturn(0); }
 	A = *B;
 	
 	A->refcnt--;
