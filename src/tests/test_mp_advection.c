@@ -706,7 +706,7 @@ PetscBool EvaluateTestVelocityField_0(PetscScalar coor[],PetscScalar *value,void
 	return PETSC_TRUE;
 }
 
-#include <../src/ksp/ksp/examples/tutorials/ex43-solcx.h>
+#include <petsc/ptatin_petsc_ex43-solcx.h>
 #undef __FUNCT__
 #define __FUNCT__ "EvaluateTestVelocityField_1"
 PetscBool EvaluateTestVelocityField_1(PetscScalar coor[],PetscScalar *value,void *ctx)
