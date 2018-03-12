@@ -610,11 +610,9 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,con
 {
 	PetscErrorCode ierr;
 	char           name[PETSC_MAX_PATH_LEN];
-	char           date_time[1024];
 	DM             stokes_pack;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    pvdfilename[PETSC_MAX_PATH_LEN];
+	static PetscBool beenhere=PETSC_FALSE;
 	DataBucket     material_points;
 
 	PetscFunctionBegin;
@@ -622,30 +620,20 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,con
   if (nvars == 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify at least one marker field to project");
   
 	// PVD
-	if (beenhere == 0) {
-		
-		if (ctx->restart_from_file) {
-			pTatinGenerateFormattedTimestamp(date_time);
-			PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell_%s.pvd",ctx->outputpath,date_time);
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n",pvdfilename);
-		} else {
-			PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename);
-		}
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
 	{
+    char pvdfilename[PETSC_MAX_PATH_LEN];
 		char vtkfilename[PETSC_MAX_PATH_LEN];
 		
+    PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
 		if (prefix) {
 			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell.pvts",prefix);
 		} else {
 			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"mpoints_cell.pvts");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
 	}
 	
 	// PVTS + VTS
@@ -705,11 +693,9 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 {
 	PetscErrorCode ierr;
 	char           basename[PETSC_MAX_PATH_LEN];
-	char           date_time[1024];
 	DM             stokes_pack;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    pvdfilename[PETSC_MAX_PATH_LEN];
+	static PetscBool beenhere=PETSC_FALSE;
 	DataBucket     material_points;
 	DM             dau,dap,dmscalar,dmp0;
 	PetscInt       MX,MY,MZ,Mp,Np,Pp,*lxv,*lyv,*lzv;
@@ -721,28 +707,20 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 
 	PetscTime(&t0);
 	// PVD
-	if (beenhere == 0) {
-		if (ctx->restart_from_file) {
-			pTatinGenerateFormattedTimestamp(date_time);
-			PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell_%s.pvd",ctx->outputpath,date_time);
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n",pvdfilename);
-		} else {
-			PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename);
-		}
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		beenhere = 1;
-	}
 	{
+    char pvdfilename[PETSC_MAX_PATH_LEN];
 		char vtkfilename[PETSC_MAX_PATH_LEN];
 		
+    PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
 		if (prefix) {
 			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell.pvts",prefix);
 		} else {
 			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"mpoints_cell.pvts");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
 	}
 
 	stokes_pack = ctx->stokes_ctx->stokes_pack;

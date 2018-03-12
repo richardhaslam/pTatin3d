@@ -116,40 +116,29 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 {
 	PetscErrorCode ierr;
 	char           *name;
-	char           date_time[1024];
 	DM             stokes_pack;
 	Vec            UP;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
+	static PetscBool beenhere=PETSC_FALSE;
 	PetscFunctionBegin;
 	
 	PetscTime(&t0);
 	// PVD
-	if (beenhere==0) {
-
-		if (ctx->restart_from_file) {
-			pTatinGenerateFormattedTimestamp(date_time);
-			if (asprintf(&pvdfilename,"%s/timeseries_vp_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
-		} else {
-			if (asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		}
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-
-		beenhere = 1;
-	}
 	{
+    char *pvdfilename;
 		char *vtkfilename;
 		
+    if (asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		if (prefix) {
 			if (asprintf(&vtkfilename, "%s_vp.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
 			if (asprintf(&vtkfilename, "vp.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
+    free(pvdfilename);
 		free(vtkfilename);
 	}
 	
@@ -178,40 +167,28 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 {
 	PetscErrorCode ierr;
 	char           *name;
-	char           date_time[1024];
 	DM             stokes_pack;
 	Vec            UP;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
+	static PetscBool beenhere=PETSC_FALSE;
 	PetscFunctionBegin;
 	
 	PetscTime(&t0);
 	// PVD
-	if (beenhere==0) {
-		
-		if (ctx->restart_from_file) {
-			pTatinGenerateFormattedTimestamp(date_time);
-			if (asprintf(&pvdfilename,"%s/timeseries_v_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
-		} else {
-			if (asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		}
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
 	{
+    char *pvdfilename;
 		char *vtkfilename;
 		
+    if (asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		if (prefix) {
 			if (asprintf(&vtkfilename, "%s_v.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
 			if (asprintf(&vtkfilename, "v.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, NULL);CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, NULL);CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
+    free(pvdfilename);
 		free(vtkfilename);
 	}
 	
@@ -237,11 +214,9 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char           date_time[1024];
 	DM             stokes_pack;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
+	static PetscBool beenhere=PETSC_FALSE;
 	char           f1[PETSC_MAX_PATH_LEN];
 	//char           f2[PETSC_MAX_PATH_LEN];
 	char           f3[PETSC_MAX_PATH_LEN];
@@ -249,30 +224,21 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	
 	PetscTime(&t0);
 	// PVD
-	if (beenhere==0) {
-		
-		if (ctx->restart_from_file) {
-			pTatinGenerateFormattedTimestamp(date_time);
-			if (asprintf(&pvdfilename,"%s/timeseries_X_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
-		} else {
-			if (asprintf(&pvdfilename,"%s/timeseries_X.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		}
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
 	{
+    char *pvdfilename;
 		char *vtkfilename;
 		
+    if (asprintf(&pvdfilename,"%s/timeseries_X.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		if (prefix) {
 			if (asprintf(&vtkfilename, "%s_X.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
 			if (asprintf(&vtkfilename, "X.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
+    free(pvdfilename);
 		free(vtkfilename);
 	}
 	
@@ -550,30 +516,26 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscErrorCode ierr;
 	char *name;
 	PetscLogDouble t0,t1;
-	static int beenhere=0;
-	static char *pvdfilename;
+	static PetscBool beenhere=PETSC_FALSE;
 	
 	PetscFunctionBegin;
 	
 	PetscTime(&t0);
 	// PVD
-	if (beenhere==0) {
-		if (asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
 	{
+    char *pvdfilename;
 		char *vtkfilename;
 		
+    if (asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		if (prefix) {
 			if (asprintf(&vtkfilename, "%s_mpoints_std.pvtu",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
 			if (asprintf(&vtkfilename, "mpoints_std.pvtu") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
 		free(vtkfilename);
 	}
 	

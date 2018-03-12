@@ -1127,40 +1127,29 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 {
 	PetscErrorCode ierr;
 	char           *name;
-	char           date_time[1024];
 	DM             stokes_pack;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
+	static PetscBool beenhere=PETSC_FALSE;
 	DataBucket     material_points;
 	PetscFunctionBegin;
 	
 	PetscTime(&t0);
 	// PVD
-	if (beenhere == 0) {
-		
-		if (ctx->restart_from_file) {
-			pTatinGenerateFormattedTimestamp(date_time);
-			if (asprintf(&pvdfilename,"%s/timeseries_mpoints_cell_%s.pvd",ctx->outputpath,date_time) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename [restarted] %s \n", pvdfilename );
-		} else {
-			if (asprintf(&pvdfilename,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-			PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		}
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
 	{
+    char *pvdfilename;
 		char *vtkfilename;
 		
+    if (asprintf(&pvdfilename,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		if (prefix) {
 			if (asprintf(&vtkfilename, "%s_mpoints_cell.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		} else {
 			if (asprintf(&vtkfilename, "mpoints_cell.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 		}
 		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    beenhere = PETSC_TRUE;
+    free(pvdfilename);
 		free(vtkfilename);
 	}
 	

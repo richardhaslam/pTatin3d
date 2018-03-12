@@ -38,6 +38,7 @@ PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],cha
 
 PetscErrorCode ParaviewPVDOpen(const char pvdfilename[]);
 PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char datafile[], const char DirectoryName[]);
+PetscErrorCode ParaviewPVDOpenAppend(PetscBool first,PetscInt step,const char pvdfilename[],double time,const char datafile[], const char directory_name[]);
 
 PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char path[],const char prefix[]);
 PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char name[]);

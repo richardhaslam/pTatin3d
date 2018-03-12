@@ -1553,8 +1553,8 @@ PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
 {
 	PetscErrorCode ierr;
   pTatinCtx ctx;
-	static int beenhere=0;
-	static char pvdfilename[PETSC_MAX_PATH_LEN];
+	static PetscBool beenhere=PETSC_FALSE;
+	char pvdfilename[PETSC_MAX_PATH_LEN];
   const char *prefix;
   char vtkfilename[PETSC_MAX_PATH_LEN];
 	char name[PETSC_MAX_PATH_LEN];
@@ -1564,25 +1564,16 @@ PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
 	// PVD
-	if (beenhere == 0) {
-    if (prefix) {
-      sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",ctx->outputpath,prefix);
-    } else {
-      sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",ctx->outputpath);
-    }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
-  
   if (prefix) {
+    sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",ctx->outputpath,prefix);
     sprintf(vtkfilename, "step%d_%spswarm.pvtu",ctx->step,prefix);
   } else {
+    sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",ctx->outputpath);
     sprintf(vtkfilename, "step%d_pswarm.pvtu",ctx->step);
   }
-  
-  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
 	
 	// PVTS + VTS
   if (prefix) {
