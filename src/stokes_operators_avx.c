@@ -28,6 +28,8 @@
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 // -*- indent-tabs-mode:t c-basic-offset:8 -*-
 
+#if defined(__AVX__)
+
 #include <petscfe.h>
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
@@ -834,4 +836,4 @@ PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar
   PetscFunctionReturn(0);
 }
 
-
+#endif /* define(__AVX__) */
