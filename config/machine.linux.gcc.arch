@@ -18,12 +18,6 @@ export TATIN_FFLAGS_OPT_b = -O2 -Wall -ffree-line-length-4000 -mtune=native -mar
 export TATIN_CFLAGS = ${TATIN_CFLAGS_DEBUG}
 export TATIN_FFLAGS = ${TATIN_FFLAGS_DEBUG}
 
-#
-# Set CONFIG_AVX=y if your system supports AVX 
-# (and ensure that -march=native or similar is included with your compiler flags)
-#
-#CONFIG_AVX=y
-
 export LIBZ_LIB = -lz
 # export LIBZ_INC = -I/usr/include
 

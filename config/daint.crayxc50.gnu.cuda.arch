@@ -34,7 +34,6 @@ export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
 export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL
 # export LIBZ_INC = -I/usr/include
 
-CONFIG_AVX=y
 CONFIG_CUDA=y
 CONFIG_OPENCL=y
 

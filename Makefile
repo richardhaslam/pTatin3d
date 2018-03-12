@@ -43,15 +43,8 @@ CONFIG_SPMA      ?= n
 CONFIG_FASTSCAPE ?= n
 
 CONFIG_FORTRAN = y
-CONFIG_AVX ?= n
 CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
-
-ifeq ($(CONFIG_AVX)$(CONFIG_CUDA),yy)
-CONFIG_AVX_CUDA = y
-else
-CONFIG_AVX_CUDA = n
-endif
 
 # Populate includes, libraries, and compiler flags
 TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
@@ -67,10 +60,6 @@ ifeq ($(CONFIG_OPENCL),y)
 TATIN_CFLAGS += -DTATIN_HAVE_OPENCL
 TATIN_LIB += $(OPENCL_LIB)
 TATIN_INC += $(OPENCL_INC)
-endif
-
-ifeq ($(CONFIG_AVX),y)
-TATIN_CFLAGS += -DTATIN_HAVE_AVX
 endif
 
 # Directory that contains most recently-parsed makefile (current)
@@ -134,17 +123,12 @@ externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT CFLAGS ———————
 	-@echo $(TATIN_CFLAGS)
 
-ifeq ($(CONFIG_AVX),n)
-TEST_IGNORE:=$(TEST_IGNORE),avx
-endif
 ifeq ($(CONFIG_CUDA),n)
 TEST_IGNORE:=$(TEST_IGNORE),cuda
+TEST_IGNORE:=$(TEST_IGNORE),avx_cuda
 endif
 ifeq ($(CONFIG_OPENCL),n)
 TEST_IGNORE:=$(TEST_IGNORE),opencl
-endif
-ifeq ($(CONFIG_AVX_CUDA),n)
-TEST_IGNORE:=$(TEST_IGNORE),avx_cuda
 endif
 
 test :

@@ -27,7 +27,6 @@ export LIBZ_LIB = -lz
 export CUDA_LIB = -L/usr/local/cuda-7.5/lib64 -lcudart
 # export LIBZ_INC = -I/usr/include
 
-CONFIG_AVX=y
 CONFIG_CUDA=y
 CONFIG_OPENCL=n
 

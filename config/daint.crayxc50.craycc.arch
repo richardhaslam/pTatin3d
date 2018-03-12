@@ -18,8 +18,6 @@ export TATIN_FFLAGS        = $(TATIN_FFLAGS_OPT_a)
 
 export LIBZ_LIB = -lz
 
-CONFIG_AVX=y
-
 # Clear the dependency flags, since craycc seems to only support -M
 # This means that $PETSC_DIR/obj/src will not contain any .d files,
 # so dependencies from included files will not be included in the makefile
