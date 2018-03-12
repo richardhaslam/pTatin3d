@@ -4,7 +4,9 @@ import re
 
 def test() :
   PTATIN_DIR = os.getenv('PTATIN_DIR')
-  PETSC_ARCH = os.getenv('PETSC_ARCH')
+  PETSC_ARCH = os.getenv('PETSC_ARCH') if os.getenv('PETSC_ARCH') else ''
+  PETSC_ARCH = PETSC_ARCH if PETSC_ARCH else ''
+  print(PETSC_ARCH)
   thisDir = os.path.split(os.path.abspath(__file__))[0]
   testName = os.path.relpath(thisDir,os.path.join(PTATIN_DIR,'tests')).replace(os.sep,'.')
   ranks = 1
