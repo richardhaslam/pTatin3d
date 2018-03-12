@@ -1612,7 +1612,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       }
     }
 #endif
-    ierr = pTatin3dCheckpointManager(pctx,X_e);CHKERRQ(ierr);
+    ierr = pTatin3dCheckpointManager(pctx,X_s);CHKERRQ(ierr);
     
     if (pctx->time > pctx->time_max) break;
   }
