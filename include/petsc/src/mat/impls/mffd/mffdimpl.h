@@ -1,8 +1,7 @@
 /*
-This file has been copied from the PETSc (v3.7) source tree
+This file has been copied from the PETSc (v3.8) source tree
   $PETSC_DIR/src/mat/impls/mffd/mffdimpl.h
 */
-
 /*
     This file should be included in NEW routines that compute the
     differencing parameter for finite difference based matrix-free
