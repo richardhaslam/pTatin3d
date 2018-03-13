@@ -176,18 +176,22 @@ PetscErrorCode ParaviewPVDOpenAppend(PetscBool not_first,PetscInt step,const cha
   if (!not_first) {
     if (step == 0) {
       ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+      ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
     } else {
       ierr = PetscTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
       if (file_found) {
         ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
       } else {
         ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+        ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
       }
     }
   } else {
     ierr = PetscTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
     if (!file_found) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open PVD file %s",pvdfilename);
+//        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open PVD file %s",pvdfilename);
+      ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+      ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
     } else {
       ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
     }
