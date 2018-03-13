@@ -33,6 +33,19 @@
 \setcounter{tocdepth}{2}
 \setcounter{secnumdepth}{3}
 
+\usepackage{listings}
+\lstset{
+  language=C,
+  basicstyle=\ttfamily,
+  showstringspaces=false,
+  basewidth=0.5em,      % For consistent spacing with inline listings
+  breaklines=true,
+  frame=single,
+  framexleftmargin= 3px,
+  framexrightmargin= 3px,
+  breakatwhitespace=true,
+}
+
 % macros
 \newcommand{\ptat}{{{\textsc{pTatin3D}}}}
 \newcommand{\PETSc}{{{\textsc{PETSc}}}}
@@ -520,7 +533,7 @@ Additional tutorial information can be found here:
   \item[-] \href{http://www.bu.edu/tech/about/research/training/online-tutorials/paraview/}{\url{www.bu.edu/tech/about/research/training/online-tutorials/paraview/}}
   \item[-] \href{http://www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}{\url{www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}}
 \end{itemize}
-\end{tiny}
+\end{small}
 
 A summary of file extensions commonly produced by {\ptat} is provided below: \newline
 \texttt{*.pvd}: Contains time dependent datasets.  \newline
@@ -774,7 +787,7 @@ Note that if you have $X$ levels, you are only required to specify $X-1$ values 
 Note that when using geometric multi-grid, all levels are spatial decomposed across all cores. Furthermore, it is required that every core contains at least one element. Thus, the total number of cores used to run a {\ptat} job must not exceed the number of elements within the coarse grid. If you require additional levels in your multi-grid hierarchy, you may
 \begin{itemize}
   \item an algebraic multi-grid preconditioner as your coarse grid preconditioner, or
-  \item use \PETSc{}'s \href{https://www.mcs.anl.gov/petsc-current/docs/manualpages/PC/PCTELESCOPE.html}{\texttt{PCTELESCOPE}}} to reduce the number of processors in the coarse grid communicator.
+  \item use \PETSc{}'s \href{https://www.mcs.anl.gov/petsc-current/docs/manualpages/PC/PCTELESCOPE.html}{\texttt{PCTELESCOPE}} to reduce the number of processors in the coarse grid communicator.
 \end{itemize}
 % TODO check PCTELESCOPE link above
 
@@ -952,5 +965,172 @@ $$
 % -------
 	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to \emph{decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to \emph{increase} by a factor of $X^2$ and $p'$ to \emph{increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will \emph{decrease} by a factor of $X$.
 \end{enumerate}
+
+\section{Passive Swarms}
+\subsection{Introduction}
+
+The PSwarm object provides a convinient way to track deformation and other quantities of interest (e.g. temperature)
+at discrete locations in the model domain. 
+The PSwarm object defines a ``passive swarm'', a set of discrete particles with no assumed connectivity to
+any other particle in the swarm. The particles are contained within the model domain and do not influence the flow field, 
+or interact with each other (hence the usage of the word passive).
+
+
+\subsection{Defining passive swarms}
+Any number of passive swarms can be created at run-time via the command line option
+\texttt{-pswarm\_list xx,yy}
+where \texttt{xx} and \texttt{yy} define the unique names you wish to assign to each passive swarm.
+In this example, since two names are provided, two passive swarms are created.
+
+At the end of each simulation, the following files will have been created in your
+output directory
+\begin{itemize}
+\item \texttt{timeseries\_xx\_pswarm.pvd}
+\item \texttt{timeseries\_yy\_pswarm.pvd}
+\item \texttt{step****\_xx\_pswarm-subdomain00000.vtu}
+\item \texttt{step****\_xx\_pswarm.pvtu}
+\item \texttt{step****\_yy\_pswarm-subdomain00000.vtu}
+\item \texttt{step****\_yy\_pswarm.pvtu}
+\end{itemize}}
+}
+
+\subsection{Defining coordinates for passive swarms}
+
+Several choices are possible to define the initial position of the passive swarm.
+The method used to define the coordinate is controlled via the command line argument
+
+\texttt{-\#\#\#\_pswarm\_coord\_layout}
+
+where \texttt{\#\#\#} will be the name used to identify each passive swarm (see Section 2)
+
+Valid choices for \texttt{-\#\#\#\_pswarm\_coord\_layout} are \texttt{0}, \texttt{1}, \texttt{2}, \texttt{3}
+The default value is \texttt{1}.
+The methods of defining the coordinates are described below
+
+\subsubsection{Filling the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 0})}
+
+Needs to be re-factored
+
+\subsubsection{Filling a sub-set of the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 1})}
+
+Within each Q2 element, the user defines a desired number of points
+\texttt{-\#\#\#\_pswarm\_lattice\_nx 3,4,5}
+
+Then a box shaped clipping mask is applied. Points located within the box are kept
+whilst all other points are ignored. The dimensions of the box are defined via
+\begin{lstlisting}
+-###_pswarm_lattice_min 0.0,0.0,0.0
+-###_pswarm_lattice_max 1.0,2.0,3.0
+\end{lstlisting}
+
+This method does not allow you to precisely control the total number of points which
+will exists within the passive swarm.
+
+Options example:
+\begin{lstlisting}
+-###_pswarm_lattice_nx 3,4,5
+-###_pswarm_lattice_min 0.0,0.0,0.0
+-###_pswarm_lattice_max 1.0,2.0,3.0
+\end{lstlisting}
+
+\subsubsection{Defining a fixed number of points within a box ( \texttt{-\#\#\#\_pswarm\_coord\_layout 2)}}
+
+This method allows you to define a box geometry with a fixed number of points in each i,j,k direction.
+
+Options example:
+\begin{lstlisting}
+-###_pswarm_box_nx 3,4,5
+-###_pswarm_box_min 0.3,0.4,0.5
+-###_pswarm_box_max 0.6,0.8,1.0
+\end{lstlisting}
+
+\subsubsection{Defining a fixed number of points via a user defined list ( \texttt{-\#\#\#\_pswarm\_coord\_layout 3})}
+
+This method allows you to exactly specify the initial location of the passive swarm points by specifying
+a list of x, y and z coordinates.
+
+Options example:
+\begin{lstlisting}
+-###_pswarm_coor_n 4
+-###_pswarm_coor_x 0.4,0.6,0.4,0.6
+-###_pswarm_coor_y 0.1,0.1,0.3,0.3
+-###_pswarm_coor_z 0.5,0.5,0.5,0.5
+\end{lstlisting}
+
+will define 4 particles with the coordinates $(0.4,0.1,0.5)$ , $(0.6,0.1,0.5)$ , $(0.4,0.3,0.5)$ and $(0.6,0.3,0.5)$
+
+\subsection{Defining the transport mode}
+
+Passive swarms can be defined to remain stationary over time, or to be advected with the fluid velocity.
+We refer to this choice as a "transport mode". By default, all passive swarms are assumed to utilize a
+Lagrangian transport mode (e.g. they move with the fluid velocity). If you require swarms to be stationary,
+use the command line option
+\begin{lstlisting}
+-pswarm_transport_mode_eulerian
+\end{lstlisting}
+
+\subsection{Defining the field update methods}
+
+A number of quantities can optionally be computed, or updated on each passive swarm. 
+For example we can compute the pressure, temperature or track the finite strain. 
+Such tasks are refered to as "field update" methods. By default, swarms do not have
+any field update methods specified
+
+On any given swarm, the user may request any number of field update methods be applied. 
+For instance, swarm "xx" may have no field updates specified, whilst swarm "yy" may be
+asked to track pressure and finite strain. This would be invoked via the following command
+line arguments:
+\begin{lstlisting}
+-yy_pswarm_field_update_pressure
+-yy_pswarm_field_update_finite_strain
+\end{lstlisting}
+
+NOTE: Field update methods are not implemented
+
+\subsection{Defining the region index of a passive swarm}
+
+For convenience, we optionally allow users to set a region index on all points within a passive swarm.
+This is achieved via the command line option
+\begin{lstlisting} 
+-###_pswarm_region_index 3
+\end{lstlisting}
+
+which would assign a region index of 3 to each point in the swarm. 
+The default region index is set to 0
+
+\section{Post-processing finite strain with a structured mesh}
+\begin{itemize}
+\item Use the coordinate layout option
+\begin{lstlisting}
+-pswarm_coord_layout 2
+\end{lstlisting}
+\item Upon execution, the following file will be created in your output directory
+\begin{lstlisting}
+deformation_grid_ref.vts
+\end{lstlisting}
+\item To generate a deformation grid, you need to 
+\begin{enumerate}
+\item Convert the pvtu file associated with your passive swarm into a vtu file.
+To do this, use
+\begin{lstlisting}
+pvpython src/filters/convert_pvtu2vtu.py \
+  -i path/to/inputfile.pvtu
+\end{lstlisting}
+
+This will create the following file
+\begin{lstlisting}
+path/to/inputfile.vtu
+\end{lstlisting}
+\item Execute the following script
+\begin{lstlisting}
+pvpython ./src/filters/extract-dgrid-pv4_3_1.py \
+-i path/to/input.vtu \
+-b path/to/deformation_grid_ref.vts \
+-o outfilename.vts
+\end{lstlisting}
+\end{enumerate}
+
+This will create the file outfilename.vts which can be loaded into ParaView
+\end{itemize}
 
 \end{document}
