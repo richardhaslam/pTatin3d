@@ -133,4 +133,15 @@ def main():
 
 
 if __name__ == "__main__":
-	main()
+  pvV = simple.GetParaViewVersion()
+  majorV = pvV.major
+  minorV = pvV.minor
+  if majorV < 4:
+    print('VersionError: Script is not tested for ParaView versions < v4.3')
+    sys.exit(1)
+  elif majorV == 4:
+    if minorV < 3:
+      print('VersionError: Script is not tested for ParaView versions < v4.3')
+      sys.exit(1)
+  
+  main()
