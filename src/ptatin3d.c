@@ -111,8 +111,8 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes"
-PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
+#define __FUNCT__ "default_pTatin3d_ModelOutput_VelocityPressure_Stokes"
+PetscErrorCode default_pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
 	char           *name;
@@ -159,6 +159,93 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_pTatin3d_ModelOutput_VelocityPressure_Stokes"
+PetscErrorCode _pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char root[],const char snap[],const char fileprefix[])
+{
+  PetscErrorCode ierr;
+  DM             stokes_pack;
+  Vec            UP;
+  static PetscBool beenhere=PETSC_FALSE;
+  char pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],name[PETSC_MAX_PATH_LEN],pvtsoutputdir[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  if (snap) { PetscSNPrintf(pvtsoutputdir,PETSC_MAX_PATH_LEN-1,"%s/%s",root,snap);
+  } else {    PetscSNPrintf(pvtsoutputdir,PETSC_MAX_PATH_LEN-1,"%s",root);         }
+  
+  // PVD
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_vp.pvd",root);
+  
+  if (fileprefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_vp.pvts",fileprefix);
+  } else {          PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "vp.pvts"); }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, snap);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
+  
+  // PVTS + VTS
+  if (fileprefix) { PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"%s_vp",fileprefix);
+  } else {          PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"vp",fileprefix);    }
+  
+  stokes_pack = ctx->stokes_ctx->stokes_pack;
+  UP = X;
+  ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,pvtsoutputdir,name);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes_per_dir"
+PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_per_dir(pTatinCtx ctx,Vec X)
+{
+  char name[PETSC_MAX_PATH_LEN];
+  PetscBool found;
+  PetscErrorCode ierr;
+  
+  // create a snapshot directory based on step
+  ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/step%D",ctx->outputpath,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(name,'w',&found);
+  if (!found) {
+    ierr = pTatinCreateDirectory(name);CHKERRQ(ierr);
+  }
+  ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);CHKERRQ(ierr);
+  ierr = _pTatin3d_ModelOutput_VelocityPressure_Stokes(ctx,X,ctx->outputpath,name,NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes_flat"
+PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_flat(pTatinCtx ctx,Vec X)
+{
+  char fileprefix[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+  
+  // create a file prefix based on step
+  ierr = PetscSNPrintf(fileprefix,PETSC_MAX_PATH_LEN-1,"step%1.6D",ctx->step);CHKERRQ(ierr);
+  ierr = _pTatin3d_ModelOutput_VelocityPressure_Stokes(ctx,X,ctx->outputpath,NULL,fileprefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes"
+PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
+{
+  char name[PETSC_MAX_PATH_LEN];
+  PetscBool found;
+  PetscErrorCode ierr;
+  
+  // create a snapshot directory based on step
+  ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/step%D",ctx->outputpath,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(name,'w',&found);
+  if (!found) {
+    ierr = pTatinCreateDirectory(name);CHKERRQ(ierr);
+  }
+  ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);CHKERRQ(ierr);
+  ierr = _pTatin3d_ModelOutput_VelocityPressure_Stokes(ctx,X,ctx->outputpath,name,prefix);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -514,40 +601,34 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char *name;
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
+  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],snap[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
 	
 	PetscFunctionBegin;
-	
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+  ierr = PetscSNPrintf(snap,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);CHKERRQ(ierr);
+
 	PetscTime(&t0);
 	// PVD
-	{
-    char *pvdfilename;
-		char *vtkfilename;
-		
-    if (asprintf(&pvdfilename,"%s/timeseries_mpoints_std.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		if (prefix) {
-			if (asprintf(&vtkfilename, "%s_mpoints_std.pvtu",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		} else {
-			if (asprintf(&vtkfilename, "mpoints_std.pvtu") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		}
-		
-    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
-    beenhere = PETSC_TRUE;
-		free(vtkfilename);
-	}
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_std.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_mpoints_std.pvtu",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "mpoints_std.pvtu");           }
+
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
 	
 	// PVTS + VTS
-	if (prefix) {
-		if (asprintf(&name,"%s_mpoints_std",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	} else {
-		if (asprintf(&name,"mpoints_std") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	}
-	
-	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,ctx->outputpath,name);CHKERRQ(ierr);
-	free(name);
+  if (prefix) { PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"%s_mpoints_std",prefix);
+  } else {      PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"mpoints_std",prefix);    }
+
+	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,pvoutputdir,name);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
 	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
