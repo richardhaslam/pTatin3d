@@ -253,45 +253,40 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char           *name;
 	DM             stokes_pack;
 	Vec            UP;
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
-	PetscFunctionBegin;
-	
-	PetscTime(&t0);
-	// PVD
-	{
-    char *pvdfilename;
-		char *vtkfilename;
-		
-    if (asprintf(&pvdfilename,"%s/timeseries_v.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		if (prefix) {
-			if (asprintf(&vtkfilename, "%s_v.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		} else {
-			if (asprintf(&vtkfilename, "v.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		}
-    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, NULL);CHKERRQ(ierr);
-    beenhere = PETSC_TRUE;
-    free(pvdfilename);
-		free(vtkfilename);
-	}
-	
-	// PVTS + VTS
-	if (prefix) {
-		if (asprintf(&name,"%s_v",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	} else {
-		if (asprintf(&name,"v") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	}
-	
-	stokes_pack = ctx->stokes_ctx->stokes_pack;
-	UP = X;
-	ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
-	free(name);
-	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
+  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
+  
+  PetscFunctionBegin;
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+  
+  PetscTime(&t0);
+  // PVD
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_v.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_v.pvts",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "v.pvts");           }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
+  
+  // PVTS + VTS
+  if (prefix) { PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"%s_v",prefix);
+  } else {      PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"v",prefix);    }
+  
+  stokes_pack = ctx->stokes_ctx->stokes_pack;
+  UP = X;
+  ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,pvoutputdir,name);CHKERRQ(ierr);
+  
+  PetscTime(&t1);
+  /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -305,42 +300,39 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
 	char           f1[PETSC_MAX_PATH_LEN];
-	//char           f2[PETSC_MAX_PATH_LEN];
 	char           f3[PETSC_MAX_PATH_LEN];
-	PetscFunctionBegin;
-	
+  char pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
+
+  PetscFunctionBegin;
 	PetscTime(&t0);
 	// PVD
-	{
-    char *pvdfilename;
-		char *vtkfilename;
-		
-    if (asprintf(&pvdfilename,"%s/timeseries_X.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		if (prefix) {
-			if (asprintf(&vtkfilename, "%s_X.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		} else {
-			if (asprintf(&vtkfilename, "X.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		}
-		
-    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
-    beenhere = PETSC_TRUE;
-    free(pvdfilename);
-		free(vtkfilename);
-	}
-	
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+  
+  PetscTime(&t0);
+  // PVD
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_X.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_X.pvts",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "X.pvts");           }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
+  
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 
 	/* dump the dmda's */
 	/* dav,dap */
 	if (prefix) {
-		sprintf(f1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
-		//sprintf(f2,"%s/%s.dmda-velocity-coords",ctx->outputpath,prefix);
-		sprintf(f3,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
+		PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",pvoutputdir,prefix);
+		PetscSNPrintf(f3,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",pvoutputdir,prefix);
 	} else {
-		sprintf(f1,"%s/dmda-velocity",ctx->outputpath);
-		//sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
-		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
+		PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",pvoutputdir);
+		PetscSNPrintf(f3,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",pvoutputdir);
 	}
   
   ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
@@ -353,15 +345,15 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		
 		ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 		
-		if (prefix) { sprintf(f1,"%s/%s.dmda-Xu",ctx->outputpath,prefix); } 
-		else {        sprintf(f1,"%s/dmda-Xu",ctx->outputpath);           }
+		if (prefix) { PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-Xu",pvoutputdir,prefix); }
+		else {        PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-Xu",pvoutputdir);           }
 		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
 		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 		ierr = VecView(Xu,viewer);CHKERRQ(ierr);
 		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 		
-		if (prefix) { sprintf(f1,"%s/%s.dmda-Xp",ctx->outputpath,prefix); } 
-		else {        sprintf(f1,"%s/dmda-Xp",ctx->outputpath);           }
+		if (prefix) { PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-Xp",pvoutputdir,prefix); }
+		else {        PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-Xp",pvoutputdir);           }
 		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
 		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 		ierr = VecView(Xp,viewer);CHKERRQ(ierr);
@@ -603,7 +595,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscErrorCode ierr;
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
-  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],snap[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
   PetscBool found;
 	
 	PetscFunctionBegin;
@@ -612,7 +604,6 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
   PetscTestDirectory(pvoutputdir,'w',&found);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
-  ierr = PetscSNPrintf(snap,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);CHKERRQ(ierr);
 
 	PetscTime(&t0);
 	// PVD
