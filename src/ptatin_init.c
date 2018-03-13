@@ -139,11 +139,6 @@ extern PetscLogEvent MAT_MultMFA11_QuasiNewtonX;
 extern PetscLogEvent MAT_MultMFA12_QuasiNewtonX;
 extern PetscLogEvent MAT_MultMFA21_QuasiNewtonX;
 
-extern PetscLogEvent MAT_MultMFA11_ltg;
-extern PetscLogEvent MAT_MultMFA11_gtl;
-extern PetscLogEvent MAT_MultMFA11_yz;
-extern PetscLogEvent MAT_MultMFA11_gv;
-
 PetscClassId PTATIN_CLASSID;
 extern PetscLogEvent PTATIN_DataExchangerTopologySetup;
 extern PetscLogEvent PTATIN_DataExchangerBegin;
@@ -206,11 +201,6 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	ierr = PetscLogEventRegister("MatMultMFA11_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA11_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA12_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA12_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("MatMultMFA21_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA21_QuasiNewtonX);CHKERRQ(ierr);
-
-	ierr = PetscLogEventRegister("MatMultMFA11_gtl",MAT_CLASSID,&MAT_MultMFA11_gtl);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_ltg",MAT_CLASSID,&MAT_MultMFA11_ltg);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_yz",MAT_CLASSID,&MAT_MultMFA11_yz);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_gv",MAT_CLASSID,&MAT_MultMFA11_gv);CHKERRQ(ierr);
 
 	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
 	ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);
