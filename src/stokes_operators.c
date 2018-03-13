@@ -288,7 +288,7 @@ PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
 	PetscErrorCode ierr;
 	PetscFunctionBegin;
 	
-	if(!B) { PetscFunctionReturn(0); }
+	if(!*B) { PetscFunctionReturn(0); }
 	A = *B;
 	
 	A->refcnt--;
@@ -2093,7 +2093,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	*B = A;
 	
 	/* tidy up */
-	ierr = MatStokesMFDestroy(&StkCtx);CHKERRQ(ierr);
 	for (i=0; i<2; i++) {
 		for (j=0; j<2; j++) {
 			if (bA[i][j]) { ierr = MatDestroy(&bA[i][j]);CHKERRQ(ierr); }
