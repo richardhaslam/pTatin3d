@@ -31,6 +31,7 @@
 
 #include "ptatin3d_defs.h"
 #include "ptatin3d.h"
+#include "ptatin_utils.h"
 #include "private/ptatin_impl.h"
 
 #include "MPntStd_def.h"
@@ -609,43 +610,40 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
 PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char           name[PETSC_MAX_PATH_LEN];
 	DM             stokes_pack;
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
 	DataBucket     material_points;
+  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
 
 	PetscFunctionBegin;
-	PetscTime(&t0);
   if (nvars == 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify at least one marker field to project");
+
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+
+  PetscTime(&t0);
   
 	// PVD
-	{
-    char pvdfilename[PETSC_MAX_PATH_LEN];
-		char vtkfilename[PETSC_MAX_PATH_LEN];
-		
-    PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
-		if (prefix) {
-			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell.pvts",prefix);
-		} else {
-			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"mpoints_cell.pvts");
-		}
-		
-    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename); }
-		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
-    beenhere = PETSC_TRUE;
-	}
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_mpoints_cell.pvts",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "mpoints_cell.pvts");           }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
 	
 	// PVTS + VTS
-	if (prefix) {
-		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell",prefix);
-	} else {
-		PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"mpoints_cell");
-	}
+  if (prefix) { PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell",prefix);
+  } else {      PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"mpoints_cell",prefix);    }
 	
 	ierr = pTatinGetMaterialPoints(ctx,&material_points,NULL);CHKERRQ(ierr);
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
-	ierr = MarkerCellFieldsP0Write_ParaView(stokes_pack,material_points,NULL,nvars,vars,low_precision,ctx->outputpath,name);CHKERRQ(ierr);
+	ierr = MarkerCellFieldsP0Write_ParaView(stokes_pack,material_points,NULL,nvars,vars,low_precision,pvoutputdir,name);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
 	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n",__FUNCT__,prefix,t1-t0);*/
@@ -701,27 +699,27 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 	PetscInt       MX,MY,MZ,Mp,Np,Pp,*lxv,*lyv,*lzv;
   Vec            cellconstant,pointcounts;
   MPI_Comm       comm;
+  char pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
 
 	PetscFunctionBegin;
   if (nvars == 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Must specify at least one marker field to project");
 
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+
 	PetscTime(&t0);
 	// PVD
-	{
-    char pvdfilename[PETSC_MAX_PATH_LEN];
-		char vtkfilename[PETSC_MAX_PATH_LEN];
-		
-    PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",ctx->outputpath);
-		if (prefix) {
-			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_mpoints_cell.pvts",prefix);
-		} else {
-			PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"mpoints_cell.pvts");
-		}
-		
-    if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename); }
-		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
-    beenhere = PETSC_TRUE;
-	}
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_cell.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_mpoints_cell.pvts",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "mpoints_cell.pvts");           }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
 
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
@@ -731,11 +729,11 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
     char f2[PETSC_MAX_PATH_LEN];
 
     if (prefix) {
-      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
-      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",pvoutputdir,prefix);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",pvoutputdir,prefix);
     } else {
-      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
-      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",pvoutputdir);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",pvoutputdir);
     }
     ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
     ierr = DMDACheckpointWrite(ctx->stokes_ctx->dap,f2);CHKERRQ(ierr);
@@ -760,9 +758,9 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 
   /* barf out dmscalar, dmp0, and the vectors */
   if (prefix) {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",ctx->outputpath,prefix);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-cell",pvoutputdir,prefix);
 	} else {
-		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",ctx->outputpath);
+		PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1,"%s/dmda-cell",pvoutputdir);
 	}
   
   ierr = MarkerCellFieldsP0Write_PetscVec(dmscalar,dmp0,cellconstant,pointcounts,
