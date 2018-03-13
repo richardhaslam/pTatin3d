@@ -23,6 +23,8 @@
     * AVX.
    */
 
+#if defined(__AVX__) && defined(TATIN_HAVE_CUDA)
+
 #include <petscfe.h>
 #include <petsc/ptatin_petsc_hash.h> /* ptatin supplied header copied from PETSc source tree
                                         In PETSc 3.8, this header is moved to $PETSC_DIR/include/petsc/private */
@@ -733,3 +735,5 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   PetscFunctionReturn(0);
 }
+
+#endif /* defined(__AVX__) && defined(TATIN_HAVE_CUDA) */
