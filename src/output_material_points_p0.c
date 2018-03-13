@@ -576,6 +576,7 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
 	ierr = DMDAGetInfo(dau,0,0,0,0,&Mp,&Np,&Pp,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRangesElementQ2(dau,0,0,0,0,0,0,&lxv,&lyv,&lzv);CHKERRQ(ierr);
 	ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,MX,MY,MZ,Mp,Np,Pp,1,0,lxv,lyv,lzv,&dmp0);CHKERRQ(ierr);
+  ierr = DMSetUp(dmp0);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dmp0,&cellconstant);CHKERRQ(ierr);
   
@@ -773,6 +774,7 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,Pet
 	ierr = DMDAGetInfo(dau,0,0,0,0,&Mp,&Np,&Pp,0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRangesElementQ2(dau,0,0,0,0,0,0,&lxv,&lyv,&lzv);CHKERRQ(ierr);
 	ierr = DMDACreate3d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,MX,MY,MZ,Mp,Np,Pp,1,0,lxv,lyv,lzv,&dmp0);CHKERRQ(ierr);
+  ierr = DMSetUp(dmp0);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dmp0,&cellconstant);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(dmp0,&pointcounts);CHKERRQ(ierr);

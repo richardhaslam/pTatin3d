@@ -55,6 +55,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
 	PetscFunctionBegin;
 	
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -109,6 +110,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
 	PetscFunctionBegin;
 	
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -175,6 +177,7 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt n
 	PetscFunctionBegin;
 	
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;

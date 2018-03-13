@@ -69,6 +69,7 @@ PetscErrorCode DMDADuplicateLayout(DM da1,PetscInt dof2,PetscInt sw2,DMDAStencil
     } else {
         SETERRQ(PetscObjectComm((PetscObject)da1),PETSC_ERR_USER,"Unknown dimension for DMDA");
     }
+    ierr = DMSetUp(*da2);CHKERRQ(ierr);
 
     ierr = DMGetCoordinates(da1,&coords);CHKERRQ(ierr);
     if (coords) {

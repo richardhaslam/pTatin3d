@@ -122,6 +122,7 @@ PetscErrorCode test_2(void)
 	N = 5;
 	
 	ierr = DMDACreate2d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,NULL,NULL,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 	ierr = DMSetOptionsPrefix(da,"vel_");CHKERRQ(ierr);
 	ierr = DMSetFromOptions(da);CHKERRQ(ierr);
 	

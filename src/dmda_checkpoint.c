@@ -574,9 +574,11 @@ PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
     case 2:
       SETERRQ(comm,PETSC_ERR_SUP,"2D requires testing: Only tested for 3D");
       ierr = DMDACreate2d(comm,bc_type[0],bc_type[1],stencil_type,M[0],M[1],mr[0],mr[1],ndof,sw,lri,lrj,&da);CHKERRQ(ierr);
+      ierr = DMSetUp(da);CHKERRQ(ierr);
       break;
     case 3:
       ierr = DMDACreate3d(comm,bc_type[0],bc_type[1],bc_type[2],stencil_type,M[0],M[1],M[2],mr[0],mr[1],mr[2],ndof,sw,lri,lrj,lrk,&da);CHKERRQ(ierr);
+      ierr = DMSetUp(da);CHKERRQ(ierr);
       break;
       
     default:

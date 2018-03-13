@@ -529,8 +529,10 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
         if (red->subcomm->parent_rank_active_in_subcomm) {
             
             //ierr = DMDACreate3d(subcomm->sub_comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,nsw, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
+          // ierr = DMSetUp(red->dmrepart);CHKERRQ(ierr);
             /* Note - I just use stencil_width = 1 here - this allows me to tunnel down deep with gmg without getting errors about stencil width > overlap */
             ierr = DMDACreate3d(subcomm->sub_comm,bx,by,bz,stencil,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, ndof,1, NULL,NULL,NULL,&red->dmrepart);CHKERRQ(ierr);
+            ierr = DMSetUp(red->dmrepart);CHKERRQ(ierr);
             ierr = DMSetOptionsPrefix(red->dmrepart,"repart_");CHKERRQ(ierr);
             
             ierr = DMDASetRefinementFactor(red->dmrepart,refine_x,refine_y,refine_z);CHKERRQ(ierr);
