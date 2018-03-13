@@ -978,115 +978,166 @@ $$
 \section{Passive Swarms}
 \subsection{Introduction}
 
-The PSwarm object provides a convinient way to track deformation and other quantities of interest (e.g. temperature)
+The PSwarm object provides a convenient way to track deformation and other quantities of interest (e.g. temperature)
 at discrete locations in the model domain. 
 The PSwarm object defines a ``passive swarm'', a set of discrete particles with no assumed connectivity to
 any other particle in the swarm. The particles are contained within the model domain and do not influence the flow field, 
 or interact with each other (hence the usage of the word passive).
 
-
-\subsection{Defining passive swarms}
+\subsection{Defining passive swarms} \label{sec:def_pswarm}
 Any number of passive swarms can be created at run-time via the command line option
 \texttt{-pswarm\_list xx,yy}
 where \texttt{xx} and \texttt{yy} define the unique names you wish to assign to each passive swarm.
 In this example, since two names are provided, two passive swarms are created.
 
-At the end of each simulation, the following files will have been created in your
-output directory
-\begin{itemize}
-\item \texttt{timeseries\_xx\_pswarm.pvd}
-\item \texttt{timeseries\_yy\_pswarm.pvd}
-\item \texttt{step****\_xx\_pswarm-subdomain00000.vtu}
-\item \texttt{step****\_xx\_pswarm.pvtu}
-\item \texttt{step****\_yy\_pswarm-subdomain00000.vtu}
-\item \texttt{step****\_yy\_pswarm.pvtu}
-\end{itemize}}
-}
+\subsection{Options}
+The definition and behaviour of the PSwarm object is configurable at run-time via command line options.
+When only a single PSwarm object is created, a unique name is not required to identify the PSwarm.
+In this case, all options take take the form
+\begin{lstlisting}
+-pswarm_<OPTION_NAME> <VALUE>
+\end{lstlisting}
+When multiple PSwarm objects have been defined, the options will be denoted via
+\begin{lstlisting}
+-###_pswarm_<OPTION_NAME> <VALUE>
+\end{lstlisting}
+where \texttt{\#\#\#} is be the name used to identify each passive swarm (see Section \ref{sec:def_pswarm})
 
-\subsection{Defining coordinates for passive swarms}
 
-Several choices are possible to define the initial position of the passive swarm.
+
+
+\subsection{Defining initial coordinates}
+
+Several choices are possible to define the initial coordinates of the points in each passive swarm.
 The method used to define the coordinate is controlled via the command line argument
+\begin{lstlisting}
+-###_pswarm_coord_layout
+\end{lstlisting}
 
-\texttt{-\#\#\#\_pswarm\_coord\_layout}
-
-where \texttt{\#\#\#} will be the name used to identify each passive swarm (see Section 2)
-
-Valid choices for \texttt{-\#\#\#\_pswarm\_coord\_layout} are \texttt{0}, \texttt{1}, \texttt{2}, \texttt{3}
+Valid choices for \texttt{-\#\#\#\_pswarm\_coord\_layout} are \texttt{1}, \texttt{2}, \texttt{3}
 The default value is \texttt{1}.
 The methods of defining the coordinates are described below
 
-\subsubsection{Filling the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 0})}
-
-Needs to be re-factored
+%\subsubsection{Filling the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 0})}
+%Needs to be re-factored
 
 \subsubsection{Filling a sub-set of the velocity mesh ( \texttt{-\#\#\#\_pswarm\_coord\_layout 1})}
 
-Within each Q2 element, the user defines a desired number of points
-\texttt{-\#\#\#\_pswarm\_lattice\_nx 3,4,5}
+Within each Q2 element, the user can define a number of points in each $i,j,k$ direction via
+\begin{lstlisting}
+-###_pswarm_lattice_nx 3,4,5
+\end{lstlisting}
 
-Then a box shaped clipping mask is applied. Points located within the box are kept
+By default, all elements are filled with points.
+If desired, a box shaped clipping mask can be applied. Points located within the box are kept
 whilst all other points are ignored. The dimensions of the box are defined via
 \begin{lstlisting}
 -###_pswarm_lattice_min 0.0,0.0,0.0
 -###_pswarm_lattice_max 1.0,2.0,3.0
 \end{lstlisting}
 
-This method does not allow you to precisely control the total number of points which
-will exists within the passive swarm.
-
 Options example:
 \begin{lstlisting}
+-###_pswarm_coord_layout 1
 -###_pswarm_lattice_nx 3,4,5
 -###_pswarm_lattice_min 0.0,0.0,0.0
 -###_pswarm_lattice_max 1.0,2.0,3.0
 \end{lstlisting}
 
-\subsubsection{Defining a fixed number of points within a box ( \texttt{-\#\#\#\_pswarm\_coord\_layout 2)}}
+Note that in general, this point creation method does not allow you to precisely control the total number of points which
+will exists within the passive swarm as it depends on the resolution of the finite element mesh.
 
-This method allows you to define a box geometry with a fixed number of points in each i,j,k direction.
+\subsubsection{Filling a box ( \texttt{-\#\#\#\_pswarm\_coord\_layout 2)}}
+
+This method allows you to define a box geometry with a fixed number of points in each $i,j,k$ direction.
 
 Options example:
 \begin{lstlisting}
+-###_pswarm_coord_layout 2
 -###_pswarm_box_nx 3,4,5
 -###_pswarm_box_min 0.3,0.4,0.5
 -###_pswarm_box_max 0.6,0.8,1.0
 \end{lstlisting}
 
-\subsubsection{Defining a fixed number of points via a user defined list ( \texttt{-\#\#\#\_pswarm\_coord\_layout 3})}
+The above defines a domain $[0.3,0.6] \times [0.4,0.8] \times [0.5,1.0]$ and fills this domain with $3$ points in the $x$- direction, and $4,5$ points in the $y$-, $z$- directions respectively. The number of points specified in each direction must be greater than $1$. 
+\textbf{Note: this design limitation could be easily fixed.} 
+Point coordinates generated which reside outside the background finite element mesh are ignored and not included within the passive swarm.
 
-This method allows you to exactly specify the initial location of the passive swarm points by specifying
-a list of x, y and z coordinates.
+\subsubsection{Using a user defined coordinate list ( \texttt{-\#\#\#\_pswarm\_coord\_layout 3})}
+
+This method allows you to exactly specify the initial location of the passive swarm points by providing
+a list of $x$, $y$ and $z$ coordinates.
 
 Options example:
 \begin{lstlisting}
+-###_pswarm_coord_layout 3
 -###_pswarm_coor_n 4
 -###_pswarm_coor_x 0.4,0.6,0.4,0.6
 -###_pswarm_coor_y 0.1,0.1,0.3,0.3
 -###_pswarm_coor_z 0.5,0.5,0.5,0.5
 \end{lstlisting}
+will define 4 particles with the coordinates $(0.4,0.1,0.5)$ , $(0.6,0.1,0.5)$ , $(0.4,0.3,0.5)$ and $(0.6,0.3,0.5)$.
+Point coordinates specified which reside outside the background finite element mesh are ignored and not included within the passive swarm.
 
-will define 4 particles with the coordinates $(0.4,0.1,0.5)$ , $(0.6,0.1,0.5)$ , $(0.4,0.3,0.5)$ and $(0.6,0.3,0.5)$
+\subsection{Visualisation}
+
+Assuming we have a PSwarm declared as follows
+\begin{lstlisting}
+PSwarm pswarm;
+\end{lstlisting}
+and where \texttt{slab} defines the unique names assigned to each passive swarm.
+
+Calling the viewer function
+\begin{lstlisting}
+PSwarmViewInfo(pswarm); 
+\end{lstlisting}
+will report meta-data about your swarm to stdout.
+Calling 
+\begin{lstlisting}
+PSwarmView(pswarm,PSW_VT_SINGLETON);
+\end{lstlisting}
+will create a single VTU file across all MPI-rank in the given communicator. 
+Given that passive swarms may be sparsely distributed throughout the finite element mesh,
+this output generation style is preferred (even though it may not be the fastest approach).
+This method will generate the following output:
+\begin{itemize}
+\item \texttt{timeseries\_slab\_pswarm.pvd}
+\item \texttt{step****/step****\_slab\_pswarm.vtu}
+\end{itemize}
+Lastly, setting the last arg to the value \texttt{PSW\_VT\_PERRANK}, e.g.
+\begin{lstlisting}
+PSwarmView(pswarm,PSW_VT_PERRANK);
+\end{lstlisting}
+will create a VTU file per MPI-rank. 
+This method will generate the following output:
+\begin{itemize}
+\item \texttt{timeseries\_slab\_pswarm.pvd}
+\item \texttt{step****/step****\_slab\_pswarm-subdomain00000.vtu}
+\item \texttt{step****/step****\_slab\_pswarm.pvtu}
+\end{itemize}
+
+
+
 
 \subsection{Defining the transport mode}
 
 Passive swarms can be defined to remain stationary over time, or to be advected with the fluid velocity.
-We refer to this choice as a "transport mode". By default, all passive swarms are assumed to utilize a
+We refer to this choice as a ``transport mode''. By default, all passive swarms are assumed to utilize a
 Lagrangian transport mode (e.g. they move with the fluid velocity). If you require swarms to be stationary,
 use the command line option
 \begin{lstlisting}
--pswarm_transport_mode_eulerian
+-###_pswarm_transport_mode_eulerian
 \end{lstlisting}
 
 \subsection{Defining the field update methods}
 
 A number of quantities can optionally be computed, or updated on each passive swarm. 
 For example we can compute the pressure, temperature or track the finite strain. 
-Such tasks are refered to as "field update" methods. By default, swarms do not have
-any field update methods specified
+Such tasks are referred to as ``field update'' methods. By default, swarms do not have
+any field update methods specified.
 
 On any given swarm, the user may request any number of field update methods be applied. 
-For instance, swarm "xx" may have no field updates specified, whilst swarm "yy" may be
+For instance, swarm ``xx'' may have no field updates specified, whilst swarm ``yy'' may be
 asked to track pressure and finite strain. This would be invoked via the following command
 line arguments:
 \begin{lstlisting}
@@ -1094,7 +1145,7 @@ line arguments:
 -yy_pswarm_field_update_finite_strain
 \end{lstlisting}
 
-NOTE: Field update methods are not implemented
+\textbf{NOTE: Only a field update method for pressure is implemented}
 
 \subsection{Defining the region index of a passive swarm}
 
@@ -1103,26 +1154,54 @@ This is achieved via the command line option
 \begin{lstlisting} 
 -###_pswarm_region_index 3
 \end{lstlisting}
+which would assign a region index of 3 to each point in this passive swarm. 
+The default region index is set to 0.
 
-which would assign a region index of 3 to each point in the swarm. 
-The default region index is set to 0
+\subsection{Post-processing finite strain}
+A simple recipe to post-process finite strain is described below.
+Here will define an initial set of points within a box, and track the deformation of the box over time.
 
-\subsection{Post-processing finite strain with a structured mesh}
-\begin{itemize}
+The script requires ParaView, and furthermore the build of ParaView must have Python support enabled.
+We will be using the python wrapper provided by ParaView called {\tt pvpython}.
+For binary builds on OSX, this can be located here:
+\begin{lstlisting}
+/Applications/paraview.app/Contents/bin/pvpython
+\end{lstlisting}
+
+\subsection{Procedure}
+\begin{enumerate}
+
 \item Use the coordinate layout option
 \begin{lstlisting}
 -pswarm_coord_layout 2
 \end{lstlisting}
-\item Upon execution, the following file will be created in your output directory
+Upon executing of the PSwarm coordinate generation code, the following file will be created in your output directory
 \begin{lstlisting}
 deformation_grid_ref.vts
 \end{lstlisting}
-\item To generate a deformation grid, you need to 
-\begin{enumerate}
-\item Convert the pvtu file associated with your passive swarm into a vtu file.
+
+\item Within your model output function, call either
+\texttt{PSwarmView(pswarm,PSW\_VT\_SINGLETON);}
+or
+\texttt{PSwarmView(pswarm,PSW\_VT\_PERRANK);}
+to generate snapshots of the passive swarm.
+
+\item To generate a deformation grid for a given time step, you need to execute the following script
+\begin{lstlisting}
+pvpython utils/python-post-proc/extract-dgrid.py \
+  -i path/to/inputfile.vtu \
+  -b path/to/deformation_grid_ref.vts \
+  -o outfilename.vts
+\end{lstlisting}
+The file created {\tt outfilename.vts}, contains a hex-mesh representation of your deformed box which can be loaded and rendered by ParaView.
+\end{enumerate}
+
+In step 3., the file specified by the \texttt{-i} must be a vtu file and not a pvtu file.
+Either format can be generated by PSwarm object (e.g. \texttt{PSW\_VT\_SINGLETON} vs. \texttt{PSW\_VT\_PERRANK}).
+A script is provided to convert a pvtu file associated with your passive swarm into a vtu file.
 To do this, use
 \begin{lstlisting}
-pvpython src/filters/convert_pvtu2vtu.py \
+pvpython utils/filters/convert_pvtu2vtu.py \
   -i path/to/inputfile.pvtu
 \end{lstlisting}
 
@@ -1130,67 +1209,94 @@ This will create the following file
 \begin{lstlisting}
 path/to/inputfile.vtu
 \end{lstlisting}
-\item Execute the following script
-\begin{lstlisting}
-pvpython ./src/filters/extract-dgrid-pv4_3_1.py \
--i path/to/input.vtu \
--b path/to/deformation_grid_ref.vts \
--o outfilename.vts
-\end{lstlisting}
-\end{enumerate}
 
-This will create the file outfilename.vts which can be loaded into ParaView
-\end{itemize}
+\textbf{NOTE: deformation grid reference file is not PREFIXED}
 
 \section{Checkpointing and Restarting}
-\textbf{TO BE UPDATED} %TODO update
+
+\subsection{General}
+\begin{itemize}
+\item All drivers are capable of \textit{generating} checkpoint files - however only {\tt ptatin\_driver\_ts\_init.app} is
+capable to restarting a job from a checkpoint file.
+
+\item All checkpoint files created will reside underneath the following directory:
 \begin{lstlisting}
-Using ptatin_driver_basic.app
+<OUTPUTDIR>/checkpoints
+\end{lstlisting}
+where {\tt <OUTPUTDIR>} was specified via {\tt -output\_path}.
+Each checkpoint is associated with a unique textual name related to the specific stage of the computation, for example
+the initial condition, or the solution at a given time step.
+A checkpoint file associated with the initial condition data will be written here
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints/initial_condition
+\end{lstlisting}
+whilst a checkpoint associated with step 100 will be written here
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints/step100
+\end{lstlisting}
+Within each each of these directories a number of different files are created.
+The parent checkpoint file for the {\ptat} is always called
+\begin{lstlisting}
+ptatin3dctx.json
+\end{lstlisting}
+\end{itemize}
 
-Section 1: Checkpointing runs
------------------------------
-Determining when to checkpointing can be controlled in several different ways.
+\subsection{Controlling checkpoint file creation}
+Specifying when a checkpoint should occur can be controlled in several different ways.
+These are summarised below.
 
-1) By enforicing that the code writes a checkpoint file every N steps, but the checkpoint files will will have a common name.
+\begin{enumerate}
+\item By enforcing that the code writes a checkpoint file every $N$ steps, but the checkpoint files will will have a common name.
 These files are over written each time checkpointing occurs. 
-Such functionality useful when you simply need to restart the code on machine which allows a fixed walltime and you want to job chain.
-Because the checkpoint files have a common name, job chaining is straight forward as you are may not know the prefix (timestep) of the last step written.
-This type of checkpointing is activated via the command line flag
--checkpoint_every N
+Such functionality is useful when you simply need to restart the code on machine which allows a fixed wall time and you want to job chain.
+Since the checkpoint files have a common name, job chaining is straight forward.
+This type of checkpointing is activated via the command line flag \newline
+{\tt -checkpoint\_every N}
 
-2) By enforcing that the code writes a checkpoint file every M timesteps. 
+\item By enforcing that the code writes a checkpoint file every $M$ time steps. 
 These files will have a file name with a unique extension, thus they do not get over-ridden.
-This type of checkpointing is activated via the command line flag
--checkpoint_every_nsteps M
+This type of checkpointing is activated via the command line flag \newline
+{\tt -checkpoint\_every\_nsteps M}
 
-3) By enforcing that the code writes a checkpoint file every X cpu minutes. 
+\item By enforcing that the code writes a checkpoint file every $X$ CPU minutes. 
 This can be useful if you have some time steps which require significantly more time to solve than others.
-In this case, simply asking to check point every M timesteps might not be appropriate and you might exceed the walltime before M timesteps are completed.
-This type of checkpointing is activated via the command line flag
--checkpoint_every_ncpumins 60.0
+In this case, requesting to check point every $M$ time steps might not be appropriate and you might exceed the wall time before $M$ time steps have completed.
+This type of checkpointing is activated via the command line flag\newline
+{\tt -checkpoint\_every\_ncpumins X}
+\end{enumerate}
 
-All these checkpointing options can be used together to presrve the results obtained from a simulation.
-WHen they are used together, I ensure that timestep based checkpoint files are not written twice.
-For example, if I asked to checkpoint every 30 mins, and this criterion is activiated at step 10, and the checkpoint_every_nsteps options was used with a value of 10, ptatin will not checkpoint step10 twice.
+All of the above checkpoint creation options can be used together to preserve the results obtained from a simulation.
+When they are used together, care is taken to ensure that time step based checkpoint files are not written twice.
+For example, if I asked to checkpoint every 30 mins, and this criterion is activated at step 10, and the {\tt -checkpoint\_every\_nsteps} options was used with a value of 10, {\ptat} will not checkpoint step10 twice.
 
-Section 2: Restarting runs
---------------------------
+\subsection{Restarting via a checkpoint file}
 
-1) To restart with a specific timestep file, you need to specify the restart prefix via
--restart_prefix step000006 
-By default, ptatin will assume that the restart files live in the directory defined by -output_path when you generated the checkpoint file 
-Similarily, by default, the restarted job will write output into the same directory specified by the value of -output_path given in the run which generated the checkpoint file.
+When ever a checkpoint file is written, the file {\tt restart.default} is created into the directory specified via {\tt -output\_path}.
+This file contains a {\PETSc} options specifying the path to the most recent checkpoint file created:
+\begin{lstlisting}
+# restart.default
+-restart_directory path/to/last_checkpoint_file_written
+\end{lstlisting}
 
-2) To restart from the last checkpointed file written, you need to specify
--restart
+To restart from the last checkpoint file written, you just need to either execute
+\begin{lstlisting}
+./ptatin_driver_ts_init.app
+\end{lstlisting}
+By default this driver will look in the directory {\tt <OUTPUTDIR>} for {\tt restart.default} and if found, it will use the path to the checkpoint file specified via the option {\tt -restart\_directory} to restart the run.
 
-If for some reason you wish to direct the output of you restarted run to a directory different from that set by -output_path in the original job, you are required to specify the following options.
--restart_directory loaction_where_your_checkpoint_files_live
--output_path path_to_new_output_directory
+To restart from any checkpoint file written, you need to either execute
+\begin{lstlisting}
+./ptatin_driver_ts_init.app \
+  -restart_directory path/to/your/checkpoint_file
+\end{lstlisting}
+If no other options are provided, the restarted job will write output into the same directory specified by the value of {\tt -output\_path} given to the run which generated the checkpoint file.
 
-
-
-~DAM (Oct 31, 2012)
+By default it is assumed that the output of a restarted job will be written into the same location as the original job.
+If you wish to direct the output of you restarted run to a directory different from that set by {\tt -output\_path} in the original job, you are required to specify the following two options: \newline
+\begin{lstlisting}
+./ptatin_driver_ts_init.app \
+  -restart_directory path/to/your/checkpoint_file \
+  -output_path path/to/new/outputdirectory
 \end{lstlisting}
 
 \end{document}
