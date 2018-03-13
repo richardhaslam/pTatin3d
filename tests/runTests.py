@@ -18,18 +18,22 @@ import os
 import sys
 import traceback
 
-# PTATIN_DIR and PETSC_ARCH are used to make easily-copyable tests
 thisDir = os.path.dirname(os.path.abspath(__file__))
+
+# PTATIN_DIR and PETSC_ARCH are used to make easily-copyable tests
+#  Note that PETSC_ARCH may be empty for a prefix install, in which
+#  case we replace it with an empty string for convenience
 PTATIN_DIR = os.getenv('PTATIN_DIR')
 if not PTATIN_DIR :
-    print("You must define PTATIN_DIR in your environment. Exiting.")
+    print('You must define PTATIN_DIR in your environment. Exiting.')
     sys.exit(1)
 if os.path.join(PTATIN_DIR,'tests') != thisDir :
-    print("PTATIN_DIR is not set correctly in your environment. Exiting.")
+    print('PTATIN_DIR is not set correctly in your environment. Exiting.')
     sys.exit(1)
-PETSC_ARCH = os.getenv('PETSC_ARCH')
-if not PETSC_ARCH :
-    print("You must define PETSC_ARCH in your environment. Exiting.")
+PETSC_ARCH = os.getenv('PETSC_ARCH') if os.getenv('PETSC_ARCH') else ''
+chkpath = os.path.join(PTATIN_DIR,PETSC_ARCH,'bin')
+if not os.path.exists(chkpath) :
+    print(chkpath,' not found. Exiting.')
     sys.exit(1)
 
 # bitbucket.org/dmay/pythontestharness
@@ -39,16 +43,16 @@ try :
 except Exception as errorMessage :
   if not sys.exc_info()[-1].tb_next :     # Check that the traceback has depth 1
     traceback.print_exc()
-    print("********************")
-    print("The required python library pyTestHarness was not found. Exiting.")
-    print("If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.")
-    print("If pyTestHarness is not installed, obtain the source by executing the following:")
-    print("  git clone https://bitbucket.org/dmay/pythontestharness " + os.path.join(PTATIN_DIR,'pythontestharness'))
-    print("********************")
+    print('********************')
+    print('The required python library pyTestHarness was not found. Exiting.')
+    print('If pyTestHarness is installed on your system, ensure pythontestharness/lib is included in the environment variable PYTHONPATH.')
+    print('If pyTestHarness is not installed, obtain the source by executing the following:')
+    print('  git clone https://bitbucket.org/dmay/pythontestharness ' + os.path.join(PTATIN_DIR,'pythontestharness'))
+    print('********************')
     sys.exit(1)
   raise
 
-#  Interpret any child directory containing "test.py" as defining as a test
+#  Interpret any child directory containing 'test.py' as defining as a test
 #  with a name defined as the relative path to the containing directory.
 allTests = []
 for (root, dirs, files) in os.walk(thisDir) :

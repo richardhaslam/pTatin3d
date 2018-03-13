@@ -1717,7 +1717,7 @@ PetscErrorCode StokesUPXNewton_FormJuu_MFFD(void *mffd_ctx,Vec x,Vec Fu)
 }
 
 #include <petsc/private/matimpl.h>
-#include <../src/mat/impls/mffd/mffdimpl.h>
+#include <petsc/ptatin_petsc_mffdimpl.h> /* ptatin supplied header copied from PETSc source tree */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_StokesJctx"
