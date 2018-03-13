@@ -216,8 +216,6 @@ $(OBJDIR)/%.o: %.cu | $$(@D)/.DIR
 	@touch $@
 
 .PRECIOUS: %/.DIR
-.SUFFIXES:                 # Clear .SUFFIXES because we don't use implicit rules
-.DELETE_ON_ERROR:          # Delete likely-corrupt target file if rule fails
 
 .PHONY: clean all print
 
