@@ -105,7 +105,9 @@ PetscErrorCode pTatinWritePreamble(void)
 #if defined(__AVX__)
   PetscPrintf(PETSC_COMM_WORLD,"** AVX detected - optimized kernels will be used \n");
 #else
-  PetscPrintf(PETSC_COMM_WORLD,"** AVX not detected - optimized kernels will not be used \n");
+  PetscPrintf(PETSC_COMM_WORLD,"** AVX not detected - optimized kernels will not be used.\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** If your system supports AVX, consider adding options,\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** e.g. -march=native, to TATIN_CFLAGS in makefile.arch\n");
 #endif
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
 				 
