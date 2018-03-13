@@ -363,7 +363,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
         ierr = ISCreateStride(comm,1,start,1,&isrow);CHKERRQ(ierr);
     }
 
-    ierr = MatGetSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(Bperm,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Blocal);CHKERRQ(ierr);
     Blocal = *_Blocal;
     ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol);CHKERRQ(ierr);

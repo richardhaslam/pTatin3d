@@ -83,7 +83,7 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,PetscMPISubComm subcomm,MatReuse reu
         ierr = ISCreateStride(comm,1,start,1,&isrow);CHKERRQ(ierr);
     }
     
-    ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
     Alocal = *_Alocal;
     
     /* insert entries */
@@ -214,7 +214,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,Ma
         ierr = ISCreateStride(comm,1,start,1,&isrow);CHKERRQ(ierr);
     }
     
-    ierr = MatGetSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrices(A,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&_Alocal);CHKERRQ(ierr);
     Alocal = *_Alocal;
     
     /* insert entries */

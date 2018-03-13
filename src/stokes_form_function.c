@@ -971,7 +971,7 @@ PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(F);CHKERRQ(ierr);
-	ierr = DMCompositeGather(stokes_pack,F,ADD_VALUES,FUloc,FPloc);CHKERRQ(ierr);
+	ierr = DMCompositeGather(stokes_pack,ADD_VALUES,F,FUloc,FPloc);CHKERRQ(ierr);
 	
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&FUloc,&FPloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
@@ -1128,7 +1128,7 @@ PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
-	ierr = DMCompositeGather(stokes_pack,Y,ADD_VALUES,YUloc,YPloc);CHKERRQ(ierr);
+	ierr = DMCompositeGather(stokes_pack,ADD_VALUES,Y,YUloc,YPloc);CHKERRQ(ierr);
 	
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
@@ -1479,7 +1479,7 @@ PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx)
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(F);CHKERRQ(ierr);
-	ierr = DMCompositeGather(stokes_pack,F,ADD_VALUES,FUloc,FPloc);CHKERRQ(ierr);
+	ierr = DMCompositeGather(stokes_pack,ADD_VALUES,F,FUloc,FPloc);CHKERRQ(ierr);
 	
 	ierr = DMRestoreLocalVector(dax,&Xloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&FUloc,&FPloc);CHKERRQ(ierr);

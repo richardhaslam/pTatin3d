@@ -462,7 +462,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	{
 		Mat sub_A11;
 		
-		ierr = MatGetSubMatrix(B,isg[0],isg[0],MAT_INITIAL_MATRIX,&sub_A11);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,isg[0],isg[0],MAT_INITIAL_MATRIX,&sub_A11);CHKERRQ(ierr);
 		A11MF[nlevels-1] = sub_A11;
 		ierr = MatDestroy(&sub_A11);CHKERRQ(ierr);
 

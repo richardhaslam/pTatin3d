@@ -550,8 +550,8 @@ PetscErrorCode PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int 
     ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
     
-    /* Use MatGetSubMatrices() to get a sequential matrix */
-    ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+    /* Use MatCreateSubMatrices() to get a sequential matrix */
+    ierr = MatCreateSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
     
     ierr = MatGetRowIJ(smat[0],0,PETSC_FALSE,PETSC_FALSE,&m,&ia,&ja,&done);CHKERRQ(ierr);
     if (!done) {
@@ -696,8 +696,8 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,
     ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
     
-    /* Use MatGetSubMatrices() to get a sequential matrix */
-    ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+    /* Use MatCreateSubMatrices() to get a sequential matrix */
+    ierr = MatCreateSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
     
     ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(A,smat[0],_nnz_ut,_ia_ut,_ja_ut,PETSC_FALSE,NULL);CHKERRQ(ierr);
     
@@ -725,8 +725,8 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nn
     ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
     
-    /* Use MatGetSubMatrices() to get a sequential matrix */
-    ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+    /* Use MatCreateSubMatrices() to get a sequential matrix */
+    ierr = MatCreateSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
     
     ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(A,smat[0],NULL,NULL,NULL,reuse,_vals_ut);CHKERRQ(ierr);
     
