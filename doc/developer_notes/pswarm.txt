@@ -6,6 +6,12 @@ ______________________________
 ______________________________
 ______________________________
 
+* The deformation grid reference file (deformation_grid_ref.vts) is not prefixed 
+with the PSwarm options prefix.
+
+* PSwarmSetUpCoords_FillBox() does not support using -pswarm_box_nx 1,1,1
+
+* Add UpdateMethods for Temperature, and e_plastic. 
 
 * PSwarm does not support JSON checkpointing. This is a current design limitation
 which needs to be addressed. Models using pswarms will not be able to completely
