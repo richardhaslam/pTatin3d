@@ -70,7 +70,6 @@ libptatin3d-y.c += $(call thisdir, \
 			stokes_assembly.c \
 			monitors.c \
 			mp_advection.c \
-			units.c \
 			model_utils.c \
 			eigen_operators.c \
 			ksp_chebyrn.c \

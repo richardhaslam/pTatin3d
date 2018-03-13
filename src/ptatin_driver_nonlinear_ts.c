@@ -1100,9 +1100,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
 	ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
 
-	/* Check if model is being restarted from a checkpointed file */
-	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
-	
 	ierr = pTatinModel_Initialize(model,user);CHKERRQ(ierr);
 	//ierr = pTatinGetMaterialConstants(user,&materialconstants_db);CHKERRQ(ierr);
 	
@@ -1801,9 +1798,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
 	ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
-	
-	/* Check if model is being restarted from a checkpointed file */
-	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
 	ierr = pTatinModel_Initialize(model,user);CHKERRQ(ierr);
 	
@@ -2595,9 +2589,6 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
 	ierr = pTatinGetModel(user,&model);CHKERRQ(ierr);
-	
-	/* Check if model is being restarted from a checkpointed file */
-	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
 	ierr = pTatinModel_Initialize(model,user);CHKERRQ(ierr);
 	//ierr = pTatinGetMaterialConstants(user,&materialconstants_db);CHKERRQ(ierr);

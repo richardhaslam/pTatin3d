@@ -94,28 +94,7 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	
 	PetscFunctionBegin;
 
-	if (user->restart_from_file) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Classic checkpoint is depreciated");
-		/* load from file */
-		char vname[PETSC_MAX_PATH_LEN];
-		char pname[PETSC_MAX_PATH_LEN];		
-		
-		/* dav,dap */
-		if (!StringEmpty(user->restart_prefix)) {
-			sprintf(vname,"%s/ptat3dcpf.dmda-velocity_%s",user->restart_dir,user->restart_prefix);
-			sprintf(pname,"%s/ptat3dcpf.dmda-pressure_%s",user->restart_dir,user->restart_prefix);
-		} else {
-			sprintf(vname,"%s/ptat3dcpf.dmda-velocity",user->restart_dir);
-			sprintf(pname,"%s/ptat3dcpf.dmda-pressure",user->restart_dir);
-		}
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", vname );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", pname );
-		
-		ierr = pTatin3d_PhysCompStokesLoad(user,(const char*)vname,(const char*)pname);CHKERRQ(ierr);
-	} else {
-		/* create from data */
-		ierr = pTatin3d_PhysCompStokesNew(user);CHKERRQ(ierr);
-	}	
+  ierr = pTatin3d_PhysCompStokesNew(user);CHKERRQ(ierr);
 	
 	/* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
 	/* Model initialize function can overload the gravity value */
@@ -310,7 +289,9 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 		//sprintf(f2,"%s/dmda-velocity-coords",ctx->outputpath);
 		sprintf(f3,"%s/dmda-pressure",ctx->outputpath);
 	}
-	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,NULL);CHKERRQ(ierr);
+  
+  ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
+  ierr = DMDACheckpointWrite(ctx->stokes_ctx->dap,f3);CHKERRQ(ierr);
 	
 	/* dump the vectors */
 	{
@@ -912,224 +893,72 @@ PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dContextLoad"
-PetscErrorCode pTatin3dContextLoad(pTatinCtx *ctx,const char filename[])
-{
-	PetscViewer viewer;
-	pTatinCtx cc;
-	PetscErrorCode ierr;
-
-	PetscFunctionBegin;
-	ierr = pTatin3dCreateContext(&cc);CHKERRQ(ierr);
-	ierr = PetscMemzero(cc,sizeof(struct _p_pTatinCtx));CHKERRQ(ierr);
-
-	ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-	
-	ierr = PetscViewerBinaryRead(viewer,cc,sizeof(struct _p_pTatinCtx)/sizeof(char),NULL,PETSC_CHAR);
-	
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	 
-	/* zero out any pointers */
-	cc->stokes_ctx = NULL;
-	cc->energy_ctx = NULL;
-	cc->materialpoint_db = NULL;
-	cc->materialpoint_ex = NULL;
-	cc->material_constants = NULL;
-	cc->model = NULL;
-	cc->model_data = NULL;
-	cc->log = NULL;
-
-	*ctx = cc;
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dContextSave"
-PetscErrorCode pTatin3dContextSave(pTatinCtx ctx,const char filename[])
-{
-	PetscViewer viewer;
-	PetscErrorCode ierr;
-	PetscMPIInt rank;
-	
-	PetscFunctionBegin;
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	if (rank==0) {
-		ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		
-		ierr = PetscViewerBinaryWrite(viewer,ctx,sizeof(struct _p_pTatinCtx)/sizeof(char),PETSC_CHAR,PETSC_FALSE);
-		
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	}
-	
-	 
-	PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_PhysCompStokesLoad"
-PetscErrorCode pTatin3d_PhysCompStokesLoad(pTatinCtx user,const char vname[],const char pname[])
-{
-	PhysCompStokes stokes;
-	PetscErrorCode ierr;
-	
-	PetscFunctionBegin;
-	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
-	
-	stokes->mx = user->mx;
-	stokes->my = user->my;
-	stokes->mz = user->mz;
-	stokes->use_mf_stokes = user->use_mf_stokes;
-	
-	ierr = PhysCompLoadMesh_Stokes3d(stokes,vname,pname);CHKERRQ(ierr);
-//	ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
-	
-	ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
-	ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
-	//	ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
-	
-	user->stokes_ctx = stokes;
-	
-	PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "pTatin3dCheckpoint"
 PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	char start[PETSC_MAX_PATH_LEN];
-	char f1[PETSC_MAX_PATH_LEN];
-	char f2[PETSC_MAX_PATH_LEN];
-	char f3[PETSC_MAX_PATH_LEN];
-	
-	PetscFunctionBegin;
-
-	if (ctx->checkpoint_disable) { PetscFunctionReturn(0); }
-	
-	/* context */
-	if (prefix) {
-		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->outputpath,prefix);
-	} else {
-		sprintf(start,"%s/ptat3dcpf.ctx",ctx->outputpath);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
-	ierr = pTatin3dContextSave(ctx,start);CHKERRQ(ierr);	
-	
-	/* dav,dap */
-	if (prefix) {
-		sprintf(f1,"%s/ptat3dcpf.dmda-velocity_%s",ctx->outputpath,prefix);
-		sprintf(f2,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->outputpath,prefix);
-		sprintf(f3,"%s/ptat3dcpf.dmda-pressure_%s",ctx->outputpath,prefix);
-	} else {
-		sprintf(f1,"%s/ptat3dcpf.dmda-velocity",ctx->outputpath);
-		sprintf(f2,"%s/ptat3dcpf.dmda-velocity-coords",ctx->outputpath);
-		sprintf(f3,"%s/ptat3dcpf.dmda-pressure",ctx->outputpath);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
-	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f2 );
-	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f3 );
-	
-	ierr = PhysCompSaveMesh_Stokes3d(ctx->stokes_ctx,f1,f3,f2);CHKERRQ(ierr);
-
-	/* solution */
-	if (prefix) {
-		sprintf(f1,"%s/ptat3dcpf.dmda-X_%s",ctx->outputpath,prefix);
-	} else {
-		sprintf(f1,"%s/ptat3dcpf.dmda-X",ctx->outputpath);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
-	{
-		PetscViewer viewer;
-		
-		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		ierr = VecView(X,viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	}
-
-#if 1
-	{
-		PetscViewer viewer;
-		Vec Xu,Xp;
-		
-		ierr = DMCompositeGetAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-
-		if (prefix) { sprintf(f1,"%s/ptat3dcpf.dmda-Xu_%s",ctx->outputpath,prefix); } 
-		else {        sprintf(f1,"%s/ptat3dcpf.dmda-Xu",ctx->outputpath);           }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
-		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		ierr = VecView(Xu,viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-		
-		if (prefix) { sprintf(f1,"%s/ptat3dcpf.dmda-Xp_%s",ctx->outputpath,prefix); } 
-		else {        sprintf(f1,"%s/ptat3dcpf.dmda-Xp",ctx->outputpath);           }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
-		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		ierr = VecView(Xp,viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-
-		ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-	}	
-	
-#endif
-	
-	/* material points */
-	if (prefix) {
-		sprintf(start,"%s/ptat3dcpf.markers_%s",ctx->outputpath,prefix);
-	} else {
-		sprintf(start,"%s/ptat3dcpf.markers",ctx->outputpath);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
-	DataBucketView(PETSC_COMM_WORLD,ctx->materialpoint_db,start,DATABUCKET_VIEW_BINARY);
-
-	/* quadrature points */
-	/* stokes quadrature points */
-	if (ctx->coefficient_projection_type == -1) {
-		if (prefix) {
-			sprintf(start,"%s/ptat3dcpf.stk_quadrature_%s",ctx->outputpath,prefix);
-		} else {
-			sprintf(start,"%s/ptat3dcpf.stk_quadrature",ctx->outputpath);
-		}
-		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", start );
-		DataBucketView(PETSC_COMM_WORLD,ctx->stokes_ctx->volQ->properties_db,start,DATABUCKET_VIEW_BINARY);
-	}
-	
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpoint is deprecated");
 	PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "pTatin3dCheckpointManager"
-PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
+PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
 {
-	PetscErrorCode ierr;
-	PetscInt       checkpoint_every;
-	PetscInt       checkpoint_every_nsteps,step;
-	double         checkpoint_every_ncpumins, max_current_cpu_time, current_cpu_time;
-	static double  last_cpu_time = 0.0;
-	int            exists;
-	char           prefix[PETSC_MAX_PATH_LEN],filetocheck[PETSC_MAX_PATH_LEN];
-	PetscBool      skip_existence_test = PETSC_TRUE;
-	
-	PetscFunctionBegin;
+  PetscErrorCode   ierr;
+  PetscInt         checkpoint_every;
+  PetscInt         checkpoint_every_nsteps,step;
+  double           checkpoint_every_ncpumins, max_current_cpu_time, current_cpu_time;
+  static double    last_cpu_time = 0.0;
+  /*PetscBool      skip_existence_test = PETSC_TRUE;*/
+  PhysCompStokes   stokes = NULL;
+  PetscBool        energy_activated;
+  PhysCompEnergy   energy = NULL;
+  Vec              Xe = NULL;
+  DM               dmv,dmp,dmstokes = NULL,dmenergy = NULL;
+  PetscBool        exists,write_step_checkpoint;
+  char             checkpoints_basedir[PETSC_MAX_PATH_LEN];
+  char             test_dir[PETSC_MAX_PATH_LEN];
 
+  PetscFunctionBegin;
+  ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
+  ierr = PhysCompStokesGetDMs(stokes,&dmv,&dmp);CHKERRQ(ierr);
+  ierr = pTatinContextValid_Energy(ctx,&energy_activated);CHKERRQ(ierr);
+  if (energy_activated) {
+    ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
+    dmenergy = energy->daT;
+    ierr = pTatinPhysCompGetData_Energy(ctx,&Xe,NULL);CHKERRQ(ierr);
+  }
+  
+  ierr = PetscSNPrintf(checkpoints_basedir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",ctx->outputpath);CHKERRQ(ierr);
+  ierr = PetscTestDirectory(checkpoints_basedir,'w',&exists);CHKERRQ(ierr);
+  if (!exists) {
+    ierr = pTatinCreateDirectory(checkpoints_basedir);CHKERRQ(ierr);
+  }
+  
 	step                      = ctx->step;
 	checkpoint_every          = ctx->checkpoint_every;
 	checkpoint_every_nsteps   = ctx->checkpoint_every_nsteps;
 	checkpoint_every_ncpumins = ctx->checkpoint_every_ncpumins;
 	
-	PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%1.6D",step);
-
 	/* -------------------------------------- */
 	/* check one - this file has a fixed name */
-	if (step%checkpoint_every==0) {
+	if (step%checkpoint_every == 0) {
 
-		sprintf(filetocheck,"%s/ptat3dcpf.ctx",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing\n");
+    ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints/default",ctx->outputpath);CHKERRQ(ierr);
+    ierr = PetscTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
+    if (!exists) {
+      ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
+    }
+		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[every]: Writing to dir %s\n",test_dir);
 		// call checkpoint routine //
-		ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
+		//ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
+    ierr = pTatinCtxCheckpointWrite(ctx,test_dir,NULL,dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
 	}
-	
+
+  write_step_checkpoint = PETSC_FALSE;
+  
 	/* -------------------------------------------------------------------- */
 	/* check three - look at cpu time and decide if we need to write or not */
 	PetscTime(&current_cpu_time);
@@ -1137,21 +966,9 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 	
 	if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
-		
-		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
 
-		if (!skip_existence_test) {
-			FileExists(filetocheck,&exists);
-			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Checking for files %s\n",filetocheck);
-			if (exists == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
-				// call checkpoint routine //
-				ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-			}
-		} else {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Writing\n");
-			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-		}
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Activated\n");
+    write_step_checkpoint = PETSC_TRUE;
 		
 		last_cpu_time = max_current_cpu_time;
 	}
@@ -1160,21 +977,41 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec X)
 	/* check two - these files have a file name related to the time step */
 	if (step%checkpoint_every_nsteps == 0) {
 		
-		PetscSNPrintf(filetocheck,PETSC_MAX_PATH_LEN-1,"%s/ptat3dcpf.ctx_step%1.6D",ctx->outputpath,step);
-		if (!skip_existence_test) {
-			FileExists(filetocheck,&exists);
-			//PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Checking for files %s\n",filetocheck);
-			if (exists == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
-				// call checkpoint routine //
-				ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-			}
-		} else {
-			PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Writing\n");
-			ierr = pTatin3dCheckpoint(ctx,X,prefix);CHKERRQ(ierr);
-		}
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Activated\n");
+    write_step_checkpoint = PETSC_TRUE;
 	}
-	
+  
+  /* if either the cpu based or step based checks returned true, write a checkpoint file */
+  if (write_step_checkpoint) {
+    PetscLogDouble time[2];
+    char           restartfile[PETSC_MAX_PATH_LEN];
+    char           restartstring[PETSC_MAX_PATH_LEN];
+    PetscMPIInt    rank;
+    
+    ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/step%d",checkpoints_basedir,step);CHKERRQ(ierr);
+    
+    ierr = PetscTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
+    if (!exists) {
+      ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
+    }
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager: Writing to dir %s\n",test_dir);
+    PetscTime(&time[0]);
+    ierr = pTatinCtxCheckpointWrite(ctx,test_dir,NULL,dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
+    PetscTime(&time[1]);
+    ierr = pTatinLogBasicCPUtime(ctx,"Checkpoint.write()",time[1]-time[0]);CHKERRQ(ierr);
+    
+    /* write out a default string for restarting the job */
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",ctx->outputpath);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/step%d",ctx->outputpath,step);CHKERRQ(ierr);
+    if (rank == 0) {
+      FILE *fp;
+      fp = fopen(restartfile,"w");
+      fprintf(fp,"%s",restartstring);
+      fclose(fp);
+    }
+  }
+  
 	PetscFunctionReturn(0);
 }
 
@@ -1191,19 +1028,9 @@ PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 #define __FUNCT__ "pTatinRestart_ApplyInitialMeshGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 {
-	char name[PETSC_MAX_PATH_LEN];
-	PetscErrorCode ierr;
 	PetscFunctionBegin;
-
-	if (!StringEmpty(ctx->restart_prefix)) {
-		sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords_%s",ctx->restart_dir,ctx->restart_prefix);
-	} else {
-		sprintf(name,"%s/ptat3dcpf.dmda-velocity-coords",ctx->restart_dir);
-	}
-
-	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMeshGeometry] from %s \n", name );
-	ierr = DMDALoadCoordinatesFromFile(ctx->stokes_ctx->dav,name);CHKERRQ(ierr);
-	
+  /* load coordinates of the velocity DMDA */
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMeshGeometry is deprecated");
 	PetscFunctionReturn(0);
 }
 
@@ -1211,53 +1038,9 @@ PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 #define __FUNCT__ "pTatinRestart_ApplyInitialMaterialGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *data)
 {
-	char           name[PETSC_MAX_PATH_LEN];
-	DataBucket     db;
-	int            load_quadrature_points;
-	
 	PetscFunctionBegin;
-
-	/* material points */
-	if (ctx->materialpoint_db) {
-			DataBucketDestroy(&ctx->materialpoint_db);
-	}
-	
-	if (!StringEmpty(ctx->restart_prefix)) {
-		sprintf(name,"%s/ptat3dcpf.markers_%s",ctx->restart_dir,ctx->restart_prefix);
-	} else {
-		sprintf(name,"%s/ptat3dcpf.markers",ctx->restart_dir);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry: material points] from %s \n", name );
-	DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
-	ctx->materialpoint_db = db;
-	
-	/* quadrature points */
-
-	if (!StringEmpty(ctx->restart_prefix)) {
-		sprintf(name,"%s/ptat3dcpf.stk_quadrature_%s",ctx->restart_dir,ctx->restart_prefix);
-	} else {
-		sprintf(name,"%s/ptat3dcpf.stk_quadrature",ctx->restart_dir);
-	}
-
-	/* check if there is a quadrature point file to load */
-	FileExistsRank(PETSC_COMM_WORLD,name,&load_quadrature_points);
-	
-	if (load_quadrature_points == 1) {
-		DataBucket properties_db;
-		
-		properties_db = ctx->stokes_ctx->volQ->properties_db;
-		if (properties_db) {
-			DataBucketDestroy(&properties_db);
-		}
-		
-		PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialMaterialGeometry: quadrature points (stokes)] from %s \n", name );
-		DataBucketLoadFromFile(PETSC_COMM_WORLD,name,DATABUCKET_VIEW_BINARY,&db);
-		properties_db = db;
-	}
-	
-	// dbg
-	//ierr = pTatin3d_ModelOutput_MPntStd(ctx,"restart");CHKERRQ(ierr);
-	
+	/* load material points from file */
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMaterialGeometry is deprecated");
 	PetscFunctionReturn(0);
 }
 
@@ -1265,95 +1048,13 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 #define __FUNCT__ "pTatinRestart_ApplyInitialSolution"
 PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data)
 {
-	char name[PETSC_MAX_PATH_LEN];
-	Vec Xt;
-	PetscErrorCode ierr;
-	PetscFunctionBegin;
-	
-	if (!StringEmpty(ctx->restart_prefix)) {
-		sprintf(name,"%s/ptat3dcpf.dmda-X_%s",ctx->restart_dir,ctx->restart_prefix);
-	} else {
-		sprintf(name,"%s/ptat3dcpf.dmda-X",ctx->restart_dir);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"Restart: [ApplyInitialSolution] from %s \n", name );
-	ierr = DMDALoadGlobalVectorFromFile(ctx->pack,name,&Xt);CHKERRQ(ierr);
-	ierr = VecCopy(Xt,X);CHKERRQ(ierr);
-	ierr = VecDestroy(&Xt);CHKERRQ(ierr);
-	
-	// dbg
-	//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(ctx,X,"restart");CHKERRQ(ierr);	
-	
-	PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  /* load state vectors (u,p,T) from file */
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialSolution is deprecated");
+  PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dRestart"
-PetscErrorCode pTatin3dRestart(pTatinCtx ctx)
-{
-	PetscBool flg;
-	pTatinCtx ctx2;
-	PetscErrorCode ierr;
-	char start[PETSC_MAX_PATH_LEN];
-
-	
-	PetscFunctionBegin;
-	
-	ierr = PetscOptionsGetBool(NULL,NULL,"-restart",&ctx->restart_from_file,&flg);CHKERRQ(ierr);
-	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_TRUE) {
-		ctx->restart_from_file = PETSC_TRUE;
-	}	
-	if (!ctx->restart_from_file) {
-		PetscPrintf(PETSC_COMM_WORLD,"pTatin3dRestart: Required to specify a suffix for your restart file via -restart_prefix\n");
-		PetscPrintf(PETSC_COMM_WORLD,"pTatin3dRestart: Unable to restart job\n");
-		PetscFunctionReturn(0);
-	}
-
-	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
-	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_FALSE) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatin3dRestart: Requires you specify a directory where the checkpoint files are locaated (-restart_directory)");
-	}
-	
-	/* context */
-	if (!StringEmpty(ctx->restart_prefix)) {
-		sprintf(start,"%s/ptat3dcpf.ctx_%s",ctx->restart_dir,ctx->restart_prefix);
-	} else {
-		sprintf(start,"%s/ptat3dcpf.ctx",ctx->restart_dir);
-	}
-	PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", start );
-	ierr = pTatin3dContextLoad(&ctx2,start);CHKERRQ(ierr);	
-
-	/* get a copy of the model pointer - or we load again */
-//	model = ctx->model;
-	ierr = PetscMemcpy(ctx,ctx2,sizeof(struct _p_pTatinCtx));CHKERRQ(ierr);
-//	ctx->model = model;
-
-	/* force these again */
-	ctx->restart_from_file = PETSC_TRUE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-restart_prefix",ctx->restart_prefix,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	sprintf(ctx->restart_dir,"%s",ctx->outputpath);
-	ierr = PetscOptionsGetString(NULL,NULL,"-restart_directory",ctx->restart_dir,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	
-	ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
-	ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
-	
-	
-	ierr = pTatin3dSetFromOptions(ctx);CHKERRQ(ierr);
-	ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
-	
-	/* set new function pointers for loading model */
-	ctx->model->FP_pTatinModel_ApplyInitialSolution = pTatinRestart_ApplyInitialSolution;
-	ctx->model->FP_pTatinModel_ApplyInitialMeshGeometry = pTatinRestart_ApplyInitialMeshGeometry;
-	ctx->model->FP_pTatinModel_ApplyInitialMaterialGeometry = pTatinRestart_ApplyInitialMaterialGeometry;
-	
-	PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMCoarsenHierarchy2_DA"
 PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 {
@@ -1577,7 +1278,6 @@ PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const ch
     content = cJSON_CreateInt((int)ctx->mz);  cJSON_AddItemToObject(jso_ptat,"mz",content);
 
     content = cJSON_CreateBool((int)ctx->restart_from_file);        cJSON_AddItemToObject(jso_ptat,"restartFromFile",content);
-    content = cJSON_CreateString(ctx->restart_prefix);              cJSON_AddItemToObject(jso_ptat,"restartPrefix",content);
     content = cJSON_CreateString(ctx->restart_dir);                 cJSON_AddItemToObject(jso_ptat,"restartPath",content);
     content = cJSON_CreateInt((int)ctx->checkpoint_every);          cJSON_AddItemToObject(jso_ptat,"checkpointEvery",content);
     content = cJSON_CreateInt((int)ctx->checkpoint_every_nsteps);   cJSON_AddItemToObject(jso_ptat,"checkpointEveryNSteps",content);
@@ -1748,7 +1448,6 @@ PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx)
   ierr = cJSONGetPetscInt(comm,jptat,"mz",&ctx->mz,&found);CHKERRQ(ierr);
 
   ierr = cJSONGetPetscBool(comm,jptat,"restartFromFile",&ctx->restart_from_file,&found);CHKERRQ(ierr);
-  ierr = cJSONGetPetscString(comm,jptat,"restartPrefix",ctx->restart_prefix,&found);CHKERRQ(ierr);
   ierr = cJSONGetPetscString(comm,jptat,"restartPath",ctx->restart_dir,&found);CHKERRQ(ierr);
 
   ierr = cJSONGetPetscInt(comm,jptat,"checkpointEvery",&ctx->checkpoint_every,&found);CHKERRQ(ierr);

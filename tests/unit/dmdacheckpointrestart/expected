@@ -1,0 +1,56 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: https://bitbucket.org/jedbrown/ptatin3d.git 
+** commit hash: c1a8ed18569fc9f5ea3b4678c96f096d07a1676e (dmay/v1.0-source-purge) 
+** log[c1a8ed1]: Dave May (dave.mayhem23@gmail.com) | 2018-03-07 10:04:35 +0000 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -O0 -Wall -g
+**                                                                       
+** WARNING pTatin3d appears to have been compiled with debug options 
+** For significant performance improvements, please consult the file makefile.arch  
+** Adjust TATIN_CFLAGS to include aggressive compiler optimizations 
+**                                                                       
+** ====================================================================================== 
+[Checkpoint test]
+|x| = 2.95554e+03 
+|x|_2 = 4.42222e+01 
+min(x) = 9.28212e-05 
+max(x) = 9.99930e-01 
+DM Object: 1 MPI processes
+  type: da
+Processor [0] M 10 N 10 P 10 m 1 n 1 p 1 w 6 s 1
+X range of indices: 0 10, Y range of indices: 0 10, Z range of indices: 0 10
+Lower left corner -10. -20. -30. : Upper right 10. 20. 30.
+gmin-x = -1.00000e+01 
+gmin-y = -2.00000e+01 
+gmin-z = -3.00000e+01 
+gmax-x = 1.00000e+01 
+gmax-y = 2.00000e+01 
+gmax-z = 3.00000e+01 
+[Restart test]
+(r) |x| = 2.95554e+03 
+(r) |x|_2 = 4.42222e+01 
+(r) min(x) = 9.28212e-05 
+(r) max(x) = 9.99930e-01 
+DM Object: 1 MPI processes
+  type: da
+Processor [0] M 10 N 10 P 10 m 1 n 1 p 1 w 6 s 1
+X range of indices: 0 10, Y range of indices: 0 10, Z range of indices: 0 10
+Lower left corner -10. -20. -30. : Upper right 10. 20. 30.
+(r) gmin-x = -1.00000e+01 
+(r) gmin-y = -2.00000e+01 
+(r) gmin-z = -3.00000e+01 
+(r) gmax-x = 1.00000e+01 
+(r) gmax-y = 2.00000e+01 
+(r) gmax-z = 3.00000e+01 

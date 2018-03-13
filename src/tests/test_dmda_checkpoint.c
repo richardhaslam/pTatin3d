@@ -52,7 +52,7 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	Vec x,coords;
 	PetscViewer v;
 	PetscReal val;
-	PetscScalar max;
+	PetscScalar max,gmin[3],gmax[3];
 	PetscReal x0,y0,z0,x1,y1,z1;
 	PetscErrorCode ierr;
 	
@@ -82,10 +82,10 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	/* create a field */
 	ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 	ierr = VecSetRandom( x, NULL );CHKERRQ(ierr);
-	ierr = VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );CHKERRQ(ierr);
-	ierr = VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );CHKERRQ(ierr);
-	ierr = VecMin( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );CHKERRQ(ierr);
-	ierr = VecMax( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );CHKERRQ(ierr);
+	ierr = VecNorm( x, NORM_1, &val );CHKERRQ(ierr);	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );
+	ierr = VecNorm( x, NORM_2, &val );CHKERRQ(ierr); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );
+  ierr = VecMin( x, 0, &max );CHKERRQ(ierr); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );
+	ierr = VecMax( x, 0, &max );CHKERRQ(ierr); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );
 	
 	
 	/* dump field to vtk */
@@ -105,8 +105,18 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	*/
 	 
 	/* dump dm to disk */
-	ierr = DMDAPackDataToFile( da, "dmda_checkpoint_output.dat" );CHKERRQ(ierr);
+	ierr = DMDACheckpointWrite( da, "checkpoint_output" );CHKERRQ(ierr);
 	
+  ierr = DMView( da, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+  
+  ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "gmin-x = %1.5e \n", gmin[0] );
+  PetscPrintf( PETSC_COMM_WORLD, "gmin-y = %1.5e \n", gmin[1] );
+  PetscPrintf( PETSC_COMM_WORLD, "gmin-z = %1.5e \n", gmin[2] );
+  PetscPrintf( PETSC_COMM_WORLD, "gmax-x = %1.5e \n", gmax[0] );
+  PetscPrintf( PETSC_COMM_WORLD, "gmax-y = %1.5e \n", gmax[1] );
+  PetscPrintf( PETSC_COMM_WORLD, "gmax-z = %1.5e \n", gmax[2] );
+  
 	ierr = DMDestroy(&da);CHKERRQ(ierr);
 	ierr = VecDestroy(&x);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
@@ -118,23 +128,31 @@ PetscErrorCode test_dmda_checkpoint_load( void )
 {
 	DM  da;
 	Vec x;
+  PetscReal val;
+  PetscScalar max,gmin[3],gmax[3];
 	PetscErrorCode ierr;
 	
 	
 	PetscFunctionBegin;
-	ierr = DMDACreateFromPackDataToFile( PETSC_COMM_WORLD, "dmda_checkpoint_output.dat",&da );CHKERRQ(ierr);
-	ierr = DMView( da, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+	ierr = DMDACheckpointLoad( PETSC_COMM_WORLD, "checkpoint_output_dmda.json",&da );CHKERRQ(ierr);
 	
 	ierr = DMDALoadGlobalVectorFromFile( da, "dmda_checkpoint_stressfield.dat", &x );CHKERRQ(ierr);
-	/*
-	 VecNorm( x, NORM_1, &val );	PetscPrintf( PETSC_COMM_WORLD, "|x| = %1.5e \n", val );
-	 VecNorm( x, NORM_2, &val ); PetscPrintf( PETSC_COMM_WORLD, "|x|_2 = %1.5e \n", val );
-	 VecMin( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "min(x) = %1.5e \n", max );
-	 VecMax( x, 0, &max ); PetscPrintf( PETSC_COMM_WORLD, "max(x) = %1.5e \n", max );
-	 */	
-	
-	//ierr = DMDALoadCoordinatesFromFile(da,"coord-data.dat");CHKERRQ(ierr);
-	
+
+  ierr = VecNorm( x, NORM_1, &val );CHKERRQ(ierr);	PetscPrintf( PETSC_COMM_WORLD, "(r) |x| = %1.5e \n", val );
+  ierr = VecNorm( x, NORM_2, &val );CHKERRQ(ierr); PetscPrintf( PETSC_COMM_WORLD, "(r) |x|_2 = %1.5e \n", val );
+  ierr = VecMin( x, 0, &max );CHKERRQ(ierr); PetscPrintf( PETSC_COMM_WORLD, "(r) min(x) = %1.5e \n", max );
+  ierr = VecMax( x, 0, &max );CHKERRQ(ierr); PetscPrintf( PETSC_COMM_WORLD, "(r) max(x) = %1.5e \n", max );
+
+  ierr = DMView( da, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
+
+  ierr = DMDAGetBoundingBox(da,gmin,gmax);CHKERRQ(ierr);
+  PetscPrintf( PETSC_COMM_WORLD, "(r) gmin-x = %1.5e \n", gmin[0] );
+  PetscPrintf( PETSC_COMM_WORLD, "(r) gmin-y = %1.5e \n", gmin[1] );
+  PetscPrintf( PETSC_COMM_WORLD, "(r) gmin-z = %1.5e \n", gmin[2] );
+  PetscPrintf( PETSC_COMM_WORLD, "(r) gmax-x = %1.5e \n", gmax[0] );
+  PetscPrintf( PETSC_COMM_WORLD, "(r) gmax-y = %1.5e \n", gmax[1] );
+  PetscPrintf( PETSC_COMM_WORLD, "(r) gmax-z = %1.5e \n", gmax[2] );
+  
 	/* dump field to vtk */
 	ierr = DMDAViewPetscVTK(da, x, "dmda_checkpoint_2.vtk");CHKERRQ(ierr);
 	
@@ -156,12 +174,14 @@ PetscErrorCode test_DMDACheckPoint(void)
 	checkpoint = PETSC_FALSE;
 	PetscOptionsGetBool(NULL, NULL, "-checkpoint", &checkpoint, &flg );
 	if( checkpoint == PETSC_TRUE ) {
+    PetscPrintf(PETSC_COMM_WORLD,"[Checkpoint test]\n");
 		ierr = test_dmda_checkpoint_pack();CHKERRQ(ierr);
 	}
 	
 	restart = PETSC_FALSE;
 	PetscOptionsGetBool(NULL, NULL, "-restart", &restart, &flg );
 	if( restart == PETSC_TRUE ) {
+    PetscPrintf(PETSC_COMM_WORLD,"[Restart test]\n");
 		ierr = test_dmda_checkpoint_load();CHKERRQ(ierr);
 	}
 	

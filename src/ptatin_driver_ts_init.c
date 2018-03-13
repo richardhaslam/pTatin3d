@@ -1392,6 +1392,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       X_e = v2;
     } else {
       ierr = DMCreateGlobalVector(dmenergy,&X_e);CHKERRQ(ierr);
+      ierr = pTatinPhysCompAttachData_Energy(pctx,X_e,NULL);CHKERRQ(ierr);
     }
     ierr = VecDuplicate(X_e,&F_e);CHKERRQ(ierr);
     ierr = DMSetMatType(dmenergy,MATAIJ);CHKERRQ(ierr);
@@ -1581,6 +1582,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",op);CHKERRQ(ierr);
     }
     
+#if 0
     if (k%pctx->checkpoint_every_nsteps == 0) {
       char checkpoints_path[PETSC_MAX_PATH_LEN];
       char checkpoint_path[PETSC_MAX_PATH_LEN];
@@ -1609,6 +1611,8 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
         fclose(fp);
       }
     }
+#endif
+    ierr = pTatin3dCheckpointManager(pctx,X_s);CHKERRQ(ierr);
     
     if (pctx->time > pctx->time_max) break;
   }

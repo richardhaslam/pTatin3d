@@ -1072,7 +1072,7 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,Petsc
     PetscFunctionReturn(0);
 }
 
-/* Depreciated */
+/* Deprecated */
 #undef __FUNCT__
 #define __FUNCT__ "_DMDACoordinateRefinementTransferFunction"
 PetscErrorCode _DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])

@@ -45,7 +45,7 @@
 
 
 typedef enum { BFALSE=0, BTRUE } BTruth;
-typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_ASCII, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_HDF5, DATABUCKET_VIEW_NATIVE } DataBucketViewType;
+typedef enum { DATABUCKET_VIEW_STDOUT=0, DATABUCKET_VIEW_BINARY, DATABUCKET_VIEW_NATIVE } DataBucketViewType;
 
 typedef struct _p_DataField* DataField;
 typedef struct _p_DataBucket* DataBucket;
@@ -64,7 +64,7 @@ struct _p_DataBucket {
 	int L; /* number in use */
 	int buffer; /* memory buffer used for re-allocation */
 	int allocated;  /* number allocated, this will equal datafield->L */
-	BTruth finalised; /* DEPRECIATED */
+	BTruth finalised;
 	int nfields; /* how many fields of this type */
 	DataField *field; /* the data */
 };
@@ -139,10 +139,9 @@ void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
 void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[], DataBucket *DB );
 void DataBucketZeroPoint( const DataBucket db, const int index );
 
-//void DataBucketLoadFromFile(const char filename[], DataBucketViewType type, DataBucket *db);
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
-//void DataBucketView(DataBucket db,const char filename[],DataBucketViewType type);
 void DataBucketView(MPI_Comm comm,DataBucket db,const char filename[],DataBucketViewType type);
+void DataBucketLoadRedundantFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db);
 
 void DataBucketAddPoint( DataBucket db );
 void DataBucketRemovePoint( DataBucket db );

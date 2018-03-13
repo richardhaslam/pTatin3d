@@ -334,9 +334,6 @@ PetscErrorCode pTatin3d_material_points_restart(int argc,char **argv)
 	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
 	/* Load model, call an initialization routines */
 	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
-
-	/* Check if model is being restarted from a checkpointed file */
-	ierr = pTatin3dRestart(user);CHKERRQ(ierr);
 	
 	/* call model init */
 	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);

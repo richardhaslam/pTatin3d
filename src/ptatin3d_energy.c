@@ -77,48 +77,18 @@ PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 {
 	PetscErrorCode ierr;
 	PhysCompStokes stokes_ctx;
+  PetscInt energy_mesh_type;
 	
 	PetscFunctionBegin;
-	
 	stokes_ctx = user->stokes_ctx;
+  /* create from data */
+  
+  energy_mesh_type = 1; /* default is Q1 overlapping Q2 */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
+  ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
 	
 	if (user->restart_from_file) {
-		/* load from file */
-		char t_name[PETSC_MAX_PATH_LEN];
-		char told_name[PETSC_MAX_PATH_LEN];
-		char xold_name[PETSC_MAX_PATH_LEN];
-		char v_name[PETSC_MAX_PATH_LEN];
-		
-		/* dav,dap */
-		if (!StringEmpty(user->restart_prefix)) {
-			sprintf(t_name,   "%s/ptat3dcpf.dmda-t_%s",user->restart_dir,user->restart_prefix);
-			sprintf(told_name,"%s/ptat3dcpf.dmda-t_old_%s",user->restart_dir,user->restart_prefix);
-			sprintf(xold_name,"%s/ptat3dcpf.dmda-x_old_%s",user->restart_dir,user->restart_prefix);
-			sprintf(v_name,   "%s/ptat3dcpf.dmda-u_minus_v_%s",user->restart_dir,user->restart_prefix);
-		} else {
-			sprintf(t_name,   "%s/ptat3dcpf.dmda-t",user->restart_dir);
-			sprintf(told_name,"%s/ptat3dcpf.dmda-t_old",user->restart_dir);
-			sprintf(xold_name,"%s/ptat3dcpf.dmda-x_old",user->restart_dir);
-			sprintf(v_name,   "%s/ptat3dcpf.dmda-u_minus_v",user->restart_dir);
-		}
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", t_name );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", told_name );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", xold_name );
-		PetscPrintf(PETSC_COMM_WORLD,"  reading %s \n", v_name );
-		
-		ierr = PhysCompLoad_Energy();CHKERRQ(ierr);
-	} else {
-		/* create from data */
-		PetscInt energy_mesh_type;
-		
-		energy_mesh_type = 1; /* default is Q1 overlapping Q2 */
-		ierr = PetscOptionsGetInt(NULL,NULL,"-energy_mesh_type",&energy_mesh_type,0);CHKERRQ(ierr);
-		ierr = PhysCompNew_Energy(stokes_ctx->dav,-1,-1,-1,energy_mesh_type,&user->energy_ctx);CHKERRQ(ierr);
-	}	
-	
-	
-	if (user->restart_from_file) {
-		
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinPhysCompCreate_Energy should not be called during restart");
 	} else {
 		ierr = PhysCompAddMaterialPointCoefficients_Energy(user->materialpoint_db);CHKERRQ(ierr);
 	}

@@ -1546,7 +1546,7 @@ PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 	PetscFunctionReturn(0);
 }
 
-/* depreciated */
+/* deprecated */
 #undef __FUNCT__
 #define __FUNCT__ "_PSwarmViewMPntStd"
 PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
