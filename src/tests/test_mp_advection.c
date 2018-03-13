@@ -554,7 +554,7 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+		ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
 		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){

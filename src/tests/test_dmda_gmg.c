@@ -250,7 +250,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-		ierr = PCMGSetGalerkin(pc_i,PETSC_TRUE);CHKERRQ(ierr); /* OUCH - GALERKIN */
+		ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_BOTH);CHKERRQ(ierr); /* OUCH - GALERKIN */
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation[k]);CHKERRQ(ierr);
@@ -509,7 +509,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+		ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
 		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){
