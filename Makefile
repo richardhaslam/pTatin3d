@@ -139,10 +139,10 @@ testcheck :
 	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --smoke) --verify
 
 testall :
-	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --skip $(TEST_IGNORE))
+	cd tests && ./runTests.py -t $(shell ./tests/getTestGroup.py --skip=$(TEST_IGNORE))
 
 testallcheck :
-	cd tests && ./runTests.py --verify -t $(shell ./tests/getTestGroup.py --skip $(TEST_IGNORE))
+	cd tests && ./runTests.py --verify -t $(shell ./tests/getTestGroup.py --skip=$(TEST_IGNORE))
 
 testallclean :
 	cd tests && ./runTests.py -p 
