@@ -34,7 +34,8 @@
 \setcounter{secnumdepth}{3}
 
 % macros
-\newcommand{\ptat}{{{\textsc pTatin3D}}}
+\newcommand{\ptat}{{{\textsc{pTatin3D}}}}
+\newcommand{\PETSc}{{{\textsc{PETSc}}}}
 \newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\hspace{5mm}\footnotesize #1}\\}
 \newcommand{\unix}[1]{\texttt{\footnotesize #1}}
 
@@ -100,8 +101,8 @@
 \pagenumbering{arabic}
 
 \section{Overview}
-{\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of lithosphere and crust.
-At its core, support is provided for solving non-linear, incompressible Stokes flow problems in three-dimensions using a mixed finite element method together with a marker-and-cell method.
+{\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of the lithosphere and crust.
+At its core, it provides support for solving non-linear, incompressible Stokes flow problems in three dimensions, using a mixed finite element method together with a marker-and-cell method.
 
 
 
@@ -110,7 +111,7 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 \newpage
 \section{Software Requirements}
 \begin{itemize}
-	\item \href{http://www.mcs.anl.gov/petsc}{PETSc 3.7}
+  \item \href{http://www.mcs.anl.gov/petsc}{{\PETSc} 3.7} (essential numerical library)
 	\item git (used to obtain the source)
 	\item Python (non-essential: required to run the test suite)
 	\item \href{www.paraview.org}{ParaView} (non-essential: required for visualisation of simulation output)
@@ -119,30 +120,33 @@ At its core, support is provided for solving non-linear, incompressible Stokes f
 
 \section{Obtaining the Source}
 The source code for {\ptat} is hosted at \href{https://bitbucket.org}{BitBucket} using the Git version control system.
-Currently the repository is private. Upon gaining access to BitBucket, and the {\ptat} repository,
-the source code can be obtained using the following git command
-\shellcmd{git clone https://USERNAME@bitbucket.org/jedbrown/ptatin3d.git}
+The latex stable version can be obtained with the \unix{git} command
+\shellcmd{git clone https://bitbucket.org/ptatin/ptatin3d}
+which will copy the code into the directory \unix{ptatin/}.
 
 \section{Installation}
-Upon successful installation of PETSc, switch into the root directory of {\ptat}.
+Upon successful installation of {\PETSc}, switch into the root directory of {\ptat}.
 You should provide a file, named \unix{makefile.arch}, which contains specific compiler optimizations for your operating system and compiler.
 If you do not provide this, a default, tailored to Mac OS X, will be copied for you.
 If you are trying to install {\ptat} on another system,
 consult the directory
 \unix{config/}
-where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6/XC50 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for you particular system by copying the closest architecture file matching your system, e.g. \unix{cp config/machine.arch.XXX makefile.arch}, then make any necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
+where several different compiler/optimization sets have been provided for you. Provided systems include Linux based cluster, Cray XT5/XE6/XC50 and the  IBM BlueGene(L,P,Q). You can use these files as a starting point for your particular system by copying the closest architecture file matching your system, e.g. \unix{cp config/machine.arch.XXX makefile.arch}, then make any necessary changes to the new \unix{makefile.arch} to tailor it for your particular operating system / compiler.
 \\[8pt]
 %
-Once the \unix{makefile.arch} is adjusted for your operating systemtype, type \unix{make} from the root directory of \ptat{}.
+Once \unix{makefile.arch} is adjusted for your operating systemtype, type \unix{make -j} from the root directory of \ptat{}.
 \begin{itemize}
-	\item Compiling with a particular PETSc build
-	\shellcmd{make PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
+	\item Compiling with a particular {\PETSc} build
+	\shellcmd{make -j PETSC\_DIR=/path/to/your/petsc PETSC\_ARCH=your.petsc.build}
 	\item Compiling with a particular compilation flags (C and Fortran)
-	\shellcmd{make TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
+	\shellcmd{make -j TATIN\_CFLAGS='-O2' TATIN\_FFLAGS='-fast'}
 \end{itemize}
 %\\[8pt]
 %
-The following targets for make exist: \unix{all}, \unix{clean}, \unix{drivers}, \unix{test}, \unix{releaseinfo}.
+The following targets for make exist: \unix{all}, \unix{clean}, \unix{drivers}, \unix{test}, \unix{testcheck}, \unix{testall}, \unix{testallcheck}, \unix{releaseinfo}.
+
+As discussed further in Section \ref{sec:examples_and_tests}, you can run \unix{make test} to get a first check that {\ptat} has been compiled correctly.
+
 The target \unix{releaseinfo} will automatically update the contents of the file \unix{include/ptatin\_version\_info.h}.
 This file is updated to reflect the current revision information associated with the Git master branch. This information is
 propagated into log files and the output of {\ptat}.
@@ -155,8 +159,7 @@ The make system will create all objects, libraries and binary files in the follo
 	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/lib}
 	\item[-] \unix{ptatin3d/\$\{PETSC\_ARCH\}/bin}
 \end{enumerate}
-The current build system allows you to conveniently compile different {\ptat} using different PETSc builds (e.g. a debug PETSc build versus an optimised build).
-
+The current build system allows you to conveniently compile different {\ptat} using different {\PETSc} builds (e.g. a debug {\PETSc} build versus an optimised build).
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
@@ -165,21 +168,21 @@ The current build system allows you to conveniently compile different {\ptat} us
 \subsection{Code structure}
 The idea we have for building models is that models should be separated as much as possible
 from the core functionality of {\ptat}. That is, we want to separate boundary conditions,
-mesh geometry, etc as much as possible from the solver used to solve the underlying PDE (Stokes).
+mesh geometry, etc. as much as possible from the solver used to solve the underlying PDE (Stokes).
 \\[8pt]
 %%
 For this reason, we have adopted a code structure in which models are compiled and combined into
-a separate, stand alone library. When using a {\ptat{ driver (i.e which is needed to solve something),
+a separate, stand alone library. When using a {\ptat{ driver (a program which solves something),
 we link the model library against the solver library.
 \\[8pt]
 %%
 Models live under the directory
 	\shellcmd{ptatin3d/src/models/}
-and the models are compiled into the following static library:
-	\shellcmd{ptatin3d/src/models/libptatin3dmodels.a}
+and the models are compiled into the static library \unix{libptatin3dmodels.a}
 An example model called ``template'' is provided in \unix{src/models}.
 \\[8pt]
 %%	
+% TODO: update if/once new model generator is added, and/or for dynamic model registration
 To add a model, you need to (1) add the directory name containing your model in
 	\shellcmd{ptatin3d/src/models/makefile}
 under the variable
@@ -201,6 +204,7 @@ are the files which define any specific data structures needed for the model,
 	(\unix{model\_template\_ctx.h})
 and a file (\unix{model\_ops\_template.c}) containing the model description.
 A ``model'' description in {\ptat} consists of defining the following operations.
+% TODO: update with any new operations (added to allow for full checkpointing)
 \begin{enumerate}
 	\item \unix{FP\_pTatinModel\_Initialize} (non essential)
 	Initialize any model specific options, and or model specific parameters in your user defined model context.
@@ -218,7 +222,7 @@ A ``model'' description in {\ptat} consists of defining the following operations
 	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value may improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
 	
 	\item \unix{FP\_pTatinModel\_ApplyInitialMeshGeometry}
-	Define the geometry of the mesh. Typically this is done simply by described a hex domain via the PETSc function \unix{DMDASetUniformCoordinates()}.
+	Define the geometry of the mesh. Typically this is done simply by described a hexahedral domain via the {\PETSc} function \unix{DMDASetUniformCoordinates()}.
 
 	\item \unix{FP\_pTatinModel\_ApplyInitialMaterialGeometry}
 	Define the initial geometry of the lithology on the markers. (e.g. specify rheology)
@@ -307,9 +311,10 @@ or
 {\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
 \\[8pt]
 %%
+% TODO: switch to using proper listings?
 To apply boundary conditions, the main function used is:
 \shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
- BCList list, \\
+  BCList list, \\
   DM da, \\
   DMDABCListConstraintLoc doflocation, \\
   PetscInt dof\_idx, \\
@@ -367,10 +372,11 @@ Notes:
 \end{enumerate}
 
 \subsection{Implementing initial conditions}
-Iterators are provided to allow to define the contents of PETSc vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
+Iterators are provided to allow to define the contents of {\PETSc} vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
 \\[8pt]
 %%	
 The standard vector iterator is given by
+% TODO: switch to using proper listings?
 \shellcmd{PetscErrorCode DMDAVecTraverse3d( \newline
   DM da, \\
   Vec X, \\
@@ -382,7 +388,7 @@ The standard vector iterator is given by
 %%
 \item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
 %%
-\item[] \unix{Vec X} - PETSc vector into which you want to insert values (e.g. velocity).
+\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
 %%
 \item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
 %%
@@ -418,7 +424,7 @@ The standard $ijk$ vector iterator is given by
 %%
 \item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
 %%
-\item[] \unix{Vec X} - PETSc vector into which you want to insert values (e.g. velocity).
+\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
 %%
 \item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
 %%
@@ -482,43 +488,46 @@ The most important (i.e. useful) of these are summarized below.
 % ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Example models and tests}
-A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and numpy and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
+\label{sec:examples_and_tests}
+A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and Numpy\footnote{To check, run \unix{python} and then enter \unix{import numpy}, which shouldn't produce an error. (Enter \unix{exit()} to exit.)} and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
+These wiill provide instructions on downloading a required \href{https://www.bitbucket.org/dmay/pythontestharness}{test harness script}.
+If on a batch system, after the queueing system has run the tests, you can use \shellcmd{make testcheck} or \shellcmd{make testallcheck} to verify the results.
 
 Numerous example models are provided with the source distribution. These serve as a starting point to generate your own models. The most simple model is ``viscous\_sinker'', with source files living in \unix{src/models/viscous\_sinker}. Several example options files are provided in \unix{src/models/viscous\_sinker/testjobs}. We summarize the examples below
 \begin{enumerate}
-	\item ex\_sinker.opts: Defines a dense, viscous rectangular block in a unit cube domain. The rectangular block sinks due to the buoyancy difference between the block and background material. ``Free slip'' boundaries (zero normal velocity, zero tangential stress) are applied along all boundaries. The model is time dependent with a linear viscous rheology, thus the driver \unix{ptatin\_driver\_linear\_ts.app} should be used.
+  \item \texttt{ex\_sinker.opts}: Defines a dense, viscous rectangular block in a unit cube domain. The rectangular block sinks due to the buoyancy difference between the block and background material. ``Free slip'' boundaries (zero normal velocity, zero tangential stress) are applied along all boundaries. The model is time dependent with a linear viscous rheology, thus the driver \unix{ptatin\_driver\_linear\_ts.app} should be used.
 
-	\item sinker-ex2.opts: Defines a buoyant spherical viscous inclusion in a domain $\Omega = [0,1] \times [0,\tfrac{1}{4}] \times [0,1]$. Boundary conditions on the upper surface $\sigma_{ij}n_j=0$ (``free surface'') and ``free slip'' on all other sides. The upper surface is initialized to have a small amount of positive topography. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file illustrates how flexible multi-grid coarsening and coarse grid operators can be used. See Sec.~\ref{sec:configsolvers} for further details.
+  \item \texttt{sinker-ex2.opts}: Defines a buoyant spherical viscous inclusion in a domain $\Omega = [0,1] \times [0,\tfrac{1}{4}] \times [0,1]$. Boundary conditions on the upper surface $\sigma_{ij}n_j=0$ (``free surface'') and ``free slip'' on all other sides. The upper surface is initialized to have a small amount of positive topography. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file illustrates how flexible multi-grid coarsening and coarse grid operators can be used. See Sec.~\ref{sec:configsolvers} for further details.
 
-	\item sinker-mfscaling.opts: Defines a dense, viscous spherical inclusion in a unit cube domain. A``free surface'' upper boundary is used and all other boundaries are ``free slip''. The upper surface is initially flat. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file is used for strong scaling experiments.
+  \item \texttt{sinker-mfscaling.opts}: Defines a dense, viscous spherical inclusion in a unit cube domain. A``free surface'' upper boundary is used and all other boundaries are ``free slip''. The upper surface is initially flat. Only a single time step is performed. The driver \unix{ptatin\_driver\_linear\_ts.app} should be used. This option file is used for strong scaling experiments.
 \end{enumerate}
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Generated output}
-All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called ``output'' will be generated.
+All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called \texttt{output} will be generated.
 
 \subsection{Diagnostics}
-The time dependent drivers will generate a log file (ptatin.log-XXX) and a file containing all options (inputs) used for the current simulation (ptatin.options-XXX). Here, ``XXX'' will be replaced with a year/date/time stamp (e.g. 2013.10.31\_11:00:54) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the time step, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
+The time dependent drivers will generate a log file (\texttt{ptatin.log-XXX}) and a file containing all options (inputs) used for the current simulation (\texttt{ptatin.options-XXX}). Here, \texttt{XXX} will be replaced with a year/date/time stamp (e.g. \texttt{2013.10.31\_11:00:54}) corresponding to when the executable was launched. The time stamp ensures unique files will be give to each model run, thus enabling them to reproduced at a later date. Log files contain information regarding the mesh resolution, memory usage, CPU times associated with each solve and diagnostics about the solver (number of iterations, residuals, etc) and the time step, current time associated with the simulation. The options file generated can be used to re-run {\ptat} models simply via executing \unix{./ptatin\_DRIVER.app -options\_file ptatin.options-XXX}.
 
 \subsection{Simulation results}
 {\ptat} generates output in formats which can be visualized via the open source tool ParaView (\url{www.paraview.org}).
 %A complete description of ParaView formats can be found here (\url{TODO}).
-A comprehensive ParaView tutorial can be found here (\url{http://www.paraview.org/Wiki/The\_ParaView\_Tutorial}). 
+A comprehensive ParaView tutorial can be found here at \url{http://www.paraview.org/Wiki/The\_ParaView\_Tutorial}. 
 Additional tutorial information can be found here:
-\begin{tiny}
+\begin{small}
 \begin{itemize}
-	\item[-] \url{http://www.bu.edu/tech/about/research/training/online-tutorials/paraview/}
-	\item[-] \url{http://www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}
+  \item[-] \href{http://www.bu.edu/tech/about/research/training/online-tutorials/paraview/}{\url{www.bu.edu/tech/about/research/training/online-tutorials/paraview/}}
+  \item[-] \href{http://www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}{\url{www.cac.cornell.edu/education/Training/data10/VisualizationWithParaView.pdf}}
 \end{itemize}
 \end{tiny}
 
 A summary of file extensions commonly produced by {\ptat} is provided below: \newline
-{\bf *.pvd}: Contains time dependent datasets.  \newline
-{\bf *.pvts}: Contains mesh data (nodal fields and cell fields) for the complete mesh.  \newline
-{\bf *.vts}: Contains mesh data (nodal fields and cell fields) for each sub-domain used in the parallel computation.  \newline
-{\bf *.pvtu}: Contains particle data for the complete set of material points.  \newline
-{\bf *.vtu}: Contains particle data for each sub-domain used in the parallel computation. \newline
+\texttt{*.pvd}: Contains time dependent datasets.  \newline
+\texttt{*.pvts}: Contains mesh data (nodal fields and cell fields) for the complete mesh.  \newline
+\texttt{*.vts}: Contains mesh data (nodal fields and cell fields) for each sub-domain used in the parallel computation.  \newline
+\texttt{*.pvtu}: Contains particle data for the complete set of material points.  \newline
+\texttt{*.vtu}: Contains particle data for each sub-domain used in the parallel computation. \newline
 
 Depending on the particular output functions called in your model, numerous fields are generated during a {\ptat} simulation.
 The term ``sub-domain'' used above refers to the piece of the mesh assigned to each core. In the mode of parallelism used in {\ptat}, there is always one sub-domain per core.
@@ -574,7 +583,7 @@ Floating point numbers are stored in the precision associated with each material
 generates these data files.
 \\[8pt]
 %%	
-A more flexible mechanism to output material point data associated with multiple marker types is provided by the function \unix{SwarmViewGeneric\_ParaView()}. Note that this function will not generate for you a *.pvd file.  All data is stored in a binary format. Marker types which can be output in these files are identified via the the following names: \\
+A more flexible mechanism to output material point data associated with multiple marker types is provided by the function \unix{SwarmViewGeneric\_ParaView()}. Note that this function will not generate a \texttt{*.pvd} file for you.  All data is stored in a binary format. Marker types which can be output in these files are identified via the the following names: \\
 \unix{MPField\_Std, MPField\_Stokes, MPField\_StokesPl, MPField\_Energy}.
 %%
 \\[8pt]
@@ -762,7 +771,12 @@ The above options will result result in the following hierarchy in the $x$ direc
 Note that if you have $X$ levels, you are only required to specify $X-1$ values to define the coarsening hierarchy. 
 \\[8pt]
 %%	
-Note that when using geometric multi-grid, all levels are spatial decomposed across all cores. Furthermore, it is required that every core contains at least one element. Thus, the total number of cores used to run a {\ptat} job must not exceed the number of elements within the coarse grid. If you require additional levels in your multi-grid hierarchy, we recommend you use an algebraic multi-grid preconditioner as your coarse grid preconditioner.
+Note that when using geometric multi-grid, all levels are spatial decomposed across all cores. Furthermore, it is required that every core contains at least one element. Thus, the total number of cores used to run a {\ptat} job must not exceed the number of elements within the coarse grid. If you require additional levels in your multi-grid hierarchy, you may
+\begin{itemize}
+  \item an algebraic multi-grid preconditioner as your coarse grid preconditioner, or
+  \item use \PETSc{}'s \href{https://www.mcs.anl.gov/petsc-current/docs/manualpages/PC/PCTELESCOPE.html}{\texttt{PCTELESCOPE}}} to reduce the number of processors in the coarse grid communicator.
+\end{itemize}
+% TODO check PCTELESCOPE link above
 
 \subsection{Coarse grid operators}
 Within {\ptat}, the style of coarse grid operator can be configured at run time. 
