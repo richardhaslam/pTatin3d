@@ -3,6 +3,7 @@
 #include "petscviewer.h"
 
 #include "ptatin3d.h"
+#include "ptatin_utils.h"
 #include "ptatin3d_defs.h"
 #include "private/ptatin_impl.h"
 #include "ptatin_version_info.h"
@@ -660,10 +661,10 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     Vec            velocity,pressure;
     MPI_Comm       comm;
     PetscViewer    viewer;
-	char           name[PETSC_MAX_PATH_LEN];
+	char           name[PETSC_MAX_PATH_LEN],xmfoutputdir[PETSC_MAX_PATH_LEN];
     char           infostr[PETSC_MAX_PATH_LEN];
     char           *model_name;
-    PetscBool      useH5 = PETSC_FALSE;
+    PetscBool      useH5 = PETSC_FALSE,found;
     PetscLogDouble t0,t1;
     pTatinModel    model;
     PetscErrorCode ierr;
@@ -673,9 +674,13 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     ierr = DMCompositeGetEntries(dmstokes,&dmv,&dmp);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
+  ierr = PetscSNPrintf(xmfoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ctx->outputpath,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(xmfoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(xmfoutputdir);CHKERRQ(ierr); }
+
     PetscObjectGetComm((PetscObject)dmstokes,&comm);
-    if (suffix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s_dmda_vel.xmf",ctx->outputpath,suffix); }
-    else {        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda_vel.xmf",ctx->outputpath); }
+    if (suffix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s_dmda_vel.xmf",xmfoutputdir,suffix); }
+    else {        PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda_vel.xmf",xmfoutputdir); }
 
     ierr = XDMFMetaXDMFOpen(comm,name,&viewer);CHKERRQ(ierr);
 
@@ -702,11 +707,11 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     PetscOptionsGetBool(NULL,NULL,"-xdmf_use_hdf",&useH5,NULL);
     PetscTime(&t0);
     if (!useH5) {
-        ierr = XDMFGridOpen_DMDA(viewer,dmv,ctx->outputpath,suffix,"stokes",XDMFBinary);CHKERRQ(ierr);
-        ierr = XDMFWriteAttribute_DMDA(viewer,dmv,velocity,ctx->outputpath,suffix,"stokes","velocity",XDMFNode,XDMFBinary);CHKERRQ(ierr);
+        ierr = XDMFGridOpen_DMDA(viewer,dmv,xmfoutputdir,suffix,"stokes",XDMFBinary);CHKERRQ(ierr);
+        ierr = XDMFWriteAttribute_DMDA(viewer,dmv,velocity,xmfoutputdir,suffix,"stokes","velocity",XDMFNode,XDMFBinary);CHKERRQ(ierr);
     } else {
-        ierr = XDMFGridOpen_DMDA(viewer,dmv,ctx->outputpath,suffix,"stokes",XDMFHDF5);CHKERRQ(ierr);
-        ierr = XDMFWriteAttribute_DMDA(viewer,dmv,velocity,ctx->outputpath,suffix,"stokes","velocity",XDMFNode,XDMFHDF5);CHKERRQ(ierr);
+        ierr = XDMFGridOpen_DMDA(viewer,dmv,xmfoutputdir,suffix,"stokes",XDMFHDF5);CHKERRQ(ierr);
+        ierr = XDMFWriteAttribute_DMDA(viewer,dmv,velocity,xmfoutputdir,suffix,"stokes","velocity",XDMFNode,XDMFHDF5);CHKERRQ(ierr);
     }
     PetscTime(&t1);
     PetscPrintf(PETSC_COMM_WORLD,"ModelOutput_ExecuteXDMFWriter: time %1.4e <sec>\n",t1-t0);
