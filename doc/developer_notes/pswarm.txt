@@ -1,0 +1,18 @@
+
+______________________________
+______________________________
+
+  Passive Swarm Developer Notes
+______________________________
+______________________________
+
+
+* PSwarm does not support JSON checkpointing. This is a current design limitation
+which needs to be addressed. Models using pswarms will not be able to completely
+checkpointed. A restart will simply re-introduce an un-iniitalised set of passive
+particles.
+
+* Only ParaView formats are supported by PSwarm. This should be updated to support
+the native databucket binary output. Introducing this feature will require a python
+tool which can load the native databucket binary output.
+
