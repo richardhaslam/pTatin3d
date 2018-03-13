@@ -69,8 +69,8 @@ struct _p_MFA11SubRepart {
   MPI_Comm         comm_sub;
   PetscMPIInt      size_sub,rank_sub;
   PetscInt         nel_sub,nen_u,nel,nel_remote,nel_repart,el_offset,nnodes,
-                   nnodes_remote,nnodes_repart, nodes_offset;
-  PetscInt         *nel_remote_in,*nnodes_remote_in,*nodes_remote,*elnidx_u_repart;
+                   nnodes_remote,nnodes_repart, nodes_offset, nodes_remote_offset;
+  PetscInt         *nel_remote_in,*nnodes_remote_in,*elnidx_u_repart;
   PetscScalar      *mem_ufield_repart,*ufield_repart_base,*mem_Yu_repart,*Yu_repart_base;
   PetscBool        win_ufield_repart_allocated,win_Yu_repart_allocated;
   MPI_Win          win_ufield_repart,win_Yu_repart;
@@ -122,12 +122,12 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
 
   PetscFunctionBeginUser;
 
-  if (ctx->rank_sub) {
+  if (ctx->rank_sub > 0) {
     PetscReal * const LA_gcoords_remote = &LA_gcoords_repart_base[NSD*ctx->nodes_offset];
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
       for(d=0;d<NSD;++d){
-        LA_gcoords_remote[NSD*i+d] = LA_gcoords[NSD*ctx->nodes_remote[i]+d];
+        LA_gcoords_remote[NSD*i+d] = LA_gcoords[NSD*(ctx->nodes_remote_offset+i)+d];
       }
     }
   } else {
@@ -161,8 +161,8 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
     PetscScalar * const ufield_remote = &ctx->ufield_repart_base[NSD*ctx->nodes_offset];
     for (i=0;i<ctx->nnodes_remote;++i) {
       PetscInt d;
-      for(d=0;d<NSD;++d){
-        ufield_remote[NSD*i+d] = ufield[NSD*ctx->nodes_remote[i]+d];
+      for(d=0;d<NSD;++d){ // TODO collapse
+        ufield_remote[NSD*i+d] = ufield[NSD*(ctx->nodes_remote_offset+i)+d];
       }
     }
   } else {
@@ -196,8 +196,8 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
     PetscScalar * const Yu_remote = &ctx->Yu_repart_base[NSD*ctx->nodes_offset];
     for (i=0; i<ctx->nnodes_remote; ++i) {
       PetscInt d;
-      for(d=0;d<NSD;++d){
-        Yu[NSD*ctx->nodes_remote[i]+d] += Yu_remote[NSD*i+d];
+      for(d=0;d<NSD;++d){ // TODO: collapse
+        Yu[NSD*(ctx->nodes_remote_offset+i)+d] += Yu_remote[NSD*i+d];
       }
     }
   } else {
@@ -223,10 +223,9 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
 PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 {
   PetscErrorCode  ierr;
-  DM              dau = mf->daUVW;
   PetscInt        i;
+  DM              dau;
   MFA11SubRepart  ctx;
-  PetscHashI      nodes_remote_inv;
 
   // TODO: this whole function wantonly uses MPI calls. These should be collected
   //       to minimize communication, and the heavy transfer for the elements should be done with shared memory.
@@ -234,6 +233,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   //       on all ranks. Then each rank can independently compute its offsets.
 
   PetscFunctionBeginUser;
+  dau = mf->daUVW;
   if (mf->ctx) PetscFunctionReturn(0);
 
   ierr = PetscLogEventBegin(MAT_MultMFA11_SUP,0,0,0,0);CHKERRQ(ierr);
@@ -295,24 +295,15 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      of unique nodes by sorting. This could, with the help of a hash table
      be done in linear time, and the wasted memory here could be recovered */
   if (ctx->rank_sub) {
-    ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&ctx->nodes_remote);CHKERRQ(ierr);
-    ierr = PetscMemcpy(ctx->nodes_remote,&ctx->elnidx_u[ctx->nel_repart*ctx->nen_u],
-        ctx->nel_remote*ctx->nen_u*sizeof(PetscInt));CHKERRQ(ierr);
-    ctx->nnodes_remote = ctx->nen_u*ctx->nel_remote; /* will be updated */
-    ierr = PetscSortRemoveDupsInt(&ctx->nnodes_remote,ctx->nodes_remote);CHKERRQ(ierr);
+    PetscInt max=0, min=PETSC_MAX_INT;
+    for (i=0; i<ctx->nel_remote*ctx->nen_u; ++i) {
+      max = PetscMax(max,ctx->elnidx_u[ctx->nel_repart*ctx->nen_u + i]);
+      min = PetscMin(min,ctx->elnidx_u[ctx->nel_repart*ctx->nen_u + i]);
+    }
+    ctx->nodes_remote_offset = min; /* The first node to send */
+    ctx->nnodes_remote = max-min; /* How many nodes to send. This sends some that aren't used, but with the advantage of sending a contiguous range */
   } else {
     ctx->nnodes_remote = 0;
-  }
-
-  /* Create a map from the entries of the local vector here
-     to just the entries which will be needed on rank_sub 0, without the offset.
-     That is, the inverse of nodes_remote[].  This is a hash table.
-     This lets us do a rank-local "scatter" to an array
-     which we send to the right place on rank_sub 0. This table is only used
-     here, and is then destroyed */
-  PetscHashICreate(nodes_remote_inv);
-  for(i=0;i<ctx->nnodes_remote;++i){
-    PetscHashIAdd(nodes_remote_inv,ctx->nodes_remote[i],i);
   }
 
   /* On rank_sub 0, obtain the number of nodes being sent from
@@ -332,8 +323,8 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 
   /* Calculate the number of nodes on each rank, after repartitioning.
      This only changes on rank_sub 0 */
-  if (ctx->rank_sub) {
-    ctx->nnodes_repart = ctx->nnodes; /* We use the existing array */
+  if (ctx->rank_sub > 0) {
+    ctx->nnodes_repart = ctx->nnodes; /* We use the existing array */ // NOTE: this could change - we are wasting time scattering to the large array from the global vector!
   } else {
     ctx->nnodes_repart = ctx->nnodes;
     for (i=1;i<ctx->size_sub;++i) ctx->nnodes_repart += ctx->nnodes_remote_in[i];
@@ -343,7 +334,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      list to correspond to the numbering on rank_sub 0 */
   {
     PetscInt *nodes_offsets = NULL;
-    if (!ctx->rank_sub) {
+    if (ctx->rank_sub == 0) {
       ierr = PetscMalloc1(ctx->size_sub,&nodes_offsets);
       nodes_offsets[0] = 0;
       nodes_offsets[1] = ctx->nnodes;
@@ -362,7 +353,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   /* Compute an element offset for each rank */
   {
     PetscInt *el_offsets = NULL;
-    if (!ctx->rank_sub) {
+    if (ctx->rank_sub == 0) {
       ierr = PetscMalloc1(ctx->size_sub,&el_offsets);
       el_offsets[0] = 0;
       el_offsets[1] = ctx->nel;
@@ -376,20 +367,12 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
      maps for the repartition.  On rank_sub > 0, this involves computing the
      element indices to send to rank 0 by mapping them into the local ordering
      for the nodes which are used there, and then offsetting.  */
-  if (ctx->rank_sub) {
+  if (ctx->rank_sub > 0) {
     PetscInt *elnidx_u_remote;
-    PetscInt i;
     ierr = PetscMalloc1(ctx->nel_remote*ctx->nen_u,&elnidx_u_remote);CHKERRQ(ierr);
-    for (i=0;i<ctx->nen_u*ctx->nel_remote;++i){
-      PetscInt ind = ctx->elnidx_u[ctx->nen_u*ctx->nel_repart + i];
-      {
-        PetscInt val ;
-        PetscHashIMap(nodes_remote_inv,ind,val); /* local index --> index in ctx->nodes_remote */
-        elnidx_u_remote[i] = val + ctx->nodes_offset; /* index in ctx->nodes_remote --> index for ctx->elnidx_u_repart on rank 0 */
-      }
+    for (i=0; i<ctx->nen_u*ctx->nel_remote; ++i) {
+      elnidx_u_remote[i] = ctx->elnidx_u[i + ctx->nel_repart*ctx->nen_u] + ctx->nodes_offset; /* ith remote node sent (starting ctx->nel_repart*ctx->nen_u --> index for ctx->elnidx_u_repart on rank 0 */
     }
-
-    PetscHashIDestroy(nodes_remote_inv);
     ierr = MPI_Send(elnidx_u_remote,ctx->nen_u*ctx->nel_remote,MPIU_INT,0,0,ctx->comm_sub);CHKERRQ(ierr);
     ierr = PetscFree(elnidx_u_remote);CHKERRQ(ierr);
   } else {
@@ -406,7 +389,7 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
     }
   }
 
-#if 0
+#if 1
   { /* Print stats on nodes and el for normal, remote, and repart */
     PetscErrorCode ierr;
     PetscMPIInt    rank,size,r;
@@ -505,9 +488,7 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
     ctx->mem_Yu_repart = NULL;
   }
 
-  if (ctx->rank_sub) {
-    ierr = PetscFree(ctx->nodes_remote);CHKERRQ(ierr);
-  } else {
+  if (ctx->rank_sub == 0 ) {
     ierr = PetscFree(ctx->elnidx_u_repart);CHKERRQ(ierr);
     ierr = PetscFree(ctx->nnodes_remote_in);CHKERRQ(ierr);
     ierr = PetscFree(ctx->nel_remote_in);CHKERRQ(ierr);
