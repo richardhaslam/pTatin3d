@@ -123,7 +123,7 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
   
 	ierr = PetscFunctionListAdd(&MatMult_flist,"ref",MFStokesWrapper_A11);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&MatMult_flist,"tensor",MFStokesWrapper_A11_Tensor);CHKERRQ(ierr);
-#ifdef TATIN_HAVE_AVX
+#if defined(__AVX__)
 	ierr = PetscFunctionListAdd(&MatMult_flist,"avx",MFStokesWrapper_A11_AVX);CHKERRQ(ierr);
 #endif
 #ifdef TATIN_HAVE_CUDA
@@ -136,14 +136,14 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	ierr = PetscFunctionListAdd(&SetUp_flist,"opencl",MFA11SetUp_OpenCL);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&Destroy_flist,"opencl",MFA11Destroy_OpenCL);CHKERRQ(ierr);
 #endif
-#if defined(TATIN_HAVE_AVX) && defined(TATIN_HAVE_CUDA)
+#if defined(__AVX__) && defined(TATIN_HAVE_CUDA)
 	ierr = PetscFunctionListAdd(&MatMult_flist,"subrepart",MFStokesWrapper_A11_SubRepart);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&SetUp_flist,"subrepart",MFA11SetUp_SubRepart);CHKERRQ(ierr);
 	ierr = PetscFunctionListAdd(&Destroy_flist,"subrepart",MFA11Destroy_SubRepart);CHKERRQ(ierr);
 #endif
 
 	/* Set A11 operator type, defaulting to AVX if available, otherwise tensor */
-#ifdef TATIN_HAVE_AVX
+#if defined(__AVX__)
 	ierr = PetscStrcpy(optype,"avx");CHKERRQ(ierr);
 #else
 	ierr = PetscStrcpy(optype,"tensor");CHKERRQ(ierr);
@@ -959,7 +959,7 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YPloc,&LA_YPloc);CHKERRQ(ierr);
 	
 	/* momentum + continuity */
-#ifdef TATIN_HAVE_AVX
+#if defined(__AVX__)
   ierr = MFStokesWrapper_A_AVX(ctx->volQ,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
 #else
 	ierr = MFStokesWrapper_A(ctx->volQ,dau,LA_XUloc,dap,LA_XPloc,LA_YUloc,LA_YPloc);CHKERRQ(ierr);
@@ -1367,7 +1367,7 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	ierr = VecGetArray(YUloc,&LA_YUloc);CHKERRQ(ierr);
 	
 	/* grad */
-#ifdef TATIN_HAVE_AVX
+#if defined(__AVX__)
   ierr = MFStokesWrapper_A12_AVX(ctx->volQ,dau,dap,LA_XPloc,LA_YUloc);CHKERRQ(ierr);
 #else
   ierr = MFStokesWrapper_A12(ctx->volQ,dau,dap,LA_XPloc,LA_YUloc);CHKERRQ(ierr);

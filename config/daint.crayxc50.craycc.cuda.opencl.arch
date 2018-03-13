@@ -23,7 +23,6 @@ export CUDA_NVCC = $(CUDATOOLKIT_HOME)/bin/nvcc  -I$(CRAY_MPICH_DIR)/include -ar
 export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
 export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL
 
-CONFIG_AVX=y
 CONFIG_CUDA=y
 CONFIG_OPENCL=y
 

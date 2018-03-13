@@ -59,12 +59,6 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 		PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
 		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	}
-
-#if defined(__AVX__) && !defined(TATIN_HAVE_AVX)
-	PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled without AVX support, on a system with AVX support. \n");
-	PetscPrintf(PETSC_COMM_WORLD,"** For significant performance gains, set CONFIG_AVX=y in makefile.arch\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**                                                                     \n");
-#endif
 	
 	PetscFunctionReturn(0);
 }
@@ -107,6 +101,13 @@ PetscErrorCode pTatinWritePreamble(void)
 	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
 	ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
 	#undef STR_ARG_NAME
+#endif
+#if defined(__AVX__)
+  PetscPrintf(PETSC_COMM_WORLD,"** AVX detected - optimized kernels will be used \n");
+#else
+  PetscPrintf(PETSC_COMM_WORLD,"** AVX not detected - optimized kernels will not be used.\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** If your system supports AVX, consider adding options,\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** e.g. -march=native, to TATIN_CFLAGS in makefile.arch\n");
 #endif
 	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
 				 

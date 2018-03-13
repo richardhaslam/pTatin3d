@@ -27,7 +27,6 @@ export CUDA_LIB = -lcudart
 export OPENCL_LIB = -lOpenCL
 # export LIBZ_INC = -I/usr/include
 
-CONFIG_AVX=y
 CONFIG_CUDA=y
 CONFIG_OPENCL=y
 

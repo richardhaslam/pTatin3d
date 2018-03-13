@@ -26,10 +26,6 @@ export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 #export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG} -fopenmp
 #export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
 
-# flag to allow GNU AVX/SSE intrinsics (don't know if this is required anymore)
-#export TATIN_CFLAGS=-hgnu
-CONFIG_AVX=y
-
 #
 #  -- pTatin external packages --
 #  User should select which packages are present

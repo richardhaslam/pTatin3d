@@ -23,6 +23,8 @@
     * AVX.
    */
 
+#if defined(__AVX__) && defined(TATIN_HAVE_CUDA)
+
 #include <petscfe.h>
 #include <../src/sys/utils/hash.h> /* Not portable to prefix installs
                                       In PETSc 3.8, this header is
@@ -746,3 +748,5 @@ PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,
 
   PetscFunctionReturn(0);
 }
+
+#endif /* defined(__AVX__) && defined(TATIN_HAVE_CUDA) */
