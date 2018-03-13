@@ -35,9 +35,12 @@ if not PTATIN_DIR :
     sys.exit(1)
 
 # Directory names to ignore
-ignore = set(args.skip.split(','))
-if '' in ignore :
-    ignore.remove('')
+if args.skip :
+  ignore = set(args.skip.split(','))
+  if '' in ignore :
+      ignore.remove('')
+else :
+  ignore = {}
 
 # Subtree to search in
 if args.prefix :
