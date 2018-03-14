@@ -435,15 +435,31 @@ The most important (i.e. useful) of these are summarized below.
 \begin{enumerate}
 	\item \unix{ptatin\_driver\_ic.app}
 	Specifically designed to confirm that the model is defined in accordance with what the developer had in mind. This driver does not solve any equations or perform any time stepping. Rather it only loads the model, loads the initial conditions and boundary conditions and calls the model output function.
+
+	\item \unix{ptatin\_driver\_ts\_init.app}
+	A driver for initlalising and solving time dependent, \emph{linear} or \emph{non-linear} Stokes flow problems. 
+	The energy equation may be optionally activated within this model.
+
+	To commence a new run, one must: (i) first execute the driver with the additional argument \texttt{-init}.
+	With this argument, the solution associated with the initial condition is computed and checkpointed;
+	(ii) execute the driver. When \texttt{-init} is not provided, the driver will load a checkpoint file and commence
+	time-stepping. See Section \ref{sec:checkpoint} for further details.
+
+	Checkpointing is enabled and restart capabilities are functional.
 	
 	\item \unix{ptatin\_driver\_energy.app}
 	A basic driver used for testing the advection diffusion solver. It does not solve Stokes.
 	
 	\item \unix{ptatin\_driver\_linear\_ts.app}
-	A driver for solving time dependent, \emph{linear} Stokes flow problems. Checkpointing is enabled.
+	A driver for solving time dependent, \emph{linear} Stokes flow problems. 
+	Checkpointing is enabled, however no capabilities for restart is provided.
+	This driver is deprecated and will soon be removed - users should use \unix{ptatin\_driver\_ts\_init.app}.
 
 	\item \unix{ptatin\_driver\_nonlinear\_ts.app}
-	A driver for solving time dependent, \emph{non-linear} Stokes flow problems. The energy equation may be optionally activated within this model.
+	A driver for solving time dependent, \emph{non-linear} Stokes flow problems. 
+	The energy equation may be optionally activated within this model.
+	Checkpointing is enabled, however no capabilities for restart is provided.
+	This driver is deprecated and will soon be removed - users should use \unix{ptatin\_driver\_ts\_init.app}.
 \end{enumerate}
 
 \subsection{Options for standard drivers}
@@ -579,7 +595,7 @@ generates these data files. This function is flexible and permits specific marke
 \unix{MPV\_region, MPV\_viscosity, MPV\_density, MPV\_plastic\_strain, MPV\_yield\_indicator, MPV\_diffusivity, MPV\_heat\_source}.
 
 % ----------------------------------------------------------------------------------------------------
-\section{Checkpointing and Restarting}
+\section{Checkpointing and Restarting} \label{sec:checkpoint}
 
 \subsection{General}
 \begin{itemize}
