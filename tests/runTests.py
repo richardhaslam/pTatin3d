@@ -33,7 +33,7 @@ if os.path.join(PTATIN_DIR,'tests') != thisDir :
 PETSC_ARCH = os.getenv('PETSC_ARCH') if os.getenv('PETSC_ARCH') else ''
 chkpath = os.path.join(PTATIN_DIR,PETSC_ARCH,'bin')
 if not os.path.exists(chkpath) :
-    print(chkpath,' not found. Exiting.')
+    print(chkpath,' not found. Set PTATIN_DIR and PETSC_ARCH properly. Exiting.')
     sys.exit(1)
 
 # bitbucket.org/dmay/pythontestharness
