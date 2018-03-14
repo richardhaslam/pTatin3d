@@ -150,7 +150,8 @@ At its core, it provides support for solving non-linear, incompressible Stokes f
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Software Requirements}
+\section{Installation}
+\subsection{Software Requirements}
 \begin{itemize}
   \item \href{http://www.mcs.anl.gov/petsc}{{\PETSc} 3.7} (essential numerical library)
 	\item git (used to obtain the source)
@@ -159,13 +160,13 @@ At its core, it provides support for solving non-linear, incompressible Stokes f
 	\item libz (non essential: used for output file compression)
 \end{itemize}
 
-\section{Obtaining the Source}
+\subsection{Obtaining the Source}
 The source code for {\ptat} is hosted at \href{https://bitbucket.org}{BitBucket} using the Git version control system.
 The latex stable version can be obtained with the \unix{git} command
 \shellcmd{git clone https://bitbucket.org/ptatin/ptatin3d}
 which will copy the code into the directory \unix{ptatin/}.
 
-\section{Installation}
+\subsection{Compilation}
 Upon successful installation of {\PETSc}, switch into the root directory of {\ptat}.
 You should provide a file, named \unix{makefile.arch}, which contains specific compiler optimizations for your operating system and compiler.
 If you do not provide this, a default, tailored to Mac OS X, will be copied for you.
@@ -1194,7 +1195,7 @@ For binary builds on OSX, this can be located here:
 /Applications/paraview.app/Contents/bin/pvpython
 \end{lstlisting}
 
-\subsection*{Procedure}
+\subsubsection*{Procedure}
 \begin{enumerate}
 
 \item Use the coordinate layout option
@@ -1207,9 +1208,9 @@ deformation_grid_ref.vts
 \end{lstlisting}
 
 \item Within your model output function, call either
-\texttt{PSwarmView(pswarm,PSW\_VT\_SINGLETON);}
+\texttt{PSwarmView(pswarm,PSW\_VT\_SINGLETON)}
 or
-\texttt{PSwarmView(pswarm,PSW\_VT\_PERRANK);}
+\texttt{PSwarmView(pswarm,PSW\_VT\_PERRANK)}
 to generate snapshots of the passive swarm.
 
 \item To generate a deformation grid for a given time step, you need to execute the following script
