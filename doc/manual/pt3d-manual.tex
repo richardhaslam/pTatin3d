@@ -1,5 +1,5 @@
 
-\documentclass[paper=a4, fontsize=11pt,twoside]{scrartcl}
+\documentclass[paper=a4, fontsize=10pt,twoside]{scrartcl}
 
 % Hacks to make scrartcl work (otherwise these provoke errors)
 \makeatletter
@@ -115,10 +115,36 @@
 
 \pagenumbering{arabic}
 
-\section{Overview}
+\section{Introduction}
+
+\subsection{Overview}
 {\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of the lithosphere and crust.
 At its core, it provides support for solving non-linear, incompressible Stokes flow problems in three dimensions, using a mixed finite element method together with a marker-and-cell method.
 
+\subsection{Referencing}
+
+\begin{lstlisting}
+@inproceedings{may2014ptatin3d,
+  title={pTatin3D: High-performance methods for long-term lithospheric dynamics},
+  author={May, Dave A and Brown, Jed and Le Pourhiet, Laetitia},
+  booktitle={High Performance Computing, Networking, Storage and Analysis, SC14: International Conference for},
+  pages={274--284},
+  year={2014},
+  organization={IEEE}
+}
+
+@article{may2015scalable,
+ title={A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
+  author={May, Dave A and Brown, Jed and Le Pourhiet, Laetitia},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  volume={290},
+  pages={496--523},
+  year={2015},
+  publisher={Elsevier}
+}
+\end{lstlisting}
+
+%\subsection{Acknowledgements}
 
 
 
@@ -1168,7 +1194,7 @@ For binary builds on OSX, this can be located here:
 /Applications/paraview.app/Contents/bin/pvpython
 \end{lstlisting}
 
-\subsection{Procedure}
+\subsection*{Procedure}
 \begin{enumerate}
 
 \item Use the coordinate layout option
