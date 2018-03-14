@@ -1009,26 +1009,28 @@ An example model called ``template'' is provided in \unix{src/models}.
 \\[8pt]
 %%	
 % TODO: update if/once new model generator is added, and/or for dynamic model registration
-To add a model, you need to (1) add the directory name containing your model in
-	\shellcmd{ptatin3d/src/models/makefile}
-under the variable
-	\shellcmd{
-	TATIN\_MODEL\_DIR = \
-        template
-	}
-and (2), you need to add the filename of \textit{all files within your model directory} into the file
-	\shellcmd{ptatin3d/src/models/local.mk}
-under the variable
-	\shellcmd{
-	libptatin3dmodels-y.c = \
-        template
-	}
+To add a model, you need to add the path to and the filename of \textit{all files within your model directory} into the file
+\begin{lstlisting}
+	ptatin3d/src/models/local.mk
+\end{lstlisting}
+A typical snippet of this file is shown below.
+Your files should replace the string \texttt{<new\_model\_files>}.
+\begin{lstlisting}
+# ptatin3d/src/models/local.mk
+libptatin3dmodels-y.c += $(call thisdir, \
+  ptatin_models_reg.c \
+  template/model_ops_template.c \
+  <new_model_files> \
+ )
+\end{lstlisting}
 %%
+\textbf{Importantly, all lines must end with forward slash character} ($\slash$).
+
 Within the directory
 	\shellcmd{ptatin3d/src/models/template}
 are the files which define any specific data structures needed for the model,
 	(\unix{model\_template\_ctx.h})
-and a file (\unix{model\_ops\_template.c}) containing the model description.
+and a file (\unix{model\_ops\_template.c}) containing a complete (yet empty) model description.
 A ``model'' description in {\ptat} consists of defining the following operations.
 % TODO: update with any new operations (added to allow for full checkpointing)
 \begin{enumerate}
@@ -1105,20 +1107,8 @@ So you don't have the compiler warning about ``implicitly defined function'', si
 \end{enumerate}
 
 \subsection{Compiling your model}
-There is also a makefile within each model in the directory.
-For example,
-	\shellcmd{ptatin3d/src/models/template/makefile}
-In general, the makefiles for each different model will all be very similar.
-It is recommended to use the model makefile identified above as the basis of a makefile for any new model.
-For most new models, one would simply have to list the C files used in defining the model in the variable
-\newline
-\unix{
-\#\# List source files here \newline
-MODEL\_SRC = \newline
-        template.c \newline
-}
-Models must be compiled at the root level of the code tree.
-That is, to make a model, you must run ``make'' from 
+Models must be compiled at the root level of the {\ptat}.
+That is, to make a model, you must run ``make all'' from 
 	\unix{ptatin3d}
 You \textit{should not} run make from within the model directory
 	\unix{ptatin3d/src/models}
