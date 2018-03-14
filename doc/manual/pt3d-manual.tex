@@ -1,5 +1,5 @@
 
-\documentclass[paper=a4, fontsize=11pt,twoside]{scrartcl}
+\documentclass[paper=a4, fontsize=10pt,twoside]{scrartcl}
 
 % Hacks to make scrartcl work (otherwise these provoke errors)
 \makeatletter
@@ -115,16 +115,43 @@
 
 \pagenumbering{arabic}
 
-\section{Overview}
+\section{Introduction}
+
+\subsection{Overview}
 {\ptat} provides a suite of functionality to study long-term geodynamic processes related to the dynamics of the lithosphere and crust.
 At its core, it provides support for solving non-linear, incompressible Stokes flow problems in three dimensions, using a mixed finite element method together with a marker-and-cell method.
 
+\subsection{Referencing}
+
+\begin{lstlisting}
+@inproceedings{may2014ptatin3d,
+  title={pTatin3D: High-performance methods for long-term lithospheric dynamics},
+  author={May, Dave A and Brown, Jed and Le Pourhiet, Laetitia},
+  booktitle={High Performance Computing, Networking, Storage and Analysis, SC14: International Conference for},
+  pages={274--284},
+  year={2014},
+  organization={IEEE}
+}
+
+@article{may2015scalable,
+ title={A scalable, matrix-free multigrid preconditioner for finite element discretizations of heterogeneous Stokes flow},
+  author={May, Dave A and Brown, Jed and Le Pourhiet, Laetitia},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  volume={290},
+  pages={496--523},
+  year={2015},
+  publisher={Elsevier}
+}
+\end{lstlisting}
+
+%\subsection{Acknowledgements}
 
 
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Software Requirements}
+\section{Installation}
+\subsection{Software requirements}
 \begin{itemize}
   \item \href{http://www.mcs.anl.gov/petsc}{{\PETSc} 3.7} (essential numerical library)
 	\item git (used to obtain the source)
@@ -133,13 +160,13 @@ At its core, it provides support for solving non-linear, incompressible Stokes f
 	\item libz (non essential: used for output file compression)
 \end{itemize}
 
-\section{Obtaining the Source}
+\subsection{Obtaining the source}
 The source code for {\ptat} is hosted at \href{https://bitbucket.org}{BitBucket} using the Git version control system.
 The latex stable version can be obtained with the \unix{git} command
 \shellcmd{git clone https://bitbucket.org/ptatin/ptatin3d}
 which will copy the code into the directory \unix{ptatin/}.
 
-\section{Installation}
+\subsection{Compilation}
 Upon successful installation of {\PETSc}, switch into the root directory of {\ptat}.
 You should provide a file, named \unix{makefile.arch}, which contains specific compiler optimizations for your operating system and compiler.
 If you do not provide this, a default, tailored to Mac OS X, will be copied for you.
@@ -184,291 +211,218 @@ The current build system allows you to conveniently compile different {\ptat} us
 See the examples in \texttt{config/} for more.
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
-\section{Building Models}
+\section{Methods}
 
-\subsection{Code structure}
-The idea we have for building models is that models should be separated as much as possible
-from the core functionality of {\ptat}. That is, we want to separate boundary conditions,
-mesh geometry, etc. as much as possible from the solver used to solve the underlying PDE (Stokes).
-\\[8pt]
-%%
-For this reason, we have adopted a code structure in which models are compiled and combined into
-a separate, stand alone library. When using a {\ptat{ driver (a program which solves something),
-we link the model library against the solver library.
-\\[8pt]
-%%
-Models live under the directory
-	\shellcmd{ptatin3d/src/models/}
-and the models are compiled into the static library \unix{libptatin3dmodels.a}
-An example model called ``template'' is provided in \unix{src/models}.
-\\[8pt]
-%%	
-% TODO: update if/once new model generator is added, and/or for dynamic model registration
-To add a model, you need to (1) add the directory name containing your model in
-	\shellcmd{ptatin3d/src/models/makefile}
-under the variable
-	\shellcmd{
-	TATIN\_MODEL\_DIR = \
-        template
-	}
-and (2), you need to add the filename of \textit{all files within your model directory} into the file
-	\shellcmd{ptatin3d/src/models/local.mk}
-under the variable
-	\shellcmd{
-	libptatin3dmodels-y.c = \
-        template
-	}
-%%
-Within the directory
-	\shellcmd{ptatin3d/src/models/template}
-are the files which define any specific data structures needed for the model,
-	(\unix{model\_template\_ctx.h})
-and a file (\unix{model\_ops\_template.c}) containing the model description.
-A ``model'' description in {\ptat} consists of defining the following operations.
-% TODO: update with any new operations (added to allow for full checkpointing)
-\begin{enumerate}
-	\item \unix{FP\_pTatinModel\_Initialize} (non essential)
-	Initialize any model specific options, and or model specific parameters in your user defined model context.
+\subsection{Governing equations}
 
-	\item \unix{FP\_pTatinModel\_ApplyBoundaryCondition}
-	Define boundary conditions for the PDE (Stokes, energy).
+We solve the mechancis, energy and transport problem within a time-dependent domain 
+denoted via $\Omega(t)$, with boundary $\partial \Omega(t)$. 
+The outward pointing normal to $\partial \Omega$ is denoted via $\boldsymbol n$.
 
-	\item \unix{FP\_pTatinModel\_ApplyBoundaryConditionMG}
-	Define boundary conditions for velocity on each multi-grid level.
+\subsubsection*{Mechanics}
+$$
+	\nabla \cdot \eta \left( \nabla \boldsymbol v + (\nabla \boldsymbol v)^T \right) - \nabla p = \boldsymbol f_u
+$$
+$$
+	\nabla \cdot \boldsymbol u = f_p
+$$
+\textit{Boundary conditions:}
+$$
+	\hat{\boldsymbol u}_1 \medspace \text{ on } \medspace \partial \Omega^M_1
+$$
+$$
+	\hat{u}_2 = \boldsymbol v \cdot \boldsymbol n \medspace \text{ on } \medspace \partial \Omega^M_2
+$$
+$$
+	\hat{\boldsymbol \sigma}_3 = \boldsymbol \sigma \medspace \text{ on } \medspace \partial \Omega^M_3
+$$
+$$
+	\hat{\boldsymbol \sigma}_4 = \boldsymbol \sigma \cdot \boldsymbol n \medspace \text{ on } \medspace \partial \Omega^M_4
+$$
 
-	\item \unix{FP\_pTatinModel\_ApplyMaterialBoundaryCondition} (non essential)
-	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n < 0$ (e.g. inflow boundary conditions).
+\subsubsection*{Energy}
+$$
+	\rho C_p \frac{\partial T}{\partial t} + \boldsymbol v \cdot \nabla T + \nabla \cdot \left( k \nabla T\right) =  f_T
+$$
+\textit{Boundary conditions:}
+$$
+	\hat{T}_1 \medspace \text{ on } \medspace \partial \Omega^E_1
+$$
+$$
+	q_2 = - k \nabla T \cdot \boldsymbol n = 0 \medspace \text{ on } \medspace \partial \Omega^E_2
+$$
 
-	\item \unix{FP\_pTatinModel\_ApplyInitialSolution} (non essential for Stokes)
-	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value may improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
-	
-	\item \unix{FP\_pTatinModel\_ApplyInitialMeshGeometry}
-	Define the geometry of the mesh. Typically this is done simply by described a hexahedral domain via the {\PETSc} function \unix{DMDASetUniformCoordinates()}.
+\subsubsection*{Transport}
+$$
+	\frac{D \Psi}{D t}  =  g_{\Psi},
+$$
+where $\Psi$ is a scalar, vector or tensor.
 
-	\item \unix{FP\_pTatinModel\_ApplyInitialMaterialGeometry}
-	Define the initial geometry of the lithology on the markers. (e.g. specify rheology)
+\textit{Boundary conditions:}
+$$
+	\hat{\Psi}_1 \medspace \text{ on } \medspace \partial \Omega^{\Psi}_1,
+$$
+where $\partial \Omega^{\Psi}_1$ denotes the segment of the boundary where inflow occurs, e.g. $\boldsymbol v \cdot \boldsymbol n < 0$.
 
-	\item \unix{FP\_pTatinModel\_UpdateMeshGeometry} (non essential)
-	Define how the mesh should evolve with time. In some models the mesh remains fixed in space through out time, thus this function need not be defined. Other models may wish to deform the mesh with the velocity vector, or may wish to advect the free surface and then apply remeshing within the interior of the domain. Such prescription of ALE mesh movement should be specified here.
+By default, we evolve the material region $\mathcal R$ according to
+$$
+	\frac{D \mathcal R}{Dt} = 0.
+$$
 
-	\item \unix{FP\_pTatinModel\_Output} (non essential)
-	Specify what mesh fields (e.g. velocity, pressure, temperature) and marker fields will be outputted. Numerous
-	methods to output objects from {\ptat} are provided. Any model specific output functions should be called here.
+\subsection{Coefficient forms}
 
-	\item \unix{FP\_pTatinModel\_Destroy} 
-	Upon completion of a {\ptat} job, this function will be called to release the memory allocated which is associated 
-	with this particular model. If no data structures were defined, then this function does not need to be defined.
-\end{enumerate}
+\subsubsection*{Mechanics}
 
-Following the definition of the above functions, to complete the model definition we have to perform the following steps :
-\begin{enumerate}
-	\item \unix{pTatinModelCreate()}
-Calling this creates a little structure to hold your function pointers and other model related information.
+In discussing the flow laws, we denote the strain-rate tensor via
+$$
+	\dot{\boldsymbol \epsilon} = \tfrac{1}{2} \left( \nabla \boldsymbol v + (\nabla \boldsymbol v)^T \right)
+$$
+and its second invariant as 
+$$
+	\dot{\epsilon}_{II} = \sqrt{ \tfrac{1}{2} \dot{\epsilon}_{ij} \dot{\epsilon}_{ij} }.
+$$
 
-	\item \unix{pTatinModelSetName(...,MODELNAME);}
-The variable in \unix{MODELNAME}, will used as the command line argument used to select the model
-	\unix{-ptatin\_model MODELNAME}
+\textit{Shear viscosity $\eta$}
+\begin{itemize}
+\item Linear (constant)
+$$
+	\eta = \eta_v := f(\mathcal R)
+$$
+\item Linear (temperature dependent)
+$$
+	\eta = \eta_v := \eta_0(\mathcal R) \exp( -\theta(\mathcal R) T)
+$$
+\item Nonlinear (strain-rate and pressure dependent)
+$$
+	\eta = \eta_v := A_0(\mathcal R) \dot{\epsilon}_{II}^{1/n(\mathcal R) - 1}
+		 A(\mathcal R)^{-1/n(\mathcal R)} \exp\left( 
+		\frac{E(\mathcal R) + P V(\mathcal R)}{n(\mathcal R) R T}
+	\right)
+$$
 
-	\item \unix{pTatinModelSetUserData()}
-Set any data structures required by the model.
+\item Nonlinear (stress limited)
+$$
+	\eta := \frac{\tau_\text{min}}{2 \dot{\epsilon}_{II}}
+$$
+$$
+	\tau_\text{min} = \min( 2 \dot{\epsilon}_{II} \eta_v, \tau_y )
+$$
+where
+$$ 
+	\tau_y = f(\mathcal R,\epsilon)
+	\medspace
+	\text{ or }
+	\medspace
+	\tau_y = f(\mathcal R,P,\epsilon).
+$$
+The variable $\epsilon$ defines the accumulated plastic strain which evolves according to
+$$
+	\frac{D\epsilon}{Dt}
+	=
+	\begin{cases}
+    \dot{\epsilon}_{II}, & \text{if } \medspace 2 \eta_v \dot{\epsilon}_{II} > \tau_y \\
+    0,                    & \text{otherwise}
+	\end{cases}
+$$
+\end{itemize}
 
-	\item Assign the function pointers. This is done via \unix{pTatinModelSetFunctionPointer()}.
-The second argument indicates which function pointer is used. These are defined via
-\unix{typedef enum \{ \} pTatinModelOperation;}
-and are declared in 
-\unix{ptatin\_models.h}
-To assign the operations which your model will perform, a helper function (\unix{pTatinModelSetFunctionPointer()}) is provided.
-Example usage:
-\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_BC,my\_apply\_bc\_function);}
-\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_INIT\_MAT\_GEOM,my\_apply\_init\_material\_geom\_function);} %line overrun
-
-	\item Register the model via the call
-\unix{pTatinModelRegister()}
-This will add your model definition into a list which {\ptat} will have access to.
-Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()}.
-
-	\item Finally, you need to edit
-	\unix{ptatin\_models\_reg.c}
-and add the function call to register your model.
-This should be done within
-		\unix{pTatinModelRegisterAll()}
-as you'll note, you will see the ``template'' model registration function 	
-		\unix{pTatinModelRegister\_Template();}
-
-So you don't have the compiler warning about ``implicitly defined function'', simply add the prototype as an \unix{extern}, e.g.
-	\shellcmd{extern PetscErrorCode pTatinModelRegister\_Template(void);}
-\end{enumerate}
-
-\subsection{Compiling your model}
-There is also a makefile within each model in the directory.
-For example,
-	\shellcmd{ptatin3d/src/models/template/makefile}
-In general, the makefiles for each different model will all be very similar.
-It is recommended to use the model makefile identified above as the basis of a makefile for any new model.
-For most new models, one would simply have to list the C files used in defining the model in the variable
-\newline
-\unix{
-\#\# List source files here \newline
-MODEL\_SRC = \newline
-        template.c \newline
-}
-Models must be compiled at the root level of the code tree.
-That is, to make a model, you must run ``make'' from 
-	\unix{ptatin3d}
-You \textit{should not} run make from within the model directory
-	\unix{ptatin3d/src/models}
+\textit{Momentum forcing $f_u$}
+\begin{itemize}
+\item Constant
+$$
+\boldsymbol f_u = \boldsymbol f(\mathcal R)
+$$
+\item Bouyancy
+$$
+\boldsymbol f_u = \rho \boldsymbol g
+$$
+where the density is defined by either
+$$
+\rho = f(\mathcal R),
+$$
 or
-	\unix{ptatin3d/src}
-or
-	\unix{ptatin3d/src/models/template}.
-%If you only want to compile the models within
-%	\unix{ptatin3d/src/models},
-%then execute the following command
-%	\unix{make models}
-%from the directory
-%	\unix{ptatin3d/src}.
-
-\subsection{Implementing Dirichlet boundary conditions}
-{\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
-\\[8pt]
-%%
-% TODO: switch to using proper listings?
-To apply boundary conditions, the main function used is:
-\shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
-  BCList list, \\
-  DM da, \\
-  DMDABCListConstraintLoc doflocation, \\
-  PetscInt dof\_idx, \\
-  PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
-  void *ctx)} 
-which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as;
-\begin{itemize}
-%%
-\item[] \unix{BCList list} - data structure used to store boundary conditions.
-%%
-\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
-%%
-\item[] \unix{DMDABCListConstraintLoc doflocation} - index identifying which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
-	\{ \unix{DMDABCList\_INTERIOR\_LOC, 
-	DMDABCList\_IMIN\_LOC,
-	DMDABCList\_IMAX\_LOC,
-	DMDABCList\_JMIN\_LOC,
-	DMDABCList\_JMAX\_LOC,
-	DMDABCList\_KMIN\_LOC,
-	DMDABCList\_KMAX\_LOC} \}.
-Refer to Fig.~\ref{fig:domain_coord} for the geometric interpretation of these names.
-%%
-\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
-%%
-\item[] \unix{PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
-%%
-\item[] \unix{void *ctx} - any data structure, or parameters which are required by the user provided function to evaluate the boundary condition.
-%%
+$$
+\rho = \rho_0 ( 1 - \alpha T + \beta P ).
+$$
 \end{itemize}
 
-The calling sequence for \unix{evaluate\_boundary\_condition} is,
-\shellcmd{PetscBool evaluate\_boundary\_condition( PetscScalar position[], PetscScalar *value, void *ctx )}
-where the arguments are;
+\textit{Continuity forcing $f_p$}
 \begin{itemize}
-\item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is evaluated.
-\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
-\item[] \unix{PetscScalar *value} - the actual value of the boundary condition [OUTPUT].
-\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the boundary condition should be applied at this location [OUTPUT].
-\end{itemize}
-For a simple example of a user defined boundary condition function, refer to 
-\shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
-in file \unix{dmda\_bcs.c}.
-\\[8pt]
-%%	
-A standard set of velocity Dirichlet boundary conditions for Stokes are defined in \unix{ptatin\_std\_dirichlet\_boundary\_conditions.c}. Please refer to  \unix{ptatin\_std\_dirichlet\_boundary\_conditions.h} for a summary of the functions available.
-
-
-
-
-Notes: 
-\begin{enumerate}
-\item Boundary conditions can be applied within the interior of the domain using the value \unix{DMDABCList\_INTERIOR\_LOC}.
-\item Boundary conditions do not have to be applied along an entire face. Prescribing boundary conditions internal to a face is controlled by whether your user provided function returns  \unix{PETSC\_TRUE} or \unix{PETSC\_FALSE}. For example, if the bc evaluator was called with the argument \unix{DMDABCList\_IMIN\_LOC} we will traverse along the bottom boundary. The user defined function could return  \unix{PETSC\_TRUE} if $x < 0.5$ and \unix{PETSC\_FALSE} otherwise. When \unix{PETSC\_FALSE} is returned the parameter \unix{PetscScalar *value} is ignored.
-\item When defining time dependent boundary conditions, the variable time should be included within the user defined structured (\unix{void *ctx}) which is passed into \unix{DMDABCListTraverse3d()}.
-\end{enumerate}
-
-\subsection{Implementing initial conditions}
-Iterators are provided to allow to define the contents of {\PETSc} vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
-\\[8pt]
-%%	
-The standard vector iterator is given by
-% TODO: switch to using proper listings?
-\shellcmd{PetscErrorCode DMDAVecTraverse3d( \newline
-  DM da, \\
-  Vec X, \\
-  PetscInt dof\_idx, \\
-  PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*), \\
-  void *ctx),} 
- where the input arguments are identified as;
-\begin{itemize}
-%%
-\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
-%%
-\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
-%%
-\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
-%%
-\item[] \unix{PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*)} - the user provided function.
-%%
-\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
-%%
-\end{itemize}
-The calling sequence for \unix{evaluate\_function} is,
-\shellcmd{PetscBool evaluate\_function( PetscScalar position[], PetscScalar *value, void *ctx )}
-where the arguments are
-\begin{itemize}
-\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
-\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
-\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
-\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
-\end{itemize}
-%
-%
-%\shellcmd{PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof\_idx,PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)}
-%
-%
-
-The standard $ijk$ vector iterator is given by
-\shellcmd{PetscErrorCode DMDAVecTraverseIJK( \newline
-  DM da, \\
-  Vec X, \\
-  PetscInt dof\_idx, \\
-  PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*), \\
-  void *ctx),} 
- where the input arguments are identified as;
-\begin{itemize}
-%%
-\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
-%%
-\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
-%%
-\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
-%%
-\item[] \unix{PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*)} - the user provided function.
-%%
-\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
-%%
-\end{itemize}
-The calling sequence for \unix{evaluate\_functionIJK} is,
-\shellcmd{PetscBool evaluate\_functionIJK( PetscScalar position[], PetscInt global\_index[], PetscInt local\_index[], PetscScalar *value, void *ctx )}
-where the arguments are
-\begin{itemize}
-\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
-\item[] \unix{PetscInt global\_index[]} - $i,j,k$ values of the node in the global numbering system.
-\item[] \unix{PetscInt local\_index[]} - $i,j,k$ values of the node in the local numbering system.
-\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
-\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
-\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\item Typically we use $f_p = 0$.
 \end{itemize}
 
 
+\subsubsection*{Energy}
 
+\textit{Density}
+\begin{itemize}
+\item Constant
+$$
+	\rho := f(\mathcal R)
+$$
+\end{itemize}
+
+\textit{Conductivity}
+\begin{itemize}
+\item Constant
+$$
+	k := f(\mathcal R)
+$$
+\item Temperature dependent
+$$
+	k := f(\mathcal R,T)
+$$
+\end{itemize}
+
+\textit{Source}
+\begin{itemize}
+\item Constant
+$$
+	f_T^c := f(\mathcal R)
+$$
+\item Radiogenic
+$$
+	f_T^r := H_0(\mathcal R) \exp( -t \lambda(\mathcal R) )
+$$
+\item Adiabatic
+$$
+	f_T^a := - T \alpha(\mathcal R) \rho(\mathcal R) (\boldsymbol g \cdot \boldsymbol v)
+$$
+\end{itemize}
+The final source term $f_T$ can be composed by summing the above terms
+$$
+	f_T = f_T^c + f_T^r + f_T^a,
+$$
+where any of the individual terms may be zero.\vspace{10mm}
+
+\textit{Simplified conservation law}\newline
+We also can solve the simpler equation
+$$
+\frac{\partial T}{\partial t} + \boldsymbol v \cdot \nabla T + \nabla \cdot \left( \kappa \nabla T\right) =  f_T.
+$$
+With this form, the following choices are valid:\newline
+\textit{Diffusivity}
+\begin{itemize}
+\item Constant
+$$
+	\kappa := f(\mathcal R)
+$$
+\end{itemize}
+\textit{Source}
+\begin{itemize}
+\item Constant
+$$
+	f_T := f(\mathcal R)
+$$
+\end{itemize}
+
+
+\subsection{Numerics}
+\begin{itemize}
+\item Mechanics: Q2-P1 mixed finite elements on hexahedral elements
+\item Energy: overlapping Q1 finite elements (hex) with SUPG stabilization
+\item Transport: Lagrangian particle (material point method)
+\end{itemize}
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
@@ -481,15 +435,31 @@ The most important (i.e. useful) of these are summarized below.
 \begin{enumerate}
 	\item \unix{ptatin\_driver\_ic.app}
 	Specifically designed to confirm that the model is defined in accordance with what the developer had in mind. This driver does not solve any equations or perform any time stepping. Rather it only loads the model, loads the initial conditions and boundary conditions and calls the model output function.
+
+	\item \unix{ptatin\_driver\_ts\_init.app}
+	A driver for initlalising and solving time dependent, \emph{linear} or \emph{non-linear} Stokes flow problems. 
+	The energy equation may be optionally activated within this model.
+
+	To commence a new run, one must: (i) first execute the driver with the additional argument \texttt{-init}.
+	With this argument, the solution associated with the initial condition is computed and checkpointed;
+	(ii) execute the driver. When \texttt{-init} is not provided, the driver will load a checkpoint file and commence
+	time-stepping. See Section \ref{sec:checkpoint} for further details.
+
+	Checkpointing is enabled and restart capabilities are functional.
 	
 	\item \unix{ptatin\_driver\_energy.app}
 	A basic driver used for testing the advection diffusion solver. It does not solve Stokes.
 	
 	\item \unix{ptatin\_driver\_linear\_ts.app}
-	A driver for solving time dependent, \emph{linear} Stokes flow problems. Checkpointing is enabled.
+	A driver for solving time dependent, \emph{linear} Stokes flow problems. 
+	Checkpointing is enabled, however no capabilities for restart is provided.
+	This driver is deprecated and will soon be removed - users should use \unix{ptatin\_driver\_ts\_init.app}.
 
 	\item \unix{ptatin\_driver\_nonlinear\_ts.app}
-	A driver for solving time dependent, \emph{non-linear} Stokes flow problems. The energy equation may be optionally activated within this model.
+	A driver for solving time dependent, \emph{non-linear} Stokes flow problems. 
+	The energy equation may be optionally activated within this model.
+	Checkpointing is enabled, however no capabilities for restart is provided.
+	This driver is deprecated and will soon be removed - users should use \unix{ptatin\_driver\_ts\_init.app}.
 \end{enumerate}
 
 \subsection{Options for standard drivers}
@@ -509,7 +479,7 @@ The most important (i.e. useful) of these are summarized below.
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Example models and tests}
+\section{Example Models and Tests}
 \label{sec:examples_and_tests}
 A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and Numpy\footnote{To check, run \unix{python} and then enter \unix{import numpy}, which shouldn't produce an error. (Enter \unix{exit()} to exit.)} and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
 These wiill provide instructions on downloading a required \href{https://www.bitbucket.org/dmay/pythontestharness}{test harness script}.
@@ -526,7 +496,7 @@ Numerous example models are provided with the source distribution. These serve a
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Generated output}
+\section{Generated Output}
 All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called \texttt{output} will be generated.
 
 \subsection{Diagnostics}
@@ -623,6 +593,94 @@ The function \\
 	\unix{pTatin3d\_ModelOutput\_MarkerCellFields()} \\
 generates these data files. This function is flexible and permits specific marker fields to be output into the file. Marker fields which can be output in these files are identified via the the following names:
 \unix{MPV\_region, MPV\_viscosity, MPV\_density, MPV\_plastic\_strain, MPV\_yield\_indicator, MPV\_diffusivity, MPV\_heat\_source}.
+
+% ----------------------------------------------------------------------------------------------------
+\section{Checkpointing and Restarting} \label{sec:checkpoint}
+
+\subsection{General}
+\begin{itemize}
+\item All drivers are capable of \textit{generating} checkpoint files - however only {\tt ptatin\_driver\_ts\_init.app} is
+capable to restarting a job from a checkpoint file.
+
+\item All checkpoint files created will reside underneath the following directory:
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints
+\end{lstlisting}
+where {\tt <OUTPUTDIR>} was specified via {\tt -output\_path}.
+Each checkpoint is associated with a unique textual name related to the specific stage of the computation, for example
+the initial condition, or the solution at a given time step.
+A checkpoint file associated with the initial condition data will be written here
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints/initial_condition
+\end{lstlisting}
+whilst a checkpoint associated with step 100 will be written here
+\begin{lstlisting}
+<OUTPUTDIR>/checkpoints/step100
+\end{lstlisting}
+Within each each of these directories a number of different files are created.
+The parent checkpoint file for the {\ptat} is always called
+\begin{lstlisting}
+ptatin3dctx.json
+\end{lstlisting}
+\end{itemize}
+
+\subsection{Controlling checkpoint file creation}
+Specifying when a checkpoint should occur can be controlled in several different ways.
+These are summarised below.
+
+\begin{enumerate}
+\item By enforcing that the code writes a checkpoint file every $N$ steps, but the checkpoint files will will have a common name.
+These files are over written each time checkpointing occurs. 
+Such functionality is useful when you simply need to restart the code on machine which allows a fixed wall time and you want to job chain.
+Since the checkpoint files have a common name, job chaining is straight forward.
+This type of checkpointing is activated via the command line flag \newline
+{\tt -checkpoint\_every N}
+
+\item By enforcing that the code writes a checkpoint file every $M$ time steps. 
+These files will have a file name with a unique extension, thus they do not get over-ridden.
+This type of checkpointing is activated via the command line flag \newline
+{\tt -checkpoint\_every\_nsteps M}
+
+\item By enforcing that the code writes a checkpoint file every $X$ CPU minutes. 
+This can be useful if you have some time steps which require significantly more time to solve than others.
+In this case, requesting to check point every $M$ time steps might not be appropriate and you might exceed the wall time before $M$ time steps have completed.
+This type of checkpointing is activated via the command line flag\newline
+{\tt -checkpoint\_every\_ncpumins X}
+\end{enumerate}
+
+All of the above checkpoint creation options can be used together to preserve the results obtained from a simulation.
+When they are used together, care is taken to ensure that time step based checkpoint files are not written twice.
+For example, if I asked to checkpoint every 30 mins, and this criterion is activated at step 10, and the {\tt -checkpoint\_every\_nsteps} options was used with a value of 10, {\ptat} will not checkpoint step10 twice.
+
+\subsection{Restarting via a checkpoint file}
+
+When ever a checkpoint file is written, the file {\tt restart.default} is created into the directory specified via {\tt -output\_path}.
+This file contains a {\PETSc} options specifying the path to the most recent checkpoint file created:
+\begin{lstlisting}
+# restart.default
+-restart_directory path/to/last_checkpoint_file_written
+\end{lstlisting}
+
+To restart from the last checkpoint file written, you just need to either execute
+\begin{lstlisting}
+./ptatin_driver_ts_init.app
+\end{lstlisting}
+By default this driver will look in the directory {\tt <OUTPUTDIR>} for {\tt restart.default} and if found, it will use the path to the checkpoint file specified via the option {\tt -restart\_directory} to restart the run.
+
+To restart from any checkpoint file written, you need to either execute
+\begin{lstlisting}
+./ptatin_driver_ts_init.app \
+  -restart_directory path/to/your/checkpoint_file
+\end{lstlisting}
+If no other options are provided, the restarted job will write output into the same directory specified by the value of {\tt -output\_path} given to the run which generated the checkpoint file.
+
+By default it is assumed that the output of a restarted job will be written into the same location as the original job.
+If you wish to direct the output of you restarted run to a directory different from that set by {\tt -output\_path} in the original job, you are required to specify the following two options: \newline
+\begin{lstlisting}
+./ptatin_driver_ts_init.app \
+  -restart_directory path/to/your/checkpoint_file \
+  -output_path path/to/new/outputdirectory
+\end{lstlisting}
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
@@ -926,54 +984,284 @@ The underlying coordinate system used in {\ptat} is Cartesian. In Fig.~\ref{fig:
 \label{fig:basis_functions}
 \end{figure}
 
-\subsection{Defining geometric regions on material points}
+%\subsection{Defining mesh geometry}
 
-\section{Non-dimensional scaling}
-The preferred choice of scaling is the following; the users chooses a characteristic velocity, length and viscosity $v^*$, $x^*$, $\eta^*$.
-These choices define the following non-dimensional variables, $v' = v/v^*$, $x' = x/x^*$, $\eta' = \eta/\eta^*$. Given the Stokes problem
-$$
-	\nabla \cdot \eta \left( \nabla v + (\nabla v)^T \right) - \nabla p = \rho g,
-	\qquad
-	\nabla \cdot u = 0,
-$$
-the non-dimensional form thus becomes
-$$
-	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \frac{x^*}{\eta^* v^*} \nabla' p = \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g,
-	\qquad
-	\nabla' \cdot u' = 0,
-$$
-where $\nabla' = \frac{1}{x^*} \nabla$.
-From this the non-dimensional pressure is chosen as 
-$$
-	p = p^* p', \qquad p^* = \frac{\eta^* v^*}{x^*} .
-$$
-Thus the final non-dimensional form of the Stokes problem is given by:
-$$
-	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
-	= \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g
-	\qquad
-	\nabla' \cdot u' = 0.
-$$
+%\subsection{Defining geometric regions on material points}
 
-The right hand side should be interpreted as a non-dimensional force per volume. If desired, we can express the right hand side in terms of a non-dimensional density $\rho = \rho^* \rho'$ and gravity $g = g^* g'$.
-$$
-	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
-	= 	\left( \frac{\phantom(x^*\phantom)^2}{\eta^* v^*}  \right) 
-		\left( \rho^* \rho' \right)  \left( g^* g' \right),
-	\qquad
-	\nabla' \cdot u' = 0.
-$$
+% ----------------------------------------------------------------------------------------------------
+\section{Building Models}
 
-%% a = x.t^-2 = x (x/v)^-2 = x .v.v/(x.x)
-\subsection{Additional notes}
+\subsection{Code structure}
+The idea we have for building models is that models should be separated as much as possible
+from the core functionality of {\ptat}. That is, we want to separate boundary conditions,
+mesh geometry, etc. as much as possible from the solver used to solve the underlying PDE (Stokes).
+\\[8pt]
+%%
+For this reason, we have adopted a code structure in which models are compiled and combined into
+a separate, stand alone library. When using a {\ptat{ driver (a program which solves something),
+we link the model library against the solver library.
+\\[8pt]
+%%
+Models live under the directory
+	\shellcmd{ptatin3d/src/models/}
+and the models are compiled into the static library \unix{libptatin3dmodels.a}
+An example model called ``template'' is provided in \unix{src/models}.
+\\[8pt]
+%%	
+% TODO: update if/once new model generator is added, and/or for dynamic model registration
+To add a model, you need to add the path to and the filename of \textit{all files within your model directory} into the file
+\begin{lstlisting}
+	ptatin3d/src/models/local.mk
+\end{lstlisting}
+A typical snippet of this file is shown below.
+Your files should replace the string \texttt{<new\_model\_files>}.
+\begin{lstlisting}
+# ptatin3d/src/models/local.mk
+libptatin3dmodels-y.c += $(call thisdir, \
+  ptatin_models_reg.c \
+  template/model_ops_template.c \
+  <new_model_files> \
+ )
+\end{lstlisting}
+%%
+\textbf{Importantly, all lines must end with forward slash character} ($\slash$).
+
+Within the directory
+	\shellcmd{ptatin3d/src/models/template}
+are the files which define any specific data structures needed for the model,
+	(\unix{model\_template\_ctx.h})
+and a file (\unix{model\_ops\_template.c}) containing a complete (yet empty) model description.
+A ``model'' description in {\ptat} consists of defining the following operations.
+% TODO: update with any new operations (added to allow for full checkpointing)
 \begin{enumerate}
-% -------
-	\item The ideal choice of $x^*, v^*, \eta^*$ scaling should result in values of velocity and pressure which follow $\bar{v} = \max_k(\vert v'_k \vert) \sim 1$ and $\bar{p} = \max_k(\vert p'_k \vert) \sim 1$. If your scaling doesn't produce this type of behaviour, then one should be careful in choosing the stopping condition applied to both the non-linear and linear solvers. For example, if $\bar{v} \sim 10^6$, it doesn't make much sense to solve the non-linear equations to a tolerance of $F_u, F_p \sim 10^{-9}$.
-% -------
-	\item Convergence of both linear and non-linear solver will appear slow if the scaling if the characteristic size of the velocity and pressure coming out of your model are orders of magnitude different. For instance, if your choice of scaling produces $F_u \sim 10^6$ and $F_p \sim 10^{-1}$ and you stop on $\delta_\text{abs} = 10^{-6}$, then a large number of iterations will be required to reduce the 2-norm of $(F_u, F_p)$ to be less than $10^{-6}$.
-% -------
-	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to \emph{decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to \emph{increase} by a factor of $X^2$ and $p'$ to \emph{increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will \emph{decrease} by a factor of $X$.
+	\item \unix{FP\_pTatinModel\_Initialize} (non essential)
+	Initialize any model specific options, and or model specific parameters in your user defined model context.
+
+	\item \unix{FP\_pTatinModel\_ApplyBoundaryCondition}
+	Define boundary conditions for the PDE (Stokes, energy).
+
+	\item \unix{FP\_pTatinModel\_ApplyBoundaryConditionMG}
+	Define boundary conditions for velocity on each multi-grid level.
+
+	\item \unix{FP\_pTatinModel\_ApplyMaterialBoundaryCondition} (non essential)
+	Define the influx of material points if you have prescribed boundary conditions for velocity which are such that $\boldsymbol u \cdot \boldsymbol n < 0$ (e.g. inflow boundary conditions).
+
+	\item \unix{FP\_pTatinModel\_ApplyInitialSolution} (non essential for Stokes)
+	Define initial values in the velocity, pressure (non essential) and temperature (essential) vectors. For the Stokes variables ($\boldsymbol u,p$), specifying an initial value may improve convergence of the Stokes solve on the first time step (e.g. by introducing a hydrostatic pressure gradient in the pressure vector).
+	
+	\item \unix{FP\_pTatinModel\_ApplyInitialMeshGeometry}
+	Define the geometry of the mesh. Typically this is done simply by described a hexahedral domain via the {\PETSc} function \unix{DMDASetUniformCoordinates()}.
+
+	\item \unix{FP\_pTatinModel\_ApplyInitialMaterialGeometry}
+	Define the initial geometry of the lithology on the markers. (e.g. specify rheology)
+
+	\item \unix{FP\_pTatinModel\_UpdateMeshGeometry} (non essential)
+	Define how the mesh should evolve with time. In some models the mesh remains fixed in space through out time, thus this function need not be defined. Other models may wish to deform the mesh with the velocity vector, or may wish to advect the free surface and then apply remeshing within the interior of the domain. Such prescription of ALE mesh movement should be specified here.
+
+	\item \unix{FP\_pTatinModel\_Output} (non essential)
+	Specify what mesh fields (e.g. velocity, pressure, temperature) and marker fields will be outputted. Numerous
+	methods to output objects from {\ptat} are provided. Any model specific output functions should be called here.
+
+	\item \unix{FP\_pTatinModel\_Destroy} 
+	Upon completion of a {\ptat} job, this function will be called to release the memory allocated which is associated 
+	with this particular model. If no data structures were defined, then this function does not need to be defined.
 \end{enumerate}
+
+Following the definition of the above functions, to complete the model definition we have to perform the following steps :
+\begin{enumerate}
+	\item \unix{pTatinModelCreate()}
+Calling this creates a little structure to hold your function pointers and other model related information.
+
+	\item \unix{pTatinModelSetName(...,MODELNAME);}
+The variable in \unix{MODELNAME}, will used as the command line argument used to select the model
+	\unix{-ptatin\_model MODELNAME}
+
+	\item \unix{pTatinModelSetUserData()}
+Set any data structures required by the model.
+
+	\item Assign the function pointers. This is done via \unix{pTatinModelSetFunctionPointer()}.
+The second argument indicates which function pointer is used. These are defined via
+\unix{typedef enum \{ \} pTatinModelOperation;}
+and are declared in 
+\unix{ptatin\_models.h}
+To assign the operations which your model will perform, a helper function (\unix{pTatinModelSetFunctionPointer()}) is provided.
+Example usage:
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_BC,my\_apply\_bc\_function);}
+\shellcmd{pTatinModelSetFunctionPointer(...,PTATIN\_MODEL\_APPLY\_INIT\_MAT\_GEOM,my\_apply\_init\_material\_geom\_function);} %line overrun
+
+	\item Register the model via the call
+\unix{pTatinModelRegister()}
+This will add your model definition into a list which {\ptat} will have access to.
+Steps 1-5 are provided within the function \unix{pTatinModelRegister\_Template()}.
+
+	\item Finally, you need to edit
+	\unix{ptatin\_models\_reg.c}
+and add the function call to register your model.
+This should be done within
+		\unix{pTatinModelRegisterAll()}
+as you'll note, you will see the ``template'' model registration function 	
+		\unix{pTatinModelRegister\_Template();}
+
+So you don't have the compiler warning about ``implicitly defined function'', simply add the prototype as an \unix{extern}, e.g.
+	\shellcmd{extern PetscErrorCode pTatinModelRegister\_Template(void);}
+\end{enumerate}
+
+\subsection{Compiling your model}
+Models must be compiled at the root level of the {\ptat}.
+That is, to make a model, you must run ``make all'' from 
+	\unix{ptatin3d}
+You \textit{should not} run make from within the model directory
+	\unix{ptatin3d/src/models}
+or
+	\unix{ptatin3d/src}
+or
+	\unix{ptatin3d/src/models/template}.
+%If you only want to compile the models within
+%	\unix{ptatin3d/src/models},
+%then execute the following command
+%	\unix{make models}
+%from the directory
+%	\unix{ptatin3d/src}.
+
+\subsection{Implementing Dirichlet boundary conditions}
+{\ptat} uses ``iterators'' to assist you in defining boundary and initial conditions. Iterators allow you to apply user defined functions to set boundary and initial conditions into the data structures and solution vectors used by {\ptat} without requiring the user to see the underlying data structures used, or understand parallelism.
+\\[8pt]
+%%
+% TODO: switch to using proper listings?
+To apply boundary conditions, the main function used is:
+\shellcmd{PetscErrorCode DMDABCListTraverse3d( \newline
+  BCList list, \\
+  DM da, \\
+  DMDABCListConstraintLoc doflocation, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*), \\
+  void *ctx)} 
+which is declared in \unix{dmda\_bcs.c}, where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{BCList list} - data structure used to store boundary conditions.
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{DMDABCListConstraintLoc doflocation} - index identifying which region of the mesh you wish to attach a boundary condition to. The value used here should be one of 
+	\{ \unix{DMDABCList\_INTERIOR\_LOC, 
+	DMDABCList\_IMIN\_LOC,
+	DMDABCList\_IMAX\_LOC,
+	DMDABCList\_JMIN\_LOC,
+	DMDABCList\_JMAX\_LOC,
+	DMDABCList\_KMIN\_LOC,
+	DMDABCList\_KMAX\_LOC} \}.
+Refer to Fig.~\ref{fig:domain_coord} for the geometric interpretation of these names.
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_boundary\_condition)(PetscScalar*,PetscScalar*,void*)} - the user provided function which defines the boundary condition.
+%%
+\item[] \unix{void *ctx} - any data structure, or parameters which are required by the user provided function to evaluate the boundary condition.
+%%
+\end{itemize}
+
+The calling sequence for \unix{evaluate\_boundary\_condition} is,
+\shellcmd{PetscBool evaluate\_boundary\_condition( PetscScalar position[], PetscScalar *value, void *ctx )}
+where the arguments are;
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the boundary condition is evaluated.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the actual value of the boundary condition [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the boundary condition should be applied at this location [OUTPUT].
+\end{itemize}
+For a simple example of a user defined boundary condition function, refer to 
+\shellcmd{PetscBool BCListEvaluator\_constant(PetscScalar position[],PetscScalar *value,void *ctx)}
+in file \unix{dmda\_bcs.c}.
+\\[8pt]
+%%	
+A standard set of velocity Dirichlet boundary conditions for Stokes are defined in \unix{ptatin\_std\_dirichlet\_boundary\_conditions.c}. Please refer to  \unix{ptatin\_std\_dirichlet\_boundary\_conditions.h} for a summary of the functions available.
+
+
+
+
+Notes: 
+\begin{enumerate}
+\item Boundary conditions can be applied within the interior of the domain using the value \unix{DMDABCList\_INTERIOR\_LOC}.
+\item Boundary conditions do not have to be applied along an entire face. Prescribing boundary conditions internal to a face is controlled by whether your user provided function returns  \unix{PETSC\_TRUE} or \unix{PETSC\_FALSE}. For example, if the bc evaluator was called with the argument \unix{DMDABCList\_IMIN\_LOC} we will traverse along the bottom boundary. The user defined function could return  \unix{PETSC\_TRUE} if $x < 0.5$ and \unix{PETSC\_FALSE} otherwise. When \unix{PETSC\_FALSE} is returned the parameter \unix{PetscScalar *value} is ignored.
+\item When defining time dependent boundary conditions, the variable time should be included within the user defined structured (\unix{void *ctx}) which is passed into \unix{DMDABCListTraverse3d()}.
+\end{enumerate}
+
+\subsection{Implementing initial conditions}
+Iterators are provided to allow to define the contents of {\PETSc} vectors via user defined functions. This is particularly useful to define initial conditions, e.g. for the temperature field. The procedure is similar to that used to define boundary conditions described above. The two iterators used to fill in values within a vector are \unix{DMDAVecTraverse3d} and \unix{DMDAVecTraverseIJK} which are declared in \unix{dmda\_iterator.c}. Below we describe the calling pattern of these two functions.
+\\[8pt]
+%%	
+The standard vector iterator is given by
+% TODO: switch to using proper listings?
+\shellcmd{PetscErrorCode DMDAVecTraverse3d( \newline
+  DM da, \\
+  Vec X, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*), \\
+  void *ctx),} 
+ where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_function)(PetscScalar*,PetscScalar*,void*)} - the user provided function.
+%%
+\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
+%%
+\end{itemize}
+The calling sequence for \unix{evaluate\_function} is,
+\shellcmd{PetscBool evaluate\_function( PetscScalar position[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\end{itemize}
+%
+%
+%\shellcmd{PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof\_idx,PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)}
+%
+%
+
+The standard $ijk$ vector iterator is given by
+\shellcmd{PetscErrorCode DMDAVecTraverseIJK( \newline
+  DM da, \\
+  Vec X, \\
+  PetscInt dof\_idx, \\
+  PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*), \\
+  void *ctx),} 
+ where the input arguments are identified as;
+\begin{itemize}
+%%
+\item[] \unix{DM da} - data structure used to represent the mesh and quantity (e.g. velocity).
+%%
+\item[] \unix{Vec X} - {\PETSc} vector into which you want to insert values (e.g. velocity).
+%%
+\item[] \unix{PetscInt dof\_idx} - integer identifying which degree of freedom the constraint should be applied to (.e.g $v_x$ would correspond to 0, $v_y$ would correspond to 1).
+%%
+\item[] \unix{PetscBool (*evaluate\_functionIJK)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*)} - the user provided function.
+%%
+\item[] \unix{void *ctx} - any data structure or parameters which are required to evaluate the the user provided function.
+%%
+\end{itemize}
+The calling sequence for \unix{evaluate\_functionIJK} is,
+\shellcmd{PetscBool evaluate\_functionIJK( PetscScalar position[], PetscInt global\_index[], PetscInt local\_index[], PetscScalar *value, void *ctx )}
+where the arguments are
+\begin{itemize}
+\item[] \unix{PetscScalar position[]} - coordinates in space where the user defined function will be evaluated.
+\item[] \unix{PetscInt global\_index[]} - $i,j,k$ values of the node in the global numbering system.
+\item[] \unix{PetscInt local\_index[]} - $i,j,k$ values of the node in the local numbering system.
+\item[] \unix{void *ctx} - user defined data require to evaluate the boundary condition.
+\item[] \unix{PetscScalar *value} - the result of the user provided function [OUTPUT].
+\item[] \unix{PetscBool} - the function must return \{ \unix{PETSC\_TRUE, PETSC\_FALSE} \} to indicate whether the value should be inserted into the vector [OUTPUT].
+\end{itemize}
+
+% ----------------------------------------------------------------------------------------------------
 
 \section{Passive Swarms}
 \subsection{Introduction}
@@ -1168,7 +1456,7 @@ For binary builds on OSX, this can be located here:
 /Applications/paraview.app/Contents/bin/pvpython
 \end{lstlisting}
 
-\subsection{Procedure}
+\subsubsection*{Procedure}
 \begin{enumerate}
 
 \item Use the coordinate layout option
@@ -1181,9 +1469,9 @@ deformation_grid_ref.vts
 \end{lstlisting}
 
 \item Within your model output function, call either
-\texttt{PSwarmView(pswarm,PSW\_VT\_SINGLETON);}
+\texttt{PSwarmView(pswarm,PSW\_VT\_SINGLETON)}
 or
-\texttt{PSwarmView(pswarm,PSW\_VT\_PERRANK);}
+\texttt{PSwarmView(pswarm,PSW\_VT\_PERRANK)}
 to generate snapshots of the passive swarm.
 
 \item To generate a deformation grid for a given time step, you need to execute the following script
@@ -1212,91 +1500,54 @@ path/to/inputfile.vtu
 
 \textbf{NOTE: deformation grid reference file is not PREFIXED}
 
-\section{Checkpointing and Restarting}
+% ----------------------------------------------------------------------------------------------------
+\section{Non-dimensional scaling}
+The preferred choice of scaling is the following; the users chooses a characteristic velocity, length and viscosity $v^*$, $x^*$, $\eta^*$.
+These choices define the following non-dimensional variables, $v' = v/v^*$, $x' = x/x^*$, $\eta' = \eta/\eta^*$. Given the Stokes problem
+$$
+	\nabla \cdot \eta \left( \nabla v + (\nabla v)^T \right) - \nabla p = \rho g,
+	\qquad
+	\nabla \cdot u = 0,
+$$
+the non-dimensional form thus becomes
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \frac{x^*}{\eta^* v^*} \nabla' p = \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g,
+	\qquad
+	\nabla' \cdot u' = 0,
+$$
+where $\nabla' = \frac{1}{x^*} \nabla$.
+From this the non-dimensional pressure is chosen as 
+$$
+	p = p^* p', \qquad p^* = \frac{\eta^* v^*}{x^*} .
+$$
+Thus the final non-dimensional form of the Stokes problem is given by:
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
+	= \frac{\phantom(x^*\phantom)^2}{\eta^* v^*} \rho g
+	\qquad
+	\nabla' \cdot u' = 0.
+$$
 
-\subsection{General}
-\begin{itemize}
-\item All drivers are capable of \textit{generating} checkpoint files - however only {\tt ptatin\_driver\_ts\_init.app} is
-capable to restarting a job from a checkpoint file.
+The right hand side should be interpreted as a non-dimensional force per volume. If desired, we can express the right hand side in terms of a non-dimensional density $\rho = \rho^* \rho'$ and gravity $g = g^* g'$.
+$$
+	\nabla' \cdot \eta' \left( \nabla' v' + (\nabla' v')^T \right) - \nabla' p' 
+	= 	\left( \frac{\phantom(x^*\phantom)^2}{\eta^* v^*}  \right) 
+		\left( \rho^* \rho' \right)  \left( g^* g' \right),
+	\qquad
+	\nabla' \cdot u' = 0.
+$$
 
-\item All checkpoint files created will reside underneath the following directory:
-\begin{lstlisting}
-<OUTPUTDIR>/checkpoints
-\end{lstlisting}
-where {\tt <OUTPUTDIR>} was specified via {\tt -output\_path}.
-Each checkpoint is associated with a unique textual name related to the specific stage of the computation, for example
-the initial condition, or the solution at a given time step.
-A checkpoint file associated with the initial condition data will be written here
-\begin{lstlisting}
-<OUTPUTDIR>/checkpoints/initial_condition
-\end{lstlisting}
-whilst a checkpoint associated with step 100 will be written here
-\begin{lstlisting}
-<OUTPUTDIR>/checkpoints/step100
-\end{lstlisting}
-Within each each of these directories a number of different files are created.
-The parent checkpoint file for the {\ptat} is always called
-\begin{lstlisting}
-ptatin3dctx.json
-\end{lstlisting}
-\end{itemize}
-
-\subsection{Controlling checkpoint file creation}
-Specifying when a checkpoint should occur can be controlled in several different ways.
-These are summarised below.
-
+%% a = x.t^-2 = x (x/v)^-2 = x .v.v/(x.x)
+\subsection{Additional notes}
 \begin{enumerate}
-\item By enforcing that the code writes a checkpoint file every $N$ steps, but the checkpoint files will will have a common name.
-These files are over written each time checkpointing occurs. 
-Such functionality is useful when you simply need to restart the code on machine which allows a fixed wall time and you want to job chain.
-Since the checkpoint files have a common name, job chaining is straight forward.
-This type of checkpointing is activated via the command line flag \newline
-{\tt -checkpoint\_every N}
-
-\item By enforcing that the code writes a checkpoint file every $M$ time steps. 
-These files will have a file name with a unique extension, thus they do not get over-ridden.
-This type of checkpointing is activated via the command line flag \newline
-{\tt -checkpoint\_every\_nsteps M}
-
-\item By enforcing that the code writes a checkpoint file every $X$ CPU minutes. 
-This can be useful if you have some time steps which require significantly more time to solve than others.
-In this case, requesting to check point every $M$ time steps might not be appropriate and you might exceed the wall time before $M$ time steps have completed.
-This type of checkpointing is activated via the command line flag\newline
-{\tt -checkpoint\_every\_ncpumins X}
+% -------
+	\item The ideal choice of $x^*, v^*, \eta^*$ scaling should result in values of velocity and pressure which follow $\bar{v} = \max_k(\vert v'_k \vert) \sim 1$ and $\bar{p} = \max_k(\vert p'_k \vert) \sim 1$. If your scaling doesn't produce this type of behaviour, then one should be careful in choosing the stopping condition applied to both the non-linear and linear solvers. For example, if $\bar{v} \sim 10^6$, it doesn't make much sense to solve the non-linear equations to a tolerance of $F_u, F_p \sim 10^{-9}$.
+% -------
+	\item Convergence of both linear and non-linear solver will appear slow if the scaling if the characteristic size of the velocity and pressure coming out of your model are orders of magnitude different. For instance, if your choice of scaling produces $F_u \sim 10^6$ and $F_p \sim 10^{-1}$ and you stop on $\delta_\text{abs} = 10^{-6}$, then a large number of iterations will be required to reduce the 2-norm of $(F_u, F_p)$ to be less than $10^{-6}$.
+% -------
+	\item Adjusting the scaling parameters to force $\bar{v}, \bar{p} \rightarrow 1$: Assuming a model with a linear rheology and a free surface boundary condition, the following observations can be made: (i) increasing $v^*$ by a factor of $X$ will cause $v'$ to \emph{decrease} by a factor of $X$ and $p'$ will be unaffected; (ii) increasing $x^*$ by a factor of $X$ will cause $v'$ to \emph{increase} by a factor of $X^2$ and $p'$ to \emph{increase} by a factor of $X^2$; (iii) increasing $\eta^*$ by a factor of $X$ will not affect $v'$, however $p'$ will \emph{decrease} by a factor of $X$.
 \end{enumerate}
 
-All of the above checkpoint creation options can be used together to preserve the results obtained from a simulation.
-When they are used together, care is taken to ensure that time step based checkpoint files are not written twice.
-For example, if I asked to checkpoint every 30 mins, and this criterion is activated at step 10, and the {\tt -checkpoint\_every\_nsteps} options was used with a value of 10, {\ptat} will not checkpoint step10 twice.
 
-\subsection{Restarting via a checkpoint file}
-
-When ever a checkpoint file is written, the file {\tt restart.default} is created into the directory specified via {\tt -output\_path}.
-This file contains a {\PETSc} options specifying the path to the most recent checkpoint file created:
-\begin{lstlisting}
-# restart.default
--restart_directory path/to/last_checkpoint_file_written
-\end{lstlisting}
-
-To restart from the last checkpoint file written, you just need to either execute
-\begin{lstlisting}
-./ptatin_driver_ts_init.app
-\end{lstlisting}
-By default this driver will look in the directory {\tt <OUTPUTDIR>} for {\tt restart.default} and if found, it will use the path to the checkpoint file specified via the option {\tt -restart\_directory} to restart the run.
-
-To restart from any checkpoint file written, you need to either execute
-\begin{lstlisting}
-./ptatin_driver_ts_init.app \
-  -restart_directory path/to/your/checkpoint_file
-\end{lstlisting}
-If no other options are provided, the restarted job will write output into the same directory specified by the value of {\tt -output\_path} given to the run which generated the checkpoint file.
-
-By default it is assumed that the output of a restarted job will be written into the same location as the original job.
-If you wish to direct the output of you restarted run to a directory different from that set by {\tt -output\_path} in the original job, you are required to specify the following two options: \newline
-\begin{lstlisting}
-./ptatin_driver_ts_init.app \
-  -restart_directory path/to/your/checkpoint_file \
-  -output_path path/to/new/outputdirectory
-\end{lstlisting}
 
 \end{document}
