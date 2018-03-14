@@ -211,7 +211,220 @@ The current build system allows you to conveniently compile different {\ptat} us
 See the examples in \texttt{config/} for more.
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
+\section{Methods}
+
+\subsection{Governing equations}
+
+We solve the mechancis, energy and transport problem within a time-dependent domain 
+denoted via $\Omega(t)$, with boundary $\partial \Omega(t)$. 
+The outward pointing normal to $\partial \Omega$ is denoted via $\boldsymbol n$.
+
+\subsubsection*{Mechanics}
+$$
+	\nabla \cdot \eta \left( \nabla \boldsymbol v + (\nabla \boldsymbol v)^T \right) - \nabla p = \boldsymbol f_u
+$$
+$$
+	\nabla \cdot \boldsymbol u = f_p
+$$
+\textit{Boundary conditions:}
+$$
+	\hat{\boldsymbol u}_1 \medspace \text{ on } \medspace \partial \Omega^M_1
+$$
+$$
+	\hat{u}_2 = \boldsymbol v \cdot \boldsymbol n \medspace \text{ on } \medspace \partial \Omega^M_2
+$$
+$$
+	\hat{\boldsymbol \sigma}_3 = \boldsymbol \sigma \medspace \text{ on } \medspace \partial \Omega^M_3
+$$
+$$
+	\hat{\boldsymbol \sigma}_4 = \boldsymbol \sigma \cdot \boldsymbol n \medspace \text{ on } \medspace \partial \Omega^M_4
+$$
+
+\subsubsection*{Energy}
+$$
+	\rho C_p \frac{\partial T}{\partial t} + \boldsymbol v \cdot \nabla T + \nabla \cdot \left( k \nabla T\right) =  f_T
+$$
+\textit{Boundary conditions:}
+$$
+	\hat{T}_1 \medspace \text{ on } \medspace \partial \Omega^E_1
+$$
+$$
+	q_2 = - k \nabla T \cdot \boldsymbol n = 0 \medspace \text{ on } \medspace \partial \Omega^E_2
+$$
+
+\subsubsection*{Transport}
+$$
+	\frac{D \Psi}{D t}  =  g_{\Psi},
+$$
+where $\Psi$ is a scalar, vector or tensor.
+
+\textit{Boundary conditions:}
+$$
+	\hat{\Psi}_1 \medspace \text{ on } \medspace \partial \Omega^{\Psi}_1,
+$$
+where $\partial \Omega^{\Psi}_1$ denotes the segment of the boundary where inflow occurs, e.g. $\boldsymbol v \cdot \boldsymbol n < 0$.
+
+By default, we evolve the material region $\mathcal R$ according to
+$$
+	\frac{D \mathcal R}{Dt} = 0.
+$$
+
+\subsection{Coefficient forms}
+
+\subsubsection*{Mechanics}
+
+In discussing the flow laws, we denote the strain-rate tensor via
+$$
+	\dot{\boldsymbol \epsilon} = \tfrac{1}{2} \left( \nabla \boldsymbol v + (\nabla \boldsymbol v)^T \right)
+$$
+and its second invariant as 
+$$
+	\dot{\epsilon}_{II} = \sqrt{ \tfrac{1}{2} \dot{\epsilon}_{ij} \dot{\epsilon}_{ij} }.
+$$
+
+\textit{Shear viscosity $\eta$}
+\begin{itemize}
+\item Linear (constant)
+$$
+	\eta = \eta_v := f(\mathcal R)
+$$
+\item Linear (temperature dependent)
+$$
+	\eta = \eta_v := \eta_0(\mathcal R) \exp( -\theta(\mathcal R) T)
+$$
+\item Nonlinear (strain-rate and pressure dependent)
+$$
+	\eta = \eta_v := A_0(\mathcal R) \dot{\epsilon}_{II}^{1/n(\mathcal R) - 1}
+		 A(\mathcal R)^{-1/n(\mathcal R)} \exp\left( 
+		\frac{E(\mathcal R) + P V(\mathcal R)}{n(\mathcal R) R T}
+	\right)
+$$
+
+\item Nonlinear (stress limited)
+$$
+	\eta := \frac{\tau_\text{min}}{2 \dot{\epsilon}_{II}}
+$$
+$$
+	\tau_\text{min} = \min( 2 \dot{\epsilon}_{II} \eta_v, \tau_y )
+$$
+where
+$$ 
+	\tau_y = f(\mathcal R,\epsilon)
+	\medspace
+	\text{ or }
+	\medspace
+	\tau_y = f(\mathcal R,P,\epsilon).
+$$
+The variable $\epsilon$ defines the accumulated plastic strain which evolves according to
+$$
+	\frac{D\epsilon}{Dt}
+	=
+	\begin{cases}
+    \dot{\epsilon}_{II}, & \text{if } \medspace 2 \eta_v \dot{\epsilon}_{II} > \tau_y \\
+    0,                    & \text{otherwise}
+	\end{cases}
+$$
+\end{itemize}
+
+\textit{Momentum forcing $f_u$}
+\begin{itemize}
+\item Constant
+$$
+\boldsymbol f_u = \boldsymbol f(\mathcal R)
+$$
+\item Bouyancy
+$$
+\boldsymbol f_u = \rho \boldsymbol g
+$$
+where the density is defined by either
+$$
+\rho = f(\mathcal R),
+$$
+or
+$$
+\rho = \rho_0 ( 1 - \alpha T + \beta P ).
+$$
+\end{itemize}
+
+\textit{Continuity forcing $f_p$}
+\begin{itemize}
+\item Typically we use $f_p = 0$.
+\end{itemize}
+
+
+\subsubsection*{Energy}
+
+\textit{Density}
+\begin{itemize}
+\item Constant
+$$
+	\rho := f(\mathcal R)
+$$
+\end{itemize}
+
+\textit{Conductivity}
+\begin{itemize}
+\item Constant
+$$
+	k := f(\mathcal R)
+$$
+\item Temperature dependent
+$$
+	k := f(\mathcal R,T)
+$$
+\end{itemize}
+
+\textit{Source}
+\begin{itemize}
+\item Constant
+$$
+	f_T^c := f(\mathcal R)
+$$
+\item Radiogenic
+$$
+	f_T^r := H_0(\mathcal R) \exp( -t \lambda(\mathcal R) )
+$$
+\item Adiabatic
+$$
+	f_T^a := - T \alpha(\mathcal R) \rho(\mathcal R) (\boldsymbol g \cdot \boldsymbol v)
+$$
+\end{itemize}
+The final source term $f_T$ can be composed by summing the above terms
+$$
+	f_T = f_T^c + f_T^r + f_T^a,
+$$
+where any of the individual terms may be zero.\vspace{10mm}
+
+\textit{Simplified conservation law}\newline
+We also can solve the simpler equation
+$$
+\frac{\partial T}{\partial t} + \boldsymbol v \cdot \nabla T + \nabla \cdot \left( \kappa \nabla T\right) =  f_T.
+$$
+With this form, the following choices are valid:\newline
+\textit{Diffusivity}
+\begin{itemize}
+\item Constant
+$$
+	\kappa := f(\mathcal R)
+$$
+\end{itemize}
+\textit{Source}
+\begin{itemize}
+\item Constant
+$$
+	f_T := f(\mathcal R)
+$$
+\end{itemize}
+
+
+\subsection{Numerics}
+\begin{itemize}
+\item Mechanics: Q2-P1 mixed finite elements on hexahedral elements
+\item Energy: overlapping Q1 finite elements (hex) with SUPG stabilization
+\item Transport: Lagrangian particle (material point method)
+\end{itemize}
+
+% ----------------------------------------------------------------------------------------------------
 \section{Building Models}
 
 \subsection{Code structure}
