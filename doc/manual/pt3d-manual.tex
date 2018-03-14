@@ -151,7 +151,7 @@ At its core, it provides support for solving non-linear, incompressible Stokes f
 % ----------------------------------------------------------------------------------------------------
 \newpage
 \section{Installation}
-\subsection{Software Requirements}
+\subsection{Software requirements}
 \begin{itemize}
   \item \href{http://www.mcs.anl.gov/petsc}{{\PETSc} 3.7} (essential numerical library)
 	\item git (used to obtain the source)
@@ -160,7 +160,7 @@ At its core, it provides support for solving non-linear, incompressible Stokes f
 	\item libz (non essential: used for output file compression)
 \end{itemize}
 
-\subsection{Obtaining the Source}
+\subsection{Obtaining the source}
 The source code for {\ptat} is hosted at \href{https://bitbucket.org}{BitBucket} using the Git version control system.
 The latex stable version can be obtained with the \unix{git} command
 \shellcmd{git clone https://bitbucket.org/ptatin/ptatin3d}
@@ -479,7 +479,7 @@ The most important (i.e. useful) of these are summarized below.
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Example models and tests}
+\section{Example Models and Tests}
 \label{sec:examples_and_tests}
 A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and Numpy\footnote{To check, run \unix{python} and then enter \unix{import numpy}, which shouldn't produce an error. (Enter \unix{exit()} to exit.)} and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
 These wiill provide instructions on downloading a required \href{https://www.bitbucket.org/dmay/pythontestharness}{test harness script}.
@@ -496,7 +496,7 @@ Numerous example models are provided with the source distribution. These serve a
 
 % ----------------------------------------------------------------------------------------------------
 \newpage
-\section{Generated output}
+\section{Generated Output}
 All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called \texttt{output} will be generated.
 
 \subsection{Diagnostics}
@@ -984,7 +984,9 @@ The underlying coordinate system used in {\ptat} is Cartesian. In Fig.~\ref{fig:
 \label{fig:basis_functions}
 \end{figure}
 
-\subsection{Defining geometric regions on material points}
+%\subsection{Defining mesh geometry}
+
+%\subsection{Defining geometric regions on material points}
 
 % ----------------------------------------------------------------------------------------------------
 \section{Building Models}
