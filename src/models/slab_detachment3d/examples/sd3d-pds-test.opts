@@ -88,11 +88,13 @@
 -fieldsplit_u_pc_type mg
 -fieldsplit_u_pc_mg_levels 2
 
--fieldsplit_u_mg_levels_ksp_type fgmres
+-fieldsplit_u_mg_levels_ksp_type gmres
+-fieldsplit_u_mg_levels_ksp_pc_side right
 -fieldsplit_u_mg_levels_ksp_max_it 2
 -fieldsplit_u_mg_levels_pc_type jacobi
 
--fieldsplit_u_mg_coarse_ksp_type fgmres
+-fieldsplit_u_mg_coarse_ksp_type gmres
+-fieldsplit_u_mg_coarse_ksp_pc_side right
 -fieldsplit_u_mg_coarse_pc_type bjacobi
 -fieldsplit_u_mg_coarse_ksp_max_it 4
 
