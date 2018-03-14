@@ -149,7 +149,6 @@ At its core, it provides support for solving non-linear, incompressible Stokes f
 
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
 \section{Installation}
 \subsection{Software requirements}
 \begin{itemize}
@@ -425,7 +424,6 @@ $$
 \end{itemize}
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
 \section{Drivers}
 {\ptat} in itself is a library which aims to enable users to build specific executables to solve a particular class of problems in lithospheric dynamics.
 Executables which utilize \unix{libptatin3d} are referred to as drivers.
@@ -478,7 +476,6 @@ The most important (i.e. useful) of these are summarized below.
 \end{itemize}
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
 \section{Example Models and Tests}
 \label{sec:examples_and_tests}
 A small test suite is provided with the source code for {\ptat}. These are used to ensure that core functionality is producing the correct results. The tests can be found in the directory \unix{test/}. To execute the tests, ensure that you have Python and Numpy\footnote{To check, run \unix{python} and then enter \unix{import numpy}, which shouldn't produce an error. (Enter \unix{exit()} to exit.)} and execute \unix{make test}(a quick subset of tests) or \unix{make testall}(all tests) from the \ptat{} root directory.
@@ -495,7 +492,6 @@ Numerous example models are provided with the source distribution. These serve a
 \end{enumerate}
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
 \section{Generated Output}
 All output generated via {\ptat} will be written in the directory specified via the option \unix{-output\_path}. If this option isn't provided, a default directory called \texttt{output} will be generated.
 
@@ -683,7 +679,6 @@ If you wish to direct the output of you restarted run to a directory different f
 \end{lstlisting}
 
 % ----------------------------------------------------------------------------------------------------
-\newpage
 \section{Nonlinear and Linear Solvers}
 
 The discrete linear Stokes problem can be expressed as
@@ -1273,10 +1268,26 @@ any other particle in the swarm. The particles are contained within the model do
 or interact with each other (hence the usage of the word passive).
 
 \subsection{Defining passive swarms} \label{sec:def_pswarm}
-Any number of passive swarms can be created at run-time via the command line option
-\texttt{-pswarm\_list xx,yy}
+A single passive swarm can be created with the following code
+\begin{lstlisting}
+PSwarm pswarm;
+
+PSwarmCreate(PETSC_COMM_WORLD,&pswarm);
+\end{lstlisting}
+
+Any arbitrary number of passive swarms can be created at run-time with the following code: 
+\begin{lstlisting}
+PSwarm *pswarm_array;
+
+PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm_array);
+\end{lstlisting}
+together with the the command line option
+\begin{lstlisting}
+	-pswarm_list xx,yy
+\end{lstlisting}	
 where \texttt{xx} and \texttt{yy} define the unique names you wish to assign to each passive swarm.
 In this example, since two names are provided, two passive swarms are created.
+If the option \texttt{-pswarm\_list} was not found, \texttt{pswarm\_array} will be returned as an array of NULL pointers.
 
 \subsection{Options}
 The definition and behaviour of the PSwarm object is configurable at run-time via command line options.
@@ -1291,6 +1302,21 @@ When multiple PSwarm objects have been defined, the options will be denoted via
 \end{lstlisting}
 where \texttt{\#\#\#} is be the name used to identify each passive swarm (see Section \ref{sec:def_pswarm})
 
+For the options to take effect, one is required to call
+\begin{lstlisting}
+    PSwarmSetFromOptions(pswarm);
+\end{lstlisting}
+An example of how to create and traverse through multiple PSwarm objects is shown below.
+\begin{lstlisting}
+PSwarm *pswarm_array, *pswarm;
+
+PSwarmCreateMultipleInstances(PETSC_COMM_WORLD,&pswarm_array);
+pswarm = &pswarm_array[0];
+while (*pswarm && pswarm_array) {
+  PSwarmSetFromOptions(*pswarm);
+  pswarm++;
+}
+\end{lstlisting}
 
 
 
