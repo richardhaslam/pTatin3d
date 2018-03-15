@@ -19,6 +19,7 @@
 
 /* symbols */
 
+/* public */
 #define DataExCreate                ptatinDataExCreate
 #define DataExView                  ptatinDataExView
 #define DataExDestroy               ptatinDataExDestroy
@@ -36,5 +37,10 @@
 #define DataExGetSendData           ptatinDataExGetSendData
 #define DataExGetRecvData           ptatinDataExGetRecvData
 #define DataExTopologyGetNeighbours ptatinDataExTopologyGetNeighbours
+
+/* private */
+#define _DataExCompleteCommunicationMap  _ptatinDataExCompleteCommunicationMap
+#define _DataExConvertProcIdToLocalIndex _ptatinDataExConvertProcIdToLocalIndex
+#define _DataExInitializeTmpStorage      _ptatinDataExInitializeTmpStorage
 
 #endif
