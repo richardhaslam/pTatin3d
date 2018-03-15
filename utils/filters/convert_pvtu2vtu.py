@@ -41,8 +41,8 @@ def main():
 	if os.path.splitext(infilename)[1]=='.pvtu':
 		vts_name = os.path.splitext(infilename)[0] + ".vtu"
 
-		print 'Reading: ' + infilename
-		print 'Writing: ' + vts_name
+		print('Reading: ' + infilename)
+		print('Writing: ' + vts_name)
 		convert_pvtu2vtu(infilename,vts_name)
 	else:
 		print('Warning: Input file specified is not a valid PVTU file')
@@ -53,4 +53,15 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+  pvV = simple.GetParaViewVersion()
+  majorV = pvV.major
+  minorV = pvV.minor
+  if majorV < 4:
+    print('VersionError: Script is not tested for ParaView versions < v4.3')
+    sys.exit(1)
+  elif majorV == 4:
+    if minorV < 3:
+      print('VersionError: Script is not tested for ParaView versions < v4.3')
+      sys.exit(1)
+  
+  main()

@@ -1410,10 +1410,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
     p_found  = 0;
     p_mine   = -1;
 	
-    //if (mask[0]) { printf("coordX %1.4e \n",coord[0]); }
-    //if (mask[1]) { printf("coordY %1.4e \n",coord[1]); }
-    //if (mask[2]) { printf("coordZ %1.4e \n",coord[2]); }
-    
     DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
 	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	for (p=0; p<n_mpoints; p++) {
@@ -1439,7 +1435,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
         }
      
         if (sep2 < min2) {
-            //printf("  p %d : %1.4e %1.4e %1.4e \n",p,pos_p[0],pos_p[1],pos_p[2]);
             p_mine   = p;
             p_found++;
             min2 = sep2;
@@ -1447,18 +1442,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
 	}
 	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 	
-    //if (p_found == 0) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Failed to locate point within tolerance specified"); }
-    //if (p_found > 1) {  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Located more than 1 point within tolerance specified"); }
- 
-  /*
-    pack[0] = p_mine;
-    pack[1] = p_onrank;
-	ierr = MPI_Allreduce(pack,gpack,2,MPI_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	
-    *_pidx = gpack[0];
-    *_rank = (PetscMPIInt)gpack[1];
-  */
-  
   /*
    http://mpi-forum.org/docs/mpi-1.1/mpi-11-html/node79.html
   */
@@ -1491,3 +1474,148 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
 	PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MPntStdCoordinateMinIdentifyPointIndex"
+PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_db,
+                    int region_idx,
+                    int pmin_x[],int pmin_y[],int pmin_z[])
+{
+  MPAccess         mpX;
+  int              d,p,n_mpoints;
+  double           *pos_p;
+  int              region_p;
+  double           min_coord[] = { PETSC_MAX_REAL, PETSC_MAX_REAL, PETSC_MAX_REAL };
+  int              p_mine[3],rank;
+  struct MPI_PairedValueRank input[3],output[3];
+  int              *collection[3];
+  PetscErrorCode   ierr;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+
+  collection[0] = pmin_x;
+  collection[1] = pmin_y;
+  collection[2] = pmin_z;
+  
+  p_mine[0] = p_mine[1] = p_mine[2] = -1;
+  
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  for (p=0; p<n_mpoints; p++) {
+    ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
+    if (region_idx != -1) {
+      if (region_p != region_idx) {
+        continue;
+      }
+    }
+    ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+    
+    for (d=0; d<3; d++) {
+      if (collection[d]) {
+        if (pos_p[d] < min_coord[d]) {
+          min_coord[d] = pos_p[d];
+          p_mine[d]     = p;
+        }
+      }
+    }
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+
+  for (d=0; d<3; d++) {
+    if (collection[d]) {
+      input[d].distance = min_coord[d];
+      input[d].rank     = rank;
+      
+      /* intialise output struct members */
+      output[d].distance = 0.0;
+      output[d].rank     = -1;
+      
+      ierr = MPI_Reduce( &input[d], &output[d], 1, MPI_DOUBLE_INT, MPI_MINLOC, 0, PETSC_COMM_WORLD );CHKERRQ(ierr);
+      
+      /* Answer resides on process root - broadcast rank with the minimum value */
+      ierr = MPI_Bcast(&output[d].rank,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&output[d].distance,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      
+      /* broadcast p_mine from the root = output.rank (that with the minimum value) */
+      ierr = MPI_Bcast(&p_mine[d],1,MPI_INT,output[d].rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      
+      collection[d][0] = p_mine[d];
+      collection[d][1] = (PetscMPIInt)output[d].rank;
+    }
+  }
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MPntStdCoordinateMaxIdentifyPointIndex"
+PetscErrorCode MPntStdCoordinateMaxIdentifyPointIndex(DataBucket materialpoint_db,
+                                                  int region_idx,
+                                                  int pmax_x[],int pmax_y[],int pmax_z[])
+{
+  MPAccess         mpX;
+  int              d,p,n_mpoints;
+  double           *pos_p;
+  int              region_p;
+  double           max_coord[] = { PETSC_MIN_REAL, PETSC_MIN_REAL, PETSC_MIN_REAL };
+  int              p_mine[3],rank;
+  struct MPI_PairedValueRank input[3],output[3];
+  int              *collection[3];
+  PetscErrorCode   ierr;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  
+  collection[0] = pmax_x;
+  collection[1] = pmax_y;
+  collection[2] = pmax_z;
+  
+  p_mine[0] = p_mine[1] = p_mine[2] = -1;
+  
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  for (p=0; p<n_mpoints; p++) {
+    ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
+    if (region_idx != -1) {
+      if (region_p != region_idx) {
+        continue;
+      }
+    }
+    ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+    
+    for (d=0; d<3; d++) {
+      if (collection[d]) {
+        if (pos_p[d] > max_coord[d]) {
+          max_coord[d] = pos_p[d];
+          p_mine[d]     = p;
+        }
+      }
+    }
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  
+  for (d=0; d<3; d++) {
+    if (collection[d]) {
+      input[d].distance = max_coord[d];
+      input[d].rank     = rank;
+      
+      /* intialise output struct members */
+      output[d].distance = 0.0;
+      output[d].rank     = -1;
+      
+      ierr = MPI_Reduce( &input[d], &output[d], 1, MPI_DOUBLE_INT, MPI_MAXLOC, 0, PETSC_COMM_WORLD );CHKERRQ(ierr);
+      
+      /* Answer resides on process root - broadcast rank with the minimum value */
+      ierr = MPI_Bcast(&output[d].rank,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&output[d].distance,1,MPI_DOUBLE,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      
+      /* broadcast p_mine from the root = output.rank (that with the minimum value) */
+      ierr = MPI_Bcast(&p_mine[d],1,MPI_INT,output[d].rank,PETSC_COMM_WORLD);CHKERRQ(ierr);
+      
+      collection[d][0] = p_mine[d];
+      collection[d][1] = (PetscMPIInt)output[d].rank;
+    }
+  }
+  
+  PetscFunctionReturn(0);
+}
