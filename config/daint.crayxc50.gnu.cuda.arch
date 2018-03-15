@@ -29,10 +29,8 @@ export TATIN_CFLAGS     = ${TATIN_CFLAGS_OPT_a} -march=native -fopenmp -dynamic
 export TATIN_CFLAGS_OPENMP = -fopenmp
 export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 
-export LIBZ_LIB = -lz
 export CUDA_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lcudart
 export OPENCL_LIB = -L$(CUDATOOLKIT_HOME)/lib64/ -lOpenCL
-# export LIBZ_INC = -I/usr/include
 
 CONFIG_CUDA=y
 CONFIG_OPENCL=y
