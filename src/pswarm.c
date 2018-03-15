@@ -967,7 +967,11 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   if (rank == 0) {
     char filename[PETSC_MAX_PATH_LEN];
     
-    PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/deformation_grid_ref.vts",ps->pctx->outputpath);
+    if (prefix) {
+      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%sdeformation_grid_ref.vts",ps->pctx->outputpath,prefix);
+    } else {
+      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/deformation_grid_ref.vts",ps->pctx->outputpath);
+    }
     ierr = pSwarmParaViewMeshDeformationBaseVTS(xmin,dx,Nxp,filename);CHKERRQ(ierr);
   }
   
