@@ -213,6 +213,49 @@ class MPntPEnergy:
              "heat_source"]
     return names
 
+# GenericData ===================================
+def read_bytes_allAtOnce(f,total_bytes_to_read):
+  bytes = f.read(total_bytes_to_read)
+  return bytes
+
+def unpack_double_allAtOnce(entry_byte,L,bs):
+  format = "d"*bs*L
+  points = struct.unpack(format, entry_byte)
+  return points
+
+class GenericData:
+  def __init__(self,name,totalBytes,L):
+    self.name = name
+    self.totalBytes = totalBytes
+    self.L = L
+  
+  def load(self,file):
+    self.bytes = read_bytes_allAtOnce(file,self.totalBytes)
+
+  def unpack(self,blockSize,cType):
+    self.blockSize = blockSize
+    self.cType = cType
+    if cType == ctypes.c_double:
+      self.byte_array = unpack_double_allAtOnce(self.bytes,self.L,self.blockSize)
+      self.bytes = []
+    else:
+      print('*** only cType = double is supported')
+      sys.exit(1)
+
+  def getValues(self,index):
+    s = index * self.blockSize
+    e = s + self.blockSize
+    point = self.byte_array[ s : e ]
+    return point
+  
+  def getMemberCSizes(self):
+    if self.cType == ctypes.c_double:
+      sizes = [[self.blockSize , "double"]]
+    else:
+      print('*** only cType = double is supported')
+      sys.exit(1)
+    return sizes
+
 
 def loadDataBucket(inputfile):
 
@@ -305,10 +348,12 @@ def loadDataBucket(inputfile):
       databucket = dict(databucket, **loaded)
     
     else:
-      print('An unknown data type was encounted which cannot be loaded')
-      printf('  ' + 'fieldName ' + metaField[f]["fieldName"])
-      printf('  ' + 'atomicSize ' + metaField[f]["atomicSize"])
-      sys.exit(1)
+      print('An unknown data type was encounted. Loading raw bytes')
+      point = GenericData(metaField[f]["fieldName"],total,tlen)
+      point.load(dbfile)
+
+      loaded = {metaField[f]["fieldName"]:point}
+      databucket = dict(databucket, **loaded)
 
   dbfile.close()
 
