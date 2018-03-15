@@ -86,9 +86,6 @@ exit(EXIT_FAILURE);\
 
 
 
-void StringInList( const char name[], const int N, const DataField gfield[], BTruth *val );
-void StringFindInList( const char name[], const int N, const DataField gfield[], int *index );
-
 void DataFieldCreate( const char registration_function[], const char name[], const size_t size, const int L, DataField *DF );
 void DataFieldDestroy( DataField *DF );
 void DataBucketCreate( DataBucket *DB );

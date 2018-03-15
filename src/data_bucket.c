@@ -90,7 +90,7 @@ gcc -O3 -g -c data_bucket.c
 #include <cjson_utils.h>
 
 /* string helpers */
-void StringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
+static void DataBucketStringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
 {
 	int i;
 	
@@ -103,7 +103,7 @@ void StringInList( const char name[], const int N, const DataField gfield[], BTr
 	}
 }
 
-void StringFindInList( const char name[], const int N, const DataField gfield[], int *index )
+static void DataBucketStringFindInList( const char name[], const int N, const DataField gfield[], int *index )
 {
 	int i;
 	
@@ -206,7 +206,7 @@ void _DataBucketRegisterField(
 	*/
 	 
 	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
+	DataBucketStringInList( field_name, db->nfields, (const DataField*)db->field, &val );
 	if(val == BTRUE ) {
 		printf("ERROR: Cannot add same field twice\n");
 		ERROR();
@@ -232,12 +232,12 @@ void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfi
 	int idx;
 	BTruth found;
 	
-	StringInList(name,db->nfields,(const DataField*)db->field,&found);
+	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,&found);
 	if(found==BFALSE) {
 		printf("ERROR: Cannot find DataField with name %s \n", name );
 		ERROR();
 	}
-	StringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
+	DataBucketStringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
 		
 	*gfield = db->field[idx];
 }
@@ -245,7 +245,7 @@ void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfi
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],BTruth *found)
 {
 	*found = BFALSE;
-	StringInList(name,db->nfields,(const DataField*)db->field,found);
+	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,found);
 }
 
 void DataBucketFinalize(DataBucket db)
