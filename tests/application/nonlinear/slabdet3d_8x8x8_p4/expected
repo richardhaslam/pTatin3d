@@ -49,8 +49,8 @@ DataBucketView <Material Constants>:
     [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
   Total mem. usage                                                      = 3.20e-01 (MB) : <collective over 4 ranks>
 [pTatin] Created output directory: sd3d_test 
-[pTatin] Created log file: sd3d_test/ptatin.log-2018.03.14_19:40:54 
-[pTatin] Created options file: sd3d_test/ptatin.options-2018.03.14_19:40:54 
+[pTatin] Created log file: sd3d_test/ptatin.log-2018.03.15_08:17:07 
+[pTatin] Created options file: sd3d_test/ptatin.options-2018.03.15_08:17:07 
 [pTatin] Created options file: sd3d_test/ptatin.options 
   [pTatinModel]: Registering model [0] with name "template"
   [pTatinModel]: Registering model [1] with name "viscous_sinker"
@@ -126,7 +126,7 @@ Generated vel/pressure mesh --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.000
   MaterialPointsStokes: Using Q1 projection
 [[Swarm initialization: 0.0001 (sec)]]
 [[Swarm->coordinate assignment: 3456 points : 0.0016 (sec)]]
-[[SwarmDMDA3dDataExchangerCreate: time = 3.0890e-03 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 2.8019e-03 (sec)]]
 Generated material points --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
 [[ModelApplyInitialMeshGeometry_SD3D]]
 [[ModelApplyInitialMaterialGeometry_SD3D]]
@@ -157,9 +157,9 @@ Generated stokes operators --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000
 PreSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
    --------- LINEAR STAGE ---------
 *** Rheology update for RHEOLOGY_VISCOUS selected ***
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 2.24e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 2.42e-04 (sec)
   0 SNES Function norm 1.386601539724e+00 
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.59e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.72e-04 (sec)
   0 KSP Component U,V,W,P residual norm [ 0.000000000000e+00, 1.386601539724e+00, 0.000000000000e+00, 0.000000000000e+00 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000000000000e+00 
@@ -179,13 +179,13 @@ Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/m
       1 KSP Residual norm 4.486511306807e-03 
       2 KSP Residual norm 7.798903572489e-04 
       3 KSP Residual norm 1.612846609179e-04 
-  3 KSP Component U,V,W,P residual norm [ 3.856613810555e-05, 1.383171499908e+00, 4.293390447425e-05, 6.887909344760e-02 ]
+  3 KSP Component U,V,W,P residual norm [ 3.856613810554e-05, 1.383171499908e+00, 4.293390447425e-05, 6.887909344760e-02 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 2.953491780703e-02 
       1 KSP Residual norm 4.371989513665e-03 
       2 KSP Residual norm 7.996408619699e-04 
       3 KSP Residual norm 1.463360312058e-04 
-  4 KSP Component U,V,W,P residual norm [ 4.341691959836e-04, 1.346135305076e+00, 4.754767123637e-04, 2.333935682561e-01 ]
+  4 KSP Component U,V,W,P residual norm [ 4.341691959835e-04, 1.346135305076e+00, 4.754767123636e-04, 2.333935682561e-01 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 2.861363781858e-02 
       1 KSP Residual norm 3.589139473608e-03 
@@ -197,52 +197,52 @@ Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/m
       1 KSP Residual norm 4.537813642321e-03 
       2 KSP Residual norm 9.573583592331e-04 
       3 KSP Residual norm 1.672440469229e-04 
-  6 KSP Component U,V,W,P residual norm [ 4.529727175717e-03, 5.348741187505e-01, 4.734597488710e-03, 6.749153245123e-01 ]
+  6 KSP Component U,V,W,P residual norm [ 4.529727175717e-03, 5.348741187505e-01, 4.734597488711e-03, 6.749153245123e-01 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 3.491435679367e-02 
       1 KSP Residual norm 6.598290398577e-03 
       2 KSP Residual norm 1.404200832620e-03 
       3 KSP Residual norm 2.108221462854e-04 
-  7 KSP Component U,V,W,P residual norm [ 2.190447852254e-03, 1.077580981085e-01, 2.199221021804e-03, 3.711887506873e-01 ]
+  7 KSP Component U,V,W,P residual norm [ 2.190447852254e-03, 1.077580981085e-01, 2.199221021805e-03, 3.711887506873e-01 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 3.899072917342e-02 
       1 KSP Residual norm 6.366618222711e-03 
       2 KSP Residual norm 1.294785111067e-03 
       3 KSP Residual norm 1.768794073109e-04 
-  8 KSP Component U,V,W,P residual norm [ 5.518129107559e-04, 2.558713596904e-02, 4.669519798594e-04, 1.866014074291e-01 ]
+  8 KSP Component U,V,W,P residual norm [ 5.518129107560e-04, 2.558713596904e-02, 4.669519798595e-04, 1.866014074291e-01 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 3.466818424240e-02 
       1 KSP Residual norm 5.746366398100e-03 
       2 KSP Residual norm 1.139513148914e-03 
       3 KSP Residual norm 1.928658808343e-04 
-  9 KSP Component U,V,W,P residual norm [ 1.491182703391e-04, 3.552560792947e-03, 8.575357786329e-05, 7.007783070455e-02 ]
+  9 KSP Component U,V,W,P residual norm [ 1.491182703390e-04, 3.552560792946e-03, 8.575357786354e-05, 7.007783070455e-02 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 3.525182701861e-02 
-      1 KSP Residual norm 3.459174167214e-03 
-      2 KSP Residual norm 5.756313774360e-04 
+      1 KSP Residual norm 3.459174167212e-03 
+      2 KSP Residual norm 5.756313774359e-04 
       3 KSP Residual norm 1.356213627450e-04 
- 10 KSP Component U,V,W,P residual norm [ 1.788476670538e-04, 3.369266068811e-04, 1.782043583049e-04, 2.046103541569e-02 ]
+ 10 KSP Component U,V,W,P residual norm [ 1.788476670538e-04, 3.369266068804e-04, 1.782043583048e-04, 2.046103541568e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 5.540610433502e-02 
-      1 KSP Residual norm 5.921774209136e-03 
+      0 KSP Residual norm 5.540610433500e-02 
+      1 KSP Residual norm 5.921774209134e-03 
       2 KSP Residual norm 1.338907440813e-03 
-      3 KSP Residual norm 1.913790494298e-04 
- 11 KSP Component U,V,W,P residual norm [ 1.046696932723e-04, 9.448470945650e-05, 9.590497119235e-05, 7.432168535443e-03 ]
+      3 KSP Residual norm 1.913790494300e-04 
+ 11 KSP Component U,V,W,P residual norm [ 1.046696932722e-04, 9.448470945497e-05, 9.590497119224e-05, 7.432168535445e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 5.225554166263e-02 
-      1 KSP Residual norm 9.897820934883e-03 
-      2 KSP Residual norm 2.226988805146e-03 
-      3 KSP Residual norm 2.788162902844e-04 
- 12 KSP Component U,V,W,P residual norm [ 3.431150342553e-05, 3.014674110981e-05, 3.991350763462e-05, 3.368655358851e-03 ]
+      0 KSP Residual norm 5.225554166262e-02 
+      1 KSP Residual norm 9.897820934874e-03 
+      2 KSP Residual norm 2.226988805145e-03 
+      3 KSP Residual norm 2.788162902839e-04 
+ 12 KSP Component U,V,W,P residual norm [ 3.431150342539e-05, 3.014674110976e-05, 3.991350763519e-05, 3.368655358849e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 5.502127187283e-02 
-      1 KSP Residual norm 1.070394283277e-02 
-      2 KSP Residual norm 2.278240656268e-03 
-      3 KSP Residual norm 2.570554996553e-04 
- 13 KSP Component U,V,W,P residual norm [ 2.733836004792e-06, 3.008520515337e-06, 3.633930076598e-06, 1.179859424689e-03 ]
+      0 KSP Residual norm 5.502127187292e-02 
+      1 KSP Residual norm 1.070394283281e-02 
+      2 KSP Residual norm 2.278240656281e-03 
+      3 KSP Residual norm 2.570554996570e-04 
+ 13 KSP Component U,V,W,P residual norm [ 2.733836004496e-06, 3.008520514646e-06, 3.633930076539e-06, 1.179859424685e-03 ]
   Linear solve converged due to CONVERGED_RTOL iterations 13
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.36e-04 (sec)
-  1 SNES Function norm 1.179872023793e-03 
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 2.82e-04 (sec)
+  1 SNES Function norm 1.179872023790e-03 
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 1
 SNES Object: 4 MPI processes
   type: newtonls
@@ -482,7 +482,7 @@ SNES Object: 4 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
           (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
           (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 2.12e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 2.28e-04 (sec)
 [[ModelOutput_SD3D]]
   writing pvdfilename sd3d_test/timeseries_v.pvd 
   writing pvdfilename sd3d_test/timeseries_vp.pvd 
@@ -491,482 +491,482 @@ slab base range: gmin 6.9697e-01 5.0000e-01 0.0000e+00
 slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
 slab edge range: gmax(x) 6.9697e-01
 slab edge identified: pidx_w,rank_w 5551 1
-slab edge range: W,Dn 6.9697e-01 8.1566e-01
+[step 0] slab edge range: W,Dn 6.9697e-01 8.1566e-01
 slab edge (back face) range: gmax(x) 6.9697e-01
 slab edge (back face) identified: pidx_w,rank_w 5117 1
-slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
+[step 0] slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
 slab edge (front face) range: gmin(z) 3.7879e-01
 slab edge (front face) identified: pidx_w,rank_w 4843 1
-slab edge (front face) range: W,Dn 3.7879e-01 5.1578e-01
+[step 0] slab edge (front face) range: W,Dn 3.7879e-01 5.1578e-01
 topo range: 1.0000e+00 1.0000e+00
 vol,int v.v,vrms: 5.7392e-01 7.5860e+00 3.6356e+00
-Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 3.32e-04 (sec)
+Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e-03,1.00e-02; log10(max/min) 1.00e+00; cpu time 4.52e-04 (sec)
 Phi: 0.0000e+00
    --------- PICARD STAGE ---------
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; npoints_yielded 0; cpu time 2.12e-02 (sec)
   0 SNES Function norm 4.775270692598e-01 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 4.323463059690e-01, 1.631895869650e+00, 2.796259607959e-01, 2.359718849378e-03 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,1.00e+00; log10(max/min) 3.00e+00; npoints_yielded 0; cpu time 2.21e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 4.323463059691e-01, 1.631895869650e+00, 2.796259607959e-01, 2.359718849371e-03 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 9.999337514723e-01 
       1 KSP Residual norm 7.377663916584e-01 
       2 KSP Residual norm 3.247753649000e-01 
       3 KSP Residual norm 1.180000143558e-01 
-      4 KSP Residual norm 4.476193682314e-02 
-      5 KSP Residual norm 2.266441997005e-02 
-      6 KSP Residual norm 7.126643874164e-03 
+      4 KSP Residual norm 4.476193682316e-02 
+      5 KSP Residual norm 2.266441997007e-02 
+      6 KSP Residual norm 7.126643874169e-03 
   1 KSP Component U,V,W,P residual norm [ 4.323113329898e-01, 1.631763922576e+00, 2.796033191056e-01, 1.561211320214e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.608872633068e-02 
-      1 KSP Residual norm 7.610552612607e-03 
-      2 KSP Residual norm 2.591614508168e-03 
-      3 KSP Residual norm 8.134818099392e-04 
-      4 KSP Residual norm 3.286406878221e-04 
-      5 KSP Residual norm 1.345728859661e-04 
-  2 KSP Component U,V,W,P residual norm [ 4.318722425687e-01, 1.630088176617e+00, 2.793100125193e-01, 5.697187913211e-02 ]
+      0 KSP Residual norm 1.608872633067e-02 
+      1 KSP Residual norm 7.610552612554e-03 
+      2 KSP Residual norm 2.591614508146e-03 
+      3 KSP Residual norm 8.134818099332e-04 
+      4 KSP Residual norm 3.286406878188e-04 
+      5 KSP Residual norm 1.345728859649e-04 
+  2 KSP Component U,V,W,P residual norm [ 4.318722425688e-01, 1.630088176617e+00, 2.793100125193e-01, 5.697187913210e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.294086120971e-01 
-      1 KSP Residual norm 4.630962292007e-02 
+      0 KSP Residual norm 1.294086120970e-01 
+      1 KSP Residual norm 4.630962292006e-02 
       2 KSP Residual norm 1.298539442426e-02 
       3 KSP Residual norm 4.741242682937e-03 
       4 KSP Residual norm 1.566799361099e-03 
-      5 KSP Residual norm 6.182545100747e-04 
-  3 KSP Component U,V,W,P residual norm [ 4.310636145363e-01, 1.627105399860e+00, 2.788427362297e-01, 9.249484097894e-02 ]
+      5 KSP Residual norm 6.182545100751e-04 
+  3 KSP Component U,V,W,P residual norm [ 4.310636145363e-01, 1.627105399860e+00, 2.788427362297e-01, 9.249484097897e-02 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 2.743232294349e-01 
       1 KSP Residual norm 9.034002744114e-02 
-      2 KSP Residual norm 2.277628530903e-02 
-      3 KSP Residual norm 8.689672373809e-03 
-      4 KSP Residual norm 2.898199410231e-03 
+      2 KSP Residual norm 2.277628530902e-02 
+      3 KSP Residual norm 8.689672373806e-03 
+      4 KSP Residual norm 2.898199410230e-03 
       5 KSP Residual norm 1.014690899332e-03 
-  4 KSP Component U,V,W,P residual norm [ 4.181022672362e-01, 1.577871786375e+00, 2.700981356665e-01, 3.062270765655e-01 ]
+  4 KSP Component U,V,W,P residual norm [ 4.181022672362e-01, 1.577871786375e+00, 2.700981356665e-01, 3.062270765656e-01 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 2.546074195955e-01 
-      1 KSP Residual norm 7.714030011322e-02 
-      2 KSP Residual norm 1.775904334488e-02 
-      3 KSP Residual norm 6.204353801259e-03 
-      4 KSP Residual norm 2.340059915738e-03 
-  5 KSP Component U,V,W,P residual norm [ 3.887250048232e-01, 1.466456623288e+00, 2.516492917045e-01, 5.164728390804e-01 ]
+      1 KSP Residual norm 7.714030011324e-02 
+      2 KSP Residual norm 1.775904334489e-02 
+      3 KSP Residual norm 6.204353801260e-03 
+      4 KSP Residual norm 2.340059915739e-03 
+  5 KSP Component U,V,W,P residual norm [ 3.887250048232e-01, 1.466456623288e+00, 2.516492917045e-01, 5.164728390805e-01 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.476424992972e-01 
+      0 KSP Residual norm 3.476424992973e-01 
       1 KSP Residual norm 1.038753365913e-01 
       2 KSP Residual norm 2.380139338460e-02 
-      3 KSP Residual norm 7.530804879960e-03 
-      4 KSP Residual norm 3.307860114343e-03 
-  6 KSP Component U,V,W,P residual norm [ 2.154124821157e-01, 8.169447268090e-01, 1.416703730772e-01, 8.555365402711e-01 ]
+      3 KSP Residual norm 7.530804879961e-03 
+      4 KSP Residual norm 3.307860114344e-03 
+  6 KSP Component U,V,W,P residual norm [ 2.154124821157e-01, 8.169447268091e-01, 1.416703730772e-01, 8.555365402711e-01 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.819403044577e-01 
+      0 KSP Residual norm 3.819403044579e-01 
       1 KSP Residual norm 1.085730980137e-01 
-      2 KSP Residual norm 2.310334687461e-02 
-      3 KSP Residual norm 7.321495060808e-03 
-      4 KSP Residual norm 2.770113831630e-03 
-  7 KSP Component U,V,W,P residual norm [ 9.831040678221e-02, 3.671706782828e-01, 6.308899148922e-02, 7.142478918077e-01 ]
+      2 KSP Residual norm 2.310334687462e-02 
+      3 KSP Residual norm 7.321495060811e-03 
+      4 KSP Residual norm 2.770113831632e-03 
+  7 KSP Component U,V,W,P residual norm [ 9.831040678220e-02, 3.671706782828e-01, 6.308899148922e-02, 7.142478918077e-01 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 7.166818587632e-01 
+      0 KSP Residual norm 7.166818587634e-01 
       1 KSP Residual norm 1.842646368334e-01 
       2 KSP Residual norm 4.274495865966e-02 
-      3 KSP Residual norm 1.452104764681e-02 
-      4 KSP Residual norm 6.756055844835e-03 
-  8 KSP Component U,V,W,P residual norm [ 1.829237640260e-02, 6.452476009701e-02, 1.253464896631e-02, 3.325627046166e-01 ]
+      3 KSP Residual norm 1.452104764682e-02 
+      4 KSP Residual norm 6.756055844838e-03 
+  8 KSP Component U,V,W,P residual norm [ 1.829237640260e-02, 6.452476009699e-02, 1.253464896631e-02, 3.325627046165e-01 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.777216640741e-01 
+      0 KSP Residual norm 9.777216640745e-01 
       1 KSP Residual norm 1.950452077816e-01 
       2 KSP Residual norm 4.495350478930e-02 
-      3 KSP Residual norm 1.124623888506e-02 
-      4 KSP Residual norm 3.667226874456e-03 
-  9 KSP Component U,V,W,P residual norm [ 3.424445899771e-03, 1.290170698799e-02, 2.685385105099e-03, 1.509279964586e-01 ]
+      3 KSP Residual norm 1.124623888507e-02 
+      4 KSP Residual norm 3.667226874458e-03 
+  9 KSP Component U,V,W,P residual norm [ 3.424445899770e-03, 1.290170698799e-02, 2.685385105095e-03, 1.509279964586e-01 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.715601642685e-01 
-      1 KSP Residual norm 1.636403410058e-01 
-      2 KSP Residual norm 4.131527676692e-02 
+      0 KSP Residual norm 9.715601642689e-01 
+      1 KSP Residual norm 1.636403410059e-01 
+      2 KSP Residual norm 4.131527676694e-02 
       3 KSP Residual norm 1.066949864305e-02 
-      4 KSP Residual norm 3.834077584359e-03 
- 10 KSP Component U,V,W,P residual norm [ 1.441490215609e-03, 2.835456666079e-03, 1.201124859328e-03, 6.996547816848e-02 ]
+      4 KSP Residual norm 3.834077584361e-03 
+ 10 KSP Component U,V,W,P residual norm [ 1.441490215607e-03, 2.835456666080e-03, 1.201124859330e-03, 6.996547816850e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.272613540572e+00 
-      1 KSP Residual norm 2.153028286847e-01 
-      2 KSP Residual norm 4.987195190208e-02 
+      0 KSP Residual norm 1.272613540573e+00 
+      1 KSP Residual norm 2.153028286848e-01 
+      2 KSP Residual norm 4.987195190209e-02 
       3 KSP Residual norm 1.175210046255e-02 
- 11 KSP Component U,V,W,P residual norm [ 6.503941849251e-04, 9.165844858628e-04, 5.703092731544e-04, 3.248193633218e-02 ]
+ 11 KSP Component U,V,W,P residual norm [ 6.503941849258e-04, 9.165844858627e-04, 5.703092731550e-04, 3.248193633218e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.064086402647e-01 
-      1 KSP Residual norm 1.367346726618e-01 
-      2 KSP Residual norm 3.792511352883e-02 
-      3 KSP Residual norm 9.336292182985e-03 
-      4 KSP Residual norm 3.282048453043e-03 
- 12 KSP Component U,V,W,P residual norm [ 3.461452438654e-04, 4.266637125585e-04, 3.492848154664e-04, 1.890428643838e-02 ]
+      0 KSP Residual norm 9.064086402635e-01 
+      1 KSP Residual norm 1.367346726616e-01 
+      2 KSP Residual norm 3.792511352879e-02 
+      3 KSP Residual norm 9.336292182979e-03 
+      4 KSP Residual norm 3.282048453045e-03 
+ 12 KSP Component U,V,W,P residual norm [ 3.461452438667e-04, 4.266637125579e-04, 3.492848154632e-04, 1.890428643838e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 8.634442722714e-01 
-      1 KSP Residual norm 1.998760119835e-01 
-      2 KSP Residual norm 4.878436346499e-02 
-      3 KSP Residual norm 1.143474229070e-02 
-      4 KSP Residual norm 4.236429204701e-03 
- 13 KSP Component U,V,W,P residual norm [ 8.323351068080e-05, 9.991496467034e-05, 1.004660704886e-04, 7.136005277842e-03 ]
+      0 KSP Residual norm 8.634442722723e-01 
+      1 KSP Residual norm 1.998760119833e-01 
+      2 KSP Residual norm 4.878436346496e-02 
+      3 KSP Residual norm 1.143474229067e-02 
+      4 KSP Residual norm 4.236429204690e-03 
+ 13 KSP Component U,V,W,P residual norm [ 8.323351068219e-05, 9.991496467406e-05, 1.004660704907e-04, 7.136005277841e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 7.817142750680e-01 
-      1 KSP Residual norm 1.696181825095e-01 
-      2 KSP Residual norm 3.645052558995e-02 
-      3 KSP Residual norm 9.476119768734e-03 
+      0 KSP Residual norm 7.817142750668e-01 
+      1 KSP Residual norm 1.696181825091e-01 
+      2 KSP Residual norm 3.645052559000e-02 
+      3 KSP Residual norm 9.476119768737e-03 
       4 KSP Residual norm 3.598975795253e-03 
- 14 KSP Component U,V,W,P residual norm [ 4.724619117589e-05, 4.605591434228e-05, 4.964569171781e-05, 3.569129770906e-03 ]
+ 14 KSP Component U,V,W,P residual norm [ 4.724619117585e-05, 4.605591434139e-05, 4.964569171786e-05, 3.569129770909e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.180405756572e+00 
-      1 KSP Residual norm 2.303125845590e-01 
-      2 KSP Residual norm 5.616214474428e-02 
-      3 KSP Residual norm 1.372883004918e-02 
-      4 KSP Residual norm 4.185940545526e-03 
- 15 KSP Component U,V,W,P residual norm [ 1.824177508488e-05, 1.489367871221e-05, 1.143303356805e-05, 1.616757747384e-03 ]
+      0 KSP Residual norm 1.180405756570e+00 
+      1 KSP Residual norm 2.303125845581e-01 
+      2 KSP Residual norm 5.616214474426e-02 
+      3 KSP Residual norm 1.372883004927e-02 
+      4 KSP Residual norm 4.185940545579e-03 
+ 15 KSP Component U,V,W,P residual norm [ 1.824177508403e-05, 1.489367870953e-05, 1.143303356730e-05, 1.616757747387e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.193482508448e+00 
-      1 KSP Residual norm 1.775685117662e-01 
-      2 KSP Residual norm 4.323695171037e-02 
-      3 KSP Residual norm 9.530144745921e-03 
- 16 KSP Component U,V,W,P residual norm [ 2.855169223261e-05, 2.251626862578e-05, 1.751882310696e-05, 8.772662819669e-04 ]
+      0 KSP Residual norm 1.193482508461e+00 
+      1 KSP Residual norm 1.775685117735e-01 
+      2 KSP Residual norm 4.323695171164e-02 
+      3 KSP Residual norm 9.530144746013e-03 
+ 16 KSP Component U,V,W,P residual norm [ 2.855169223328e-05, 2.251626862826e-05, 1.751882310573e-05, 8.772662819644e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.260267444862e+00 
-      1 KSP Residual norm 2.349957847582e-01 
-      2 KSP Residual norm 6.198660151146e-02 
-      3 KSP Residual norm 1.275108677991e-02 
-      4 KSP Residual norm 3.908411133029e-03 
- 17 KSP Component U,V,W,P residual norm [ 4.319761132567e-06, 6.693352901134e-06, 7.600429728835e-06, 4.081751946024e-04 ]
+      0 KSP Residual norm 1.260267444807e+00 
+      1 KSP Residual norm 2.349957847476e-01 
+      2 KSP Residual norm 6.198660150927e-02 
+      3 KSP Residual norm 1.275108677933e-02 
+      4 KSP Residual norm 3.908411132993e-03 
+ 17 KSP Component U,V,W,P residual norm [ 4.319761131848e-06, 6.693352903722e-06, 7.600429730381e-06, 4.081751945950e-04 ]
   Linear solve converged due to CONVERGED_RTOL iterations 17
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.96e-02 (sec)
-  1 SNES Function norm 2.585390859940e-02 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 2.611774152150e-01, 3.959729186057e-01, 1.610310482639e-01, 1.315550690894e-03 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.89e-02 (sec)
+  1 SNES Function norm 2.585390859938e-02 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.611774152150e-01, 3.959729186057e-01, 1.610310482639e-01, 1.315550690850e-03 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000402566235e+00 
-      1 KSP Residual norm 3.255598463172e-01 
-      2 KSP Residual norm 9.025152801921e-02 
+      1 KSP Residual norm 3.255598463171e-01 
+      2 KSP Residual norm 9.025152801920e-02 
       3 KSP Residual norm 2.520344417865e-02 
-      4 KSP Residual norm 7.559005570878e-03 
-  1 KSP Component U,V,W,P residual norm [ 1.632934288042e-02, 2.531630340627e-02, 1.056716680896e-02, 1.219141494502e-01 ]
+      4 KSP Residual norm 7.559005570874e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.632934288045e-02, 2.531630340631e-02, 1.056716680898e-02, 1.219141494502e-01 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.051964279874e+00 
-      1 KSP Residual norm 3.815412132809e-01 
-      2 KSP Residual norm 6.209131892165e-02 
-      3 KSP Residual norm 1.310286814231e-02 
-      4 KSP Residual norm 3.982309957032e-03 
-  2 KSP Component U,V,W,P residual norm [ 6.909967394074e-03, 9.699591298125e-03, 4.124616327611e-03, 7.718551137001e-02 ]
+      0 KSP Residual norm 1.051964279873e+00 
+      1 KSP Residual norm 3.815412132807e-01 
+      2 KSP Residual norm 6.209131892160e-02 
+      3 KSP Residual norm 1.310286814228e-02 
+      4 KSP Residual norm 3.982309957017e-03 
+  2 KSP Component U,V,W,P residual norm [ 6.909967394073e-03, 9.699591298120e-03, 4.124616327610e-03, 7.718551136992e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.307040508486e+00 
-      1 KSP Residual norm 3.637791046712e-01 
-      2 KSP Residual norm 7.933241979175e-02 
-      3 KSP Residual norm 2.468891687758e-02 
-      4 KSP Residual norm 9.672013322788e-03 
-  3 KSP Component U,V,W,P residual norm [ 9.597075650735e-04, 1.625655515560e-03, 6.609139333713e-04, 2.934273508949e-02 ]
+      0 KSP Residual norm 1.307040508487e+00 
+      1 KSP Residual norm 3.637791046713e-01 
+      2 KSP Residual norm 7.933241979169e-02 
+      3 KSP Residual norm 2.468891687751e-02 
+      4 KSP Residual norm 9.672013322752e-03 
+  3 KSP Component U,V,W,P residual norm [ 9.597075650735e-04, 1.625655515558e-03, 6.609139333696e-04, 2.934273508946e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.479634252732e+00 
-      1 KSP Residual norm 2.400478604868e-01 
-      2 KSP Residual norm 5.867558918109e-02 
-      3 KSP Residual norm 1.984904407882e-02 
-      4 KSP Residual norm 6.865889815812e-03 
-  4 KSP Component U,V,W,P residual norm [ 4.021543191909e-04, 5.159370099356e-04, 2.798937528287e-04, 1.836766843998e-02 ]
+      0 KSP Residual norm 1.479634252733e+00 
+      1 KSP Residual norm 2.400478604870e-01 
+      2 KSP Residual norm 5.867558918112e-02 
+      3 KSP Residual norm 1.984904407879e-02 
+      4 KSP Residual norm 6.865889815805e-03 
+  4 KSP Component U,V,W,P residual norm [ 4.021543191942e-04, 5.159370099396e-04, 2.798937528305e-04, 1.836766843996e-02 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.032548582400e+00 
-      1 KSP Residual norm 2.691954719615e-01 
-      2 KSP Residual norm 5.035222907822e-02 
-      3 KSP Residual norm 1.699085885969e-02 
-      4 KSP Residual norm 5.536553096592e-03 
-  5 KSP Component U,V,W,P residual norm [ 1.692395915485e-04, 1.609927883136e-04, 1.772253551955e-04, 5.781137027755e-03 ]
+      1 KSP Residual norm 2.691954719620e-01 
+      2 KSP Residual norm 5.035222907839e-02 
+      3 KSP Residual norm 1.699085885972e-02 
+      4 KSP Residual norm 5.536553096601e-03 
+  5 KSP Component U,V,W,P residual norm [ 1.692395915481e-04, 1.609927883130e-04, 1.772253551945e-04, 5.781137027744e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.063517752664e+00 
-      1 KSP Residual norm 2.604915783021e-01 
-      2 KSP Residual norm 5.834639668161e-02 
+      0 KSP Residual norm 3.063517752669e+00 
+      1 KSP Residual norm 2.604915783026e-01 
+      2 KSP Residual norm 5.834639668165e-02 
       3 KSP Residual norm 1.823158181320e-02 
-  6 KSP Component U,V,W,P residual norm [ 8.412834313154e-05, 9.659261075920e-05, 1.083867814409e-04, 3.342289252926e-03 ]
+  6 KSP Component U,V,W,P residual norm [ 8.412834313132e-05, 9.659261075920e-05, 1.083867814409e-04, 3.342289252924e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.655534649320e+00 
-      1 KSP Residual norm 2.571188710358e-01 
-      2 KSP Residual norm 4.916329437894e-02 
-      3 KSP Residual norm 1.423703889191e-02 
-  7 KSP Component U,V,W,P residual norm [ 7.231846223875e-05, 5.590733736060e-05, 7.459007722761e-05, 1.847767878909e-03 ]
+      0 KSP Residual norm 1.655534649312e+00 
+      1 KSP Residual norm 2.571188710351e-01 
+      2 KSP Residual norm 4.916329437885e-02 
+      3 KSP Residual norm 1.423703889188e-02 
+  7 KSP Component U,V,W,P residual norm [ 7.231846223840e-05, 5.590733736026e-05, 7.459007722738e-05, 1.847767878904e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.200311960722e+00 
-      1 KSP Residual norm 2.431866593734e-01 
-      2 KSP Residual norm 6.810097629773e-02 
-      3 KSP Residual norm 2.838790837568e-02 
-      4 KSP Residual norm 1.316009733148e-02 
-  8 KSP Component U,V,W,P residual norm [ 1.457436284714e-05, 1.327395588598e-05, 1.346028797051e-05, 9.520941788230e-04 ]
+      0 KSP Residual norm 2.200311960727e+00 
+      1 KSP Residual norm 2.431866593725e-01 
+      2 KSP Residual norm 6.810097629754e-02 
+      3 KSP Residual norm 2.838790837561e-02 
+      4 KSP Residual norm 1.316009733144e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.457436284724e-05, 1.327395588587e-05, 1.346028797059e-05, 9.520941788204e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.183272909430e+00 
-      1 KSP Residual norm 2.156399606466e-01 
-      2 KSP Residual norm 6.593847066814e-02 
-      3 KSP Residual norm 2.635127542295e-02 
-      4 KSP Residual norm 1.150628432659e-02 
-  9 KSP Component U,V,W,P residual norm [ 2.823651309216e-05, 3.123789657986e-05, 3.439092078419e-05, 4.585618086288e-04 ]
+      0 KSP Residual norm 2.183272909429e+00 
+      1 KSP Residual norm 2.156399606469e-01 
+      2 KSP Residual norm 6.593847066819e-02 
+      3 KSP Residual norm 2.635127542301e-02 
+      4 KSP Residual norm 1.150628432661e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.823651309201e-05, 3.123789657966e-05, 3.439092078397e-05, 4.585618086269e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.798359131138e+00 
-      1 KSP Residual norm 2.274868821693e-01 
-      2 KSP Residual norm 5.651471902330e-02 
-      3 KSP Residual norm 2.750314178349e-02 
-      4 KSP Residual norm 1.296492480070e-02 
- 10 KSP Component U,V,W,P residual norm [ 1.038892913100e-05, 1.133799133407e-05, 1.172699062865e-05, 2.697379895892e-04 ]
+      0 KSP Residual norm 1.798359131144e+00 
+      1 KSP Residual norm 2.274868821696e-01 
+      2 KSP Residual norm 5.651471902318e-02 
+      3 KSP Residual norm 2.750314178338e-02 
+      4 KSP Residual norm 1.296492480066e-02 
+ 10 KSP Component U,V,W,P residual norm [ 1.038892913110e-05, 1.133799133400e-05, 1.172699062875e-05, 2.697379895880e-04 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.760208179289e+00 
-      1 KSP Residual norm 2.558899315715e-01 
-      2 KSP Residual norm 7.239776613466e-02 
+      1 KSP Residual norm 2.558899315718e-01 
+      2 KSP Residual norm 7.239776613464e-02 
       3 KSP Residual norm 3.407423663598e-02 
-      4 KSP Residual norm 1.607895858887e-02 
- 11 KSP Component U,V,W,P residual norm [ 7.524650795511e-06, 8.220620269891e-06, 7.797348236020e-06, 1.412688768460e-04 ]
+      4 KSP Residual norm 1.607895858886e-02 
+ 11 KSP Component U,V,W,P residual norm [ 7.524650795477e-06, 8.220620269767e-06, 7.797348235897e-06, 1.412688768452e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.073491043484e+00 
+      0 KSP Residual norm 2.073491043496e+00 
       1 KSP Residual norm 2.002217477296e-01 
-      2 KSP Residual norm 5.318876955888e-02 
-      3 KSP Residual norm 1.774500484357e-02 
- 12 KSP Component U,V,W,P residual norm [ 2.668927684351e-06, 2.933795369985e-06, 2.161693511006e-06, 6.435461536217e-05 ]
+      2 KSP Residual norm 5.318876955884e-02 
+      3 KSP Residual norm 1.774500484351e-02 
+ 12 KSP Component U,V,W,P residual norm [ 2.668927684192e-06, 2.933795369981e-06, 2.161693510953e-06, 6.435461536192e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.424003247136e+00 
+      0 KSP Residual norm 3.424003247138e+00 
       1 KSP Residual norm 2.322892342351e-01 
-      2 KSP Residual norm 5.442839429054e-02 
-      3 KSP Residual norm 1.412814165853e-02 
- 13 KSP Component U,V,W,P residual norm [ 2.868380897732e-06, 2.960083574471e-06, 2.465929329973e-06, 4.040524935739e-05 ]
+      2 KSP Residual norm 5.442839429043e-02 
+      3 KSP Residual norm 1.412814165848e-02 
+ 13 KSP Component U,V,W,P residual norm [ 2.868380897807e-06, 2.960083574403e-06, 2.465929330034e-06, 4.040524935716e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.550577994890e+00 
-      1 KSP Residual norm 2.600229091056e-01 
-      2 KSP Residual norm 7.229804673245e-02 
-      3 KSP Residual norm 3.039008073079e-02 
-      4 KSP Residual norm 1.445269197177e-02 
- 14 KSP Component U,V,W,P residual norm [ 8.312162698516e-07, 9.538834089593e-07, 1.125378347454e-06, 2.159289777119e-05 ]
+      0 KSP Residual norm 1.550577994904e+00 
+      1 KSP Residual norm 2.600229091053e-01 
+      2 KSP Residual norm 7.229804673247e-02 
+      3 KSP Residual norm 3.039008073085e-02 
+      4 KSP Residual norm 1.445269197182e-02 
+ 14 KSP Component U,V,W,P residual norm [ 8.312162698920e-07, 9.538834089967e-07, 1.125378347460e-06, 2.159289777112e-05 ]
   Linear solve converged due to CONVERGED_RTOL iterations 14
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
   2 SNES Function norm 1.033310105618e-02 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.89e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 2.590919608328e-02, 2.055553424215e-02, 1.162685527462e-02, 4.204990350490e-04 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.30e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.590919608326e-02, 2.055553424214e-02, 1.162685527460e-02, 4.204990350437e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.997058670740e-01 
-      1 KSP Residual norm 2.538807722148e-01 
-      2 KSP Residual norm 7.179550351348e-02 
-      3 KSP Residual norm 2.184410412629e-02 
-      4 KSP Residual norm 9.388674461319e-03 
-  1 KSP Component U,V,W,P residual norm [ 3.494555577654e-03, 2.850953908789e-03, 1.566080646804e-03, 1.204886442176e-02 ]
+      0 KSP Residual norm 9.997058670739e-01 
+      1 KSP Residual norm 2.538807722153e-01 
+      2 KSP Residual norm 7.179550351349e-02 
+      3 KSP Residual norm 2.184410412618e-02 
+      4 KSP Residual norm 9.388674461237e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.494555577660e-03, 2.850953908795e-03, 1.566080646805e-03, 1.204886442182e-02 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.715149783019e-01 
-      1 KSP Residual norm 2.643272170110e-02 
-      2 KSP Residual norm 1.107558629339e-02 
-      3 KSP Residual norm 5.114679790715e-03 
-      4 KSP Residual norm 1.891388833400e-03 
-  2 KSP Component U,V,W,P residual norm [ 1.407137068613e-03, 9.866306168130e-04, 7.195311223647e-04, 7.696860425300e-03 ]
+      0 KSP Residual norm 2.715149783021e-01 
+      1 KSP Residual norm 2.643272170199e-02 
+      2 KSP Residual norm 1.107558629379e-02 
+      3 KSP Residual norm 5.114679790829e-03 
+      4 KSP Residual norm 1.891388833410e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.407137068646e-03, 9.866306168380e-04, 7.195311223761e-04, 7.696860425404e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 5.475833734263e-01 
-      1 KSP Residual norm 1.300898361227e-01 
-      2 KSP Residual norm 6.067738620709e-02 
-      3 KSP Residual norm 2.381918133570e-02 
-      4 KSP Residual norm 9.281601997196e-03 
-      5 KSP Residual norm 3.379920045784e-03 
-  3 KSP Component U,V,W,P residual norm [ 1.393365196369e-04, 9.948279001017e-05, 9.957265033697e-05, 2.285318952008e-03 ]
+      0 KSP Residual norm 5.475833734452e-01 
+      1 KSP Residual norm 1.300898361266e-01 
+      2 KSP Residual norm 6.067738620878e-02 
+      3 KSP Residual norm 2.381918133631e-02 
+      4 KSP Residual norm 9.281601997251e-03 
+      5 KSP Residual norm 3.379920045830e-03 
+  3 KSP Component U,V,W,P residual norm [ 1.393365196404e-04, 9.948279001172e-05, 9.957265033724e-05, 2.285318952031e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.112519676616e+00 
-      1 KSP Residual norm 1.499992678730e-01 
-      2 KSP Residual norm 4.486281842412e-02 
-      3 KSP Residual norm 1.702099635805e-02 
-      4 KSP Residual norm 7.528831124453e-03 
-  4 KSP Component U,V,W,P residual norm [ 4.125556102831e-05, 2.806550626565e-05, 2.448748539839e-05, 1.369991706002e-03 ]
+      0 KSP Residual norm 1.112519676611e+00 
+      1 KSP Residual norm 1.499992678738e-01 
+      2 KSP Residual norm 4.486281842494e-02 
+      3 KSP Residual norm 1.702099635824e-02 
+      4 KSP Residual norm 7.528831124530e-03 
+  4 KSP Component U,V,W,P residual norm [ 4.125556102741e-05, 2.806550626560e-05, 2.448748539857e-05, 1.369991706019e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.542778959949e-01 
-      1 KSP Residual norm 2.161133284999e-01 
-      2 KSP Residual norm 7.350058563167e-02 
-      3 KSP Residual norm 2.474469764857e-02 
-      4 KSP Residual norm 1.134187483171e-02 
-      5 KSP Residual norm 4.966683964122e-03 
-  5 KSP Component U,V,W,P residual norm [ 8.906467141828e-06, 9.069183001350e-06, 6.853420890458e-06, 4.701923627948e-04 ]
+      0 KSP Residual norm 9.542778959873e-01 
+      1 KSP Residual norm 2.161133284930e-01 
+      2 KSP Residual norm 7.350058562922e-02 
+      3 KSP Residual norm 2.474469764754e-02 
+      4 KSP Residual norm 1.134187483115e-02 
+      5 KSP Residual norm 4.966683963810e-03 
+  5 KSP Component U,V,W,P residual norm [ 8.906467141300e-06, 9.069183000740e-06, 6.853420890041e-06, 4.701923627995e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.385348945037e+00 
-      1 KSP Residual norm 1.737819592531e-01 
-      2 KSP Residual norm 4.162730956968e-02 
-      3 KSP Residual norm 1.266123007109e-02 
-  6 KSP Component U,V,W,P residual norm [ 4.966590056190e-06, 4.338616707281e-06, 4.678324949450e-06, 3.066812733719e-04 ]
+      0 KSP Residual norm 1.385348945026e+00 
+      1 KSP Residual norm 1.737819592555e-01 
+      2 KSP Residual norm 4.162730957021e-02 
+      3 KSP Residual norm 1.266123007130e-02 
+  6 KSP Component U,V,W,P residual norm [ 4.966590055748e-06, 4.338616707130e-06, 4.678324949808e-06, 3.066812733747e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 8.809430112472e-01 
-      1 KSP Residual norm 1.947523182246e-01 
-      2 KSP Residual norm 5.312993808745e-02 
-      3 KSP Residual norm 1.716441367368e-02 
-      4 KSP Residual norm 7.560266317055e-03 
-  7 KSP Component U,V,W,P residual norm [ 3.296102902909e-06, 3.027926585253e-06, 4.441842414204e-06, 1.304220171209e-04 ]
+      0 KSP Residual norm 8.809430112226e-01 
+      1 KSP Residual norm 1.947523182176e-01 
+      2 KSP Residual norm 5.312993808474e-02 
+      3 KSP Residual norm 1.716441367275e-02 
+      4 KSP Residual norm 7.560266316506e-03 
+  7 KSP Component U,V,W,P residual norm [ 3.296102902782e-06, 3.027926585170e-06, 4.441842414092e-06, 1.304220171221e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.702984604894e+00 
-      1 KSP Residual norm 1.838105198255e-01 
-      2 KSP Residual norm 4.097092440092e-02 
-      3 KSP Residual norm 1.345608372003e-02 
-  8 KSP Component U,V,W,P residual norm [ 2.067598957048e-06, 1.813234207631e-06, 2.167027577523e-06, 6.872669821521e-05 ]
+      0 KSP Residual norm 1.702984604915e+00 
+      1 KSP Residual norm 1.838105198304e-01 
+      2 KSP Residual norm 4.097092440274e-02 
+      3 KSP Residual norm 1.345608372049e-02 
+  8 KSP Component U,V,W,P residual norm [ 2.067598956942e-06, 1.813234207609e-06, 2.167027577511e-06, 6.872669821619e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.440457001413e+00 
-      1 KSP Residual norm 2.684170850887e-01 
-      2 KSP Residual norm 7.168564385990e-02 
-      3 KSP Residual norm 2.351107415813e-02 
-      4 KSP Residual norm 1.092322151641e-02 
-  9 KSP Component U,V,W,P residual norm [ 9.027027122256e-07, 1.704834549123e-06, 1.971821245143e-06, 3.451428259818e-05 ]
+      0 KSP Residual norm 1.440457001408e+00 
+      1 KSP Residual norm 2.684170850878e-01 
+      2 KSP Residual norm 7.168564386077e-02 
+      3 KSP Residual norm 2.351107415828e-02 
+      4 KSP Residual norm 1.092322151634e-02 
+  9 KSP Component U,V,W,P residual norm [ 9.027027122065e-07, 1.704834549146e-06, 1.971821245137e-06, 3.451428259876e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.339883902467e+00 
-      1 KSP Residual norm 1.903959480160e-01 
-      2 KSP Residual norm 6.526258665326e-02 
-      3 KSP Residual norm 2.971567409029e-02 
-      4 KSP Residual norm 1.326114555352e-02 
- 10 KSP Component U,V,W,P residual norm [ 6.116446858384e-07, 5.026312522437e-07, 6.588500708300e-07, 1.661589459918e-05 ]
+      0 KSP Residual norm 1.339883902459e+00 
+      1 KSP Residual norm 1.903959480104e-01 
+      2 KSP Residual norm 6.526258665194e-02 
+      3 KSP Residual norm 2.971567409000e-02 
+      4 KSP Residual norm 1.326114555326e-02 
+ 10 KSP Component U,V,W,P residual norm [ 6.116446858130e-07, 5.026312522287e-07, 6.588500707840e-07, 1.661589459972e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.591355222208e+00 
-      1 KSP Residual norm 2.565764315971e-01 
-      2 KSP Residual norm 8.165743273356e-02 
-      3 KSP Residual norm 3.029696861299e-02 
+      0 KSP Residual norm 1.591355222174e+00 
+      1 KSP Residual norm 2.565764315846e-01 
+      2 KSP Residual norm 8.165743272885e-02 
+      3 KSP Residual norm 3.029696861203e-02 
       4 KSP Residual norm 1.212596249754e-02 
- 11 KSP Component U,V,W,P residual norm [ 3.514219613866e-07, 4.400508705618e-07, 4.270027513783e-07, 8.139058201633e-06 ]
+ 11 KSP Component U,V,W,P residual norm [ 3.514219613496e-07, 4.400508705686e-07, 4.270027514169e-07, 8.139058202205e-06 ]
   Linear solve converged due to CONVERGED_RTOL iterations 11
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.93e-02 (sec)
-  3 SNES Function norm 6.376576964796e-03 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 6.783122084544e-03, 6.438517077408e-03, 3.055297076740e-03, 2.736194196742e-05 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.92e-02 (sec)
+  3 SNES Function norm 6.376576964794e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 6.783122084541e-03, 6.438517077404e-03, 3.055297076739e-03, 2.736194196830e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.998744666349e-01 
+      0 KSP Residual norm 9.998744666348e-01 
       1 KSP Residual norm 2.459543302050e-01 
-      2 KSP Residual norm 7.779913286056e-02 
-      3 KSP Residual norm 2.860677918134e-02 
-      4 KSP Residual norm 1.342147490864e-02 
-      5 KSP Residual norm 6.380053381449e-03 
-  1 KSP Component U,V,W,P residual norm [ 8.119968639902e-04, 7.717553377685e-04, 3.601972645802e-04, 3.189677634094e-03 ]
+      2 KSP Residual norm 7.779913286055e-02 
+      3 KSP Residual norm 2.860677918133e-02 
+      4 KSP Residual norm 1.342147490862e-02 
+      5 KSP Residual norm 6.380053381438e-03 
+  1 KSP Component U,V,W,P residual norm [ 8.119968639900e-04, 7.717553377682e-04, 3.601972645802e-04, 3.189677634093e-03 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 2.678128592623e-01 
-      1 KSP Residual norm 2.089740732945e-02 
-      2 KSP Residual norm 9.133497654093e-03 
-      3 KSP Residual norm 4.156715843701e-03 
+      1 KSP Residual norm 2.089740732946e-02 
+      2 KSP Residual norm 9.133497654095e-03 
+      3 KSP Residual norm 4.156715843697e-03 
       4 KSP Residual norm 1.499623947917e-03 
-  2 KSP Component U,V,W,P residual norm [ 9.623871324365e-05, 1.193072738092e-04, 1.360814529271e-04, 1.043159987510e-03 ]
+  2 KSP Component U,V,W,P residual norm [ 9.623871324335e-05, 1.193072738089e-04, 1.360814529269e-04, 1.043159987508e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.126904214962e+00 
-      1 KSP Residual norm 2.356283170742e-01 
-      2 KSP Residual norm 1.097168088246e-01 
-      3 KSP Residual norm 3.997593113342e-02 
-      4 KSP Residual norm 1.651787955099e-02 
-      5 KSP Residual norm 6.846821085233e-03 
-  3 KSP Component U,V,W,P residual norm [ 2.192800180714e-05, 2.045451625262e-05, 1.508848852149e-05, 5.494502709851e-04 ]
+      0 KSP Residual norm 1.126904214967e+00 
+      1 KSP Residual norm 2.356283170753e-01 
+      2 KSP Residual norm 1.097168088250e-01 
+      3 KSP Residual norm 3.997593113355e-02 
+      4 KSP Residual norm 1.651787955105e-02 
+      5 KSP Residual norm 6.846821085269e-03 
+  3 KSP Component U,V,W,P residual norm [ 2.192800180723e-05, 2.045451625283e-05, 1.508848852196e-05, 5.494502709858e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.188607921857e+00 
-      1 KSP Residual norm 2.655217552992e-01 
-      2 KSP Residual norm 1.186846261988e-01 
-      3 KSP Residual norm 4.261705928358e-02 
-      4 KSP Residual norm 1.875467907272e-02 
-      5 KSP Residual norm 8.876111665513e-03 
-  4 KSP Component U,V,W,P residual norm [ 1.208979797591e-05, 1.855673909992e-05, 2.223564804503e-05, 2.822713987099e-04 ]
+      0 KSP Residual norm 1.188607921852e+00 
+      1 KSP Residual norm 2.655217552980e-01 
+      2 KSP Residual norm 1.186846261979e-01 
+      3 KSP Residual norm 4.261705928326e-02 
+      4 KSP Residual norm 1.875467907259e-02 
+      5 KSP Residual norm 8.876111665468e-03 
+  4 KSP Component U,V,W,P residual norm [ 1.208979797593e-05, 1.855673909994e-05, 2.223564804505e-05, 2.822713987106e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.421745676294e+00 
-      1 KSP Residual norm 3.055310785119e-01 
-      2 KSP Residual norm 1.202432638801e-01 
-      3 KSP Residual norm 3.831240825872e-02 
-      4 KSP Residual norm 1.496387048125e-02 
-      5 KSP Residual norm 7.286339909888e-03 
-  5 KSP Component U,V,W,P residual norm [ 1.378024960448e-06, 1.295021303156e-06, 1.138747936921e-06, 1.020314304673e-04 ]
+      0 KSP Residual norm 1.421745676288e+00 
+      1 KSP Residual norm 3.055310785106e-01 
+      2 KSP Residual norm 1.202432638791e-01 
+      3 KSP Residual norm 3.831240825845e-02 
+      4 KSP Residual norm 1.496387048111e-02 
+      5 KSP Residual norm 7.286339909808e-03 
+  5 KSP Component U,V,W,P residual norm [ 1.378024960459e-06, 1.295021303219e-06, 1.138747936989e-06, 1.020314304677e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.432461235719e+00 
-      1 KSP Residual norm 1.680518712331e-01 
-      2 KSP Residual norm 5.505546737826e-02 
-      3 KSP Residual norm 2.123468631708e-02 
-      4 KSP Residual norm 1.099249631632e-02 
-  6 KSP Component U,V,W,P residual norm [ 7.306353565106e-07, 7.114111184626e-07, 7.132638584116e-07, 7.131353869406e-05 ]
+      0 KSP Residual norm 1.432461235709e+00 
+      1 KSP Residual norm 1.680518712330e-01 
+      2 KSP Residual norm 5.505546737786e-02 
+      3 KSP Residual norm 2.123468631714e-02 
+      4 KSP Residual norm 1.099249631630e-02 
+  6 KSP Component U,V,W,P residual norm [ 7.306353564904e-07, 7.114111184496e-07, 7.132638583899e-07, 7.131353869475e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.188128340672e+00 
-      1 KSP Residual norm 2.788406410329e-01 
-      2 KSP Residual norm 9.563102255949e-02 
-      3 KSP Residual norm 3.209664145421e-02 
-      4 KSP Residual norm 1.364941548217e-02 
+      0 KSP Residual norm 1.188128340658e+00 
+      1 KSP Residual norm 2.788406410284e-01 
+      2 KSP Residual norm 9.563102255661e-02 
+      3 KSP Residual norm 3.209664145412e-02 
+      4 KSP Residual norm 1.364941548210e-02 
       5 KSP Residual norm 6.885853349583e-03 
-  7 KSP Component U,V,W,P residual norm [ 7.295637206811e-07, 4.578572717737e-07, 6.065473555703e-07, 2.903158903451e-05 ]
+  7 KSP Component U,V,W,P residual norm [ 7.295637206752e-07, 4.578572717655e-07, 6.065473555965e-07, 2.903158903486e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.876065541329e+00 
-      1 KSP Residual norm 2.394762860576e-01 
-      2 KSP Residual norm 7.567355946343e-02 
-      3 KSP Residual norm 2.367490149727e-02 
-      4 KSP Residual norm 7.342734806663e-03 
-  8 KSP Component U,V,W,P residual norm [ 4.937724344201e-07, 7.215647223506e-07, 9.016858301786e-07, 1.687772136335e-05 ]
+      0 KSP Residual norm 1.876065541325e+00 
+      1 KSP Residual norm 2.394762860618e-01 
+      2 KSP Residual norm 7.567355946517e-02 
+      3 KSP Residual norm 2.367490149786e-02 
+      4 KSP Residual norm 7.342734806868e-03 
+  8 KSP Component U,V,W,P residual norm [ 4.937724344144e-07, 7.215647223426e-07, 9.016858301491e-07, 1.687772136365e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.283650793949e+00 
-      1 KSP Residual norm 2.745472854657e-01 
-      2 KSP Residual norm 1.036785450825e-01 
-      3 KSP Residual norm 4.569879162495e-02 
-      4 KSP Residual norm 2.313953743043e-02 
-      5 KSP Residual norm 8.849270514149e-03 
-  9 KSP Component U,V,W,P residual norm [ 2.306047448626e-07, 2.881435857014e-07, 4.309921578944e-07, 8.374862233737e-06 ]
+      0 KSP Residual norm 1.283650793924e+00 
+      1 KSP Residual norm 2.745472854606e-01 
+      2 KSP Residual norm 1.036785450796e-01 
+      3 KSP Residual norm 4.569879162358e-02 
+      4 KSP Residual norm 2.313953742979e-02 
+      5 KSP Residual norm 8.849270514125e-03 
+  9 KSP Component U,V,W,P residual norm [ 2.306047448620e-07, 2.881435857252e-07, 4.309921579200e-07, 8.374862233795e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.122155064931e+00 
-      1 KSP Residual norm 2.861206875958e-01 
-      2 KSP Residual norm 8.168719097193e-02 
-      3 KSP Residual norm 3.466550974340e-02 
-      4 KSP Residual norm 1.620224427794e-02 
- 10 KSP Component U,V,W,P residual norm [ 2.109417903328e-07, 2.716888176057e-07, 3.551593139371e-07, 4.371493506238e-06 ]
+      0 KSP Residual norm 2.122155064942e+00 
+      1 KSP Residual norm 2.861206876030e-01 
+      2 KSP Residual norm 8.168719097706e-02 
+      3 KSP Residual norm 3.466550974624e-02 
+      4 KSP Residual norm 1.620224427892e-02 
+ 10 KSP Component U,V,W,P residual norm [ 2.109417903380e-07, 2.716888176218e-07, 3.551593139552e-07, 4.371493506245e-06 ]
   Linear solve converged due to CONVERGED_RTOL iterations 10
 Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
-  4 SNES Function norm 4.783461266624e-03 
+  4 SNES Function norm 4.783461266623e-03 
 Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.89e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 2.925748731820e-03, 3.065266290167e-03, 1.311889446602e-03, 8.550911105534e-06 ]
+  0 KSP Component U,V,W,P residual norm [ 2.925748731819e-03, 3.065266290166e-03, 1.311889446602e-03, 8.550911105029e-06 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000466329111e+00 
-      1 KSP Residual norm 2.315972178394e-01 
-      2 KSP Residual norm 7.913254971722e-02 
-      3 KSP Residual norm 3.101071309289e-02 
-      4 KSP Residual norm 1.498631708591e-02 
-      5 KSP Residual norm 7.491369839862e-03 
-  1 KSP Component U,V,W,P residual norm [ 2.407358774457e-04, 2.539803656664e-04, 1.060497992804e-04, 1.217612980417e-03 ]
+      1 KSP Residual norm 2.315972178395e-01 
+      2 KSP Residual norm 7.913254971719e-02 
+      3 KSP Residual norm 3.101071309288e-02 
+      4 KSP Residual norm 1.498631708590e-02 
+      5 KSP Residual norm 7.491369839858e-03 
+  1 KSP Component U,V,W,P residual norm [ 2.407358774441e-04, 2.539803656646e-04, 1.060497992797e-04, 1.217612980413e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.755258045433e-01 
-      1 KSP Residual norm 2.962402976249e-02 
-      2 KSP Residual norm 1.276975313667e-02 
-      3 KSP Residual norm 4.933847459173e-03 
-      4 KSP Residual norm 1.925681278803e-03 
-  2 KSP Component U,V,W,P residual norm [ 4.215318313120e-05, 5.344668771931e-05, 6.775413765922e-05, 4.049008223653e-04 ]
+      0 KSP Residual norm 2.755258045437e-01 
+      1 KSP Residual norm 2.962402976239e-02 
+      2 KSP Residual norm 1.276975313662e-02 
+      3 KSP Residual norm 4.933847459159e-03 
+      4 KSP Residual norm 1.925681278796e-03 
+  2 KSP Component U,V,W,P residual norm [ 4.215318313100e-05, 5.344668771923e-05, 6.775413765950e-05, 4.049008223594e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.352287231368e+00 
-      1 KSP Residual norm 3.482442385322e-01 
-      2 KSP Residual norm 1.563417494090e-01 
-      3 KSP Residual norm 5.060447136471e-02 
-      4 KSP Residual norm 2.177076728412e-02 
-      5 KSP Residual norm 1.040270848161e-02 
-  3 KSP Component U,V,W,P residual norm [ 6.923371702271e-06, 7.722030634526e-06, 7.738927177606e-06, 2.042722989191e-04 ]
+      0 KSP Residual norm 1.352287231385e+00 
+      1 KSP Residual norm 3.482442385354e-01 
+      2 KSP Residual norm 1.563417494106e-01 
+      3 KSP Residual norm 5.060447136528e-02 
+      4 KSP Residual norm 2.177076728436e-02 
+      5 KSP Residual norm 1.040270848168e-02 
+  3 KSP Component U,V,W,P residual norm [ 6.923371702074e-06, 7.722030634457e-06, 7.738927177874e-06, 2.042722989147e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.685859817616e+00 
-      1 KSP Residual norm 3.941509793484e-01 
-      2 KSP Residual norm 1.710268821484e-01 
+      0 KSP Residual norm 1.685859817628e+00 
+      1 KSP Residual norm 3.941509793464e-01 
+      2 KSP Residual norm 1.710268821482e-01 
       3 KSP Residual norm 5.621033448454e-02 
-      4 KSP Residual norm 2.404084402564e-02 
-      5 KSP Residual norm 1.218010258736e-02 
-  4 KSP Component U,V,W,P residual norm [ 5.349038672666e-06, 9.233924073942e-06, 1.162949397759e-05, 1.073242028880e-04 ]
+      4 KSP Residual norm 2.404084402560e-02 
+      5 KSP Residual norm 1.218010258731e-02 
+  4 KSP Component U,V,W,P residual norm [ 5.349038672557e-06, 9.233924073745e-06, 1.162949397735e-05, 1.073242028870e-04 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.973162325897e+00 
-      1 KSP Residual norm 3.965427996053e-01 
-      2 KSP Residual norm 1.532395660154e-01 
-      3 KSP Residual norm 4.671596383123e-02 
-      4 KSP Residual norm 1.789739801323e-02 
-  5 KSP Component U,V,W,P residual norm [ 1.178681100577e-06, 9.362868882645e-07, 1.380868436700e-06, 3.738879085206e-05 ]
+      1 KSP Residual norm 3.965427996039e-01 
+      2 KSP Residual norm 1.532395660158e-01 
+      3 KSP Residual norm 4.671596383114e-02 
+      4 KSP Residual norm 1.789739801318e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.178681100573e-06, 9.362868882225e-07, 1.380868436608e-06, 3.738879085154e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.710376241687e+00 
-      1 KSP Residual norm 2.736338105225e-01 
-      2 KSP Residual norm 1.089175085646e-01 
-      3 KSP Residual norm 4.864875970075e-02 
-      4 KSP Residual norm 2.526160076578e-02 
-      5 KSP Residual norm 9.839396389090e-03 
-  6 KSP Component U,V,W,P residual norm [ 3.304236390962e-07, 3.979056596257e-07, 4.914212816046e-07, 2.641247677712e-05 ]
+      0 KSP Residual norm 1.710376241749e+00 
+      1 KSP Residual norm 2.736338105265e-01 
+      2 KSP Residual norm 1.089175085651e-01 
+      3 KSP Residual norm 4.864875970084e-02 
+      4 KSP Residual norm 2.526160076617e-02 
+      5 KSP Residual norm 9.839396389185e-03 
+  6 KSP Component U,V,W,P residual norm [ 3.304236391430e-07, 3.979056597241e-07, 4.914212817281e-07, 2.641247677683e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.422127911735e+00 
-      1 KSP Residual norm 3.511180624795e-01 
-      2 KSP Residual norm 1.434498313864e-01 
-      3 KSP Residual norm 5.724265709194e-02 
-      4 KSP Residual norm 2.800574261480e-02 
-      5 KSP Residual norm 1.267031034611e-02 
-  7 KSP Component U,V,W,P residual norm [ 4.900182044986e-07, 7.493207175777e-07, 1.084546887027e-06, 1.098428941937e-05 ]
+      0 KSP Residual norm 1.422127911726e+00 
+      1 KSP Residual norm 3.511180624809e-01 
+      2 KSP Residual norm 1.434498313889e-01 
+      3 KSP Residual norm 5.724265709216e-02 
+      4 KSP Residual norm 2.800574261589e-02 
+      5 KSP Residual norm 1.267031034600e-02 
+  7 KSP Component U,V,W,P residual norm [ 4.900182044861e-07, 7.493207175320e-07, 1.084546886951e-06, 1.098428941900e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.265682812094e+00 
-      1 KSP Residual norm 2.759292581597e-01 
-      2 KSP Residual norm 9.703744586029e-02 
-      3 KSP Residual norm 4.006226844310e-02 
-      4 KSP Residual norm 1.992597816732e-02 
-  8 KSP Component U,V,W,P residual norm [ 3.120892590383e-07, 4.507166506226e-07, 6.190610941147e-07, 5.965001647659e-06 ]
+      0 KSP Residual norm 2.265682812171e+00 
+      1 KSP Residual norm 2.759292581545e-01 
+      2 KSP Residual norm 9.703744585989e-02 
+      3 KSP Residual norm 4.006226844117e-02 
+      4 KSP Residual norm 1.992597816553e-02 
+  8 KSP Component U,V,W,P residual norm [ 3.120892591225e-07, 4.507166507682e-07, 6.190610943473e-07, 5.965001647212e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.427812925836e+00 
-      1 KSP Residual norm 3.773977332789e-01 
-      2 KSP Residual norm 1.680965966872e-01 
-      3 KSP Residual norm 7.869595280359e-02 
-      4 KSP Residual norm 3.434554860667e-02 
-      5 KSP Residual norm 1.114757714947e-02 
-  9 KSP Component U,V,W,P residual norm [ 2.118611092948e-07, 3.106589881627e-07, 4.586327167553e-07, 3.239168832177e-06 ]
+      0 KSP Residual norm 1.427812925874e+00 
+      1 KSP Residual norm 3.773977333025e-01 
+      2 KSP Residual norm 1.680965967221e-01 
+      3 KSP Residual norm 7.869595281623e-02 
+      4 KSP Residual norm 3.434554861181e-02 
+      5 KSP Residual norm 1.114757714995e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.118611092488e-07, 3.106589880524e-07, 4.586327165921e-07, 3.239168832014e-06 ]
   Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
   5 SNES Function norm 3.799090156380e-03 
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 5
 SNES Object: 4 MPI processes
@@ -1207,22 +1207,22 @@ SNES Object: 4 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
           (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
           (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
 [[ModelOutput_SD3D]]
 slab base range: gmin 6.9697e-01 5.0000e-01 0.0000e+00
 slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
 slab edge range: gmax(x) 6.9697e-01
 slab edge identified: pidx_w,rank_w 5551 1
-slab edge range: W,Dn 6.9697e-01 8.1566e-01
+[step 0] slab edge range: W,Dn 6.9697e-01 8.1566e-01
 slab edge (back face) range: gmax(x) 6.9697e-01
 slab edge (back face) identified: pidx_w,rank_w 5117 1
-slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
+[step 0] slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
 slab edge (front face) range: gmin(z) 3.7879e-01
 slab edge (front face) identified: pidx_w,rank_w 4843 1
-slab edge (front face) range: W,Dn 3.7879e-01 5.1578e-01
+[step 0] slab edge (front face) range: W,Dn 3.7879e-01 5.1578e-01
 topo range: 1.0000e+00 1.0000e+00
 vol,int v.v,vrms: 5.7392e-01 2.0679e-02 1.8982e-01
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.19e-02 (sec)
 Phi: 0.0000e+00
 PostSolve(0) --> pTatin3dCurrentMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB) 
 [[ModelOutput_SD3D]]
@@ -1230,16 +1230,16 @@ slab base range: gmin 6.9697e-01 5.0000e-01 0.0000e+00
 slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
 slab edge range: gmax(x) 6.9697e-01
 slab edge identified: pidx_w,rank_w 5551 1
-slab edge range: W,Dn 6.9697e-01 8.1566e-01
+[step 0] slab edge range: W,Dn 6.9697e-01 8.1566e-01
 slab edge (back face) range: gmax(x) 6.9697e-01
 slab edge (back face) identified: pidx_w,rank_w 5117 1
-slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
+[step 0] slab edge (back face) range: W,Dn 6.9697e-01 5.7891e-01
 slab edge (front face) range: gmin(z) 3.7879e-01
 slab edge (front face) identified: pidx_w,rank_w 4843 1
-slab edge (front face) range: W,Dn 3.7879e-01 5.1578e-01
+[step 0] slab edge (front face) range: W,Dn 3.7879e-01 5.1578e-01
 topo range: 1.0000e+00 1.0000e+00
 vol,int v.v,vrms: 5.7392e-01 2.0679e-02 1.8982e-01
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.94e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.70e-02 (sec)
 Phi: 0.0000e+00
   TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 2.4662e-01 [accepted] | dt > dt_max : restricted to = 2.3891e-03 | ==>> dt used = 2.3891e-03 |
   TimeStep control(StkSurfaceCourant): | current = 2.3891e-03 : trial = 1.0000e+32 | ==>> dt used = 2.3891e-03 |
@@ -1250,374 +1250,374 @@ Phi: 0.0000e+00
      time  : 2.3891e-13 
 =========== MaterialPointStd_UpdateCoordinates ============= 
       Number of material points                     19860 (init) / 19860 (final)
-    	MaterialPointStd_UpdateLocalCoordinates     4.34e-03 (sec) efficiency 46.1%
-    	SwarmUpdatePosition_Communication_Generic   2.91e-03 (sec) efficiency 20.1%
-    	MaterialPointStd_Removal                    2.31e-05 (sec) efficiency 39.2%
+    	MaterialPointStd_UpdateLocalCoordinates     5.13e-03 (sec) efficiency 39.3%
+    	SwarmUpdatePosition_Communication_Generic   3.66e-03 (sec) efficiency 15.6%
+    	MaterialPointStd_Removal                    2.60e-05 (sec) efficiency 46.8%
 =========== ================================== ============= 
    [[ COMPUTING FLOW FIELD FOR STEP : 1 ]]
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
   0 SNES Function norm 3.799090156380e-03 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 2.329199543321e-03, 2.852981335902e-03, 9.318811664976e-04, 3.239168832177e-06 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.329199543321e-03, 2.852981335902e-03, 9.318811664980e-04, 3.239168832014e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.999115427679e-01 
+      0 KSP Residual norm 9.999115427678e-01 
       1 KSP Residual norm 2.181557241208e-01 
-      2 KSP Residual norm 7.646882494741e-02 
-      3 KSP Residual norm 3.229313601441e-02 
+      2 KSP Residual norm 7.646882494740e-02 
+      3 KSP Residual norm 3.229313601440e-02 
       4 KSP Residual norm 1.558383709326e-02 
-      5 KSP Residual norm 7.669508934497e-03 
-  1 KSP Component U,V,W,P residual norm [ 1.877000847966e-04, 2.315861654001e-04, 7.571890632021e-05, 1.034074921985e-03 ]
+      5 KSP Residual norm 7.669508934503e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.877000847945e-04, 2.315861653976e-04, 7.571890631944e-05, 1.034074921980e-03 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.196342905866e-01 
-      1 KSP Residual norm 1.259857289531e-01 
-      2 KSP Residual norm 3.364625564100e-02 
-      3 KSP Residual norm 1.124351232538e-02 
-      4 KSP Residual norm 3.921804586887e-03 
-  2 KSP Component U,V,W,P residual norm [ 3.203551847578e-05, 4.325536443565e-05, 4.210240074980e-05, 3.910767825642e-04 ]
+      0 KSP Residual norm 9.196342905920e-01 
+      1 KSP Residual norm 1.259857289538e-01 
+      2 KSP Residual norm 3.364625564119e-02 
+      3 KSP Residual norm 1.124351232544e-02 
+      4 KSP Residual norm 3.921804586906e-03 
+  2 KSP Component U,V,W,P residual norm [ 3.203551847554e-05, 4.325536443543e-05, 4.210240074988e-05, 3.910767825614e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.131943864918e+00 
-      1 KSP Residual norm 5.244775385988e-01 
-      2 KSP Residual norm 1.630184244684e-01 
-      3 KSP Residual norm 5.175204978061e-02 
-      4 KSP Residual norm 1.732479388681e-02 
-  3 KSP Component U,V,W,P residual norm [ 8.092449373695e-06, 9.562175716085e-06, 5.671859346417e-06, 1.995870382384e-04 ]
+      0 KSP Residual norm 3.131943864949e+00 
+      1 KSP Residual norm 5.244775386040e-01 
+      2 KSP Residual norm 1.630184244701e-01 
+      3 KSP Residual norm 5.175204978117e-02 
+      4 KSP Residual norm 1.732479388698e-02 
+  3 KSP Component U,V,W,P residual norm [ 8.092449373569e-06, 9.562175715944e-06, 5.671859346418e-06, 1.995870382365e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.632624381845e+00 
-      1 KSP Residual norm 4.075206156243e-01 
-      2 KSP Residual norm 1.343689501344e-01 
-      3 KSP Residual norm 5.179288819527e-02 
-      4 KSP Residual norm 1.546535641654e-02 
-  4 KSP Component U,V,W,P residual norm [ 3.339136568479e-06, 4.200900163906e-06, 4.057024081485e-06, 9.640315048148e-05 ]
+      0 KSP Residual norm 2.632624381865e+00 
+      1 KSP Residual norm 4.075206156238e-01 
+      2 KSP Residual norm 1.343689501345e-01 
+      3 KSP Residual norm 5.179288819545e-02 
+      4 KSP Residual norm 1.546535641667e-02 
+  4 KSP Component U,V,W,P residual norm [ 3.339136568412e-06, 4.200900163815e-06, 4.057024081394e-06, 9.640315048049e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.834780040768e+00 
-      1 KSP Residual norm 5.566274863345e-01 
-      2 KSP Residual norm 2.163833499256e-01 
-      3 KSP Residual norm 8.045574564191e-02 
-      4 KSP Residual norm 2.942349933486e-02 
-      5 KSP Residual norm 1.439155581361e-02 
-  5 KSP Component U,V,W,P residual norm [ 1.480463228216e-06, 2.099378459251e-06, 2.540681690244e-06, 4.100663486854e-05 ]
+      0 KSP Residual norm 2.834780040750e+00 
+      1 KSP Residual norm 5.566274863295e-01 
+      2 KSP Residual norm 2.163833499234e-01 
+      3 KSP Residual norm 8.045574564093e-02 
+      4 KSP Residual norm 2.942349933447e-02 
+      5 KSP Residual norm 1.439155581342e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.480463228200e-06, 2.099378459224e-06, 2.540681690210e-06, 4.100663486862e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.285120673388e+00 
-      1 KSP Residual norm 3.206632279967e-01 
-      2 KSP Residual norm 1.137498383500e-01 
-      3 KSP Residual norm 3.532925121180e-02 
-      4 KSP Residual norm 1.196052174803e-02 
-  6 KSP Component U,V,W,P residual norm [ 6.956791588813e-07, 5.560390934086e-07, 6.245496273000e-07, 2.517230337335e-05 ]
+      0 KSP Residual norm 2.285120673373e+00 
+      1 KSP Residual norm 3.206632279938e-01 
+      2 KSP Residual norm 1.137498383491e-01 
+      3 KSP Residual norm 3.532925121140e-02 
+      4 KSP Residual norm 1.196052174789e-02 
+  6 KSP Component U,V,W,P residual norm [ 6.956791588759e-07, 5.560390934085e-07, 6.245496273027e-07, 2.517230337349e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.073081314795e+00 
+      0 KSP Residual norm 2.073081314794e+00 
       1 KSP Residual norm 4.118215129878e-01 
-      2 KSP Residual norm 1.269770664987e-01 
-      3 KSP Residual norm 4.456271498115e-02 
-      4 KSP Residual norm 1.961275125904e-02 
-  7 KSP Component U,V,W,P residual norm [ 3.142856057874e-07, 7.473928541194e-07, 8.064778627883e-07, 1.242231005629e-05 ]
+      2 KSP Residual norm 1.269770665004e-01 
+      3 KSP Residual norm 4.456271498145e-02 
+      4 KSP Residual norm 1.961275125903e-02 
+  7 KSP Component U,V,W,P residual norm [ 3.142856057890e-07, 7.473928541279e-07, 8.064778628017e-07, 1.242231005627e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.430399654985e+00 
-      1 KSP Residual norm 4.993930130648e-01 
-      2 KSP Residual norm 1.750757495719e-01 
-      3 KSP Residual norm 5.962178070690e-02 
-      4 KSP Residual norm 1.847989109966e-02 
-  8 KSP Component U,V,W,P residual norm [ 4.793045109531e-07, 6.068281764716e-07, 7.623600626353e-07, 6.446911752952e-06 ]
+      0 KSP Residual norm 3.430399655012e+00 
+      1 KSP Residual norm 4.993930130662e-01 
+      2 KSP Residual norm 1.750757495741e-01 
+      3 KSP Residual norm 5.962178070734e-02 
+      4 KSP Residual norm 1.847989109994e-02 
+  8 KSP Component U,V,W,P residual norm [ 4.793045109534e-07, 6.068281764811e-07, 7.623600626414e-07, 6.446911752977e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.643033736140e+00 
-      1 KSP Residual norm 5.095681902391e-01 
-      2 KSP Residual norm 1.677953158473e-01 
-      3 KSP Residual norm 6.309892426281e-02 
-      4 KSP Residual norm 3.209035500208e-02 
-      5 KSP Residual norm 1.345091024006e-02 
-  9 KSP Component U,V,W,P residual norm [ 2.212870254407e-07, 3.815608109297e-07, 4.542859084276e-07, 4.282859052647e-06 ]
+      0 KSP Residual norm 2.643033736122e+00 
+      1 KSP Residual norm 5.095681902371e-01 
+      2 KSP Residual norm 1.677953158476e-01 
+      3 KSP Residual norm 6.309892426297e-02 
+      4 KSP Residual norm 3.209035500212e-02 
+      5 KSP Residual norm 1.345091024010e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.212870254416e-07, 3.815608109321e-07, 4.542859084322e-07, 4.282859052668e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.391113920967e+00 
-      1 KSP Residual norm 4.073388782619e-01 
-      2 KSP Residual norm 1.301665739750e-01 
-      3 KSP Residual norm 4.986505716668e-02 
-      4 KSP Residual norm 2.368716771689e-02 
- 10 KSP Component U,V,W,P residual norm [ 1.228793239247e-07, 2.117085842335e-07, 2.479764781399e-07, 2.424630254141e-06 ]
+      0 KSP Residual norm 2.391113921009e+00 
+      1 KSP Residual norm 4.073388782640e-01 
+      2 KSP Residual norm 1.301665739752e-01 
+      3 KSP Residual norm 4.986505716706e-02 
+      4 KSP Residual norm 2.368716771725e-02 
+ 10 KSP Component U,V,W,P residual norm [ 1.228793239231e-07, 2.117085842306e-07, 2.479764781355e-07, 2.424630254131e-06 ]
   Linear solve converged due to CONVERGED_RTOL iterations 10
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
-  1 SNES Function norm 2.835206361052e-03 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.95e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 1.817217926037e-03, 2.073972283138e-03, 6.593536296892e-04, 2.424630254141e-06 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.08e-02 (sec)
+  1 SNES Function norm 2.835206361053e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.08e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 1.817217926037e-03, 2.073972283139e-03, 6.593536296897e-04, 2.424630254131e-06 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000231492783e+00 
-      1 KSP Residual norm 2.038074123899e-01 
-      2 KSP Residual norm 7.101139283565e-02 
-      3 KSP Residual norm 3.124206195040e-02 
+      1 KSP Residual norm 2.038074123900e-01 
+      2 KSP Residual norm 7.101139283566e-02 
+      3 KSP Residual norm 3.124206195041e-02 
       4 KSP Residual norm 1.460912161259e-02 
-      5 KSP Residual norm 7.044139871748e-03 
-  1 KSP Component U,V,W,P residual norm [ 1.139094493556e-04, 1.312650321708e-04, 4.222299667542e-05, 6.872392192317e-04 ]
+      5 KSP Residual norm 7.044139871745e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.139094493573e-04, 1.312650321727e-04, 4.222299667600e-05, 6.872392192366e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.107447191484e+00 
-      1 KSP Residual norm 1.496761278538e-01 
-      2 KSP Residual norm 3.700878583271e-02 
-      3 KSP Residual norm 1.353964541753e-02 
-      4 KSP Residual norm 5.001053195996e-03 
-  2 KSP Component U,V,W,P residual norm [ 2.080337199775e-05, 2.819506164851e-05, 2.877138714923e-05, 2.636539241150e-04 ]
+      0 KSP Residual norm 1.107447191476e+00 
+      1 KSP Residual norm 1.496761278527e-01 
+      2 KSP Residual norm 3.700878583246e-02 
+      3 KSP Residual norm 1.353964541743e-02 
+      4 KSP Residual norm 5.001053195955e-03 
+  2 KSP Component U,V,W,P residual norm [ 2.080337199790e-05, 2.819506164860e-05, 2.877138714911e-05, 2.636539241172e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.574658449733e+00 
-      1 KSP Residual norm 5.746898093049e-01 
-      2 KSP Residual norm 1.711227352470e-01 
-      3 KSP Residual norm 6.095806729003e-02 
-      4 KSP Residual norm 2.086575954809e-02 
-  3 KSP Component U,V,W,P residual norm [ 5.736848101152e-06, 6.540697854925e-06, 4.456815139904e-06, 1.365041218156e-04 ]
+      0 KSP Residual norm 3.574658449688e+00 
+      1 KSP Residual norm 5.746898092976e-01 
+      2 KSP Residual norm 1.711227352448e-01 
+      3 KSP Residual norm 6.095806728922e-02 
+      4 KSP Residual norm 2.086575954781e-02 
+  3 KSP Component U,V,W,P residual norm [ 5.736848101292e-06, 6.540697855058e-06, 4.456815139885e-06, 1.365041218188e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.202754165620e+00 
-      1 KSP Residual norm 5.029049799037e-01 
-      2 KSP Residual norm 1.720829716489e-01 
-      3 KSP Residual norm 6.579965844996e-02 
-      4 KSP Residual norm 1.876315949987e-02 
-  4 KSP Component U,V,W,P residual norm [ 2.583447493065e-06, 3.489009962090e-06, 3.671190114172e-06, 6.339815996449e-05 ]
+      0 KSP Residual norm 3.202754165524e+00 
+      1 KSP Residual norm 5.029049798964e-01 
+      2 KSP Residual norm 1.720829716465e-01 
+      3 KSP Residual norm 6.579965844874e-02 
+      4 KSP Residual norm 1.876315949938e-02 
+  4 KSP Component U,V,W,P residual norm [ 2.583447493162e-06, 3.489009962178e-06, 3.671190114265e-06, 6.339815996642e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.531993592527e+00 
-      1 KSP Residual norm 6.452197760016e-01 
-      2 KSP Residual norm 2.614249623473e-01 
-      3 KSP Residual norm 9.252353327667e-02 
-      4 KSP Residual norm 3.458358276631e-02 
-  5 KSP Component U,V,W,P residual norm [ 1.765013537390e-06, 1.945995584533e-06, 2.219114584205e-06, 2.614502192322e-05 ]
+      0 KSP Residual norm 3.531993592553e+00 
+      1 KSP Residual norm 6.452197760098e-01 
+      2 KSP Residual norm 2.614249623509e-01 
+      3 KSP Residual norm 9.252353327816e-02 
+      4 KSP Residual norm 3.458358276692e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.765013537463e-06, 1.945995584607e-06, 2.219114584298e-06, 2.614502192360e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.005835857330e+00 
-      1 KSP Residual norm 3.339937938784e-01 
-      2 KSP Residual norm 1.131677084582e-01 
-      3 KSP Residual norm 3.402233517494e-02 
-      4 KSP Residual norm 1.128378287539e-02 
-  6 KSP Component U,V,W,P residual norm [ 2.991172521771e-07, 3.093491173631e-07, 2.706077746759e-07, 1.745840372354e-05 ]
+      0 KSP Residual norm 3.005835857328e+00 
+      1 KSP Residual norm 3.339937938798e-01 
+      2 KSP Residual norm 1.131677084576e-01 
+      3 KSP Residual norm 3.402233517508e-02 
+      4 KSP Residual norm 1.128378287590e-02 
+  6 KSP Component U,V,W,P residual norm [ 2.991172521811e-07, 3.093491173822e-07, 2.706077746992e-07, 1.745840372364e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.036756431108e+00 
-      1 KSP Residual norm 3.900490685112e-01 
+      0 KSP Residual norm 2.036756431089e+00 
+      1 KSP Residual norm 3.900490685129e-01 
       2 KSP Residual norm 1.275193352259e-01 
-      3 KSP Residual norm 4.991288232661e-02 
-      4 KSP Residual norm 2.231937955149e-02 
-      5 KSP Residual norm 9.963806560905e-03 
-  7 KSP Component U,V,W,P residual norm [ 4.555746154692e-07, 6.388594377806e-07, 6.886509096970e-07, 8.572035735256e-06 ]
+      3 KSP Residual norm 4.991288232689e-02 
+      4 KSP Residual norm 2.231937955160e-02 
+      5 KSP Residual norm 9.963806560955e-03 
+  7 KSP Component U,V,W,P residual norm [ 4.555746154673e-07, 6.388594377711e-07, 6.886509096881e-07, 8.572035735325e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.961008581779e+00 
-      1 KSP Residual norm 5.353010774855e-01 
-      2 KSP Residual norm 1.997687551071e-01 
-      3 KSP Residual norm 6.376134217152e-02 
-      4 KSP Residual norm 1.924612973517e-02 
-  8 KSP Component U,V,W,P residual norm [ 4.588968129640e-07, 4.665213509362e-07, 5.693640404532e-07, 4.375932747483e-06 ]
+      0 KSP Residual norm 3.961008581682e+00 
+      1 KSP Residual norm 5.353010774848e-01 
+      2 KSP Residual norm 1.997687551058e-01 
+      3 KSP Residual norm 6.376134217095e-02 
+      4 KSP Residual norm 1.924612973474e-02 
+  8 KSP Component U,V,W,P residual norm [ 4.588968129766e-07, 4.665213509386e-07, 5.693640404573e-07, 4.375932747513e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.944456411311e+00 
-      1 KSP Residual norm 5.639201157429e-01 
-      2 KSP Residual norm 1.985824216633e-01 
-      3 KSP Residual norm 8.022312130777e-02 
-      4 KSP Residual norm 3.932799166747e-02 
-      5 KSP Residual norm 1.486331689832e-02 
-  9 KSP Component U,V,W,P residual norm [ 2.177524378286e-07, 2.818562156965e-07, 3.197802733184e-07, 2.816659505721e-06 ]
+      0 KSP Residual norm 2.944456411282e+00 
+      1 KSP Residual norm 5.639201157427e-01 
+      2 KSP Residual norm 1.985824216624e-01 
+      3 KSP Residual norm 8.022312130677e-02 
+      4 KSP Residual norm 3.932799166716e-02 
+      5 KSP Residual norm 1.486331689835e-02 
+  9 KSP Component U,V,W,P residual norm [ 2.177524378331e-07, 2.818562156994e-07, 3.197802733229e-07, 2.816659505730e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.753740210707e+00 
-      1 KSP Residual norm 4.237074039900e-01 
-      2 KSP Residual norm 1.358861227542e-01 
-      3 KSP Residual norm 4.542465964327e-02 
-      4 KSP Residual norm 2.090367195272e-02 
- 10 KSP Component U,V,W,P residual norm [ 1.064884321250e-07, 1.335920805778e-07, 1.442076108498e-07, 1.606054007812e-06 ]
+      0 KSP Residual norm 2.753740210642e+00 
+      1 KSP Residual norm 4.237074039859e-01 
+      2 KSP Residual norm 1.358861227531e-01 
+      3 KSP Residual norm 4.542465964276e-02 
+      4 KSP Residual norm 2.090367195239e-02 
+ 10 KSP Component U,V,W,P residual norm [ 1.064884321266e-07, 1.335920805763e-07, 1.442076108484e-07, 1.606054007840e-06 ]
   Linear solve converged due to CONVERGED_RTOL iterations 10
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.89e-02 (sec)
-  2 SNES Function norm 1.838203468010e-03 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.16e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 1.188702969966e-03, 1.336153662157e-03, 4.250506448542e-04, 1.606054007812e-06 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  2 SNES Function norm 1.838203468011e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 1.188702969967e-03, 1.336153662158e-03, 4.250506448546e-04, 1.606054007840e-06 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000195592856e+00 
       1 KSP Residual norm 2.010856867221e-01 
       2 KSP Residual norm 7.129302686596e-02 
       3 KSP Residual norm 3.178520238108e-02 
-      4 KSP Residual norm 1.453507232109e-02 
-      5 KSP Residual norm 6.825283181433e-03 
-  1 KSP Component U,V,W,P residual norm [ 6.742012075874e-05, 7.641667929008e-05, 2.483224256183e-05, 4.249257953146e-04 ]
+      4 KSP Residual norm 1.453507232110e-02 
+      5 KSP Residual norm 6.825283181439e-03 
+  1 KSP Component U,V,W,P residual norm [ 6.742012075830e-05, 7.641667928959e-05, 2.483224256170e-05, 4.249257953135e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.184961155816e+00 
-      1 KSP Residual norm 1.620926664701e-01 
-      2 KSP Residual norm 3.970873246630e-02 
-      3 KSP Residual norm 1.567294847239e-02 
-      4 KSP Residual norm 6.215402708816e-03 
-  2 KSP Component U,V,W,P residual norm [ 1.288985326026e-05, 1.782202283029e-05, 1.834465378354e-05, 1.640453270689e-04 ]
+      0 KSP Residual norm 1.184961155820e+00 
+      1 KSP Residual norm 1.620926664707e-01 
+      2 KSP Residual norm 3.970873246646e-02 
+      3 KSP Residual norm 1.567294847245e-02 
+      4 KSP Residual norm 6.215402708846e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.288985326026e-05, 1.782202283035e-05, 1.834465378368e-05, 1.640453270684e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.823488205331e+00 
-      1 KSP Residual norm 6.250584849451e-01 
-      2 KSP Residual norm 1.844540475772e-01 
-      3 KSP Residual norm 6.991202303505e-02 
-      4 KSP Residual norm 2.451210178373e-02 
-  3 KSP Component U,V,W,P residual norm [ 3.808640908674e-06, 4.387290359777e-06, 3.149958675622e-06, 8.656269877760e-05 ]
+      0 KSP Residual norm 3.823488205372e+00 
+      1 KSP Residual norm 6.250584849515e-01 
+      2 KSP Residual norm 1.844540475789e-01 
+      3 KSP Residual norm 6.991202303570e-02 
+      4 KSP Residual norm 2.451210178398e-02 
+  3 KSP Component U,V,W,P residual norm [ 3.808640908616e-06, 4.387290359747e-06, 3.149958675617e-06, 8.656269877721e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.515484857322e+00 
-      1 KSP Residual norm 5.524833375501e-01 
-      2 KSP Residual norm 1.940248658586e-01 
-      3 KSP Residual norm 7.007785404299e-02 
+      0 KSP Residual norm 3.515484857324e+00 
+      1 KSP Residual norm 5.524833375420e-01 
+      2 KSP Residual norm 1.940248658553e-01 
+      3 KSP Residual norm 7.007785404223e-02 
       4 KSP Residual norm 1.990522953385e-02 
-  4 KSP Component U,V,W,P residual norm [ 1.709033453684e-06, 2.494995545161e-06, 2.764876360823e-06, 3.875286741655e-05 ]
+  4 KSP Component U,V,W,P residual norm [ 1.709033453651e-06, 2.494995545052e-06, 2.764876360724e-06, 3.875286741607e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.808037470659e+00 
-      1 KSP Residual norm 6.585543822410e-01 
-      2 KSP Residual norm 2.690692060824e-01 
-      3 KSP Residual norm 9.335246965209e-02 
-      4 KSP Residual norm 3.613818172867e-02 
-  5 KSP Component U,V,W,P residual norm [ 1.052524909352e-06, 1.183345573514e-06, 1.241449031925e-06, 1.605108952163e-05 ]
+      0 KSP Residual norm 3.808037470653e+00 
+      1 KSP Residual norm 6.585543822471e-01 
+      2 KSP Residual norm 2.690692060847e-01 
+      3 KSP Residual norm 9.335246965272e-02 
+      4 KSP Residual norm 3.613818172850e-02 
+  5 KSP Component U,V,W,P residual norm [ 1.052524909348e-06, 1.183345573501e-06, 1.241449031914e-06, 1.605108952138e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.483598948326e+00 
-      1 KSP Residual norm 3.363601483509e-01 
-      2 KSP Residual norm 1.083026951659e-01 
-      3 KSP Residual norm 3.465657597149e-02 
-  6 KSP Component U,V,W,P residual norm [ 4.152293896596e-07, 4.135106124895e-07, 3.341907442990e-07, 1.079083896494e-05 ]
+      0 KSP Residual norm 3.483598948328e+00 
+      1 KSP Residual norm 3.363601483470e-01 
+      2 KSP Residual norm 1.083026951648e-01 
+      3 KSP Residual norm 3.465657597102e-02 
+  6 KSP Component U,V,W,P residual norm [ 4.152293896484e-07, 4.135106124715e-07, 3.341907442869e-07, 1.079083896491e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.919756173601e+00 
-      1 KSP Residual norm 3.779605281064e-01 
+      0 KSP Residual norm 1.919756173598e+00 
+      1 KSP Residual norm 3.779605281056e-01 
       2 KSP Residual norm 1.143205413888e-01 
-      3 KSP Residual norm 3.979566269433e-02 
-      4 KSP Residual norm 1.626348247057e-02 
-  7 KSP Component U,V,W,P residual norm [ 4.292854233727e-07, 4.997471540459e-07, 5.951646743561e-07, 5.390077189145e-06 ]
+      3 KSP Residual norm 3.979566269425e-02 
+      4 KSP Residual norm 1.626348247052e-02 
+  7 KSP Component U,V,W,P residual norm [ 4.292854233804e-07, 4.997471540542e-07, 5.951646743644e-07, 5.390077189155e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 4.135005787287e+00 
-      1 KSP Residual norm 5.507340599527e-01 
-      2 KSP Residual norm 2.032727261396e-01 
-      3 KSP Residual norm 6.280254976393e-02 
-      4 KSP Residual norm 1.761020126323e-02 
-  8 KSP Component U,V,W,P residual norm [ 2.916333027215e-07, 2.620756392538e-07, 3.194085169166e-07, 2.733032784686e-06 ]
+      0 KSP Residual norm 4.135005787327e+00 
+      1 KSP Residual norm 5.507340599513e-01 
+      2 KSP Residual norm 2.032727261394e-01 
+      3 KSP Residual norm 6.280254976387e-02 
+      4 KSP Residual norm 1.761020126346e-02 
+  8 KSP Component U,V,W,P residual norm [ 2.916333027197e-07, 2.620756392563e-07, 3.194085169141e-07, 2.733032784675e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.134780750894e+00 
-      1 KSP Residual norm 5.553734036246e-01 
-      2 KSP Residual norm 1.882268569491e-01 
-      3 KSP Residual norm 7.192897882321e-02 
-      4 KSP Residual norm 3.356497051229e-02 
-      5 KSP Residual norm 1.170749717469e-02 
-  9 KSP Component U,V,W,P residual norm [ 1.502307555163e-07, 1.741747536363e-07, 2.008479290733e-07, 1.687162667706e-06 ]
+      0 KSP Residual norm 3.134780750959e+00 
+      1 KSP Residual norm 5.553734036250e-01 
+      2 KSP Residual norm 1.882268569496e-01 
+      3 KSP Residual norm 7.192897882356e-02 
+      4 KSP Residual norm 3.356497051234e-02 
+      5 KSP Residual norm 1.170749717473e-02 
+  9 KSP Component U,V,W,P residual norm [ 1.502307555136e-07, 1.741747536345e-07, 2.008479290702e-07, 1.687162667704e-06 ]
   Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.95e-02 (sec)
-  3 SNES Function norm 1.066796162460e-03 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.97e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 6.866638359524e-04, 7.761853375974e-04, 2.531408774084e-04, 1.687162667706e-06 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+  3 SNES Function norm 1.066796162461e-03 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 6.866638359531e-04, 7.761853375981e-04, 2.531408774088e-04, 1.687162667703e-06 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000231217125e+00 
-      1 KSP Residual norm 2.103148089652e-01 
+      1 KSP Residual norm 2.103148089651e-01 
       2 KSP Residual norm 7.316731371452e-02 
-      3 KSP Residual norm 3.264880949170e-02 
-      4 KSP Residual norm 1.475717416656e-02 
-      5 KSP Residual norm 6.697276640066e-03 
-  1 KSP Component U,V,W,P residual norm [ 3.835119777732e-05, 4.359842918240e-05, 1.454155778054e-05, 2.446814712548e-04 ]
+      3 KSP Residual norm 3.264880949167e-02 
+      4 KSP Residual norm 1.475717416652e-02 
+      5 KSP Residual norm 6.697276640044e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.835119777751e-05, 4.359842918260e-05, 1.454155778061e-05, 2.446814712554e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.164384541990e+00 
-      1 KSP Residual norm 1.642661624741e-01 
-      2 KSP Residual norm 4.127384532414e-02 
-      3 KSP Residual norm 1.690006711781e-02 
-      4 KSP Residual norm 7.019707074650e-03 
-  2 KSP Component U,V,W,P residual norm [ 7.445644889713e-06, 1.038582297371e-05, 1.062808317447e-05, 9.412188645771e-05 ]
+      0 KSP Residual norm 1.164384541988e+00 
+      1 KSP Residual norm 1.642661624736e-01 
+      2 KSP Residual norm 4.127384532400e-02 
+      3 KSP Residual norm 1.690006711775e-02 
+      4 KSP Residual norm 7.019707074609e-03 
+  2 KSP Component U,V,W,P residual norm [ 7.445644889709e-06, 1.038582297379e-05, 1.062808317466e-05, 9.412188645682e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.884313927184e+00 
-      1 KSP Residual norm 6.692613499802e-01 
-      2 KSP Residual norm 1.966839749165e-01 
-      3 KSP Residual norm 7.610483933525e-02 
-      4 KSP Residual norm 2.756744624151e-02 
-  3 KSP Component U,V,W,P residual norm [ 2.246776765567e-06, 2.750204538937e-06, 1.918026527639e-06, 5.023160966458e-05 ]
+      0 KSP Residual norm 3.884313927299e+00 
+      1 KSP Residual norm 6.692613499986e-01 
+      2 KSP Residual norm 1.966839749216e-01 
+      3 KSP Residual norm 7.610483933718e-02 
+      4 KSP Residual norm 2.756744624225e-02 
+  3 KSP Component U,V,W,P residual norm [ 2.246776765443e-06, 2.750204538850e-06, 1.918026527611e-06, 5.023160966346e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.639109993135e+00 
-      1 KSP Residual norm 5.714528417659e-01 
-      2 KSP Residual norm 1.991525853827e-01 
-      3 KSP Residual norm 7.048071867900e-02 
-      4 KSP Residual norm 2.000310475250e-02 
-  4 KSP Component U,V,W,P residual norm [ 1.030701073222e-06, 1.486533889909e-06, 1.714177726805e-06, 2.224164630897e-05 ]
+      0 KSP Residual norm 3.639109993118e+00 
+      1 KSP Residual norm 5.714528417425e-01 
+      2 KSP Residual norm 1.991525853747e-01 
+      3 KSP Residual norm 7.048071867708e-02 
+      4 KSP Residual norm 2.000310475263e-02 
+  4 KSP Component U,V,W,P residual norm [ 1.030701073191e-06, 1.486533889804e-06, 1.714177726690e-06, 2.224164630970e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.898101173676e+00 
-      1 KSP Residual norm 6.656518419331e-01 
-      2 KSP Residual norm 2.724815633882e-01 
-      3 KSP Residual norm 9.494819133885e-02 
-      4 KSP Residual norm 3.788033244056e-02 
-  5 KSP Component U,V,W,P residual norm [ 5.939281343501e-07, 6.939729512019e-07, 6.527515681719e-07, 9.310050421888e-06 ]
+      0 KSP Residual norm 3.898101173622e+00 
+      1 KSP Residual norm 6.656518419348e-01 
+      2 KSP Residual norm 2.724815633902e-01 
+      3 KSP Residual norm 9.494819133935e-02 
+      4 KSP Residual norm 3.788033244028e-02 
+  5 KSP Component U,V,W,P residual norm [ 5.939281343606e-07, 6.939729512135e-07, 6.527515682006e-07, 9.310050421685e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.660894065542e+00 
-      1 KSP Residual norm 3.387490200326e-01 
-      2 KSP Residual norm 1.069850520350e-01 
-      3 KSP Residual norm 3.463972165569e-02 
-  6 KSP Component U,V,W,P residual norm [ 2.633456166192e-07, 2.265140043788e-07, 1.732538766609e-07, 6.146056833965e-06 ]
+      0 KSP Residual norm 3.660894065494e+00 
+      1 KSP Residual norm 3.387490200269e-01 
+      2 KSP Residual norm 1.069850520345e-01 
+      3 KSP Residual norm 3.463972165507e-02 
+  6 KSP Component U,V,W,P residual norm [ 2.633456166150e-07, 2.265140043686e-07, 1.732538766534e-07, 6.146056833758e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.887052869248e+00 
-      1 KSP Residual norm 3.574404890117e-01 
-      2 KSP Residual norm 1.110100181348e-01 
-      3 KSP Residual norm 3.777177773733e-02 
-      4 KSP Residual norm 1.536959832134e-02 
-  7 KSP Component U,V,W,P residual norm [ 2.296648572602e-07, 2.859083731571e-07, 3.445118350914e-07, 3.031779272660e-06 ]
+      0 KSP Residual norm 1.887052869219e+00 
+      1 KSP Residual norm 3.574404890191e-01 
+      2 KSP Residual norm 1.110100181392e-01 
+      3 KSP Residual norm 3.777177773974e-02 
+      4 KSP Residual norm 1.536959832214e-02 
+  7 KSP Component U,V,W,P residual norm [ 2.296648572656e-07, 2.859083731592e-07, 3.445118350945e-07, 3.031779272453e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 4.144000576878e+00 
-      1 KSP Residual norm 5.697348022852e-01 
-      2 KSP Residual norm 2.146984341898e-01 
-      3 KSP Residual norm 6.335862258725e-02 
-      4 KSP Residual norm 1.884338707606e-02 
-  8 KSP Component U,V,W,P residual norm [ 1.749271185191e-07, 1.730905969642e-07, 1.974352588036e-07, 1.515961608354e-06 ]
+      0 KSP Residual norm 4.144000576836e+00 
+      1 KSP Residual norm 5.697348022811e-01 
+      2 KSP Residual norm 2.146984341904e-01 
+      3 KSP Residual norm 6.335862258715e-02 
+      4 KSP Residual norm 1.884338707685e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.749271185019e-07, 1.730905969531e-07, 1.974352587917e-07, 1.515961608259e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.369667656620e+00 
-      1 KSP Residual norm 5.622601955349e-01 
-      2 KSP Residual norm 1.933299274340e-01 
-      3 KSP Residual norm 7.084173033744e-02 
-      4 KSP Residual norm 3.198460072797e-02 
-  9 KSP Component U,V,W,P residual norm [ 6.680085725918e-08, 8.669669712167e-08, 1.019941400303e-07, 9.438174889197e-07 ]
+      0 KSP Residual norm 3.369667656646e+00 
+      1 KSP Residual norm 5.622601955432e-01 
+      2 KSP Residual norm 1.933299274395e-01 
+      3 KSP Residual norm 7.084173033950e-02 
+      4 KSP Residual norm 3.198460072832e-02 
+  9 KSP Component U,V,W,P residual norm [ 6.680085725879e-08, 8.669669712208e-08, 1.019941400321e-07, 9.438174888667e-07 ]
   Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.94e-02 (sec)
-  4 SNES Function norm 5.864896219898e-04 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.98e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 3.748204292308e-04, 4.279599442313e-04, 1.425802155808e-04, 9.438174889198e-07 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  4 SNES Function norm 5.864896219903e-04 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.88e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 3.748204292312e-04, 4.279599442316e-04, 1.425802155809e-04, 9.438174888667e-07 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 1.000337608927e+00 
-      1 KSP Residual norm 2.174289700125e-01 
-      2 KSP Residual norm 7.952045740062e-02 
-      3 KSP Residual norm 3.545475415673e-02 
-      4 KSP Residual norm 1.596829738160e-02 
-      5 KSP Residual norm 7.254448170393e-03 
-  1 KSP Component U,V,W,P residual norm [ 2.108509427800e-05, 2.423737004510e-05, 8.271212961623e-06, 1.349544276324e-04 ]
+      1 KSP Residual norm 2.174289700126e-01 
+      2 KSP Residual norm 7.952045740061e-02 
+      3 KSP Residual norm 3.545475415675e-02 
+      4 KSP Residual norm 1.596829738166e-02 
+      5 KSP Residual norm 7.254448170425e-03 
+  1 KSP Component U,V,W,P residual norm [ 2.108509427729e-05, 2.423737004429e-05, 8.271212961376e-06, 1.349544276303e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.123481821808e+00 
-      1 KSP Residual norm 1.605037000219e-01 
-      2 KSP Residual norm 4.118780795043e-02 
-      3 KSP Residual norm 1.697339380171e-02 
-      4 KSP Residual norm 7.069694146586e-03 
-  2 KSP Component U,V,W,P residual norm [ 4.357341111981e-06, 6.007151387408e-06, 6.264953229024e-06, 5.233884270749e-05 ]
+      0 KSP Residual norm 1.123481821829e+00 
+      1 KSP Residual norm 1.605037000251e-01 
+      2 KSP Residual norm 4.118780795124e-02 
+      3 KSP Residual norm 1.697339380205e-02 
+      4 KSP Residual norm 7.069694146714e-03 
+  2 KSP Component U,V,W,P residual norm [ 4.357341111898e-06, 6.007151387230e-06, 6.264953228777e-06, 5.233884270774e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.815292337992e+00 
-      1 KSP Residual norm 6.828176520307e-01 
-      2 KSP Residual norm 2.022902062404e-01 
-      3 KSP Residual norm 7.797883206237e-02 
-      4 KSP Residual norm 2.811298725757e-02 
-  3 KSP Component U,V,W,P residual norm [ 1.236117980986e-06, 1.564818668564e-06, 1.086258320956e-06, 2.764424941500e-05 ]
+      0 KSP Residual norm 3.815292337824e+00 
+      1 KSP Residual norm 6.828176520039e-01 
+      2 KSP Residual norm 2.022902062331e-01 
+      3 KSP Residual norm 7.797883205953e-02 
+      4 KSP Residual norm 2.811298725643e-02 
+  3 KSP Component U,V,W,P residual norm [ 1.236117981060e-06, 1.564818668577e-06, 1.086258320957e-06, 2.764424941375e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.665230652800e+00 
-      1 KSP Residual norm 5.773201377456e-01 
-      2 KSP Residual norm 2.037314224494e-01 
-      3 KSP Residual norm 7.062648766754e-02 
-      4 KSP Residual norm 2.058115886542e-02 
-  4 KSP Component U,V,W,P residual norm [ 6.068897976795e-07, 8.726269340201e-07, 1.009231913541e-06, 1.238298540274e-05 ]
+      0 KSP Residual norm 3.665230653242e+00 
+      1 KSP Residual norm 5.773201378393e-01 
+      2 KSP Residual norm 2.037314224824e-01 
+      3 KSP Residual norm 7.062648767767e-02 
+      4 KSP Residual norm 2.058115886743e-02 
+  4 KSP Component U,V,W,P residual norm [ 6.068897977151e-07, 8.726269341677e-07, 1.009231913699e-06, 1.238298540184e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.906712521286e+00 
-      1 KSP Residual norm 6.765599447523e-01 
-      2 KSP Residual norm 2.779396096225e-01 
-      3 KSP Residual norm 9.569275146417e-02 
-      4 KSP Residual norm 3.816330417250e-02 
-  5 KSP Component U,V,W,P residual norm [ 3.279458580873e-07, 3.874263168180e-07, 3.476633863093e-07, 5.101600005667e-06 ]
+      0 KSP Residual norm 3.906712521262e+00 
+      1 KSP Residual norm 6.765599447074e-01 
+      2 KSP Residual norm 2.779396096005e-01 
+      3 KSP Residual norm 9.569275145768e-02 
+      4 KSP Residual norm 3.816330417196e-02 
+  5 KSP Component U,V,W,P residual norm [ 3.279458580563e-07, 3.874263167965e-07, 3.476633862774e-07, 5.101600005656e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.794511381357e+00 
-      1 KSP Residual norm 3.473541963047e-01 
-      2 KSP Residual norm 1.064914792651e-01 
-      3 KSP Residual norm 3.634533578153e-02 
-  6 KSP Component U,V,W,P residual norm [ 1.491958103318e-07, 1.301318550768e-07, 1.002600927145e-07, 3.358321107033e-06 ]
+      0 KSP Residual norm 3.794511381433e+00 
+      1 KSP Residual norm 3.473541963280e-01 
+      2 KSP Residual norm 1.064914792753e-01 
+      3 KSP Residual norm 3.634533578365e-02 
+  6 KSP Component U,V,W,P residual norm [ 1.491958103412e-07, 1.301318550913e-07, 1.002600927180e-07, 3.358321106954e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.871998396913e+00 
-      1 KSP Residual norm 3.526412398163e-01 
-      2 KSP Residual norm 1.064561297884e-01 
-      3 KSP Residual norm 3.498240106496e-02 
-      4 KSP Residual norm 1.380643662064e-02 
-  7 KSP Component U,V,W,P residual norm [ 1.268242920567e-07, 1.547564589413e-07, 1.892241964574e-07, 1.667286436821e-06 ]
+      0 KSP Residual norm 1.871998397110e+00 
+      1 KSP Residual norm 3.526412398060e-01 
+      2 KSP Residual norm 1.064561297819e-01 
+      3 KSP Residual norm 3.498240106199e-02 
+      4 KSP Residual norm 1.380643662074e-02 
+  7 KSP Component U,V,W,P residual norm [ 1.268242920386e-07, 1.547564589265e-07, 1.892241964337e-07, 1.667286436806e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 4.101881955700e+00 
-      1 KSP Residual norm 5.706355811806e-01 
-      2 KSP Residual norm 2.142837568101e-01 
-      3 KSP Residual norm 6.325010966779e-02 
-      4 KSP Residual norm 1.892986121827e-02 
-  8 KSP Component U,V,W,P residual norm [ 9.358005590532e-08, 9.187168866609e-08, 1.026979446214e-07, 8.419562635838e-07 ]
+      0 KSP Residual norm 4.101881955865e+00 
+      1 KSP Residual norm 5.706355811853e-01 
+      2 KSP Residual norm 2.142837568107e-01 
+      3 KSP Residual norm 6.325010966828e-02 
+      4 KSP Residual norm 1.892986121686e-02 
+  8 KSP Component U,V,W,P residual norm [ 9.358005590436e-08, 9.187168866324e-08, 1.026979446212e-07, 8.419562635800e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.390936062405e+00 
-      1 KSP Residual norm 5.570309868749e-01 
-      2 KSP Residual norm 1.869283097720e-01 
-      3 KSP Residual norm 6.696902681018e-02 
-      4 KSP Residual norm 2.978689084134e-02 
-  9 KSP Component U,V,W,P residual norm [ 3.482604369862e-08, 4.525198799533e-08, 5.425609795058e-08, 5.183929372996e-07 ]
+      0 KSP Residual norm 3.390936062425e+00 
+      1 KSP Residual norm 5.570309868722e-01 
+      2 KSP Residual norm 1.869283097704e-01 
+      3 KSP Residual norm 6.696902681308e-02 
+      4 KSP Residual norm 2.978689084518e-02 
+  9 KSP Component U,V,W,P residual norm [ 3.482604369864e-08, 4.525198799353e-08, 5.425609794481e-08, 5.183929373087e-07 ]
   Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
-  5 SNES Function norm 3.129309046633e-04 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+  5 SNES Function norm 3.129309046637e-04 
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 5
 SNES Object: 4 MPI processes
   type: newtonls
@@ -1857,22 +1857,22 @@ SNES Object: 4 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
           (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
           (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.98e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.10e-02 (sec)
 [[ModelOutput_SD3D]]
 slab base range: gmin 6.9697e-01 5.0000e-01 6.0261e-22
 slab base range: gmax 7.5758e-01 5.0000e-01 3.7879e-01
 slab edge range: gmax(x) 6.9697e-01
 slab edge identified: pidx_w,rank_w 5180 1
-slab edge range: W,Dn 6.9697e-01 8.7879e-01
+[step 1] slab edge range: W,Dn 6.9697e-01 8.7879e-01
 slab edge (back face) range: gmax(x) 6.9697e-01
 slab edge (back face) identified: pidx_w,rank_w 5155 1
-slab edge (back face) range: W,Dn 6.9697e-01 8.7879e-01
+[step 1] slab edge (back face) range: W,Dn 6.9697e-01 8.7879e-01
 slab edge (front face) range: gmin(z) 3.7879e-01
 slab edge (front face) identified: pidx_w,rank_w 5104 1
-slab edge (front face) range: W,Dn 3.7879e-01 8.7879e-01
+[step 1] slab edge (front face) range: W,Dn 3.7879e-01 8.7879e-01
 topo range: 1.0000e+00 1.0000e+00
 vol,int v.v,vrms: 5.7392e-01 1.4128e-02 1.5690e-01
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.15e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.20e-02 (sec)
 Phi: 0.0000e+00
   TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 3.1012e-02 [accepted] | dt > dt_max : restricted to = 2.3891e-03 | ==>> dt used = 2.3891e-03 |
   TimeStep control(StkSurfaceCourant): | current = 2.3891e-03 : trial = 1.0000e+32 | ==>> dt used = 2.3891e-03 |
@@ -1883,356 +1883,356 @@ Phi: 0.0000e+00
      time  : 2.3891e-03 
 =========== MaterialPointStd_UpdateCoordinates ============= 
       Number of material points                     19860 (init) / 19860 (final)
-    	MaterialPointStd_UpdateLocalCoordinates     1.59e-02 (sec) efficiency 40.8%
-    	SwarmUpdatePosition_Communication_Generic   1.79e-02 (sec) efficiency 47.5%
-    	MaterialPointStd_Removal                    2.68e-04 (sec) efficiency 4.5%
+    	MaterialPointStd_UpdateLocalCoordinates     1.59e-02 (sec) efficiency 40.2%
+    	SwarmUpdatePosition_Communication_Generic   1.80e-02 (sec) efficiency 47.2%
+    	MaterialPointStd_Removal                    2.80e-04 (sec) efficiency 3.9%
 =========== ================================== ============= 
    [[ COMPUTING FLOW FIELD FOR STEP : 2 ]]
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.29e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.94e-02 (sec)
   0 SNES Function norm 1.198663390409e-03 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.19e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 4.355067200057e-04, 1.094883686344e-03, 2.199028535128e-04, 5.183929372996e-07 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 4.355067200063e-04, 1.094883686344e-03, 2.199028535120e-04, 5.183929373087e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.999654994590e-01 
+      0 KSP Residual norm 9.999654994591e-01 
       1 KSP Residual norm 1.878147928072e-01 
-      2 KSP Residual norm 4.316082649009e-02 
-      3 KSP Residual norm 1.479838633509e-02 
-      4 KSP Residual norm 4.749094954715e-03 
-  1 KSP Component U,V,W,P residual norm [ 3.472673428982e-04, 8.730237147227e-04, 1.755301783724e-04, 4.817629181222e-04 ]
+      2 KSP Residual norm 4.316082648998e-02 
+      3 KSP Residual norm 1.479838633500e-02 
+      4 KSP Residual norm 4.749094954698e-03 
+  1 KSP Component U,V,W,P residual norm [ 3.472673428988e-04, 8.730237147232e-04, 1.755301783718e-04, 4.817629181221e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.179476435101e-01 
-      1 KSP Residual norm 2.767264750441e-02 
-      2 KSP Residual norm 9.255034019848e-03 
-      3 KSP Residual norm 3.236212235354e-03 
-      4 KSP Residual norm 1.111653423594e-03 
-  2 KSP Component U,V,W,P residual norm [ 1.631526418590e-04, 4.106053343305e-04, 8.200965108586e-05, 5.802095132230e-04 ]
+      0 KSP Residual norm 2.179476435100e-01 
+      1 KSP Residual norm 2.767264750444e-02 
+      2 KSP Residual norm 9.255034019856e-03 
+      3 KSP Residual norm 3.236212235355e-03 
+      4 KSP Residual norm 1.111653423595e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.631526418603e-04, 4.106053343333e-04, 8.200965108609e-05, 5.802095132239e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 7.702374494312e-01 
-      1 KSP Residual norm 1.553582678466e-01 
-      2 KSP Residual norm 5.275658842882e-02 
-      3 KSP Residual norm 1.628464955213e-02 
-      4 KSP Residual norm 5.125441092786e-03 
-  3 KSP Component U,V,W,P residual norm [ 2.073612025422e-05, 5.144037183726e-05, 1.041508970665e-05, 2.532174761921e-04 ]
+      0 KSP Residual norm 7.702374494266e-01 
+      1 KSP Residual norm 1.553582678458e-01 
+      2 KSP Residual norm 5.275658842854e-02 
+      3 KSP Residual norm 1.628464955204e-02 
+      4 KSP Residual norm 5.125441092758e-03 
+  3 KSP Component U,V,W,P residual norm [ 2.073612025467e-05, 5.144037183832e-05, 1.041508970681e-05, 2.532174761946e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.255701129801e+00 
-      1 KSP Residual norm 2.372502385275e-01 
-      2 KSP Residual norm 7.968044964181e-02 
-      3 KSP Residual norm 2.319883290609e-02 
-      4 KSP Residual norm 7.054771416348e-03 
-  4 KSP Component U,V,W,P residual norm [ 7.167296288646e-06, 1.640989891651e-05, 5.240572479995e-06, 1.445819091503e-04 ]
+      0 KSP Residual norm 1.255701129799e+00 
+      1 KSP Residual norm 2.372502385274e-01 
+      2 KSP Residual norm 7.968044964182e-02 
+      3 KSP Residual norm 2.319883290607e-02 
+      4 KSP Residual norm 7.054771416327e-03 
+  4 KSP Component U,V,W,P residual norm [ 7.167296288752e-06, 1.640989891679e-05, 5.240572480024e-06, 1.445819091515e-04 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.897345412327e+00 
-      1 KSP Residual norm 5.761651951285e-01 
-      2 KSP Residual norm 1.989156800458e-01 
-      3 KSP Residual norm 5.605418348932e-02 
-      4 KSP Residual norm 1.638063361340e-02 
-  5 KSP Component U,V,W,P residual norm [ 2.489064956550e-06, 3.383194374153e-06, 2.768477154849e-06, 5.615469846779e-05 ]
+      0 KSP Residual norm 2.897345412302e+00 
+      1 KSP Residual norm 5.761651951236e-01 
+      2 KSP Residual norm 1.989156800442e-01 
+      3 KSP Residual norm 5.605418348885e-02 
+      4 KSP Residual norm 1.638063361324e-02 
+  5 KSP Component U,V,W,P residual norm [ 2.489064956578e-06, 3.383194374192e-06, 2.768477154871e-06, 5.615469846819e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.411480436851e+00 
-      1 KSP Residual norm 4.966884141842e-01 
-      2 KSP Residual norm 1.599353842668e-01 
-      3 KSP Residual norm 4.738703502017e-02 
-      4 KSP Residual norm 1.377808120356e-02 
-  6 KSP Component U,V,W,P residual norm [ 5.610456079849e-07, 6.712798333142e-07, 5.548047218751e-07, 2.645580893015e-05 ]
+      0 KSP Residual norm 2.411480436871e+00 
+      1 KSP Residual norm 4.966884141885e-01 
+      2 KSP Residual norm 1.599353842686e-01 
+      3 KSP Residual norm 4.738703502064e-02 
+      4 KSP Residual norm 1.377808120368e-02 
+  6 KSP Component U,V,W,P residual norm [ 5.610456079894e-07, 6.712798333237e-07, 5.548047218783e-07, 2.645580893037e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 9.611338791441e-01 
-      1 KSP Residual norm 1.807112894199e-01 
-      2 KSP Residual norm 4.294071235742e-02 
-      3 KSP Residual norm 1.392692203667e-02 
-      4 KSP Residual norm 4.947966715349e-03 
-  7 KSP Component U,V,W,P residual norm [ 4.764040350596e-07, 4.724436206555e-07, 4.904084939199e-07, 1.572229712742e-05 ]
+      0 KSP Residual norm 9.611338791395e-01 
+      1 KSP Residual norm 1.807112894193e-01 
+      2 KSP Residual norm 4.294071235686e-02 
+      3 KSP Residual norm 1.392692203623e-02 
+      4 KSP Residual norm 4.947966715191e-03 
+  7 KSP Component U,V,W,P residual norm [ 4.764040350666e-07, 4.724436206597e-07, 4.904084939244e-07, 1.572229712753e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.657717590929e+00 
-      1 KSP Residual norm 5.146346881295e-01 
-      2 KSP Residual norm 1.740838069109e-01 
-      3 KSP Residual norm 5.110242846743e-02 
-      4 KSP Residual norm 1.347358353705e-02 
-  8 KSP Component U,V,W,P residual norm [ 1.959069883014e-07, 2.662355167432e-07, 3.739235379680e-07, 6.249455337770e-06 ]
+      0 KSP Residual norm 2.657717590935e+00 
+      1 KSP Residual norm 5.146346881304e-01 
+      2 KSP Residual norm 1.740838069111e-01 
+      3 KSP Residual norm 5.110242846753e-02 
+      4 KSP Residual norm 1.347358353709e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.959069883025e-07, 2.662355167439e-07, 3.739235379685e-07, 6.249455337803e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.745147181639e+00 
-      1 KSP Residual norm 3.117201043099e-01 
-      2 KSP Residual norm 7.681665852660e-02 
-      3 KSP Residual norm 2.261854511229e-02 
-      4 KSP Residual norm 8.043806371127e-03 
-  9 KSP Component U,V,W,P residual norm [ 1.030567747964e-07, 6.851665911301e-08, 9.744610182181e-08, 3.178192121733e-06 ]
+      0 KSP Residual norm 1.745147181619e+00 
+      1 KSP Residual norm 3.117201043066e-01 
+      2 KSP Residual norm 7.681665852565e-02 
+      3 KSP Residual norm 2.261854511191e-02 
+      4 KSP Residual norm 8.043806371006e-03 
+  9 KSP Component U,V,W,P residual norm [ 1.030567747960e-07, 6.851665911360e-08, 9.744610182289e-08, 3.178192121753e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.220982893812e+00 
-      1 KSP Residual norm 4.454017504531e-01 
+      0 KSP Residual norm 2.220982893810e+00 
+      1 KSP Residual norm 4.454017504530e-01 
       2 KSP Residual norm 1.125125898500e-01 
-      3 KSP Residual norm 3.490615658794e-02 
-      4 KSP Residual norm 1.071953975666e-02 
- 10 KSP Component U,V,W,P residual norm [ 6.108266481550e-08, 8.328234247886e-08, 9.921625452431e-08, 1.427759593982e-06 ]
+      3 KSP Residual norm 3.490615658791e-02 
+      4 KSP Residual norm 1.071953975665e-02 
+ 10 KSP Component U,V,W,P residual norm [ 6.108266481562e-08, 8.328234247875e-08, 9.921625452384e-08, 1.427759593989e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.379010903501e+00 
-      1 KSP Residual norm 3.306240924949e-01 
-      2 KSP Residual norm 8.538786546038e-02 
-      3 KSP Residual norm 2.273412386387e-02 
- 11 KSP Component U,V,W,P residual norm [ 3.060480520184e-08, 4.645836558396e-08, 3.994381320519e-08, 8.029813126058e-07 ]
+      0 KSP Residual norm 2.379010903471e+00 
+      1 KSP Residual norm 3.306240924927e-01 
+      2 KSP Residual norm 8.538786545990e-02 
+      3 KSP Residual norm 2.273412386366e-02 
+ 11 KSP Component U,V,W,P residual norm [ 3.060480520198e-08, 4.645836558406e-08, 3.994381320546e-08, 8.029813126090e-07 ]
   Linear solve converged due to CONVERGED_RTOL iterations 11
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.01e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.02e-02 (sec)
   1 SNES Function norm 1.243645099618e-04 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 6.938362872082e-05, 9.619375099568e-05, 3.739733805988e-05, 8.029813126057e-07 ]
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.98e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 6.938362872082e-05, 9.619375099570e-05, 3.739733805983e-05, 8.029813126091e-07 ]
       Residual norms for fieldsplit_u_ solve.
       0 KSP Residual norm 9.983757453406e-01 
-      1 KSP Residual norm 1.857676345770e-01 
-      2 KSP Residual norm 6.084042999363e-02 
-      3 KSP Residual norm 1.782071960605e-02 
-      4 KSP Residual norm 5.983508206520e-03 
-  1 KSP Component U,V,W,P residual norm [ 1.605835136784e-06, 2.169215346460e-06, 8.827446959142e-07, 1.821122425315e-05 ]
+      1 KSP Residual norm 1.857676345768e-01 
+      2 KSP Residual norm 6.084042999353e-02 
+      3 KSP Residual norm 1.782071960603e-02 
+      4 KSP Residual norm 5.983508206576e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.605835137477e-06, 2.169215347428e-06, 8.827446962734e-07, 1.821122425727e-05 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.292535343008e+00 
-      1 KSP Residual norm 3.404748374991e-01 
-      2 KSP Residual norm 8.235828887351e-02 
-      3 KSP Residual norm 3.710711351220e-02 
-      4 KSP Residual norm 1.397643744612e-02 
-  2 KSP Component U,V,W,P residual norm [ 4.035193705634e-07, 6.377316179219e-07, 3.818893795678e-07, 8.108403792034e-06 ]
+      0 KSP Residual norm 2.292535342463e+00 
+      1 KSP Residual norm 3.404748374172e-01 
+      2 KSP Residual norm 8.235828885308e-02 
+      3 KSP Residual norm 3.710711350280e-02 
+      4 KSP Residual norm 1.397643744266e-02 
+  2 KSP Component U,V,W,P residual norm [ 4.035193707788e-07, 6.377316182337e-07, 3.818893796924e-07, 8.108403795159e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.696344258246e+00 
-      1 KSP Residual norm 4.392272828769e-01 
-      2 KSP Residual norm 1.115779582628e-01 
-      3 KSP Residual norm 4.034889426737e-02 
-      4 KSP Residual norm 1.484984809375e-02 
-  3 KSP Component U,V,W,P residual norm [ 1.971514647264e-07, 2.079979376022e-07, 1.684666304675e-07, 4.959633421090e-06 ]
+      0 KSP Residual norm 2.696344258002e+00 
+      1 KSP Residual norm 4.392272828753e-01 
+      2 KSP Residual norm 1.115779582671e-01 
+      3 KSP Residual norm 4.034889427071e-02 
+      4 KSP Residual norm 1.484984809474e-02 
+  3 KSP Component U,V,W,P residual norm [ 1.971514648368e-07, 2.079979377470e-07, 1.684666305697e-07, 4.959633422724e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.654306691791e+00 
-      1 KSP Residual norm 5.212913793783e-01 
-      2 KSP Residual norm 1.300807875788e-01 
-      3 KSP Residual norm 4.652935242610e-02 
-      4 KSP Residual norm 1.694724084455e-02 
-  4 KSP Component U,V,W,P residual norm [ 7.339901074609e-08, 1.054147527217e-07, 7.184778841443e-08, 2.735493058977e-06 ]
+      0 KSP Residual norm 3.654306691572e+00 
+      1 KSP Residual norm 5.212913793718e-01 
+      2 KSP Residual norm 1.300807875822e-01 
+      3 KSP Residual norm 4.652935242590e-02 
+      4 KSP Residual norm 1.694724084368e-02 
+  4 KSP Component U,V,W,P residual norm [ 7.339901076844e-08, 1.054147527558e-07, 7.184778843251e-08, 2.735493059989e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.091245521439e+00 
-      1 KSP Residual norm 5.476833146043e-01 
-      2 KSP Residual norm 1.793076938384e-01 
-      3 KSP Residual norm 5.757384643493e-02 
-      4 KSP Residual norm 1.975360965082e-02 
-  5 KSP Component U,V,W,P residual norm [ 8.265336434632e-08, 1.130115184970e-07, 1.205668625863e-07, 1.337872334736e-06 ]
+      0 KSP Residual norm 3.091245521047e+00 
+      1 KSP Residual norm 5.476833146150e-01 
+      2 KSP Residual norm 1.793076938487e-01 
+      3 KSP Residual norm 5.757384644020e-02 
+      4 KSP Residual norm 1.975360965399e-02 
+  5 KSP Component U,V,W,P residual norm [ 8.265336437963e-08, 1.130115185358e-07, 1.205668626272e-07, 1.337872335261e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.348676131200e+00 
-      1 KSP Residual norm 4.255725926820e-01 
-      2 KSP Residual norm 1.143826639832e-01 
-      3 KSP Residual norm 3.294906863969e-02 
-  6 KSP Component U,V,W,P residual norm [ 4.180048753285e-08, 3.542552536310e-08, 5.004271962770e-08, 7.593441534564e-07 ]
+      0 KSP Residual norm 3.348676131414e+00 
+      1 KSP Residual norm 4.255725927120e-01 
+      2 KSP Residual norm 1.143826639878e-01 
+      3 KSP Residual norm 3.294906864013e-02 
+  6 KSP Component U,V,W,P residual norm [ 4.180048754574e-08, 3.542552537261e-08, 5.004271964844e-08, 7.593441536023e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.021805424434e+00 
-      1 KSP Residual norm 4.756715276540e-01 
-      2 KSP Residual norm 1.395755569313e-01 
-      3 KSP Residual norm 4.452875403048e-02 
-      4 KSP Residual norm 2.153127916067e-02 
-  7 KSP Component U,V,W,P residual norm [ 1.535648157416e-08, 2.339367890095e-08, 2.836695004745e-08, 3.793930268474e-07 ]
+      0 KSP Residual norm 3.021805424233e+00 
+      1 KSP Residual norm 4.756715276069e-01 
+      2 KSP Residual norm 1.395755569200e-01 
+      3 KSP Residual norm 4.452875402624e-02 
+      4 KSP Residual norm 2.153127915700e-02 
+  7 KSP Component U,V,W,P residual norm [ 1.535648157650e-08, 2.339367890527e-08, 2.836695005356e-08, 3.793930269395e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.052112730402e+00 
-      1 KSP Residual norm 5.102067917667e-01 
-      2 KSP Residual norm 1.493114912565e-01 
-      3 KSP Residual norm 4.458424980915e-02 
-      4 KSP Residual norm 1.759502533978e-02 
-  8 KSP Component U,V,W,P residual norm [ 1.167497409505e-08, 1.801796272359e-08, 2.133624608132e-08, 1.980787096478e-07 ]
+      0 KSP Residual norm 3.052112730056e+00 
+      1 KSP Residual norm 5.102067917699e-01 
+      2 KSP Residual norm 1.493114912554e-01 
+      3 KSP Residual norm 4.458424980829e-02 
+      4 KSP Residual norm 1.759502533923e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.167497409910e-08, 1.801796272662e-08, 2.133624608978e-08, 1.980787096620e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.142703926923e+00 
-      1 KSP Residual norm 4.960862548690e-01 
-      2 KSP Residual norm 1.414135078589e-01 
-      3 KSP Residual norm 4.710942410842e-02 
-      4 KSP Residual norm 2.241258379130e-02 
-  9 KSP Component U,V,W,P residual norm [ 5.030554444423e-09, 8.632856130004e-09, 9.438067316550e-09, 1.129166593450e-07 ]
+      0 KSP Residual norm 3.142703927287e+00 
+      1 KSP Residual norm 4.960862549337e-01 
+      2 KSP Residual norm 1.414135078774e-01 
+      3 KSP Residual norm 4.710942411384e-02 
+      4 KSP Residual norm 2.241258379340e-02 
+  9 KSP Component U,V,W,P residual norm [ 5.030554445018e-09, 8.632856130726e-09, 9.438067318206e-09, 1.129166593470e-07 ]
   Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.92e-02 (sec)
-  2 SNES Function norm 3.791041046828e-05 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.95e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 2.164851545810e-05, 2.828206528872e-05, 1.298664826530e-05, 1.129166593451e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.000521580423e+00 
-      1 KSP Residual norm 2.053237364500e-01 
-      2 KSP Residual norm 6.773579945579e-02 
-      3 KSP Residual norm 2.027996430845e-02 
-      4 KSP Residual norm 6.095232980909e-03 
-  1 KSP Component U,V,W,P residual norm [ 5.475646290933e-07, 7.011658490798e-07, 3.271884817915e-07, 5.831252192044e-06 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.253164225212e+00 
-      1 KSP Residual norm 3.394590118107e-01 
-      2 KSP Residual norm 8.080079183144e-02 
-      3 KSP Residual norm 2.682853931796e-02 
-      4 KSP Residual norm 9.976137408736e-03 
-  2 KSP Component U,V,W,P residual norm [ 1.500845259809e-07, 2.043840057667e-07, 1.057464626700e-07, 2.876394710638e-06 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.711625352813e+00 
-      1 KSP Residual norm 4.185189802737e-01 
-      2 KSP Residual norm 1.078767701580e-01 
-      3 KSP Residual norm 2.992589065785e-02 
-      4 KSP Residual norm 1.065788691960e-02 
-  3 KSP Component U,V,W,P residual norm [ 5.649884564046e-08, 7.087286524102e-08, 5.821457448831e-08, 1.695060872210e-06 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.312066097856e+00 
-      1 KSP Residual norm 4.575809466943e-01 
-      2 KSP Residual norm 1.133515394561e-01 
-      3 KSP Residual norm 3.936447828042e-02 
-      4 KSP Residual norm 1.518510410717e-02 
-  4 KSP Component U,V,W,P residual norm [ 2.138594448952e-08, 2.443909096037e-08, 1.922601638891e-08, 9.590477752932e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.543668794944e+00 
-      1 KSP Residual norm 4.584581328540e-01 
-      2 KSP Residual norm 1.433330751249e-01 
-      3 KSP Residual norm 4.783698189726e-02 
-      4 KSP Residual norm 1.819796084927e-02 
-  5 KSP Component U,V,W,P residual norm [ 2.705247913251e-08, 3.791225480437e-08, 3.263821213768e-08, 4.576262571184e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.022259863781e+00 
-      1 KSP Residual norm 4.467239262399e-01 
-      2 KSP Residual norm 1.071133805885e-01 
-      3 KSP Residual norm 2.711013331978e-02 
-  6 KSP Component U,V,W,P residual norm [ 1.114007984680e-08, 8.536298037166e-09, 1.612567858590e-08, 2.438677254770e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.700968707923e+00 
-      1 KSP Residual norm 4.119249488964e-01 
-      2 KSP Residual norm 1.211140531021e-01 
-      3 KSP Residual norm 4.567276522333e-02 
-      4 KSP Residual norm 2.016971090918e-02 
-  7 KSP Component U,V,W,P residual norm [ 3.181208566853e-09, 5.329656488428e-09, 5.184448276536e-09, 1.222622843993e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.701521164627e+00 
-      1 KSP Residual norm 4.279447849575e-01 
-      2 KSP Residual norm 1.304992486895e-01 
-      3 KSP Residual norm 4.514989411349e-02 
-      4 KSP Residual norm 1.925025527553e-02 
-  8 KSP Component U,V,W,P residual norm [ 4.366669428977e-09, 5.943722944615e-09, 6.967575316769e-09, 6.280637313103e-08 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.619005457583e+00 
-      1 KSP Residual norm 4.298720244076e-01 
-      2 KSP Residual norm 1.304237110954e-01 
-      3 KSP Residual norm 5.016818607503e-02 
-      4 KSP Residual norm 2.276374982128e-02 
-  9 KSP Component U,V,W,P residual norm [ 1.294541275965e-09, 2.276824083437e-09, 1.982732850413e-09, 3.713808703826e-08 ]
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.92e-02 (sec)
-  3 SNES Function norm 1.327603524141e-05 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 7.671662163541e-06, 9.966094295979e-06, 4.251387611808e-06, 3.713808703819e-08 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.000455177558e+00 
-      1 KSP Residual norm 2.109364862055e-01 
-      2 KSP Residual norm 6.993548076100e-02 
-      3 KSP Residual norm 2.130139118486e-02 
-      4 KSP Residual norm 6.351622901285e-03 
-  1 KSP Component U,V,W,P residual norm [ 1.926199398633e-07, 2.501723964789e-07, 1.075878530521e-07, 2.044246465924e-06 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.216685098237e+00 
-      1 KSP Residual norm 3.440716267860e-01 
-      2 KSP Residual norm 8.178708522118e-02 
-      3 KSP Residual norm 2.488615042346e-02 
-      4 KSP Residual norm 8.613250840808e-03 
-  2 KSP Component U,V,W,P residual norm [ 6.022852742554e-08, 7.520242536901e-08, 3.964359978226e-08, 1.064122728728e-06 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.825979175004e+00 
-      1 KSP Residual norm 4.417183895914e-01 
-      2 KSP Residual norm 1.150422739110e-01 
-      3 KSP Residual norm 3.022483243522e-02 
-      4 KSP Residual norm 9.617835411887e-03 
-  3 KSP Component U,V,W,P residual norm [ 2.062961277136e-08, 2.399213579320e-08, 2.035579594033e-08, 6.033525623457e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.169035969342e+00 
-      1 KSP Residual norm 4.528127429596e-01 
-      2 KSP Residual norm 1.106000752883e-01 
-      3 KSP Residual norm 3.816155553383e-02 
-      4 KSP Residual norm 1.372912792165e-02 
-  4 KSP Component U,V,W,P residual norm [ 6.970096356252e-09, 8.356901990809e-09, 6.630173048758e-09, 3.294424169394e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.558135312185e+00 
-      1 KSP Residual norm 4.484146578312e-01 
-      2 KSP Residual norm 1.348466599446e-01 
-      3 KSP Residual norm 4.667722202809e-02 
-      4 KSP Residual norm 1.714527892263e-02 
-  5 KSP Component U,V,W,P residual norm [ 9.399935156437e-09, 1.065790209301e-08, 1.046851494493e-08, 1.598431189090e-07 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.837804769324e+00 
-      1 KSP Residual norm 4.549628826256e-01 
-      2 KSP Residual norm 1.054942841601e-01 
-      3 KSP Residual norm 2.745891250228e-02 
-  6 KSP Component U,V,W,P residual norm [ 3.885372667563e-09, 3.469616190825e-09, 5.197014820763e-09, 8.541602799653e-08 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.717537836807e+00 
-      1 KSP Residual norm 3.918318104825e-01 
-      2 KSP Residual norm 1.107418588859e-01 
-      3 KSP Residual norm 3.666088452347e-02 
-      4 KSP Residual norm 1.619977835055e-02 
-  7 KSP Component U,V,W,P residual norm [ 9.992962303833e-10, 2.056427734101e-09, 1.719903208699e-09, 4.456383237315e-08 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.431502659752e+00 
-      1 KSP Residual norm 4.181725345769e-01 
-      2 KSP Residual norm 1.136083750463e-01 
-      3 KSP Residual norm 3.495550508209e-02 
-      4 KSP Residual norm 1.400045597745e-02 
-  8 KSP Component U,V,W,P residual norm [ 1.543550495245e-09, 1.131917069644e-09, 2.223570470381e-09, 2.213185852837e-08 ]
-      Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.756591848616e+00 
-      1 KSP Residual norm 4.242390007272e-01 
-      2 KSP Residual norm 1.279764346025e-01 
-      3 KSP Residual norm 5.170902369023e-02 
-      4 KSP Residual norm 2.249383949501e-02 
-  9 KSP Component U,V,W,P residual norm [ 4.177976499475e-10, 8.886352011717e-10, 7.266342886428e-10, 1.237458595102e-08 ]
-  Linear solve converged due to CONVERGED_RTOL iterations 9
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.94e-02 (sec)
-  4 SNES Function norm 4.780560007174e-06 
 Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
-  0 KSP Component U,V,W,P residual norm [ 2.888961444234e-06, 3.591835299944e-06, 1.267368061623e-06, 1.237458595101e-08 ]
+  2 SNES Function norm 3.791041046837e-05 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.90e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.164851545821e-05, 2.828206528877e-05, 1.298664826528e-05, 1.129166593468e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.000770713453e+00 
-      1 KSP Residual norm 2.158613361935e-01 
-      2 KSP Residual norm 7.437397449537e-02 
-      3 KSP Residual norm 2.350749148261e-02 
-      4 KSP Residual norm 7.479638916381e-03 
-  1 KSP Component U,V,W,P residual norm [ 7.960748493394e-08, 1.015003892906e-07, 3.627047667688e-08, 7.748246404488e-07 ]
+      0 KSP Residual norm 1.000521580424e+00 
+      1 KSP Residual norm 2.053237364498e-01 
+      2 KSP Residual norm 6.773579945591e-02 
+      3 KSP Residual norm 2.027996430859e-02 
+      4 KSP Residual norm 6.095232980948e-03 
+  1 KSP Component U,V,W,P residual norm [ 5.475646281052e-07, 7.011658477802e-07, 3.271884812136e-07, 5.831252186494e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 1.938642808134e+00 
-      1 KSP Residual norm 2.901880754384e-01 
-      2 KSP Residual norm 6.794415606389e-02 
-      3 KSP Residual norm 1.969796703452e-02 
-      4 KSP Residual norm 6.426139467885e-03 
-  2 KSP Component U,V,W,P residual norm [ 2.940373674909e-08, 3.706307792695e-08, 2.022219586333e-08, 4.329636530665e-07 ]
+      0 KSP Residual norm 2.253164227466e+00 
+      1 KSP Residual norm 3.394590121541e-01 
+      2 KSP Residual norm 8.080079191324e-02 
+      3 KSP Residual norm 2.682853934546e-02 
+      4 KSP Residual norm 9.976137419235e-03 
+  2 KSP Component U,V,W,P residual norm [ 1.500845255985e-07, 2.043840052682e-07, 1.057464624469e-07, 2.876394706155e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.032862303792e+00 
-      1 KSP Residual norm 4.908044380222e-01 
-      2 KSP Residual norm 1.280742242755e-01 
-      3 KSP Residual norm 3.252962261359e-02 
-      4 KSP Residual norm 8.908240890150e-03 
-  3 KSP Component U,V,W,P residual norm [ 7.795078113724e-09, 8.821090961036e-09, 5.102584608162e-09, 2.198384150398e-07 ]
+      0 KSP Residual norm 2.711625352775e+00 
+      1 KSP Residual norm 4.185189801215e-01 
+      2 KSP Residual norm 1.078767701193e-01 
+      3 KSP Residual norm 2.992589063896e-02 
+      4 KSP Residual norm 1.065788691231e-02 
+  3 KSP Component U,V,W,P residual norm [ 5.649884553387e-08, 7.087286509775e-08, 5.821457439699e-08, 1.695060870502e-06 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 3.067714479349e+00 
-      1 KSP Residual norm 4.305892351761e-01 
-      2 KSP Residual norm 1.263028499725e-01 
-      3 KSP Residual norm 4.553892082393e-02 
-      4 KSP Residual norm 1.612036355419e-02 
-  4 KSP Component U,V,W,P residual norm [ 2.776043358749e-09, 4.973682426292e-09, 3.598210137043e-09, 1.156849951459e-07 ]
+      0 KSP Residual norm 3.312066099926e+00 
+      1 KSP Residual norm 4.575809469381e-01 
+      2 KSP Residual norm 1.133515395012e-01 
+      3 KSP Residual norm 3.936447829872e-02 
+      4 KSP Residual norm 1.518510411477e-02 
+  4 KSP Component U,V,W,P residual norm [ 2.138594445488e-08, 2.443909092113e-08, 1.922601636816e-08, 9.590477741772e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.719327155150e+00 
-      1 KSP Residual norm 4.886851431663e-01 
-      2 KSP Residual norm 1.545464073557e-01 
-      3 KSP Residual norm 5.276431719811e-02 
-      4 KSP Residual norm 1.866572891233e-02 
-  5 KSP Component U,V,W,P residual norm [ 3.409683864982e-09, 3.755289810116e-09, 3.612983004179e-09, 5.557774099975e-08 ]
+      0 KSP Residual norm 2.543668796621e+00 
+      1 KSP Residual norm 4.584581327300e-01 
+      2 KSP Residual norm 1.433330750754e-01 
+      3 KSP Residual norm 4.783698187245e-02 
+      4 KSP Residual norm 1.819796084203e-02 
+  5 KSP Component U,V,W,P residual norm [ 2.705247909840e-08, 3.791225476103e-08, 3.263821210000e-08, 4.576262564196e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.709325971737e+00 
-      1 KSP Residual norm 4.454652194179e-01 
-      2 KSP Residual norm 1.060356664220e-01 
-      3 KSP Residual norm 3.201566070993e-02 
-      4 KSP Residual norm 1.204318619576e-02 
-  6 KSP Component U,V,W,P residual norm [ 7.453931672821e-10, 1.368541811798e-09, 8.813147452695e-10, 3.214745027513e-08 ]
+      0 KSP Residual norm 3.022259864038e+00 
+      1 KSP Residual norm 4.467239261800e-01 
+      2 KSP Residual norm 1.071133805975e-01 
+      3 KSP Residual norm 2.711013331792e-02 
+  6 KSP Component U,V,W,P residual norm [ 1.114007983412e-08, 8.536298024994e-09, 1.612567856027e-08, 2.438677252150e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.710478254540e+00 
-      1 KSP Residual norm 4.298562795396e-01 
-      2 KSP Residual norm 1.327647827539e-01 
-      3 KSP Residual norm 4.370705202269e-02 
-      4 KSP Residual norm 1.957133532067e-02 
-  7 KSP Component U,V,W,P residual norm [ 5.220859408510e-10, 1.167719466375e-09, 1.002929086518e-09, 1.663866053602e-08 ]
+      0 KSP Residual norm 2.700968709575e+00 
+      1 KSP Residual norm 4.119249491366e-01 
+      2 KSP Residual norm 1.211140531549e-01 
+      3 KSP Residual norm 4.567276523637e-02 
+      4 KSP Residual norm 2.016971091599e-02 
+  7 KSP Component U,V,W,P residual norm [ 3.181208562669e-09, 5.329656480307e-09, 5.184448271597e-09, 1.222622842540e-07 ]
       Residual norms for fieldsplit_u_ solve.
-      0 KSP Residual norm 2.605667742689e+00 
-      1 KSP Residual norm 4.783918087683e-01 
-      2 KSP Residual norm 1.410185699779e-01 
-      3 KSP Residual norm 3.914816828796e-02 
-      4 KSP Residual norm 1.478496007847e-02 
-  8 KSP Component U,V,W,P residual norm [ 5.268803736429e-10, 3.863059345625e-10, 5.373477219612e-10, 7.657923554877e-09 ]
+      0 KSP Residual norm 2.701521166120e+00 
+      1 KSP Residual norm 4.279447848709e-01 
+      2 KSP Residual norm 1.304992486693e-01 
+      3 KSP Residual norm 4.514989408932e-02 
+      4 KSP Residual norm 1.925025526735e-02 
+  8 KSP Component U,V,W,P residual norm [ 4.366669423258e-09, 5.943722938070e-09, 6.967575305443e-09, 6.280637309211e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.619005456593e+00 
+      1 KSP Residual norm 4.298720243718e-01 
+      2 KSP Residual norm 1.304237110974e-01 
+      3 KSP Residual norm 5.016818606861e-02 
+      4 KSP Residual norm 2.276374981551e-02 
+  9 KSP Component U,V,W,P residual norm [ 1.294541275112e-09, 2.276824081969e-09, 1.982732848558e-09, 3.713808702581e-08 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.97e-02 (sec)
+  3 SNES Function norm 1.327603524141e-05 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.28e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 7.671662163562e-06, 9.966094295976e-06, 4.251387611766e-06, 3.713808702569e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000455177552e+00 
+      1 KSP Residual norm 2.109364862058e-01 
+      2 KSP Residual norm 6.993548075928e-02 
+      3 KSP Residual norm 2.130139118459e-02 
+      4 KSP Residual norm 6.351622901283e-03 
+  1 KSP Component U,V,W,P residual norm [ 1.926199399489e-07, 2.501723965911e-07, 1.075878530961e-07, 2.044246466422e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.216685097678e+00 
+      1 KSP Residual norm 3.440716266818e-01 
+      2 KSP Residual norm 8.178708519805e-02 
+      3 KSP Residual norm 2.488615041450e-02 
+      4 KSP Residual norm 8.613250836938e-03 
+  2 KSP Component U,V,W,P residual norm [ 6.022852749131e-08, 7.520242545331e-08, 3.964359981548e-08, 1.064122729534e-06 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.825979174680e+00 
+      1 KSP Residual norm 4.417183895927e-01 
+      2 KSP Residual norm 1.150422739172e-01 
+      3 KSP Residual norm 3.022483243184e-02 
+      4 KSP Residual norm 9.617835406645e-03 
+  3 KSP Component U,V,W,P residual norm [ 2.062961279795e-08, 2.399213581703e-08, 2.035579595767e-08, 6.033525625907e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.169035971726e+00 
+      1 KSP Residual norm 4.528127433104e-01 
+      2 KSP Residual norm 1.106000753859e-01 
+      3 KSP Residual norm 3.816155556565e-02 
+      4 KSP Residual norm 1.372912793278e-02 
+  4 KSP Component U,V,W,P residual norm [ 6.970096356843e-09, 8.356902001121e-09, 6.630173053478e-09, 3.294424170443e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.558135312357e+00 
+      1 KSP Residual norm 4.484146579065e-01 
+      2 KSP Residual norm 1.348466599563e-01 
+      3 KSP Residual norm 4.667722202217e-02 
+      4 KSP Residual norm 1.714527891893e-02 
+  5 KSP Component U,V,W,P residual norm [ 9.399935155403e-09, 1.065790208981e-08, 1.046851494240e-08, 1.598431190622e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.837804768980e+00 
+      1 KSP Residual norm 4.549628826284e-01 
+      2 KSP Residual norm 1.054942841604e-01 
+      3 KSP Residual norm 2.745891249446e-02 
+  6 KSP Component U,V,W,P residual norm [ 3.885372669031e-09, 3.469616195597e-09, 5.197014820990e-09, 8.541602804828e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.717537837949e+00 
+      1 KSP Residual norm 3.918318103463e-01 
+      2 KSP Residual norm 1.107418588130e-01 
+      3 KSP Residual norm 3.666088453049e-02 
+      4 KSP Residual norm 1.619977834942e-02 
+  7 KSP Component U,V,W,P residual norm [ 9.992962308735e-10, 2.056427736760e-09, 1.719903215536e-09, 4.456383237968e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.431502660391e+00 
+      1 KSP Residual norm 4.181725339425e-01 
+      2 KSP Residual norm 1.136083748449e-01 
+      3 KSP Residual norm 3.495550503143e-02 
+      4 KSP Residual norm 1.400045594653e-02 
+  8 KSP Component U,V,W,P residual norm [ 1.543550495536e-09, 1.131917067202e-09, 2.223570469700e-09, 2.213185854149e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.756591849838e+00 
+      1 KSP Residual norm 4.242390010753e-01 
+      2 KSP Residual norm 1.279764345506e-01 
+      3 KSP Residual norm 5.170902369315e-02 
+      4 KSP Residual norm 2.249383949810e-02 
+  9 KSP Component U,V,W,P residual norm [ 4.177976497491e-10, 8.886352013919e-10, 7.266342894637e-10, 1.237458594890e-08 ]
+  Linear solve converged due to CONVERGED_RTOL iterations 9
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.92e-02 (sec)
+  4 SNES Function norm 4.780560007257e-06 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.00e-02 (sec)
+  0 KSP Component U,V,W,P residual norm [ 2.888961444287e-06, 3.591835300007e-06, 1.267368061636e-06, 1.237458594910e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.000770713462e+00 
+      1 KSP Residual norm 2.158613361914e-01 
+      2 KSP Residual norm 7.437397449985e-02 
+      3 KSP Residual norm 2.350749148453e-02 
+      4 KSP Residual norm 7.479638916087e-03 
+  1 KSP Component U,V,W,P residual norm [ 7.960748546636e-08, 1.015003899468e-07, 3.627047688738e-08, 7.748246430575e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 1.938642801302e+00 
+      1 KSP Residual norm 2.901880744173e-01 
+      2 KSP Residual norm 6.794415582860e-02 
+      3 KSP Residual norm 1.969796697144e-02 
+      4 KSP Residual norm 6.426139451349e-03 
+  2 KSP Component U,V,W,P residual norm [ 2.940373689577e-08, 3.706307811036e-08, 2.022219594791e-08, 4.329636542199e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.032862303048e+00 
+      1 KSP Residual norm 4.908044379193e-01 
+      2 KSP Residual norm 1.280742241616e-01 
+      3 KSP Residual norm 3.252962260417e-02 
+      4 KSP Residual norm 8.908240900665e-03 
+  3 KSP Component U,V,W,P residual norm [ 7.795078107531e-09, 8.821090949012e-09, 5.102584641801e-09, 2.198384148096e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 3.067714470839e+00 
+      1 KSP Residual norm 4.305892342276e-01 
+      2 KSP Residual norm 1.263028496674e-01 
+      3 KSP Residual norm 4.553892070592e-02 
+      4 KSP Residual norm 1.612036351475e-02 
+  4 KSP Component U,V,W,P residual norm [ 2.776043348937e-09, 4.973682414315e-09, 3.598210120893e-09, 1.156849949407e-07 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.719327151908e+00 
+      1 KSP Residual norm 4.886851433303e-01 
+      2 KSP Residual norm 1.545464072829e-01 
+      3 KSP Residual norm 5.276431721090e-02 
+      4 KSP Residual norm 1.866572893033e-02 
+  5 KSP Component U,V,W,P residual norm [ 3.409683853410e-09, 3.755289810139e-09, 3.612982999572e-09, 5.557774078852e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.709325960400e+00 
+      1 KSP Residual norm 4.454652189151e-01 
+      2 KSP Residual norm 1.060356662725e-01 
+      3 KSP Residual norm 3.201566064873e-02 
+      4 KSP Residual norm 1.204318616481e-02 
+  6 KSP Component U,V,W,P residual norm [ 7.453931648218e-10, 1.368541809533e-09, 8.813147443631e-10, 3.214745019841e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.710478254070e+00 
+      1 KSP Residual norm 4.298562802429e-01 
+      2 KSP Residual norm 1.327647829069e-01 
+      3 KSP Residual norm 4.370705212513e-02 
+      4 KSP Residual norm 1.957133536713e-02 
+  7 KSP Component U,V,W,P residual norm [ 5.220859392759e-10, 1.167719461642e-09, 1.002929081798e-09, 1.663866055375e-08 ]
+      Residual norms for fieldsplit_u_ solve.
+      0 KSP Residual norm 2.605667746002e+00 
+      1 KSP Residual norm 4.783918096071e-01 
+      2 KSP Residual norm 1.410185704058e-01 
+      3 KSP Residual norm 3.914816841582e-02 
+      4 KSP Residual norm 1.478496016680e-02 
+  8 KSP Component U,V,W,P residual norm [ 5.268803751182e-10, 3.863059373787e-10, 5.373477247364e-10, 7.657923547424e-09 ]
   Linear solve converged due to CONVERGED_ATOL iterations 8
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.98e-02 (sec)
-  5 SNES Function norm 1.899032790297e-06 
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
+  5 SNES Function norm 1.899032790192e-06 
 Nonlinear solve did not converge due to DIVERGED_MAX_IT iterations 5
 SNES Object: 4 MPI processes
   type: newtonls
@@ -2472,22 +2472,22 @@ SNES Object: 4 MPI processes
           (0,1) : prefix="Bup_", type=shell, rows=14739, cols=2048 
           (1,0) : prefix="Bpu_", type=shell, rows=2048, cols=14739 
           (1,1) : prefix="fieldsplit_p_", type=mpisbaij, rows=2048, cols=2048 
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.93e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.91e-02 (sec)
 [[ModelOutput_SD3D]]
 slab base range: gmin 6.9697e-01 4.9902e-01 -7.0740e-13
 slab base range: gmax 7.5758e-01 4.9920e-01 3.7878e-01
 slab edge range: gmax(x) 6.9715e-01
 slab edge identified: pidx_w,rank_w 5180 1
-slab edge range: W,Dn 6.9715e-01 8.7815e-01
+[step 2] slab edge range: W,Dn 6.9715e-01 8.7815e-01
 slab edge (back face) range: gmax(x) 6.9715e-01
 slab edge (back face) identified: pidx_w,rank_w 5155 1
-slab edge (back face) range: W,Dn 6.9715e-01 8.7815e-01
+[step 2] slab edge (back face) range: W,Dn 6.9715e-01 8.7815e-01
 slab edge (front face) range: gmin(z) 3.7847e-01
 slab edge (front face) identified: pidx_w,rank_w 5103 1
-slab edge (front face) range: W,Dn 3.7847e-01 8.7822e-01
+[step 2] slab edge (front face) range: W,Dn 3.7847e-01 8.7822e-01
 topo range: 1.0000e+00 1.0000e+00
 vol,int v.v,vrms: 5.7392e-01 1.5117e-02 1.6230e-01
-Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 1.92e-02 (sec)
+Update non-linearities (VPSTD) [mpoint]: (min,max)_eta 1.00e-03,2.67e+00; log10(max/min) 3.43e+00; npoints_yielded 0; cpu time 2.03e-02 (sec)
 Phi: 0.0000e+00
   TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 3.1164e-02 [accepted] | dt > dt_max : restricted to = 2.3891e-03 | ==>> dt used = 2.3891e-03 |
   TimeStep control(StkSurfaceCourant): | current = 2.3891e-03 : trial = 1.0000e+32 | ==>> dt used = 2.3891e-03 |
@@ -2514,14 +2514,14 @@ pTatin3dMaxMemoryUsage = [0.0000e+00 , 0.0000e+00] (MB)
 
 ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
 
-/Users/patrick/ptatin3d/arch-darwin-maint-double-opt/bin/ptatin_driver_nonlinear_ts.app on a arch-darwin-maint-double-opt named Windbauer.local with 4 processors, by patrick Wed Mar 14 19:41:50 2018
+/Users/patrick/ptatin3d/arch-darwin-maint-double-opt/bin/ptatin_driver_nonlinear_ts.app on a arch-darwin-maint-double-opt named Windbauer.local with 4 processors, by patrick Thu Mar 15 08:18:03 2018
 Using Petsc Release Version 3.8.3, unknown 
 
                          Max       Max/Min        Avg      Total 
-Time (sec):           5.522e+01      1.00001   5.522e+01
+Time (sec):           5.624e+01      1.00001   5.624e+01
 Objects:              3.506e+03      1.00000   3.506e+03
 Flop:                 1.634e+10      1.05802   1.586e+10  6.345e+10
-Flop/sec:            2.959e+08      1.05802   2.873e+08  1.149e+09
+Flop/sec:            2.906e+08      1.05802   2.820e+08  1.128e+09
 MPI Messages:         4.479e+04      1.01822   4.437e+04  1.775e+05
 MPI Message Lengths:  1.378e+08      1.12319   2.930e+03  5.201e+08
 MPI Reductions:       4.460e+04      1.00000
@@ -2532,8 +2532,8 @@ Flop counting convention: 1 flop = 1 real number operation of type (multiply/div
 
 Summary of Stages:   ----- Time ------  ----- Flop -----  --- Messages ---  -- Message Lengths --  -- Reductions --
                         Avg     %Total     Avg     %Total   counts   %Total     Avg         %Total   counts   %Total 
- 0:      Main Stage: 1.3774e+01  24.9%  2.1248e+10  33.5%  4.210e+04  23.7%  7.491e+02       25.6%  7.531e+03  16.9% 
- 1:        MG Apply: 3.9741e+01  72.0%  4.2206e+10  66.5%  1.354e+05  76.3%  2.181e+03       74.4%  1.207e+04  27.1% 
+ 0:      Main Stage: 1.4090e+01  25.1%  2.1248e+10  33.5%  4.210e+04  23.7%  7.491e+02       25.6%  7.531e+03  16.9% 
+ 1:        MG Apply: 4.0455e+01  71.9%  4.2206e+10  66.5%  1.354e+05  76.3%  2.181e+03       74.4%  1.207e+04  27.1% 
 
 ------------------------------------------------------------------------------------------------------------------------
 See the 'Profiling' chapter of the users' manual for details on interpreting output.
@@ -2557,106 +2557,106 @@ Event                Count      Time (sec)     Flop                             
 
 --- Event Stage 0: Main Stage
 
-MatMultMFA11         670 1.0 5.7403e+00 1.0 1.48e+09 1.0 1.6e+04 3.4e+03 0.0e+00 10  9  9 11  0  41 28 38 42  0  1031
-MatMultMFA           356 1.0 2.4819e+00 1.0 2.71e+09 1.0 8.5e+03 3.4e+03 0.0e+00  4 17  5  6  0  18 51 20 22  0  4374
-MatMultMFA12         167 1.0 9.4884e-01 1.0 7.47e+08 1.0 2.0e+03 3.4e+03 0.0e+00  2  5  1  1  0   7 14  5  5  0  3148
-DataExTopoSetup        1 1.0 2.9120e-03 1.1 0.00e+00 0.0 6.0e+01 5.6e+00 1.5e+01  0  0  0  0  0   0  0  0  0  0     0
-DataExBegin            2 1.0 7.4863e-05 2.1 0.00e+00 0.0 1.2e+01 6.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-DataExEnd              2 1.0 1.2650e-0312.4 0.00e+00 0.0 1.2e+01 6.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelInit              1 1.0 5.5385e-04 4.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatMultMFA11         670 1.0 5.7589e+00 1.0 1.48e+09 1.0 1.6e+04 3.4e+03 0.0e+00 10  9  9 11  0  41 28 38 42  0  1028
+MatMultMFA           356 1.0 2.6307e+00 1.0 2.71e+09 1.0 8.5e+03 3.4e+03 0.0e+00  5 17  5  6  0  19 51 20 22  0  4127
+MatMultMFA12         167 1.0 9.7993e-01 1.0 7.47e+08 1.0 2.0e+03 3.4e+03 0.0e+00  2  5  1  1  0   7 14  5  5  0  3049
+DataExTopoSetup        1 1.0 2.6650e-03 1.1 0.00e+00 0.0 6.0e+01 5.6e+00 1.5e+01  0  0  0  0  0   0  0  0  0  0     0
+DataExBegin            2 1.0 7.2956e-05 2.0 0.00e+00 0.0 1.2e+01 6.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+DataExEnd              2 1.0 1.2929e-0315.4 0.00e+00 0.0 1.2e+01 6.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInit              1 1.0 5.3906e-04 3.5 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
 ModelInitSoln          1 1.0 0.0000e+00 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelInitMesh          1 1.0 2.3317e-04 1.5 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelInitMat           1 1.0 6.7648e-02 1.6 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelInitStkVar        1 1.0 1.1921e-06 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelBC                3 1.0 7.1309e-03 1.0 0.00e+00 0.0 5.8e+02 3.4e+03 0.0e+00  0  0  0  0  0   0  0  1  1  0     0
-ModelBCMG              3 1.0 1.0844e-02 1.0 0.00e+00 0.0 1.2e+03 2.3e+03 0.0e+00  0  0  1  0  0   0  0  3  2  0     0
+ModelInitMesh          1 1.0 2.1386e-04 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInitMat           1 1.0 7.2055e-02 1.5 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelInitStkVar        1 1.0 0.0000e+00 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelBC                3 1.0 6.8581e-03 1.0 0.00e+00 0.0 5.8e+02 3.4e+03 0.0e+00  0  0  0  0  0   0  0  1  1  0     0
+ModelBCMG              3 1.0 1.0354e-02 1.0 0.00e+00 0.0 1.2e+03 2.3e+03 0.0e+00  0  0  1  0  0   0  0  3  2  0     0
 ModelMatBC             2 1.0 1.1921e-06 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelUpdateMesh        2 1.0 9.5367e-07 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-ModelOutput            5 1.0 2.9047e-01 1.0 3.33e+07 1.0 9.6e+02 2.2e+03 3.5e+02  1  0  1  0  1   2  1  2  2  5   458
-MPAdvGCoord            2 1.0 9.7289e-03 2.1 0.00e+00 0.0 2.4e+01 3.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MPAdvLCoord            2 1.0 2.0201e-02 2.4 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MPAdvComm              2 1.0 8.4600e-03 2.2 0.00e+00 0.0 4.8e+01 3.2e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MPAdvRemove            2 1.0 2.8563e-0414.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MPPCInsert             2 1.0 1.0879e-03 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecMax                24 1.0 3.9256e-03 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
-VecMin                24 1.0 5.1506e-03 1.8 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
-VecMDot              846 1.0 2.0433e-01 1.9 2.34e+07 1.3 0.0e+00 0.0e+00 8.5e+02  0  0  0  0  2   1  0  0  0 11   411
-VecNorm             1254 1.0 2.4263e-01 1.0 8.98e+06 1.3 0.0e+00 0.0e+00 1.3e+03  0  0  0  0  3   2  0  0  0 17   133
-VecScale            1196 1.0 4.7812e-03 1.3 5.00e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3739
-VecCopy              463 1.0 1.8430e-03 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecSet              4584 1.0 1.0352e-02 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecAXPY              350 1.0 2.2216e-03 1.2 3.08e+06 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  4982
-VecAYPX              183 1.0 3.0587e-03 1.3 8.50e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1004
-VecWAXPY              22 1.0 5.0735e-04 1.3 1.02e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   728
-VecMAXPY            1196 1.0 4.9843e-02 1.2 3.98e+07 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  1  0  0  0  2865
-VecPointwiseMult     203 1.0 7.3981e-04 1.4 9.36e+04 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   498
-VecScatterBegin     4695 1.0 1.5723e-01 1.1 0.00e+00 0.0 3.6e+04 3.1e+03 0.0e+00  0  0 20 22  0   1  0 86 85  0     0
-VecScatterEnd       4695 1.0 7.0536e-01 1.5 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   4  0  0  0  0     0
-VecReduceArith        48 1.0 3.4165e-04 1.2 4.46e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  4716
-VecReduceComm         16 1.0 3.2637e-03 1.9 0.00e+00 0.0 0.0e+00 0.0e+00 1.6e+01  0  0  0  0  0   0  0  0  0  0     0
-VecNormalize           9 1.0 1.6720e-03 1.0 1.82e+04 1.6 0.0e+00 0.0e+00 9.0e+00  0  0  0  0  0   0  0  0  0  0    35
-MatMult             1196 1.0 9.1688e+00 1.0 4.94e+09 1.0 2.7e+04 3.4e+03 0.0e+00 17 31 15 18  0  66 93 63 69  0  2155
-MatMultTranspose      54 1.0 3.8719e-03 1.3 4.56e+05 1.2 2.7e+02 2.7e+02 0.0e+00  0  0  0  0  0   0  0  1  0  0   436
-MatAssemblyBegin     114 1.0 1.9760e-01 2.6 0.00e+00 0.0 1.0e+03 1.7e+04 3.0e+02  0  0  1  3  1   1  0  2 13  4     0
-MatAssemblyEnd       187 1.0 6.8747e-02 2.7 0.00e+00 0.0 1.1e+02 2.8e+02 7.0e+01  0  0  0  0  0   0  0  0  0  1     0
-MatGetRow              1 1.0 5.9605e-06 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MatCreateSubMat      108 1.0 3.1085e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 1.5e+02  0  0  0  0  0   0  0  0  0  2     0
-MatZeroEntries        35 1.0 2.7208e-03 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MatView               36 1.3 1.3331e-02 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 1.6e+01  0  0  0  0  0   0  0  0  0  0     0
-DMCoarsen              1 1.0 4.5161e-03 1.0 0.00e+00 0.0 5.6e+01 4.3e+02 3.7e+01  0  0  0  0  0   0  0  0  0  0     0
-DMCreateInterp         1 1.0 2.4490e-03 1.0 0.00e+00 0.0 2.0e+01 7.0e+01 2.1e+01  0  0  0  0  0   0  0  0  0  0     0
+ModelUpdateMesh        2 1.0 9.5367e-07 0.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+ModelOutput            5 1.0 2.9416e-01 1.0 3.33e+07 1.0 9.6e+02 2.2e+03 3.5e+02  1  0  1  0  1   2  1  2  2  5   453
+MPAdvGCoord            2 1.0 1.1537e-02 1.9 0.00e+00 0.0 2.4e+01 3.4e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPAdvLCoord            2 1.0 2.1045e-02 2.5 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPAdvComm              2 1.0 8.5580e-03 2.1 0.00e+00 0.0 4.8e+01 3.2e+03 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPAdvRemove            2 1.0 3.0398e-0415.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MPPCInsert             2 1.0 1.0152e-03 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 2.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecMax                24 1.0 3.9694e-03 1.0 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
+VecMin                24 1.0 4.9632e-03 1.7 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
+VecMDot              846 1.0 2.1884e-01 1.8 2.34e+07 1.3 0.0e+00 0.0e+00 8.5e+02  0  0  0  0  2   1  0  0  0 11   384
+VecNorm             1254 1.0 2.4684e-01 1.0 8.98e+06 1.3 0.0e+00 0.0e+00 1.3e+03  0  0  0  0  3   2  0  0  0 17   130
+VecScale            1196 1.0 4.6833e-03 1.3 5.00e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3817
+VecCopy              463 1.0 1.7769e-03 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecSet              4584 1.0 1.1258e-02 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecAXPY              350 1.0 2.3184e-03 1.2 3.08e+06 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  4774
+VecAYPX              183 1.0 3.2256e-03 1.3 8.50e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   952
+VecWAXPY              22 1.0 5.0688e-04 1.3 1.02e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   729
+VecMAXPY            1196 1.0 5.0111e-02 1.2 3.98e+07 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  1  0  0  0  2850
+VecPointwiseMult     203 1.0 6.6447e-04 1.2 9.36e+04 1.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   554
+VecScatterBegin     4695 1.0 1.5975e-01 1.1 0.00e+00 0.0 3.6e+04 3.1e+03 0.0e+00  0  0 20 22  0   1  0 86 85  0     0
+VecScatterEnd       4695 1.0 7.0509e-01 1.5 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  1  0  0  0  0   4  0  0  0  0     0
+VecReduceArith        48 1.0 3.2830e-04 1.2 4.46e+05 1.2 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  4908
+VecReduceComm         16 1.0 3.1421e-03 1.8 0.00e+00 0.0 0.0e+00 0.0e+00 1.6e+01  0  0  0  0  0   0  0  0  0  0     0
+VecNormalize           9 1.0 1.6849e-03 1.1 1.82e+04 1.6 0.0e+00 0.0e+00 9.0e+00  0  0  0  0  0   0  0  0  0  0    35
+MatMult             1196 1.0 9.3658e+00 1.0 4.94e+09 1.0 2.7e+04 3.4e+03 0.0e+00 17 31 15 18  0  66 93 63 69  0  2110
+MatMultTranspose      54 1.0 3.9477e-03 1.1 4.56e+05 1.2 2.7e+02 2.7e+02 0.0e+00  0  0  0  0  0   0  0  1  0  0   427
+MatAssemblyBegin     114 1.0 1.6087e-01 2.3 0.00e+00 0.0 1.0e+03 1.7e+04 3.0e+02  0  0  1  3  1   1  0  2 13  4     0
+MatAssemblyEnd       187 1.0 7.1136e-02 2.8 0.00e+00 0.0 1.1e+02 2.8e+02 7.0e+01  0  0  0  0  0   0  0  0  0  1     0
+MatGetRow              1 1.0 6.1989e-06 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatCreateSubMat      108 1.0 3.1543e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 1.5e+02  0  0  0  0  0   0  0  0  0  2     0
+MatZeroEntries        35 1.0 2.2957e-03 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatView               36 1.3 1.3487e-02 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 1.6e+01  0  0  0  0  0   0  0  0  0  0     0
+DMCoarsen              1 1.0 4.7350e-03 1.0 0.00e+00 0.0 5.6e+01 4.3e+02 3.7e+01  0  0  0  0  0   0  0  0  0  0     0
+DMCreateInterp         1 1.0 2.4972e-03 1.0 0.00e+00 0.0 2.0e+01 7.0e+01 2.1e+01  0  0  0  0  0   0  0  0  0  0     0
 Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
-SNESSolve              4 1.0 5.2476e+01 1.0 1.63e+10 1.1 1.7e+05 2.9e+03 1.8e+04 95100 97 98 41 381297409382242  1205
-SNESFunctionEval      24 1.0 1.0128e+00 1.0 1.60e+08 1.0 3.7e+03 1.9e+03 8.6e+02  2  1  2  1  2   7  3  9  5 11   631
-SNESJacobianEval      16 1.0 1.6527e+00 1.0 6.04e+07 1.0 7.0e+03 3.1e+03 1.9e+03  3  0  4  4  4  12  1 17 17 25   146
-SNESLineSearch        16 1.0 6.9009e-01 1.0 1.07e+08 1.0 2.5e+03 1.9e+03 5.9e+02  1  1  1  1  1   5  2  6  3  8   620
-KSPGMRESOrthog       837 1.0 2.3344e-01 1.7 4.67e+07 1.3 0.0e+00 0.0e+00 8.4e+02  0  0  0  0  2   1  1  0  0 11   718
-KSPSetUp              83 1.0 4.2346e-03 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
+SNESSolve              4 1.0 5.3511e+01 1.0 1.63e+10 1.1 1.7e+05 2.9e+03 1.8e+04 95100 97 98 41 380297409382242  1181
+SNESFunctionEval      24 1.0 1.0074e+00 1.0 1.60e+08 1.0 3.7e+03 1.9e+03 8.6e+02  2  1  2  1  2   7  3  9  5 11   635
+SNESJacobianEval      16 1.0 1.7295e+00 1.0 6.04e+07 1.0 7.0e+03 3.1e+03 1.9e+03  3  0  4  4  4  12  1 17 17 25   140
+SNESLineSearch        16 1.0 6.9398e-01 1.0 1.07e+08 1.0 2.5e+03 1.9e+03 5.9e+02  1  1  1  1  1   5  2  6  3  8   617
+KSPGMRESOrthog       837 1.0 2.4484e-01 1.6 4.67e+07 1.3 0.0e+00 0.0e+00 8.4e+02  0  0  0  0  2   1  1  0  0 11   685
+KSPSetUp              83 1.0 4.5462e-03 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 2.4e+01  0  0  0  0  0   0  0  0  0  0     0
 Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
-KSPSolve              16 1.0 4.9969e+01 1.0 1.61e+10 1.1 1.6e+05 3.0e+03 1.6e+04 90 98 91 92 35 363294385361207  1249
-PCSetUp               51 1.0 4.1626e-01 1.0 4.33e+07 1.0 2.4e+02 3.9e+03 3.1e+02  1  0  0  0  1   3  1  1  1  4   416
+KSPSolve              16 1.0 5.0930e+01 1.0 1.61e+10 1.1 1.6e+05 3.0e+03 1.6e+04 91 98 91 92 35 361294385361207  1226
+PCSetUp               51 1.0 4.3385e-01 1.0 4.33e+07 1.0 2.4e+02 3.9e+03 3.1e+02  1  0  0  0  1   3  1  1  1  4   399
 Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
-PCApply              167 1.0 4.7118e+01 1.0 1.33e+10 1.1 1.5e+05 2.9e+03 1.4e+04 85 81 87 87 31 342242365338181  1092
+PCApply              167 1.0 4.7915e+01 1.0 1.33e+10 1.1 1.5e+05 2.9e+03 1.4e+04 85 81 87 87 31 340242365338181  1074
 Warning -- total time of event greater than time of entire stage -- something is wrong with the timer
-KSPSolve_FS_0        167 1.0 4.6159e+01 1.0 1.26e+10 1.1 1.5e+05 2.9e+03 1.4e+04 84 76 85 85 30 335228360333181  1050
-KSPSolve_FS_Schu     167 1.0 1.2694e-02 1.1 8.55e+04 1.0 0.0e+00 0.0e+00 6.0e+00  0  0  0  0  0   0  0  0  0  0    27
-MGSetup Level 0       16 1.0 1.3473e-03 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 6.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MGSetup Level 1       16 1.0 3.6023e-01 1.0 4.33e+07 1.0 1.6e+02 3.4e+03 6.0e+00  1  0  0  0  0   3  1  0  0  0   480
+KSPSolve_FS_0        167 1.0 4.6921e+01 1.0 1.26e+10 1.1 1.5e+05 2.9e+03 1.4e+04 83 76 85 85 30 333228360333181  1033
+KSPSolve_FS_Schu     167 1.0 1.3466e-02 1.1 8.55e+04 1.0 0.0e+00 0.0e+00 6.0e+00  0  0  0  0  0   0  0  0  0  0    25
+MGSetup Level 0       16 1.0 1.6086e-03 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 6.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MGSetup Level 1       16 1.0 3.7569e-01 1.0 4.33e+07 1.0 1.6e+02 3.4e+03 6.0e+00  1  0  0  0  0   3  1  0  0  0   461
 
 --- Event Stage 1: MG Apply
 
-MatMultMFA11        4020 1.0 3.4054e+01 1.0 8.88e+09 1.0 9.6e+04 3.4e+03 0.0e+00 61 56 54 64  0  85 84 71 86  0  1043
-VecMDot             5360 1.0 1.6247e+00 4.1 4.22e+07 1.3 0.0e+00 0.0e+00 5.4e+03  2  0  0  0 12   3  0  0  0 44    91
-VecNorm             6700 1.0 1.5432e+00 1.3 3.22e+07 1.3 0.0e+00 0.0e+00 6.7e+03  2  0  0  0 15   3  0  0  0 56    73
-VecScale            6773 1.0 1.5186e-02 1.1 1.64e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3805
-VecCopy             6030 1.0 1.8905e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecSet             16756 1.0 3.5786e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-VecAXPY             2680 1.0 1.0325e-02 1.3 1.75e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  6023
-VecAYPX              670 1.0 8.8487e-03 1.3 2.77e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1116
-VecMAXPY            7370 1.0 9.1908e-02 1.3 6.80e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  1  0  0  0  2595
-VecPointwiseMult    4020 1.0 6.4341e-02 1.2 1.66e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   921
-VecScatterBegin    12063 1.0 5.3102e-01 1.1 0.00e+00 0.0 1.4e+05 2.9e+03 0.0e+00  1  0 76 74  0   1  0100100  0     0
-VecScatterEnd      12063 1.0 1.8046e+00 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  3  0  0  0  0   4  0  0  0  0     0
-VecNormalize        7370 1.0 1.5682e+00 1.3 4.86e+07 1.3 0.0e+00 0.0e+00 6.7e+03  2  0  0  0 15   3  0  0  0 56   109
-MatMult             6700 1.0 3.5569e+01 1.0 9.79e+09 1.0 1.3e+05 3.0e+03 0.0e+00 64 60 72 74  0  89 91 95 99  0  1079
-MatMultAdd           670 1.0 1.0501e-01 1.4 1.70e+07 1.2 3.4e+03 5.5e+02 0.0e+00  0  0  2  0  0   0  0  2  0  0   598
-MatMultTranspose     670 1.0 9.8511e-02 1.6 1.70e+07 1.2 3.4e+03 5.5e+02 0.0e+00  0  0  2  0  0   0  0  2  0  0   638
-MatSolve            3350 1.0 1.3565e+00 1.8 8.47e+08 1.8 0.0e+00 0.0e+00 0.0e+00  2  4  0  0  0   3  6  0  0  0  1882
-MatLUFactorNum        16 1.0 2.5974e-01 2.0 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   0  1  0  0  0  1661
-MatILUFactorSym        3 1.0 3.3829e-03 1.6 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MatResidual          670 1.0 5.6979e+00 1.0 1.48e+09 1.0 1.6e+04 3.4e+03 0.0e+00 10  9  9 11  0  14 14 12 14  0  1040
-MatGetRowIJ            3 1.0 3.0994e-06 1.4 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-MatGetOrdering         3 1.0 2.0075e-04 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-KSPGMRESOrthog      5360 1.0 1.6959e+00 3.6 8.45e+07 1.3 0.0e+00 0.0e+00 5.4e+03  2  0  0  0 12   3  1  0  0 44   174
-KSPSetUp              16 1.0 1.3351e-05 2.7 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
-KSPSolve            2010 1.0 3.3803e+01 1.0 9.51e+09 1.1 1.1e+05 2.9e+03 1.2e+04 61 57 63 63 27  85 86 83 85100  1069
-PCSetUp               16 1.0 2.6356e-01 2.0 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   0  1  0  0  0  1637
-PCSetUpOnBlocks      670 1.0 2.6476e-01 2.0 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   0  1  0  0  0  1630
-PCApply             7370 1.0 1.7261e+00 1.6 8.73e+08 1.8 3.6e+01 3.4e+03 6.0e+00  3  4  0  0  0   3  6  0  0  0  1537
-MGSmooth Level 0     670 1.0 4.1248e+00 1.0 1.93e+09 1.8 3.2e+04 1.6e+03 6.0e+03  7  9 18 10 14  10 14 24 13 50  1439
-MGSmooth Level 1    1340 1.0 2.9831e+01 1.0 7.57e+09 1.0 8.0e+04 3.4e+03 6.0e+03 54 48 45 53 14  75 72 59 72 50  1013
-MGResid Level 1      670 1.0 5.6988e+00 1.0 1.48e+09 1.0 1.6e+04 3.4e+03 0.0e+00 10  9  9 11  0  14 14 12 14  0  1040
-MGInterp Level 1    1340 1.0 1.8764e-01 1.1 3.40e+07 1.2 6.7e+03 5.5e+02 0.0e+00  0  0  4  1  0   0  0  5  1  0   670
+MatMultMFA11        4020 1.0 3.4692e+01 1.0 8.88e+09 1.0 9.6e+04 3.4e+03 0.0e+00 61 56 54 64  0  85 84 71 86  0  1024
+VecMDot             5360 1.0 1.6606e+00 4.0 4.22e+07 1.3 0.0e+00 0.0e+00 5.4e+03  2  0  0  0 12   3  0  0  0 44    89
+VecNorm             6700 1.0 1.5562e+00 1.3 3.22e+07 1.3 0.0e+00 0.0e+00 6.7e+03  2  0  0  0 15   3  0  0  0 56    73
+VecScale            6775 1.0 1.5752e-02 1.2 1.64e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  3670
+VecCopy             6030 1.0 2.0100e-02 1.2 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecSet             16756 1.0 4.0124e-02 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+VecAXPY             2680 1.0 1.0587e-02 1.2 1.75e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  5873
+VecAYPX              670 1.0 9.1031e-03 1.2 2.77e+06 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0  1085
+VecMAXPY            7370 1.0 1.0088e-01 1.3 6.80e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  1  0  0  0  2364
+VecPointwiseMult    4020 1.0 6.4389e-02 1.1 1.66e+07 1.3 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0   920
+VecScatterBegin    12063 1.0 5.4486e-01 1.1 0.00e+00 0.0 1.4e+05 2.9e+03 0.0e+00  1  0 76 74  0   1  0100100  0     0
+VecScatterEnd      12063 1.0 1.8027e+00 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  3  0  0  0  0   4  0  0  0  0     0
+VecNormalize        7370 1.0 1.5820e+00 1.3 4.86e+07 1.3 0.0e+00 0.0e+00 6.7e+03  2  0  0  0 15   3  0  0  0 56   108
+MatMult             6700 1.0 3.6230e+01 1.0 9.79e+09 1.0 1.3e+05 3.0e+03 0.0e+00 64 60 72 74  0  89 91 95 99  0  1059
+MatMultAdd           670 1.0 1.0687e-01 1.4 1.70e+07 1.2 3.4e+03 5.5e+02 0.0e+00  0  0  2  0  0   0  0  2  0  0   588
+MatMultTranspose     670 1.0 9.5607e-02 1.5 1.70e+07 1.2 3.4e+03 5.5e+02 0.0e+00  0  0  2  0  0   0  0  2  0  0   657
+MatSolve            3350 1.0 1.3614e+00 1.8 8.47e+08 1.8 0.0e+00 0.0e+00 0.0e+00  2  4  0  0  0   3  6  0  0  0  1876
+MatLUFactorNum        16 1.0 2.7202e-01 2.0 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   0  1  0  0  0  1586
+MatILUFactorSym        3 1.0 5.2209e-03 2.0 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatResidual          670 1.0 5.8093e+00 1.0 1.48e+09 1.0 1.6e+04 3.4e+03 0.0e+00 10  9  9 11  0  14 14 12 14  0  1020
+MatGetRowIJ            3 1.0 5.2452e-06 1.3 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+MatGetOrdering         3 1.0 2.6870e-04 1.1 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+KSPGMRESOrthog      5360 1.0 1.7324e+00 3.5 8.45e+07 1.3 0.0e+00 0.0e+00 5.4e+03  2  0  0  0 12   3  1  0  0 44   171
+KSPSetUp              16 1.0 3.0041e-05 3.8 0.00e+00 0.0 0.0e+00 0.0e+00 0.0e+00  0  0  0  0  0   0  0  0  0  0     0
+KSPSolve            2010 1.0 3.4401e+01 1.0 9.51e+09 1.1 1.1e+05 2.9e+03 1.2e+04 61 57 63 63 27  85 86 83 85100  1051
+PCSetUp               16 1.0 2.7783e-01 2.0 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   1  1  0  0  0  1553
+PCSetUpOnBlocks      670 1.0 2.7896e-01 2.0 1.49e+08 2.0 0.0e+00 0.0e+00 0.0e+00  0  1  0  0  0   1  1  0  0  0  1547
+PCApply             7370 1.0 1.7380e+00 1.6 8.73e+08 1.8 3.6e+01 3.4e+03 6.0e+00  2  4  0  0  0   3  6  0  0  0  1526
+MGSmooth Level 0     670 1.0 4.1760e+00 1.0 1.93e+09 1.8 3.2e+04 1.6e+03 6.0e+03  7  9 18 10 14  10 14 24 13 50  1421
+MGSmooth Level 1    1340 1.0 3.0384e+01 1.0 7.57e+09 1.0 8.0e+04 3.4e+03 6.0e+03 54 48 45 53 14  75 72 59 72 50   994
+MGResid Level 1      670 1.0 5.8101e+00 1.0 1.48e+09 1.0 1.6e+04 3.4e+03 0.0e+00 10  9  9 11  0  14 14 12 14  0  1020
+MGInterp Level 1    1340 1.0 1.9334e-01 1.1 3.40e+07 1.2 6.7e+03 5.5e+02 0.0e+00  0  0  4  1  0   0  0  5  1  0   650
 ------------------------------------------------------------------------------------------------------------------------
 
 Memory usage is given in bytes:
@@ -2691,8 +2691,8 @@ Reports information only for process 0.
            Index Set    15              6        10104     0.
 ========================================================================================================================
 Average time to get PetscTime(): 0.
-Average time for MPI_Barrier(): 6.51836e-05
-Average time for zero size MPI_Send(): 2.15173e-05
+Average time for MPI_Barrier(): 7.13825e-05
+Average time for zero size MPI_Send(): 1.97291e-05
 #PETSc Option Table entries:
 -A11_operator_type 0,1
 -checkpoint_disable
