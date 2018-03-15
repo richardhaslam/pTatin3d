@@ -321,34 +321,35 @@ PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 	PetscInt M,N,P,m,n,p,k;
 	const PetscInt *lx,*ly,*lz;
 	Vec coords;
+  const char *prefix;
 	PetscErrorCode ierr;
 	
   if (!ctx->log) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatinCtx->log is NULL");
-	//ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
+	ierr = DMGetOptionsPrefix(dm,&prefix);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dm,0,&M,&N,&P,&m,&n,&p, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dm,&lx,&ly,&lz);CHKERRQ(ierr);
 	
-	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %8.8s]  node [ %1.4d x %1.4d x %1.4d ] \n", dmname,NULL,M,N,P);
+	PetscViewerASCIIPrintf(ctx->log,"  DMDA: (%18.18s)[prefix %s]\n    node [ %1.4d x %1.4d x %1.4d ] \n", dmname,prefix,M,N,P);
 
 	coords = NULL;
 	ierr = DMGetCoordinates(dm,&coords);CHKERRQ(ierr);
 	if (coords) {
 		ierr = DMDAGetBoundingBox(dm,min,max);CHKERRQ(ierr);
-		PetscViewerASCIIPrintf(ctx->log,"                                               span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);
+		PetscViewerASCIIPrintf(ctx->log,"    span [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] x [ %1.4e , %1.4e ] \n", min[0],max[0],min[1],max[1],min[2],max[2]);
 	}
-	PetscViewerASCIIPrintf(ctx->log,"                                               processor decomp [ %1.4d x %1.4d x %1.4d ] \n", m,n,p);
+	PetscViewerASCIIPrintf(ctx->log,"    processor decomp [ %1.4d x %1.4d x %1.4d ] \n", m,n,p);
 
-	PetscViewerASCIIPrintf(ctx->log,"                                               node decomp : i [");
+	PetscViewerASCIIPrintf(ctx->log,"    node decomp : i [");
 	for (k=0; k<m-1; k++) {
 		PetscViewerASCIIPrintf(ctx->log," %1.4d x",lx[k]);
 	} PetscViewerASCIIPrintf(ctx->log," %1.4d ] \n",lx[m-1]);
 
-	PetscViewerASCIIPrintf(ctx->log,"                                               node decomp : j [");
+	PetscViewerASCIIPrintf(ctx->log,"    node decomp : j [");
 	for (k=0; k<n-1; k++) {
 		PetscViewerASCIIPrintf(ctx->log," %1.4d x",ly[k]);
 	} PetscViewerASCIIPrintf(ctx->log," %1.4d ] \n",ly[n-1]);
 	
-	PetscViewerASCIIPrintf(ctx->log,"                                               node decomp : k [");
+	PetscViewerASCIIPrintf(ctx->log,"    node decomp : k [");
 	for (k=0; k<p-1; k++) {
 		PetscViewerASCIIPrintf(ctx->log," %1.4d x",lz[k]);
 	} PetscViewerASCIIPrintf(ctx->log," %1.4d ] \n",lz[p-1]);

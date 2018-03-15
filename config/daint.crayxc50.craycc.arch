@@ -16,7 +16,6 @@ export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_a)
 export TATIN_CFLAGS_OPENMP = -openmp
 export TATIN_FFLAGS        = $(TATIN_FFLAGS_OPT_a)
 
-export LIBZ_LIB = -lz
 
 # Clear the dependency flags, since craycc seems to only support -M
 # This means that $PETSC_DIR/obj/src will not contain any .d files,

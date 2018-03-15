@@ -56,7 +56,6 @@ CONFIG_OPENCL ?= n
 
 # Populate includes, libraries, and compiler flags
 TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
-TATIN_LIB +=  $(LIBZ_LIB)
 
 ifeq ($(CONFIG_CUDA),y)
 TATIN_CFLAGS += -DTATIN_HAVE_CUDA

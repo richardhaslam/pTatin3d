@@ -20,8 +20,6 @@ export TATIN_FFLAGS_OPT_b = -g -sox -O3 -Wstrict-aliasing -fstrict-aliasing
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_b}
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 
-export LIBZ_LIB = -lz
-# export LIBZ_INC = -I/usr/include
 
 #
 #

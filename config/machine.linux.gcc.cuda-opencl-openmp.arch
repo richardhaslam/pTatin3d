@@ -22,10 +22,8 @@ export TATIN_FFLAGS     = ${TATIN_FFLAGS_OPT_a}
 #export CUDA_INC = -I/usr/local/cuda/include
 #export OPENCL_INC = -I/usr/local/cuda/include
 
-export LIBZ_LIB = -lz
 export CUDA_LIB = -lcudart
 export OPENCL_LIB = -lOpenCL
-# export LIBZ_INC = -I/usr/include
 
 CONFIG_CUDA=y
 CONFIG_OPENCL=y

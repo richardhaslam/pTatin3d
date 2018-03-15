@@ -213,6 +213,49 @@ class MPntPEnergy:
              "heat_source"]
     return names
 
+# GenericData ===================================
+def read_bytes_allAtOnce(f,total_bytes_to_read):
+  bytes = f.read(total_bytes_to_read)
+  return bytes
+
+def unpack_double_allAtOnce(entry_byte,L,bs):
+  format = "d"*bs*L
+  points = struct.unpack(format, entry_byte)
+  return points
+
+class GenericData:
+  def __init__(self,name,totalBytes,L):
+    self.name = name
+    self.totalBytes = totalBytes
+    self.L = L
+  
+  def load(self,file):
+    self.bytes = read_bytes_allAtOnce(file,self.totalBytes)
+
+  def unpack(self,blockSize,cType):
+    self.blockSize = blockSize
+    self.cType = cType
+    if cType == ctypes.c_double:
+      self.byte_array = unpack_double_allAtOnce(self.bytes,self.L,self.blockSize)
+      self.bytes = []
+    else:
+      print('*** only cType = double is supported')
+      sys.exit(1)
+
+  def getValues(self,index):
+    s = index * self.blockSize
+    e = s + self.blockSize
+    point = self.byte_array[ s : e ]
+    return point
+  
+  def getMemberCSizes(self):
+    if self.cType == ctypes.c_double:
+      sizes = [[self.blockSize , "double"]]
+    else:
+      print('*** only cType = double is supported')
+      sys.exit(1)
+    return sizes
+
 
 def loadDataBucket(inputfile):
 
@@ -305,57 +348,13 @@ def loadDataBucket(inputfile):
       databucket = dict(databucket, **loaded)
     
     else:
-      print('An unknown data type was encounted which cannot be loaded')
-      printf('  ' + 'fieldName ' + metaField[f]["fieldName"])
-      printf('  ' + 'atomicSize ' + metaField[f]["atomicSize"])
-      sys.exit(1)
+      print('An unknown data type was encounted. Loading raw bytes')
+      point = GenericData(metaField[f]["fieldName"],total,tlen)
+      point.load(dbfile)
+
+      loaded = {metaField[f]["fieldName"]:point}
+      databucket = dict(databucket, **loaded)
 
   dbfile.close()
 
   return databucket
-
-
-
-def main():
-  optparser=OptionParser(usage='usage: %prog -i <json_file>',
-                         add_help_option=True,
-                         description="""Read JSON metadata for """ +
-                         """the DataBucket object.""")
-    
-  optparser.add_option( "-i", "--input", dest="opt_inputfile",
-                       help="Input file name", metavar="FILE")
-
-  (options, argv) = optparser.parse_args()
-        
-  if options.opt_inputfile == None:
-    optparser.print_help()
-    sys.exit(1)
-      
-
-  infilename = options.opt_inputfile
-        
-  if os.path.splitext(infilename)[1]=='.json':
-
-    print('Reading: ' + infilename)
-  
-    databucket = loadDataBucket(infilename)
-
-    print(databucket)
-    print(databucket["MPntStd"].getValues(1))
-    print(databucket["MPntPStokes"].getValues(1))
-    print(databucket["MPntPStokesPl"].getValues(1))
-    try:
-      print(databucket["MPntPEnergy"].getValues(1))
-    except:
-      print("MPntPEnergy was not found")
-
-  else:
-    print('Warning: Input file specified is not a JSON file')
-    print('Warning: Expected something with the extension .json')
-    print('Warning: Found input file: ' + infilename)
-    optparser.print_help()
-    sys.exit(1)
-
-
-if __name__ == '__main__':
-  main()
