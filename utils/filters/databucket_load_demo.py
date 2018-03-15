@@ -34,13 +34,36 @@ def main():
     databucket = db.loadDataBucket(infilename)
 
     print(databucket)
-    print(databucket["MPntStd"].getValues(1))
-    print(databucket["MPntPStokes"].getValues(1))
-    print(databucket["MPntPStokesPl"].getValues(1))
+    
+    # Demonstrate how to access known ptatin structs
+    try:
+      print(databucket["MPntStd"].getValues(1))
+    except:
+      print("MPntStd was not found")
+
+    try:
+      print(databucket["MPntPStokes"].getValues(1))
+    except:
+      print("MPntPStokes was not found")
+
+    try:
+      print(databucket["MPntPStokesPl"].getValues(1))
+    except:
+      print("MPntPStokesPl was not found")
+
     try:
       print(databucket["MPntPEnergy"].getValues(1))
     except:
       print("MPntPEnergy was not found")
+
+    for t in databucket:
+      print("Loaded item named:",t)
+
+    # Demonstrate how to access data associated with "pressure" which is known to be 1 x double
+    #generic = databucket["pressure"]
+    #generic.unpack(1,ctypes.c_double)
+    #print(generic.getMemberCSizes())
+    #print(generic.getValues(1))
 
   else:
     print('Warning: Input file specified is not a JSON file')
