@@ -1663,7 +1663,7 @@ int main(int argc,char *argv[])
       char fname[PETSC_MAX_PATH_LEN];
       
       ierr = PetscSNPrintf(fname,PETSC_MAX_PATH_LEN-1,"%s/restart.default",outputpath);CHKERRQ(ierr);
-      ierr = PetscTestFile(fname,'r',&restart_string_found);CHKERRQ(ierr);
+      ierr = pTatinTestFile(fname,'r',&restart_string_found);CHKERRQ(ierr);
       if (restart_string_found) {
         PetscPrintf(PETSC_COMM_WORLD,"[pTatin] Detected default restart option file helper: %s\n",fname);
         //ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,NULL,fname,PETSC_TRUE);CHKERRQ(ierr);

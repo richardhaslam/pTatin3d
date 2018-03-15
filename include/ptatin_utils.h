@@ -44,5 +44,7 @@ int ptatin_RandomNumberGetInt(int min,int max);
 
 PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[]);
 PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[]);
+PetscErrorCode pTatinTestDirectory(const char dirname[],char mode,PetscBool *_exists);
+PetscErrorCode pTatinTestFile(const char filename[],char mode,PetscBool *_exists);
 
 #endif
