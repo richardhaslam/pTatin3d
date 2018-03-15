@@ -27,18 +27,19 @@
  **
  ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ @*/
 
-#ifndef __DATA_BUCKET_H__
-#define __DATA_BUCKET_H__
+#ifndef __PTATIN_DATA_BUCKET_H__
+#define __PTATIN_DATA_BUCKET_H__
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <mpi.h>
 
+#include "data_bucket_namespace.h"
 
-#define DEFAULT -32654789
+#define PTATIN_DEFAULT -32654789
 
-#define DATAFIELD_POINT_ACCESS_GUARD 
+#define PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 
 /* Logging flag */
 #define PTAT3D_LOG_DATA_BUCKET
