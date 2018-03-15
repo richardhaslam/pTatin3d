@@ -1389,7 +1389,7 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
   if (energy_activated) {
     ierr = pTatinGetContext_Energy(pctx,&energy);CHKERRQ(ierr);
     dmenergy = energy->daT;
-    ierr = pTatinLogBasicDMDA(user,"energy_dmda",dmenergy);CHKERRQ(ierr);
+    ierr = pTatinLogBasicDMDA(pctx,"energy_dmda",dmenergy);CHKERRQ(ierr);
     if (v2) {
       X_e = v2;
     } else {
