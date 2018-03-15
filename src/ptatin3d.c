@@ -932,7 +932,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
   }
   
   ierr = PetscSNPrintf(checkpoints_basedir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",ctx->outputpath);CHKERRQ(ierr);
-  ierr = PetscTestDirectory(checkpoints_basedir,'w',&exists);CHKERRQ(ierr);
+  ierr = pTatinTestDirectory(checkpoints_basedir,'w',&exists);CHKERRQ(ierr);
   if (!exists) {
     ierr = pTatinCreateDirectory(checkpoints_basedir);CHKERRQ(ierr);
   }
@@ -947,7 +947,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
 	if (step%checkpoint_every == 0) {
 
     ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints/default",ctx->outputpath);CHKERRQ(ierr);
-    ierr = PetscTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
+    ierr = pTatinTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
     if (!exists) {
       ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
     }
@@ -990,7 +990,7 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
     
     ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/step%d",checkpoints_basedir,step);CHKERRQ(ierr);
     
-    ierr = PetscTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
+    ierr = pTatinTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
     if (!exists) {
       ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
     }
