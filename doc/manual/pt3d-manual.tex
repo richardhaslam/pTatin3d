@@ -51,6 +51,7 @@
 \newcommand{\PETSc}{{{\textsc{PETSc}}}}
 \newcommand{\CUDA}{{{\textsc{CUDA}}}}
 \newcommand{\OpenCL}{{{\textsc{OpenCL}}}}
+\newcommand{\OpenMP}{{{\textsc{OpenMP}}}}
 \newcommand{\shellcmd}[1]{\\\indent\indent\texttt{\hspace{5mm}\footnotesize #1}\\}
 \newcommand{\unix}[1]{\texttt{\footnotesize #1}}
 
@@ -202,10 +203,11 @@ The make system will create all objects, libraries and binary files in the follo
 \end{enumerate}
 The current build system allows you to conveniently compile different {\ptat} using different {\PETSc} builds (e.g. a debug {\PETSc} build versus an optimised build).
 
-\paragraph{Prefix \PETSc{} Builds}
+\subsubsection{Prefix \PETSc{} Builds}
 \ptat{} also support the use of ``prefix'' builds, which may be available as modules on clusters, where one supplies \unix{PETSC\_DIR} without \unix{PETSC\_ARCH}. In this case, the three directories mentioned will be created in the root \ptat{} directory.
 
-\paragraph{GPU Support}
+\subsubsection{GPU Support}
+\label{sec:gpusupport}
 \ptat{} can be configured to compile special operator kernels for use with GPUs. \CUDA{} and/or \OpenCL{} can be enabled by adding \lstinline{CONFIG_CUDA=y} and/or \lstinline{CONFIG_OPENCL=y}, respectively, to \texttt{makefile.arch}, along with suitable values for compilers, libraries, and include paths.
 See the examples in \texttt{config/} for more.
 
@@ -957,7 +959,22 @@ The longer lines containing the ``{\tt U,V,W,P residual norm}'' relate to the re
 	%%%%%%%%%%%%
 \end{enumerate}
 
+\subsection{Using optimized operators}
+\ptat{} should automatically use optimized kernels for matrix-free application of the operators $A$ and $B$ in Equations \ref{eq:discretelinearstokes} and \ref{eq:discretelinearstokes_pc}. Additional control over the $A$ operator (also known as the viscous block or the $A_{11}$ operator)is achieved with a command line flag
+\begin{lstlisting}
+-a11_op <ref,tensor,avx,opencl,cuda,subrepart>
+\end{lstlisting}
+The default is \texttt{avx} if your compiler detects that AVX is available, and otherwise \texttt{tensor}. See the initial \ptat{} output for a note about whether or not AVX was detected. Note that you may need to provide a special compiler flag in \texttt{makefile.arch}, such as \texttt{-march=native}, to enable AVX.
 
+\texttt{opencl} and \texttt{cuda} kernels require that you have configured \ptat{} to use \OpenCL{} and \CUDA{}, respectively; see Section \ref{sec:gpusupport}. Note that these kernels assume one GPU per rank.
+
+If you have AVX, \CUDA{}, and MPI-3 shared memory constructs \footnote{In particular, a working \lstinline{MPI_Comm_split_type()}} available, you can use \texttt{-a11\_op subrepart}, which uses the \CUDA{} and AVX kernels simultaneously, assuming $1$ GPU per shared-memory domain. It requires specification of a parameter describing what fraction of the work (local elements) to allocate to the GPU,  
+\begin{lstlisting}
+-subrepart_frac <value 0-1>
+\end{lstlisting}
+This value should be tuned until good load balance is achieved between the single rank per node which uses the GPU, and the others which use only the CPU. Good balanced is achieved when a time ``ratio'' value of $1.0$ is observed in the \PETSc{} logs in the \texttt{MatMultMFA11\_sub} row.
+
+You may also experiment with using more than one \OpenMP{} (hyper)thread per rank.
 
 \section{Geometry}
 
