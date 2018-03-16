@@ -281,6 +281,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solcx(pTatinCtx c,void *c
     if (position[0] <= xc) {
       eta = eta0;
     } else {
+      phase = 1;
       eta = eta1;
     }
     rho = -PetscCosReal(km*position[0])*PetscSinReal(kn*position[1]);

@@ -31,6 +31,7 @@
 #include "petscvec.h"
 #include "petscdm.h"
 #include "ptatin3d.h"
+#include "ptatin_utils.h"
 #include "ptatin3d_defs.h"
 #include "private/ptatin_impl.h"
 #include "QPntVolCoefEnergy_def.h"
@@ -597,52 +598,41 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Quadrature Q,Vec X,const ch
 PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char           *name;
 	PhysCompEnergy energy;
 	DM             daT;
 	PetscLogDouble t0,t1;
-	static int     beenhere=0;
-	static char    *pvdfilename;
-	Quadrature     volQ;
+	static PetscBool beenhere = PETSC_FALSE;
+	Quadrature      volQ;
+  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
 
 	PetscFunctionBegin;
-	
 	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
 	daT  = energy->daT;
 	volQ = energy->volQ;
 	
-	PetscTime(&t0);
-	// PVD
-	if (beenhere==0) {
-		if (asprintf(&pvdfilename,"%s/timeseries_energy.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
-	{
-		char *vtkfilename;
-		
-		if (prefix) {
-			if (asprintf(&vtkfilename, "%s_energy.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		} else {
-			if (asprintf(&vtkfilename, "energy.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		}
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
-		free(vtkfilename);
-	}
-	
-	// PVTS + VTS
-	if (prefix) {
-		if (asprintf(&name,"%s_energy",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	} else {
-		if (asprintf(&name,"energy") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	}
-	
-	ierr = pTatinOutputParaViewMeshEnergy(daT,volQ,X,ctx->outputpath,name);CHKERRQ(ierr);
-	free(name);
-	PetscTime(&t1);
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+  
+  PetscTime(&t0);
+  // PVD
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_energy.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_energy.pvts",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "energy.pvts");           }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
+  
+  // PVTS + VTS
+  if (prefix) { PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"%s_energy",prefix);
+  } else {      PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"energy",prefix);    }
+  
+  ierr = pTatinOutputParaViewMeshEnergy(daT,volQ,X,pvoutputdir,name);CHKERRQ(ierr);
+  PetscTime(&t1);
 	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_energy.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
@@ -653,47 +643,45 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
-	char           name[PETSC_MAX_PATH_LEN];
 	PhysCompEnergy energy;
 	DM             daT;
 	PetscLogDouble t0,t1;
-	static int     beenhere = 0;
-	static char    pvdfilename[PETSC_MAX_PATH_LEN];
+	static PetscBool beenhere = PETSC_FALSE;
   PetscViewer    viewer;
+  char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  PetscBool found;
   
 	PetscFunctionBegin;
 	
 	ierr = pTatinGetContext_Energy(ctx,&energy);CHKERRQ(ierr);
 	daT  = energy->daT;
 	
+  ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
+  
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+
 	PetscTime(&t0);
 	// PVD
-	if (beenhere == 0) {
-		PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_energy.pvd",ctx->outputpath);
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n",pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
-	{
-		char vtkfilename[PETSC_MAX_PATH_LEN];
-		
-		if (prefix) { PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"%s_energy.pvts",prefix);
-		} else {      PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1,"energy.pvts"); }
-		
-		ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
-	}
+  PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_energy.pvd",root);
+  if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_energy.pvts",prefix);
+  } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "energy.pvts");           }
+  
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
 	
   if (dm_velocity_data_required) {
     char f1[PETSC_MAX_PATH_LEN];
     char f2[PETSC_MAX_PATH_LEN];
     
     if (prefix) {
-      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",ctx->outputpath,prefix);
-      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",ctx->outputpath,prefix);
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",pvoutputdir,prefix);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",pvoutputdir,prefix);
     } else {
-      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",ctx->outputpath);
-      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",ctx->outputpath);
+      PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",pvoutputdir);
+      PetscSNPrintf(f2,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",pvoutputdir);
     }
     
     ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
@@ -703,8 +691,8 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
   {
     Vec coor;
     
-    if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-energy.coords.vec",ctx->outputpath,prefix);
-    } else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda-energy.coords.vec",ctx->outputpath); }
+    if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-energy.coords.vec",pvoutputdir,prefix);
+    } else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda-energy.coords.vec",pvoutputdir); }
 
     ierr = DMGetCoordinates(daT,&coor);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
@@ -712,8 +700,8 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   
-	if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-energy.temperature.vec",ctx->outputpath,prefix);
-	} else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda-energy.temperature.vec",ctx->outputpath); }
+	if (prefix) { PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-energy.temperature.vec",pvoutputdir,prefix);
+	} else {      PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/dmda-energy.temperature.vec",pvoutputdir); }
 	
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,name,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(X,viewer);CHKERRQ(ierr);

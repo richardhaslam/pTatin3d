@@ -1149,17 +1149,10 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   }
   
   {
-    char output_path[PETSC_MAX_PATH_LEN];
-    char output_path_ic[PETSC_MAX_PATH_LEN];
+    char prefix[PETSC_MAX_PATH_LEN];
     
-    ierr = PetscSNPrintf(output_path,PETSC_MAX_PATH_LEN-1,"%s",user->outputpath);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(output_path_ic,PETSC_MAX_PATH_LEN-1,"%s/step%d",user->outputpath,user->step);CHKERRQ(ierr);
-    ierr = pTatinCreateDirectory(output_path_ic);CHKERRQ(ierr);
-    ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path_ic);CHKERRQ(ierr);
-
-    ierr = pTatinModel_Output(model,user,X_s,NULL);CHKERRQ(ierr);
-
-    ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%D",user->step);CHKERRQ(ierr);
+    ierr = pTatinModel_Output(model,user,X_s,prefix);CHKERRQ(ierr);
   }
   
   /* last thing we do */
@@ -1316,8 +1309,9 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
     ierr = PetscSNPrintf(output_path_ic,PETSC_MAX_PATH_LEN-1,"%s/fromfile",user->outputpath);CHKERRQ(ierr);
     ierr = pTatinCreateDirectory(output_path_ic);CHKERRQ(ierr);
     ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path_ic);CHKERRQ(ierr);
-    
-    ierr = pTatinModel_Output(model,user,X_s,"icbc");CHKERRQ(ierr);
+    ierr = PetscSNPrintf(output_path_ic,PETSC_MAX_PATH_LEN-1,"fromfile/icbc");CHKERRQ(ierr);
+
+    ierr = pTatinModel_Output(model,user,X_s,output_path_ic);CHKERRQ(ierr);
     
     ierr = PetscSNPrintf(user->outputpath,PETSC_MAX_PATH_LEN-1,"%s",output_path);CHKERRQ(ierr);
   }
@@ -1568,20 +1562,12 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
     pctx->dt = dt_next;
     
     if (k%pctx->output_frequency == 0){
-      char io_path[PETSC_MAX_PATH_LEN],op[PETSC_MAX_PATH_LEN];
+      char prefix[PETSC_MAX_PATH_LEN];
       
-      ierr = PetscSNPrintf(op,PETSC_MAX_PATH_LEN-1,"%s",pctx->outputpath);CHKERRQ(ierr);
-      
-      ierr = PetscSNPrintf(io_path,PETSC_MAX_PATH_LEN-1,"%s/step%d",pctx->outputpath,k);CHKERRQ(ierr);
-      ierr = pTatinCreateDirectory(io_path);CHKERRQ(ierr);
-
-      ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",io_path);CHKERRQ(ierr);
+      ierr = PetscSNPrintf(prefix,PETSC_MAX_PATH_LEN-1,"step%D",k);CHKERRQ(ierr);
       PetscTime(&time[0]);
-      ierr = pTatinModel_Output(model,pctx,X_s,NULL);CHKERRQ(ierr);
+      ierr = pTatinModel_Output(model,pctx,X_s,prefix);CHKERRQ(ierr);
       PetscTime(&time[1]);
-      ierr = pTatinLogBasicCPUtime(pctx,"Output.write()",time[1]-time[0]);CHKERRQ(ierr);
-
-      ierr = PetscSNPrintf(pctx->outputpath,PETSC_MAX_PATH_LEN-1,"%s",op);CHKERRQ(ierr);
     }
     
 #if 0

@@ -32,7 +32,8 @@
 #include <material_point_std_utils.h>
 #include <dmda_element_q2p1.h>
 #include <mp_advection.h>
-#include <ptatin3d.c>
+#include <ptatin3d.h>
+#include <ptatin_utils.h>
 #include <ptatin3d_stokes.h>
 #include <ptatin3d_energy.h>
 #include <pswarm.h>
@@ -40,6 +41,7 @@
 #include <mpiio_blocking.h>
 #include <model_utils.h>
 #include <element_utils_q2.h>
+#include <output_paraview.h>
 
 
 PetscClassId PSWARM_CLASSID;
@@ -1557,8 +1559,8 @@ PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
 {
 	PetscErrorCode ierr;
   pTatinCtx ctx;
-	static int beenhere=0;
-	static char pvdfilename[PETSC_MAX_PATH_LEN];
+	static PetscBool beenhere=PETSC_FALSE;
+	char pvdfilename[PETSC_MAX_PATH_LEN];
   const char *prefix;
   char vtkfilename[PETSC_MAX_PATH_LEN];
 	char name[PETSC_MAX_PATH_LEN];
@@ -1568,31 +1570,22 @@ PetscErrorCode _PSwarmViewMPntStd(PSwarm ps)
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
 	// PVD
-	if (beenhere == 0) {
-    if (prefix) {
-      sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",ctx->outputpath,prefix);
-    } else {
-      sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",ctx->outputpath);
-    }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
-		
-		beenhere = 1;
-	}
-  
   if (prefix) {
-    sprintf(vtkfilename, "step%d_%spswarm.pvtu",ctx->step,prefix);
+    PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_%spswarm.pvd",ctx->outputpath,prefix);
+    PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "step%D_%spswarm.pvtu",ctx->step,prefix);
   } else {
-    sprintf(vtkfilename, "step%d_pswarm.pvtu",ctx->step);
+    PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_pswarm.pvd",ctx->outputpath);
+    PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "step%D_pswarm.pvtu",ctx->step);
   }
-  
-  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+  if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+  beenhere = PETSC_TRUE;
 	
 	// PVTS + VTS
   if (prefix) {
-    sprintf(name,"step%d_%spswarm",ctx->step,prefix);
+    PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%D_%spswarm",ctx->step,prefix);
   } else {
-    sprintf(name,"step%d_pswarm",ctx->step);
+    PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"step%D_pswarm",ctx->step);
   }
 	
 	ierr = SwarmOutputParaView_MPntStd(ps->db,ctx->outputpath,name);CHKERRQ(ierr);
@@ -1637,12 +1630,12 @@ PetscErrorCode PSwarmViewParaview_VTU(PSwarm ps,const char path[],const char ste
 	
 	PetscFunctionBegin;
 
-  if (petscprefix) { sprintf(basename, "%s_%spswarm",stepprefix,petscprefix); }
-  else {             sprintf(basename, "%s_pswarm",stepprefix); }
+  if (petscprefix) { PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm",stepprefix,petscprefix); }
+  else {             PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_pswarm",stepprefix); }
 	
 	ierr = pTatinGenerateParallelVTKName(basename,"vtu",&vtkfilename);CHKERRQ(ierr);
-	if (path) { sprintf(filename,"%s/%s",path,vtkfilename); }
-	else {      sprintf(filename,"./%s",vtkfilename); }
+	if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename); }
+	else {      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"./%s",vtkfilename); }
   
   DataBucketGetSizes(ps->db,&n_points,NULL,NULL);
   if (n_points > 0) {
@@ -1737,15 +1730,15 @@ PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const cha
 	PetscFunctionBegin;
   
   if (petscprefix) {
-    sprintf(fileprefix,"%s_%spswarm",stepprefix,petscprefix);
+    PetscSNPrintf(fileprefix,PETSC_MAX_PATH_LEN-1,"%s_%spswarm",stepprefix,petscprefix);
   } else {
-    sprintf(fileprefix,"%s_pswarm",stepprefix);
+    PetscSNPrintf(fileprefix,PETSC_MAX_PATH_LEN-1,"%s_pswarm",stepprefix);
   }
   
   if (path) {
-    sprintf(fileprefix2,"%s/%s",path,fileprefix);
+    PetscSNPrintf(fileprefix2,PETSC_MAX_PATH_LEN-1,"%s/%s",path,fileprefix);
   } else {
-    sprintf(fileprefix2,"./%s",fileprefix);
+    PetscSNPrintf(fileprefix2,PETSC_MAX_PATH_LEN-1,"./%s",fileprefix);
   }
   
 	ierr = pTatinGenerateVTKName(fileprefix2,"pvtu",&vtufilename);CHKERRQ(ierr);
@@ -1783,18 +1776,18 @@ PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char ste
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
   
-  if (prefix) { sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
-  else { sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",path); }
+  if (prefix) { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
+  else { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_pswarm.pvd",path); }
 	if (!ps->pvdopen) {
 		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
 		ps->pvdopen = PETSC_TRUE;
 	}
-  if (prefix) { sprintf(vtkfilename, "%s_%spswarm.pvtu",stepprefix,petscprefix); }
-  else {        sprintf(vtkfilename, "%s_pswarm.pvtu",stepprefix); }
+  if (prefix) { PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm.pvtu",stepprefix,petscprefix); }
+  else {        PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_pswarm.pvtu",stepprefix); }
   
-  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,stepprefix);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -1822,8 +1815,9 @@ PetscErrorCode PSwarmView_PerRank(PSwarm ps)
 {
   PhysCompStokes stokes;
   DM             dmv,dmstokes;
-  char           stepprefix[PETSC_MAX_PATH_LEN];
+  char           stepprefix[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN];
   const char     *petscprefix;
+  PetscBool      found;
   PetscErrorCode ierr;
   
   ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
@@ -1842,11 +1836,15 @@ PetscErrorCode PSwarmView_PerRank(PSwarm ps)
    */
   
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
-  sprintf(stepprefix,"step%d",ps->pctx->step);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
   
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ps->pctx->outputpath,ps->pctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+
   ierr = PSwarmViewParaview_PVD(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
-  ierr = PSwarmViewParaview_VTU(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
-  ierr = PSwarmViewParaview_PVTU(ps->db,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
+  ierr = PSwarmViewParaview_VTU(ps,pvoutputdir,stepprefix,petscprefix);CHKERRQ(ierr);
+  ierr = PSwarmViewParaview_PVTU(ps->db,pvoutputdir,stepprefix,petscprefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1951,18 +1949,18 @@ PetscErrorCode PSwarmViewSingletonParaview_PVD(PSwarm ps,const char path[],const
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
   
-  if (prefix) { sprintf(pvdfilename,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
-  else { sprintf(pvdfilename,"%s/timeseries_pswarm.pvd",path); }
+  if (prefix) { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
+  else { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_pswarm.pvd",path); }
 	if (!ps->pvdopen) {
 		PetscPrintf(PetscObjectComm((PetscObject)ps),"  writing pvdfilename %s \n", pvdfilename );
 		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 		
 		ps->pvdopen = PETSC_TRUE;
 	}
-  if (prefix) { sprintf(vtkfilename, "%s_%spswarm.vtu",stepprefix,petscprefix); }
-  else {        sprintf(vtkfilename, "%s_pswarm.vtu",stepprefix); }
+  if (prefix) { PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm.vtu",stepprefix,petscprefix); }
+  else {        PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_pswarm.vtu",stepprefix); }
   
-  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,"");CHKERRQ(ierr);
+  ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,stepprefix);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
@@ -2248,12 +2246,12 @@ PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const
 	
 	PetscFunctionBegin;
   
-  if (petscprefix) { sprintf(basename, "%s_%spswarm",stepprefix,petscprefix); }
-  else {             sprintf(basename, "%s_pswarm",stepprefix); }
+  if (petscprefix) { PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm",stepprefix,petscprefix); }
+  else {             PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_pswarm",stepprefix); }
 	
-  sprintf(vtkfilename, "%s.vtu",basename);
-	if (path) { sprintf(filename,"%s/%s",path,vtkfilename); }
-	else {      sprintf(filename,"./%s",vtkfilename); }
+  PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s.vtu",basename);
+	if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename); }
+	else {      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"./%s",vtkfilename); }
   
   ierr = PSwarmViewSingleton_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
 	
@@ -2266,8 +2264,9 @@ PetscErrorCode PSwarmView_Singleton(PSwarm ps)
 {
   PhysCompStokes stokes;
   DM             dmv,dmstokes;
-  char           stepprefix[PETSC_MAX_PATH_LEN];
+  char           stepprefix[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN];
   const char     *petscprefix;
+  PetscBool      found;
   PetscErrorCode ierr;
   
   ierr = pTatinGetStokesContext(ps->pctx,&stokes);CHKERRQ(ierr);
@@ -2275,11 +2274,15 @@ PetscErrorCode PSwarmView_Singleton(PSwarm ps)
   ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
   
 	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
-  sprintf(stepprefix,"step%d",ps->pctx->step);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
   
+  ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ps->pctx->outputpath,ps->pctx->step);CHKERRQ(ierr);
+  PetscTestDirectory(pvoutputdir,'w',&found);
+  if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
+
   ierr = PSwarmViewSingletonParaview_PVD(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
   
-  ierr = PSwarmViewSingletonParaview_VTU(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
+  ierr = PSwarmViewSingletonParaview_VTU(ps,pvoutputdir,stepprefix,petscprefix);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
