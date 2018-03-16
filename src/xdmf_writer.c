@@ -675,7 +675,7 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(xmfoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ctx->outputpath,ctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(xmfoutputdir,'w',&found);
+  ierr = pTatinTestDirectory(xmfoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(xmfoutputdir);CHKERRQ(ierr); }
 
     PetscObjectGetComm((PetscObject)dmstokes,&comm);

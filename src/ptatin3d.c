@@ -206,7 +206,7 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_per_dir(pTatinCtx ct
   
   // create a snapshot directory based on step
   ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/step%D",ctx->outputpath,ctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(name,'w',&found);
+  ierr = pTatinTestDirectory(name,'w',&found);CHKERRQ(ierr);
   if (!found) {
     ierr = pTatinCreateDirectory(name);CHKERRQ(ierr);
   }
@@ -238,7 +238,7 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
   
   // create a snapshot directory based on step
   ierr = PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"%s/step%D",ctx->outputpath,ctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(name,'w',&found);
+  ierr = pTatinTestDirectory(name,'w',&found);CHKERRQ(ierr);
   if (!found) {
     ierr = pTatinCreateDirectory(name);CHKERRQ(ierr);
   }
@@ -265,7 +265,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
   ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
   
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(pvoutputdir,'w',&found);
+  ierr = pTatinTestDirectory(pvoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
   
   PetscTime(&t0);
@@ -313,7 +313,7 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
   ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
   
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(pvoutputdir,'w',&found);
+  ierr = pTatinTestDirectory(pvoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
   
   PetscTime(&t0);
@@ -607,7 +607,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
   ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
   
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(pvoutputdir,'w',&found);
+  ierr = pTatinTestDirectory(pvoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
 
 	PetscTime(&t0);

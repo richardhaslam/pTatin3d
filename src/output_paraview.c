@@ -30,6 +30,7 @@
 
 #include "petsc.h"
 #include "dmda_element_q2p1.h"
+#include "ptatin_utils.h"
 #include "output_paraview.h"
 
 const char *PTatinFieldNames[] =  {
@@ -178,7 +179,7 @@ PetscErrorCode ParaviewPVDOpenAppend(PetscBool not_first,PetscInt step,const cha
       ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
       ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
     } else {
-      ierr = PetscTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
+      ierr = pTatinTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
       if (file_found) {
         ierr = ParaviewPVDAppend(pvdfilename,time,datafile,directory_name);CHKERRQ(ierr);
       } else {
@@ -187,7 +188,7 @@ PetscErrorCode ParaviewPVDOpenAppend(PetscBool not_first,PetscInt step,const cha
       }
     }
   } else {
-    ierr = PetscTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
+    ierr = pTatinTestFile(pvdfilename,'r',&file_found);CHKERRQ(ierr);
     if (!file_found) {
 //        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open PVD file %s",pvdfilename);
       ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);

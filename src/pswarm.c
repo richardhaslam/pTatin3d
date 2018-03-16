@@ -1771,7 +1771,7 @@ PetscErrorCode PSwarmView_PerRank(PSwarm ps)
   PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
   
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ps->pctx->outputpath,ps->pctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(pvoutputdir,'w',&found);
+  ierr = pTatinTestDirectory(pvoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
 
   ierr = PSwarmViewParaview_PVD(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
@@ -2209,7 +2209,7 @@ PetscErrorCode PSwarmView_Singleton(PSwarm ps)
   PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
   
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ps->pctx->outputpath,ps->pctx->step);CHKERRQ(ierr);
-  PetscTestDirectory(pvoutputdir,'w',&found);
+  ierr = pTatinTestDirectory(pvoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
 
   ierr = PSwarmViewSingletonParaview_PVD(ps,ps->pctx->outputpath,stepprefix,petscprefix);CHKERRQ(ierr);
