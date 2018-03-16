@@ -45,6 +45,7 @@ save_config: $(INSTALL_DIR)/.DIR makefile.arch
 OBJDIR ?= $(INSTALL_DIR)/obj
 LIBDIR ?= $(INSTALL_DIR)/lib
 BINDIR ?= $(INSTALL_DIR)/bin
+INCDIR ?= $(INSTALL_DIR)/include
 
 # Configuration option defaults
 CONFIG_SPMA      ?= n
@@ -55,7 +56,7 @@ CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
 # Populate includes, libraries, and compiler flags
-TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
+TATIN_INC := $(PETSC_CC_INCLUDES) -I$(INSTALL_DIR)/include -I${PWD}/include
 
 ifeq ($(CONFIG_CUDA),y)
 TATIN_CFLAGS += -DTATIN_HAVE_CUDA
@@ -112,12 +113,14 @@ info:
 	-@echo "    git url: https://bitbucket.org/jedbrown/ptatin3d.git"
 	-@echo "    update version information by running \"make releaseinfo\""
 	-@echo "—————————————————————————————————————————————————————————————————"
+	$(shell mkdir -p $(INSTALL_DIR)/include)
 
 releaseinfo:
+	$(shell mkdir -p $(INSTALL_DIR)/include)
 	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
-	$(shell mv ptatin_git_version_info.h include/ptatin_git_version_info.h)
+	$(shell mv ptatin_git_version_info.h  $(INSTALL_DIR)/include/ptatin_git_version_info.h)
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
-	-@echo "  Generated the file include/ptatin_git_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "  Generated the file ptatin_git_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
 	-@echo "  pTatin3D version info appears in: stdout; ptatin3d log files; generated PETSc summary/options files"
 	-@echo "  Execute 'make all' to propogate the version information into your ptatin executables"
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
