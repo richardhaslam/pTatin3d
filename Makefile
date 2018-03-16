@@ -117,7 +117,7 @@ info:
 releaseinfo: $(INCDIRGEN)/.DIR
 	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
 	$(shell mv ptatin_git_version_info.h  $(INCDIRGEN)/ptatin_git_version_info.h)
-	touch include/ptatin_version_info.h
+	-@touch include/ptatin_version_info.h
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
 	-@echo "  Generated the file ptatin_git_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
 	-@echo "  pTatin3D version info appears in: stdout; ptatin3d log files; generated PETSc summary/options files"
