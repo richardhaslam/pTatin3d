@@ -287,3 +287,49 @@ PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
 	
 	PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinTestDirectory"
+PetscErrorCode pTatinTestDirectory(const char dirname[],char mode,PetscBool *_exists)
+{
+  PetscMPIInt rank;
+  int i_exists = 0;
+  PetscBool exists = PETSC_FALSE;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  
+  if (rank == 0) {
+    ierr = PetscTestDirectory(dirname,mode,&exists);CHKERRQ(ierr);
+    i_exists = (int)exists;
+  }
+  ierr = MPI_Bcast(&i_exists,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  if (i_exists == 1) { *_exists = PETSC_TRUE; }
+  else               { *_exists = PETSC_FALSE; }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "pTatinTestFile"
+PetscErrorCode pTatinTestFile(const char filename[],char mode,PetscBool *_exists)
+{
+  PetscMPIInt rank;
+  int i_exists = 0;
+  PetscBool exists = PETSC_FALSE;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  
+  if (rank == 0) {
+    ierr = PetscTestFile(filename,mode,&exists);CHKERRQ(ierr);
+    i_exists = (int)exists;
+  }
+  ierr = MPI_Bcast(&i_exists,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  
+  if (i_exists == 1) { *_exists = PETSC_TRUE; }
+  else               { *_exists = PETSC_FALSE; }
+  PetscFunctionReturn(0);
+}

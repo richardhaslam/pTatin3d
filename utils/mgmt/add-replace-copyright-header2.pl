@@ -112,8 +112,8 @@ sub process_file
     # create a new file with the same name 
     # Add header at the of the file
 
-		print_header_2012( 'tmp.file', 'pTatin3d', $filename );
-	
+		#print_header_2012( 'tmp.file', 'pTatin3d', $filename );
+    print_header_version_one_dot_zero( 'tmp.file', 'pTatin3d', $filename );
 
     # Dump everything else
     open( DAT, ">>tmp.file" ) || die( "Could not open file ($filename) ! \n" );
@@ -177,6 +177,45 @@ sub print_header_2012
 	
     close( DAT );
 }
+
+sub print_header_version_one_dot_zero
+{
+    my $filename = $_[0];
+    my $proj = $_[1];
+    my $name = $_[2];
+  
+  
+    open( DAT, ">$filename" ) || die( "Could not open file ($filename) ! \n" );
+  
+    print DAT "/*@";
+  
+    print DAT " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ **
+ **    Copyright (c) 2012 - 2018 by the $proj authors
+ **
+ **    This file is part of the $proj library
+ **
+ **    $proj is free software: you can redistribute it and/or modify
+ **    it under the terms of the GNU General Public License as published
+ **    by the Free Software Foundation, either version 3 of the License,
+ **    or (at your option) any later version.
+ **
+ **    $proj is distributed in the hope that it will be useful,
+ **    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ **    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ **    See the GNU General Public License for more details.
+ **
+ **    The full text of the GNU General Public License can be found in
+ **    the file COPYING at the top level of the $proj distribution.
+ **    Alternatively, see <http://www.gnu.org/licenses/>.
+ **
+ ** ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+    
+    print DAT " @*/\n";
+  
+    close( DAT );
+}
+
 
 sub trim($)
 {
