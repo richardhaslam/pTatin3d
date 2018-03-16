@@ -1,5 +1,5 @@
-
 import os
+import re
 
 # Repo id
 # git config --get remote.origin.url
@@ -52,9 +52,7 @@ def GitFound_WriteInfoHeader():
         giturl = line.rstrip('\n')
     gitf.close();
 
-    # We do this splitting nonesense to remove the username from the URL
-    #tmp = giturl.split("bitbucket.org")
-    #giturl = "https://bitbucket.org" + tmp[1]
+    giturl = re.sub("https://.*@","https://",giturl) # strip username from HTTPS URLs
     giturl = '"%s"' % ("git url: " + giturl)
     gitstr = spacer.join( ["#define PTATIN_VERSION_CNTR_REPO" , giturl ])
     hf.write(gitstr + "\n")
