@@ -12,11 +12,11 @@ def test() :
   expectedFile = os.path.join(thisDir,'expected')
 
   def comparefunc(t) :
-    t.compareLiteral(re.escape('[staticBox] ||v0 - v0_exact||_inf <= 1.0e-12 '))
-    t.compareLiteral(re.escape('[staticBox] ||v1 - v1_exact||_inf <= 1.0e-12 '))
-    t.compareLiteral(re.escape('[staticBox] ||v2 - v2_exact||_inf <= 1.0e-12 '))
-    t.compareLiteral(re.escape('[staticBox] ||p - p_exact||_inf <= 1.0e-12 '  ))
-    t.compareLiteral(re.escape('[staticBox] ||T - T_exact||_inf <= 1.0e-12 '  ))
+    t.compareLiteral(re.escape('[staticBox] ||v0 - v0_exact||_inf <= 1.0e-11 '))
+    t.compareLiteral(re.escape('[staticBox] ||v1 - v1_exact||_inf <= 1.0e-11 '))
+    t.compareLiteral(re.escape('[staticBox] ||v2 - v2_exact||_inf <= 1.0e-11 '))
+    t.compareLiteral(re.escape('[staticBox] ||p - p_exact||_inf <= 1.0e-11 '  ))
+    t.compareLiteral(re.escape('[staticBox] ||T - T_exact||_inf <= 1.0e-11 '  ))
     t.compareFloatingPoint(re.escape('[staticBox] Q = '),1e-14)
 
   # Create Test Object

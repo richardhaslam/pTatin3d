@@ -415,10 +415,10 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
   ierr = VecStrideNorm(Xu,1,NORM_INFINITY,&nrm[2]);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(stokes,X,&Xu,&Xp);CHKERRQ(ierr);
   for (k=0; k<3; k++) {
-    if (nrm[k] > 1.0e-12) {
+    if (nrm[k] > 1.0e-11) {
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||v%D - v%D_exact||_inf = %+1.12e <fail>\n",k,k,nrm[k]);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||v%D - v%D_exact||_inf <= 1.0e-12 <pass>\n",k,k);
+      PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||v%D - v%D_exact||_inf <= 1.0e-11 <pass>\n",k,k);
     }
   }
   
@@ -458,10 +458,10 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
     DataFieldRestoreEntries(datafield,(void**)&tracer_pressure);
     
     ierr = MPI_Allreduce(&max_abs_delta_p,&max_abs_delta_p_g,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    if (max_abs_delta_p_g > 1.0e-12) {
+    if (max_abs_delta_p_g > 1.0e-11) {
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||p - p_exact||_inf = %+1.12e <fail>\n",max_abs_delta_p_g);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||p - p_exact||_inf <= 1.0e-12 <pass>\n");
+      PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||p - p_exact||_inf <= 1.0e-11 <pass>\n");
     }
   }
   
@@ -512,10 +512,10 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
     ierr = DMDAVecRestoreArray(daT,temperature,&T);CHKERRQ(ierr);
     
     ierr = MPI_Allreduce(&max_abs_delta_t,&max_abs_delta_t_g,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-    if (max_abs_delta_t_g > 1.0e-12) {
+    if (max_abs_delta_t_g > 1.0e-11) {
       PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||T - T_exact||_inf = %+1.12e <fail>\n",max_abs_delta_t_g);
     } else {
-      PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||T - T_exact||_inf <= 1.0e-12 <pass>\n");
+      PetscPrintf(PETSC_COMM_WORLD,"[staticBox] ||T - T_exact||_inf <= 1.0e-11 <pass>\n");
     }
     PetscPrintf(PETSC_COMM_WORLD,"[staticBox] Q = %+1.2e\n",Q);
   }
