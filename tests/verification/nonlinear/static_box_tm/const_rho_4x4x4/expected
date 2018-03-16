@@ -1292,11 +1292,11 @@ ALE(vel) min = -9.7700e-15 : max = 3.9080e-14
 Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 3.48e-05 (sec)
 Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
 Update rheology (viscous) [mpoint]: (min,max)_eta 1.00e+01,1.00e+01; log10(max/min) 0.00e+00; cpu time 2.50e-05 (sec)
-[staticBox] ||v0 - v0_exact||_inf <= 1.0e-12 <pass>
-[staticBox] ||v1 - v1_exact||_inf <= 1.0e-12 <pass>
-[staticBox] ||v2 - v2_exact||_inf <= 1.0e-12 <pass>
-[staticBox] ||p - p_exact||_inf <= 1.0e-12 <pass>
-[staticBox] ||T - T_exact||_inf <= 1.0e-12 <pass>
+[staticBox] ||v0 - v0_exact||_inf <= 1.0e-11 <pass>
+[staticBox] ||v1 - v1_exact||_inf <= 1.0e-11 <pass>
+[staticBox] ||v2 - v2_exact||_inf <= 1.0e-11 <pass>
+[staticBox] ||p - p_exact||_inf <= 1.0e-11 <pass>
+[staticBox] ||T - T_exact||_inf <= 1.0e-11 <pass>
 [staticBox] Q = +0.00e+00
   TimeStep control(StkCourant): | current = 1.0000e+32 : trial = 9.7843e+12 [accepted] | dt > dt_max : restricted to = 5.0000e-01 | ==>> dt used = 5.0000e-01 |
   TimeStep control(StkSurfaceCourant): | current = 5.0000e-01 : trial = 1.0000e+32 | ==>> dt used = 5.0000e-01 |
