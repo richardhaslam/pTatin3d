@@ -45,8 +45,6 @@ export TATIN_FFLAGS	= -ffree-line-length-4000
 # ----------------------------------------------------------------------------
 #    pTatin build configuration settings (user to edit - defaults are shown)
 # ----------------------------------------------------------------------------
-# <OpenMP support>
-#export TATIN_CFLAGS_OPENMP = -fopenmp
 
 # <CUDA support>
 CONFIG_CUDA      = n

@@ -20,7 +20,6 @@ export TATIN_FFLAGS_OPT_b = -O2 -ffree-line-length-4000
 
 # Choose options
 export TATIN_CFLAGS	= ${TATIN_CFLAGS_OPT_b} -dynamic -march=native -fopenmp
-export TATIN_CFLAGS_OPENMP = -fopenmp
 export TATIN_FFLAGS	= ${TATIN_FFLAGS_OPT_b}
 #export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG} -fopenmp
 #export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
