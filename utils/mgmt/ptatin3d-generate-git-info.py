@@ -53,8 +53,8 @@ def GitFound_WriteInfoHeader():
     gitf.close();
 
     # We do this splitting nonesense to remove the username from the URL
-    tmp = giturl.split("bitbucket.org")
-    giturl = "https://bitbucket.org" + tmp[1]
+    #tmp = giturl.split("bitbucket.org")
+    #giturl = "https://bitbucket.org" + tmp[1]
     giturl = '"%s"' % ("git url: " + giturl)
     gitstr = spacer.join( ["#define PTATIN_VERSION_CNTR_REPO" , giturl ])
     hf.write(gitstr + "\n")
