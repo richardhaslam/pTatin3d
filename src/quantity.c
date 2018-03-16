@@ -323,7 +323,7 @@ PetscErrorCode ptatinQuantitySetupGeoUnitList(void)
 PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
 {
   PetscInt       i,n;
-  PetscReal      Ls,Vs,Es,geo_time,geo_length,geo_stress;
+  PetscReal      Ls,Vs,Es,geo_time,geo_length;
   PetscReal      secondsPerYear,secondsPerkyr;
   PetscErrorCode ierr;
   
@@ -340,7 +340,6 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
   geo_time = secondsPerkyr; /* kyr */
 
   geo_length = 1.0e3; /* km */
-  geo_stress = 1.0e6; /* MPa */
   
   switch (units) {
     case UNITS_NATIVE:

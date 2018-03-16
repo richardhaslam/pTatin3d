@@ -76,7 +76,7 @@ PetscErrorCode test_quantity_utils_2(void)
 PetscErrorCode test_quantity_utils_3(void)
 {
   PetscErrorCode ierr;
-  PetscReal visc,visc_array[] = {1.0e18, 1.0e22, 1.0e24 };
+  PetscReal visc_array[] = {1.0e18, 1.0e22, 1.0e24 };
   PetscReal visc_array2[3];
   
   PetscOptionsInsertString(NULL,"-ptatin_input_units si");
