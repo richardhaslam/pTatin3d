@@ -604,6 +604,7 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	static PetscBool beenhere = PETSC_FALSE;
 	Quadrature      volQ;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
 
 	PetscFunctionBegin;
@@ -624,7 +625,8 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "energy.pvts");           }
   
   if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
   
   // PVTS + VTS
@@ -649,6 +651,7 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
 	static PetscBool beenhere = PETSC_FALSE;
   PetscViewer    viewer;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
   
 	PetscFunctionBegin;
@@ -669,7 +672,8 @@ PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_ve
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "energy.pvts");           }
   
   if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
 	
   if (dm_velocity_data_required) {

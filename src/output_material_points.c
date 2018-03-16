@@ -1131,6 +1131,7 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
 	static PetscBool beenhere=PETSC_FALSE;
 	DataBucket     material_points;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
 
   PetscFunctionBegin;
@@ -1147,7 +1148,8 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "mpoints_cell.pvts");           }
   
   if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
   
   // PVTS + VTS

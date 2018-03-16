@@ -258,6 +258,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
   
   PetscFunctionBegin;
@@ -274,7 +275,8 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "v.pvts");           }
   
   if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
   
   // PVTS + VTS
@@ -302,6 +304,7 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	char           f1[PETSC_MAX_PATH_LEN];
 	char           f3[PETSC_MAX_PATH_LEN];
   char pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
 
   PetscFunctionBegin;
@@ -320,7 +323,8 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "X.pvts");           }
   
   if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
   
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
@@ -596,6 +600,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscLogDouble t0,t1;
 	static PetscBool beenhere=PETSC_FALSE;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
+  char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
 	
 	PetscFunctionBegin;
@@ -612,7 +617,8 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "mpoints_std.pvtu");           }
 
   if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, prefix);CHKERRQ(ierr);
+  PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ctx->step);
+  ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
 	
 	// PVTS + VTS
