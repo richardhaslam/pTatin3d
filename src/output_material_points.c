@@ -600,7 +600,6 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 		}
 	}
 
-#if 1
 	/* check cells if empty */
 	for (ek=0; ek<mz; ek++) {
 		for (ej=0; ej<my; ej++) {
@@ -716,10 +715,8 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 	if (gempty != 0) {
 		PetscPrintf(PETSC_COMM_WORLD,"WARNING(_compute_cell_composition): Detected %ld cells which could not assigned a composition\n",gempty);
 	}
-#endif
 	
 	/* assign phase based on nearest point */
-#if 1
 	for (e=0; e<mx*my*mz; e++) {
 		int pid,phase;
 		
@@ -731,8 +728,8 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 			LA_cell[e] = phase;
 		}
 	}
-#endif	
-	ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
+
+  ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
 	ierr = PetscFree(closest_point);CHKERRQ(ierr);
 
 	

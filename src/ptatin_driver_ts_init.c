@@ -1570,36 +1570,6 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
       PetscTime(&time[1]);
     }
     
-#if 0
-    if (k%pctx->checkpoint_every_nsteps == 0) {
-      char checkpoints_path[PETSC_MAX_PATH_LEN];
-      char checkpoint_path[PETSC_MAX_PATH_LEN];
-      char restartfile[PETSC_MAX_PATH_LEN];
-      char restartstring[PETSC_MAX_PATH_LEN];
-      
-      ierr = PetscSNPrintf(checkpoints_path,PETSC_MAX_PATH_LEN-1,"%s/checkpoints",pctx->outputpath);CHKERRQ(ierr);
-      ierr = pTatinCreateDirectory(checkpoints_path);CHKERRQ(ierr);
-      
-      ierr = PetscSNPrintf(checkpoint_path,PETSC_MAX_PATH_LEN-1,"%s/step%d",checkpoints_path,k);CHKERRQ(ierr);
-      ierr = pTatinCreateDirectory(checkpoint_path);CHKERRQ(ierr);
-      
-      PetscTime(&time[0]);
-      ierr = pTatinCtxCheckpointWrite(pctx,checkpoint_path,NULL,
-                                      dmstokes,dmenergy,0,NULL,NULL,X_s,X_e,NULL,NULL);CHKERRQ(ierr);
-      PetscTime(&time[1]);
-      ierr = pTatinLogBasicCPUtime(pctx,"Checkpoint.write()",time[1]-time[0]);CHKERRQ(ierr);
-
-      /* write out a default string for restarting the job */
-      ierr = PetscSNPrintf(restartfile,PETSC_MAX_PATH_LEN-1,"%s/restart.default",pctx->outputpath);CHKERRQ(ierr);
-      ierr = PetscSNPrintf(restartstring,PETSC_MAX_PATH_LEN-1,"-restart_directory %s/checkpoints/step%d",pctx->outputpath,k);CHKERRQ(ierr);
-      if (rank == 0) {
-        FILE *fp;
-        fp = fopen(restartfile,"w");
-        fprintf(fp,"%s",restartstring);
-        fclose(fp);
-      }
-    }
-#endif
     ierr = pTatin3dCheckpointManager(pctx,X_s);CHKERRQ(ierr);
     
     if (pctx->time > pctx->time_max) break;

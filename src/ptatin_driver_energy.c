@@ -220,13 +220,10 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = pTatinPhysCompEnergy_UpdateALEVelocity(stokes,X,energy,energy->dt);CHKERRQ(ierr);
 			
 			// crappy way - make it non-linear
-	#if 0		
+      /*
 			ierr = TS_FormJacobianEnergy(user->time,T,user->dt,JE,JE,(void*)user);CHKERRQ(ierr);
 			ierr = TS_FormFunctionEnergy(user->time,T,user->dt,f,(void*)user);CHKERRQ(ierr);
 
-			//ierr = VecSetRandom(f,0);CHKERRQ(ierr);
-			//ierr = VecSet(f,12.1);CHKERRQ(ierr);
-					
 			ierr = KSPCreate(PETSC_COMM_WORLD,&kspT);CHKERRQ(ierr);
 			ierr = KSPSetOptionsPrefix(kspT,"T_");CHKERRQ(ierr);
 			ierr = KSPSetOperators(kspT,JE,JE);CHKERRQ(ierr);
@@ -235,9 +232,8 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = KSPSolve(kspT,f,T);CHKERRQ(ierr);
 
 			ierr = KSPDestroy(&kspT);CHKERRQ(ierr);
-	#endif
+      */
 			
-	#if 1
 			ierr = SNESCreate(PETSC_COMM_WORLD,&snesT);CHKERRQ(ierr);
 			ierr = SNESSetOptionsPrefix(snesT,"T_");CHKERRQ(ierr);
 
@@ -254,8 +250,8 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 			ierr = SNESSolve(snesT,NULL,T);CHKERRQ(ierr);
 			
 			ierr = SNESDestroy(&snesT);CHKERRQ(ierr);
-	#endif
-			ierr = pTatinPhysCompEnergy_Update(energy,dav,T);CHKERRQ(ierr);
+
+      ierr = pTatinPhysCompEnergy_Update(energy,dav,T);CHKERRQ(ierr);
 			
 			user->time = user->time + user->dt;
 			

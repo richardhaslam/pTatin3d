@@ -312,9 +312,9 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 
 
 
-#if 0	
 	/* Some portion of grid may overlap sub-domains */
 	/* Figure out the range of k indices I need to traverse */
+  /*
 	start = 0;
 	end   = 0;
 	if( (endK+1) >= (sk+nz) ) {
@@ -329,7 +329,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 		SETERRQ( PetscObjectComm((PetscObject)da), PETSC_ERR_USER, "DL cannot be negative" );
 	}
 	
-	/* total range of k indices to span */
+	// total range of k indices to span //
 	RANGE = endK - startK;
 	
 	printf("DL = %d \n", DL );
@@ -354,7 +354,7 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 		}
 		
 	}
-#endif
+  */
 
 	RANGE = endK - startK;
 	for( j=0; j<ny; j++ ) {

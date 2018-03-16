@@ -1316,39 +1316,7 @@ PetscErrorCode SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierar
 	}
 	ierr = DMGetGlobalVector(clone[nlevels-1],&properties_B);CHKERRQ(ierr);
 	ierr = VecZeroEntries(properties_B);CHKERRQ(ierr);
-	
     
-#if 0
-
-	switch (coefficient_projection_type) {
-        case -1:
-         /*
-         If null projection is chosen, then we assume we have defined quadrature point values on the fine mesh already (by some other means), thus we do not interpolate the smoothed nodal viscosity onto the quadrature points
-         */
-            break;
-            
-        case 0:
-            break;
-            
-        case 1:
-            /* This doesn't need to be performed as any call to pTatin_EvaluateRheologyNonlinearitiesMarkers() will have already performed such an interpolation from markers to quadrature points
-            */
-            ierr = _SwarmUpdateGaussPropertiesLocalL2ProjectionQ1_MPntPStokes_InterpolateToQuadratePoints(
-                    clone[nlevels-1], properties_A1[nlevels-1],properties_A2[nlevels-1],Q[nlevels-1] );CHKERRQ(ierr);
-            break;
-            
-        case 2:
-            break;
-            
-        case 3:
-            break;
-            
-        case 4:
-            ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,Q[nlevels-1]);CHKERRQ(ierr);
-            break;
-	}
-#endif
-	
 	switch (coefficient_projection_type) {
         /*
          If the following projection methods are chosen, 

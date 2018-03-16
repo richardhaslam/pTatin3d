@@ -783,7 +783,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	/* nonlinearitiers: markers => quad points */
 	ierr = pTatin_EvaluateRheologyNonlinearities(user,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 
-#if 1
 	/* interpolate coefficients */
 	{
 		int               npoints;
@@ -801,7 +800,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		
 		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes_Hierarchy(user->coefficient_projection_type,npoints,mp_std,mp_stokes,mlctx->nlevels,mlctx->interpolation_eta,mlctx->dav_hierarchy,mlctx->volQ);CHKERRQ(ierr);
 	}
-#endif	
 	
 	/* operator */
 	ierr = PetscObjectTypeCompare((PetscObject)A,MATMFFD, &is_mffd);CHKERRQ(ierr);
@@ -855,7 +853,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd  (B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 	
-#if 1	
 	/* Buu preconditioner for all other levels in the hierarchy */
 	{
 		PetscBool use_low_order_geometry;
@@ -1012,7 +1009,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 		}
 				
 	}
-#endif	
 	
 	{
 		PetscBool mg_dump_coarse = PETSC_FALSE;
@@ -1330,7 +1326,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	
 	PetscPrintf(PETSC_COMM_WORLD,"PreSolve(0) --> ");
 	pTatinGetRangeCurrentMemoryUsage(NULL);
-#if 1
 {
 	PetscInt snes_its;
 
@@ -1376,7 +1371,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 		ierr = pTatinModel_Output(model,user,X,"picard_stage");CHKERRQ(ierr);
 	}
 }
-#endif
 	PetscPrintf(PETSC_COMM_WORLD,"PostSolve(0) --> ");
 	pTatinGetRangeCurrentMemoryUsage(NULL);
 
@@ -1979,7 +1973,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 	
 	PetscPrintf(PETSC_COMM_WORLD,"   [[ COMPUTING FLOW FIELD FOR STEP : %D ]]\n", 0 );
 
-#if 1
 	{
 		PetscInt snes_its;
 
@@ -2191,7 +2184,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 		
 	}
-#endif
 	
 	newton_its = 0;
 	PetscOptionsGetInt(NULL,NULL,"-newton_its",&newton_its,NULL);
@@ -3108,7 +3100,6 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 		ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 		
-#if 1		
 		/* NEWTON - Define non-linear solver */
 		PetscPrintf(PETSC_COMM_WORLD,"   --------- NEWTON STAGE ---------\n");
 		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
@@ -3148,7 +3139,6 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 
 		ierr = SNESDestroyMGCtx(snes);CHKERRQ(ierr);
 		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-#endif		
 		 
 		
 		/* output */
