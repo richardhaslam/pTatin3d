@@ -41,6 +41,7 @@
 #include <mpiio_blocking.h>
 #include <model_utils.h>
 #include <element_utils_q2.h>
+#include <output_paraview.h>
 
 
 PetscClassId PSWARM_CLASSID;
