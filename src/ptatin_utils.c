@@ -110,6 +110,9 @@ PetscErrorCode pTatinWriteOptionsFile(const char filename[])
 #ifdef PTATIN_DEVELOPMENT_VERSION
 	ierr = PetscViewerASCIIPrintf(viewer,"##     %s \n", PTATIN_VERSION_CNTR_REVISION);
 	ierr = PetscViewerASCIIPrintf(viewer,"##     %s \n", PTATIN_VERSION_CNTR_LOG);
+  #ifdef PTATIN_GIT_REPO_STATUS
+  ierr = PetscViewerASCIIPrintf(viewer,"##     %s \n", PTATIN_GIT_REPO_STATUS);
+  #endif
 #endif
 #ifdef PTATIN_RELEASE
 	ierr = PetscViewerASCIIPrintf(viewer,"##     %s \n", PTATIN_VERSION_CNTR_REVISION);

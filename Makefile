@@ -42,9 +42,10 @@ save_config: $(INSTALL_DIR)/.DIR makefile.arch
 	@cat makefile.arch >> $(MAKEFILE_ARCH_SAVE_LOC)
 .PHONY : save_config
 
-OBJDIR ?= $(INSTALL_DIR)/obj
-LIBDIR ?= $(INSTALL_DIR)/lib
-BINDIR ?= $(INSTALL_DIR)/bin
+OBJDIR    ?= $(INSTALL_DIR)/obj
+LIBDIR    ?= $(INSTALL_DIR)/lib
+BINDIR    ?= $(INSTALL_DIR)/bin
+INCDIRGEN ?= $(INSTALL_DIR)/include_gen
 
 # Configuration option defaults
 CONFIG_SPMA      ?= n
@@ -55,7 +56,7 @@ CONFIG_CUDA ?= n
 CONFIG_OPENCL ?= n
 
 # Populate includes, libraries, and compiler flags
-TATIN_INC := $(PETSC_CC_INCLUDES) -I${PWD}/include
+TATIN_INC := $(PETSC_CC_INCLUDES) -I$(INCDIRGEN) -I$(PWD)/include
 
 ifeq ($(CONFIG_CUDA),y)
 TATIN_CFLAGS += -DTATIN_HAVE_CUDA
@@ -113,15 +114,15 @@ info:
 	-@echo "    update version information by running \"make releaseinfo\""
 	-@echo "—————————————————————————————————————————————————————————————————"
 
-releaseinfo:
+releaseinfo: $(INCDIRGEN)/.DIR
+	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
+	$(shell mv ptatin_git_version_info.h  $(INCDIRGEN)/ptatin_git_version_info.h)
+	-@touch include/ptatin_version_info.h
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
-	-@echo "  Updating the contents of include/ptatin_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
+	-@echo "  Generated the file ptatin_git_version_info.h from: https://bitbucket.org/jedbrown/ptatin3d.git"
 	-@echo "  pTatin3D version info appears in: stdout; ptatin3d log files; generated PETSc summary/options files"
 	-@echo "  Execute 'make all' to propagate the version information into your pTatin3D executables"
 	-@echo "—————————————————————————————————————————————————————————————————————————————————————————————————————————————"
-	$(shell python utils/mgmt/ptatin3d-generate-git-info.py)
-	$(shell mv ptatin_version_info.h include/ptatin_version_info.h)
-	$(shell git update-index --assume-unchanged include/ptatin_version_info.h)
 
 externals:
 	-@echo ——————— EXTERNAL PACKAGE OBJECT FILES ———————
@@ -212,7 +213,7 @@ $(OBJDIR)/%.o: %.cu | $$(@D)/.DIR
 .PHONY: clean all print
 
 clean:
-	rm -rf $(OBJDIR) $(LIBDIR) $(BINDIR)
+	rm -rf $(OBJDIR) $(LIBDIR) $(BINDIR) $(INCGENDIR)
 
 # make print VAR=the-variable
 print:
