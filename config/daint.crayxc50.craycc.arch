@@ -13,7 +13,6 @@ export TATIN_FFLAGS_OPT_b  = -O3 -h fp3
 
 # Compiler flags
 export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_a)
-export TATIN_CFLAGS_OPENMP = -openmp
 export TATIN_FFLAGS        = $(TATIN_FFLAGS_OPT_a)
 
 

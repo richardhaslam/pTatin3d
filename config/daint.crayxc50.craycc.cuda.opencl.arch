@@ -13,9 +13,7 @@ export TATIN_FFLAGS_OPT_b  = -O3 -h fp3
 
 # Compiler flags
 export TATIN_CFLAGS        = $(TATIN_CFLAGS_OPT_a)
-export TATIN_CFLAGS_OPENMP = -openmp
 export TATIN_FFLAGS        = $(TATIN_FFLAGS_OPT_a)
-
 
 # CUDA and OpenCL
 export CUDA_NVCC = $(CUDATOOLKIT_HOME)/bin/nvcc  -I$(CRAY_MPICH_DIR)/include -arch=sm_60
