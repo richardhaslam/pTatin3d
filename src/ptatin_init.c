@@ -88,6 +88,9 @@ PetscErrorCode pTatinWritePreamble(void)
 #ifdef PTATIN_DEVELOPMENT_VERSION
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_LOG);
+  #ifdef PTATIN_GIT_REPO_STATUS
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_GIT_REPO_STATUS);
+  #endif
 #endif
 #ifdef PTATIN_RELEASE
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
