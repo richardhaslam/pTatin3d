@@ -32,8 +32,8 @@
 #include <material_point_std_utils.h>
 #include <dmda_element_q2p1.h>
 #include <mp_advection.h>
-#include <ptatin3d.c>
-#include <ptatin_utils.c>
+#include <ptatin3d.h>
+#include <ptatin_utils.h>
 #include <ptatin3d_stokes.h>
 #include <ptatin3d_energy.h>
 #include <pswarm.h>
