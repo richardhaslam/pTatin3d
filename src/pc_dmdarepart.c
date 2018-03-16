@@ -196,7 +196,8 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     red->scatter = scatter;
     red->xsub    = xsub;
 
-#if 0 /* testing */
+    /* testing */
+    /*
     ierr = VecGetOwnershipRange(x,&st,&ed);CHKERRQ(ierr);
     for (i=st; i<ed; i++) {
         VecSetValue(x,i,(PetscScalar)i,INSERT_VALUES);
@@ -213,9 +214,9 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
 
         ierr = VecCreateMPIWithArray(red->subcomm->sub_comm,1,m,PETSC_DECIDE,NULL,&xsub);CHKERRQ(ierr);
         
-        /* define xred */
+        // define xred //
         ierr = VecGetArray(xred,&array);CHKERRQ(ierr);
-        /* we created xred with empty local arrays, now we fill it in */
+        // we created xred with empty local arrays, now we fill it in //
         ierr = VecPlaceArray(xsub,(const PetscScalar*)array);CHKERRQ(ierr);
 
         VecView(xsub,PETSC_VIEWER_STDOUT_(red->subcomm->sub_comm));
@@ -223,7 +224,7 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
         ierr = VecResetArray(xsub);CHKERRQ(ierr);
         ierr = VecRestoreArray(xred,&array);CHKERRQ(ierr);
     }
-#endif
+    */
     
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     

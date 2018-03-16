@@ -1663,7 +1663,6 @@ void testEQ2_SurfQuad3d_2( void )
 	}
 
 	// optional
-#if 1
 	/* rotate the coordinates about z axis */
 	for( i=0; i<27; i++ ) {
 		double R[3][3];
@@ -1687,7 +1686,6 @@ void testEQ2_SurfQuad3d_2( void )
 		coords[3*i+1] = xnew[1];
 		coords[3*i+2] = xnew[2];
 	}
-#endif	
 
 	/* perform the volume integration of div(F) */
 	e->generate_volume_quadrature_3D(&ngp3,gp3);	

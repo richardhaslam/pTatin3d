@@ -936,21 +936,3 @@ PetscErrorCode ex2(void)
     
 	PetscFunctionReturn(0);
 }
-
-#if 0
-#undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc,char **args)
-{
-    PetscErrorCode ierr;
-    
-    ierr = PetscInitialize(&argc,&args,(char*)0,NULL);CHKERRQ(ierr);
-
-    //ierr = ex1();CHKERRQ(ierr);
-    ierr = ex2();CHKERRQ(ierr);
-    
-    
-    ierr = PetscFinalize();CHKERRQ(ierr);
-    return 0;
-}
-#endif

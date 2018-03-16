@@ -264,11 +264,6 @@ PetscErrorCode GeometryObjectFindByName(GeometryObject G[],const char name[],Geo
 		i++;
 		item = G[i];
 	}
-#if 0
-	if (*g == NULL) {
-		PetscPrintf(PETSC_COMM_SELF,"[Warning] GeomObject with name %s was not found in list\n",name);
-	}
-#endif
 	PetscFunctionReturn(0);
 }
 
@@ -292,11 +287,6 @@ PetscErrorCode GeometryObjectIdFindByName(GeometryObject G[],const char name[],P
 		i++;
 		item = G[i];
 	}
-#if 0
-	if (*GoId == -1) {
-		PetscPrintf(PETSC_COMM_SELF,"[Warning] GeomObject with name %s was not found in list\n",name);
-	}
-#endif
 	PetscFunctionReturn(0);
 }
 

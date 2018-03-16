@@ -197,7 +197,7 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 			el_eta[p] = cell_gausspoints[p].eta;
 		}
 		
-#if 0		
+/*
 		PetscTime(&t0q);
 		for (p=0; p<ngp; p++) {
 			
@@ -215,9 +215,8 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 		}
 		PetscTime(&t1q);
 		tq += (t1q-t0q);
-#endif
+*/
 		
-//#if 0
 		PetscTime(&t0q);
 		for (p=0; p<ngp; p++) {
 			
@@ -271,7 +270,6 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 		}
 		PetscTime(&t1q);
 		tq += (t1q-t0q);
-//#endif	
 		
 		ierr = MatSetValues(A,Q2_NODES_PER_EL_3D * U_DOFS,ge_eqnums,Q2_NODES_PER_EL_3D * U_DOFS,ge_eqnums,Ae,ADD_VALUES);CHKERRQ(ierr);
 

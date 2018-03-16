@@ -207,48 +207,6 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 	
 	/* ======================================================================================== */
 	
-#if 0	
-	// z
-	for (k=sk; k<sk+p; k++) {
-		if (k%2==0 && k==sk && k!=0) { continue; } /* reject first ghost if its's even */
-
-		if (k%2==0) {
-			start = k;
-			break;
-		}
-	}
-	while (start + 2 * cntz < p+sk) {
-		PetscInt n0,n2;
-		
-		n0 = start + 2 * cntz;
-		n2 = n0 + 2;
-		
-//		printf("last-n2 = %d \n", sk+p-n2 );
-		/* if start and end of element are inside global range - keep it */
-		if (n2<skg+pg) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT (%4d - %4d) inside range l[%4d-%4d]\n", n0,n2,sk,sk+p-1 );
-//			printf("[GLOBAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
-			cntz++;
-			continue;
-		}		
-		
-		if (sk+p-n2>1) {
-			PetscPrintf(PETSC_COMM_SELF,"ELEMENT (%4d - %4d) inside range l[%4d-%4d]\n", n0,n2,sk,sk+p-1 );
-//			printf("[LOCAL] usng start id [k] %d [%d-%d]l [%d-%d]g\n", n0,sk,sk+p-1,skg,skg+pg-1);
-			cntz++;
-			continue;
-		}		
-
-		if (sk+p-n2<=1) {
-			/* this means the element is taking two entries from the ghost cells */
-//			printf("[OUTSIDE] element (%d .. %d) [%d-%d]l [%d-%d]g\n", n0,n2,sk,sk+p-1,skg,skg+pg-1);
-			break;
-		}		
-		
-	}
-	/*printf("mx,my,mz = %d %d %d \n", cntx,cnty,cntz);*/
-#endif
-	
 	if (mx) { *mx = cntx; }
 	if (my) { *my = cnty; }
 	if (mz) { *mz = cntz; }

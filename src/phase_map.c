@@ -279,15 +279,14 @@ PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map)
 	PetscFunctionReturn(0);
 }
 
-
-#if 0
+/*
 void test_PhaseMap(void)
 {
 	PhaseMap phasemap;
 	double xp[2];
 	int phase;
 	
-    //	PhaseMapLoadFromFile("test.bmp",&phasemap);
+  //	PhaseMapLoadFromFile("test.bmp",&phasemap);
 	PhaseMapLoadFromFile("model_geometry",&phasemap);
 	
 	xp[0] = 0.0;	xp[1] = 1.0;
@@ -307,14 +306,4 @@ void test_PhaseMap(void)
 	PhaseMapDestroy(&phasemap);
 	
 }
-
-
-int main(int nargs,char *args[])
-{
-    
-	test_PhaseMap();
-	
-	return EXIT_SUCCESS;
-}
-#endif
-
+*/

@@ -559,7 +559,7 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 		P3D_evaluate_geometry_elementQ2_1gp(GNIC,ngp,elcoords,GNI, detJ,dNudx,dNudy,dNudz);
 
 
-#if 0
+/*
 		// local average of 27 viscosities
 		for (ii=0; ii<2; ii++) {
 			for (jj=0; jj<2; jj++) {
@@ -584,9 +584,8 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 			}
 			
 		}
-#endif 
+*/
 		
-#if 1
 		// average all 27 viscosities
 		// converges at least //
 		{
@@ -598,8 +597,6 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 				el_eta[ii] = avg/27.0;
 			}
 		}
-		//
-#endif		
 		
 		/* initialise element stiffness matrix */
 		PetscMemzero( Ye, sizeof(PetscScalar)* ( Q2_NODES_PER_EL_3D*3) );
