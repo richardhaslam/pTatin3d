@@ -9,5 +9,11 @@
 #define PTATIN_VERSION_CNTR_REVISION "commit hash: [out-of-date] Execute \"make releaseinfo\" to update to the most recent revision"
 #define PTATIN_VERSION_CNTR_LOG "log: [out-of-date] Execute \"make releaseinfo\" to update to the most recent revision"
 
+#if defined(__has_include)
+  #if __has_include("ptatin_git_version_info.h")
+    #include "ptatin_git_version_info.h"
+  #endif
+#endif
+
 #endif
 
