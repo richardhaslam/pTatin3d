@@ -101,6 +101,9 @@ PetscErrorCode pTatinLogHeader(pTatinCtx ctx)
 #ifdef PTATIN_DEVELOPMENT_VERSION
 	ierr = PetscViewerASCIIPrintf(ctx->log,"**     %s \n", PTATIN_VERSION_CNTR_REVISION);
 	ierr = PetscViewerASCIIPrintf(ctx->log,"**     %s \n", PTATIN_VERSION_CNTR_LOG);
+  #ifdef PTATIN_GIT_REPO_STATUS
+  ierr = PetscViewerASCIIPrintf(ctx->log,"**     %s \n", PTATIN_GIT_REPO_STATUS);
+  #endif
 #endif
 #ifdef PTATIN_RELEASE
 	ierr = PetscViewerASCIIPrintf(ctx->log,"**     %s \n", PTATIN_VERSION_CNTR_REVISION);
