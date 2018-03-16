@@ -1,28 +1,68 @@
 #
-#  -- pTatin Optimization flags --
-#    Operating system: OSX operating system (musashi,tora)
+#  Default architecture neutral makefile for pTatin
+#    Operating system: OSX operating system
 #    Compiler: gcc,gfortran
-#
 
-export TATIN_CFLAGS_DEBUG	= -std=gnu99 -O0 -Wall -g
-export TATIN_CFLAGS_OPT_a	= -std=gnu99 -O2 -Wall -fstrict-aliasing -funroll-loops
-export TATIN_CFLAGS_OPT_b	= -std=gnu99 -O3 -Wall -fast -ftree-vectorize -ftree-vectorizer-verbose=4 -fstrict-aliasing -funroll-loops
+# ----------------------------------------------------------------------------
+#  pTatin specific compilation flags can be defined using TATIN_CFLAGS
+#  By default, pTatin will use the CFLAGS associated with your PETSc build
+#  TATIN_CFLAGS allows you to define a set of compilation flags for pTatin
+#  which are independent of those defined by PETSc
+#  For example, this enables you to:
+#  (i)  Build pTatin with debug symbols (-O0 -g) but link
+#       against an optimised PETSc build
+#  (ii) Build pTatin with AVX256 and OpenMP support, but link
+#       against a PETSc build which does not use AVX or OpenMP
+# ----------------------------------------------------------------------------
 
-export TATIN_FFLAGS_DEBUG	= -O0 -ffree-line-length-4000
-export TATIN_FFLAGS_OPT_a	= -O2 -ffree-line-length-4000
+# ----------------------------------------------------------------------------
+# Definition of TATIN_CFLAGS (user to edit)
+# ----------------------------------------------------------------------------
 
-#
-#  Select optimized or debug compilation flags
-#
-export TATIN_CFLAGS	= ${TATIN_CFLAGS_DEBUG}
-export TATIN_FFLAGS	= ${TATIN_FFLAGS_DEBUG}
+# Use default petsc compilation flags + petsc cflags
+export TATIN_CFLAGS	= -std=gnu99 -Wall
 
+# <example> Enforce debug ptatin build (independent of petsc configuration)
+#export TATIN_CFLAGS	= -std=gnu99 -O0 -Wall -g
 
-#
-#  -- pTatin external packages --
+# <examples> Enforce specific optimisation flags for ptatin build (independent of petsc configuration
+#export TATIN_CFLAGS	= -std=gnu99 -O2 -Wall -fstrict-aliasing -funroll-loops -mavx
+#export TATIN_CFLAGS	= -std=gnu99 -O3 -Wall -fast -ftree-vectorize -ftree-vectorizer-verbose=4 -fstrict-aliasing -funroll-loops -mavx
+
+# ----------------------------------------------------------------------------
+# Definition of TATIN_FFLAGS (user to edit)
+# ----------------------------------------------------------------------------
+
+# Use default petsc compilation flags + petsc cflags
+export TATIN_FFLAGS	= -ffree-line-length-4000
+
+# <example> Enforce debug pTatin build of fortran source
+#export TATIN_FFLAGS	= -O0 -ffree-line-length-4000
+
+# <example> Enforce optimised pTatin build of fortran source
+#export TATIN_FFLAGS	= -O2 -ffree-line-length-4000
+
+# ----------------------------------------------------------------------------
+#    pTatin build configuration settings (user to edit - defaults are shown)
+# ----------------------------------------------------------------------------
+# <OpenMP support>
+#export TATIN_CFLAGS_OPENMP = -fopenmp
+
+# <CUDA support>
+CONFIG_CUDA      = n
+#export CUDA_INC =
+#export CUDA_LIB =
+
+# <OpenCL support>
+CONFIG_OPENCL      = n
+#export OPENCL_INC =
+#export OPENCL_LIB =
+
+# ----------------------------------------------------------------------------
+#  -- pTatin external packages (user to edit)
 #  User should select which packages are present
 #    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
 #    ** please compile external packages using the PETSc compiler          **
-#
-PTATIN_CONTAINS_SPMA = 0
-PTATIN_CONTAINS_FASTSCAPE_V3 = 0
+# ----------------------------------------------------------------------------
+CONFIG_SPMA      = n
+CONFIG_FASTSCAPE = n
