@@ -77,10 +77,9 @@ PetscErrorCode MaterialPointComputeCoordStats(DataBucket db,PetscReal stats[])
 PetscErrorCode ptatin_db_checkpoint(void)
 {
   PetscErrorCode ierr;
-  DM             multipys_pack,dav;
+  DM             dav;
   DataBucket     material_points;
   pTatinCtx      user;
-  Vec            X;
   pTatinModel    model;
   PetscLogDouble time[4];
   PetscReal      statsOrig[9],statsCP[9];
@@ -109,10 +108,7 @@ PetscErrorCode ptatin_db_checkpoint(void)
   user->pack = user->stokes_ctx->stokes_pack;
   
   /* fetch some local variables */
-  multipys_pack = user->pack;
-  dav           = user->stokes_ctx->dav;
-  
-  ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+  dav = user->stokes_ctx->dav;
   
   ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
   
