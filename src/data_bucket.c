@@ -90,7 +90,7 @@ gcc -O3 -g -c data_bucket.c
 #include <cjson_utils.h>
 
 /* string helpers */
-void StringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
+static void DataBucketStringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
 {
 	int i;
 	
@@ -103,7 +103,7 @@ void StringInList( const char name[], const int N, const DataField gfield[], BTr
 	}
 }
 
-void StringFindInList( const char name[], const int N, const DataField gfield[], int *index )
+static void DataBucketStringFindInList( const char name[], const int N, const DataField gfield[], int *index )
 {
 	int i;
 	
@@ -206,7 +206,7 @@ void _DataBucketRegisterField(
 	*/
 	 
 	/* check for repeated name */
-	StringInList( field_name, db->nfields, (const DataField*)db->field, &val );
+	DataBucketStringInList( field_name, db->nfields, (const DataField*)db->field, &val );
 	if(val == BTRUE ) {
 		printf("ERROR: Cannot add same field twice\n");
 		ERROR();
@@ -232,12 +232,12 @@ void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfi
 	int idx;
 	BTruth found;
 	
-	StringInList(name,db->nfields,(const DataField*)db->field,&found);
+	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,&found);
 	if(found==BFALSE) {
 		printf("ERROR: Cannot find DataField with name %s \n", name );
 		ERROR();
 	}
-	StringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
+	DataBucketStringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
 		
 	*gfield = db->field[idx];
 }
@@ -245,7 +245,7 @@ void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfi
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],BTruth *found)
 {
 	*found = BFALSE;
-	StringInList(name,db->nfields,(const DataField*)db->field,found);
+	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,found);
 }
 
 void DataBucketFinalize(DataBucket db)
@@ -418,7 +418,7 @@ void DataFieldGetAccess( const DataField gfield )
 
 void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
 	/* check point is valid */
 	if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
@@ -436,7 +436,7 @@ void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 
 void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p )
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* debug mode */
 	
 	/* check point is valid */
@@ -467,7 +467,7 @@ void DataFieldRestoreAccess( DataField gfield )
 
 void DataFieldVerifyAccess( const DataField gfield, const size_t size)
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	if(gfield->atomic_size != size ) {
         printf("ERROR: Field \"%s\" must be mapped to %zu bytes, your intended structure is %zu bytes in length.\n",
                gfield->name, gfield->atomic_size, size );
@@ -547,7 +547,7 @@ void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[],
 void DataFieldInsertPoint( const DataField field, const int index, const void *ctx ) 
 {
 
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
 	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
@@ -562,7 +562,7 @@ void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
 {
 	int f;
 	
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->L+db->buffer); ERROR(); }
@@ -595,7 +595,7 @@ void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 												 const int pid_y, const DataField field_y ) 
 {
 
-#ifdef DATAFIELD_POINT_ACCESS_GUARD	
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( pid_x < 0 ){ printf("ERROR: (IN) index must be >= 0\n"); ERROR(); }
 	if( pid_x >= field_x->L ){ printf("ERROR: (IN) index must be < %d\n",field_x->L); ERROR(); }
@@ -622,7 +622,7 @@ void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 // zero only the datafield at this point
 void DataFieldZeroPoint( const DataField field, const int index ) 
 {
-#ifdef DATAFIELD_POINT_ACCESS_GUARD
+#ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
 	/* check point is valid */
 	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
 	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }

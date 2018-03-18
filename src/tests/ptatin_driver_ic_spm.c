@@ -73,6 +73,7 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&da_surf);CHKERRQ(ierr);	
+  ierr = DMSetUp(da_surf);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(da_surf, 0.0,1.0, 0.0,1.0, 0.,0.);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(da_surf,&si2d,&sj2d,0,&nx2d,&ny2d,0);CHKERRQ(ierr);
 

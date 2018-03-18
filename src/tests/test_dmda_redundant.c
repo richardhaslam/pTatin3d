@@ -117,6 +117,7 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	PetscFunctionBegin;
 	
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 	
 	x0 = y0 = z0 = -1.0;
 	x1 = y1 = z1 = 1.0;
@@ -134,10 +135,12 @@ PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 	
 	/*
 	ierr = DMDACreate3dRedundant(da, 0,3, 5,10, 4,5, 3, &da_red );CHKERRQ(ierr);
+  ierr = DMSetUp(da_red);CHKERRQ(ierr);
 	*/
 
 	ierr = DMDAGetGhostCorners(da,&si,&sj,&sk,&nxs,&nys,&nzs);CHKERRQ(ierr);
 	ierr = DMDACreate3dRedundant(da, si,si+nxs, sj,sj+nys, P-1,P, 3, &da_red );CHKERRQ(ierr);
+  ierr = DMSetUp(da_red);CHKERRQ(ierr);
 	
 	/* output */
 	ierr = PetscViewerASCIIOpen(PetscObjectComm((PetscObject)da), "test_dmda_redundant_in.vtk", &vv);CHKERRQ(ierr);

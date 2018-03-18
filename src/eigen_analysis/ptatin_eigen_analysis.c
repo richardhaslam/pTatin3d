@@ -241,7 +241,7 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   if (is_nest) {
     Mat Auu;
     
-    ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
     
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -262,8 +262,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   {
     Mat Buu,Bpp;
     
-    ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-    ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+    ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
     
     is_shell = PETSC_FALSE;
     ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -580,7 +580,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
   ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
   ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
   
   for( k=1; k<nlevels; k++ ){
     ierr = PCMGSetInterpolation(pc_i,k,interpolation_v[k]);CHKERRQ(ierr);

@@ -114,10 +114,12 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
 	PetscPrintf(PETSC_COMM_WORLD,"  Q2 cell problem contains: [%D x %D x %D] elements, [%D x %D x %D] nodes\n",refi,refj,refk,nni,nnj,nnk);
 	
 	ierr = x_DMDACreate3d(PETSC_COMM_SELF,wrap,DMDA_STENCIL_BOX,nni,nnj,nnk, 1,1,1, 3,2, 0,0,0,&daf);CHKERRQ(ierr);
+  ierr = DMSetUp(daf);CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(daf);CHKERRQ(ierr);
 	//ierr = DMDASetUniformCoordinates(daf, 0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr); /* not compatable with using -da_processors_x etc */
 	
 	ierr = x_DMDACreate3d(PETSC_COMM_SELF,wrap,DMDA_STENCIL_BOX,3,3,3, 1,1,1, 3,2, 0,0,0,&dac);CHKERRQ(ierr);
+  ierr = DMSetUp(dac);CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dac);CHKERRQ(ierr);
 	//ierr = DMDASetUniformCoordinates(dac, 0.0,1.0, 0.0,1.0, 0.0,1.0);CHKERRQ(ierr);
 	
@@ -423,7 +425,7 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	if (is_nest) {
 		Mat Auu;
 		
-		ierr = MatGetSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(A,is[0],is[0],MAT_INITIAL_MATRIX,&Auu);CHKERRQ(ierr);
         
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Auu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -444,8 +446,8 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	{
 		Mat Buu,Bpp;
 		
-		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
-		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&Buu);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&Bpp);CHKERRQ(ierr);
 		
 		is_shell = PETSC_FALSE;
 		ierr = PetscObjectTypeCompare((PetscObject)Buu,MATSHELL,&is_shell);CHKERRQ(ierr);
@@ -853,7 +855,7 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 	ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 	ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-	ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+	ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
     ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 	
 	for( k=1; k<nlevels; k++ ){

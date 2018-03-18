@@ -154,6 +154,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	/* velocity */
 	vbasis_dofs = 3;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, 2*MX+1,2*MY+1,2*MZ+1, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, vbasis_dofs,2, NULL,NULL,NULL, &dav );CHKERRQ(ierr);
+  ierr = DMSetUp(dav);CHKERRQ(ierr);
 	ierr = DMDASetElementType_Q2(dav);CHKERRQ(ierr);
 	ierr = DMSetMatType(dav,MATSBAIJ);CHKERRQ(ierr);
 	ierr = DMDAGetInfo(dav,0,0,0,0,&Mp,&Np,&Pp,0,0, 0,0,0, 0);CHKERRQ(ierr);
@@ -162,6 +163,7 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	/* pressure */
 	pbasis_dofs = P_BASIS_FUNCTIONS;
 	ierr = DMDACreate3d( PETSC_COMM_WORLD, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+  ierr = DMSetUp(dap);CHKERRQ(ierr);
 	ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
 	ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
 	ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);
@@ -383,6 +385,7 @@ PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
   
   pbasis_dofs = P_BASIS_FUNCTIONS;
   ierr = DMDACreate3d( comm, DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE, DMDA_STENCIL_BOX, MX,MY,MZ, Mp,Np,Pp, pbasis_dofs,0, lxv,lyv,lzv, &dap );CHKERRQ(ierr);
+  ierr = DMSetUp(dap);CHKERRQ(ierr);
   ierr = DMDASetElementType_P1(dap);CHKERRQ(ierr);
   ierr = DMSetMatType(dap,MATSBAIJ);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(dap,&lxp,&lyp,&lzp);CHKERRQ(ierr);

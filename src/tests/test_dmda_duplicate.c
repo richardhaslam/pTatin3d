@@ -116,6 +116,7 @@ PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 	
 	/* create da1 */
 	ierr = DMDACreate3d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,nx,ny,nz, PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE, 3,1, 0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
 
 	/* set an aspect ratio box, then perturb the coords */	
 	x0 = y0 = z0 = -1.0;

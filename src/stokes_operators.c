@@ -577,8 +577,8 @@ PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
  
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrix_MFStokes_A"
-PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
+#define __FUNCT__ "MatCreateSubMatrix_MFStokes_A"
+PetscErrorCode MatCreateSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
 {
 	MatStokesMF ctx,copyA;
 	MatA11MF copyA11;
@@ -792,8 +792,8 @@ PetscErrorCode MatGetSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSubMatrix_MFStokes_A11"
-PetscErrorCode MatGetSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
+#define __FUNCT__ "MatCreateSubMatrix_MFStokes_A11"
+PetscErrorCode MatCreateSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
 {
 	MatA11MF  ctx;
 	PetscBool f1,f2,same;
@@ -972,7 +972,7 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
-	ierr = DMCompositeGather(stokes_pack,Y,ADD_VALUES,YUloc,YPloc);CHKERRQ(ierr);
+	ierr = DMCompositeGather(stokes_pack,ADD_VALUES,Y,YUloc,YPloc);CHKERRQ(ierr);
 	
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
@@ -1065,7 +1065,7 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	
 	/* do global fem summation */
 	ierr = VecZeroEntries(Y);CHKERRQ(ierr);
-	ierr = DMCompositeGather(stokes_pack,Y,ADD_VALUES,YUloc,YPloc);CHKERRQ(ierr);
+	ierr = DMCompositeGather(stokes_pack,ADD_VALUES,Y,YUloc,YPloc);CHKERRQ(ierr);
 	
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&YUloc,&YPloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&XUloc,&XPloc);CHKERRQ(ierr);
@@ -1736,7 +1736,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A)
 	ierr = MatCreateShell(PETSC_COMM_WORLD,Stk->mu+Stk->mp,Stk->mu+Stk->mp,Stk->Mu+Stk->Mp,Stk->Mu+Stk->Mp,(void*)Stk,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
-	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_MFStokes_A);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatStokesMF);CHKERRQ(ierr);
 	
 	*A = B;
@@ -1759,7 +1759,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,
 	ierr = MatCreateShell(PETSC_COMM_WORLD,Stk->mu+Stk->mp,Stk->mu+Stk->mp,Stk->Mu+Stk->Mp,Stk->Mu+Stk->Mp,(void*)Stk,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
-	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_MFStokes_A);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatStokesMF_QuasiNewtonX);CHKERRQ(ierr);
 	
 	ierr = DMGetCoordinateDM(Stk->daUVW,&dax);CHKERRQ(ierr);
@@ -1787,7 +1787,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
-	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
@@ -1814,7 +1814,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
-	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11);CHKERRQ(ierr);
+	ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_MFStokes_A11);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11_QuasiNewtonX);CHKERRQ(ierr);
 	ierr = MatSetBlockSize(B,3);CHKERRQ(ierr);
@@ -1844,7 +1844,7 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 	ierr = MatCreateShell(PETSC_COMM_WORLD,A11->mu,A11->mu,A11->Mu,A11->Mu,(void*)A11,&B);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT,(void(*)(void))MatMult_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_MULT_ADD,(void(*)(void))MatMultAdd_basic);CHKERRQ(ierr);
-//	ierr = MatShellSetOperation(B,MATOP_GET_SUBMATRIX,(void(*)(void))MatGetSubMatrix_MFStokes_A11LowOrder);CHKERRQ(ierr);
+//	ierr = MatShellSetOperation(B,MATOP_CREATE_SUBMATRIX,(void(*)(void))MatCreateSubMatrix_MFStokes_A11LowOrder);CHKERRQ(ierr);
 	ierr = MatShellSetOperation(B,MATOP_DESTROY,(void(*)(void))MatDestroy_MatA11MF);CHKERRQ(ierr);
 	// does the true diagonal work better??
 	ierr = MatShellSetOperation(B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_MFStokes_A11);CHKERRQ(ierr);

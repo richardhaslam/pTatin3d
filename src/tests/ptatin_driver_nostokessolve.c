@@ -222,24 +222,24 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = MatMult(B,X,F);CHKERRQ(ierr);
 		
 		// A11
-		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
 		// A11vv
-		ierr = MatGetSubMatrix(B,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
 		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 
 		
 		// A12
-		ierr = MatGetSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
 		// A21
-		ierr = MatGetSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
 		// A22
-		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
 		ierr = MatDestroy(&B);CHKERRQ(ierr);
@@ -252,31 +252,31 @@ PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 		ierr = MatMult(B,X,F);CHKERRQ(ierr);
 
 		/* Get A11 */
-		ierr = MatGetSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
 		ierr = MatView(subA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 		ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     
 		/* Get Auu,Avv,Aww */	
-		ierr = MatGetSubMatrix(subA,isU,isU,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(subA,isU,isU,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
 		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 
-		ierr = MatGetSubMatrix(subA,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(subA,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
 		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 
-		ierr = MatGetSubMatrix(subA,isW,isW,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(subA,isW,isW,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
 		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 	
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
 		/* Get A12 */
-		ierr = MatGetSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 		/* A21 */
-		ierr = MatGetSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 		/* A22 */
-		ierr = MatGetSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
 		ierr = MatDestroy(&subA);CHKERRQ(ierr);
 		
 		ierr = MatDestroy(&B);CHKERRQ(ierr);

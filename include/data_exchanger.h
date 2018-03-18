@@ -29,8 +29,8 @@
 
 
 
-#ifndef __TATIN_DATA_EXCHANGER_H__
-#define __TATIN_DATA_EXCHANGER_H__
+#ifndef __PTATIN_DATA_EXCHANGER_H__
+#define __PTATIN_DATA_EXCHANGER_H__
 
 
 #include <stdio.h>
@@ -41,6 +41,8 @@
 #include <petsc.h>
 #include <petscvec.h>
 #include <petscmat.h>
+
+#include "data_exchanger_namespace.h"
 
 typedef enum { DEOBJECT_INITIALIZED=0, DEOBJECT_FINALIZED, DEOBJECT_STATE_UNKNOWN } DEObjectState;
 
