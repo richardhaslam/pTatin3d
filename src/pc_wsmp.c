@@ -31,18 +31,22 @@
  Notes:
  [1] Compatable with PWSSMP version V 17.01.01
  [2] PWSSMP appears to fail when using C indices.
- wsmp->IPARM[5 -1] = 0 does not appear to function correctly
- I also not that some of the factorization steps alter the value of wsmp->IPARM[5 -1].
- e.g. If you set it to zero, the symbolic factorization changes its value to 1
- If this gets fixed, search this file for "fortran" and correct the +1 / -1 accordingly
+     wsmp->IPARM[5 -1] = 0 does not appear to function correctly
+     I also not that some of the factorization steps alter the value of wsmp->IPARM[5 -1].
+     e.g. If you set it to zero, the symbolic factorization changes its value to 1
+     If this gets fixed, search this file for "fortran" and correct the +1 / -1 accordingly
  [3] If you run with MPI-ranks = 1, by default this PC implementation will try to use WSSMP.
- If WSSMP hasn't found, it will call PWSSMP.
- Support with WSSMP is activated by the compiler flag
- -DHAVE_WSSMP
- Support for PWSSMP is activated via the compiler flag
- -DHAVE_PWSSMP
- In parallel (MPI-ranks > 1), you must have compiled the code with support for PWSSMP
- */
+     If WSSMP hasn't found, it will call PWSSMP.
+     Support with WSSMP is activated by the compiler flag
+       -DHAVE_WSSMP
+     Support for PWSSMP is activated via the compiler flag
+       -DHAVE_PWSSMP
+     In parallel (MPI-ranks > 1), you must have compiled the code with support for PWSSMP
+ [4] For consistency with the WSMP documentation, the parameter names, e.g.,
+       -pc_wsmp_iparm31
+     relates to the parameter as identified in the manual as IPARM[31].
+     That is, the pc_wsmp option strings use the fortran index style (starting from 1)
+*/
 
 #include <petsc.h>
 #include <petscvec.h>
