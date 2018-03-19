@@ -594,6 +594,7 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 	
 	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
+  ierr = DMSetUp(dm_surf);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, 0.,0.);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,NULL,&nx2d,&ny2d,NULL);CHKERRQ(ierr);
 	
@@ -853,6 +854,7 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	
 	ierr = DMDAGetInfo(dm_mech,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDACreate2d(comm,DM_BOUNDARY_NONE,DM_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,P, PETSC_DECIDE,PETSC_DECIDE, 1,1, 0,0,&dm_surf);CHKERRQ(ierr);	
+  ierr = DMSetUp(dm_surf);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(dm_surf, 0.0,1.0, 0.0,1.0, 0.,0.);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dm_surf,&si2d,&sj2d,NULL,&nx2d,&ny2d,NULL);CHKERRQ(ierr);
 	

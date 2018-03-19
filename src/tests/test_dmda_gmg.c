@@ -250,7 +250,7 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-		ierr = PCMGSetGalerkin(pc_i,PETSC_TRUE);CHKERRQ(ierr); /* OUCH - GALERKIN */
+		ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_BOTH);CHKERRQ(ierr); /* OUCH - GALERKIN */
 		
 		for( k=1; k<nlevels; k++ ){
 			ierr = PCMGSetInterpolation(pc_i,k,interpolatation[k]);CHKERRQ(ierr);
@@ -462,7 +462,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	{
 		Mat sub_A11;
 		
-		ierr = MatGetSubMatrix(B,isg[0],isg[0],MAT_INITIAL_MATRIX,&sub_A11);CHKERRQ(ierr);
+		ierr = MatCreateSubMatrix(B,isg[0],isg[0],MAT_INITIAL_MATRIX,&sub_A11);CHKERRQ(ierr);
 		A11MF[nlevels-1] = sub_A11;
 		ierr = MatDestroy(&sub_A11);CHKERRQ(ierr);
 
@@ -509,7 +509,7 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 		ierr = PCSetType(pc_i,PCMG);CHKERRQ(ierr);
 		ierr = PCMGSetLevels(pc_i,nlevels,NULL);CHKERRQ(ierr);
 		ierr = PCMGSetType(pc_i,PC_MG_MULTIPLICATIVE);CHKERRQ(ierr);
-		ierr = PCMGSetGalerkin(pc_i,PETSC_FALSE);CHKERRQ(ierr);
+		ierr = PCMGSetGalerkin(pc_i,PC_MG_GALERKIN_NONE);CHKERRQ(ierr);
 		ierr = PCSetDM(pc_i,NULL);CHKERRQ(ierr);
 		
 		for( k=1; k<nlevels; k++ ){

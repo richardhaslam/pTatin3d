@@ -26,8 +26,7 @@
 #if defined(__AVX__) && defined(TATIN_HAVE_CUDA)
 
 #include <petscfe.h>
-#include <petsc/ptatin_petsc_hash.h> /* ptatin supplied header copied from PETSc source tree
-                                        In PETSc 3.8, this header is moved to $PETSC_DIR/include/petsc/private */
+#include <petsc/private/hash.h>
 #include <ptatin3d.h>
 #include <ptatin3d_stokes.h>
 #include <dmda_element_q2p1.h>

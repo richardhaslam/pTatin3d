@@ -1,0 +1,155 @@
+** ====================================================================================== 
+**
+**             ___________                          _______
+**     _______/          /_____ ________ __ _   ___/       \ ____
+**    /      /___    ___/      /__   __/  /  \ /  /\__ _   /     \
+**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /
+**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /
+** /__/       /___/  /__//__/  /__/ /__/__/ \__//_______/______/
+**
+** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           
+**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    
+**           Jed Brown            (jedbrown@mcs.anl.gov)            
+**
+** git url: bitbucket:jedbrown/ptatin3d 
+** commit hash: 4e605476779ed6d3d1d4faead9db261e77744dd8 (dmay/ptatin-v1.0-version-generator) 
+** log[4e605476]: Patrick Sanan (patrick.sanan@gmail.com) | 2018-03-16 15:19:50 +0100 
+** git status: Your branch is up-to-date 
+**                                                                       
+** TATIN_CFLAGS = -std=gnu99 -Wall
+**                                                                       
+** AVX not detected - optimized kernels will not be used.
+** If your system supports AVX, consider adding options,
+** e.g. -march=native, to TATIN_CFLAGS in makefile.arch
+** ====================================================================================== 
+DataBucketView <Material Constants>:
+  L                  = 200 
+  buffer (max)       = 0 
+  allocated          = 200 
+  nfields registered = 17 
+    [  0]: field name  ==>>     MaterialConst_MaterialType : Mem. usage = 3.20e-03 (MB) : rank0
+    [  1]: field name  ==>>   MaterialConst_ViscosityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  2]: field name  ==>>       MaterialConst_ViscosityZ : Mem. usage = 4.80e-03 (MB) : rank0
+    [  3]: field name  ==>>    MaterialConst_ViscosityArrh : Mem. usage = 1.28e-02 (MB) : rank0
+    [  4]: field name  ==>>      MaterialConst_ViscosityFK : Mem. usage = 3.20e-03 (MB) : rank0
+    [  5]: field name  ==>>     MaterialConst_PlasticMises : Mem. usage = 3.20e-03 (MB) : rank0
+    [  6]: field name  ==>>        MaterialConst_PlasticDP : Mem. usage = 9.60e-03 (MB) : rank0
+    [  7]: field name  ==>>     MaterialConst_DensityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [  8]: field name  ==>> MaterialConst_DensityBoussinesq : Mem. usage = 4.80e-03 (MB) : rank0
+    [  9]: field name  ==>>          MaterialConst_SoftLin : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 10]: field name  ==>>         MaterialConst_SoftExpo : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 11]: field name  ==>>        EnergyMaterialConstants : Mem. usage = 1.44e-02 (MB) : rank0
+    [ 12]: field name  ==>>        EnergyConductivityConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 13]: field name  ==>>    EnergyConductivityThreshold : Mem. usage = 6.40e-03 (MB) : rank0
+    [ 14]: field name  ==>>              EnergySourceConst : Mem. usage = 1.60e-03 (MB) : rank0
+    [ 15]: field name  ==>>              EnergySourceDecay : Mem. usage = 3.20e-03 (MB) : rank0
+    [ 16]: field name  ==>> EnergySourceAdiabaticAdvection : Mem. usage = 1.60e-03 (MB) : rank0
+  Total mem. usage                                                      = 8.00e-02 (MB) : <collective over 1 ranks>
+[pTatin] Created output directory: pt3dout 
+[pTatin] Created log file: pt3dout/ptatin.log-2018.03.18_18:35:11 
+[pTatin] Created options file: pt3dout/ptatin.options-2018.03.18_18:35:11 
+[pTatin] Created options file: pt3dout/ptatin.options 
+  [pTatinModel]: Registering model [0] with name "template"
+  [pTatinModel]: Registering model [1] with name "viscous_sinker"
+  [pTatinModel]: Registering model [2] with name "Gene3D"
+  [pTatinModel]: Registering model [3] with name "indentor"
+  [pTatinModel]: Registering model [4] with name "rift3D_T"
+  [pTatinModel]: Registering model [5] with name "advdiff_example"
+  [pTatinModel]: Registering model [6] with name "delamination"
+  [pTatinModel]: Registering model [7] with name "Riftrh"
+  [pTatinModel]: Registering model [8] with name "Rift_oblique3d"
+  [pTatinModel]: Registering model [9] with name "geomod2008"
+  [pTatinModel]: Registering model [10] with name "multilayer_folding"
+  [pTatinModel]: Registering model [11] with name "submarinelavaflow"
+  [pTatinModel]: Registering model [12] with name "ex_subduction"
+  [pTatinModel]: Registering model [13] with name "iplus"
+  [pTatinModel]: Registering model [14] with name "subduction_initiation2d"
+  [pTatinModel]: Registering model [15] with name "convection2d"
+  [pTatinModel]: Registering model [16] with name "thermal_sb"
+  [pTatinModel]: Registering model [17] with name "sd3d"
+  [pTatinModel]: Registering model [18] with name "pas"
+  [pTatinModel]: Registering model [19] with name "pd"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box"
+  [pTatinModelDynamic]: Dynamically registering model with name "static_box_thermomech"
+  [pTatinModelDynamic]: Dynamically registering model with name "analytics_vv"
+  [pTatinModel]: -ptatin_model "viscous_sinker" was detected
+[[ModelInitialize_ViscousSinker]]
+  MaterialPointsStokes: Using Q1 projection
+[[Swarm initialization: 0.0005 (sec)]]
+[[Swarm->coordinate assignment: 6336 points : 0.0025 (sec)]]
+[[SwarmDMDA3dDataExchangerCreate: time = 2.0521e-03 (sec)]]
+[[ModelApplyInitialMeshGeometry_ViscousSinker]]
+RUNNING DEFORMED MESH EXAMPLE 
+[[ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion]]
+[[ModelApplyBoundaryCondition_ViscousSinker]]
+
+
+
+====================================================================
+
++  Test [compare_mf_A11]: Mesh 8 x 9 x 11 
+MatMultA11(MF):      time 3.1481e-02 (sec): ratio 1.0000e+02%: min/max 3.1481e-02 3.1481e-02 (sec)
+MatAssemblyA11(ASM): time 2.2720e+00 (sec): ratio 1.0000e+02%: min/max 2.2720e+00 2.2720e+00 (sec)
+MatMultA11(ASM):     time 2.0926e-02 (sec): ratio 1.0000e+02%: min/max 2.0926e-02 2.0926e-02 (sec)
+  y.y    = +5.71909086e+04 [mfo]
+  y2.y2  = +5.71909086e+04 [asm]
+  min[A11_mfo.x-A11_asm.x]  = -2.02685091e-14 
+  max[A11_mfo.x-A11_asm.x]  = +2.52090016e-14 
+
++  Test [compare_mf_A21]: Mesh 8 x 9 x 11 
+StokesA21Preallocation_basic: using nnz = 81 and onnz = 30 
+  y.y    = +2.08663233e+00 [mfo]
+  y2.y2  = +2.08663233e+00 [asm]
+  min[A21_mfo.x-A21_asm.x]  = -1.24900090e-16 
+  max[A21_mfo.x-A21_asm.x]  = +9.71445147e-17 
+
++  Test [compare_mf_A12]: Mesh 8 x 9 x 11 
+StokesA12Preallocation_basic: using nnz = 32 and onnz = 16 
+  y.y    = +2.46117948e+00 [mfo]
+  y2.y2  = +2.46117948e+00 [asm]
+  min[A12_mfo.x-A12_asm.x]  = -2.08166817e-17 
+  max[A12_mfo.x-A12_asm.x]  = +2.08166817e-17 
+
++  Test [compare_mf_A]: Mesh 8 x 9 x 11 
+  y.y    = +2.14457051e+03 [mfo]
+  y2.y2  = +2.14457051e+03 [asm]
+  min[A_mfo.x-A_asm.x]  = -8.88178420e-16 
+  max[A_mfo.x-A_asm.x]  = +8.88178420e-16 
+
++  Test [compare_mf_diagA11]: Mesh 8 x 9 x 11 
+  y.y    = +1.80245954e+04 [mfo]
+  y2.y2  = +1.80245954e+04 [asm]
+  min[diagA11_mfo-diagA11_asm]  = -3.55271368e-15 
+  max[diagA11_mfo-diagA11_asm]  = +3.55271368e-15 
+
+
+
+====================================================================
+[[ModelDestroy_Template]]
+[[ModelDestroy_ViscousSinker]]
+[[ModelDestroy_Gene3D]]
+[[ModelDestroy_Indentor]]
+[[ModelDestroy_Rift3D_T]]
+[[ModelDestroy_AdvDiffExample]]
+[[ModelDestroy_Delamination]]
+[[ModelDestroy_Riftrh]]
+[[ModelDestroy_Rift_oblique3d]]
+[[ModelDestroy_MultilayerFolding]]
+[[ModelDestroy_SubmarineLavaFlow]]
+[[ModelDestroy_ExSubduction]]
+[[ModelDestroy_iPLUS]]
+[[ModelDestroy_Subduction_Initiation2d]]
+[[ModelDestroy_Thermal_Convection2d]]
+#PETSc Option Table entries:
+-a11_op ref
+-compare_operators
+-lattice_layout_perturb 0.0
+-model_viscous_sinker_eta1 10
+-mx 8
+-my 9
+-mz 11
+-options_left
+-output_path pt3dout
+-ptatin_model viscous_sinker
+#End of PETSc Option Table entries
+There are no unused options.

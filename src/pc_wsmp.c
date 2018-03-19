@@ -407,7 +407,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nn
     idx = 0;
     cnt = 0;
     for (i=0; i<m; i++) {
-      
       nnz_i = ia[i+1]-ia[i];
       for (j=cnt; j<cnt+nnz_i; j++) {
         if (ja[j] >= (i+start)) {

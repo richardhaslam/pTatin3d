@@ -4,10 +4,10 @@
 /* version check */
 #include "petscversion.h"
 
-#if ((PETSC_VERSION_MAJOR == 3) && (PETSC_VERSION_MINOR == 7))
+#if ((PETSC_VERSION_MAJOR == 3) && (PETSC_VERSION_MINOR == 8))
   #include "src/mat/impls/mffd/mffdimpl.h"
 #else
-  #error "pTatin provided private petsc header for src/mat/impls/mffd/mffdimpl.h is only valid for PETSc v3.7"
+  #error "pTatin provided private petsc header for src/mat/impls/mffd/mffdimpl.h is only valid for PETSc v3.8"
 #endif
 
 #endif
