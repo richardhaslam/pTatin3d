@@ -478,7 +478,7 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,
   ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
   
-  ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
   
   ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(A,smat[0],_nnz_ut,_ia_ut,_ja_ut,PETSC_FALSE,NULL);CHKERRQ(ierr);
   
@@ -507,7 +507,7 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nn
   ierr = ISCreateStride(PETSC_COMM_SELF,m,start,1,&irow);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&icol);CHKERRQ(ierr);
   
-  ierr = MatGetSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
+  ierr = MatCreateSubMatrices(A,1,&irow,&icol,MAT_INITIAL_MATRIX,&smat);CHKERRQ(ierr);
   
   ierr = PCWSMP_ExtractUpperTriangular_MatSeqAIJ(A,smat[0],&nnz,NULL,NULL,reuse,_vals_ut);CHKERRQ(ierr);
   if (reuse) {
