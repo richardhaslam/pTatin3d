@@ -1,7 +1,7 @@
 # Note: this is an example using WSMP, for reference purposes.
 
-local_TATIN_CFLAGS	:= -std=gnu99 -Wall
-local_TATIN_FFLAGS	:= -ffree-line-length-4000
+LOCAL_TATIN_CFLAGS	:= -std=gnu99 -Wall
+LOCAL_TATIN_FFLAGS	:= -ffree-line-length-4000
 
 # ------------------------------------------------
 #  Link against either WSMP or PWSMP - not both
@@ -9,16 +9,16 @@ local_TATIN_FFLAGS	:= -ffree-line-length-4000
 
 #  -- Sequential, multi-threaded version of WSMP --
 #
-#local_TATIN_CFLAGS += =DTATIN_HAVE_WSSMP
+#LOCAL_TATIN_CFLAGS += =DTATIN_HAVE_WSSMP
 #WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lwsmp64
 
 #  -- Parallel, distributed memory version of WSMP --
 #
-local_TATIN_CFLAGS += -DTATIN_HAVE_PWSSMP
+LOCAL_TATIN_CFLAGS += -DTATIN_HAVE_PWSSMP
 WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lpwsmp
 
-export TATIN_CFLAGS = ${local_TATIN_CFLAGS}
-export TATIN_FFLAGS = ${local_TATIN_FFLAGS}
+export TATIN_CFLAGS = ${LOCAL_TATIN_CFLAGS}
+export TATIN_FFLAGS = ${LOCAL_TATIN_FFLAGS}
 export TATIN_LIB = ${WSMP_LIB}
 
 # ----------------------------------------------------------------------------
