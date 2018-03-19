@@ -517,44 +517,40 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nn
 PetscErrorCode call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
-  if (wsmp->symmetric) {
-    if (wsmp->sequential) {
-      
-#ifdef HAVE_WSSMP
+
+  if (wsmp->sequential) {
+    #ifdef HAVE_WSSMP
       wssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
-              &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
-      
+               &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
+    
       if (wsmp->IPARM[64 -1] != 0) {
         SETERRQ1(comm,PETSC_ERR_USER,"[wsmp] WSSMP generated the following error code: %d",wsmp->IPARM[64 -1]);
       }
-#else
-#ifdef HAVE_PWSSMP
+    #else
+      #ifdef HAVE_PWSSMP
+        pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
+                  &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
+        if (wsmp->IPARM[64 -1] != 0) {
+          SETERRQ1(comm,PETSC_ERR_USER,"[wsmp] PWSSMP generated the following error code: %d",wsmp->IPARM[64 -1]);
+        }
+      #else
+        SETERRQ(comm,PETSC_ERR_SUP,"[wsmp] Missing external package (WSSMP or PWSSMP) needed for type -pc_type \"wsmp\" when using 1 MPI rank");
+      #endif
+    #endif
+  } else {
+    #ifdef HAVE_PWSSMP
       pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
-               &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
-      if (wsmp->IPARM[64 -1] != 0) {
-        SETERRQ1(comm,PETSC_ERR_USER,"[wsmp] PWSSMP generated the following error code: %d",wsmp->IPARM[64 -1]);
-      }
-#else
-      SETERRQ(comm,PETSC_ERR_SUP,"[wsmp] Missing external package (WSSMP or PWSSMP) needed for type -pc_type \"wsmp\" when using 1 MPI rank");
-#endif
-#endif
-      
-    } else {
-#ifdef HAVE_PWSSMP
-      pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
-               &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
-      
+                &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
+    
       if (wsmp->IPARM[64 -1] != 0) {
         if (wsmp->IPARM[64 -1] == -200) {
           PetscPrintf(comm,"[wsmp] PWSSMP generated error code indicating matrix is too small for a parallel solve - suggest using fewer MPI-ranks\n");
         }
         SETERRQ1(comm,PETSC_ERR_USER,"[wsmp] PWSSMP generated the following error code: %d",wsmp->IPARM[64 -1]);
       }
-#else
+    #else
       SETERRQ(comm,PETSC_ERR_SUP,"[wsmp] Missing external package (PWSSMP) needed for type -pc_type \"wsmp\" when using > 1 MPI rank");
-#endif
-    }
-  } else {
+    #endif
   }
   PetscFunctionReturn(0);
 }
