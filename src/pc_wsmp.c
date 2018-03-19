@@ -93,7 +93,7 @@ typedef struct {
   int    NRHS;
   double *B; /* placeholder for rhs and solution */
   int    LDB;
-  int    AUX,NAUX; /* depreciated ununsed crap */
+  int    AUX,NAUX;
   int    *MRP;
 } PC_WSMP;
 
