@@ -737,6 +737,276 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "_compute_cell_nearest_point"
+PetscErrorCode _compute_cell_nearest_point(DM dau,PetscScalar LA_gcoords[],DataBucket db,const PetscInt mx,const PetscInt my,const PetscInt mz,int closest_point[],PetscBool *empty_cells_detected)
+{
+  int e,ueid,ueid2,umx,umy,uei,uej,uek,i,j,k,li,lj,lk,ii,jj,kk;
+  double *xi_p,*x_p;
+  int ei,ej,ek,eidx,idx;
+  int p,n_mp;
+  MPAccess X;
+  PetscInt nel,nen;
+  const PetscInt *elnidx;
+  PetscReal elcoords[3*Q2_NODES_PER_EL_3D];
+  long int empty,gempty;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  
+  umx = mx/2;
+  umy = my/2;
+  
+  for (e=0; e<mx*my*mz; e++) {
+    closest_point[e] = -1;
+  }
+  
+  ierr = DMDAGetElements_pTatinQ2P1(dau,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  
+  DataBucketGetSizes(db,&n_mp,NULL,NULL);
+  ierr = MaterialPointGetAccess(db,&X);CHKERRQ(ierr);
+  
+  for (p=0; p<n_mp; p++) {
+    ierr = MaterialPointGet_local_element_index(X,p,&ueid);CHKERRQ(ierr);
+    ierr = MaterialPointGet_local_coord(X,p,&xi_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_global_coord(X,p,&x_p);CHKERRQ(ierr);
+    uek   = ueid/(umx*umy);
+    
+    ueid2 = ueid - uek * (umx*umy);
+    uej   = ueid2/umx;
+    uei   = ueid2 - uej * umx;
+    
+    ei = 2*uei;
+    ej = 2*uej;
+    ek = 2*uek;
+    
+    li = lj = lk = 0;
+    if (xi_p[0] > 0.0) { ei++; li++; }
+    if (xi_p[1] > 0.0) { ej++; lj++; }
+    if (xi_p[2] > 0.0) { ek++; lk++; }
+    
+    eidx = ei + ej*mx + ek*mx*my;
+    if (eidx >= mx*my*mz) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"eidx is too large");
+    }
+    
+    
+    if (closest_point[eidx] == -1) {
+      /* cell unclaimed */
+      closest_point[eidx] = p;
+    } else {
+      /* someone else claimed it */
+      double *x_p_closest;
+      int p_closest;
+      double x_center[3];
+      double xc[3*8];
+      double dist_p_closest,dist_p;
+      
+      ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*ueid],LA_gcoords);CHKERRQ(ierr);
+      for (k=lk; k<lk+2; k++) {
+        for (j=lj; j<lj+2; j++) {
+          for (i=li; i<li+2; i++) {
+            int idx,gidx;
+            
+            gidx = i + j*3 + k*3*3;
+            idx  = (i-li) + (j-lj)*2 + (k-lk)*2*2;
+            
+            xc[3*idx+0] = elcoords[3*gidx+0];
+            xc[3*idx+1] = elcoords[3*gidx+1];
+            xc[3*idx+2] = elcoords[3*gidx+2];
+          }
+        }
+      }
+      
+      x_center[0] = x_center[1] = x_center[2] = 0.0;
+      for (i=0; i<8; i++) {
+        x_center[0] += 0.125 * xc[3*i+0];
+        x_center[1] += 0.125 * xc[3*i+1];
+        x_center[2] += 0.125 * xc[3*i+2];
+      }
+      
+      p_closest = closest_point[eidx];
+      ierr = MaterialPointGet_global_coord(X,p_closest,&x_p_closest);CHKERRQ(ierr);
+      
+      dist_p_closest = (x_center[0]-x_p_closest[0])*(x_center[0]-x_p_closest[0])
+      + (x_center[1]-x_p_closest[1])*(x_center[1]-x_p_closest[1])
+      + (x_center[2]-x_p_closest[2])*(x_center[2]-x_p_closest[2]);
+      dist_p         = (x_center[0]-x_p[0])*(x_center[0]-x_p[0])
+      + (x_center[1]-x_p[1])*(x_center[1]-x_p[1])
+      + (x_center[2]-x_p[2])*(x_center[2]-x_p[2]);
+      
+      if (dist_p < dist_p_closest) {
+        closest_point[eidx] = p;
+      }
+    }
+  }
+  
+  /* check cells if empty */
+  for (ek=0; ek<mz; ek++) {
+    for (ej=0; ej<my; ej++) {
+      for (ei=0; ei<mx; ei++) {
+        int eidx;
+        
+        eidx = ei + ej*mx + ek*mx*my;
+        
+        if (closest_point[eidx] != -1) { continue; }
+        
+        /* else take action */
+        {
+          double x_center[3];
+          double xc[3*8];
+          double min_sep;
+          int p_closest;
+          double *x_p_closest;
+          double dist_p_closest;
+          
+          /* compute cell centroid */
+          uei = ei/2;
+          uej = ej/2;
+          uek = ek/2;
+          ueid = uei + uej*(umx) + uek*(umx)*(umy);
+          
+          li = ei - 2*uei;
+          lj = ej - 2*uej;
+          lk = ek - 2*uek;
+          
+          ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*ueid],LA_gcoords);CHKERRQ(ierr);
+          for (kk=lk; kk<lk+2; kk++) {
+            for (jj=lj; jj<lj+2; jj++) {
+              for (ii=li; ii<li+2; ii++) {
+                int idx,gidx;
+                
+                gidx = ii + jj*3 + kk*3*3;
+                idx  = (ii-li) + (jj-lj)*2 + (kk-lk)*2*2;
+                
+                xc[3*idx+0] = elcoords[3*gidx+0];
+                xc[3*idx+1] = elcoords[3*gidx+1];
+                xc[3*idx+2] = elcoords[3*gidx+2];
+              }
+            }
+          }
+          
+          x_center[0] = x_center[1] = x_center[2] = 0.0;
+          for (ii=0; ii<8; ii++) {
+            x_center[0] += 0.125 * xc[3*ii+0];
+            x_center[1] += 0.125 * xc[3*ii+1];
+            x_center[2] += 0.125 * xc[3*ii+2];
+          }
+          
+          /* scan neighbours */
+          min_sep = 1.0e32;
+          for (k=ek-2; k<=ek+2; k++) {
+            if (k < 0)  { continue; }
+            if (k >= mz) { continue; }
+            
+            for (j=ej-2; j<=ej+2; j++) {
+              if (j < 0)  { continue; }
+              if (j >= my) { continue; }
+              
+              for (i=ei-2; i<=ei+2; i++) {
+                if (i < 0)  { continue; }
+                if (i >= mx) { continue; }
+                
+                idx = i + j*mx + k*mx*my;
+                if ( idx >= mx*my*mz ) {
+                  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"idx too large");
+                }
+                
+                p_closest = closest_point[ idx ];
+                if (p_closest == -1) { continue; } /* skip if neighbour cell is also empty */
+                
+                ierr = MaterialPointGet_global_coord(X,p_closest,&x_p_closest);CHKERRQ(ierr);
+                
+                /* compute dist from p1 to x_center */
+                dist_p_closest = (x_center[0]-x_p_closest[0])*(x_center[0]-x_p_closest[0])
+                + (x_center[1]-x_p_closest[1])*(x_center[1]-x_p_closest[1])
+                + (x_center[2]-x_p_closest[2])*(x_center[2]-x_p_closest[2]);
+                
+                if (dist_p_closest < min_sep) {
+                  min_sep = dist_p_closest;
+                  closest_point[ eidx ] = p_closest;
+                }
+                
+              }
+            }
+          } /* end neighbour cell k */
+          
+        }
+        
+      } /* end cell k */
+    }
+  }
+  /* report cells if empty */
+  *empty_cells_detected = PETSC_FALSE;
+  empty = 0;
+  for (e=0; e<mx*my*mz; e++) {
+    if (closest_point[e] == -1) {
+      empty++;
+    }
+  }
+  ierr = MPI_Allreduce(&empty,&gempty,1,MPI_LONG,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  if (gempty != 0) {
+    PetscPrintf(PETSC_COMM_WORLD,"WARNING(_compute_cell_nearest_point): Detected %ld cells which could not assigned a composition\n",gempty);
+    *empty_cells_detected = PETSC_TRUE;
+  }
+  
+  ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "_compute_cell_value_short"
+PetscErrorCode _compute_cell_value_short(DataBucket db,MaterialPointVariable variable,const PetscInt ncells,const int closest_point[],short LA_cell[])
+{
+  int e,pid,n_mp;
+  MPAccess X;
+  PetscErrorCode ierr;
+  
+  DataBucketGetSizes(db,&n_mp,NULL,NULL);
+  ierr = MaterialPointGetAccess(db,&X);CHKERRQ(ierr);
+  for (e=0; e<ncells; e++) {
+    LA_cell[e] = -1;
+  }
+
+  switch (variable) {
+    case MPV_region:
+    {
+      int var_i;
+      
+      for (e=0; e<ncells; e++) {
+        pid = closest_point[e];
+        if (pid != -1) {
+          ierr = MaterialPointGet_phase_index(X,pid,&var_i);CHKERRQ(ierr);
+          LA_cell[e] = (short)var_i;
+        }
+      }
+    }
+      break;
+
+    case MPV_yield_indicator:
+    {
+      short var_s;
+      
+      for (e=0; e<ncells; e++) {
+        pid = closest_point[e];
+        if (pid != -1) {
+          ierr = MaterialPointGet_yield_indicator(X,pid,&var_s);CHKERRQ(ierr);
+          LA_cell[e] = var_s;
+        }
+      }
+    }
+      break;
+
+    default:
+      SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Cannot convert material point variable type %D to short - consult typedef enum {} MaterialPointVariable in output_material_point.h to understand what the quantity is and whether _compute_cell_value_short() should be updated",(PetscInt)variable);
+      break;
+  }
+  ierr = MaterialPointRestoreAccess(db,&X);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "pTatinOutputParaViewMarkerFields_VTS"
 PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_points,const int nvars,const MaterialPointVariable vars[],const char name[])
 {
@@ -855,13 +1125,26 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 					break;
 					
 				case MPV_yield_indicator:
-					ierr = PetscMalloc(sizeof(short)*2*mx*2*my*2*mz,&s_LA_cell);CHKERRQ(ierr);
-					ierr = PetscMemzero(s_LA_cell,sizeof(short)*2*mx*2*my*2*mz);CHKERRQ(ierr);
+        {
+          int *closest_point;
+          PetscBool empty_cells_detected;
+          
+          ierr = PetscMalloc1(2*mx*2*my*2*mz,&closest_point);CHKERRQ(ierr);
+          
+          ierr = PetscMalloc1(2*mx*2*my*2*mz,&s_LA_cell);CHKERRQ(ierr);
+          ierr = PetscMemzero(s_LA_cell,sizeof(short)*2*mx*2*my*2*mz);CHKERRQ(ierr);
+
+          ierr = VecGetArray(gcoords,&LA_gc);CHKERRQ(ierr);
+          ierr = _compute_cell_nearest_point(dau,LA_gc,material_points,2*mx,2*my,2*mz,closest_point,&empty_cells_detected);CHKERRQ(ierr);
+          ierr = VecRestoreArray(gcoords,&LA_gc);CHKERRQ(ierr);
 					
-					PetscPrintf(PETSC_COMM_WORLD,"MPV_yield_indicator -> writer not yet completed\n");
-					ierr = _write_short(vtk_fp,2*mx,2*my,2*mz,s_LA_cell);CHKERRQ(ierr);
+          ierr = _compute_cell_value_short(material_points,MPV_yield_indicator,2*mx*2*my*2*mz,(const int*)closest_point,s_LA_cell);CHKERRQ(ierr);
+          
+          ierr = _write_short(vtk_fp,2*mx,2*my,2*mz,s_LA_cell);CHKERRQ(ierr);
 					
 					ierr = PetscFree(s_LA_cell);CHKERRQ(ierr);
+          ierr = PetscFree(closest_point);CHKERRQ(ierr);
+        }
 					break;
 					
 				case MPV_diffusivity:
