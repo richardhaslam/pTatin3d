@@ -9,7 +9,7 @@ LOCAL_TATIN_FFLAGS	:= -ffree-line-length-4000
 
 #  -- Sequential, multi-threaded version of WSMP --
 #
-#LOCAL_TATIN_CFLAGS += =DTATIN_HAVE_WSSMP
+#LOCAL_TATIN_CFLAGS += -DTATIN_HAVE_WSSMP
 #WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lwsmp64
 
 #  -- Parallel, distributed memory version of WSMP --
