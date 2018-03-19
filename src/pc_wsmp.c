@@ -38,9 +38,9 @@
  [3] If you run with MPI-ranks = 1, by default this PC implementation will try to use WSSMP.
      If WSSMP hasn't found, it will call PWSSMP.
      Support with WSSMP is activated by the compiler flag
-       -DHAVE_WSSMP
+       -DTATIN_HAVE_WSSMP
      Support for PWSSMP is activated via the compiler flag
-       -DHAVE_PWSSMP
+       -DTATIN_HAVE_PWSSMP
      In parallel (MPI-ranks > 1), you must have compiled the code with support for PWSSMP
  [4] For consistency with the WSMP documentation, the parameter names, e.g.,
        -pc_wsmp_iparm31
@@ -70,12 +70,12 @@ extern void pwsffree_(void);
 /*
  If support for PWSSMP is defined, we automatically have support for WSSMP
  as all the symbols are contained in libpwsmp.so
- We thus set HAVE_WSSMP. The consequence of this is that when running in serial,
+ We thus set TATIN_HAVE_WSSMP. The consequence of this is that when running in serial,
  wssmp_() will be called instead of pwssmp_()
 */
-#ifdef HAVE_PWSSMP
-  #ifndef HAVE_WSSMP
-    #define HAVE_WSSMP
+#ifdef TATIN_HAVE_PWSSMP
+  #ifndef TATIN_HAVE_WSSMP
+    #define TATIN_HAVE_WSSMP
   #endif
 #endif
 
@@ -529,7 +529,7 @@ PetscErrorCode call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
   PetscFunctionBegin;
 
   if (wsmp->sequential) {
-    #ifdef HAVE_WSSMP
+    #ifdef TATIN_HAVE_WSSMP
       wssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
                &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
     
@@ -537,7 +537,7 @@ PetscErrorCode call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
         SETERRQ1(comm,PETSC_ERR_USER,"[wsmp] WSSMP generated the following error code: %d",wsmp->IPARM[64 -1]);
       }
     #else
-      #ifdef HAVE_PWSSMP
+      #ifdef TATIN_HAVE_PWSSMP
         pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
                   &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
         if (wsmp->IPARM[64 -1] != 0) {
@@ -548,7 +548,7 @@ PetscErrorCode call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
       #endif
     #endif
   } else {
-    #ifdef HAVE_PWSSMP
+    #ifdef TATIN_HAVE_PWSSMP
       pwssmp_ ( &wsmp->Nlocal, wsmp->IA, wsmp->JA, wsmp->AVALS, wsmp->DIAG, wsmp->PERM, wsmp->INVP, wsmp->B, &wsmp->LDB, &wsmp->NRHS,
                 &wsmp->AUX, &wsmp->NAUX, wsmp->MRP, wsmp->IPARM, wsmp->DPARM );
     
@@ -571,14 +571,14 @@ PetscErrorCode call_wsffree(PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
   if (wsmp->sequential) {
-#ifdef HAVE_WSSMP
+#ifdef TATIN_HAVE_WSSMP
     wsffree_();
 #endif
-#ifdef HAVE_PWSSMP
+#ifdef TATIN_HAVE_PWSSMP
     pwsffree_();
 #endif
   } else {
-#ifdef HAVE_PWSSMP
+#ifdef TATIN_HAVE_PWSSMP
     pwsffree_();
 #endif
   }
@@ -591,14 +591,14 @@ PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
   if (wsmp->sequential) {
-#ifdef HAVE_WSSMP
+#ifdef TATIN_HAVE_WSSMP
     wsmp_clear_();
 #endif
-#ifdef HAVE_PWSSMP
+#ifdef TATIN_HAVE_PWSSMP
     pwsmp_clear_();
 #endif
   } else {
-#ifdef HAVE_PWSSMP
+#ifdef TATIN_HAVE_PWSSMP
     pwsmp_clear_();
 #endif
   }
@@ -630,7 +630,7 @@ PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
 #define __FUNCT__ "call_wsmp_wsetmpicomm"
 PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 {
-#ifdef HAVE_PWSSMP
+#ifdef TATIN_HAVE_PWSSMP
   MPI_Fint fcomm;
   
   PetscFunctionBegin;
