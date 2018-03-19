@@ -79,9 +79,10 @@ PetscErrorCode pTatinWritePreamble(void)
 	PetscPrintf(PETSC_COMM_WORLD,"**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /\n");
 	PetscPrintf(PETSC_COMM_WORLD,"** /__/       /___/  /__//__/  /__/ /__/__/ \\__//_______/______/\n");
 	PetscPrintf(PETSC_COMM_WORLD,"**\n");	
-	PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (dave.may@erdw.ethz.ch)           \n");
+	PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (david.may@earth.ox.ac.uk)        \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jedbrown@mcs.anl.gov)            \n");
+	PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jed.brown@colorado.edu)          \n");
+	PetscPrintf(PETSC_COMM_WORLD,"**           Patrick Sanan        (patrick.sanan@erdw.ethz.ch)      \n");
 	PetscPrintf(PETSC_COMM_WORLD,"**\n");
 	
 	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REPO);
