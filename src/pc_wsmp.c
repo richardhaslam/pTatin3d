@@ -67,6 +67,17 @@ extern void pwsmp_clear_(void);
 extern void wsetmpicomm_(int *fcomm);
 extern void pwsffree_(void);
 
+/*
+ If support for PWSSMP is defined, we automatically have support for WSSMP
+ as all the symbols are contained in libpwsmp.so
+ We thus set HAVE_WSSMP. The consequence of this is that when running in serial,
+ wssmp_() will be called instead of pwssmp_()
+*/
+#ifdef HAVE_PWSSMP
+  #ifndef HAVE_WSSMP
+    #define HAVE_WSSMP
+  #endif
+#endif
 
 typedef struct {
   PetscBool sequential,symmetric;
