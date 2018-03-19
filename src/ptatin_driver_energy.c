@@ -116,6 +116,9 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = pTatinPhysCompActivate_Energy(user,load_energy);CHKERRQ(ierr);
 		ierr = pTatinContextValid_Energy(user,&active_energy);CHKERRQ(ierr);
 	}
+  T = NULL;
+  f = NULL;
+  JE = NULL;
 	if (active_energy) {
 		ierr = pTatinGetContext_Energy(user,&energy);CHKERRQ(ierr);
 
@@ -124,7 +127,6 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 		ierr = DMCreateGlobalVector(energy->daT,&T);CHKERRQ(ierr);
 		ierr = DMCreateGlobalVector(energy->daT,&f);CHKERRQ(ierr);
 
-		JE = NULL;
 		if (!use_JFNK_T) {
 			ierr = DMSetMatType(energy->daT,MATAIJ);CHKERRQ(ierr);
 			ierr = DMCreateMatrix(energy->daT,&JE);CHKERRQ(ierr);
@@ -264,9 +266,9 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	}	
 	
 	
-	ierr = VecDestroy(&T);CHKERRQ(ierr);
+	if (T)  { ierr = VecDestroy(&T);CHKERRQ(ierr); }
 	if (JE) { ierr = MatDestroy(&JE);CHKERRQ(ierr); }
-	ierr = VecDestroy(&f);CHKERRQ(ierr);
+	if (f)  { ierr = VecDestroy(&f);CHKERRQ(ierr); }
 	
 	ierr = VecDestroy(&X);CHKERRQ(ierr);
 	ierr = VecDestroy(&F);CHKERRQ(ierr);
