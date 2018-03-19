@@ -41,6 +41,7 @@
 #include "ptatin3d_stokes.h"
 #include "ptatin3d_energy.h"
 #include "MPntPEnergy_def.h"
+#include "material_constants_energy.h"
 
 PetscInt model_setup = 0;
 PetscReal vel_scale       = 1.0;
@@ -50,7 +51,14 @@ PetscReal diffusion_scale = 1.0;
 #define __FUNCT__ "ModelInitialize_AdvDiffExample"
 PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 {	
-	PetscFunctionBegin;
+  DataBucket              materialconstants;
+  DataField               PField;
+  EnergyMaterialConstants *matconstants_e;
+  int                     r,regionidx;
+  double                  rho_ref,Cp;
+  PetscErrorCode          ierr;
+  
+  PetscFunctionBegin;
 
 	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
 	
@@ -73,6 +81,21 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 			break;
 	}
 	
+  ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
+  ierr = MaterialConstantsSetDefaults(materialconstants);CHKERRQ(ierr);
+  
+  DataBucketGetDataFieldByName(materialconstants,EnergyMaterialConstants_classname,&PField);
+  DataFieldGetEntries(PField,(void**)&matconstants_e);
+  
+  for (r=0; r<4; r++) {
+    regionidx = r;
+    rho_ref = 1.0;
+    Cp = 1.0;
+    ierr = MaterialConstantsSetValues_EnergyMaterialConstants(regionidx,matconstants_e,0.0,0.0,rho_ref,Cp,ENERGYDENSITY_CONSTANT,ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE,NULL);CHKERRQ(ierr);
+    EnergyMaterialConstantsSetFieldAll_SourceMethod(&matconstants_e[regionidx],ENERGYSOURCE_NONE);
+  }
+  DataFieldRestoreEntries(PField,(void**)&matconstants_e);
+  
 	PetscFunctionReturn(0);
 }
 
@@ -242,11 +265,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 		
 		if (position[0] < 0.5) {
 			MPntStdSetField_phase_index(material_point,1);
-		}
-		if (position[1] < 0.7) {
+		} else if (position[1] < 0.7) {
 			MPntStdSetField_phase_index(material_point,2);
-		}
-		if (position[2] < 0.9) {
+		} else if (position[2] < 0.9) {
 			MPntStdSetField_phase_index(material_point,3);
 		}
 	}
@@ -446,7 +467,7 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	PhysCompEnergy energy;
 	Vec            temperature;
 	char           name[256];
-	PetscBool      write_markers,output_markers_once = PETSC_FALSE;
+	PetscBool      write_markers,output_markers_once = PETSC_TRUE;
 	static int     been_here = 0;
 	
 	
