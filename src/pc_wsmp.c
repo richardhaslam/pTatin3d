@@ -223,12 +223,11 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&m,NULL);CHKERRQ(ierr);
   
-  // ia
+  /* ia */
   if (ia) {
     PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ia_rank%D.dat",rank);
     fp = fopen(name,"w");
     
-    //PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
     PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",m+1);
     for (i=0; i<m; i++) {
       PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D\n",i,ia[i]);
@@ -237,7 +236,7 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
     fclose(fp);
   }
   
-  // ja
+  /* ja */
   if (ja) {
     if (!ia) {
       SETERRQ(comm,PETSC_ERR_USER,"Cannot write ja[] as ia[] isn't provided <require nnz");
@@ -247,7 +246,6 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
     PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"ja_rank%D.dat",rank);
     fp = fopen(name,"w");
     
-    //PetscFPrintf(PETSC_COMM_SELF,fp,"# idx ia[] \n");
     PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",nnz);
     for (i=0; i<nnz; i++) {
       PetscFPrintf(PETSC_COMM_SELF,fp,"%D %D\n",i,ja[i]);
@@ -255,7 +253,7 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
     fclose(fp);
   }
   
-  // aij
+  /* aij */
   if (aij) {
     if (!ia) {
       SETERRQ(comm,PETSC_ERR_USER,"Cannot write aij[] as ia[] isn't provided <require nnz>");
@@ -265,7 +263,6 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
     PetscSNPrintf(name,PETSC_MAX_PATH_LEN-1,"aij_rank%D.dat",rank);
     fp = fopen(name,"w");
     
-    //PetscFPrintf(PETSC_COMM_SELF,fp,"# idx aij[] \n");
     PetscFPrintf(PETSC_COMM_SELF,fp,"%D\n",nnz);
     for (i=0; i<nnz; i++) {
       PetscFPrintf(PETSC_COMM_SELF,fp,"%D %+1.8e\n",i,aij[i]);
@@ -368,7 +365,6 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nn
     }
     cnt = cnt + nnz_i;
   }
-  //printf("nnz = %d \n",nnz_ut);
   
   /* allocate and store */
   if (_ia_ut) { ierr = PetscMalloc1(m+1,&ia_ut);CHKERRQ(ierr); }
@@ -722,12 +718,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
     PetscTime(&t1);
     PetscInfo1(pc,"Symbolic factorization --- %1.2e sec\n",t1-t0);
-    
-    //PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
-    
-    PetscPrintf(comm,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
-    PetscPrintf(comm,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
-    
   } else {
 
     /* Determine if matrix is symmetric (either due to non-zero pattern or changing aij values */
@@ -765,11 +755,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
       PetscTime(&t1);
       PetscInfo1(pc,"Symbolic factorization --- %1.2e sec\n",t1-t0);
-      
-      //PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
-      
-      PetscPrintf(comm,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
-      PetscPrintf(comm,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
     }
   }
   
@@ -818,7 +803,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
   ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
   PetscTime(&t1);
   PetscInfo1(pc,"Numerical factorization --- %1.2e sec\n",t1-t0);
-  //PetscPrintf(PETSC_COMM_SELF,"[wsmp][num. fact.] Actual memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
   
   PetscFunctionReturn(0);
 }
@@ -842,11 +826,6 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
   
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  //if (rank == 0) {
-  //for (i=0; i<wsmp->Nglobal; i++) {
-  //	printf("perm %d : iperm %d \n",wsmp->PERM[i],wsmp->INVP[i]);
-  //}
-  //}
   
   ierr = VecGetLocalSize(x,&m);CHKERRQ(ierr);
   ierr = VecGetArrayRead(x,&_val);CHKERRQ(ierr);
