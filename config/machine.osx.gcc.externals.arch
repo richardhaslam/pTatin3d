@@ -1,26 +1,31 @@
-# Note: this is an old example using WSMP, for reference purposes.
-#       makefile.arch.default provides examples suitable for general OS X usage
+# Note: this is an example using WSMP, for reference purposes.
 
-export TATIN_CFLAGS	= -std=gnu99 -Wall
-export TATIN_FFLAGS	= -ffree-line-length-4000
+local_TATIN_CFLAGS	:= -std=gnu99 -Wall
+local_TATIN_FFLAGS	:= -ffree-line-length-4000
 
+# ------------------------------------------------
+#  Link against either WSMP or PWSMP - not both
+# ------------------------------------------------
+
+#  -- Sequential, multi-threaded version of WSMP --
 #
-#  -- pTatin external packages --
+#local_TATIN_CFLAGS += =DHAVE_WSSMP
+#WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lwsmp64
+
+#  -- Parallel, distributed memory version of WSMP --
+#
+local_TATIN_CFLAGS += -DHAVE_PWSSMP
+WSMP_LIB := -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lpwsmp
+
+export TATIN_CFLAGS = ${local_TATIN_CFLAGS}
+export TATIN_FFLAGS = ${local_TATIN_FFLAGS}
+export TATIN_LIB = ${WSMP_LIB}
+
+# ----------------------------------------------------------------------------
+#  -- pTatin external packages (user to edit)
 #  User should select which packages are present
 #    ** To ensure consistent compilation, between MPI, PETSc and ptatin3d, **
 #    ** please compile external packages using the PETSc compiler          **
-#
-PTATIN_CONTAINS_SPMA = 0
-PTATIN_CONTAINS_FASTSCAPE_V3 = 0
-
-#
-#  -- Sequential, multi-threaded version of WSMP --
-#
-export HAVE_WSMP_SEQ = 0
-export WSMP_SEQ_LIB = -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lwsmp64
-#
-#  -- Parallel, distributed memory version of WSMP --
-#
-export HAVE_WSMP_P = 0
-export WSMP_P_LIB = -L/Users/dmay/Downloads/Jan2012-XXX/wsmp/wsmp-MacOS/lib/GNU -lpwsmp
-
+# ----------------------------------------------------------------------------
+CONFIG_SPMA      = n
+CONFIG_FASTSCAPE = n
