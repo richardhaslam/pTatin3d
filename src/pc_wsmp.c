@@ -98,15 +98,15 @@ typedef struct {
 } PC_WSMP;
 
 
-PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp);
-PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp);
-PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsmp);
-PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp);
-PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp);
+static PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp);
+static PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp);
+static PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsmp);
+static PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp);
+static PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_CheckCSR"
-PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
+static PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm;
@@ -181,7 +181,7 @@ PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_VecView"
-PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
+static PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -209,7 +209,7 @@ PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_CSRView"
-PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
+static PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -275,7 +275,7 @@ PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
 
 #undef __FUNCT__
 #define __FUNCT__ "Default_MatIsSymmetric"
-PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
+static PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
   Vec            x,y1,y2;
@@ -309,7 +309,7 @@ PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_MatIsSymmetric"
-PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
+static PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -330,7 +330,7 @@ PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 /* helpers to get AIJ info from sequential and parallel matrices */
 #undef __FUNCT__
 #define __FUNCT__ "PCWSMP_ExtractUpperTriangular_MatSeqAIJ"
-PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut,PetscBool reuse,double **_vals)
+static PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut,PetscBool reuse,double **_vals)
 {
   PetscErrorCode ierr;
   const PetscInt *ia;
@@ -447,7 +447,7 @@ PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nn
 
 #undef __FUNCT__
 #define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ"
-PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
+static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
   PetscErrorCode ierr;
   
@@ -459,7 +459,7 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,
 
 #undef __FUNCT__
 #define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ"
-PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
+static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
   PetscErrorCode ierr;
   PetscInt       m,n,M,N,start,end;
@@ -487,7 +487,7 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,
 
 #undef __FUNCT__
 #define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularAIJ"
-PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut,double **_vals_ut)
+static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut,double **_vals_ut)
 {
   PetscErrorCode ierr;
   PetscInt       m,n,M,N,start,end;
@@ -519,8 +519,8 @@ PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nn
 
 /* wrappers for WSMP to hide some ugly #if and if sequential type statements */
 #undef __FUNCT__
-#define __FUNCT__ "call_wsmp"
-PetscErrorCode call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
+#define __FUNCT__ "PCWSMP_call_wsmp"
+static PetscErrorCode PCWSMP_call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
 
@@ -553,14 +553,12 @@ PetscErrorCode call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
       SETERRQ1(comm,PETSC_ERR_USER,"WSSMP generated the following error code %d. See \"WSMP Users' Guide Part I - Symmetric Direct Solvers\", section 5.2.14:IPARM[64] to understand the meaning.",wsmp->IPARM[64 -1]);
     }
   }
-  
-  
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "call_wsffree"
-PetscErrorCode call_wsffree(PC_WSMP *wsmp)
+#define __FUNCT__ "PCWSMP_call_wsffree"
+static PetscErrorCode PCWSMP_call_wsffree(PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
   if (wsmp->sequential) {
@@ -579,8 +577,8 @@ PetscErrorCode call_wsffree(PC_WSMP *wsmp)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "call_wsmp_clear"
-PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
+#define __FUNCT__ "PCWSMP_call_wsmp_clear"
+static PetscErrorCode PCWSMP_call_wsmp_clear(PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
   if (wsmp->sequential) {
@@ -619,9 +617,10 @@ PetscErrorCode call_wsmp_clear(PC_WSMP *wsmp)
  }
  */
 
+/*
 #undef __FUNCT__
-#define __FUNCT__ "call_wsmp_wsetmpicomm"
-PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
+#define __FUNCT__ "PCWSMP_call_wsmp_wsetmpicomm"
+static PetscErrorCode PCWSMP_call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 {
 #ifdef TATIN_HAVE_PWSSMP
   MPI_Fint fcomm;
@@ -635,6 +634,7 @@ PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
   
   PetscFunctionReturn(0);
 }
+*/
 
 /* implementations for PC_WSMP */
 #undef __FUNCT__
@@ -703,7 +703,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     wsmp->IPARM[2 -1] = 1;
     wsmp->IPARM[3 -1] = 1;
     ierr = WSMPSetFromOptions_Ordering(pc,wsmp);CHKERRQ(ierr);
-    ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+    ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
     PetscTime(&t1);
     PetscInfo1(pc,"Ordering --- %1.2e sec\n",t1-t0);
     
@@ -712,7 +712,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     wsmp->IPARM[3 -1] = 2;
     PetscTime(&t0);
     ierr = WSMPSetFromOptions_SymbolicFactorization(pc,wsmp);CHKERRQ(ierr);
-    ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+    ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
     PetscTime(&t1);
     PetscInfo1(pc,"Symbolic factorization --- %1.2e sec\n",t1-t0);
   } else {
@@ -741,7 +741,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       PetscTime(&t0);
       wsmp->IPARM[2 -1] = 1;
       wsmp->IPARM[3 -1] = 1;
-      ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+      ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
       PetscTime(&t1);
       PetscInfo1(pc,"Symmetric ordering --- %1.2e sec\n",t1-t0);
       
@@ -749,7 +749,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       wsmp->IPARM[2 -1] = 2;
       wsmp->IPARM[3 -1] = 2;
       PetscTime(&t0);
-      ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+      ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
       PetscTime(&t1);
       PetscInfo1(pc,"Symbolic factorization --- %1.2e sec\n",t1-t0);
     }
@@ -765,7 +765,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       /* Repeated solve but non-zero structure has changed, use new data */
       ierr = PetscFree(wsmp->AVALS);CHKERRQ(ierr);
       /* release internal memory for factors */
-      ierr = call_wsffree(wsmp);CHKERRQ(ierr);
+      ierr = PCWSMP_call_wsffree(wsmp);CHKERRQ(ierr);
       
       ierr = xxx_PCWSMP_ExtractUpperTriangularAIJ(B,PETSC_FALSE,wsmp->nnz,&wsmp->AVALS);CHKERRQ(ierr);
     } else {
@@ -797,7 +797,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
   wsmp->IPARM[3 -1] = 3;
   
   ierr = WSMPSetFromOptions_NumericFactorization(pc,wsmp);CHKERRQ(ierr);
-  ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+  ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
   PetscTime(&t1);
   PetscInfo1(pc,"Numerical factorization --- %1.2e sec\n",t1-t0);
   
@@ -839,13 +839,13 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
   wsmp->IPARM[2 -1] = 4;
   wsmp->IPARM[3 -1] = 4;
   ierr = WSMPSetFromOptions_BackSubstitution(pc,wsmp);CHKERRQ(ierr);
-  ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+  ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
   
   /* iterative refinement */
   wsmp->IPARM[2 -1] = 5;
   wsmp->IPARM[3 -1] = 5;
   ierr = WSMPSetFromOptions_IterativeRefinement(pc,wsmp);CHKERRQ(ierr);
-  ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
+  ierr = PCWSMP_call_wsmp(comm,wsmp);CHKERRQ(ierr);
   
   if (view && (beenhere==0)) {
     ierr = PCWSMP_VecView("sol",wsmp);CHKERRQ(ierr);
@@ -878,7 +878,7 @@ static PetscErrorCode PCReset_WSMP(PC pc)
   ierr = PetscFree(wsmp->B);CHKERRQ(ierr);
   ierr = PetscFree(wsmp->MRP);CHKERRQ(ierr);
   
-  ierr = call_wsmp_clear(wsmp);CHKERRQ(ierr);
+  ierr = PCWSMP_call_wsmp_clear(wsmp);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -899,7 +899,7 @@ static PetscErrorCode PCDestroy_WSMP(PC pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_Ordering"
-PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp)
+static PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   PetscBool      found;
@@ -963,7 +963,7 @@ PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_SymbolicFactorization"
-PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp)
+static PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   PetscInt       ival,index;
@@ -980,7 +980,7 @@ PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_BackSubstitution"
-PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp)
+static PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   PetscInt       ival,index;
@@ -997,7 +997,7 @@ PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_IterativeRefinement"
-PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp)
+static PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   PetscInt       ival,index;
@@ -1024,7 +1024,7 @@ PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp)
 
 #undef __FUNCT__
 #define __FUNCT__ "WSMPSetFromOptions_NumericFactorization"
-PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsmp)
+static PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
   PetscInt       ival,index;
@@ -1216,7 +1216,7 @@ PetscErrorCode PCCreate_WSMP(PC pc)
   wsmp->IPARM[1 -1] = 0;
   wsmp->IPARM[2 -1] = 0;
   wsmp->IPARM[3 -1] = 0;
-  ierr = call_wsmp(PetscObjectComm((PetscObject)pc),wsmp);CHKERRQ(ierr);
+  ierr = PCWSMP_call_wsmp(PetscObjectComm((PetscObject)pc),wsmp);CHKERRQ(ierr);
   wsmp->IPARM[4 -1] = 0; /* CSR/CSC matrix format */
   wsmp->IPARM[5 -1] = 1; /* F style numbering */
   
