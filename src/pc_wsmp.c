@@ -654,9 +654,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     
     /* Determine if matrix is symmetric */
     ierr = PCWSMP_MatIsSymmetric(B,1.0e-8,&wsmp->symmetric);CHKERRQ(ierr);
-    if (!wsmp->symmetric) {
-      SETERRQ(comm,PETSC_ERR_SUP,"[wsmp] Only support for symmetric WSMP implemenatations exists");
-    }
+    if (!wsmp->symmetric) SETERRQ(comm,PETSC_ERR_SUP,"[wsmp] Only support for symmetric WSMP implemenatations exists");
     
     ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
@@ -722,7 +720,11 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     PetscPrintf(comm,"[wsmp][sym. fact.] Factorization MegaFlops = %1.4e \n",wsmp->DPARM[23 -1]*1.0e-6 / (t1-t0) );
     
   } else {
-    
+
+    /* Determine if matrix is symmetric (either due to non-zero pattern or changing aij values */
+    ierr = PCWSMP_MatIsSymmetric(B,1.0e-8,&wsmp->symmetric);CHKERRQ(ierr);
+    if (!wsmp->symmetric) SETERRQ(comm,PETSC_ERR_SUP,"[wsmp] Only support for symmetric WSMP implemenatations exists");
+
     if (pc->flag != SAME_NONZERO_PATTERN) {
       /* Repeated solve but non-zero structure has changed, use new data */
       /* Re-constuct ordering and symbolic factorization */
@@ -1025,7 +1027,7 @@ PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp)
   ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm6",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
   
   index = 7;  ival = (PetscInt)wsmp->IPARM[index-1];
-  ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm7",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
+  ierr = PetscOptionsGetInt(NULLx,prefix,"-pc_wsmp_iparm7",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
   
   index = 36;  ival = (PetscInt)wsmp->IPARM[index-1];
   ierr = PetscOptionsGetInt(NULL,prefix,"-pc_wsmp_iparm36",&ival,&found);CHKERRQ(ierr); if (found) { PetscMPIIntCast(ival,&wsmp->IPARM[index-1]); }
