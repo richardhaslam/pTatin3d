@@ -153,7 +153,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
         break;
 			
       case ENERGYDENSITY_USE_MATERIALPOINT_VALUE:
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"ENERGYDENSITY_USE_MATERIALPOINT_VALUE is not available");
+				SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] ENERGYDENSITY_USE_MATERIALPOINT_VALUE is not available",region_idx);
         break;
         
       case ENERGYDENSITY_CONSTANT:
@@ -161,7 +161,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 			break;
 
 			case ENERGYDENSITY_BOUSSINESQ:
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"ENERGYDENSITY_BOUSSINESQ is not available - sorry email GD for help");
+				SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] ENERGYDENSITY_BOUSSINESQ is not available - sorry email GD for help",region_idx);
 				break;
 		}
 
@@ -169,7 +169,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 		conductivity_mp = 1.0;
 		switch (conductivity_type) {
       case ENERGYCONDUCTIVITY_NONE:
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"A valid conductivity type must be specified");
+        SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] A valid conductivity type must be specified",region_idx);
         break;
         
       case ENERGYCONDUCTIVITY_USE_MATERIALPOINT_VALUE:
@@ -220,7 +220,7 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 					break;
 					
 				case ENERGYSOURCE_SHEAR_HEATING:
-					SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"SHEAR-HEATING is not available");
+					SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"[region %D] SHEAR-HEATING is not available",region_idx);
 					break;
 					
 				case ENERGYSOURCE_DECAY:
