@@ -723,7 +723,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     PetscTime(&t1);
     PetscPrintf(comm," --- wsmp: done sym fac --- %1.2e sec\n",t1-t0);
     
-    PetscPrintf(comm,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
     //PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
     
     PetscPrintf(comm,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
@@ -767,7 +766,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       PetscTime(&t1);
       PetscPrintf(comm," --- wsmp: done sym fac --- %1.2e sec\n",t1-t0);
       
-      PetscPrintf(comm,"[wsmp][sym. fact.] Num. nonzeros in factors = %d \n",wsmp->IPARM[24 -1]);
       //PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
       
       PetscPrintf(comm,"[wsmp][sym. fact.] Actual number of FLOPS in factorization =  %1.4e \n",wsmp->DPARM[23 -1]);
