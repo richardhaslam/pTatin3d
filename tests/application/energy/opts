@@ -1,0 +1,7 @@
+-ptatin_model advdiff_example 
+-activate_energy 
+-nsteps 10 
+-mx 16 
+-my 16 
+-mz 1 
+-advdiff_setup 2
