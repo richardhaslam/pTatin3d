@@ -695,7 +695,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
     }
     PetscTime(&t1);
-    PetscPrintf(comm," --- wsmp: done IJ --- %1.2e sec\n",t1-t0);
+    PetscInfo1(pc,"CSR extraction --- %1.2e sec\n",t1-t0);
     
     {
       PetscBool view = PETSC_FALSE;
@@ -712,7 +712,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     ierr = WSMPSetFromOptions_Ordering(pc,wsmp);CHKERRQ(ierr);
     ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
     PetscTime(&t1);
-    PetscPrintf(comm," --- wsmp: done ordering --- %1.2e sec\n",t1-t0);
+    PetscInfo1(pc,"Ordering --- %1.2e sec\n",t1-t0);
     
     /* -- [wsmp] : symbolic factorization -- */
     wsmp->IPARM[2 -1] = 2;
@@ -721,7 +721,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     ierr = WSMPSetFromOptions_SymbolicFactorization(pc,wsmp);CHKERRQ(ierr);
     ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
     PetscTime(&t1);
-    PetscPrintf(comm," --- wsmp: done sym fac --- %1.2e sec\n",t1-t0);
+    PetscInfo1(pc,"Symbolic factorization --- %1.2e sec\n",t1-t0);
     
     //PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
     
@@ -748,7 +748,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
         ierr = xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(B,&wsmp->nnz,&wsmp->IA,&wsmp->JA);CHKERRQ(ierr);
       }
       PetscTime(&t1);
-      PetscPrintf(comm," --- wsmp: done IJ --- %1.2e sec\n",t1-t0);
+      PetscInfo1(pc,"CSR extraction --- %1.2e sec\n",t1-t0);
       
       /* -- [wsmp] : ordering -- */
       PetscTime(&t0);
@@ -756,7 +756,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       wsmp->IPARM[3 -1] = 1;
       ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
       PetscTime(&t1);
-      PetscPrintf(comm," --- wsmp: done sym ordering --- %1.2e sec\n",t1-t0);
+      PetscInfo1(pc,"Symmetric ordering --- %1.2e sec\n",t1-t0);
       
       /* -- [wsmp] : symbolic factorization -- */
       wsmp->IPARM[2 -1] = 2;
@@ -764,7 +764,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
       PetscTime(&t0);
       ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
       PetscTime(&t1);
-      PetscPrintf(comm," --- wsmp: done sym fac --- %1.2e sec\n",t1-t0);
+      PetscInfo1(pc,"Symbolic factorization --- %1.2e sec\n",t1-t0);
       
       //PetscPrintf(PETSC_COMM_SELF,"[wsmp][sym. fact.] Estimated memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
       
@@ -792,7 +792,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
     }
   }
   PetscTime(&t1);
-  PetscPrintf(comm," --- wsmp: done AIJ --- %1.2e sec\n",t1-t0);
+  PetscInfo1(pc,"CSR extraction --- %1.2e sec\n",t1-t0);
   
   {
     PetscBool view = PETSC_FALSE;
@@ -817,7 +817,7 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
   ierr = WSMPSetFromOptions_NumericFactorization(pc,wsmp);CHKERRQ(ierr);
   ierr = call_wsmp(comm,wsmp);CHKERRQ(ierr);
   PetscTime(&t1);
-  PetscPrintf(comm," --- wsmp: done num fac --- %1.2e sec\n",t1-t0);
+  PetscInfo1(pc,"Numerical factorization --- %1.2e sec\n",t1-t0);
   //PetscPrintf(PETSC_COMM_SELF,"[wsmp][num. fact.] Actual memory usage for factors = 1000 X %d \n",wsmp->IPARM[23 -1]);
   
   PetscFunctionReturn(0);
