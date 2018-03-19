@@ -1,4 +1,15 @@
-# Note: this is an example using WSMP, for reference purposes.
+# ------------------------------------------------------------------------
+# Example makefile showing how to invoke support for WSMP within ptatin
+# ------------------------------------------------------------------------
+# To test your ptatin build, please execute either
+#
+# <serial - wsmp>
+#   ./${PETSC_ARCH}/bin/test_petsc_wsmp.app
+#
+# <parallel - pwsmp>
+#  ./${PETSC_ARCH}/bin/test_petsc_wsmp.app
+#  mpiexec -n 3 ./${PETSC_ARCH}/bin/test_petsc_wsmp.app
+# ------------------------------------------------------------------------
 
 LOCAL_TATIN_CFLAGS	:= -std=gnu99 -Wall
 LOCAL_TATIN_FFLAGS	:= -ffree-line-length-4000
