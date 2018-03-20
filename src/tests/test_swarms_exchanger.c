@@ -88,7 +88,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
   }
 
   if (rank) {
-    printf("[[%s]]\n",__FUNCTION__);
+    printf("[[%s]]\n",PETSC_FUNCTION_NAME);
   }
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
@@ -339,7 +339,7 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
   }
 
   if (rank) {
-    printf("[[%s]]\n",__FUNCTION__);
+    printf("[[%s]]\n",PETSC_FUNCTION_NAME);
   }
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
@@ -584,7 +584,7 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
   }
 
   if (rank) {
-    printf("[[%s]]\n",__FUNCTION__);
+    printf("[[%s]]\n",PETSC_FUNCTION_NAME);
   }
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 

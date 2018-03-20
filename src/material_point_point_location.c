@@ -324,9 +324,9 @@ void InverseMappingDomain_2dQ2(PetscReal tolerance,PetscInt max_its,
 
     if (monitor && (point_found == PETSC_FALSE)){
       if (its >= max_its) {
-        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, __FUNCTION__, max_its );
+        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, PETSC_FUNCTION_NAME, max_its );
       } else {
-        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Newton broke down, diverged or stagnated after (%D) iterations without converging. \n", its, __FUNCTION__, its );
+        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Newton broke down, diverged or stagnated after (%D) iterations without converging. \n", its, PETSC_FUNCTION_NAME, its );
       }
     }
 
@@ -817,9 +817,9 @@ void InverseMappingDomain_3dQ2(PetscReal tolerance,PetscInt max_its,
 
     if (monitor && (point_found == PETSC_FALSE)) {
       if (its >= max_its) {
-        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, __FUNCTION__, max_its );
+        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Reached maximum iterations (%D) without converging. \n", its, PETSC_FUNCTION_NAME, max_its );
       } else {
-        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Newton broke down, diverged or stagnated after (%D) iterations without converging. \n", its, __FUNCTION__, its );
+        PetscPrintf(PETSC_COMM_SELF,"%4D %s : Newton broke down, diverged or stagnated after (%D) iterations without converging. \n", its, PETSC_FUNCTION_NAME, its );
       }
     }
 

@@ -46,7 +46,7 @@ PetscErrorCode wssmp_ex1_serial_petsc_lu(void)
   PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
   PetscErrorCode ierr;
 
-  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
+  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",PETSC_FUNCTION_NAME);
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
@@ -136,7 +136,7 @@ PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
   PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
   PetscErrorCode ierr;
 
-  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
+  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",PETSC_FUNCTION_NAME);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
   ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
   PetscMPIInt size,rank;
   PetscErrorCode ierr;
 
-  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
+  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",PETSC_FUNCTION_NAME);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
