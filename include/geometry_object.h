@@ -32,38 +32,38 @@
 #define __geometry_object_h__
 
 typedef enum {
-	GeomType_Box              = 0,
-	GeomType_Cylinder         = 1,
-	GeomType_Sphere           = 2,
-	GeomType_EllipticCylinder = 3,
-	GeomType_Ellipsoid        = 4,
-	GeomType_InfLayer         = 5,
-	GeomType_SetOperation     = 6,
-	GeomType_HalfSpace        = 7,
-	GeomType_NULL
+  GeomType_Box              = 0,
+  GeomType_Cylinder         = 1,
+  GeomType_Sphere           = 2,
+  GeomType_EllipticCylinder = 3,
+  GeomType_Ellipsoid        = 4,
+  GeomType_InfLayer         = 5,
+  GeomType_SetOperation     = 6,
+  GeomType_HalfSpace        = 7,
+  GeomType_NULL
 } GeomType;
 extern const char *GeomTypeNames[];
 
 typedef enum {
-	GeomSet_Union        = 0,
-	GeomSet_Intersection = 1,
-	GeomSet_Complement   = 2,
-	GeomSet_Undefined,
+  GeomSet_Union        = 0,
+  GeomSet_Intersection = 1,
+  GeomSet_Complement   = 2,
+  GeomSet_Undefined,
 } GeomSetOperatorType;
 extern const char *GeomTypeSetOperatorNames[];
 
 typedef enum {
-	ROTATE_AXIS_X = 0,
-	ROTATE_AXIS_Y = 1,
-	ROTATE_AXIS_Z = 2,
-	ROTATE_AXIS_UNDEFINED
+  ROTATE_AXIS_X = 0,
+  ROTATE_AXIS_Y = 1,
+  ROTATE_AXIS_Z = 2,
+  ROTATE_AXIS_UNDEFINED
 } GeomRotateAxis;
 extern const char *GeomRotateAxisNames[];
 
 typedef enum {
-	SIGN_POSITIVE = 0,
-	SIGN_NEGATIVE = 1,
-	SIGN_UNDEFINED
+  SIGN_POSITIVE = 0,
+  SIGN_NEGATIVE = 1,
+  SIGN_UNDEFINED
 } GeomSign;
 extern const char *GeomSignNames[];
 
@@ -72,18 +72,18 @@ extern const char *GeomSignNames[];
 
 typedef struct _p_GeometryObject *GeometryObject;
 struct _p_GeometryObject {
-	char     *name;
-	GeomType type;
-	int      ref_cnt;
-	void     *ctx;
-	double   centroid[3];
-	int            n_rotations;
-	double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
-	GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
-	/* operations */
-	PetscErrorCode (*geom_point_inside)(GeometryObject,double*,int*);
-	PetscErrorCode (*geom_transform_translate)(GeometryObject,double*);
-	PetscErrorCode (*geom_destroy)(GeometryObject);
+  char     *name;
+  GeomType type;
+  int      ref_cnt;
+  void     *ctx;
+  double   centroid[3];
+  int            n_rotations;
+  double         rotation_angle[GEOM_SHAPE_MAX_ROTATIONS];
+  GeomRotateAxis rotation_axis[GEOM_SHAPE_MAX_ROTATIONS];
+  /* operations */
+  PetscErrorCode (*geom_point_inside)(GeometryObject,double*,int*);
+  PetscErrorCode (*geom_transform_translate)(GeometryObject,double*);
+  PetscErrorCode (*geom_destroy)(GeometryObject);
 };
 
 
@@ -93,47 +93,47 @@ struct _p_GeometryObject {
 */
 typedef struct _p_GeomTypeBox *GeomTypeBox;
 struct _p_GeomTypeBox {
-	double Lx[3];
+  double Lx[3];
 };
 
 typedef struct _p_GeomTypeCylinder *GeomTypeCylinder;
 struct _p_GeomTypeCylinder {
-	GeomRotateAxis axis;
-	double radius,length;
+  GeomRotateAxis axis;
+  double radius,length;
 };
 
 typedef struct _p_GeomTypeSphere *GeomTypeSphere;
 struct _p_GeomTypeSphere {
-	double radius;
+  double radius;
 };
 
 typedef struct _p_GeomTypeEllipticCylinder *GeomTypeEllipticCylinder;
 struct _p_GeomTypeEllipticCylinder {
     GeomRotateAxis axis;
-	double radia,radib,length;
+  double radia,radib,length;
 };
 
 typedef struct _p_GeomTypeInfLayer *GeomTypeInfLayer;
 struct _p_GeomTypeInfLayer {
     GeomRotateAxis axis;
-	double thickness;
+  double thickness;
 };
 
 typedef struct _p_GeomTypeEllipsoid *GeomTypeEllipsoid;
 struct _p_GeomTypeEllipsoid {
-	double radia,radib,radic;
+  double radia,radib,radic;
 };
 
 typedef struct _p_GeomTypeSetOperation *GeomTypeSetOperation;
 struct _p_GeomTypeSetOperation {
-	GeomSetOperatorType operator_type;
-	GeometryObject A,B;
+  GeomSetOperatorType operator_type;
+  GeometryObject A,B;
 };
 
 typedef struct _p_GeomTypeHalfSpace *GeomTypeHalfSpace;
 struct _p_GeomTypeHalfSpace {
-	GeomSign       sign;
-	GeomRotateAxis axis;
+  GeomSign       sign;
+  GeomRotateAxis axis;
 };
 
 /*

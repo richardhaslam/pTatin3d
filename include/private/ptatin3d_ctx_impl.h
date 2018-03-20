@@ -41,52 +41,52 @@
 #include "material_constants.h"
 
 struct _p_pTatinCtx {
-	PhysCompStokes stokes_ctx;
-	PhysCompEnergy energy_ctx;
-	//	PhysCompCoords coords_ctx;
+  PhysCompStokes stokes_ctx;
+  PhysCompEnergy energy_ctx;
+  //  PhysCompCoords coords_ctx;
 
-	PetscBool  restart_from_file;
-	char			 restart_dir[PETSC_MAX_PATH_LEN];
-	PetscInt   checkpoint_every, checkpoint_every_nsteps;
-	PetscReal  checkpoint_every_ncpumins;
-	PetscBool  checkpoint_disable;
-	PetscBool  use_mf_stokes;
+  PetscBool  restart_from_file;
+  char       restart_dir[PETSC_MAX_PATH_LEN];
+  PetscInt   checkpoint_every, checkpoint_every_nsteps;
+  PetscReal  checkpoint_every_ncpumins;
+  PetscBool  checkpoint_disable;
+  PetscBool  use_mf_stokes;
 
-	/* rheology */
+  /* rheology */
   //RheologyConstants rheology_constants;
 
-	/* Mesh size */
-	PetscInt   mx,my,mz;
+  /* Mesh size */
+  PetscInt   mx,my,mz;
 
   DM  pack; /* all physics gets jammed in here */
 
-	char       formatted_timestamp[PETSC_MAX_PATH_LEN];
-	char       outputpath[PETSC_MAX_PATH_LEN];
-	/* material points */
-	PetscInt   coefficient_projection_type;
-	DataBucket materialpoint_db;
-	DataEx     materialpoint_ex;
-	/* options */
-	PetscBool solverstatistics;
-	/* snes continuation parameter */
-	PetscInt continuation_m, continuation_M;
-	/* time stepping */
-	PetscInt  nsteps,step;
-	PetscReal dt,dt_max,dt_min,dt_adv;
-	PetscInt  output_frequency;
-	PetscReal time_max,time;
-	PetscBool use_constant_dt;
-	PetscReal constant_dt;
+  char       formatted_timestamp[PETSC_MAX_PATH_LEN];
+  char       outputpath[PETSC_MAX_PATH_LEN];
+  /* material points */
+  PetscInt   coefficient_projection_type;
+  DataBucket materialpoint_db;
+  DataEx     materialpoint_ex;
+  /* options */
+  PetscBool solverstatistics;
+  /* snes continuation parameter */
+  PetscInt continuation_m, continuation_M;
+  /* time stepping */
+  PetscInt  nsteps,step;
+  PetscReal dt,dt_max,dt_min,dt_adv;
+  PetscInt  output_frequency;
+  PetscReal time_max,time;
+  PetscBool use_constant_dt;
+  PetscReal constant_dt;
 
-	/* rheology */
+  /* rheology */
   RheologyConstants rheology_constants;
-	DataBucket material_constants;
+  DataBucket material_constants;
 
-	/* model function pointers */
-	pTatinModel model;
-	PetscContainer model_data;
-	/* logger */
-	PetscViewer log;
+  /* model function pointers */
+  pTatinModel model;
+  PetscContainer model_data;
+  /* logger */
+  PetscViewer log;
 };
 
 #endif

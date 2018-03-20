@@ -49,9 +49,9 @@
 
 /* Define structure for storing material point data */
 typedef struct {
-	double    coor[3];
-	long int  pid;
-	float     viscosity;
+  double    coor[3];
+  long int  pid;
+  float     viscosity;
     short int region_id;
 } MaterialPoint;
 
@@ -62,7 +62,7 @@ const char MaterialPointClassName[] = "DBF_MaterialPoint";
 
 int SwarmTest_Initialization1(void)
 {
-	DataBucket db;
+  DataBucket db;
     int        L;
 
 
@@ -72,28 +72,28 @@ int SwarmTest_Initialization1(void)
     DataBucketCreate(&db);
 
     /* Load a specific data type into data bucket, specifying textual name and its size in bytes */
-	DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
+  DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
 
-	DataBucketFinalize(db);
+  DataBucketFinalize(db);
 
     /* Set number of instances of all data within the data bucket (active size, total size) */
-	DataBucketSetSizes(db,10,-1);
+  DataBucketSetSizes(db,10,-1);
 
     /* Get number of entries */
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  DataBucketGetSizes(db,&L,NULL,NULL);
 
     /* Report information about the bucket and its contents */
     DataBucketView(MPI_COMM_SELF,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
 
     /* Destroy object */
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     return(0);
 }
 
 int SwarmTest_Initialization2(void)
 {
-	DataBucket db;
+  DataBucket db;
     int        L;
 
 
@@ -103,57 +103,57 @@ int SwarmTest_Initialization2(void)
     DataBucketCreate(&db);
 
     /* Load a specific data type into data bucket, specifying textual name and its size in bytes */
-	DataBucketRegisterField(db,"MP_vx",sizeof(double),NULL);
-	DataBucketRegisterField(db,"MP_vy",sizeof(double),NULL);
-	DataBucketRegisterField(db,"MP_pid",sizeof(short int),NULL);
+  DataBucketRegisterField(db,"MP_vx",sizeof(double),NULL);
+  DataBucketRegisterField(db,"MP_vy",sizeof(double),NULL);
+  DataBucketRegisterField(db,"MP_pid",sizeof(short int),NULL);
 
-	DataBucketFinalize(db);
+  DataBucketFinalize(db);
 
     /* Set number of instances of all data within the data bucket (active size, total size) */
-	DataBucketSetSizes(db,10,-1);
+  DataBucketSetSizes(db,10,-1);
 
     /* Get number of entries */
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  DataBucketGetSizes(db,&L,NULL,NULL);
 
     /* Report information about the bucket and its contents */
     DataBucketView(MPI_COMM_SELF,db,"Material Point Data Arrays",DATABUCKET_VIEW_STDOUT);
 
     /* Destroy object */
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     return(0);
 }
 
 int SwarmTest_AccessPatterns1(void)
 {
-	DataBucket db;
-	DataField  dbField;
+  DataBucket db;
+  DataField  dbField;
     int        k,L;
 
 
     printf("[[%s]]\n",__FUNCTION__);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
-	DataBucketFinalize(db);
-	DataBucketSetSizes(db,10,-1);
+  DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
+  DataBucketFinalize(db);
+  DataBucketSetSizes(db,10,-1);
 
     /* Get number of entries */
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  DataBucketGetSizes(db,&L,NULL,NULL);
 
-	/* Set data into the data bucket */
+  /* Set data into the data bucket */
     /*   a) Fetch data type from bucket using textual name */
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     /*   b) Get access to data type. Calls to DataFieldGetAccess() must be paired with a call to DataFieldRestoreAccess() */
-	DataFieldGetAccess(dbField);
+  DataFieldGetAccess(dbField);
     /*   c) Optional: Perform check to ensure data field requested matches size of what you expect */
-	DataFieldVerifyAccess(dbField,sizeof(MaterialPoint));
+  DataFieldVerifyAccess(dbField,sizeof(MaterialPoint));
 
     for (k=0; k<L; k++) {
-		MaterialPoint *mp_k;
+    MaterialPoint *mp_k;
 
         /* From the data field object, get pointer to the k'th entry of type MaterialPoint */
-		DataFieldAccessPoint(dbField,k,(void**)&mp_k);
+    DataFieldAccessPoint(dbField,k,(void**)&mp_k);
 
         /* Set values in the k'th entry */
         mp_k->coor[0] = (double)3*k + 1.1;
@@ -166,28 +166,28 @@ int SwarmTest_AccessPatterns1(void)
     }
 
     /*   d) Restore access to data type */
-	DataFieldRestoreAccess(dbField);
+  DataFieldRestoreAccess(dbField);
 
     /* Examine result */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
-	DataFieldGetAccess(dbField);
+  DataFieldGetAccess(dbField);
     for (k=0; k<L; k++) {
-		MaterialPoint *mp_k;
+    MaterialPoint *mp_k;
 
-		DataFieldAccessPoint(dbField,k,(void**)&mp_k);
+    DataFieldAccessPoint(dbField,k,(void**)&mp_k);
         printf("  [%.2d] pid = %ld ; viscosity = %1.4e\n",k,mp_k->pid,mp_k->viscosity);
     }
-	DataFieldRestoreAccess(dbField);
+  DataFieldRestoreAccess(dbField);
 
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     return(0);
 }
 
 int SwarmTest_AccessPatterns2(void)
 {
-	DataBucket    db;
-	DataField     dbField;
+  DataBucket    db;
+  DataField     dbField;
     MaterialPoint *mp_list;
     int           k,L;
 
@@ -195,26 +195,26 @@ int SwarmTest_AccessPatterns2(void)
     printf("[[%s]]\n",__FUNCTION__);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
-	DataBucketFinalize(db);
-	DataBucketSetSizes(db,10,-1);
+  DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
+  DataBucketFinalize(db);
+  DataBucketSetSizes(db,10,-1);
 
     /* Get number of entries */
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  DataBucketGetSizes(db,&L,NULL,NULL);
 
-	/* Set data into the data bucket */
+  /* Set data into the data bucket */
     /*   a) Fetch data type from bucket using textual name */
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     /*   b) Get access to data type. Calls to DataFieldGetAccess() must be paired with a call to DataFieldRestoreAccess() */
-	DataFieldGetAccess(dbField);
+  DataFieldGetAccess(dbField);
     /*   c) Optional: Perform check to ensure data field requested matches size of what you expect */
-	DataFieldVerifyAccess(dbField,sizeof(MaterialPoint));
+  DataFieldVerifyAccess(dbField,sizeof(MaterialPoint));
 
     for (k=0; k<L; k++) {
-		MaterialPoint *mp_k;
+    MaterialPoint *mp_k;
 
         /* From the data field object, get pointer to the k'th entry of type MaterialPoint */
-		DataFieldAccessPoint(dbField,k,(void**)&mp_k);
+    DataFieldAccessPoint(dbField,k,(void**)&mp_k);
 
         /* Set values in the k'th entry */
         mp_k->coor[0] = (double)3*k + 1.1;
@@ -227,7 +227,7 @@ int SwarmTest_AccessPatterns2(void)
     }
 
     /*   d) Restore access to data type */
-	DataFieldRestoreAccess(dbField);
+  DataFieldRestoreAccess(dbField);
 
     /* Examine result */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
@@ -243,15 +243,15 @@ int SwarmTest_AccessPatterns2(void)
     }
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
 
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     return(0);
 }
 
 int SwarmTest_AccessPatterns3(void)
 {
-	DataBucket db;
-	DataField  dbField;
+  DataBucket db;
+  DataField  dbField;
     double     *data_d;
     short int  *data_si;
     int        k,L;
@@ -263,15 +263,15 @@ int SwarmTest_AccessPatterns3(void)
     DataBucketCreate(&db);
 
     /* Load a specific data type into data bucket, specifying textual name and its size in bytes */
-	DataBucketRegisterField(db,"MP_vx",sizeof(double),NULL);
-	DataBucketRegisterField(db,"MP_vy",sizeof(double),NULL);
-	DataBucketRegisterField(db,"MP_pid",sizeof(short int),NULL);
+  DataBucketRegisterField(db,"MP_vx",sizeof(double),NULL);
+  DataBucketRegisterField(db,"MP_vy",sizeof(double),NULL);
+  DataBucketRegisterField(db,"MP_pid",sizeof(short int),NULL);
 
-	DataBucketFinalize(db);
+  DataBucketFinalize(db);
 
-	DataBucketSetSizes(db,5,-1);
+  DataBucketSetSizes(db,5,-1);
 
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  DataBucketGetSizes(db,&L,NULL,NULL);
 
     /* Set array entries : vx */
     DataBucketGetDataFieldByName(db,"MP_vx",&dbField);
@@ -328,8 +328,8 @@ int SwarmTest_AccessPatterns3(void)
 
 int SwarmTest_LengthManipulations1(void)
 {
-	DataBucket    db;
-	DataField     dbField;
+  DataBucket    db;
+  DataField     dbField;
     MaterialPoint *mp_list;
     int           k,L,Lnew;
 
@@ -337,22 +337,22 @@ int SwarmTest_LengthManipulations1(void)
     printf("[[%s]]\n",__FUNCTION__);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
-	DataBucketFinalize(db);
-	DataBucketSetSizes(db,6,-1);
+  DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
+  DataBucketFinalize(db);
+  DataBucketSetSizes(db,6,-1);
 
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  DataBucketGetSizes(db,&L,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
 
-	/* Set data into the data bucket */
-	DataFieldGetAccess(dbField);
-	DataBucketGetSizes(db,&L,NULL,NULL);
+  /* Set data into the data bucket */
+  DataFieldGetAccess(dbField);
+  DataBucketGetSizes(db,&L,NULL,NULL);
     for (k=0; k<L; k++) {
-		MaterialPoint *mp_k;
+    MaterialPoint *mp_k;
 
         /* From the data field object, get pointer to the k'th entry of type MaterialPoint */
-		DataFieldAccessPoint(dbField,k,(void**)&mp_k);
+    DataFieldAccessPoint(dbField,k,(void**)&mp_k);
 
         /* Set values in the k'th entry */
         mp_k->coor[0] = (double)3*k + 1.1;
@@ -363,11 +363,11 @@ int SwarmTest_LengthManipulations1(void)
         mp_k->viscosity = (float)(k*10);
         mp_k->region_id = 2;
     }
-	DataFieldRestoreAccess(dbField);
+  DataFieldRestoreAccess(dbField);
 
     /* Examine result */
     DataFieldGetEntries(dbField,(void**)&mp_list);
-	DataBucketGetSizes(db,&Lnew,NULL,NULL);
+  DataBucketGetSizes(db,&Lnew,NULL,NULL);
     printf("[a] Initial entries\n");
     for (k=0; k<L; k++) {
         printf("  [%.2d] pid = %ld ; viscosity = %1.4e\n",k,mp_list[k].pid,mp_list[k].viscosity);
@@ -383,11 +383,11 @@ int SwarmTest_LengthManipulations1(void)
 
      Note: New entries are placed at the end of the list
     */
-	DataBucketSetSizes(db,10,20);
-	DataBucketGetSizes(db,&Lnew,NULL,NULL);
+  DataBucketSetSizes(db,10,20);
+  DataBucketGetSizes(db,&Lnew,NULL,NULL);
 
     /* Set values on new points */
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     DataFieldGetEntries(dbField,(void**)&mp_list);
     for (k=L; k<Lnew; k++) {
         mp_list[k].coor[0] = (double)3*k + 10.1;
@@ -402,7 +402,7 @@ int SwarmTest_LengthManipulations1(void)
 
     /* Examine result */
     DataFieldGetEntries(dbField,(void**)&mp_list);
-	DataBucketGetSizes(db,&Lnew,NULL,NULL);
+  DataBucketGetSizes(db,&Lnew,NULL,NULL);
     printf("[b] Current entries (extended)\n");
     for (k=0; k<Lnew; k++) {
         printf("  [%.2d] pid = %ld ; viscosity = %1.4e\n",k,mp_list[k].pid,mp_list[k].viscosity);
@@ -422,9 +422,9 @@ int SwarmTest_LengthManipulations1(void)
     DataBucketRemovePointAtIndex(db,4);
     DataBucketRemovePointAtIndex(db,7);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     DataFieldGetEntries(dbField,(void**)&mp_list);
-	DataBucketGetSizes(db,&Lnew,NULL,NULL);
+  DataBucketGetSizes(db,&Lnew,NULL,NULL);
     printf("[c] Current entries (2,4,8 removed)\n");
     for (k=0; k<Lnew; k++) {
         printf("  [%.2d] pid = %ld ; viscosity = %1.4e\n",k,mp_list[k].pid,mp_list[k].viscosity);
@@ -434,15 +434,15 @@ int SwarmTest_LengthManipulations1(void)
     /* Report information about the bucket and its contents */
     DataBucketView(MPI_COMM_SELF,db,"Material Point Data Arrays",DATABUCKET_VIEW_STDOUT);
 
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     return(0);
 }
 
 int SwarmTest_Parallel1(MPI_Comm comm)
 {
-	DataBucket    db;
-	DataField     dbField;
+  DataBucket    db;
+  DataField     dbField;
     MaterialPoint *mp_list;
     int           nproc,rank,i,k,init_size,L_local;
     long int      L_global;
@@ -456,22 +456,22 @@ int SwarmTest_Parallel1(MPI_Comm comm)
     MPI_Barrier(comm);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
-	DataBucketFinalize(db);
+  DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
+  DataBucketFinalize(db);
 
     /* Each processor will define a different number of entries */
     init_size = (rank + 1) * 3;
-	DataBucketSetSizes(db,init_size,-1);
+  DataBucketSetSizes(db,init_size,-1);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
-	DataFieldGetAccess(dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataFieldGetAccess(dbField);
     /* Get number of entries */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
     for (k=0; k<L_local; k++) {
-		MaterialPoint *mp_k;
+    MaterialPoint *mp_k;
 
-		DataFieldAccessPoint(dbField,k,(void**)&mp_k);
+    DataFieldAccessPoint(dbField,k,(void**)&mp_k);
 
         /* Set values in the k'th entry */
         mp_k->coor[0] = (double)3*k + 1.1 + (double)(rank*10);
@@ -483,12 +483,12 @@ int SwarmTest_Parallel1(MPI_Comm comm)
         mp_k->region_id = (short int)(rank+1);
     }
 
-	DataFieldRestoreAccess(dbField);
+  DataFieldRestoreAccess(dbField);
 
     /* Examine result */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     DataFieldGetEntries(dbField,(void**)&mp_list);
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
     for (i=0; i<nproc; i++) {
         MPI_Barrier(comm);
         if (rank == i) {
@@ -500,12 +500,12 @@ int SwarmTest_Parallel1(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
 
     /* Get total number of entries (summed over all ranks in comm */
-	DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
+  DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
 
     /* Report parallel information about data bucket */
     DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
 
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     return(0);
 }

@@ -51,14 +51,14 @@
 
 /* Define structures for storing material point data */
 typedef struct {
-	double    coor[3];
-	long int  pid;
-	float     viscosity;
+  double    coor[3];
+  long int  pid;
+  float     viscosity;
     short int region_id;
 } MaterialPoint;
 
 typedef struct {
-	float plastic_strain;
+  float plastic_strain;
     char  failure_type;
 } MaterialPointVP;
 
@@ -72,8 +72,8 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
 {
     PetscErrorCode ierr;
     DataEx          data_exchanger;
-	DataBucket      db;
-	DataField       dbField;
+  DataBucket      db;
+  DataField       dbField;
     MaterialPoint   *mp_list,*mp_list_recv;
     int             nproc,rank,i,k,init_size,L_local;
     long int        L_global;
@@ -93,23 +93,23 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
-	DataBucketFinalize(db);
+  DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
+  DataBucketFinalize(db);
 
     /* Each processor will define a different number of entries */
     if (rank == 0) { init_size = 7; }
     if (rank == 1) { init_size = 3; }
-	DataBucketSetSizes(db,init_size,-1);
+  DataBucketSetSizes(db,init_size,-1);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
-	DataFieldGetAccess(dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataFieldGetAccess(dbField);
     /* Get number of entries */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
     for (k=0; k<L_local; k++) {
-		MaterialPoint *mp_k;
+    MaterialPoint *mp_k;
 
-		DataFieldAccessPoint(dbField,k,(void**)&mp_k);
+    DataFieldAccessPoint(dbField,k,(void**)&mp_k);
 
         /* Set values in the k'th entry */
         mp_k->coor[0] = (double)3*k + 1.1 + (double)(rank*10);
@@ -121,12 +121,12 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
         mp_k->region_id = (short int)(rank+1);
     }
 
-	DataFieldRestoreAccess(dbField);
+  DataFieldRestoreAccess(dbField);
 
     /* Examine result */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     DataFieldGetEntries(dbField,(void**)&mp_list);
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
     ierr = MPI_Barrier(comm);CHKERRQ(ierr); fflush(stdout);
     if (rank) { printf("[Initial data bucket (pre communication)]\n"); fflush(stdout);} ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -142,7 +142,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp_list);
 
     /* Get total number of entries (summed over all ranks in comm */
-	DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
+  DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
 
     /* Report parallel information about data bucket */
     DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
@@ -274,8 +274,8 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
      The newly received data needs to be inserted into the users data structure.
      We will insert new material points at the end of the array within our data bucket
     */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
-	DataBucketSetSizes(db,L_local + num_items_recv,-1);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketSetSizes(db,L_local + num_items_recv,-1);
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     for (k=0; k<num_items_recv; k++) {
         DataFieldInsertPoint(dbField,L_local+k,&mp_list_recv[k]);
@@ -284,7 +284,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     /* View result */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     DataFieldGetEntries(dbField,(void**)&mp_list);
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
     ierr = MPI_Barrier(comm);CHKERRQ(ierr); fflush(stdout);
     if (rank) { printf("[Final data bucket (post communication)]\n"); fflush(stdout); } ierr = MPI_Barrier(comm);CHKERRQ(ierr);
@@ -304,7 +304,7 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
     ierr = DataExView(data_exchanger);CHKERRQ(ierr);
 
     ierr = DataExDestroy(data_exchanger);CHKERRQ(ierr);
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     PetscFunctionReturn(0);
 }
@@ -322,8 +322,8 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
 {
     PetscErrorCode ierr;
     DataEx          data_exchanger;
-	DataBucket      db;
-	DataField       dbField,dbFieldVP;
+  DataBucket      db;
+  DataField       dbField,dbFieldVP;
     int             nproc,rank,i,k,init_size,L_local;
     long int        L_global;
     PetscInt        num_items_recv;
@@ -344,17 +344,17 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,  sizeof(MaterialPoint),  NULL);
-	DataBucketRegisterField(db,MaterialPointVPClassName,sizeof(MaterialPointVP),NULL);
-	DataBucketFinalize(db);
+  DataBucketRegisterField(db,MaterialPointClassName,  sizeof(MaterialPoint),  NULL);
+  DataBucketRegisterField(db,MaterialPointVPClassName,sizeof(MaterialPointVP),NULL);
+  DataBucketFinalize(db);
 
     /* Each processor will define a different number of entries */
     if (rank == 0) { init_size = 7; }
     if (rank == 1) { init_size = 3; }
-	DataBucketSetSizes(db,init_size,-1);
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketSetSizes(db,init_size,-1);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
     DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
     DataFieldGetEntries(dbField,  (void**)&mp);
     DataFieldGetEntries(dbFieldVP,(void**)&mpv);
@@ -378,9 +378,9 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp);
 
     /* Examine result */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
     DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
     DataFieldGetEntries(dbField,  (void**)&mp);
     DataFieldGetEntries(dbFieldVP,(void**)&mpv);
@@ -400,7 +400,7 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp);
 
     /* Get total number of entries (summed over all ranks in comm */
-	DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
+  DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
 
     /* Report parallel information about data bucket */
     DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
@@ -463,8 +463,8 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     ierr = DataExGetRecvData(data_exchanger,&num_items_recv,(void**)&mp_recv);CHKERRQ(ierr);
 
     /* Increase size of data bucket */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
-	DataBucketSetSizes(db,L_local + num_items_recv,-1);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketSetSizes(db,L_local + num_items_recv,-1);
 
     /* Insert new values for MaterialPoint */
     DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
@@ -516,8 +516,8 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
      "ownership" of the material point has changed - hence we should remove the material points which
      are being sent.
      */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,&dbField);
     DataFieldGetEntries(dbField,(void**)&mp);
     for (k=0; k<L_local; k++) {
         if (mp[k].region_id == -10) {
@@ -527,9 +527,9 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp);
 
     /* View result */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
     DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
     DataFieldGetEntries(dbField,  (void**)&mp);
     DataFieldGetEntries(dbFieldVP,(void**)&mpv);
@@ -552,7 +552,7 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
     ierr = DataExView(data_exchanger);CHKERRQ(ierr);
 
     ierr = DataExDestroy(data_exchanger);CHKERRQ(ierr);
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     PetscFunctionReturn(0);
 }
@@ -565,15 +565,15 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
 {
     PetscErrorCode ierr;
     DataEx          data_exchanger;
-	DataBucket      db;
-	DataField       dbField,dbFieldVP;
+  DataBucket      db;
+  DataField       dbField,dbFieldVP;
     int             nproc,rank,i,k,init_size,L_local;
     long int        L_global;
     PetscInt        num_items_recv;
     MaterialPoint   *mp;
     MaterialPointVP *mpv;
-	size_t          sizeof_marker_contents;
-	void            *recv_buffer,*dbuf;
+  size_t          sizeof_marker_contents;
+  void            *recv_buffer,*dbuf;
 
 
     ierr = MPI_Comm_size(comm,&nproc);CHKERRQ(ierr);
@@ -589,17 +589,17 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 
     DataBucketCreate(&db);
-	DataBucketRegisterField(db,MaterialPointClassName,  sizeof(MaterialPoint),  NULL);
-	DataBucketRegisterField(db,MaterialPointVPClassName,sizeof(MaterialPointVP),NULL);
-	DataBucketFinalize(db);
+  DataBucketRegisterField(db,MaterialPointClassName,  sizeof(MaterialPoint),  NULL);
+  DataBucketRegisterField(db,MaterialPointVPClassName,sizeof(MaterialPointVP),NULL);
+  DataBucketFinalize(db);
 
     /* Each processor will define a different number of entries */
     if (rank == 0) { init_size = 7; }
     if (rank == 1) { init_size = 3; }
-	DataBucketSetSizes(db,init_size,-1);
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketSetSizes(db,init_size,-1);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
     DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
     DataFieldGetEntries(dbField,  (void**)&mp);
     DataFieldGetEntries(dbFieldVP,(void**)&mpv);
@@ -623,9 +623,9 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp);
 
     /* Examine result */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
     DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
     DataFieldGetEntries(dbField,  (void**)&mp);
     DataFieldGetEntries(dbFieldVP,(void**)&mpv);
@@ -645,7 +645,7 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     DataFieldRestoreEntries(dbField,(void**)&mp);
 
     /* Get total number of entries (summed over all ranks in comm */
-	DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
+  DataBucketGetGlobalSizes(comm,db,&L_global,NULL,NULL);
 
     /* Report parallel information about data bucket */
     DataBucketView(comm,db,"Material Point Coefficients",DATABUCKET_VIEW_STDOUT);
@@ -671,7 +671,7 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     }
     ierr = DataExFinalizeSendCount(data_exchanger);CHKERRQ(ierr);
 
-	/* allocate a temporary buffer which is large enough to store all marker fields from an individual point,p */
+  /* allocate a temporary buffer which is large enough to store all marker fields from an individual point,p */
     DataBucketCreatePackedArray(db,&sizeof_marker_contents,&dbuf);
 
     /* Phase b) Pack data into buffers to be sent [MaterialPoint + MaterialPointVP] */
@@ -729,8 +729,8 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     ierr = DataExGetRecvData(data_exchanger,&num_items_recv,(void**)&recv_buffer);CHKERRQ(ierr);
 
     /* Increase size of data bucket */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
-	DataBucketSetSizes(db,L_local + num_items_recv,-1);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketSetSizes(db,L_local + num_items_recv,-1);
 
     /* Insert new values for MaterialPoint */
     for (k=0; k<num_items_recv; k++) {
@@ -740,9 +740,9 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     }
 
     /* View result */
-	DataBucketGetSizes(db,&L_local,NULL,NULL);
+  DataBucketGetSizes(db,&L_local,NULL,NULL);
 
-	DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
+  DataBucketGetDataFieldByName(db,MaterialPointClassName,  &dbField);
     DataBucketGetDataFieldByName(db,MaterialPointVPClassName,&dbFieldVP);
     DataFieldGetEntries(dbField,  (void**)&mp);
     DataFieldGetEntries(dbFieldVP,(void**)&mpv);
@@ -765,9 +765,9 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
     ierr = DataExView(data_exchanger);CHKERRQ(ierr);
 
     DataBucketDestroyPackedArray(db,&dbuf);
-	//ierr = PetscFree(data_buffer);CHKERRQ(ierr);
+  //ierr = PetscFree(data_buffer);CHKERRQ(ierr);
     ierr = DataExDestroy(data_exchanger);CHKERRQ(ierr);
-	DataBucketDestroy(&db);
+  DataBucketDestroy(&db);
 
     PetscFunctionReturn(0);
 }

@@ -49,105 +49,105 @@ PetscErrorCode DMDAECreate(DMDAE *dae)
 
 PetscErrorCode DMDAEDestroy(DMDAE *dae)
 {
-	DMDAE d;
-	PetscErrorCode ierr;
+  DMDAE d;
+  PetscErrorCode ierr;
 
     PetscFunctionBegin;
-	if (!dae){ PetscFunctionReturn(0); }
-	d = (*dae);
+  if (!dae){ PetscFunctionReturn(0); }
+  d = (*dae);
   ierr = PetscFree(d->lsip);CHKERRQ(ierr);
   ierr = PetscFree(d->lsjp);CHKERRQ(ierr);
   ierr = PetscFree(d->lskp);CHKERRQ(ierr);
   ierr = PetscFree(d->lmxp);CHKERRQ(ierr);
   ierr = PetscFree(d->lmyp);CHKERRQ(ierr);
   ierr = PetscFree(d->lmzp);CHKERRQ(ierr);
-	ierr = PetscFree(d);CHKERRQ(ierr);
-	*dae = NULL;
+  ierr = PetscFree(d);CHKERRQ(ierr);
+  *dae = NULL;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
     PetscFunctionBegin;
-	dae2->ne  = dae1->ne;
-	dae2->lne = dae1->lne;
+  dae2->ne  = dae1->ne;
+  dae2->lne = dae1->lne;
 
-	dae2->mx = dae1->mx;
-	dae2->my = dae1->my;
-	dae2->mz = dae1->mz;
+  dae2->mx = dae1->mx;
+  dae2->my = dae1->my;
+  dae2->mz = dae1->mz;
 
-	dae2->lmx = dae1->lmx;
-	dae2->lmy = dae1->lmy;
-	dae2->lmz = dae1->lmz;
+  dae2->lmx = dae1->lmx;
+  dae2->lmy = dae1->lmy;
+  dae2->lmz = dae1->lmz;
 
-	dae2->si = dae1->si;
-	dae2->sj = dae1->sj;
-	dae2->sk = dae1->sk;
+  dae2->si = dae1->si;
+  dae2->sj = dae1->sj;
+  dae2->sk = dae1->sk;
 
-	dae2->npe = dae1->npe;
-	dae2->nps = dae1->nps;
-	dae2->overlap = dae1->overlap;
+  dae2->npe = dae1->npe;
+  dae2->nps = dae1->nps;
+  dae2->overlap = dae1->overlap;
 
-	dae2->sgi = dae1->sgi;
-	dae2->sgj = dae1->sgj;
-	dae2->sgk = dae1->sgk;
+  dae2->sgi = dae1->sgi;
+  dae2->sgj = dae1->sgj;
+  dae2->sgk = dae1->sgk;
 
-	ierr = PetscMalloc(sizeof(PetscInt)*NP[0],&dae2->lsip);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*NP[1],&dae2->lsjp);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*NP[2],&dae2->lskp);CHKERRQ(ierr);
-	ierr = PetscMemcpy(dae2->lsip,dae1->lsip,sizeof(PetscInt)*NP[0]);CHKERRQ(ierr);
-	ierr = PetscMemcpy(dae2->lsjp,dae1->lsjp,sizeof(PetscInt)*NP[1]);CHKERRQ(ierr);
-	ierr = PetscMemcpy(dae2->lskp,dae1->lskp,sizeof(PetscInt)*NP[2]);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*NP[0],&dae2->lsip);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*NP[1],&dae2->lsjp);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*NP[2],&dae2->lskp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dae2->lsip,dae1->lsip,sizeof(PetscInt)*NP[0]);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dae2->lsjp,dae1->lsjp,sizeof(PetscInt)*NP[1]);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dae2->lskp,dae1->lskp,sizeof(PetscInt)*NP[2]);CHKERRQ(ierr);
 
-	ierr = PetscMalloc(sizeof(PetscInt)*NP[0],&dae2->lmxp);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*NP[1],&dae2->lmyp);CHKERRQ(ierr);
-	ierr = PetscMalloc(sizeof(PetscInt)*NP[2],&dae2->lmzp);CHKERRQ(ierr);
-	ierr = PetscMemcpy(dae2->lsip,dae1->lmxp,sizeof(PetscInt)*NP[0]);CHKERRQ(ierr);
-	ierr = PetscMemcpy(dae2->lsjp,dae1->lmyp,sizeof(PetscInt)*NP[1]);CHKERRQ(ierr);
-	ierr = PetscMemcpy(dae2->lskp,dae1->lmzp,sizeof(PetscInt)*NP[2]);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*NP[0],&dae2->lmxp);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*NP[1],&dae2->lmyp);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*NP[2],&dae2->lmzp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dae2->lsip,dae1->lmxp,sizeof(PetscInt)*NP[0]);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dae2->lsjp,dae1->lmyp,sizeof(PetscInt)*NP[1]);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dae2->lskp,dae1->lmzp,sizeof(PetscInt)*NP[2]);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2)
 {
 
     PetscFunctionBegin;
-	dae2->ne  = dae1->ne;
-	dae2->lne = dae1->lne;
+  dae2->ne  = dae1->ne;
+  dae2->lne = dae1->lne;
 
-	dae2->mx = dae1->mx;
-	dae2->my = dae1->my;
-	dae2->mz = dae1->mz;
+  dae2->mx = dae1->mx;
+  dae2->my = dae1->my;
+  dae2->mz = dae1->mz;
 
-	dae2->lmx = dae1->lmx;
-	dae2->lmy = dae1->lmy;
-	dae2->lmz = dae1->lmz;
+  dae2->lmx = dae1->lmx;
+  dae2->lmy = dae1->lmy;
+  dae2->lmz = dae1->lmz;
 
-	dae2->si = dae1->si;
-	dae2->sj = dae1->sj;
-	dae2->sk = dae1->sk;
+  dae2->si = dae1->si;
+  dae2->sj = dae1->sj;
+  dae2->sk = dae1->sk;
 
-	dae2->npe = dae1->npe;
-	dae2->nps = dae1->nps;
-	dae2->overlap = dae1->overlap;
+  dae2->npe = dae1->npe;
+  dae2->nps = dae1->nps;
+  dae2->overlap = dae1->overlap;
 
-	dae2->sgi = dae1->sgi;
-	dae2->sgj = dae1->sgj;
-	dae2->sgk = dae1->sgk;
+  dae2->sgi = dae1->sgi;
+  dae2->sgj = dae1->sgj;
+  dae2->sgk = dae1->sgk;
 
-	dae2->lsip = dae1->lsip;
-	dae2->lsjp = dae1->lsjp;
-	dae2->lskp = dae1->lskp;
+  dae2->lsip = dae1->lsip;
+  dae2->lsjp = dae1->lsjp;
+  dae2->lskp = dae1->lskp;
 
-	dae2->lmxp = dae1->lmxp;
-	dae2->lmyp = dae1->lmyp;
-	dae2->lmzp = dae1->lmzp;
+  dae2->lmxp = dae1->lmxp;
+  dae2->lmyp = dae1->lmyp;
+  dae2->lmzp = dae1->lmzp;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMAttachDMDAE(DM dm)
@@ -186,19 +186,19 @@ PetscErrorCode DMGetDMDAE(DM dm,DMDAE *dae)
 
 PetscErrorCode DMDestroyDMDAE(DM dm)
 {
-	DMDAE d;
-	PetscContainer container;
-	PetscErrorCode ierr;
+  DMDAE d;
+  PetscContainer container;
+  PetscErrorCode ierr;
 
     PetscFunctionBegin;
-	ierr = PetscObjectQuery((PetscObject)dm,"DMDAEobject",(PetscObject*)&container);CHKERRQ(ierr);
-	if (!container) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"DMDAEobject\" was composed with DM");
-	ierr = PetscContainerGetPointer(container,(void**)&d);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)dm,"DMDAEobject",(PetscObject*)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"DMDAEobject\" was composed with DM");
+  ierr = PetscContainerGetPointer(container,(void**)&d);CHKERRQ(ierr);
 
-	ierr = DMDAEDestroy(&d);CHKERRQ(ierr);
-	//ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+  ierr = DMDAEDestroy(&d);CHKERRQ(ierr);
+  //ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
@@ -206,44 +206,44 @@ PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
                                        PetscInt **si,PetscInt **sj,PetscInt **sk,
                                        PetscInt **mx,PetscInt **my,PetscInt **mz)
 {
-	DMDAE dae;
-	PetscInt pM,pN,pP;
-	PetscErrorCode ierr;
+  DMDAE dae;
+  PetscInt pM,pN,pP;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
+  ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
 
-	ierr = DMDAGetInfo(dm,0,0,0,0,&pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
-	if (m) { *m = pM; }
-	if (n) { *n = pN; }
-	if (p) { *p = pP; }
+  ierr = DMDAGetInfo(dm,0,0,0,0,&pM,&pN,&pP, 0, 0, 0,0,0, 0 );CHKERRQ(ierr);
+  if (m) { *m = pM; }
+  if (n) { *n = pN; }
+  if (p) { *p = pP; }
 
-	if (si) { *si = dae->lsip; }
-	if (sj) { *sj = dae->lsjp; }
-	if (sk) { *sk = dae->lskp; }
+  if (si) { *si = dae->lsip; }
+  if (sj) { *sj = dae->lsjp; }
+  if (sk) { *sk = dae->lskp; }
 
-	if (mx) { *mx = dae->lmxp; }
-	if (my) { *my = dae->lmyp; }
-	if (mz) { *mz = dae->lmzp; }
+  if (mx) { *mx = dae->lmxp; }
+  if (my) { *my = dae->lmyp; }
+  if (mz) { *mz = dae->lmzp; }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt *esk,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
-	DMDAE dae;
-	PetscErrorCode ierr;
+  DMDAE dae;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-	ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
-	if (esi) { *esi = dae->si; }
-	if (esj) { *esj = dae->sj; }
-	if (esk) { *esk = dae->sk; }
+  ierr = DMGetDMDAE(dm,&dae);CHKERRQ(ierr);
+  if (esi) { *esi = dae->si; }
+  if (esj) { *esj = dae->sj; }
+  if (esk) { *esk = dae->sk; }
 
-	if (mx) { *mx = dae->lmx; }
-	if (my) { *my = dae->lmy; }
-	if (mz) { *mz = dae->lmz; }
+  if (mx) { *mx = dae->lmx; }
+  if (my) { *my = dae->lmy; }
+  if (mz) { *mz = dae->lmz; }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 

@@ -41,66 +41,66 @@
 
 PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 {
-	char *loc = NULL;
-	int throw_warning = 0;
+  char *loc = NULL;
+  int throw_warning = 0;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	loc = strstr(flags,"-O0");
-	if (loc != NULL) {
-		throw_warning = 1;
-	}
-	if (throw_warning == 1) {
-		PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled with debug options \n");
-		//PetscPrintf(PETSC_COMM_WORLD,"**   TATIN_CFLAGS = %s\n",flags);
-		PetscPrintf(PETSC_COMM_WORLD,"** For significant performance improvements, please consult the file makefile.arch  \n");
-		PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
-		PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
-	}
+  loc = strstr(flags,"-O0");
+  if (loc != NULL) {
+    throw_warning = 1;
+  }
+  if (throw_warning == 1) {
+    PetscPrintf(PETSC_COMM_WORLD,"** WARNING pTatin3d appears to have been compiled with debug options \n");
+    //PetscPrintf(PETSC_COMM_WORLD,"**   TATIN_CFLAGS = %s\n",flags);
+    PetscPrintf(PETSC_COMM_WORLD,"** For significant performance improvements, please consult the file makefile.arch  \n");
+    PetscPrintf(PETSC_COMM_WORLD,"** Adjust TATIN_CFLAGS to include aggressive compiler optimizations \n");
+    PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinWritePreamble(void)
 {
-	PetscErrorCode ierr;
-	PetscFunctionBegin;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
 
-	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**             ___________                          _______\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**     _______/          /_____ ________ __ _   ___/       \\ ____\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**    /      /___    ___/      /__   __/  /  \\ /  /\\__ _   /     \\\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /\n");
-	PetscPrintf(PETSC_COMM_WORLD,"** /__/       /___/  /__//__/  /__/ /__/__/ \\__//_______/______/\n");
-	PetscPrintf(PETSC_COMM_WORLD,"**\n");
-	PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (david.may@earth.ox.ac.uk)        \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jed.brown@colorado.edu)          \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**           Patrick Sanan        (patrick.sanan@erdw.ethz.ch)      \n");
-	PetscPrintf(PETSC_COMM_WORLD,"**\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
+  PetscPrintf(PETSC_COMM_WORLD,"**\n");
+  PetscPrintf(PETSC_COMM_WORLD,"**             ___________                          _______\n");
+  PetscPrintf(PETSC_COMM_WORLD,"**     _______/          /_____ ________ __ _   ___/       \\ ____\n");
+  PetscPrintf(PETSC_COMM_WORLD,"**    /      /___    ___/      /__   __/  /  \\ /  /\\__ _   /     \\\n");
+  PetscPrintf(PETSC_COMM_WORLD,"**   /  //  /   /   /  /  //  /  /  / /  /    /  /___/_   /  //  /\n");
+  PetscPrintf(PETSC_COMM_WORLD,"**  /  ___ /   /   /  /  _   /  /  / /  /  /    //       /  //  /\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** /__/       /___/  /__//__/  /__/ /__/__/ \\__//_______/______/\n");
+  PetscPrintf(PETSC_COMM_WORLD,"**\n");
+  PetscPrintf(PETSC_COMM_WORLD,"** Authors:  Dave A. May          (david.may@earth.ox.ac.uk)        \n");
+  PetscPrintf(PETSC_COMM_WORLD,"**           Laetitia Le Pourhiet (laetitia.le_pourhiet@upmc.fr)    \n");
+  PetscPrintf(PETSC_COMM_WORLD,"**           Jed Brown            (jed.brown@colorado.edu)          \n");
+  PetscPrintf(PETSC_COMM_WORLD,"**           Patrick Sanan        (patrick.sanan@erdw.ethz.ch)      \n");
+  PetscPrintf(PETSC_COMM_WORLD,"**\n");
 
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REPO);
+  PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REPO);
 #ifdef PTATIN_DEVELOPMENT_VERSION
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_LOG);
+  PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
+  PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_LOG);
   #ifdef PTATIN_GIT_REPO_STATUS
   ierr = PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_GIT_REPO_STATUS);
   #endif
 #endif
 #ifdef PTATIN_RELEASE
-	PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
-	PetscPrintf(PETSC_COMM_WORLD,"** Release v%d.%d-p%d \n", PTATIN_VERSION_MAJOR,PTATIN_VERSION_MINOR,PTATIN_VERSION_PATCH);
+  PetscPrintf(PETSC_COMM_WORLD,"** %s \n", PTATIN_VERSION_CNTR_REVISION);
+  PetscPrintf(PETSC_COMM_WORLD,"** Release v%d.%d-p%d \n", PTATIN_VERSION_MAJOR,PTATIN_VERSION_MINOR,PTATIN_VERSION_PATCH);
 #endif
 
 #ifdef COMPFLAGS
-	#define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
-	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
-	PetscPrintf(PETSC_COMM_WORLD,"** TATIN_CFLAGS = %s\n",STR_ARG_NAME);
-	PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
-	ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
-	#undef STR_ARG_NAME
+  #define STR_ARG_NAME STRINGIFY_ARG(COMPFLAGS)
+  PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
+  PetscPrintf(PETSC_COMM_WORLD,"** TATIN_CFLAGS = %s\n",STR_ARG_NAME);
+  PetscPrintf(PETSC_COMM_WORLD,"**                                                                       \n");
+  ierr = pTatinCheckCompilationFlags(STR_ARG_NAME);CHKERRQ(ierr);
+  #undef STR_ARG_NAME
 #endif
 #if defined(__AVX__)
   PetscPrintf(PETSC_COMM_WORLD,"** AVX detected - optimized kernels will be used \n");
@@ -109,9 +109,9 @@ PetscErrorCode pTatinWritePreamble(void)
   PetscPrintf(PETSC_COMM_WORLD,"** If your system supports AVX, consider adding options,\n");
   PetscPrintf(PETSC_COMM_WORLD,"** e.g. -march=native, to TATIN_CFLAGS in makefile.arch\n");
 #endif
-	PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
+  PetscPrintf(PETSC_COMM_WORLD,"** ====================================================================================== \n");
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 
@@ -168,78 +168,78 @@ extern PetscLogEvent PTATIN_ModelOutput;
 
 PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const char help[])
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
   PetscBool      supress = PETSC_FALSE;
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
+  ierr = PetscInitialize(argc,args,file,help);CHKERRQ(ierr);
 
   ierr = PetscLogDefaultBegin();CHKERRQ(ierr);
 
-	ierr = KSPRegister("chebychevrn",KSPCreate_ChebychevRN);CHKERRQ(ierr);
-	ierr = PCRegister("semiredundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
-	ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
-	ierr = PCRegister("dmdarepart",PCCreate_DMDARepart);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_stp",MAT_CLASSID,&MAT_MultMFA11_stp);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_cto",MAT_CLASSID,&MAT_MultMFA11_cto);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_ker",MAT_CLASSID,&MAT_MultMFA11_ker);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_cfr",MAT_CLASSID,&MAT_MultMFA11_cfr);CHKERRQ(ierr);
+  ierr = KSPRegister("chebychevrn",KSPCreate_ChebychevRN);CHKERRQ(ierr);
+  ierr = PCRegister("semiredundant",PCCreate_SemiRedundant);CHKERRQ(ierr);
+  ierr = PCRegister("wsmp",PCCreate_WSMP);CHKERRQ(ierr);
+  ierr = PCRegister("dmdarepart",PCCreate_DMDARepart);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11",MAT_CLASSID,&MAT_MultMFA11);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_stp",MAT_CLASSID,&MAT_MultMFA11_stp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_cto",MAT_CLASSID,&MAT_MultMFA11_cto);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_ker",MAT_CLASSID,&MAT_MultMFA11_ker);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_cfr",MAT_CLASSID,&MAT_MultMFA11_cfr);CHKERRQ(ierr);
 
-	ierr = PetscLogEventRegister("MatMultMFA11_sub",MAT_CLASSID,&MAT_MultMFA11_sub);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_rto",MAT_CLASSID,&MAT_MultMFA11_rto);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_rfr",MAT_CLASSID,&MAT_MultMFA11_rfr);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_SUP",MAT_CLASSID,&MAT_MultMFA11_SUP);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_sub",MAT_CLASSID,&MAT_MultMFA11_sub);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_rto",MAT_CLASSID,&MAT_MultMFA11_rto);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_rfr",MAT_CLASSID,&MAT_MultMFA11_rfr);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_SUP",MAT_CLASSID,&MAT_MultMFA11_SUP);CHKERRQ(ierr);
 
-	ierr = PetscLogEventRegister("MatMultMFA",  MAT_CLASSID,&MAT_MultMFA  );CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA12",MAT_CLASSID,&MAT_MultMFA12);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA21",MAT_CLASSID,&MAT_MultMFA21);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA",  MAT_CLASSID,&MAT_MultMFA  );CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA12",MAT_CLASSID,&MAT_MultMFA12);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA21",MAT_CLASSID,&MAT_MultMFA21);CHKERRQ(ierr);
 
-	ierr = PetscLogEventRegister("MatMultMFA_QuasiNewtonX",  MAT_CLASSID,&MAT_MultMFA_QuasiNewtonX  );CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA11_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA11_QuasiNewtonX);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA12_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA12_QuasiNewtonX);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MatMultMFA21_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA21_QuasiNewtonX);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA_QuasiNewtonX",  MAT_CLASSID,&MAT_MultMFA_QuasiNewtonX  );CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA11_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA11_QuasiNewtonX);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA12_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA12_QuasiNewtonX);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMultMFA21_QuasiNewtonX",MAT_CLASSID,&MAT_MultMFA21_QuasiNewtonX);CHKERRQ(ierr);
 
-	ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("DataExBegin",    PTATIN_CLASSID,&PTATIN_DataExchangerBegin);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("DataExEnd",      PTATIN_CLASSID,&PTATIN_DataExchangerEnd);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("ptatin",&PTATIN_CLASSID);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DataExTopoSetup",PTATIN_CLASSID,&PTATIN_DataExchangerTopologySetup);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DataExBegin",    PTATIN_CLASSID,&PTATIN_DataExchangerBegin);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DataExEnd",      PTATIN_CLASSID,&PTATIN_DataExchangerEnd);CHKERRQ(ierr);
 
-	ierr = PetscLogEventRegister("ModelInit",      PTATIN_CLASSID,&PTATIN_ModelInitialize);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelInitSoln",  PTATIN_CLASSID,&PTATIN_ModelApplyInitialSolution);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelInitMesh",  PTATIN_CLASSID,&PTATIN_ModelApplyInitialMeshGeometry);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelInitMat",   PTATIN_CLASSID,&PTATIN_ModelApplyInitialMaterialGeometry);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelInitStkVar",PTATIN_CLASSID,&PTATIN_ModelApplyInitialStokesVariableMarkers);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelBC",        PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryCondition);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelBCMG",      PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryConditionMG);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelInit",      PTATIN_CLASSID,&PTATIN_ModelInitialize);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelInitSoln",  PTATIN_CLASSID,&PTATIN_ModelApplyInitialSolution);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelInitMesh",  PTATIN_CLASSID,&PTATIN_ModelApplyInitialMeshGeometry);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelInitMat",   PTATIN_CLASSID,&PTATIN_ModelApplyInitialMaterialGeometry);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelInitStkVar",PTATIN_CLASSID,&PTATIN_ModelApplyInitialStokesVariableMarkers);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelBC",        PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryCondition);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelBCMG",      PTATIN_CLASSID,&PTATIN_ModelApplyBoundaryConditionMG);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelMatBC",     PTATIN_CLASSID,&PTATIN_ModelApplyMaterialBoundaryCondition);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelUpdateMesh",PTATIN_CLASSID,&PTATIN_ModelUpdateMeshGeometry);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("ModelOutput",    PTATIN_CLASSID,&PTATIN_ModelOutput);CHKERRQ(ierr);
 
-	ierr = PetscLogEventRegister("MPAdvGCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvGlobalCoordUpdate);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MPAdvLCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvLocalCoordUpdate);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MPAdvComm",   PTATIN_CLASSID,&PTATIN_MaterialPointAdvCommunication);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MPAdvRemove", PTATIN_CLASSID,&PTATIN_MaterialPointAdvRemoval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MPAdvGCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvGlobalCoordUpdate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MPAdvLCoord", PTATIN_CLASSID,&PTATIN_MaterialPointAdvLocalCoordUpdate);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MPAdvComm",   PTATIN_CLASSID,&PTATIN_MaterialPointAdvCommunication);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MPAdvRemove", PTATIN_CLASSID,&PTATIN_MaterialPointAdvRemoval);CHKERRQ(ierr);
 
-	ierr = PetscLogEventRegister("MPPCInsert", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlInsert);CHKERRQ(ierr);
-	ierr = PetscLogEventRegister("MPPCRemove", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlRemove);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MPPCInsert", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlInsert);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MPPCRemove", PTATIN_CLASSID,&PTATIN_MaterialPointPopulationControlRemove);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(NULL,NULL,"-ptatin_supress_preamble",&supress,NULL);CHKERRQ(ierr);
   if (!supress) {
     ierr = pTatinWritePreamble();CHKERRQ(ierr);
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinFinalize(void)
 {
-	PetscErrorCode ierr;
-	PetscFunctionBegin;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
 
   ierr = pTatinModelDeRegisterAll();CHKERRQ(ierr);
-	ierr = PetscFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 

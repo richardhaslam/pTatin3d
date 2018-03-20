@@ -34,11 +34,11 @@ typedef enum { PHASE_MAP_POINT_OUTSIDE=-1, PHASE_MAP_POINT_INSIDE=1 } PhaseMapLo
 
 typedef struct _p_PhaseMap *PhaseMap;
 struct _p_PhaseMap {
-	double x0,y0,x1,y1;
-	double dx,dy;
-	int mx,my;
-	int nphases;
-	int *data;
+  double x0,y0,x1,y1;
+  double dx,dy;
+  int mx,my;
+  int nphases;
+  int *data;
 };
 
 void PhaseMapCreate(PhaseMap *map);

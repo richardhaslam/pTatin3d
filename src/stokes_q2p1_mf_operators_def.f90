@@ -2,7 +2,7 @@
 
 SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dNudx, dNudy, dNudz, Np, Y )
 
-	! input
+  ! input
   DOUBLE PRECISION, INTENT(IN) :: FAC
   DOUBLE PRECISION, INTENT(IN) :: eta_gp
 
@@ -134,6 +134,6 @@ SUBROUTINE f_matmultmf_stokes_mixedfem3d_b11( FAC, eta_gp, Ux, Uy, Uz, P, Nu, dN
   Y(79) = Y(79) + FAC*(dNudx(26)*tau_gp(3) + dNudy(26)*tau_gp(1) + dNudz(26)*tau_gp(5))
   Y(80) = Y(80) + FAC*(dNudx(26)*tau_gp(4) + dNudy(26)*tau_gp(5) + dNudz(26)*tau_gp(2))
 
-	! total operations = 1058
+  ! total operations = 1058
 
 END

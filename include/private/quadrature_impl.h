@@ -34,25 +34,25 @@
 #include "element_type_Q2.h"
 
 struct _p_Quadrature {
-	PetscInt       dim;
-	QuadratureType type; /* line (dim=2), surface(dim=3), vol(dim=2,3) */
-	PetscInt    npoints;
-	PetscReal  *q_xi_coor;
-	PetscReal  *q_weight;
-	PetscInt   n_elements;
-	DataBucket properties_db;
+  PetscInt       dim;
+  QuadratureType type; /* line (dim=2), surface(dim=3), vol(dim=2,3) */
+  PetscInt    npoints;
+  PetscReal  *q_xi_coor;
+  PetscReal  *q_weight;
+  PetscInt   n_elements;
+  DataBucket properties_db;
 };
 
 struct _p_SurfaceQuadrature {
-	ConformingElementFamily e;
-	HexElementFace face_id;
-	/* quadrature */
-	PetscInt    ngp;
-	QPoint2d    gp2[9]; /* s,t coordinates */
-	QPoint3d    gp3[9]; /* xi,eta,zeta coordinates */
-	PetscInt    nfaces;
-	PetscInt    *element_list; /* list of cells connected to the face */
-	DataBucket  properties_db;
+  ConformingElementFamily e;
+  HexElementFace face_id;
+  /* quadrature */
+  PetscInt    ngp;
+  QPoint2d    gp2[9]; /* s,t coordinates */
+  QPoint3d    gp3[9]; /* xi,eta,zeta coordinates */
+  PetscInt    nfaces;
+  PetscInt    *element_list; /* list of cells connected to the face */
+  DataBucket  properties_db;
 };
 
 

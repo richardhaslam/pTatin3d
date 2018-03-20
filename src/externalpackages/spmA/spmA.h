@@ -31,13 +31,13 @@
 #define __spmA_dummy_h__
 
 typedef struct {
-	int    nx,ny;
-	double Lx,Ly;
-	double base_level;
-	double *x,*y,*h,*h_old,*w;
-	double diffusion0,diffusion1,erodibility;
-	double dt,final_time;
-	int output_frequency;
+  int    nx,ny;
+  double Lx,Ly;
+  double base_level;
+  double *x,*y,*h,*h_old,*w;
+  double diffusion0,diffusion1,erodibility;
+  double dt,final_time;
+  int output_frequency;
 } SPMAData;
 
 typedef enum { SPMA_EVO_BASIC=1, SPMA_EVO_LINEAR_DIFFUSION, SPMA_EVO_NONLINEAR_DIFFUSION } SPMAEvolutionType;

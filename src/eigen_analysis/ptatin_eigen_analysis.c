@@ -612,50 +612,50 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
 
   PetscFunctionBegin;
 
-	ierr = PetscOptionsGetBool(NULL,NULL,"-slepc_compute_errors",&compute_errors,NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-slepc_compute_errors",&compute_errors,NULL);CHKERRQ(ierr);
 
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysis: \"%s\" ===== \n",description);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysis: \"%s\" ===== \n",description);
   ierr = MatCreateVecs(A,NULL,&xr);CHKERRQ(ierr);
   ierr = MatCreateVecs(A,NULL,&xi);CHKERRQ(ierr);
 
-	ierr = EPSCreate(PETSC_COMM_WORLD,&eps);CHKERRQ(ierr);
-	ierr = EPSSetOperators(eps,A,NULL);CHKERRQ(ierr);
-	ierr = EPSSetProblemType(eps,prob_type);CHKERRQ(ierr);
-	ierr = EPSSetFromOptions(eps);CHKERRQ(ierr);
-	ierr = EPSSolve(eps);CHKERRQ(ierr);
+  ierr = EPSCreate(PETSC_COMM_WORLD,&eps);CHKERRQ(ierr);
+  ierr = EPSSetOperators(eps,A,NULL);CHKERRQ(ierr);
+  ierr = EPSSetProblemType(eps,prob_type);CHKERRQ(ierr);
+  ierr = EPSSetFromOptions(eps);CHKERRQ(ierr);
+  ierr = EPSSolve(eps);CHKERRQ(ierr);
 
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysisReport: \"%s\" ===== \n",description);
-	ierr = EPSGetIterationNumber(eps,&its);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of iterations of the method: %D\n",its);CHKERRQ(ierr);
-	ierr = EPSGetType(eps,&type);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Solution method: %s\n\n",type);CHKERRQ(ierr);
-	ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
-	ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",(double)tol,maxit);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"===== EigenAnalysisReport: \"%s\" ===== \n",description);
+  ierr = EPSGetIterationNumber(eps,&its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of iterations of the method: %D\n",its);CHKERRQ(ierr);
+  ierr = EPSGetType(eps,&type);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Solution method: %s\n\n",type);CHKERRQ(ierr);
+  ierr = EPSGetDimensions(eps,&nev,NULL,NULL);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of requested eigenvalues: %D\n",nev);CHKERRQ(ierr);
+  ierr = EPSGetTolerances(eps,&tol,&maxit);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Stopping condition: tol=%.4g, maxit=%D\n",(double)tol,maxit);CHKERRQ(ierr);
 
-	ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
-	ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
+  ierr = EPSGetConverged(eps,&nconv);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," Number of converged eigenpairs: %D\n\n",nconv);CHKERRQ(ierr);
 
-	if (nconv>0) {
-		/* Display eigenvalues and relative errors */
-		if (compute_errors) {
-			ierr = PetscPrintf(PETSC_COMM_WORLD,
-												 "               k                   ||Ax-kx||/||kx||\n"
-												 "   --------------------------    --------------------\n");CHKERRQ(ierr);
-		} else {
-			ierr = PetscPrintf(PETSC_COMM_WORLD,
-												 "               k              \n"
-												 "   -------------------------- \n");CHKERRQ(ierr);
-		}
+  if (nconv>0) {
+    /* Display eigenvalues and relative errors */
+    if (compute_errors) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,
+                         "               k                   ||Ax-kx||/||kx||\n"
+                         "   --------------------------    --------------------\n");CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,
+                         "               k              \n"
+                         "   -------------------------- \n");CHKERRQ(ierr);
+    }
 
-		for (i=0;i<nconv;i++) {
-			/*
-			 Get converged eigenpairs: i-th eigenvalue is stored in kr (real part) and ki (imaginary part)
-			 */
-			ierr = EPSGetEigenpair(eps,i,&kr,&ki,xr,xi);CHKERRQ(ierr);
-			re = kr;
-			im = ki;
+    for (i=0;i<nconv;i++) {
+      /*
+       Get converged eigenpairs: i-th eigenvalue is stored in kr (real part) and ki (imaginary part)
+       */
+      ierr = EPSGetEigenpair(eps,i,&kr,&ki,xr,xi);CHKERRQ(ierr);
+      re = kr;
+      im = ki;
 
       /*
        Compute the relative error associated to each eigenpair

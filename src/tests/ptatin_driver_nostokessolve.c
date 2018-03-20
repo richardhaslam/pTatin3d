@@ -44,302 +44,302 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 PetscErrorCode pTatin3d_material_points_gmg(int argc,char **argv)
 {
-	DM             multipys_pack,dav;
-	pTatinCtx      user;
-	PetscErrorCode ierr;
+  DM             multipys_pack,dav;
+  pTatinCtx      user;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
+  ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
+  ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
-	/* Register all models */
-	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
-	/* Load model, call an initialization routines */
-	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+  /* Register all models */
+  ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
+  /* Load model, call an initialization routines */
+  ierr = pTatinModelLoad(user);CHKERRQ(ierr);
 
-	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
+  ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
 
-	/* Generate physics modules */
-	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
+  /* Generate physics modules */
+  ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 
-	/* Pack all physics together */
-	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
-	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
-	user->pack = user->stokes_ctx->stokes_pack;
+  /* Pack all physics together */
+  /* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
+  ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
+  user->pack = user->stokes_ctx->stokes_pack;
 
-	/* fetch some local variables */
-	multipys_pack = user->pack;
-	dav           = user->stokes_ctx->dav;
+  /* fetch some local variables */
+  multipys_pack = user->pack;
+  dav           = user->stokes_ctx->dav;
 
-	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
+  ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 
-	/* mesh geometry */
-	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+  /* mesh geometry */
+  ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
 
-	/* interpolate point coordinates (needed if mesh was modified) */
-	//ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
-	//for (e=0; e<QUAD_EDGES; e++) {
-	//	ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
-	//}
-	/* interpolate material point coordinates (needed if mesh was modified) */
-	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
+  /* interpolate point coordinates (needed if mesh was modified) */
+  //ierr = QuadratureStokesCoordinateSetUp(user->stokes_ctx->Q,dav);CHKERRQ(ierr);
+  //for (e=0; e<QUAD_EDGES; e++) {
+  //  ierr = SurfaceQuadratureStokesGeometrySetUp(user->stokes_ctx->surfQ[e],dav);CHKERRQ(ierr);
+  //}
+  /* interpolate material point coordinates (needed if mesh was modified) */
+  ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 
-	/* material geometry */
-	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+  /* material geometry */
+  ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
 
-	/* boundary conditions */
-	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
+  /* boundary conditions */
+  ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
 
 /*
-	{
-		PetscScalar zero = 0.0;
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+  {
+    PetscScalar zero = 0.0;
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_JMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-		ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-	}
-	{
-		BCList flat;
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+    ierr = DMDABCListTraverse3d(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+  }
+  {
+    BCList flat;
 
-		ierr = BCListFlattenedCreate(user->stokes_ctx->u_bclist,&flat);CHKERRQ(ierr);
-		ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
-		user->stokes_ctx->u_bclist = flat;
-	}
+    ierr = BCListFlattenedCreate(user->stokes_ctx->u_bclist,&flat);CHKERRQ(ierr);
+    ierr = BCListDestroy(&user->stokes_ctx->u_bclist);CHKERRQ(ierr);
+    user->stokes_ctx->u_bclist = flat;
+  }
 */
 
-	/* test form function */
-	{
-		Vec X,F;
-		SNES snes;
+  /* test form function */
+  {
+    Vec X,F;
+    SNES snes;
 
-		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-		ierr = VecDestroy(&X);CHKERRQ(ierr);
-		ierr = VecDestroy(&F);CHKERRQ(ierr);
-	}
+    ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
+    ierr = VecDestroy(&F);CHKERRQ(ierr);
+  }
 
-	{
-		Vec X,Y;
+  {
+    Vec X,Y;
 
-		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&Y);CHKERRQ(ierr);
 
-		ierr = MF_Stokes(X,Y,(void*)user);CHKERRQ(ierr);
+    ierr = MF_Stokes(X,Y,(void*)user);CHKERRQ(ierr);
 
-		ierr = VecDestroy(&X);CHKERRQ(ierr);
-		ierr = VecDestroy(&Y);CHKERRQ(ierr);
-	}
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  }
 
 #if 0
-	{
-		Vec X,F;
-		SNES snes;
-		Mat JMF;
+  {
+    Vec X,F;
+    SNES snes;
+    Mat JMF;
 
-		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-		ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-		ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
-		ierr = MatCreateSNESMF(snes,&JMF);CHKERRQ(ierr);
-		ierr = SNESSetJacobian(snes,JMF,JMF,0,0);CHKERRQ(ierr);
+    ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,F,FormFunction_Stokes,user);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&JMF);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,JMF,JMF,0,0);CHKERRQ(ierr);
 
-//		ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
-		ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+//    ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-		ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
+    ierr = SNESSolve(snes,NULL,X);CHKERRQ(ierr);
 
-		ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-		ierr = VecDestroy(&X);CHKERRQ(ierr);
-		ierr = VecDestroy(&F);CHKERRQ(ierr);
-	}
+    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
+    ierr = VecDestroy(&F);CHKERRQ(ierr);
+  }
 #endif
 
 
-	{
-		Mat B,subA;
-		Vec X,F;
-		IS *is;
-		Vec u,p;
-		PetscInt n,mu,mp,Mu,Mp,start,offset;
-		IS isU,isV,isW;
-		Mat Aii;
+  {
+    Mat B,subA;
+    Vec X,F;
+    IS *is;
+    Vec u,p;
+    PetscInt n,mu,mp,Mu,Mp,start,offset;
+    IS isU,isV,isW;
+    Mat Aii;
 
-		ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
 
-		ierr = DMCompositeGetGlobalISs(user->stokes_ctx->stokes_pack,&is);CHKERRQ(ierr);
-
-
-		/* Sizes */
-		ierr = DMCompositeGetAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
-		ierr = VecGetSize(u,&Mu);CHKERRQ(ierr);
-		ierr = VecGetLocalSize(u,&mu);CHKERRQ(ierr);
-		ierr = VecGetSize(p,&Mp);CHKERRQ(ierr);
-		ierr = VecGetLocalSize(p,&mp);CHKERRQ(ierr);
-		ierr = VecGetOwnershipRange(u,&start,NULL);CHKERRQ(ierr);
-		ierr = DMCompositeRestoreAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
-
-		n = (mu/3);
-		offset = start + 0;
-		ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isU);CHKERRQ(ierr);
-		offset = start + 1;
-		ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isV);CHKERRQ(ierr);
-		offset = start + 2;
-		ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isW);CHKERRQ(ierr);
+    ierr = DMCompositeGetGlobalISs(user->stokes_ctx->stokes_pack,&is);CHKERRQ(ierr);
 
 
-		/* test operator, A */
-		PetscPrintf(PETSC_COMM_WORLD,"operatorA\n");
-		ierr = StokesQ2P1CreateMatrix_Operator(user->stokes_ctx,&B);CHKERRQ(ierr);
-		ierr = MatMult(B,X,F);CHKERRQ(ierr);
+    /* Sizes */
+    ierr = DMCompositeGetAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
+    ierr = VecGetSize(u,&Mu);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(u,&mu);CHKERRQ(ierr);
+    ierr = VecGetSize(p,&Mp);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(p,&mp);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(u,&start,NULL);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(multipys_pack,X,&u,&p);CHKERRQ(ierr);
 
-		// A11
-		ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-		// A11vv
-		ierr = MatCreateSubMatrix(B,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
-
-
-		// A12
-		ierr = MatCreateSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-		// A21
-		ierr = MatCreateSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-		// A22
-		ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-		ierr = MatDestroy(&B);CHKERRQ(ierr);
-
-		/* ========================================= */
-
-		/* test pc operator, B */
-		PetscPrintf(PETSC_COMM_WORLD,"operatorB\n");
-		ierr = StokesQ2P1CreateMatrixNest_Operator(user->stokes_ctx,1,1,1,&B);CHKERRQ(ierr);
-		ierr = MatMult(B,X,F);CHKERRQ(ierr);
-
-		/* Get A11 */
-		ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-		ierr = MatView(subA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
-		/* Get Auu,Avv,Aww */
-		ierr = MatCreateSubMatrix(subA,isU,isU,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
-
-		ierr = MatCreateSubMatrix(subA,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
-
-		ierr = MatCreateSubMatrix(subA,isW,isW,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-		ierr = MatDestroy(&Aii);CHKERRQ(ierr);
-
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-		/* Get A12 */
-		ierr = MatCreateSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-		/* A21 */
-		ierr = MatCreateSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-		/* A22 */
-		ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
-		ierr = MatDestroy(&subA);CHKERRQ(ierr);
-
-		ierr = MatDestroy(&B);CHKERRQ(ierr);
+    n = (mu/3);
+    offset = start + 0;
+    ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isU);CHKERRQ(ierr);
+    offset = start + 1;
+    ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isV);CHKERRQ(ierr);
+    offset = start + 2;
+    ierr = ISCreateStride(PETSC_COMM_WORLD, n,offset,3,&isW);CHKERRQ(ierr);
 
 
-		ierr = ISDestroy(&isU);CHKERRQ(ierr);
-		ierr = ISDestroy(&isV);CHKERRQ(ierr);
-		ierr = ISDestroy(&isW);CHKERRQ(ierr);
+    /* test operator, A */
+    PetscPrintf(PETSC_COMM_WORLD,"operatorA\n");
+    ierr = StokesQ2P1CreateMatrix_Operator(user->stokes_ctx,&B);CHKERRQ(ierr);
+    ierr = MatMult(B,X,F);CHKERRQ(ierr);
 
-		ierr = VecDestroy(&X);CHKERRQ(ierr);
-		ierr = VecDestroy(&F);CHKERRQ(ierr);
+    // A11
+    ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
-		ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
-		ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
-		ierr = PetscFree(is);CHKERRQ(ierr);
-	}
-
-
-	/* test viewer */
-	DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+    // A11vv
+    ierr = MatCreateSubMatrix(B,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+    ierr = MatDestroy(&Aii);CHKERRQ(ierr);
 
 
-	{
-		Vec X;
+    // A12
+    ierr = MatCreateSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
-		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
-		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    // A21
+    ierr = MatCreateSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
-	}
+    // A22
+    ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
 
-	/* dummy outputting */
-	{
-		Vec X;
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
 
-		ierr = pTatin3d_ModelOutput_MPntStd(user,"step0");CHKERRQ(ierr);
+    /* ========================================= */
 
-		ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-		ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(user,X,"step0");CHKERRQ(ierr);
-		ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
-	}
+    /* test pc operator, B */
+    PetscPrintf(PETSC_COMM_WORLD,"operatorB\n");
+    ierr = StokesQ2P1CreateMatrixNest_Operator(user->stokes_ctx,1,1,1,&B);CHKERRQ(ierr);
+    ierr = MatMult(B,X,F);CHKERRQ(ierr);
 
-	/* test generic viewer */
-	{
-//		const int nf=2;
-//		const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
-		const int nf=1;
-		const MaterialPointField mp_prop_list[] = { MPField_Stokes };
-		ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test0");CHKERRQ(ierr);
-	}
+    /* Get A11 */
+    ierr = MatCreateSubMatrix(B,is[0],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatView(subA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    /* Get Auu,Avv,Aww */
+    ierr = MatCreateSubMatrix(subA,isU,isU,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+    ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+
+    ierr = MatCreateSubMatrix(subA,isV,isV,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+    ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+
+    ierr = MatCreateSubMatrix(subA,isW,isW,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
+    ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+    /* Get A12 */
+    ierr = MatCreateSubMatrix(B,is[0],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
+    /* A21 */
+    ierr = MatCreateSubMatrix(B,is[1],is[0],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
+    /* A22 */
+    ierr = MatCreateSubMatrix(B,is[1],is[1],MAT_INITIAL_MATRIX,&subA);CHKERRQ(ierr);
+    ierr = MatDestroy(&subA);CHKERRQ(ierr);
+
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
 
 
-	ierr = pTatin3dDestroyContext(&user);
+    ierr = ISDestroy(&isU);CHKERRQ(ierr);
+    ierr = ISDestroy(&isV);CHKERRQ(ierr);
+    ierr = ISDestroy(&isW);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
+    ierr = VecDestroy(&F);CHKERRQ(ierr);
+
+    ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
+    ierr = PetscFree(is);CHKERRQ(ierr);
+  }
+
+
+  /* test viewer */
+  DataBucketView(PetscObjectComm((PetscObject)multipys_pack), user->materialpoint_db,"materialpoint_stokes",DATABUCKET_VIEW_STDOUT);
+
+
+  {
+    Vec X;
+
+    ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    ierr = pTatinModel_Output(user->model,user,X,"icbc");CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+
+  }
+
+  /* dummy outputting */
+  {
+    Vec X;
+
+    ierr = pTatin3d_ModelOutput_MPntStd(user,"step0");CHKERRQ(ierr);
+
+    ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+    ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(user,X,"step0");CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+  }
+
+  /* test generic viewer */
+  {
+//    const int nf=2;
+//    const MaterialPointField mp_prop_list[] = { MPField_Std, MPField_Stokes };
+    const int nf=1;
+    const MaterialPointField mp_prop_list[] = { MPField_Stokes };
+    ierr = SwarmViewGeneric_ParaView(user->materialpoint_db,nf,mp_prop_list,user->outputpath,"test0");CHKERRQ(ierr);
+  }
+
+
+  ierr = pTatin3dDestroyContext(&user);
+
+  PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 
-	ierr = pTatin3d_material_points_gmg(argc,argv);CHKERRQ(ierr);
+  ierr = pTatin3d_material_points_gmg(argc,argv);CHKERRQ(ierr);
 
-	ierr = pTatinFinalize();CHKERRQ(ierr);
-	return 0;
+  ierr = pTatinFinalize();CHKERRQ(ierr);
+  return 0;
 }

@@ -44,78 +44,78 @@ extern PetscErrorCode pTatinModelRegister_Template(void);
 
 /* define user model */
 typedef struct {
-	double alpha;
-	double beta;
+  double alpha;
+  double beta;
 } UserModelCtx;
 
 
 PetscErrorCode ModelTest_ApplyBoundaryCondition(pTatinCtx c,void *ctx)
 {
-	UserModelCtx *data = (UserModelCtx*)ctx;
-	printf("alpha = %lf \n", data->alpha );
-	PetscFunctionReturn(0);
+  UserModelCtx *data = (UserModelCtx*)ctx;
+  printf("alpha = %lf \n", data->alpha );
+  PetscFunctionReturn(0);
 }
 PetscErrorCode ModelTest_ApplyInitialMaterialGeometry(pTatinCtx c,void *ctx)
 {
-	UserModelCtx *data = (UserModelCtx*)ctx;
-	printf("beta = %lf \n", data->beta );
-	PetscFunctionReturn(0);
+  UserModelCtx *data = (UserModelCtx*)ctx;
+  printf("beta = %lf \n", data->beta );
+  PetscFunctionReturn(0);
 }
 
 
 PetscErrorCode test_model(void)
 {
-	UserModelCtx *data;
-	pTatinModel m,model;
-	PetscErrorCode ierr;
+  UserModelCtx *data;
+  pTatinModel m,model;
+  PetscErrorCode ierr;
 
-	data = malloc(sizeof(UserModelCtx));
-	data->alpha = 11.23;
-	data->beta = 66.99;
+  data = malloc(sizeof(UserModelCtx));
+  data->alpha = 11.23;
+  data->beta = 66.99;
 
-	/* register user model */
-	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
-	ierr = pTatinModelSetName(m,"test_model");CHKERRQ(ierr);
+  /* register user model */
+  ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
+  ierr = pTatinModelSetName(m,"test_model");CHKERRQ(ierr);
 
-	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
+  ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,(void (*)(void))ModelTest_ApplyBoundaryCondition);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,(void (*)(void))ModelTest_ApplyInitialMaterialGeometry);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,(void (*)(void))ModelTest_ApplyBoundaryCondition);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,(void (*)(void))ModelTest_ApplyInitialMaterialGeometry);CHKERRQ(ierr);
 
-	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
-//	ierr = pTatinModelRegister(m);CHKERRQ(ierr); /* test for duplicate model name insertition */
+  ierr = pTatinModelRegister(m);CHKERRQ(ierr);
+//  ierr = pTatinModelRegister(m);CHKERRQ(ierr); /* test for duplicate model name insertition */
 
-	ierr = pTatinModelGetByName("test_model",&model);CHKERRQ(ierr);
-	printf("m     = %p \n", m );
-	printf("model = %p \n", model );
-	printf("data    = %p \n", data );
-	printf("m->data = %p \n", m->model_data );
+  ierr = pTatinModelGetByName("test_model",&model);CHKERRQ(ierr);
+  printf("m     = %p \n", m );
+  printf("model = %p \n", model );
+  printf("data    = %p \n", data );
+  printf("m->data = %p \n", m->model_data );
 
 
-	{
-		void *userdata;
-		ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
-		ierr = pTatinModelGetByName("template",&model);CHKERRQ(ierr);
+  {
+    void *userdata;
+    ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
+    ierr = pTatinModelGetByName("template",&model);CHKERRQ(ierr);
 
-		ierr = pTatinModelGetByName("template",&model);CHKERRQ(ierr);
-		ierr = pTatinModelGetUserData(model,&userdata);CHKERRQ(ierr);
+    ierr = pTatinModelGetByName("template",&model);CHKERRQ(ierr);
+    ierr = pTatinModelGetUserData(model,&userdata);CHKERRQ(ierr);
 
-		ierr = model->FP_pTatinModel_Initialize(0,userdata);CHKERRQ(ierr);
-		ierr = model->FP_pTatinModel_ApplyBoundaryCondition(0,userdata);CHKERRQ(ierr);
-		ierr = model->FP_pTatinModel_ApplyInitialMeshGeometry(0,userdata);CHKERRQ(ierr);
-	}
+    ierr = model->FP_pTatinModel_Initialize(0,userdata);CHKERRQ(ierr);
+    ierr = model->FP_pTatinModel_ApplyBoundaryCondition(0,userdata);CHKERRQ(ierr);
+    ierr = model->FP_pTatinModel_ApplyInitialMeshGeometry(0,userdata);CHKERRQ(ierr);
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
+  ierr = pTatinInitialize(&argc,&argv,(char *)0,NULL);CHKERRQ(ierr);
 
-	test_model();
+  test_model();
 
-	ierr = pTatinFinalize();CHKERRQ(ierr);
-	return 0;
+  ierr = pTatinFinalize();CHKERRQ(ierr);
+  return 0;
 }

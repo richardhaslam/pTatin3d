@@ -61,13 +61,13 @@ typedef struct {
 
 PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 {
-	ThermalSBData      *modeldata = (ThermalSBData*)modelctx;
-	RheologyConstants  *rheology;
-	DataBucket         materialconstants;
+  ThermalSBData      *modeldata = (ThermalSBData*)modelctx;
+  RheologyConstants  *rheology;
+  DataBucket         materialconstants;
     PetscInt           regionidx;
     PetscReal          n_exp,F,eta_0,preexp_A;
     PetscInt           matrix_idx,inclusion_idx;
-	PetscErrorCode     ierr;
+  PetscErrorCode     ierr;
 
     /* scaling params */
     modeldata->L_bar   = 35.0e3;  /* m */
@@ -106,7 +106,7 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 
 
     /* force energy equation to be introduced */
-	ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
+  ierr = PetscOptionsInsertString(NULL,"-activate_energy");CHKERRQ(ierr);
 
     /*
         Current Value -preexpA_0   :  3.2000e-20
@@ -129,20 +129,20 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
         Current Value -P_scale_1   :  5.0000e+08
         Current Value -density_1   :  2.7000e+03
     */
-	/* Rheology prescription */
-	ierr = pTatinGetRheology(ptatinctx,&rheology);CHKERRQ(ierr);
-	rheology->rheology_type = RHEOLOGY_VP_STD;
+  /* Rheology prescription */
+  ierr = pTatinGetRheology(ptatinctx,&rheology);CHKERRQ(ierr);
+  rheology->rheology_type = RHEOLOGY_VP_STD;
     rheology->nphases_active = 2;
 
     /* Material constant */
-	ierr = pTatinGetMaterialConstants(ptatinctx,&materialconstants);CHKERRQ(ierr);
+  ierr = pTatinGetMaterialConstants(ptatinctx,&materialconstants);CHKERRQ(ierr);
     MaterialConstantsSetDefaults(materialconstants);
 
     matrix_idx    = 0;
     inclusion_idx = 1;
 
     /* matrix */
-	MaterialConstantsSetValues_MaterialType(materialconstants,matrix_idx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+  MaterialConstantsSetValues_MaterialType(materialconstants,matrix_idx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 
     n_exp = 3.0;
     F = pow( 2.0, (1.0-n_exp)/n_exp );
@@ -155,7 +155,7 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
     MaterialConstantsScaleValues_ViscosityArrh(materialconstants,matrix_idx, modeldata->eta_bar, modeldata->P_bar );
 
     /* inclusion */
-	MaterialConstantsSetValues_MaterialType(materialconstants,inclusion_idx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
+  MaterialConstantsSetValues_MaterialType(materialconstants,inclusion_idx,VISCOUS_ARRHENIUS_2,PLASTIC_NONE,SOFTENING_NONE,DENSITY_CONSTANT);
 
     n_exp = 3.3;
     F = pow( 2.0, (1.0-n_exp)/n_exp );
@@ -168,17 +168,17 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
     MaterialConstantsScaleValues_ViscosityArrh(materialconstants,inclusion_idx, modeldata->eta_bar, modeldata->P_bar );
 
     /* Material constant */
-	for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
-		ierr= MaterialConstantsSetFromOptions(materialconstants,"model_thermal_sb",regionidx,PETSC_FALSE);CHKERRQ(ierr);
-	}
+  for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
+    ierr= MaterialConstantsSetFromOptions(materialconstants,"model_thermal_sb",regionidx,PETSC_FALSE);CHKERRQ(ierr);
+  }
 
     /* output */
-	for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
-		MaterialConstantsPrintAll(materialconstants,regionidx);
-	}
+  for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
+    MaterialConstantsPrintAll(materialconstants,regionidx);
+  }
 
     /* scale material properties */
-	//for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
+  //for (regionidx=0; regionidx<rheology->nphases_active; regionidx++) {
     //    MaterialConstantsScaleAll(materialconstants,regionidx,data->length_bar,data->velocity_bar,data->time_bar,data->viscosity_bar,data->density_bar,data->pressure_bar);
     //}
 
@@ -188,19 +188,19 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 
 PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 {
-	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
-	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
+  ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
+  PhysCompStokes   stokes;
+  DM               stokes_pack,dav,dap;
     PetscReal        Lx,Ly,Lz;
-	PetscErrorCode   ierr;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
-	/* set initial velocity field */
-	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
-	stokes_pack = stokes->stokes_pack;
-	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  /* set initial velocity field */
+  ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
     /* dav -> velocity mesh */
     /* dap -> pressure mesh */
@@ -208,13 +208,13 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void 
     Lx = 35.0 * 1.0e3; /* km */
     Ly = 30.0 * 1.0e3; /* km */
     Lz = 35.0 * 1.0e3; /* km */
-	ierr = DMDASetUniformCoordinates(dav,0.0,Lx/modeldata->L_bar, 0.0,Ly/modeldata->L_bar, 0.0,Lz/modeldata->L_bar);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(dav,0.0,Lx/modeldata->L_bar, 0.0,Ly/modeldata->L_bar, 0.0,Lz/modeldata->L_bar);CHKERRQ(ierr);
   {
     PetscReal gvec[] = { 0.0, -9.81, 0.0 };
     ierr = PhysCompStokesSetGravityVector(stokes,gvec);CHKERRQ(ierr);
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* velocity bcs */
@@ -223,13 +223,13 @@ PetscErrorCode ThermalSB_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,The
     ThermalSBData  *modeldata = (ThermalSBData*)modelctx;
     PetscReal      exx;
     PetscReal      Lx,Ly,vxE,vyN,gmin[3],gmax[3];
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
     exx = modeldata->srate_xx;
-	//ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
+  //ierr = DirichletBC_ApplyDirectStrainRate(bclist,dav,exx,0);CHKERRQ(ierr);
 
     /*
      div(u) = exx + eyy + ezz
@@ -253,7 +253,7 @@ PetscErrorCode ThermalSB_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,The
     /* compute vx on the east face from exx */
     vxE = modeldata->srate_xx * Lx * 0.5;
 
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxE);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&vxE);CHKERRQ(ierr);
 
     /* on the upper/north face */
     vyN = - 0.5 * exx * Ly;
@@ -266,58 +266,58 @@ PetscErrorCode ThermalSB_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,The
     ierr = DirichletBC_ApplyNormalVelocity(bclist,dav,BACK_FACE,0);CHKERRQ(ierr);
 
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyBoundaryCondition_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 {
-	ThermalSBData         *modeldata = (ThermalSBData*)modelctx;
-	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
-	PetscErrorCode   ierr;
+  ThermalSBData         *modeldata = (ThermalSBData*)modelctx;
+  PhysCompStokes   stokes;
+  DM               stokes_pack,dav,dap;
+  PetscErrorCode   ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* Define velocity boundary conditions */
-	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
-	stokes_pack = stokes->stokes_pack;
-	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  /* Define velocity boundary conditions */
+  ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
-	ierr = ThermalSB_VelocityBC(stokes->u_bclist,dav,ptatinctx,modeldata);CHKERRQ(ierr);
+  ierr = ThermalSB_VelocityBC(stokes->u_bclist,dav,ptatinctx,modeldata);CHKERRQ(ierr);
 
-	/* Define boundary conditions for any other physics */
+  /* Define boundary conditions for any other physics */
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyBoundaryConditionMG_ThermalSB(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx ptatinctx,void *modelctx)
 {
-	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
-	PetscInt         n;
-	PetscErrorCode   ierr;
+  ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
+  PetscInt         n;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* Define velocity boundary conditions on each level within the MG hierarchy */
-	for (n=0; n<nl; n++) {
-		ierr = ThermalSB_VelocityBC(bclist[n],dav[n],ptatinctx,modeldata);CHKERRQ(ierr);
-	}
+  /* Define velocity boundary conditions on each level within the MG hierarchy */
+  for (n=0; n<nl; n++) {
+    ierr = ThermalSB_VelocityBC(bclist[n],dav[n],ptatinctx,modeldata);CHKERRQ(ierr);
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx)
 {
-	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
-	PhysCompStokes   stokes;
-	DM               stokes_pack=NULL,dav,dap;
+  ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
+  PhysCompStokes   stokes;
+  DM               stokes_pack=NULL,dav,dap;
     Vec              coords,velocity,pressure;
     PetscBool        active_energy;
-	PetscErrorCode   ierr;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
     if (modeldata->output_si) {
         /* get the velocity mesh */
@@ -337,15 +337,15 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         ierr = VecScale(pressure,modeldata->P_bar);CHKERRQ(ierr);
     }
 
-	/* ---- Velocity-Pressure Mesh Output ---- */
-	/* [1] Standard viewer: v,p written out as binary in double */
+  /* ---- Velocity-Pressure Mesh Output ---- */
+  /* [1] Standard viewer: v,p written out as binary in double */
     ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
 
     /* [2] Light weight viewer: Only v is written out. v and coords are expressed as floats */
     ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(ptatinctx,X,prefix);CHKERRQ(ierr);
 
-	/* [3] Write out v,p into PETSc Vec. These can be used to restart pTatin */
-	/*
+  /* [3] Write out v,p into PETSc Vec. These can be used to restart pTatin */
+  /*
      ierr = pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
      */
 
@@ -362,13 +362,13 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
     }
 
-	/* ---- Material Point Output ---- */
-	/* [1] Basic viewer: Only reports coords, regionid and other internal data */
-	/*
+  /* ---- Material Point Output ---- */
+  /* [1] Basic viewer: Only reports coords, regionid and other internal data */
+  /*
      ierr = pTatin3d_ModelOutput_MPntStd(c,prefix);CHKERRQ(ierr);
      */
 
-	/* [2] Customized viewer: User defines specific fields they want to view - NOTE not .pvd file will be created */
+  /* [2] Customized viewer: User defines specific fields they want to view - NOTE not .pvd file will be created */
     {
         DataBucket                materialpoint_db;
         const int                 nf = 2;
@@ -381,7 +381,7 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
         ierr = SwarmViewGeneric_ParaView(materialpoint_db,nf,mp_prop_list,ptatinctx->outputpath,mp_file_prefix);CHKERRQ(ierr);
     }
 
-	/* [3] Customized marker->cell viewer: Marker data is projected onto the velocity mesh. User defines specific fields */
+  /* [3] Customized marker->cell viewer: Marker data is projected onto the velocity mesh. User defines specific fields */
     {
         const int                    nf = 2;
         const MaterialPointVariable  mp_prop_list[] = { MPV_viscosity, MPV_density };
@@ -390,32 +390,32 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
     }
 
     /* standard viewer for temperature */
-	ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
-	if (active_energy) {
-		PhysCompEnergy energy;
-		Vec            temperature;
+  ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
+  if (active_energy) {
+    PhysCompEnergy energy;
+    Vec            temperature;
 
-		ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
+    ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
+    ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
 
-		ierr = pTatin3d_ModelOutput_Temperature_Energy(ptatinctx,temperature,prefix);CHKERRQ(ierr);
-	}
-	PetscFunctionReturn(0);
+    ierr = pTatin3d_ModelOutput_Temperature_Energy(ptatinctx,temperature,prefix);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,void *modelctx)
 {
-	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
-	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
+  ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
+  PhysCompStokes   stokes;
+  DM               stokes_pack,dav,dap;
     Vec              velocity,pressure;
     PetscReal        Lx,Ly,vxR,vxL,vyT,vyB,gmin[3],gmax[3];
-	DMDAVecTraverse3d_InterpCtx IntpCtx;
+  DMDAVecTraverse3d_InterpCtx IntpCtx;
     PetscBool        active_energy;
-	PetscErrorCode   ierr;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -446,50 +446,50 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
     ierr = DMDAVecTraverse3d(dav,velocity,1,DMDAVecTraverse3d_Interp,(void*)&IntpCtx);CHKERRQ(ierr);
 
     /* set initial temperature field */
-	/* initial condition for temperature */
-	ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
-	if (active_energy) {
-		PhysCompEnergy energy;
-		Vec            temperature;
-		/* DM             daT; */
+  /* initial condition for temperature */
+  ierr = pTatinContextValid_Energy(ptatinctx,&active_energy);CHKERRQ(ierr);
+  if (active_energy) {
+    PhysCompEnergy energy;
+    Vec            temperature;
+    /* DM             daT; */
 
-		ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
-		ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
-		/* daT  = energy->daT; */
+    ierr = pTatinGetContext_Energy(ptatinctx,&energy);CHKERRQ(ierr);
+    ierr = pTatinPhysCompGetData_Energy(ptatinctx,&temperature,NULL);CHKERRQ(ierr);
+    /* daT  = energy->daT; */
 
         ierr = VecSet(temperature,400.0+273.0);CHKERRQ(ierr);
-	}
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx)
 {
-	ThermalSBData    *data = (ThermalSBData*)ctx;
-	MPAccess         mpX;
-	int              p,n_mpoints;
-	DataBucket       materialpoint_db;
-	DataBucket       materialconstants;
-	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
+  ThermalSBData    *data = (ThermalSBData*)ctx;
+  MPAccess         mpX;
+  int              p,n_mpoints;
+  DataBucket       materialpoint_db;
+  DataBucket       materialconstants;
+  PhysCompStokes   stokes;
+  DM               stokes_pack,dav,dap;
     PetscReal        Ox[3],gmin[3],gmax[3],inc_rad2;
-	PetscErrorCode   ierr;
-	MaterialConst_DensityConst      *DensityConst_data;
-	/* MaterialConst_ViscosityArrh     *ViscArrh_data; */
-	DataField                       PField_DensityConst,PField_ViscArrh;
+  PetscErrorCode   ierr;
+  MaterialConst_DensityConst      *DensityConst_data;
+  /* MaterialConst_ViscosityArrh     *ViscArrh_data; */
+  DataField                       PField_DensityConst,PField_ViscArrh;
   PetscReal                       kappa;
   /* PetscReal                       H; */
 
-	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+  PetscFunctionBegin;
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
-	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
+  ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 
     DataBucketGetDataFieldByName(materialconstants,MaterialConst_DensityConst_classname,&PField_DensityConst);
-	DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
+  DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
 
-	DataBucketGetDataFieldByName(materialconstants,MaterialConst_ViscosityArrh_classname,&PField_ViscArrh);
-	/* ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data; */
+  DataBucketGetDataFieldByName(materialconstants,MaterialConst_ViscosityArrh_classname,&PField_ViscArrh);
+  /* ViscArrh_data          = (MaterialConst_ViscosityArrh*)PField_ViscArrh->data; */
 
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -497,9 +497,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 
     ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
 
-	ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
-	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
-	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
     /* background */
     kappa = 1.0/(2700.0 * 1050.0) * 2.5 * data->t_bar / ( data->L_bar * data->L_bar );
@@ -507,9 +507,9 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 
     PetscPrintf(PETSC_COMM_WORLD,"thermal_sb: BACKGROUND kappa = %1.4e \n",kappa );
     for (p=0; p<n_mpoints; p++) {
-		ierr = MaterialPointSet_phase_index(mpX,p, 0);CHKERRQ(ierr);
-		ierr = MaterialPointSet_viscosity(mpX,  p, 1.0);CHKERRQ(ierr);
-		ierr = MaterialPointSet_density(mpX,    p, DensityConst_data[0].density);CHKERRQ(ierr);
+    ierr = MaterialPointSet_phase_index(mpX,p, 0);CHKERRQ(ierr);
+    ierr = MaterialPointSet_viscosity(mpX,  p, 1.0);CHKERRQ(ierr);
+    ierr = MaterialPointSet_density(mpX,    p, DensityConst_data[0].density);CHKERRQ(ierr);
 
         ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
         ierr = MaterialPointSet_heat_source(mpX,p,0.0);CHKERRQ(ierr);
@@ -520,10 +520,10 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
     /* inclusion */
     kappa = 1.0/(2700.0 * 1050.0 ) * 2.5 * data->t_bar / ( data->L_bar * data->L_bar );
     PetscPrintf(PETSC_COMM_WORLD,"thermal_sb: INCLUSION kappa = %1.4e \n",kappa );
-	for (p=0; p<n_mpoints; p++) {
+  for (p=0; p<n_mpoints; p++) {
         double *position_p,r2;
 
-		ierr = MaterialPointGet_global_coord(mpX,p,&position_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_global_coord(mpX,p,&position_p);CHKERRQ(ierr);
 
         //Ox[0] = (double)(gmin[0] + 0.5 * (gmax[0] - gmin[0]));
         //Ox[1] = (double)(gmin[1] + 0.5 * (gmax[1] - gmin[1]));
@@ -543,27 +543,27 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
             ierr = MaterialPointSet_diffusivity(mpX,p,kappa);CHKERRQ(ierr);
             ierr = MaterialPointSet_heat_source(mpX,p,0.0);CHKERRQ(ierr);
         }
-	}
+  }
     ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ctx)
 {
-	PetscReal        step,gmin[3],gmax[3];
-	PhysCompStokes   stokes;
-	DM               stokes_pack,dav,dap;
-	Vec              velocity,pressure;
-	PetscErrorCode   ierr;
+  PetscReal        step,gmin[3],gmax[3];
+  PhysCompStokes   stokes;
+  DM               stokes_pack,dav,dap;
+  Vec              velocity,pressure;
+  PetscErrorCode   ierr;
 
-	/* fully lagrangian update */
-	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
-	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+  /* fully lagrangian update */
+  ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 
-	stokes_pack = stokes->stokes_pack;
-	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
-	ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
     ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,step);CHKERRQ(ierr);
 
@@ -572,59 +572,59 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ct
     ierr = DMDASetUniformCoordinates1D(dav,1,gmin[1],gmax[1]);CHKERRQ(ierr);
     ierr = DMDASetUniformCoordinates1D(dav,2,gmin[2],gmax[2]);CHKERRQ(ierr);
 
-	ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(stokes_pack,X,&velocity,&pressure);CHKERRQ(ierr);
 
     PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelDestroy_ThermalSB(pTatinCtx c,void *ctx)
 {
-	ThermalSBData *data = (ThermalSBData*)ctx;
-	PetscErrorCode ierr;
+  ThermalSBData *data = (ThermalSBData*)ctx;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	/* Free contents of structure */
-	/* Free structure */
-	ierr = PetscFree(data);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  /* Free contents of structure */
+  /* Free structure */
+  ierr = PetscFree(data);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinModelRegister_ThermalSB(void)
 {
-	ThermalSBData   *data;
-	pTatinModel     m;
-	PetscErrorCode  ierr;
+  ThermalSBData   *data;
+  pTatinModel     m;
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* Allocate memory for the data structure for this model */
-	ierr = PetscMalloc(sizeof(ThermalSBData),&data);CHKERRQ(ierr);
-	ierr = PetscMemzero(data,sizeof(ThermalSBData));CHKERRQ(ierr);
+  /* Allocate memory for the data structure for this model */
+  ierr = PetscMalloc(sizeof(ThermalSBData),&data);CHKERRQ(ierr);
+  ierr = PetscMemzero(data,sizeof(ThermalSBData));CHKERRQ(ierr);
 
-	/* register user model */
-	ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
+  /* register user model */
+  ierr = pTatinModelCreate(&m);CHKERRQ(ierr);
 
-	/* Set name, model select via -ptatin_model NAME */
-	ierr = pTatinModelSetName(m,"thermal_sb");CHKERRQ(ierr);
+  /* Set name, model select via -ptatin_model NAME */
+  ierr = pTatinModelSetName(m,"thermal_sb");CHKERRQ(ierr);
 
-	/* Set model data */
-	ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
+  /* Set model data */
+  ierr = pTatinModelSetUserData(m,data);CHKERRQ(ierr);
 
-	/* Set function pointers */
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_ThermalSB);CHKERRQ(ierr);
-	//ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_ThermalSB);CHKERRQ(ierr);
-	ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_ThermalSB);CHKERRQ(ierr);
+  /* Set function pointers */
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_INIT,                  (void (*)(void))ModelInitialize_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_SOLUTION,   (void (*)(void))ModelApplyInitialSolution_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BC,              (void (*)(void))ModelApplyBoundaryCondition_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_BCMG,            (void (*)(void))ModelApplyBoundaryConditionMG_ThermalSB);CHKERRQ(ierr);
+  //ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_MAT_BC,          (void (*)(void))ModelApplyMaterialBoundaryCondition_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MESH_GEOM,  (void (*)(void))ModelApplyInitialMeshGeometry_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_INIT_MAT_GEOM,   (void (*)(void))ModelApplyInitialMaterialGeometry_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_APPLY_UPDATE_MESH_GEOM,(void (*)(void))ModelApplyUpdateMeshGeometry_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_OUTPUT,                (void (*)(void))ModelOutput_ThermalSB);CHKERRQ(ierr);
+  ierr = pTatinModelSetFunctionPointer(m,PTATIN_MODEL_DESTROY,               (void (*)(void))ModelDestroy_ThermalSB);CHKERRQ(ierr);
 
-	/* Insert model into list */
-	ierr = pTatinModelRegister(m);CHKERRQ(ierr);
+  /* Insert model into list */
+  ierr = pTatinModelRegister(m);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }

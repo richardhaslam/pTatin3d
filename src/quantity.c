@@ -294,7 +294,7 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
   PetscOptionsGetReal(NULL,NULL,"-ptatin_q_viscosity_mag",&Es,NULL);
 
   secondsPerYear = 60.0 * 60.0 * 24.0 * 365.0;
-	secondsPerkyr = secondsPerYear * 1.0e3;
+  secondsPerkyr = secondsPerYear * 1.0e3;
   geo_time = secondsPerkyr; /* kyr */
 
   geo_length = 1.0e3; /* km */

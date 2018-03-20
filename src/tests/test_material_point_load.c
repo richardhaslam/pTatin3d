@@ -52,98 +52,98 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 PetscErrorCode pTatin3d_stokes(int argc,char **argv)
 {
-	PetscErrorCode ierr;
-	DM              multipys_pack,dav;
-	pTatinCtx       user;
-	Vec X;
+  PetscErrorCode ierr;
+  DM              multipys_pack,dav;
+  pTatinCtx       user;
+  Vec X;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
-	ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
+  ierr = pTatin3dCreateContext(&user);CHKERRQ(ierr);
+  ierr = pTatin3dSetFromOptions(user);CHKERRQ(ierr);
 
-	/* Register all models */
-	ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
-	/* Load model, call an initialization routines */
-	ierr = pTatinModelLoad(user);CHKERRQ(ierr);
+  /* Register all models */
+  ierr = pTatinModelRegisterAll();CHKERRQ(ierr);
+  /* Load model, call an initialization routines */
+  ierr = pTatinModelLoad(user);CHKERRQ(ierr);
 
-	ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
+  ierr = pTatinModel_Initialize(user->model,user);CHKERRQ(ierr);
 
-	/* Generate physics modules */
-	ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
+  /* Generate physics modules */
+  ierr = pTatin3d_PhysCompStokesCreate(user);CHKERRQ(ierr);
 
-	/* Pack all physics together */
-	/* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
-	ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
-	user->pack = user->stokes_ctx->stokes_pack;
+  /* Pack all physics together */
+  /* Here it's simple, we don't need a DM for this, just assign the pack DM to be equal to the stokes DM */
+  ierr = PetscObjectReference((PetscObject)user->stokes_ctx->stokes_pack);CHKERRQ(ierr);
+  user->pack = user->stokes_ctx->stokes_pack;
 
-	/* fetch some local variables */
-	multipys_pack = user->pack;
-	dav           = user->stokes_ctx->dav;
+  /* fetch some local variables */
+  multipys_pack = user->pack;
+  dav           = user->stokes_ctx->dav;
 
-	ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(multipys_pack,&X);CHKERRQ(ierr);
 
-	ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
+  ierr = pTatin3dCreateMaterialPoints(user,dav);CHKERRQ(ierr);
 
-	/* mesh geometry */
-	ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
+  /* mesh geometry */
+  ierr = pTatinModel_ApplyInitialMeshGeometry(user->model,user);CHKERRQ(ierr);
 
-	/* interpolate material point coordinates (needed if mesh was modified) */
-	ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
+  /* interpolate material point coordinates (needed if mesh was modified) */
+  ierr = MaterialPointCoordinateSetUp(user,dav);CHKERRQ(ierr);
 
-	/* material geometry */
-	ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
+  /* material geometry */
+  ierr = pTatinModel_ApplyInitialMaterialGeometry(user->model,user);CHKERRQ(ierr);
 
-	// LOAD FROM FILE
-//	ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_FALSE,"filters/coords_markers.dat","filters/phase_markers.dat");CHKERRQ(ierr);
+  // LOAD FROM FILE
+//  ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_FALSE,"filters/coords_markers.dat","filters/phase_markers.dat");CHKERRQ(ierr);
 
-//	ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_FALSE,"testdump/coords_test-0.dat","testdump/phase_test-0.dat");CHKERRQ(ierr);
-//	ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_TRUE, "testdump/coords_test-2.dat","testdump/phase_test-2.dat");CHKERRQ(ierr);
-//	ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_TRUE, "testdump/coords_test-4.dat","testdump/phase_test-4.dat");CHKERRQ(ierr);
-
-
-
-	/* boundary conditions */
-	ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
+//  ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_FALSE,"testdump/coords_test-0.dat","testdump/phase_test-0.dat");CHKERRQ(ierr);
+//  ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_TRUE, "testdump/coords_test-2.dat","testdump/phase_test-2.dat");CHKERRQ(ierr);
+//  ierr = MaterialPointDataBasicLoadIntoListFromFile(user->materialpoint_db,dav,PETSC_TRUE, "testdump/coords_test-4.dat","testdump/phase_test-4.dat");CHKERRQ(ierr);
 
 
-	/* update markers = >> gauss points */
+
+  /* boundary conditions */
+  ierr = pTatinModel_ApplyBoundaryCondition(user->model,user);CHKERRQ(ierr);
+
+
+  /* update markers = >> gauss points */
 #if 0
-	{
-		int               npoints;
-		DataField         PField_std;
-		DataField         PField_stokes;
-		MPntStd           *mp_std;
-		MPntPStokes       *mp_stokes;
+  {
+    int               npoints;
+    DataField         PField_std;
+    DataField         PField_stokes;
+    MPntStd           *mp_std;
+    MPntPStokes       *mp_stokes;
 
-		DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
-		DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
+    DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
+    DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 
-		DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-		mp_std    = PField_std->data; /* should write a function to do this */
-		mp_stokes = PField_stokes->data; /* should write a function to do this */
+    DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
+    mp_std    = PField_std->data; /* should write a function to do this */
+    mp_stokes = PField_stokes->data; /* should write a function to do this */
 
-		ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,user->stokes_ctx->dav,user->stokes_ctx->volQ);CHKERRQ(ierr);
-	}
+    ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,user->stokes_ctx->dav,user->stokes_ctx->volQ);CHKERRQ(ierr);
+  }
 #endif
 
-	/* boundary conditions */
-	ierr = pTatinModel_Output(user->model,user,X,"test");CHKERRQ(ierr);
+  /* boundary conditions */
+  ierr = pTatinModel_Output(user->model,user,X,"test");CHKERRQ(ierr);
 
 
-	ierr = pTatin3dDestroyContext(&user);
+  ierr = pTatin3dDestroyContext(&user);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 
-	ierr = pTatin3d_stokes(argc,argv);CHKERRQ(ierr);
+  ierr = pTatin3d_stokes(argc,argv);CHKERRQ(ierr);
 
-	ierr = pTatinFinalize();CHKERRQ(ierr);
-	return 0;
+  ierr = pTatinFinalize();CHKERRQ(ierr);
+  return 0;
 }

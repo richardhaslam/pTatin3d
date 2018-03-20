@@ -339,7 +339,7 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
 
     /* Get submatrices */
     ierr = MatGetSize(B,NULL,&Mc);CHKERRQ(ierr);
-	ierr = ISCreateStride(comm,Mc,0,1,&iscol);CHKERRQ(ierr);
+  ierr = ISCreateStride(comm,Mc,0,1,&iscol);CHKERRQ(ierr);
 
     ierr = PetscMPISubCommGetActive(red->subcomm,&active);CHKERRQ(ierr);
 
@@ -722,7 +722,7 @@ static PetscErrorCode PCReset_DMDARepart(PC pc)
     PetscFree(red->start_k_re);
 
     if (red->ksp) {  ierr = KSPReset(red->ksp);CHKERRQ(ierr);}
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 static PetscErrorCode PCDestroy_DMDARepart(PC pc)

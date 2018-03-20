@@ -310,15 +310,15 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
 
   if (ps->state == PSW_TS_STALE) {
     /* update local coordinates and perform communication */
-		ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+    ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
     ps->state = PSW_TS_INSYNC;
   }
 
   DataBucketGetDataFieldByName(ps->db,MPntStd_classname,&datafield_tracers);
-	DataFieldGetEntries(datafield_tracers,(void**)&tracer);
+  DataFieldGetEntries(datafield_tracers,(void**)&tracer);
 
   DataBucketGetDataFieldByName(ps->db,"pressure",&datafield);
-	DataFieldGetEntries(datafield,(void**)&tracer_pressure);
+  DataFieldGetEntries(datafield,(void**)&tracer_pressure);
 
   ierr = DMDAGetElements_pTatinQ2P1(dmv,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
   ierr = DMGetCoordinatesLocal(dmv,&gcoords);CHKERRQ(ierr);
@@ -330,7 +330,7 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   ierr = DMGlobalToLocalEnd(dmp,pressure,INSERT_VALUES,pressure_l);CHKERRQ(ierr);
   ierr = VecGetArrayRead(pressure_l,&LA_pfield);CHKERRQ(ierr);
 
-	DataBucketGetSizes(ps->db,&n_tracers,NULL,NULL);
+  DataBucketGetSizes(ps->db,&n_tracers,NULL,NULL);
   for (p=0; p<n_tracers; p++) {
     double        *xi_p;
     PetscReal     NIp[P_BASIS_FUNCTIONS],pressure_p;
@@ -433,7 +433,7 @@ PetscErrorCode PSwarmFieldUpdate_Advect(PSwarm ps)
 
     if (ps->state == PSW_TS_STALE) {
         /* update local coordinates and perform communication */
-		ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+    ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
         ps->state = PSW_TS_INSYNC;
     }
 
@@ -473,7 +473,7 @@ PetscErrorCode PSwarmFieldUpdate_FiniteStrain(PSwarm ps)
 
     if (ps->state == PSW_TS_STALE) {
         /* update local coordinates and perform communication */
-		ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+    ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
         ps->state = PSW_TS_INSYNC;
     }
 
@@ -483,11 +483,11 @@ PetscErrorCode PSwarmFieldUpdate_FiniteStrain(PSwarm ps)
         ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
         if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
 
-		ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
         ierr = ps->ops->field_update_finitestrain(ps,dmv,velocity);CHKERRQ(ierr);
 
-		ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
     } else {
         SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(FiniteStrain) was not activated");
     }
@@ -511,25 +511,25 @@ PetscErrorCode PSwarmFieldUpdate_PressTempTime(PSwarm ps)
 
     if (ps->state == PSW_TS_STALE) {
         /* update local coordinates and perform communication */
-		ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
+    ierr = MaterialPointStd_UpdateCoordinates(ps->db,dmv,ps->de);CHKERRQ(ierr);
         ps->state = PSW_TS_INSYNC;
     }
 
     if (ps->ops->field_update_ptt) {
         Vec X,velocity,pressure,temperature;
 
-		ierr = pTatinGetContext_Energy(ps->pctx,&energy);CHKERRQ(ierr);
-		dmT = energy->daT;
+    ierr = pTatinGetContext_Energy(ps->pctx,&energy);CHKERRQ(ierr);
+    dmT = energy->daT;
         ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_VELPRES,(PetscObject*)&X);CHKERRQ(ierr);
         ierr = PetscObjectQuery((PetscObject)ps,PSWARM_COMPOSED_STATE_TEMP,(PetscObject*)&temperature);CHKERRQ(ierr);
         if (!X) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector X=(u,p) was not provided. User must call PSwarmAttachStateVecVelocityPressure()");
         if (!temperature) SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"State vector T was not provided. User must call PSwarmAttachStateVecTemperature()");
 
-		ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
 
         ierr = ps->ops->field_update_ptt(ps,dmp,dmT,pressure,temperature,ps->pctx->time);CHKERRQ(ierr);
 
-		ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);
     } else {
         SETERRQ(PetscObjectComm((PetscObject)ps),PETSC_ERR_SUP,"FieldUpdate(PressTempTime) was not activated");
     }
@@ -762,7 +762,7 @@ PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
   xmax[2] = 1.0e32;
 
   nn = 3;
-	PetscOptionsGetIntArray(NULL,prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
+  PetscOptionsGetIntArray(NULL,prefix,"-pswarm_lattice_nx",Nxp,&nn,NULL);
   nn = 3;
   PetscOptionsGetRealArray(NULL,prefix,"-pswarm_lattice_min",xmin,&nn,NULL);
   nn = 3;
@@ -816,7 +816,7 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   xmax[2] = 1.0e32;
 
   nn = 3;
-	PetscOptionsGetIntArray(NULL,prefix,"-pswarm_box_nx",Nxp,&nn,NULL);
+  PetscOptionsGetIntArray(NULL,prefix,"-pswarm_box_nx",Nxp,&nn,NULL);
 
   if (Nxp[0] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[0] must be greater than 1, use -pswarm_box_nx");
   if (Nxp[1] <= 1) SETERRQ(comm,PETSC_ERR_USER,"Nxp[1] must be greater than 1, use -pswarm_box_nx");
@@ -1197,7 +1197,7 @@ PetscErrorCode PSwarm_VTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBuc
 {
   BTruth found;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   { /* MPStd */
     MPntStd_VTUWriteBinaryAppendedHeader_pid(vtk_fp,byte_offset,(const int)npoints);
@@ -1211,7 +1211,7 @@ PetscErrorCode PSwarm_VTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBuc
     }
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* data writers */
@@ -1278,13 +1278,13 @@ void MPntStd_VTUWriteBinaryAppendedData_pid(FILE *vtk_fp,const int N,const MPntS
 
 PetscErrorCode PSwarm_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db)
 {
-	int npoints;
+  int npoints;
   BTruth found;
-	DataField datafield;
+  DataField datafield;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
 
   { /* MPStd */
     MPntStd *tracer;
@@ -1308,7 +1308,7 @@ PetscErrorCode PSwarm_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucke
     }
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db)
@@ -1326,229 +1326,229 @@ PetscErrorCode PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBu
     fprintf(vtk_fp, "\t\t\t<PDataArray type=\"Float64\" Name=\"pressure\" NumberOfComponents=\"1\"/>\n");
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 {
-	FILE *vtk_fp;
-	PetscInt k;
-	int npoints;
-	PetscLogDouble t0,t1;
-	DataField PField;
-	int byte_offset,length;
+  FILE *vtk_fp;
+  PetscInt k;
+  int npoints;
+  PetscLogDouble t0,t1;
+  DataField PField;
+  int byte_offset,length;
   DataBucket db;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscTime(&t0);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
-	if ((vtk_fp = fopen (name,"w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
-	}
+  if ((vtk_fp = fopen (name,"w")) == NULL)  {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+  }
 
-	db = ps->db;
-	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+  db = ps->db;
+  DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
 
-	fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
+  fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
 
 #ifdef WORDSIZE_BIGENDIAN
-	fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
-	fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-	fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
+  fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
 
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
-	fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
+  fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
 
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t<Cells>\n");
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t<Cells>\n");
 
-	byte_offset = 0;
+  byte_offset = 0;
 
-	// connectivity //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  // connectivity //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * sizeof(int);
 
-	// offsets //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  // offsets //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * sizeof(int);
 
-	// types //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  // types //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * sizeof(unsigned char);
 
-	fprintf( vtk_fp, "\t\t\t</Cells>\n");
+  fprintf( vtk_fp, "\t\t\t</Cells>\n");
 
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t<CellData>\n");
-	fprintf( vtk_fp, "\t\t\t</CellData>\n");
-	fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t<CellData>\n");
+  fprintf( vtk_fp, "\t\t\t</CellData>\n");
+  fprintf( vtk_fp, "\n");
 
-	fprintf( vtk_fp, "\t\t\t<Points>\n");
+  fprintf( vtk_fp, "\t\t\t<Points>\n");
 
-	/* coordinates */
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  /* coordinates */
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * 3 * sizeof(double);
 
-	fprintf( vtk_fp, "\t\t\t</Points>\n");
-	fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t</Points>\n");
+  fprintf( vtk_fp, "\n");
 
-	/* point data BEGIN */
-	fprintf( vtk_fp, "\t\t\t<PointData>\n");
-	/* auto generated shit for the header goes here */
-	{
-		ierr = PSwarm_VTUWriteBinaryAppendedHeaderAllFields(vtk_fp,db,npoints,&byte_offset);CHKERRQ(ierr);
-	}
-	fprintf( vtk_fp, "\t\t\t</PointData>\n");
-	fprintf( vtk_fp, "\n");
-	/* point data END */
+  /* point data BEGIN */
+  fprintf( vtk_fp, "\t\t\t<PointData>\n");
+  /* auto generated shit for the header goes here */
+  {
+    ierr = PSwarm_VTUWriteBinaryAppendedHeaderAllFields(vtk_fp,db,npoints,&byte_offset);CHKERRQ(ierr);
+  }
+  fprintf( vtk_fp, "\t\t\t</PointData>\n");
+  fprintf( vtk_fp, "\n");
+  /* point data END */
 
-	fprintf( vtk_fp, "\t\t</Piece>\n");
-	fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
+  fprintf( vtk_fp, "\t\t</Piece>\n");
+  fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
 
-	/* WRITE APPENDED DATA HERE */
-	fprintf( vtk_fp,"\t<AppendedData encoding=\"raw\">\n");
-	fprintf( vtk_fp,"_");
+  /* WRITE APPENDED DATA HERE */
+  fprintf( vtk_fp,"\t<AppendedData encoding=\"raw\">\n");
+  fprintf( vtk_fp,"_");
 
-	/* connectivity, offsets, types, coords */
-	////////////////////////////////////////////////////////
-	/* write connectivity */
-	length = sizeof(int)*npoints;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		int idx = k;
-		fwrite( &idx, sizeof(int),1, vtk_fp );
-	}
-	////////////////////////////////////////////////////////
-	/* write offset */
-	length = sizeof(int)*npoints;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		int idx = k+1;
-		fwrite( &idx, sizeof(int),1, vtk_fp );
-	}
-	////////////////////////////////////////////////////////
-	/* write types */
-	length = sizeof(unsigned char)*npoints;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		unsigned char idx = 1; /* VTK_VERTEX */
-		fwrite( &idx, sizeof(unsigned char),1, vtk_fp );
-	}
-	////////////////////////////////////////////////////////
-	/* write coordinates */
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  /* connectivity, offsets, types, coords */
+  ////////////////////////////////////////////////////////
+  /* write connectivity */
+  length = sizeof(int)*npoints;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    int idx = k;
+    fwrite( &idx, sizeof(int),1, vtk_fp );
+  }
+  ////////////////////////////////////////////////////////
+  /* write offset */
+  length = sizeof(int)*npoints;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    int idx = k+1;
+    fwrite( &idx, sizeof(int),1, vtk_fp );
+  }
+  ////////////////////////////////////////////////////////
+  /* write types */
+  length = sizeof(unsigned char)*npoints;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    unsigned char idx = 1; /* VTK_VERTEX */
+    fwrite( &idx, sizeof(unsigned char),1, vtk_fp );
+  }
+  ////////////////////////////////////////////////////////
+  /* write coordinates */
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	length = sizeof(double)*npoints*3;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		MPntStd *marker;
-		double  *coor;
-		double  coords_k[] = {0.0, 0.0, 0.0};
+  length = sizeof(double)*npoints*3;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    MPntStd *marker;
+    double  *coor;
+    double  coords_k[] = {0.0, 0.0, 0.0};
 
-		DataFieldAccessPoint(PField,k,(void**)&marker);
-		MPntStdGetField_global_coord(marker,&coor);
-		coords_k[0] = coor[0];
-		coords_k[1] = coor[1];
-		coords_k[2] = coor[2];
+    DataFieldAccessPoint(PField,k,(void**)&marker);
+    MPntStdGetField_global_coord(marker,&coor);
+    coords_k[0] = coor[0];
+    coords_k[1] = coor[1];
+    coords_k[2] = coor[2];
 
-		fwrite( coords_k, sizeof(double), 3, vtk_fp );
-	}
-	DataFieldRestoreAccess(PField);
+    fwrite( coords_k, sizeof(double), 3, vtk_fp );
+  }
+  DataFieldRestoreAccess(PField);
 
-	/* auto generated shit for the marker data goes here */
-	{
-		ierr = PSwarm_VTUWriteBinaryAppendedDataAllFields(vtk_fp,db);CHKERRQ(ierr);
-	}
+  /* auto generated shit for the marker data goes here */
+  {
+    ierr = PSwarm_VTUWriteBinaryAppendedDataAllFields(vtk_fp,db);CHKERRQ(ierr);
+  }
 
-	fprintf( vtk_fp,"\n\t</AppendedData>\n");
+  fprintf( vtk_fp,"\n\t</AppendedData>\n");
 
-	fprintf( vtk_fp, "</VTKFile>\n");
+  fprintf( vtk_fp, "</VTKFile>\n");
 
-	if( vtk_fp!= NULL ) {
-		fclose( vtk_fp );
-		vtk_fp = NULL;
-	}
+  if( vtk_fp!= NULL ) {
+    fclose( vtk_fp );
+    vtk_fp = NULL;
+  }
 
-	ierr = PetscTime(&t1);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmViewParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
-	char *vtkfilename,filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
+  char *vtkfilename,filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
   int n_points;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   if (petscprefix) { PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm",stepprefix,petscprefix); }
   else {             PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_pswarm",stepprefix); }
 
-	ierr = pTatinGenerateParallelVTKName(basename,"vtu",&vtkfilename);CHKERRQ(ierr);
-	if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename); }
-	else {      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"./%s",vtkfilename); }
+  ierr = pTatinGenerateParallelVTKName(basename,"vtu",&vtkfilename);CHKERRQ(ierr);
+  if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename); }
+  else {      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"./%s",vtkfilename); }
 
   DataBucketGetSizes(ps->db,&n_points,NULL,NULL);
   if (n_points > 0) {
     ierr = PSwarmView_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
   }
-	free(vtkfilename);
+  free(vtkfilename);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],const char fileprefix[],PetscMPIInt nplist[])
 {
-	PetscMPIInt nproc;
-	FILE *vtk_fp;
-	PetscInt i;
-	char *sourcename;
-	PetscErrorCode ierr;
+  PetscMPIInt nproc;
+  FILE *vtk_fp;
+  PetscInt i;
+  char *sourcename;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	if ((vtk_fp = fopen (filename,"w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename);
-	}
+  if ((vtk_fp = fopen (filename,"w")) == NULL)  {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",filename);
+  }
 
-	/* (VTK) generate pvts header */
-	fprintf(vtk_fp,"<?xml version=\"1.0\"?>\n");
+  /* (VTK) generate pvts header */
+  fprintf(vtk_fp,"<?xml version=\"1.0\"?>\n");
 
 #ifdef WORDSIZE_BIGENDIAN
-	fprintf(vtk_fp,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+  fprintf(vtk_fp,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
-	fprintf(vtk_fp,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf(vtk_fp,"<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-	/* define size of the nodal mesh based on the cell DM */
-	fprintf(vtk_fp,"  <PUnstructuredGrid GhostLevel=\"0\">\n" ); /* note overlap = 0 */
+  /* define size of the nodal mesh based on the cell DM */
+  fprintf(vtk_fp,"  <PUnstructuredGrid GhostLevel=\"0\">\n" ); /* note overlap = 0 */
 
-	/* DUMP THE CELL REFERENCES */
-	fprintf(vtk_fp,"    <PCellData>\n");
-	fprintf(vtk_fp,"    </PCellData>\n");
+  /* DUMP THE CELL REFERENCES */
+  fprintf(vtk_fp,"    <PCellData>\n");
+  fprintf(vtk_fp,"    </PCellData>\n");
 
-	///////////////
-	fprintf(vtk_fp,"    <PPoints>\n");
-	fprintf(vtk_fp,"      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
-	fprintf(vtk_fp,"    </PPoints>\n");
-	///////////////
+  ///////////////
+  fprintf(vtk_fp,"    <PPoints>\n");
+  fprintf(vtk_fp,"      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
+  fprintf(vtk_fp,"    </PPoints>\n");
+  ///////////////
 
-	///////////////
+  ///////////////
   fprintf(vtk_fp,"    <PPointData>\n");
 
   ierr = PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(vtk_fp,db);CHKERRQ(ierr);
 
   fprintf(vtk_fp,"    </PPointData>\n");
-	///////////////
+  ///////////////
 
-	/* write out the parallel information */
-	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-	for (i=0; i<nproc; i++) {
+  /* write out the parallel information */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
+  for (i=0; i<nproc; i++) {
     int i32;
 
     if (nplist[i] != 0) {
@@ -1558,28 +1558,28 @@ PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],con
       fprintf(vtk_fp,"    <Piece Source=\"%s\"/>\n",sourcename);
       free(sourcename);
     }
-	}
+  }
 
-	/* close the file */
-	fprintf(vtk_fp,"  </PUnstructuredGrid>\n");
-	fprintf(vtk_fp,"</VTKFile>\n");
+  /* close the file */
+  fprintf(vtk_fp,"  </PUnstructuredGrid>\n");
+  fprintf(vtk_fp,"</VTKFile>\n");
 
-	if (vtk_fp != NULL){
-		fclose(vtk_fp);
-		vtk_fp = NULL;
-	}
+  if (vtk_fp != NULL){
+    fclose(vtk_fp);
+    vtk_fp = NULL;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const char stepprefix[],const char petscprefix[])
 {
-	char *vtufilename,fileprefix[PETSC_MAX_PATH_LEN],fileprefix2[PETSC_MAX_PATH_LEN];
-	PetscMPIInt commsize,rank;
+  char *vtufilename,fileprefix[PETSC_MAX_PATH_LEN],fileprefix2[PETSC_MAX_PATH_LEN];
+  PetscMPIInt commsize,rank;
   int n_points,*nplist;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   if (petscprefix) {
     PetscSNPrintf(fileprefix,PETSC_MAX_PATH_LEN-1,"%s_%spswarm",stepprefix,petscprefix);
@@ -1593,7 +1593,7 @@ PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const cha
     PetscSNPrintf(fileprefix2,PETSC_MAX_PATH_LEN-1,"./%s",fileprefix);
   }
 
-	ierr = pTatinGenerateVTKName(fileprefix2,"pvtu",&vtufilename);CHKERRQ(ierr);
+  ierr = pTatinGenerateVTKName(fileprefix2,"pvtu",&vtufilename);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&commsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -1607,7 +1607,7 @@ PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const cha
   if (rank == 0) {
     ierr = __PSwarmViewParaview_PVTU(db,vtufilename,fileprefix,nplist);CHKERRQ(ierr);
     PetscFree(nplist);
-	}
+  }
   free(vtufilename);
 
   PetscFunctionReturn(0);
@@ -1615,31 +1615,31 @@ PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const cha
 
 PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
   pTatinCtx ctx;
-	char pvdfilename[PETSC_MAX_PATH_LEN];
+  char pvdfilename[PETSC_MAX_PATH_LEN];
   const char *prefix;
   char vtkfilename[PETSC_MAX_PATH_LEN];
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
 
   if (prefix) { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
   else { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_pswarm.pvd",path); }
-	if (!ps->pvdopen) {
-		PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+  if (!ps->pvdopen) {
+    PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename );
+    ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 
-		ps->pvdopen = PETSC_TRUE;
-	}
+    ps->pvdopen = PETSC_TRUE;
+  }
   if (prefix) { PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm.pvtu",stepprefix,petscprefix); }
   else {        PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_pswarm.pvtu",stepprefix); }
 
   ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,stepprefix);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1683,7 +1683,7 @@ PetscErrorCode PSwarmView_PerRank(PSwarm ps)
    }
    */
 
-	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
   PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
 
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ps->pctx->outputpath,ps->pctx->step);CHKERRQ(ierr);
@@ -1714,112 +1714,112 @@ PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx)
 
 PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscReal xmin[],PetscReal dx[],PetscInt nx[],const char name[])
 {
-	PetscInt i,j,k;
-	FILE*	vtk_fp = NULL;
+  PetscInt i,j,k;
+  FILE* vtk_fp = NULL;
   float xp,yp,zp;
 
-	PetscFunctionBegin;
-	if ((vtk_fp = fopen (name,"w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
-	}
+  PetscFunctionBegin;
+  if ((vtk_fp = fopen (name,"w")) == NULL)  {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+  }
 
-	/* VTS HEADER - OPEN */
+  /* VTS HEADER - OPEN */
 #ifdef WORDSIZE_BIGENDIAN
-	fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+  fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
-	fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf(vtk_fp,"<VTKFile type=\"StructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-	fprintf(vtk_fp,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
-	fprintf(vtk_fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
+  fprintf(vtk_fp,"  <StructuredGrid WholeExtent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
+  fprintf(vtk_fp,"    <Piece Extent=\"%d %d %d %d %d %d\">\n", 0,nx[0]-1, 0,nx[1]-1,0,nx[2]-1);
 
-	/* VTS COORD DATA */
-	fprintf(vtk_fp,"    <Points>\n");
-	fprintf(vtk_fp,"      <DataArray Name=\"coords\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
-	for (k=0; k<nx[2]; k++) {
-		for (j=0; j<nx[1]; j++) {
-			for (i=0; i<nx[0]; i++) {
+  /* VTS COORD DATA */
+  fprintf(vtk_fp,"    <Points>\n");
+  fprintf(vtk_fp,"      <DataArray Name=\"coords\" type=\"Float32\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+  for (k=0; k<nx[2]; k++) {
+    for (j=0; j<nx[1]; j++) {
+      for (i=0; i<nx[0]; i++) {
         xp = xmin[0] + dx[0] * i;
         yp = xmin[1] + dx[1] * j;
         zp = xmin[2] + dx[2] * k;
-				fprintf(vtk_fp,"      %1.6e %1.6e %1.6e\n",xp,yp,zp);
-			}
-		}
-	}
-	fprintf(vtk_fp,"      </DataArray>\n");
-	fprintf(vtk_fp,"    </Points>\n");
+        fprintf(vtk_fp,"      %1.6e %1.6e %1.6e\n",xp,yp,zp);
+      }
+    }
+  }
+  fprintf(vtk_fp,"      </DataArray>\n");
+  fprintf(vtk_fp,"    </Points>\n");
 
-	/* VTS CELL DATA */
-	fprintf(vtk_fp,"    <CellData>\n");
+  /* VTS CELL DATA */
+  fprintf(vtk_fp,"    <CellData>\n");
 
-	fprintf(vtk_fp,"      <DataArray Name=\"index\" type=\"Int32\" NumberOfComponents=\"1\" format=\"ascii\">\n");
-	fprintf(vtk_fp,"      ");
-	for (k=0; k<nx[2]; k++) {
-		for (j=0; j<nx[1]; j++) {
-			for (i=0; i<nx[0]; i++) {
-				fprintf(vtk_fp,"%d ", 0 );
-			}
-		}
-	}
-	fprintf(vtk_fp,"\n");
-	fprintf(vtk_fp,"      </DataArray>\n");
+  fprintf(vtk_fp,"      <DataArray Name=\"index\" type=\"Int32\" NumberOfComponents=\"1\" format=\"ascii\">\n");
+  fprintf(vtk_fp,"      ");
+  for (k=0; k<nx[2]; k++) {
+    for (j=0; j<nx[1]; j++) {
+      for (i=0; i<nx[0]; i++) {
+        fprintf(vtk_fp,"%d ", 0 );
+      }
+    }
+  }
+  fprintf(vtk_fp,"\n");
+  fprintf(vtk_fp,"      </DataArray>\n");
 
-	fprintf(vtk_fp,"    </CellData>\n");
+  fprintf(vtk_fp,"    </CellData>\n");
 
-	/* VTS NODAL DATA */
-	fprintf(vtk_fp,"    <PointData>\n");
-	fprintf(vtk_fp,"    </PointData>\n");
+  /* VTS NODAL DATA */
+  fprintf(vtk_fp,"    <PointData>\n");
+  fprintf(vtk_fp,"    </PointData>\n");
 
-	/* VTS HEADER - CLOSE */
-	fprintf(vtk_fp,"    </Piece>\n");
-	fprintf(vtk_fp,"  </StructuredGrid>\n");
-	fprintf(vtk_fp,"</VTKFile>\n");
-	fclose(vtk_fp);
-	PetscFunctionReturn(0);
+  /* VTS HEADER - CLOSE */
+  fprintf(vtk_fp,"    </Piece>\n");
+  fprintf(vtk_fp,"  </StructuredGrid>\n");
+  fprintf(vtk_fp,"</VTKFile>\n");
+  fclose(vtk_fp);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmViewSingletonParaview_PVD(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
   pTatinCtx ctx;
-	char pvdfilename[PETSC_MAX_PATH_LEN];
+  char pvdfilename[PETSC_MAX_PATH_LEN];
   const char *prefix;
   char vtkfilename[PETSC_MAX_PATH_LEN];
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&prefix);CHKERRQ(ierr);
   ctx = ps->pctx;
 
   if (prefix) { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_%spswarm.pvd",path,petscprefix); }
   else { PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_pswarm.pvd",path); }
-	if (!ps->pvdopen) {
-		PetscPrintf(PetscObjectComm((PetscObject)ps),"  writing pvdfilename %s \n", pvdfilename );
-		ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
+  if (!ps->pvdopen) {
+    PetscPrintf(PetscObjectComm((PetscObject)ps),"  writing pvdfilename %s \n", pvdfilename );
+    ierr = ParaviewPVDOpen(pvdfilename);CHKERRQ(ierr);
 
-		ps->pvdopen = PETSC_TRUE;
-	}
+    ps->pvdopen = PETSC_TRUE;
+  }
   if (prefix) { PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm.vtu",stepprefix,petscprefix); }
   else {        PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s_pswarm.vtu",stepprefix); }
 
   ierr = ParaviewPVDAppend(pvdfilename,ctx->time,vtkfilename,stepprefix);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmSingleton_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db,MPI_Comm comm)
 {
-	int i,npoints,npoints_g = 0;
+  int i,npoints,npoints_g = 0;
   BTruth found;
-	DataField datafield;
+  DataField datafield;
   PetscMPIInt rank;
   size_t atomic_size;
   PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
   ierr = MPI_Reduce(&npoints,&npoints_g,1,MPI_INT,MPI_SUM,0,comm);CHKERRQ(ierr);
 
   { /* MPStd - pid */
@@ -1893,25 +1893,25 @@ PetscErrorCode PSwarmSingleton_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,
     }
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char name[])
 {
-	FILE *vtk_fp;
-	PetscInt k;
-	int npoints,npoints_g;
-	PetscLogDouble t0,t1;
-	DataField PField;
-	int byte_offset,length;
+  FILE *vtk_fp;
+  PetscInt k;
+  int npoints,npoints_g;
+  PetscLogDouble t0,t1;
+  DataField PField;
+  int byte_offset,length;
   DataBucket db;
   PetscMPIInt rank;
   MPI_Comm comm;
   double *buffer;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscTime(&t0);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
   comm = PetscObjectComm((PetscObject)ps);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -1923,8 +1923,8 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     }
   }
 
-	db = ps->db;
-	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+  db = ps->db;
+  DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
 
   if (rank == 0) {
     fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
@@ -1938,7 +1938,7 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
   }
 
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
   ierr = MPI_Reduce(&npoints,&npoints_g,1,MPI_INT,MPI_SUM,0,comm);CHKERRQ(ierr);
 
   if (rank == 0) {
@@ -1948,7 +1948,7 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     fprintf( vtk_fp, "\t\t\t<Cells>\n");
   }
 
-	byte_offset = 0;
+  byte_offset = 0;
 
   if (rank == 0) {
     // connectivity //
@@ -1980,7 +1980,7 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     fprintf( vtk_fp, "\n");
   }
 
-	if (rank == 0) {
+  if (rank == 0) {
     /* point data BEGIN */
     fprintf( vtk_fp, "\t\t\t<PointData>\n");
     /* auto generated shit for the header goes here */
@@ -1992,7 +1992,7 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     /* point data END */
   }
 
-	if (rank == 0) {
+  if (rank == 0) {
     fprintf( vtk_fp, "\t\t</Piece>\n");
     fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
 
@@ -2001,7 +2001,7 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     fprintf( vtk_fp,"_");
   }
 
-	if (rank == 0) {
+  if (rank == 0) {
     /* connectivity, offsets, types, coords */
     ////////////////////////////////////////////////////////
     /* write connectivity */
@@ -2031,23 +2031,23 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     }
   }
 
-	////////////////////////////////////////////////////////
-	/* write coordinates */
-	PetscMalloc(sizeof(double)*npoints*3,&buffer);
+  ////////////////////////////////////////////////////////
+  /* write coordinates */
+  PetscMalloc(sizeof(double)*npoints*3,&buffer);
 
   DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
   for (k=0; k<npoints; k++) {
-		MPntStd *marker;
-		double  *coor;
+    MPntStd *marker;
+    double  *coor;
 
-		DataFieldAccessPoint(PField,k,(void**)&marker);
-		MPntStdGetField_global_coord(marker,&coor);
-		buffer[3*k+0] = coor[0];
-		buffer[3*k+1] = coor[1];
-		buffer[3*k+2] = coor[2];
-	}
-	DataFieldRestoreAccess(PField);
+    DataFieldAccessPoint(PField,k,(void**)&marker);
+    MPntStdGetField_global_coord(marker,&coor);
+    buffer[3*k+0] = coor[0];
+    buffer[3*k+1] = coor[1];
+    buffer[3*k+2] = coor[2];
+  }
+  DataFieldRestoreAccess(PField);
 
   if (rank == 0) {
     length = sizeof(double)*npoints_g*3;
@@ -2056,8 +2056,8 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
   ierr = MPIWrite_Blocking(vtk_fp,(void*)buffer,npoints,3*sizeof(double),0,PETSC_TRUE,comm);CHKERRQ(ierr);
   PetscFree(buffer);
 
-	/* auto generated shit for the marker data goes here */
-	{
+  /* auto generated shit for the marker data goes here */
+  {
     ierr = PSwarmSingleton_VTUWriteBinaryAppendedDataAllFields(vtk_fp,db,comm);CHKERRQ(ierr);
   }
 
@@ -2071,27 +2071,27 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
     }
   }
 
-	ierr = PetscTime(&t1);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
-	char vtkfilename[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
-	PetscErrorCode ierr;
+  char vtkfilename[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   if (petscprefix) { PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_%spswarm",stepprefix,petscprefix); }
   else {             PetscSNPrintf(basename,PETSC_MAX_PATH_LEN-1, "%s_pswarm",stepprefix); }
 
   PetscSNPrintf(vtkfilename,PETSC_MAX_PATH_LEN-1, "%s.vtu",basename);
-	if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename); }
-	else {      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"./%s",vtkfilename); }
+  if (path) { PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"%s/%s",path,vtkfilename); }
+  else {      PetscSNPrintf(filename,PETSC_MAX_PATH_LEN-1,"./%s",vtkfilename); }
 
   ierr = PSwarmViewSingleton_VTUXML_binary_appended(ps,filename);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PSwarmView_Singleton(PSwarm ps)
@@ -2107,7 +2107,7 @@ PetscErrorCode PSwarmView_Singleton(PSwarm ps)
   ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);CHKERRQ(ierr);
   ierr = PhysCompStokesGetDMs(stokes,&dmv,NULL);CHKERRQ(ierr);
 
-	ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)ps,&petscprefix);CHKERRQ(ierr);
   PetscSNPrintf(stepprefix,PETSC_MAX_PATH_LEN-1,"step%D",ps->pctx->step);
 
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",ps->pctx->outputpath,ps->pctx->step);CHKERRQ(ierr);

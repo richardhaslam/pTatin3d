@@ -35,14 +35,14 @@
 
 
 struct _p_PhysCompStokes {
-	PetscInt                mx,my,mz; /* global mesh size */
-	DM                      dav,dap;
+  PetscInt                mx,my,mz; /* global mesh size */
+  DM                      dav,dap;
   DM                      stokes_pack;
-	BCList                  u_bclist,p_bclist;
-	Quadrature              volQ;
-	SurfaceQuadrature       *surfQ; /* eight faces - one for each hex */
-	PetscBool               use_mf_stokes;
-	PetscReal               gravity_vector[3];
+  BCList                  u_bclist,p_bclist;
+  Quadrature              volQ;
+  SurfaceQuadrature       *surfQ; /* eight faces - one for each hex */
+  PetscBool               use_mf_stokes;
+  PetscReal               gravity_vector[3];
 };
 
 #endif

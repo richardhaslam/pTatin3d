@@ -247,6 +247,6 @@ int main(int argc,char **argv)
       break;
     }
 
-	ierr = pTatinFinalize();CHKERRQ(ierr);
-	return 0;
+  ierr = pTatinFinalize();CHKERRQ(ierr);
+  return 0;
 }

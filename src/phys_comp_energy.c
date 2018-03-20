@@ -69,32 +69,32 @@
 
 PetscErrorCode PhysCompCreate_Energy(PhysCompEnergy *E)
 {
-	PetscErrorCode ierr;
-	PhysCompEnergy energy;
+  PetscErrorCode ierr;
+  PhysCompEnergy energy;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
   *E = NULL;
-	ierr = PetscMalloc(sizeof(struct _p_PhysCompEnergy),&energy);CHKERRQ(ierr);
-	ierr = PetscMemzero(energy,sizeof(struct _p_PhysCompEnergy));CHKERRQ(ierr);
-	*E = energy;
-	PetscFunctionReturn(0);
+  ierr = PetscMalloc(sizeof(struct _p_PhysCompEnergy),&energy);CHKERRQ(ierr);
+  ierr = PetscMemzero(energy,sizeof(struct _p_PhysCompEnergy));CHKERRQ(ierr);
+  *E = energy;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
 {
-	PetscErrorCode ierr;
-	PhysCompEnergy ctx;
+  PetscErrorCode ierr;
+  PhysCompEnergy ctx;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	if (!E) {PetscFunctionReturn(0);}
-	ctx = *E;
+  if (!E) {PetscFunctionReturn(0);}
+  ctx = *E;
 
-	//	for (e=0; e<HEX_FACES; e++) {
-	//		if (ctx->surfQ[e]) { ierr = SurfaceQuadratureDestroy(&ctx->surfQ[e]);CHKERRQ(ierr); }
-	//	}
-	if (ctx->volQ) { ierr = QuadratureDestroy(&ctx->volQ);CHKERRQ(ierr); }
-	if (ctx->T_bclist) { ierr = BCListDestroy(&ctx->T_bclist);CHKERRQ(ierr); }
+  //  for (e=0; e<HEX_FACES; e++) {
+  //    if (ctx->surfQ[e]) { ierr = SurfaceQuadratureDestroy(&ctx->surfQ[e]);CHKERRQ(ierr); }
+  //  }
+  if (ctx->volQ) { ierr = QuadratureDestroy(&ctx->volQ);CHKERRQ(ierr); }
+  if (ctx->T_bclist) { ierr = BCListDestroy(&ctx->T_bclist);CHKERRQ(ierr); }
   if (ctx->daT) {
     ierr = DMDestroyDMDAE(ctx->daT);CHKERRQ(ierr);
     ierr = DMDestroy(&ctx->daT);CHKERRQ(ierr);
@@ -102,212 +102,212 @@ PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
   if (ctx->u_minus_V) { ierr = VecDestroy(&ctx->u_minus_V);CHKERRQ(ierr); }
   if (ctx->Told) {      ierr = VecDestroy(&ctx->Told);CHKERRQ(ierr); }
   if (ctx->Xold) {      ierr = VecDestroy(&ctx->Xold);CHKERRQ(ierr); }
-	if (ctx) { ierr = PetscFree(ctx);CHKERRQ(ierr); }
+  if (ctx) { ierr = PetscFree(ctx);CHKERRQ(ierr); }
 
-	*E = NULL;
-	PetscFunctionReturn(0);
+  *E = NULL;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompCreateMesh_Energy(PhysCompEnergy E,DM dav,PetscInt mx,PetscInt my, PetscInt mz,PetscInt mesh_generator_type)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	E->energy_mesh_type = mesh_generator_type;
+  E->energy_mesh_type = mesh_generator_type;
 
-	switch (mesh_generator_type) {
-		DMDAE dae;
+  switch (mesh_generator_type) {
+    DMDAE dae;
 
-		case 0:
-			PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating standard Q1 DMDA\n");
-			E->mx = mx;
-			E->my = my;
-			E->mz = mz;
+    case 0:
+      PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating standard Q1 DMDA\n");
+      E->mx = mx;
+      E->my = my;
+      E->mz = mz;
 
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only overlapping and nested supported {1,2} ");
-			break;
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Only overlapping and nested supported {1,2} ");
+      break;
 
-		case 1:
-			PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating overlapping Q1 DMDA\n");
-			if (!dav) {
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require valid DM dav");
-			}
-			ierr = DMDACreateOverlappingQ1FromQ2(dav,1,&E->daT);CHKERRQ(ierr);
-			ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
-			E->mx = dae->mx;
-			E->my = dae->my;
-			E->mz = dae->mz;
-			break;
+    case 1:
+      PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating overlapping Q1 DMDA\n");
+      if (!dav) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require valid DM dav");
+      }
+      ierr = DMDACreateOverlappingQ1FromQ2(dav,1,&E->daT);CHKERRQ(ierr);
+      ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
+      E->mx = dae->mx;
+      E->my = dae->my;
+      E->mz = dae->mz;
+      break;
 
-		case 2:
-			PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating nested Q1 DMDA\n");
-			if (!dav) {
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require valid DM dav");
-			}
-			ierr = DMDACreateNestedQ1FromQ2(dav,1,&E->daT);CHKERRQ(ierr);
-			ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
-			E->mx = dae->mx;
-			E->my = dae->my;
-			E->mz = dae->mz;
-			break;
+    case 2:
+      PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating nested Q1 DMDA\n");
+      if (!dav) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require valid DM dav");
+      }
+      ierr = DMDACreateNestedQ1FromQ2(dav,1,&E->daT);CHKERRQ(ierr);
+      ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
+      E->mx = dae->mx;
+      E->my = dae->my;
+      E->mz = dae->mz;
+      break;
 
-		default:
-			E->energy_mesh_type = 1;
+    default:
+      E->energy_mesh_type = 1;
 
-			PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating overlapping Q1 DMDA\n");
-			if (!dav) {
-				SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require valid DM dav");
-			}
-			ierr = DMDACreateOverlappingQ1FromQ2(dav,1,&E->daT);CHKERRQ(ierr);
-			ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
-			E->mx = dae->mx;
-			E->my = dae->my;
-			E->mz = dae->mz;
-			break;
-	}
+      PetscPrintf(PETSC_COMM_WORLD,"PhysCompCreateMesh_Energy: Generating overlapping Q1 DMDA\n");
+      if (!dav) {
+        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"Require valid DM dav");
+      }
+      ierr = DMDACreateOverlappingQ1FromQ2(dav,1,&E->daT);CHKERRQ(ierr);
+      ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
+      E->mx = dae->mx;
+      E->my = dae->my;
+      E->mz = dae->mz;
+      break;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompCreateBoundaryList_Energy(PhysCompEnergy E)
 {
-	DM daT;
-	PetscErrorCode ierr;
+  DM daT;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	daT = E->daT;
-	if (!daT) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"daT must be set"); }
-	ierr = DMDABCListCreate(daT,&E->T_bclist);CHKERRQ(ierr);
+  daT = E->daT;
+  if (!daT) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"daT must be set"); }
+  ierr = DMDABCListCreate(daT,&E->T_bclist);CHKERRQ(ierr);
 
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompCreateVolumeQuadrature_Energy(PhysCompEnergy E)
 {
-	PetscInt dim, np_per_dim, ncells;
-	DMDAE dae;
-	PetscErrorCode ierr;
+  PetscInt dim, np_per_dim, ncells;
+  DMDAE dae;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	np_per_dim = 2;
-	dim = 3;
+  np_per_dim = 2;
+  dim = 3;
 
-	ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
-	ncells = dae->lmx * dae->lmy * dae->lmz;
+  ierr = DMGetDMDAE(E->daT,&dae);CHKERRQ(ierr);
+  ncells = dae->lmx * dae->lmy * dae->lmz;
 
-	ierr = VolumeQuadratureCreate_GaussLegendreEnergy(dim,np_per_dim,ncells,&E->volQ);CHKERRQ(ierr);
+  ierr = VolumeQuadratureCreate_GaussLegendreEnergy(dim,np_per_dim,ncells,&E->volQ);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,PetscInt mesh_generator_type,PhysCompEnergy *E)
 {
-	PetscErrorCode  ierr;
-	PhysCompEnergy  energy;
-	DM              cda;
+  PetscErrorCode  ierr;
+  PhysCompEnergy  energy;
+  DM              cda;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = PhysCompCreate_Energy(&energy);CHKERRQ(ierr);
+  ierr = PhysCompCreate_Energy(&energy);CHKERRQ(ierr);
 
-	ierr = PhysCompCreateMesh_Energy(energy,dav,mx,my,mz,mesh_generator_type);CHKERRQ(ierr);
-	ierr = PhysCompCreateBoundaryList_Energy(energy);CHKERRQ(ierr);
-	ierr = PhysCompCreateVolumeQuadrature_Energy(energy);CHKERRQ(ierr);
+  ierr = PhysCompCreateMesh_Energy(energy,dav,mx,my,mz,mesh_generator_type);CHKERRQ(ierr);
+  ierr = PhysCompCreateBoundaryList_Energy(energy);CHKERRQ(ierr);
+  ierr = PhysCompCreateVolumeQuadrature_Energy(energy);CHKERRQ(ierr);
 
-	/* create aux vectors */
-	ierr = DMCreateGlobalVector(energy->daT,&energy->Told);CHKERRQ(ierr);
+  /* create aux vectors */
+  ierr = DMCreateGlobalVector(energy->daT,&energy->Told);CHKERRQ(ierr);
 
-	ierr = DMGetCoordinateDM(energy->daT,&cda);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(cda,&energy->u_minus_V);CHKERRQ(ierr);
-	ierr = DMCreateGlobalVector(cda,&energy->Xold);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(energy->daT,&cda);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(cda,&energy->u_minus_V);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(cda,&energy->Xold);CHKERRQ(ierr);
 
-	*E = energy;
+  *E = energy;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompLoad_Energy(void)
 {
-	PetscFunctionBegin;
-	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Currently unavailable");
-	PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Currently unavailable");
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode PhysCompSave_Energy(void)
 {
-	PetscFunctionBegin;
-	SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Currently unavailable");
-	PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Currently unavailable");
+  PetscFunctionReturn(0);
 }
 
 /* quadrature */
 PetscErrorCode VolumeQuadratureCreate_GaussLegendreEnergy(PetscInt nsd,PetscInt np_per_dim,PetscInt ncells,Quadrature *quadrature)
 {
-	Quadrature Q;
-	PetscErrorCode ierr;
+  Quadrature Q;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-	ierr = QuadratureCreate(&Q);CHKERRQ(ierr);
-	Q->dim  = nsd;
-	Q->type = VOLUME_QUAD;
+  ierr = QuadratureCreate(&Q);CHKERRQ(ierr);
+  Q->dim  = nsd;
+  Q->type = VOLUME_QUAD;
 
-	/*PetscPrintf(PETSC_COMM_WORLD,"VolumeQuadratureCreate_GaussLegendreEnergy:\n");*/
-	switch (np_per_dim) {
-		case 1:
-			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 1 pnt Gauss Legendre quadrature\n");*/
-			//QuadratureCreateGauss_1pnt_3D(&ngp,gp_xi,gp_weight);
+  /*PetscPrintf(PETSC_COMM_WORLD,"VolumeQuadratureCreate_GaussLegendreEnergy:\n");*/
+  switch (np_per_dim) {
+    case 1:
+      /*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 1 pnt Gauss Legendre quadrature\n");*/
+      //QuadratureCreateGauss_1pnt_3D(&ngp,gp_xi,gp_weight);
       SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"This will result in a rank-deficient operator");
-			break;
+      break;
 
-		case 2:
-			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");*/
-			QuadratureCreateGauss_2pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
-			break;
+    case 2:
+      /*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 2x2 pnt Gauss Legendre quadrature\n");*/
+      QuadratureCreateGauss_2pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
+      break;
 
-		case 3:
-			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
-			QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
-			break;
+    case 3:
+      /*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
+      QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
+      break;
 
-		default:
-			/*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
-			QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
-			break;
-	}
+    default:
+      /*PetscPrintf(PETSC_COMM_WORLD,"\tUsing 3x3 pnt Gauss Legendre quadrature\n");*/
+      QuadratureCreateGauss_3pnt_3D(&Q->npoints,&Q->q_xi_coor,&Q->q_weight);
+      break;
+  }
 
-	Q->n_elements = ncells;
-	if (ncells != 0) {
+  Q->n_elements = ncells;
+  if (ncells != 0) {
 
-		DataBucketCreate(&Q->properties_db);
-		DataBucketRegisterField(Q->properties_db,QPntVolCoefEnergy_classname, sizeof(QPntVolCoefEnergy),NULL);
-		DataBucketFinalize(Q->properties_db);
+    DataBucketCreate(&Q->properties_db);
+    DataBucketRegisterField(Q->properties_db,QPntVolCoefEnergy_classname, sizeof(QPntVolCoefEnergy),NULL);
+    DataBucketFinalize(Q->properties_db);
 
-		DataBucketSetInitialSizes(Q->properties_db,Q->npoints*ncells,1);
+    DataBucketSetInitialSizes(Q->properties_db,Q->npoints*ncells,1);
 
     /*
     // Note: This call will hang if any rank contained zero elements
-		DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"GaussLegendre EnergyCoefficients",DATABUCKET_VIEW_STDOUT);
+    DataBucketView(PETSC_COMM_WORLD, Q->properties_db,"GaussLegendre EnergyCoefficients",DATABUCKET_VIEW_STDOUT);
     */
-	}
+  }
 
-	*quadrature = Q;
+  *quadrature = Q;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode VolumeQuadratureGetAllCellData_Energy(Quadrature Q,QPntVolCoefEnergy *coeffs[])
 {
-	QPntVolCoefEnergy *quadraturepoint_data;
+  QPntVolCoefEnergy *quadraturepoint_data;
   DataField          PField;
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	DataBucketGetDataFieldByName(Q->properties_db, QPntVolCoefEnergy_classname ,&PField);
-	quadraturepoint_data = PField->data;
-	*coeffs = quadraturepoint_data;
+  DataBucketGetDataFieldByName(Q->properties_db, QPntVolCoefEnergy_classname ,&PField);
+  quadraturepoint_data = PField->data;
+  *coeffs = quadraturepoint_data;
 
   PetscFunctionReturn(0);
 }
@@ -315,22 +315,22 @@ PetscErrorCode VolumeQuadratureGetAllCellData_Energy(Quadrature Q,QPntVolCoefEne
 PetscErrorCode VolumeQuadratureGetCellData_Energy(Quadrature Q,QPntVolCoefEnergy coeffs[],PetscInt cidx,QPntVolCoefEnergy *cell[])
 {
   PetscFunctionBegin;
-	if (cidx>=Q->n_elements) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"cidx > max cells");
-	}
+  if (cidx>=Q->n_elements) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_SIZ,"cidx > max cells");
+  }
 
-	*cell = &coeffs[cidx*Q->npoints];
+  *cell = &coeffs[cidx*Q->npoints];
   PetscFunctionReturn(0);
 }
 
 /* material points */
 PetscErrorCode PhysCompAddMaterialPointCoefficients_Energy(DataBucket db)
 {
-	PetscFunctionBegin;
-	/* register marker structures here */
-	DataBucketRegisterField(db,MPntPEnergy_classname,sizeof(MPntPEnergy),NULL);
+  PetscFunctionBegin;
+  /* register marker structures here */
+  DataBucketRegisterField(db,MPntPEnergy_classname,sizeof(MPntPEnergy),NULL);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* unneeded */

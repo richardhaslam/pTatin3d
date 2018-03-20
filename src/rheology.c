@@ -49,9 +49,9 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
   PetscScalar vis;
   PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	R->nphases_active = 0;
+  R->nphases_active = 0;
 
   /* Define defaults for the viscosity cut-offs */
   R->apply_viscosity_cutoff_global = PETSC_FALSE;
@@ -67,7 +67,7 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
     R->eta_lower_cutoff_global       = vis;
   }
 
-	flg = PETSC_FALSE;
+  flg = PETSC_FALSE;
   ierr = PetscOptionsGetReal(NULL,NULL,"-eta_upper_cutoff_global",&vis,&flg);CHKERRQ(ierr);
 
   if (flg == PETSC_TRUE) {
@@ -88,119 +88,119 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
   }
 
   /* Define defaults for the parameters for each rheology */
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
   RheologyConstants *rheo;
-	int               npoints;
-	DataField         PField_std;
-	DataField         PField_stokes;
+  int               npoints;
+  DataField         PField_std;
+  DataField         PField_stokes;
   MPntStd           *mp_std;
-	MPntPStokes       *mp_stokes;
-	PetscErrorCode    ierr;
+  MPntPStokes       *mp_stokes;
+  PetscErrorCode    ierr;
   static int        been_here=0;
-	PhysCompStokes    stokes;
+  PhysCompStokes    stokes;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
   rheo = &user->rheology_constants;
-	switch (rheo->rheology_type) {
+  switch (rheo->rheology_type) {
 
-		case RHEOLOGY_VISCOUS:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS selected ***\n");
-			}
-			/* update on markers */
-			ierr = EvaluateRheologyNonlinearitiesMarkers_Viscous(user,dau,u,dap,p);CHKERRQ(ierr);
-			break;
+    case RHEOLOGY_VISCOUS:
+      if (been_here == 0) {
+        PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VISCOUS selected ***\n");
+      }
+      /* update on markers */
+      ierr = EvaluateRheologyNonlinearitiesMarkers_Viscous(user,dau,u,dap,p);CHKERRQ(ierr);
+      break;
 
-		case RHEOLOGY_VP_STD:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VP_STD selected ***\n");
-			}
-			ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+    case RHEOLOGY_VP_STD:
+      if (been_here == 0) {
+        PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_VP_STD selected ***\n");
+      }
+      ierr = EvaluateRheologyNonlinearitiesMarkers_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
       ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
-			break;
+      break;
 
-		case RHEOLOGY_LAVA:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_LAVA selected ***\n");
-			}
-			ierr = EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,u,dap,p);CHKERRQ(ierr);
+    case RHEOLOGY_LAVA:
+      if (been_here == 0) {
+        PetscPrintf(PETSC_COMM_WORLD,"*** Rheology update for RHEOLOGY_LAVA selected ***\n");
+      }
+      ierr = EvaluateRheologyNonlinearitiesMarkers_LAVA(user,dau,u,dap,p);CHKERRQ(ierr);
       ierr = ApplyViscosityCutOffMarkers_VPSTD(user);CHKERRQ(ierr);
-			break;
+      break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update is not defined");
-			break;
-	}
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Rheology update is not defined");
+      break;
+  }
 
   /* Marker -> quadrature point projection */
-	DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
-	DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
+  DataBucketGetDataFieldByName(user->materialpoint_db, MPntStd_classname     , &PField_std);
+  DataBucketGetDataFieldByName(user->materialpoint_db, MPntPStokes_classname , &PField_stokes);
 
-	DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
-	mp_std    = PField_std->data; /* should write a function to do this */
-	mp_stokes = PField_stokes->data; /* should write a function to do this */
+  DataBucketGetSizes(user->materialpoint_db,&npoints,NULL,NULL);
+  mp_std    = PField_std->data; /* should write a function to do this */
+  mp_stokes = PField_stokes->data; /* should write a function to do this */
 
-	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 
-	switch (user->coefficient_projection_type) {
+  switch (user->coefficient_projection_type) {
 
-		case -1:			/* Perform null projection use the values currently defined on the quadrature points */
-			break;
+    case -1:      /* Perform null projection use the values currently defined on the quadrature points */
+      break;
 
-		case 0:			/* Perform P0 projection over Q2 element directly onto quadrature points */
-			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [arithmetic avg] marker->quadrature projection not supported");
+    case 0:     /* Perform P0 projection over Q2 element directly onto quadrature points */
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [arithmetic avg] marker->quadrature projection not supported");
             ierr = MPntPStokesProj_P0(CoefAvgARITHMETIC,npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
-			break;
-		case 10:
-			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [harmonic avg] marker->quadrature projection not supported");
+      break;
+    case 10:
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [harmonic avg] marker->quadrature projection not supported");
             ierr = MPntPStokesProj_P0(CoefAvgHARMONIC,npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
-			break;
-		case 20:
-			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [geometric avg] marker->quadrature projection not supported");
+      break;
+    case 20:
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [geometric avg] marker->quadrature projection not supported");
             ierr = MPntPStokesProj_P0(CoefAvgGEOMETRIC,npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
-			break;
-		case 30:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [dominant phase] marker->quadrature projection not supported");
-			break;
+      break;
+    case 30:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P0 [dominant phase] marker->quadrature projection not supported");
+      break;
 
-		case 1:			/* Perform Q1 projection over Q2 element and interpolate back to quadrature points */
-			ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
-			break;
+    case 1:     /* Perform Q1 projection over Q2 element and interpolate back to quadrature points */
+      ierr = SwarmUpdateGaussPropertiesLocalL2Projection_Q1_MPntPStokes(npoints,mp_std,mp_stokes,stokes->dav,stokes->volQ);CHKERRQ(ierr);
+      break;
 
-		case 2: 			/* Perform Q2 projection and interpolate back to quadrature points */
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
-			break;
+    case 2:       /* Perform Q2 projection and interpolate back to quadrature points */
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Q2 marker->quadrature projection not supported");
+      break;
 
-		case 3: 			/* Perform P1 projection and interpolate back to quadrature points */
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
-			break;
+    case 3:       /* Perform P1 projection and interpolate back to quadrature points */
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"P1 marker->quadrature projection not supported");
+      break;
         case 4:
             ierr = SwarmUpdateGaussPropertiesOne2OneMap_MPntPStokes(npoints,mp_std,mp_stokes,stokes->volQ);CHKERRQ(ierr);
             break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Viscosity projection type is not defined");
-			break;
-	}
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Viscosity projection type is not defined");
+      break;
+  }
 
-	ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
+  ierr = pTatin_ApplyStokesGravityModel(user);CHKERRQ(ierr);
 
-	been_here = 1;
+  been_here = 1;
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
-	PetscErrorCode ierr;
-	PetscFunctionBegin;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
 
-	ierr = pTatin_EvaluateRheologyNonlinearitiesMarkers(user,dau,u,dap,p);CHKERRQ(ierr);
+  ierr = pTatin_EvaluateRheologyNonlinearitiesMarkers(user,dau,u,dap,p);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,Vec X)
@@ -209,31 +209,31 @@ PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,
   DM                stokes_pack,dau,dap;
   Vec               Uloc,Ploc;
   PetscScalar       *LA_Uloc,*LA_Ploc;
-	PhysCompStokes    stokes;
+  PhysCompStokes    stokes;
 
   PetscFunctionBegin;
 
-	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
-	stokes_pack = stokes->stokes_pack;
+  ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
 
   ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
-	/* get the local (ghosted) entries for each physics */
-	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
-	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
-	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+  /* get the local (ghosted) entries for each physics */
+  ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+  ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+  ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 
-	/* ======================================== */
-	/*         UPDATE NON-LINEARITIES           */
-	/* evaluate rheology and rhs using X        */
-	/* map marker eta to quadrature points */
-	/* map marker force to quadrature points */
-	/* ======================================== */
-	ierr = pTatin_EvaluateRheologyNonlinearities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+  /* ======================================== */
+  /*         UPDATE NON-LINEARITIES           */
+  /* evaluate rheology and rhs using X        */
+  /* map marker eta to quadrature points */
+  /* map marker force to quadrature points */
+  /* ======================================== */
+  ierr = pTatin_EvaluateRheologyNonlinearities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 
-	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
-	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -243,57 +243,57 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 {
   RheologyConstants *rheo;
   static int        been_here = 0;
-	PetscErrorCode    ierr;
+  PetscErrorCode    ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = pTatinGetRheology(user,&rheo);
+  ierr = pTatinGetRheology(user,&rheo);
 
-	switch (rheo->rheology_type) {
+  switch (rheo->rheology_type) {
 
-		case RHEOLOGY_VISCOUS:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***\n");
-			}
-			break;
+    case RHEOLOGY_VISCOUS:
+      if (been_here == 0) {
+        PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_VISCOUS is NULL ***\n");
+      }
+      break;
 
-		case RHEOLOGY_VP_STD:
-		{
-			DataBucket     db;
-			static BTruth  found;
+    case RHEOLOGY_VP_STD:
+    {
+      DataBucket     db;
+      static BTruth  found;
 
-			if (been_here == 0) {
-				/* access material point information */
-				ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
-				/* check plastic marker type is loaded */
-				DataBucketQueryDataFieldByName(db,MPntPStokesPl_classname,&found);
-				if (found == BFALSE) {
-					PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Update of plastic strain requires you register the marker field: %s. Ignoring update of plastic strain.\n", MPntPStokesPl_classname);
-				}
-			}
+      if (been_here == 0) {
+        /* access material point information */
+        ierr = pTatinGetMaterialPoints(user,&db,NULL);CHKERRQ(ierr);
+        /* check plastic marker type is loaded */
+        DataBucketQueryDataFieldByName(db,MPntPStokesPl_classname,&found);
+        if (found == BFALSE) {
+          PetscPrintf(PETSC_COMM_WORLD,"*** WARNING: Update of plastic strain requires you register the marker field: %s. Ignoring update of plastic strain.\n", MPntPStokesPl_classname);
+        }
+      }
 
-			/* call */
-			if (found == BTRUE) {
-				ierr = StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
-			}
-		}
-			break;
+      /* call */
+      if (found == BTRUE) {
+        ierr = StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(user,dau,u,dap,p);CHKERRQ(ierr);
+      }
+    }
+      break;
 
-		case RHEOLOGY_LAVA:
-			if (been_here == 0) {
-				PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_LAVA is NULL ***\n");
-			}
-			break;
+    case RHEOLOGY_LAVA:
+      if (been_here == 0) {
+        PetscPrintf(PETSC_COMM_WORLD,"*** StokesCoefficientUpdate for RHEOLOGY_LAVA is NULL ***\n");
+      }
+      break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"StokesCoefficientUpdate is not defined");
-			break;
-	}
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"StokesCoefficientUpdate is not defined");
+      break;
+  }
 
 
-	been_here = 1;
+  been_here = 1;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptatin,Vec X)
@@ -302,25 +302,25 @@ PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptati
   DM                stokes_pack,dau,dap;
   Vec               Uloc,Ploc;
   PetscScalar       *LA_Uloc,*LA_Ploc;
-	PhysCompStokes    stokes;
+  PhysCompStokes    stokes;
 
   PetscFunctionBegin;
 
-	ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
-	stokes_pack = stokes->stokes_pack;
+  ierr = pTatinGetStokesContext(ptatin,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
 
   ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
   ierr = DMCompositeGetLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
-	/* get the local (ghosted) entries for each physics */
-	ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
-	ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
-	ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+  /* get the local (ghosted) entries for each physics */
+  ierr = DMCompositeScatter(stokes_pack,X,Uloc,Ploc);CHKERRQ(ierr);
+  ierr = VecGetArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+  ierr = VecGetArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
 
-	ierr = pTatin_StokesCoefficient_UpdateTimeDependentQuantities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
+  ierr = pTatin_StokesCoefficient_UpdateTimeDependentQuantities(ptatin,dau,LA_Uloc,dap,LA_Ploc);CHKERRQ(ierr);
 
-	ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
-	ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Ploc,&LA_Ploc);CHKERRQ(ierr);
+  ierr = VecRestoreArray(Uloc,&LA_Uloc);CHKERRQ(ierr);
   ierr = DMCompositeRestoreLocalVectors(stokes_pack,&Uloc,&Ploc);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -328,25 +328,25 @@ PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptati
 
 PetscErrorCode pTatin_ApplyStokesGravityModel(pTatinCtx ctx)
 {
-	PetscErrorCode    ierr;
-	PhysCompStokes    stokes;
-	PetscInt          e,nel,q,nqp;
-	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
-	PetscFunctionBegin;
+  PetscErrorCode    ierr;
+  PhysCompStokes    stokes;
+  PetscInt          e,nel,q,nqp;
+  QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+  PetscFunctionBegin;
 
-	ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
 
-	nel = stokes->volQ->n_elements;
-	nqp = stokes->volQ->npoints;
-	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
-	for (e=0; e<nel; e++) {
-		ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
-		for (q=0; q<nqp; q++) {
-			cell_gausspoints[q].Fu[0] = stokes->gravity_vector[0] * cell_gausspoints[q].rho;
-			cell_gausspoints[q].Fu[1] = stokes->gravity_vector[1] * cell_gausspoints[q].rho;
-			cell_gausspoints[q].Fu[2] = stokes->gravity_vector[2] * cell_gausspoints[q].rho;
-		}
-	}
+  nel = stokes->volQ->n_elements;
+  nqp = stokes->volQ->npoints;
+  ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
+  for (e=0; e<nel; e++) {
+    ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+    for (q=0; q<nqp; q++) {
+      cell_gausspoints[q].Fu[0] = stokes->gravity_vector[0] * cell_gausspoints[q].rho;
+      cell_gausspoints[q].Fu[1] = stokes->gravity_vector[1] * cell_gausspoints[q].rho;
+      cell_gausspoints[q].Fu[2] = stokes->gravity_vector[2] * cell_gausspoints[q].rho;
+    }
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }

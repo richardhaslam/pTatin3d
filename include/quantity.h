@@ -35,8 +35,8 @@
 typedef struct _p_Quantity *Quantity;
 
 struct _p_Quantity {
-	char      name[PETSC_MAX_PATH_LEN],unit[PETSC_MAX_PATH_LEN];
-	PetscReal magnitude,recip_magnitude;
+  char      name[PETSC_MAX_PATH_LEN],unit[PETSC_MAX_PATH_LEN];
+  PetscReal magnitude,recip_magnitude;
 };
 
 extern Quantity *PTATIN_SI_QLIST;

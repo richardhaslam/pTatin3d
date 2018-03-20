@@ -53,24 +53,24 @@ void P3D_prepare_elementQ2_2x2(PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI
 void P3D_prepare_elementQ2(PetscInt nqp,PetscReal WEIGHT[],PetscReal XI[][3],PetscReal NI[][NPE],PetscReal GNI[][3][NPE]);
 
 void P3D_evaluate_geometry_elementQ2(PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
-																		 PetscReal detJ[],
-																		 PetscReal dNudx[][NPE],
-																		 PetscReal dNudy[][NPE],
-																		 PetscReal dNudz[][NPE] );
+                                     PetscReal detJ[],
+                                     PetscReal dNudx[][NPE],
+                                     PetscReal dNudy[][NPE],
+                                     PetscReal dNudz[][NPE] );
 void P3D_evaluate_geometry_elementQ2_1gp(
-																				 PetscReal GNI_centre[3][NPE],
-																				 PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
-																				 PetscReal detJ[],
-																				 PetscReal dNudx[][NPE],
-																				 PetscReal dNudy[][NPE],
-																				 PetscReal dNudz[][NPE] );
+                                         PetscReal GNI_centre[3][NPE],
+                                         PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
+                                         PetscReal detJ[],
+                                         PetscReal dNudx[][NPE],
+                                         PetscReal dNudy[][NPE],
+                                         PetscReal dNudz[][NPE] );
 void P3D_evaluate_geometry_elementQ2_1gp_diagonal(
-																									PetscReal GNI_centre[3][NPE],
-																									PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
-																									PetscReal detJ[],
-																									PetscReal dNudx[][NPE],
-																									PetscReal dNudy[][NPE],
-																									PetscReal dNudz[][NPE] );
+                                                  PetscReal GNI_centre[3][NPE],
+                                                  PetscInt nqp,PetscReal el_coords[NPE*3],PetscReal GNI[][3][NPE],
+                                                  PetscReal detJ[],
+                                                  PetscReal dNudx[][NPE],
+                                                  PetscReal dNudy[][NPE],
+                                                  PetscReal dNudz[][NPE] );
 
 void P3D_evaluate_global_derivatives_Q2(PetscReal el_coords[NPE*3],PetscReal GNI[3][NPE],
                                         PetscReal dNudx[NPE],

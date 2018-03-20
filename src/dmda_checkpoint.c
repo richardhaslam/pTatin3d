@@ -37,120 +37,120 @@
 
 PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 {
-	PetscErrorCode ierr;
-	PetscViewer    v;
-	MPI_Comm       comm;
-	Vec            xn;
+  PetscErrorCode ierr;
+  PetscViewer    v;
+  MPI_Comm       comm;
+  Vec            xn;
 
 
-	PetscFunctionBegin;
-	PetscObjectGetComm( (PetscObject)da, &comm );
-	if (da == NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
+  PetscFunctionBegin;
+  PetscObjectGetComm( (PetscObject)da, &comm );
+  if (da == NULL) SETERRQ(comm,PETSC_ERR_USER, "da is NULL");
 
-	ierr = DMCreateGlobalVector(da, &xn);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da, &xn);CHKERRQ(ierr);
 
-	ierr = PetscViewerCreate(comm,&v);CHKERRQ(ierr);
-	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
-	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm,&v);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
-	ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
 #endif
-	ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
-	ierr = VecLoad(xn,v); CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
+  ierr = VecLoad(xn,v); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
 
-	/*
-	 putain - VecLoadIntoVector inserts the option below into the command line.
-	 This will screw shit up if you load in vectors with different block sizes.
-	 */
-	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
+  /*
+   putain - VecLoadIntoVector inserts the option below into the command line.
+   This will screw shit up if you load in vectors with different block sizes.
+   */
+  ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
 
-	*da_x = xn;
+  *da_x = xn;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 {
-	PetscErrorCode ierr;
-	DM             cda;
-	Vec            coords,da_coords;
+  PetscErrorCode ierr;
+  DM             cda;
+  Vec            coords,da_coords;
 
 
-	PetscFunctionBegin;
-	if (da == NULL) SETERRQ( PetscObjectComm((PetscObject)da),PETSC_ERR_USER, "da is NULL" );
+  PetscFunctionBegin;
+  if (da == NULL) SETERRQ( PetscObjectComm((PetscObject)da),PETSC_ERR_USER, "da is NULL" );
 
-	/* make sure the vector is present */
-	ierr = DMDASetUniformCoordinates(da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
+  /* make sure the vector is present */
+  ierr = DMDASetUniformCoordinates(da, 0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
 
-	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-	ierr = DMDALoadGlobalVectorFromFile(cda,name,&coords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMDALoadGlobalVectorFromFile(cda,name,&coords);CHKERRQ(ierr);
 
-	/* set the global coordinates */
-	ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
-	ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
+  /* set the global coordinates */
+  ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
+  ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
 
-	/* make sure the local coordinates are upto date */
-	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+  /* make sure the local coordinates are upto date */
+  ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 
-	ierr = VecDestroy(&coords);CHKERRQ(ierr);
+  ierr = VecDestroy(&coords);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 {
-	char fieldname[PETSC_MAX_PATH_LEN];
-	PetscViewer viewer;
-	PetscErrorCode ierr;
+  char fieldname[PETSC_MAX_PATH_LEN];
+  PetscViewer viewer;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	if (zip_file) {
-		sprintf(fieldname,"%s.gz",name);
-	} else {
-		sprintf(fieldname,"%s",name);
-	}
+  if (zip_file) {
+    sprintf(fieldname,"%s.gz",name);
+  } else {
+    sprintf(fieldname,"%s",name);
+  }
 
   ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&viewer);CHKERRQ(ierr);
   ierr = PetscViewerSetType(viewer,PETSCVIEWERBINARY);CHKERRQ(ierr);
   ierr = PetscViewerFileSetMode(viewer,FILE_MODE_WRITE);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
-	ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetMPIIO(viewer);CHKERRQ(ierr);
 #endif
-	ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer,fieldname);CHKERRQ(ierr);
 
-	ierr = VecView(x,viewer);CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 {
-	PetscErrorCode ierr;
-	PetscViewer    v;
+  PetscErrorCode ierr;
+  PetscViewer    v;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&v);CHKERRQ(ierr);
-	ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
-	ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(PetscObjectComm((PetscObject)x),&v);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(v,PETSCVIEWERBINARY);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetMode(v,FILE_MODE_READ);CHKERRQ(ierr);
 #ifdef PTATIN_USE_MPIIO
-	ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
+  ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
 #endif
-	ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
-	ierr = VecLoad(x,v); CHKERRQ(ierr);
-	ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(v,name);CHKERRQ(ierr);
+  ierr = VecLoad(x,v); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&v); CHKERRQ(ierr);
 
-	/*
-	 putain - VecLoadIntoVector inserts the option below into the command line.
-	 This will screw shit up if you load in vectors with different block sizes.
-	 */
-	ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
+  /*
+   putain - VecLoadIntoVector inserts the option below into the command line.
+   This will screw shit up if you load in vectors with different block sizes.
+   */
+  ierr = PetscOptionsClearValue(NULL,"-vecload_block_size");CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])

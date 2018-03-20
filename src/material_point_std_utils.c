@@ -49,217 +49,217 @@
 
 PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucket db,int start_pid,int end_pid)
 {
-	DataField      PField;
-	long int       np_local, np_global, max_local, max;
-	PetscMPIInt    rank;
+  DataField      PField;
+  long int       np_local, np_global, max_local, max;
+  PetscMPIInt    rank;
     int            p,L;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	DataBucketGetSizes(db,&L,0,0);
+  DataBucketGetSizes(db,&L,0,0);
 
-	/* find max pid presently in the system */
-	max_local = 0;
-	for (p=0; p<L; p++) {
-		MPntStd *marker;
-		DataFieldAccessPoint(PField,p,(void**)&marker);
+  /* find max pid presently in the system */
+  max_local = 0;
+  for (p=0; p<L; p++) {
+    MPntStd *marker;
+    DataFieldAccessPoint(PField,p,(void**)&marker);
 
-		if ( marker->pid > max_local ) {
-			max_local = marker->pid;
-		}
-	}
-	ierr = MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );CHKERRQ(ierr);
-	/*PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);*/
-	max = max + 1;
+    if ( marker->pid > max_local ) {
+      max_local = marker->pid;
+    }
+  }
+  ierr = MPI_Allreduce( &max_local, &max, 1, MPI_LONG, MPI_MAX, comm );CHKERRQ(ierr);
+  /*PetscPrintf(comm,"SwarmMPntStd_AssignUniquePointIdentifiers : max_pid = %ld \n",max);*/
+  max = max + 1;
 
-	/* give particles a unique identifier */
-	np_local = (end_pid-start_pid);
+  /* give particles a unique identifier */
+  np_local = (end_pid-start_pid);
 
-	ierr = MPI_Scan( &np_local, &np_global, 1, MPI_LONG, MPI_SUM, comm );CHKERRQ(ierr);
-	//printf("rank %d : np_local = %ld, np_global = %ld \n",(int)rank,np_local,np_global);
-	for (p=start_pid; p<end_pid; p++) {
-		MPntStd *marker;
-		DataFieldAccessPoint(PField,p,(void**)&marker);
+  ierr = MPI_Scan( &np_local, &np_global, 1, MPI_LONG, MPI_SUM, comm );CHKERRQ(ierr);
+  //printf("rank %d : np_local = %ld, np_global = %ld \n",(int)rank,np_local,np_global);
+  for (p=start_pid; p<end_pid; p++) {
+    MPntStd *marker;
+    DataFieldAccessPoint(PField,p,(void**)&marker);
 
-		//marker->pid = max + (np_global-1) - (np_local-1-p);
-		marker->pid = max + (np_global-np_local) + (long int)(p-start_pid);
-		//printf("assigning %d -> pid = %ld \n", p, marker->pid );
-	}
+    //marker->pid = max + (np_global-1) - (np_local-1-p);
+    marker->pid = max + (np_global-np_local) + (long int)(p-start_pid);
+    //printf("assigning %d -> pid = %ld \n", p, marker->pid );
+  }
 
 
-	DataFieldRestoreAccess(PField);
+  DataFieldRestoreAccess(PField);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,DataBucket db)
 {
-	DataField    PField;
-	PetscInt     e;
+  DataField    PField;
+  PetscInt     e;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
-	int          ncells,np_per_cell;
-	PetscInt     nel,nen;
-	const PetscInt     *elnidx;
-	PetscInt     p,k,pi,pj,pk;
-	PetscReal    dxi,deta,dzeta;
-	long int     np_local;
-	PetscErrorCode ierr;
+  int          ncells,np_per_cell;
+  PetscInt     nel,nen;
+  const PetscInt     *elnidx;
+  PetscInt     p,k,pi,pj,pk;
+  PetscReal    dxi,deta,dzeta;
+  long int     np_local;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	PetscOptionsGetReal(NULL,NULL,"-lattice_layout_perturb", &perturb, NULL );
-	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nx", &Nxp[0], NULL );
-	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Ny", &Nxp[1], NULL );
-	PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nz", &Nxp[2], NULL );
+  PetscOptionsGetReal(NULL,NULL,"-lattice_layout_perturb", &perturb, NULL );
+  PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nx", &Nxp[0], NULL );
+  PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Ny", &Nxp[1], NULL );
+  PetscOptionsGetInt(NULL,NULL,"-lattice_layout_Nz", &Nxp[2], NULL );
 
-	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
-	// re-size //
-	ncells = nel;
-	np_per_cell = Nxp[0] * Nxp[1] * Nxp[2];
-	DataBucketSetSizes(db,np_per_cell*ncells,-1);
+  // re-size //
+  ncells = nel;
+  np_per_cell = Nxp[0] * Nxp[1] * Nxp[2];
+  DataBucketSetSizes(db,np_per_cell*ncells,-1);
 
-	if (perturb<0.0) {
-		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
-	}
-	if (perturb>1.0) {
-		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
-	}
+  if (perturb<0.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
+  }
+  if (perturb>1.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+  }
 
   /* setup for coords */
   ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	dxi    = 2.0/(PetscReal)Nxp[0];
-	deta   = 2.0/(PetscReal)Nxp[1];
-	dzeta  = 2.0/(PetscReal)Nxp[2];
+  dxi    = 2.0/(PetscReal)Nxp[0];
+  deta   = 2.0/(PetscReal)Nxp[1];
+  dzeta  = 2.0/(PetscReal)Nxp[2];
 
-	p = 0;
-	for (e = 0; e < ncells; e++) {
-		/* get coords for the element */
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
+  p = 0;
+  for (e = 0; e < ncells; e++) {
+    /* get coords for the element */
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
 
-		for (pk=0; pk<Nxp[2]; pk++) {
-			for (pj=0; pj<Nxp[1]; pj++) {
-				for (pi=0; pi<Nxp[0]; pi++) {
-					MPntStd *marker;
-					double xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+    for (pk=0; pk<Nxp[2]; pk++) {
+      for (pj=0; pj<Nxp[1]; pj++) {
+        for (pi=0; pi<Nxp[0]; pi++) {
+          MPntStd *marker;
+          double xip[NSD],xip_shift[NSD],xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
 
-					xip[0] = -1.0 + dxi    * (pi + 0.5);
-					xip[1] = -1.0 + deta   * (pj + 0.5);
-					xip[2] = -1.0 + dzeta  * (pk + 0.5);
+          xip[0] = -1.0 + dxi    * (pi + 0.5);
+          xip[1] = -1.0 + deta   * (pj + 0.5);
+          xip[2] = -1.0 + dzeta  * (pk + 0.5);
 
-					/* random between -0.5 <= shift <= 0.5 */
-					xip_shift[0] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
-					xip_shift[1] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
-					xip_shift[2] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+          /* random between -0.5 <= shift <= 0.5 */
+          xip_shift[0] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+          xip_shift[1] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+          xip_shift[2] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
 
-					xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
-					xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
-					xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
+          xip_rand[0] = xip[0] + perturb * dxi    * xip_shift[0];
+          xip_rand[1] = xip[1] + perturb * deta   * xip_shift[1];
+          xip_rand[2] = xip[2] + perturb * dzeta  * xip_shift[2];
 
-					if (fabs(xip_rand[0]) > 1.0) {
-						SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
-					}
-					if (fabs(xip_rand[1]) > 1.0) {
-						SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
-					}
-					if (fabs(xip_rand[2]) > 1.0) {
-						SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
-					}
+          if (fabs(xip_rand[0]) > 1.0) {
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+          }
+          if (fabs(xip_rand[1]) > 1.0) {
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+          }
+          if (fabs(xip_rand[2]) > 1.0) {
+            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(z-point coord) greater than 1.0");
+          }
 
-					pTatin_ConstructNi_Q2_3D(xip_rand,Ni);
+          pTatin_ConstructNi_Q2_3D(xip_rand,Ni);
 
-					xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
-					for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-						xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
-						xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
-						xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
-					}
+          xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
+          for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+            xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
+            xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
+            xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
+          }
 
-					DataFieldAccessPoint(PField,p,(void**)&marker);
+          DataFieldAccessPoint(PField,p,(void**)&marker);
 
-					marker->coor[0] = xp_rand[0];
-					marker->coor[1] = xp_rand[1];
-					marker->coor[2] = xp_rand[2];
+          marker->coor[0] = xp_rand[0];
+          marker->coor[1] = xp_rand[1];
+          marker->coor[2] = xp_rand[2];
 
-					marker->xi[0] = xip_rand[0];
-					marker->xi[1] = xip_rand[1];
-					marker->xi[2] = xip_rand[2];
+          marker->xi[0] = xip_rand[0];
+          marker->xi[1] = xip_rand[1];
+          marker->xi[2] = xip_rand[2];
 
-					marker->wil    = e;
-					marker->pid    = 0;
+          marker->wil    = e;
+          marker->pid    = 0;
 
-					p++;
-				}
-			}
-		}
-	}
-	DataFieldRestoreAccess(PField);
+          p++;
+        }
+      }
+    }
+  }
+  DataFieldRestoreAccess(PField);
   ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	np_local = np_per_cell * ncells;
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
+  np_local = np_per_cell * ncells;
+  ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 {
-	DataField    PField;
-	PetscInt     e;
+  DataField    PField;
+  PetscInt     e;
     Vec          gcoords;
     PetscScalar  *LA_coords;
     PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
-	int          ncells,np_per_cell;
-	PetscInt     nel,nen;
-	const PetscInt     *elnidx;
-	PetscInt     p,q,k;
-	long int     np_local;
+  int          ncells,np_per_cell;
+  PetscInt     nel,nen;
+  const PetscInt     *elnidx;
+  PetscInt     p,q,k;
+  long int     np_local;
     PetscInt     nqp;
     PetscReal    *q_coor,*q_weight;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
     QuadratureCreateGauss_3pnt_3D(&nqp,&q_coor,&q_weight);
 
-	// re-size //
-	ncells = nel;
-	np_per_cell = nqp;
-	DataBucketSetSizes(db,np_per_cell*ncells,-1);
+  // re-size //
+  ncells = nel;
+  np_per_cell = nqp;
+  DataBucketSetSizes(db,np_per_cell*ncells,-1);
 
     /* setup for coords */
     ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	p = 0;
-	for (e = 0; e < ncells; e++) {
-		/* get coords for the element */
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
+  p = 0;
+  for (e = 0; e < ncells; e++) {
+    /* get coords for the element */
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
 
-		for (q=0; q<nqp; q++) {
+    for (q=0; q<nqp; q++) {
             MPntStd *marker;
             double xip[NSD],xp[NSD],Ni[Q2_NODES_PER_EL_3D];
 
@@ -290,98 +290,98 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 
             p++;
         }
-	}
-	DataFieldRestoreAccess(PField);
+  }
+  DataFieldRestoreAccess(PField);
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	np_local = np_per_cell * ncells;
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
+  np_local = np_per_cell * ncells;
+  ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 
     PetscFree(q_coor);
     PetscFree(q_weight);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCell,DataBucket db)
 {
-	DataField    PField;
-	PetscInt     e;
+  DataField    PField;
+  PetscInt     e;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
-	int          ncells,np_per_cell;
-	PetscInt     nel,nen;
-	const PetscInt *elnidx;
-	PetscInt     p,k,pi;
-	long int     np_local;
-	PetscErrorCode ierr;
+  int          ncells,np_per_cell;
+  PetscInt     nel,nen;
+  const PetscInt *elnidx;
+  PetscInt     p,k,pi;
+  long int     np_local;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	PetscOptionsGetInt(NULL,NULL,"-random_layout_Np", &nPerCell, NULL );
+  PetscOptionsGetInt(NULL,NULL,"-random_layout_Np", &nPerCell, NULL );
 
-	// re-size //
-	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-	ncells = nel;
-	np_per_cell = nPerCell;
-	DataBucketSetSizes(db,np_per_cell*ncells,-1);
+  // re-size //
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ncells = nel;
+  np_per_cell = nPerCell;
+  DataBucketSetSizes(db,np_per_cell*ncells,-1);
 
   /* setup for coords */
   ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	p = 0;
-	for (e = 0; e < ncells; e++) {
-		/* get coords for the element */
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
+  p = 0;
+  for (e = 0; e < ncells; e++) {
+    /* get coords for the element */
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
 
-		for (pi=0; pi<np_per_cell; pi++) {
-			MPntStd *marker;
-			double xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+    for (pi=0; pi<np_per_cell; pi++) {
+      MPntStd *marker;
+      double xip_rand[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
 
-			/* random between -1 <= xi,eta,zeta <= 1 */
-			xip_rand[0] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
-			xip_rand[1] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
-			xip_rand[2] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
+      /* random between -1 <= xi,eta,zeta <= 1 */
+      xip_rand[0] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
+      xip_rand[1] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
+      xip_rand[2] = 2.0*(rand()/(RAND_MAX+1.0)) - 1.0;
 
-			pTatin_ConstructNi_Q2_3D(xip_rand,Ni);
+      pTatin_ConstructNi_Q2_3D(xip_rand,Ni);
 
-			xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
-			for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-				xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
-				xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
-				xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
-			}
+      xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
+      for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+        xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
+        xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
+        xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
+      }
 
-			DataFieldAccessPoint(PField,p,(void**)&marker);
+      DataFieldAccessPoint(PField,p,(void**)&marker);
 
-			marker->coor[0] = xp_rand[0];
-			marker->coor[1] = xp_rand[1];
-			marker->coor[2] = xp_rand[2];
+      marker->coor[0] = xp_rand[0];
+      marker->coor[1] = xp_rand[1];
+      marker->coor[2] = xp_rand[2];
 
-			marker->xi[0] = xip_rand[0];
-			marker->xi[1] = xip_rand[1];
-			marker->xi[2] = xip_rand[2];
+      marker->xi[0] = xip_rand[0];
+      marker->xi[1] = xip_rand[1];
+      marker->xi[2] = xip_rand[2];
 
-			marker->wil    = e;
-			marker->pid    = 0;
+      marker->wil    = e;
+      marker->pid    = 0;
 
-			p++;
-		}
+      p++;
+    }
 
-	}
-	DataFieldRestoreAccess(PField);
+  }
+  DataFieldRestoreAccess(PField);
   ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	np_local = np_per_cell * ncells;
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
+  np_local = np_per_cell * ncells;
+  ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,0,np_local);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -401,82 +401,82 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
 */
 PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,DataBucket db)
 {
-	DataField    PField;
-	PetscInt     e,ei,ej,ek,eij2d;
+  DataField    PField;
+  PetscInt     e,ei,ej,ek,eij2d;
   Vec          gcoords;
   PetscScalar  *LA_coords;
   PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
-	int          ncells,ncells_face,np_per_cell;
-	PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
-	const PetscInt     *elnidx;
-	PetscInt     p,k,pi,pj;
-	PetscReal    dxi,deta;
-	int          np_current,np_new;
-	PetscInt si,sj,sk,M,N,P,lnx,lny,lnz;
-	PetscBool contains_east,contains_west,contains_north,contains_south,contains_front,contains_back;
-	PetscErrorCode ierr;
+  int          ncells,ncells_face,np_per_cell;
+  PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
+  const PetscInt     *elnidx;
+  PetscInt     p,k,pi,pj;
+  PetscReal    dxi,deta;
+  int          np_current,np_new;
+  PetscInt si,sj,sk,M,N,P,lnx,lny,lnz;
+  PetscBool contains_east,contains_west,contains_north,contains_south,contains_front,contains_back;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-	ncells = nel;
-	ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ncells = nel;
+  ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-	switch (face_idx) {
-		case 0:// east-west
-			ncells_face = lmy * lmz; // east
-			break;
-		case 1:
-			ncells_face = lmy * lmz; // west
-			break;
+  switch (face_idx) {
+    case 0:// east-west
+      ncells_face = lmy * lmz; // east
+      break;
+    case 1:
+      ncells_face = lmy * lmz; // west
+      break;
 
-		case 2:// north-south
-			ncells_face = lmx * lmz; // north
-			break;
-		case 3:
-			ncells_face = lmx * lmz; // south
-			break;
+    case 2:// north-south
+      ncells_face = lmx * lmz; // north
+      break;
+    case 3:
+      ncells_face = lmx * lmz; // south
+      break;
 
-		case 4: // front-back
-			ncells_face = lmx * lmy; // front
-			break;
-		case 5:
-			ncells_face = lmx * lmy; // back
-			break;
+    case 4: // front-back
+      ncells_face = lmx * lmy; // front
+      break;
+    case 5:
+      ncells_face = lmx * lmy; // back
+      break;
 
-		default:
-			SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Unknown face index");
-			break;
-	}
+    default:
+      SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Unknown face index");
+      break;
+  }
 
-	// re-size //
-	np_per_cell = Nxp[0] * Nxp[1];
+  // re-size //
+  np_per_cell = Nxp[0] * Nxp[1];
 
-	DataBucketGetSizes(db,&np_current,NULL,NULL);
-	np_new = np_current + ncells_face * np_per_cell;
+  DataBucketGetSizes(db,&np_current,NULL,NULL);
+  np_new = np_current + ncells_face * np_per_cell;
 
-	DataBucketSetSizes(db,np_new,-1);
-
-
-	if (perturb<0.0) {
-		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
-	}
-	if (perturb>1.0) {
-		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
-	}
+  DataBucketSetSizes(db,np_new,-1);
 
 
-	ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
+  if (perturb<0.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
+  }
+  if (perturb>1.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+  }
 
-	contains_east  = PETSC_FALSE; if (si+lnx == M) { contains_east  = PETSC_TRUE; }
-	contains_west  = PETSC_FALSE; if (si == 0)       { contains_west  = PETSC_TRUE; }
-	contains_north = PETSC_FALSE; if (sj+lny == N) { contains_north = PETSC_TRUE; }
-	contains_south = PETSC_FALSE; if (sj == 0)       { contains_south = PETSC_TRUE; }
-	contains_front = PETSC_FALSE; if (sk+lnz == P) { contains_front = PETSC_TRUE; }
-	contains_back  = PETSC_FALSE; if (sk == 0)       { contains_back  = PETSC_TRUE; }
+
+  ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
+
+  contains_east  = PETSC_FALSE; if (si+lnx == M) { contains_east  = PETSC_TRUE; }
+  contains_west  = PETSC_FALSE; if (si == 0)       { contains_west  = PETSC_TRUE; }
+  contains_north = PETSC_FALSE; if (sj+lny == N) { contains_north = PETSC_TRUE; }
+  contains_south = PETSC_FALSE; if (sj == 0)       { contains_south = PETSC_TRUE; }
+  contains_front = PETSC_FALSE; if (sk+lnz == P) { contains_front = PETSC_TRUE; }
+  contains_back  = PETSC_FALSE; if (sk == 0)       { contains_back  = PETSC_TRUE; }
 
 
   /* setup for coords */
@@ -484,183 +484,183 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
   ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
 
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	dxi    = 2.0/(PetscReal)Nxp[0];
-	deta   = 2.0/(PetscReal)Nxp[1];
+  dxi    = 2.0/(PetscReal)Nxp[0];
+  deta   = 2.0/(PetscReal)Nxp[1];
 
-	p = np_current;
-	for (e = 0; e < ncells; e++) {
-		/* get coords for the element */
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
+  p = np_current;
+  for (e = 0; e < ncells; e++) {
+    /* get coords for the element */
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_coords);CHKERRQ(ierr);
 
-		ek = e / (lmx*lmy);
-		eij2d = e - ek * (lmx*lmy);
-		ej = eij2d / lmx;
-		ei = eij2d - ej * lmx;
+    ek = e / (lmx*lmy);
+    eij2d = e - ek * (lmx*lmy);
+    ej = eij2d / lmx;
+    ei = eij2d - ej * lmx;
 
-		switch (face_idx) {
-			case 0:// east-west
-				if (!contains_east) { continue; }
-				if (ei != lmx-1) { continue; }
-				break;
-			case 1:
-				if (!contains_west) { continue; }
-				if (ei != 0) { continue; }
-				break;
+    switch (face_idx) {
+      case 0:// east-west
+        if (!contains_east) { continue; }
+        if (ei != lmx-1) { continue; }
+        break;
+      case 1:
+        if (!contains_west) { continue; }
+        if (ei != 0) { continue; }
+        break;
 
-			case 2:// north-south
-				if (!contains_north) { continue; }
-				if (ej != lmy-1) { continue; }
-				break;
-			case 3:
-				if (!contains_south) { continue; }
-				if (ej != 0) { continue; }
-				break;
+      case 2:// north-south
+        if (!contains_north) { continue; }
+        if (ej != lmy-1) { continue; }
+        break;
+      case 3:
+        if (!contains_south) { continue; }
+        if (ej != 0) { continue; }
+        break;
 
-			case 4: // front-back
-				if (!contains_front) { continue; }
-				if (ek != lmz-1) { continue; }
-				break;
-			case 5:
-				if (!contains_back) { continue; }
-				if (ek != 0) { continue; }
-				break;
-		}
+      case 4: // front-back
+        if (!contains_front) { continue; }
+        if (ek != lmz-1) { continue; }
+        break;
+      case 5:
+        if (!contains_back) { continue; }
+        if (ek != 0) { continue; }
+        break;
+    }
 
 
-		for (pj=0; pj<Nxp[1]; pj++) {
-			for (pi=0; pi<Nxp[0]; pi++) {
-				MPntStd *marker;
-				double xip2d[2],xip_shift2d[2],xip_rand2d[2];
-				double xip[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+    for (pj=0; pj<Nxp[1]; pj++) {
+      for (pi=0; pi<Nxp[0]; pi++) {
+        MPntStd *marker;
+        double xip2d[2],xip_shift2d[2],xip_rand2d[2];
+        double xip[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
 
-				/* define coordinates in 2d layout */
-				xip2d[0] = -1.0 + dxi    * (pi + 0.5);
-				xip2d[1] = -1.0 + deta   * (pj + 0.5);
+        /* define coordinates in 2d layout */
+        xip2d[0] = -1.0 + dxi    * (pi + 0.5);
+        xip2d[1] = -1.0 + deta   * (pj + 0.5);
 
-				/* random between -0.5 <= shift <= 0.5 */
-				xip_shift2d[0] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
-				xip_shift2d[1] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+        /* random between -0.5 <= shift <= 0.5 */
+        xip_shift2d[0] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
+        xip_shift2d[1] = 1.0*(rand()/(RAND_MAX+1.0)) - 0.5;
 
-				xip_rand2d[0] = xip2d[0] + perturb * dxi    * xip_shift2d[0];
-				xip_rand2d[1] = xip2d[1] + perturb * deta   * xip_shift2d[1];
+        xip_rand2d[0] = xip2d[0] + perturb * dxi    * xip_shift2d[0];
+        xip_rand2d[1] = xip2d[1] + perturb * deta   * xip_shift2d[1];
 
-				if (fabs(xip_rand2d[0]) > 1.0) {
-					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
-				}
-				if (fabs(xip_rand2d[1]) > 1.0) {
-					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
-				}
+        if (fabs(xip_rand2d[0]) > 1.0) {
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+        }
+        if (fabs(xip_rand2d[1]) > 1.0) {
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+        }
 
-				/* set to 3d dependnent on face*/
-			// case 0:// east-west
-			// case 2:// north-south
-			// case 4: // front-back
+        /* set to 3d dependnent on face*/
+      // case 0:// east-west
+      // case 2:// north-south
+      // case 4: // front-back
 
-				switch (face_idx) {
-					case 0:// east-west
-						xip[0] = 1.0;
-						xip[1] = xip_rand2d[0];
-						xip[2] = xip_rand2d[1];
-						break;
-					case 1:
-						xip[0] = -1.0;
-						xip[1] = xip_rand2d[0];
-						xip[2] = xip_rand2d[1];
-						break;
+        switch (face_idx) {
+          case 0:// east-west
+            xip[0] = 1.0;
+            xip[1] = xip_rand2d[0];
+            xip[2] = xip_rand2d[1];
+            break;
+          case 1:
+            xip[0] = -1.0;
+            xip[1] = xip_rand2d[0];
+            xip[2] = xip_rand2d[1];
+            break;
 
-					case 2:// north-south
-						xip[0] = xip_rand2d[0];
-						xip[1] = 1.0;
-						xip[2] = xip_rand2d[1];
-						break;
-					case 3:
-						xip[0] = xip_rand2d[0];
-						xip[1] = -1.0;
-						xip[2] = xip_rand2d[1];
-						break;
+          case 2:// north-south
+            xip[0] = xip_rand2d[0];
+            xip[1] = 1.0;
+            xip[2] = xip_rand2d[1];
+            break;
+          case 3:
+            xip[0] = xip_rand2d[0];
+            xip[1] = -1.0;
+            xip[2] = xip_rand2d[1];
+            break;
 
-					case 4: // front-back
-						xip[0] = xip_rand2d[0];
-						xip[1] = xip_rand2d[1];
-						xip[2] = 1.0;
-						break;
-					case 5:
-						xip[0] = xip_rand2d[0];
-						xip[1] = xip_rand2d[1];
-						xip[2] = -1.0;
-						break;
-				}
+          case 4: // front-back
+            xip[0] = xip_rand2d[0];
+            xip[1] = xip_rand2d[1];
+            xip[2] = 1.0;
+            break;
+          case 5:
+            xip[0] = xip_rand2d[0];
+            xip[1] = xip_rand2d[1];
+            xip[2] = -1.0;
+            break;
+        }
 
-				pTatin_ConstructNi_Q2_3D(xip,Ni);
+        pTatin_ConstructNi_Q2_3D(xip,Ni);
 
-				xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
-				for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-					xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
-					xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
-					xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
-				}
+        xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
+        for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+          xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
+          xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
+          xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
+        }
 
-				DataFieldAccessPoint(PField,p,(void**)&marker);
+        DataFieldAccessPoint(PField,p,(void**)&marker);
 
-				marker->coor[0] = xp_rand[0];
-				marker->coor[1] = xp_rand[1];
-				marker->coor[2] = xp_rand[2];
+        marker->coor[0] = xp_rand[0];
+        marker->coor[1] = xp_rand[1];
+        marker->coor[2] = xp_rand[2];
 
-				marker->xi[0] = xip[0];
-				marker->xi[1] = xip[1];
-				marker->xi[2] = xip[2];
+        marker->xi[0] = xip[0];
+        marker->xi[1] = xip[1];
+        marker->xi[2] = xip[2];
 
-				marker->wil    = e;
-				marker->pid    = 0;
+        marker->wil    = e;
+        marker->pid    = 0;
 
-				p++;
-			}
-		}
+        p++;
+      }
+    }
 
-	}
-	DataFieldRestoreAccess(PField);
+  }
+  DataFieldRestoreAccess(PField);
   ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,np_current,np_new);CHKERRQ(ierr);
+  ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,np_current,np_new);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,PetscInt ncells_list,PetscInt cell_list[],PetscInt *start_pidx,PetscInt *n_pidx,DataBucket db)
 {
-	DataField    PField;
-	PetscInt     e;
+  DataField    PField;
+  PetscInt     e;
     Vec          gcoords;
     PetscScalar  *LA_coords;
     PetscScalar  el_coords[Q2_NODES_PER_EL_3D*NSD];
-	int          ncells,np_per_cell;
-	PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
-	const PetscInt *elnidx;
-	PetscInt       p,k,pi,pj;
-	PetscReal      dxi,deta;
-	int            np_current,np_new;
-	PetscInt       si,sj,sk,M,N,P,lnx,lny,lnz;
-	PetscErrorCode ierr;
+  int          ncells,np_per_cell;
+  PetscInt     nel,nen,lmx,lmy,lmz,MX,MY,MZ;
+  const PetscInt *elnidx;
+  PetscInt       p,k,pi,pj;
+  PetscReal      dxi,deta;
+  int            np_current,np_new;
+  PetscInt       si,sj,sk,M,N,P,lnx,lny,lnz;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
     if ((!cell_list) && (ncells_list != 0)) {
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"A cell list must be provided. Use SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d() if you want to assign points to a face of the domain defined by the DMDA");
     }
 
-	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
-	ncells = nel;
-	ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ncells = nel;
+  ierr = DMDAGetLocalSizeElementQ2(da,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
-	// re-size //
-	np_per_cell = Nxp[0] * Nxp[1];
+  // re-size //
+  np_per_cell = Nxp[0] * Nxp[1];
 
-	DataBucketGetSizes(db,&np_current,NULL,NULL);
+  DataBucketGetSizes(db,&np_current,NULL,NULL);
     (*start_pidx) = (PetscInt)np_current;
 
     /* define new size of the bucket */
@@ -672,554 +672,554 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
         }
     }
 
-	DataBucketSetSizes(db,np_new,-1);
+  DataBucketSetSizes(db,np_new,-1);
 
 
-	if (perturb < 0.0) {
-		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
-	}
-	if (perturb > 1.0) {
-		SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
-	}
+  if (perturb < 0.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a negative perturbation");
+  }
+  if (perturb > 1.0) {
+    SETERRQ(PetscObjectComm((PetscObject)da),PETSC_ERR_USER,"Cannot use a perturbation greater than 1.0");
+  }
 
 
-	ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
-	ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
-	ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetSizeElementQ2(da,&MX,&MY,&MZ);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, 0,0, 0,0,0, 0);CHKERRQ(ierr);
 
     /* setup for coords */
     ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
     ierr = VecGetArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
 
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess(PField,sizeof(MPntStd));
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess(PField,sizeof(MPntStd));
 
-	dxi    = 2.0/(PetscReal)Nxp[0];
-	deta   = 2.0/(PetscReal)Nxp[1];
+  dxi    = 2.0/(PetscReal)Nxp[0];
+  deta   = 2.0/(PetscReal)Nxp[1];
 
-	p = np_current;
-	for (e = 0; e <ncells_list; e++) {
+  p = np_current;
+  for (e = 0; e <ncells_list; e++) {
         PetscInt element_idx;
 
         element_idx = cell_list[e];
 
-		if (element_idx >= ncells) {
+    if (element_idx >= ncells) {
             SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"cell_list[] contains an entry outside local sub-domain");
         }
         /* skip negative entries */
-		if (element_idx < 0) { continue; }
+    if (element_idx < 0) { continue; }
 
         /* get coords for the element */
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*element_idx],LA_coords);CHKERRQ(ierr);
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*element_idx],LA_coords);CHKERRQ(ierr);
 
-		for (pj=0; pj<Nxp[1]; pj++) {
-			for (pi=0; pi<Nxp[0]; pi++) {
-				MPntStd *marker;
-				double xip2d[2],xip_shift2d[2],xip_rand2d[2];
-				double xip[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
+    for (pj=0; pj<Nxp[1]; pj++) {
+      for (pi=0; pi<Nxp[0]; pi++) {
+        MPntStd *marker;
+        double xip2d[2],xip_shift2d[2],xip_rand2d[2];
+        double xip[NSD],xp_rand[NSD],Ni[Q2_NODES_PER_EL_3D];
 
-				/* define coordinates in 2d layout */
-				xip2d[0] = -1.0 + dxi    * (pi + 0.5);
-				xip2d[1] = -1.0 + deta   * (pj + 0.5);
+        /* define coordinates in 2d layout */
+        xip2d[0] = -1.0 + dxi    * (pi + 0.5);
+        xip2d[1] = -1.0 + deta   * (pj + 0.5);
 
-				/* random between -0.5 <= shift <= 0.5 */
-				xip_shift2d[0] = rand()/((double)RAND_MAX) - 0.5;
-				xip_shift2d[1] = rand()/((double)RAND_MAX) - 0.5;
+        /* random between -0.5 <= shift <= 0.5 */
+        xip_shift2d[0] = rand()/((double)RAND_MAX) - 0.5;
+        xip_shift2d[1] = rand()/((double)RAND_MAX) - 0.5;
 
-				xip_rand2d[0] = xip2d[0] + perturb * dxi    * xip_shift2d[0];
-				xip_rand2d[1] = xip2d[1] + perturb * deta   * xip_shift2d[1];
+        xip_rand2d[0] = xip2d[0] + perturb * dxi    * xip_shift2d[0];
+        xip_rand2d[1] = xip2d[1] + perturb * deta   * xip_shift2d[1];
 
-				if (PetscAbsReal(xip_rand2d[0]) > 1.0) {
-					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
-				}
-				if (PetscAbsReal(xip_rand2d[1]) > 1.0) {
-					SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
-				}
+        if (PetscAbsReal(xip_rand2d[0]) > 1.0) {
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(x-point coord) greater than 1.0");
+        }
+        if (PetscAbsReal(xip_rand2d[1]) > 1.0) {
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"fabs(y-point coord) greater than 1.0");
+        }
 
-				/* set to 3d dependnent on face*/
+        /* set to 3d dependnent on face*/
                 // case 0:// east-west
                 // case 2:// north-south
                 // case 4: // front-back
 
-				switch (face_idx) {
-					case 0:// east-west
-						xip[0] = 1.0;
-						xip[1] = xip_rand2d[0];
-						xip[2] = xip_rand2d[1];
-						break;
-					case 1:
-						xip[0] = -1.0;
-						xip[1] = xip_rand2d[0];
-						xip[2] = xip_rand2d[1];
-						break;
+        switch (face_idx) {
+          case 0:// east-west
+            xip[0] = 1.0;
+            xip[1] = xip_rand2d[0];
+            xip[2] = xip_rand2d[1];
+            break;
+          case 1:
+            xip[0] = -1.0;
+            xip[1] = xip_rand2d[0];
+            xip[2] = xip_rand2d[1];
+            break;
 
-					case 2:// north-south
-						xip[0] = xip_rand2d[0];
-						xip[1] = 1.0;
-						xip[2] = xip_rand2d[1];
-						break;
-					case 3:
-						xip[0] = xip_rand2d[0];
-						xip[1] = -1.0;
-						xip[2] = xip_rand2d[1];
-						break;
+          case 2:// north-south
+            xip[0] = xip_rand2d[0];
+            xip[1] = 1.0;
+            xip[2] = xip_rand2d[1];
+            break;
+          case 3:
+            xip[0] = xip_rand2d[0];
+            xip[1] = -1.0;
+            xip[2] = xip_rand2d[1];
+            break;
 
-					case 4: // front-back
-						xip[0] = xip_rand2d[0];
-						xip[1] = xip_rand2d[1];
-						xip[2] = 1.0;
-						break;
-					case 5:
-						xip[0] = xip_rand2d[0];
-						xip[1] = xip_rand2d[1];
-						xip[2] = -1.0;
-						break;
-				}
+          case 4: // front-back
+            xip[0] = xip_rand2d[0];
+            xip[1] = xip_rand2d[1];
+            xip[2] = 1.0;
+            break;
+          case 5:
+            xip[0] = xip_rand2d[0];
+            xip[1] = xip_rand2d[1];
+            xip[2] = -1.0;
+            break;
+        }
 
-				pTatin_ConstructNi_Q2_3D(xip,Ni);
+        pTatin_ConstructNi_Q2_3D(xip,Ni);
 
-				xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
-				for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-					xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
-					xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
-					xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
-				}
+        xp_rand[0] = xp_rand[1] = xp_rand[2] = 0.0;
+        for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+          xp_rand[0] += Ni[k] * el_coords[NSD*k+0];
+          xp_rand[1] += Ni[k] * el_coords[NSD*k+1];
+          xp_rand[2] += Ni[k] * el_coords[NSD*k+2];
+        }
 
-				DataFieldAccessPoint(PField,p,(void**)&marker);
+        DataFieldAccessPoint(PField,p,(void**)&marker);
 
-				marker->coor[0] = xp_rand[0];
-				marker->coor[1] = xp_rand[1];
-				marker->coor[2] = xp_rand[2];
+        marker->coor[0] = xp_rand[0];
+        marker->coor[1] = xp_rand[1];
+        marker->coor[2] = xp_rand[2];
 
-				marker->xi[0] = xip[0];
-				marker->xi[1] = xip[1];
-				marker->xi[2] = xip[2];
+        marker->xi[0] = xip[0];
+        marker->xi[1] = xip[1];
+        marker->xi[2] = xip[2];
 
-				marker->wil    = element_idx;
-				marker->pid    = 0;
+        marker->wil    = element_idx;
+        marker->pid    = 0;
 
-				p++;
-			}
-		}
+        p++;
+      }
+    }
 
-	}
-	DataFieldRestoreAccess(PField);
+  }
+  DataFieldRestoreAccess(PField);
     ierr = VecRestoreArray(gcoords,&LA_coords);CHKERRQ(ierr);
 
-	ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,np_current,np_new);CHKERRQ(ierr);
+  ierr = SwarmMPntStd_AssignUniquePointIdentifiers(PetscObjectComm((PetscObject)da),db,np_current,np_new);CHKERRQ(ierr);
 
     /* length of new points added */
-	DataBucketGetSizes(db,&np_current,NULL,NULL);
+  DataBucketGetSizes(db,&np_current,NULL,NULL);
     (*n_pidx) = (PetscInt)np_current - (*start_pidx);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 {
-	FILE *vtk_fp;
-	int k,npoints;
-	PetscLogDouble t0,t1;
-	DataField PField;
-	PetscErrorCode ierr;
+  FILE *vtk_fp;
+  int k,npoints;
+  PetscLogDouble t0,t1;
+  DataField PField;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscTime(&t0);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
-	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
-	}
+  if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+  }
 
-	fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
+  fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
 
 #ifdef WORDSIZE_BIGENDIAN
-	fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
-	fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-	fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
+  fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
 
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
-	fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
-
-
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t<Cells>\n");
-
-	// connectivity //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
-	fprintf( vtk_fp, "\t\t\t\t");
-	for(k=0;k<npoints;k++) {
-		fprintf( vtk_fp,"%d ",k);
-	}
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
-
-	// offsets //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
-	fprintf( vtk_fp, "\t\t\t\t");
-	for(k=0;k<npoints;k++) {
-		fprintf( vtk_fp,"%d ",k+1);
-	}
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
-
-	// types //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n");
-	fprintf( vtk_fp, "\t\t\t\t");
-	for(k=0;k<npoints;k++) {
-		fprintf( vtk_fp,"1 "); // VTK_VERTEX //
-	}
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
-
-	fprintf( vtk_fp, "\t\t\t</Cells>\n");
-
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t<CellData>\n");
-	fprintf( vtk_fp, "\t\t\t</CellData>\n");
-	fprintf( vtk_fp, "\n");
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
+  fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
 
 
-	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t<Cells>\n");
+
+  // connectivity //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n");
+  fprintf( vtk_fp, "\t\t\t\t");
+  for(k=0;k<npoints;k++) {
+    fprintf( vtk_fp,"%d ",k);
+  }
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
+
+  // offsets //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n");
+  fprintf( vtk_fp, "\t\t\t\t");
+  for(k=0;k<npoints;k++) {
+    fprintf( vtk_fp,"%d ",k+1);
+  }
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
+
+  // types //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n");
+  fprintf( vtk_fp, "\t\t\t\t");
+  for(k=0;k<npoints;k++) {
+    fprintf( vtk_fp,"1 "); // VTK_VERTEX //
+  }
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
+
+  fprintf( vtk_fp, "\t\t\t</Cells>\n");
+
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t<CellData>\n");
+  fprintf( vtk_fp, "\t\t\t</CellData>\n");
+  fprintf( vtk_fp, "\n");
 
 
-	/* point coordinates */
-	fprintf( vtk_fp, "\t\t\t<Points>\n");
-
-	/* copy coordinates */
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\" format=\"ascii\">\n");
-	for(k=0;k<npoints;k++) {
-		MPntStd *marker;
-		double *coords;
-
-		DataFieldAccessPoint(PField,k,(void**)&marker);
+  DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
 
-		/* extract coords from your data type */
-		//coords = elasticParticle->pos;
-		MPntStdGetField_global_coord( marker,&coords );
+  /* point coordinates */
+  fprintf( vtk_fp, "\t\t\t<Points>\n");
 
-		fprintf( vtk_fp,"\t\t\t\t\t%lf %lf %lf \n",coords[0],coords[1],coords[2]);
-	}
-	fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
+  /* copy coordinates */
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\" format=\"ascii\">\n");
+  for(k=0;k<npoints;k++) {
+    MPntStd *marker;
+    double *coords;
 
-	fprintf( vtk_fp, "\t\t\t</Points>\n");
-	fprintf( vtk_fp, "\n");
-
-	DataFieldRestoreAccess(PField);
-
-	/* point data BEGIN */
-	fprintf( vtk_fp, "\t\t\t<PointData>\n");
-
-	/* auto generated shit goes here */
-	{
-		MPntStd *marker = PField->data; /* should write a function to do this */
-
-		MPntStdVTKWriteAsciiAllFields(vtk_fp,(const int)npoints,(const MPntStd*)marker );
-	}
-	fprintf( vtk_fp, "\t\t\t</PointData>\n");
-	fprintf( vtk_fp, "\n");
-	/* point data END */
+    DataFieldAccessPoint(PField,k,(void**)&marker);
 
 
-	fprintf( vtk_fp, "\t\t</Piece>\n");
-	fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
+    /* extract coords from your data type */
+    //coords = elasticParticle->pos;
+    MPntStdGetField_global_coord( marker,&coords );
 
-	fprintf( vtk_fp, "</VTKFile>\n");
+    fprintf( vtk_fp,"\t\t\t\t\t%lf %lf %lf \n",coords[0],coords[1],coords[2]);
+  }
+  fprintf( vtk_fp, "\t\t\t\t</DataArray>\n");
 
-	if( vtk_fp!= NULL ) {
-		fclose( vtk_fp );
-		vtk_fp = NULL;
-	}
+  fprintf( vtk_fp, "\t\t\t</Points>\n");
+  fprintf( vtk_fp, "\n");
 
-	ierr = PetscTime(&t1);CHKERRQ(ierr);
+  DataFieldRestoreAccess(PField);
+
+  /* point data BEGIN */
+  fprintf( vtk_fp, "\t\t\t<PointData>\n");
+
+  /* auto generated shit goes here */
+  {
+    MPntStd *marker = PField->data; /* should write a function to do this */
+
+    MPntStdVTKWriteAsciiAllFields(vtk_fp,(const int)npoints,(const MPntStd*)marker );
+  }
+  fprintf( vtk_fp, "\t\t\t</PointData>\n");
+  fprintf( vtk_fp, "\n");
+  /* point data END */
+
+
+  fprintf( vtk_fp, "\t\t</Piece>\n");
+  fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
+
+  fprintf( vtk_fp, "</VTKFile>\n");
+
+  if( vtk_fp!= NULL ) {
+    fclose( vtk_fp );
+    vtk_fp = NULL;
+  }
+
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
 #ifdef PROFILE_TIMING
-	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
+  PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
 #endif
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char name[])
 {
-	FILE *vtk_fp;
-	PetscInt k;
-	int npoints;
-	PetscLogDouble t0,t1;
-	DataField PField;
-	int byte_offset,length;
-	PetscErrorCode ierr;
+  FILE *vtk_fp;
+  PetscInt k;
+  int npoints;
+  PetscLogDouble t0,t1;
+  DataField PField;
+  int byte_offset,length;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscTime(&t0);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PetscTime(&t0);CHKERRQ(ierr);
 
-	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
-	}
+  if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+  }
 
-	DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
+  DataBucketGetDataFieldByName(db, MPntStd_classname ,&PField);
 
-	fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
+  fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
 
 #ifdef WORDSIZE_BIGENDIAN
-	fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
-	fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-	fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
+  fprintf( vtk_fp, "\t<UnstructuredGrid>\n" );
 
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
-	fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
+  fprintf( vtk_fp, "\t\t<Piece NumberOfPoints=\"%d\" NumberOfCells=\"%d\">\n",npoints,npoints );
 
 
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t<Cells>\n");
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t<Cells>\n");
 
-	byte_offset = 0;
+  byte_offset = 0;
 
-	// connectivity //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  // connectivity //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"connectivity\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * sizeof(int);
 
-	// offsets //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  // offsets //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Int32\" Name=\"offsets\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * sizeof(int);
 
-	// types //
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  // types //
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"UInt8\" Name=\"types\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * sizeof(unsigned char);
 
-	fprintf( vtk_fp, "\t\t\t</Cells>\n");
+  fprintf( vtk_fp, "\t\t\t</Cells>\n");
 
-	fprintf( vtk_fp, "\n");
-	fprintf( vtk_fp, "\t\t\t<CellData>\n");
-	fprintf( vtk_fp, "\t\t\t</CellData>\n");
-	fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t<CellData>\n");
+  fprintf( vtk_fp, "\t\t\t</CellData>\n");
+  fprintf( vtk_fp, "\n");
 
-	fprintf( vtk_fp, "\t\t\t<Points>\n");
+  fprintf( vtk_fp, "\t\t\t<Points>\n");
 
-	/* coordinates */
-	fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
+  /* coordinates */
+  fprintf( vtk_fp, "\t\t\t\t<DataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\" format=\"appended\" offset=\"%d\" />\n",byte_offset);
   byte_offset = byte_offset + sizeof(int) + npoints * 3 * sizeof(double);
 
-	fprintf( vtk_fp, "\t\t\t</Points>\n");
-	fprintf( vtk_fp, "\n");
+  fprintf( vtk_fp, "\t\t\t</Points>\n");
+  fprintf( vtk_fp, "\n");
 
-	/* point data BEGIN */
-	fprintf( vtk_fp, "\t\t\t<PointData>\n");
-	/* auto generated shit for the header goes here */
-	{
-		MPntStd *marker = PField->data; /* should write a function to do this */
+  /* point data BEGIN */
+  fprintf( vtk_fp, "\t\t\t<PointData>\n");
+  /* auto generated shit for the header goes here */
+  {
+    MPntStd *marker = PField->data; /* should write a function to do this */
 
-		MPntStdVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,&byte_offset,npoints,marker);
-	}
-	fprintf( vtk_fp, "\t\t\t</PointData>\n");
-	fprintf( vtk_fp, "\n");
-	/* point data END */
+    MPntStdVTKWriteBinaryAppendedHeaderAllFields(vtk_fp,&byte_offset,npoints,marker);
+  }
+  fprintf( vtk_fp, "\t\t\t</PointData>\n");
+  fprintf( vtk_fp, "\n");
+  /* point data END */
 
-	fprintf( vtk_fp, "\t\t</Piece>\n");
-	fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
+  fprintf( vtk_fp, "\t\t</Piece>\n");
+  fprintf( vtk_fp, "\t</UnstructuredGrid>\n");
 
-	/* WRITE APPENDED DATA HERE */
-	fprintf( vtk_fp,"\t<AppendedData encoding=\"raw\">\n");
-	fprintf( vtk_fp,"_");
+  /* WRITE APPENDED DATA HERE */
+  fprintf( vtk_fp,"\t<AppendedData encoding=\"raw\">\n");
+  fprintf( vtk_fp,"_");
 
-	/* connectivity, offsets, types, coords */
-	////////////////////////////////////////////////////////
-	/* write connectivity */
-	length = sizeof(int)*npoints;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		int idx = k;
-		fwrite( &idx, sizeof(int),1, vtk_fp );
-	}
-	////////////////////////////////////////////////////////
-	/* write offset */
-	length = sizeof(int)*npoints;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		int idx = k+1;
-		fwrite( &idx, sizeof(int),1, vtk_fp );
-	}
-	////////////////////////////////////////////////////////
-	/* write types */
-	length = sizeof(unsigned char)*npoints;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		unsigned char idx = 1; /* VTK_VERTEX */
-		fwrite( &idx, sizeof(unsigned char),1, vtk_fp );
-	}
-	////////////////////////////////////////////////////////
-	/* write coordinates */
-	DataFieldGetAccess(PField);
-	DataFieldVerifyAccess( PField,sizeof(MPntStd));
+  /* connectivity, offsets, types, coords */
+  ////////////////////////////////////////////////////////
+  /* write connectivity */
+  length = sizeof(int)*npoints;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    int idx = k;
+    fwrite( &idx, sizeof(int),1, vtk_fp );
+  }
+  ////////////////////////////////////////////////////////
+  /* write offset */
+  length = sizeof(int)*npoints;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    int idx = k+1;
+    fwrite( &idx, sizeof(int),1, vtk_fp );
+  }
+  ////////////////////////////////////////////////////////
+  /* write types */
+  length = sizeof(unsigned char)*npoints;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    unsigned char idx = 1; /* VTK_VERTEX */
+    fwrite( &idx, sizeof(unsigned char),1, vtk_fp );
+  }
+  ////////////////////////////////////////////////////////
+  /* write coordinates */
+  DataFieldGetAccess(PField);
+  DataFieldVerifyAccess( PField,sizeof(MPntStd));
 
-	length = sizeof(double)*npoints*3;
-	fwrite( &length,sizeof(int),1,vtk_fp);
-	for (k=0; k<npoints; k++) {
-		MPntStd *marker;
-		double  *coor;
-		double  coords_k[] = {0.0, 0.0, 0.0};
+  length = sizeof(double)*npoints*3;
+  fwrite( &length,sizeof(int),1,vtk_fp);
+  for (k=0; k<npoints; k++) {
+    MPntStd *marker;
+    double  *coor;
+    double  coords_k[] = {0.0, 0.0, 0.0};
 
-		DataFieldAccessPoint(PField,k,(void**)&marker);
-		MPntStdGetField_global_coord(marker,&coor);
-		coords_k[0] = coor[0];
-		coords_k[1] = coor[1];
-		coords_k[2] = coor[2];
+    DataFieldAccessPoint(PField,k,(void**)&marker);
+    MPntStdGetField_global_coord(marker,&coor);
+    coords_k[0] = coor[0];
+    coords_k[1] = coor[1];
+    coords_k[2] = coor[2];
 
-		fwrite( coords_k, sizeof(double), 3, vtk_fp );
-	}
-	DataFieldRestoreAccess(PField);
+    fwrite( coords_k, sizeof(double), 3, vtk_fp );
+  }
+  DataFieldRestoreAccess(PField);
 
-	/* auto generated shit for the marker data goes here */
-	{
-		MPntStd *marker = PField->data;
-		MPntStdVTKWriteBinaryAppendedDataAllFields(vtk_fp,npoints,marker);
-	}
+  /* auto generated shit for the marker data goes here */
+  {
+    MPntStd *marker = PField->data;
+    MPntStdVTKWriteBinaryAppendedDataAllFields(vtk_fp,npoints,marker);
+  }
 
-	fprintf( vtk_fp,"\n\t</AppendedData>\n");
+  fprintf( vtk_fp,"\n\t</AppendedData>\n");
 
-	fprintf( vtk_fp, "</VTKFile>\n");
+  fprintf( vtk_fp, "</VTKFile>\n");
 
-	if( vtk_fp!= NULL ) {
-		fclose( vtk_fp );
-		vtk_fp = NULL;
-	}
+  if( vtk_fp!= NULL ) {
+    fclose( vtk_fp );
+    vtk_fp = NULL;
+  }
 
-	ierr = PetscTime(&t1);CHKERRQ(ierr);
+  ierr = PetscTime(&t1);CHKERRQ(ierr);
 #ifdef PROFILE_TIMING
-	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
+  PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
 #endif
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 {
-	PetscMPIInt nproc;
-	FILE *vtk_fp;
-	PetscInt i;
-	char *sourcename;
-	PetscErrorCode ierr;
+  PetscMPIInt nproc;
+  FILE *vtk_fp;
+  PetscInt i;
+  char *sourcename;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	if ((vtk_fp = fopen ( name, "w")) == NULL)  {
-		SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
-	}
+  if ((vtk_fp = fopen ( name, "w")) == NULL)  {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file %s",name );
+  }
 
-	/* (VTK) generate pvts header */
-	fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
+  /* (VTK) generate pvts header */
+  fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
 
 #ifdef WORDSIZE_BIGENDIAN
-	fprintf( vtk_fp, "<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"BigEndian\">\n");
 #else
-	fprintf( vtk_fp, "<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
+  fprintf( vtk_fp, "<VTKFile type=\"PUnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n");
 #endif
 
-	/* define size of the nodal mesh based on the cell DM */
-	fprintf( vtk_fp, "  <PUnstructuredGrid GhostLevel=\"0\">\n" ); /* note overlap = 0 */
+  /* define size of the nodal mesh based on the cell DM */
+  fprintf( vtk_fp, "  <PUnstructuredGrid GhostLevel=\"0\">\n" ); /* note overlap = 0 */
 
-	/* DUMP THE CELL REFERENCES */
-	fprintf( vtk_fp, "    <PCellData>\n");
-	fprintf( vtk_fp, "    </PCellData>\n");
+  /* DUMP THE CELL REFERENCES */
+  fprintf( vtk_fp, "    <PCellData>\n");
+  fprintf( vtk_fp, "    </PCellData>\n");
 
-	///////////////
-	fprintf( vtk_fp, "    <PPoints>\n");
-	fprintf( vtk_fp, "      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
-	fprintf( vtk_fp, "    </PPoints>\n");
-	///////////////
+  ///////////////
+  fprintf( vtk_fp, "    <PPoints>\n");
+  fprintf( vtk_fp, "      <PDataArray type=\"Float64\" Name=\"Points\" NumberOfComponents=\"3\"/>\n");
+  fprintf( vtk_fp, "    </PPoints>\n");
+  ///////////////
 
-	///////////////
+  ///////////////
   fprintf(vtk_fp, "    <PPointData>\n");
-	MPntStdPVTUWriteAllPPointDataFields(vtk_fp);
+  MPntStdPVTUWriteAllPPointDataFields(vtk_fp);
   fprintf(vtk_fp, "    </PPointData>\n");
-	///////////////
+  ///////////////
 
-	/* write out the parallel information */
-	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
-	for (i=0; i<nproc; i++) {
+  /* write out the parallel information */
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&nproc);CHKERRQ(ierr);
+  for (i=0; i<nproc; i++) {
         int i32;
 
         PetscMPIIntCast(i,&i32);
-		if (asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
-		free(sourcename);
-	}
+    if (asprintf( &sourcename, "%s-subdomain%1.5d.vtu", prefix, i32 ) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+    fprintf( vtk_fp, "    <Piece Source=\"%s\"/>\n",sourcename);
+    free(sourcename);
+  }
 
-	/* close the file */
-	fprintf( vtk_fp, "  </PUnstructuredGrid>\n");
-	fprintf( vtk_fp, "</VTKFile>\n");
+  /* close the file */
+  fprintf( vtk_fp, "  </PUnstructuredGrid>\n");
+  fprintf( vtk_fp, "</VTKFile>\n");
 
-	if(vtk_fp!=NULL){
-		fclose( vtk_fp );
-		vtk_fp = NULL;
-	}
+  if(vtk_fp!=NULL){
+    fclose( vtk_fp );
+    vtk_fp = NULL;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const char prefix[])
 {
-	char *vtkfilename,*filename;
-	PetscMPIInt rank;
-	PetscErrorCode ierr;
+  char *vtkfilename,*filename;
+  PetscMPIInt rank;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = pTatinGenerateParallelVTKName(prefix,"vtu",&vtkfilename);CHKERRQ(ierr);
-	if (path) {
-		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	} else {
-		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	}
+  ierr = pTatinGenerateParallelVTKName(prefix,"vtu",&vtkfilename);CHKERRQ(ierr);
+  if (path) {
+    if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+  } else {
+    if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+  }
 
 //#ifdef __VTK_ASCII__
-//	ierr = SwarmView_MPntStd_VTKascii( db,filename );CHKERRQ(ierr);
+//  ierr = SwarmView_MPntStd_VTKascii( db,filename );CHKERRQ(ierr);
 //#endif
 //#ifndef __VTK_ASCII__
-	ierr = SwarmView_MPntStd_VTKappended_binary(db,filename);CHKERRQ(ierr);
+  ierr = SwarmView_MPntStd_VTKappended_binary(db,filename);CHKERRQ(ierr);
 //#endif
-	free(filename);
-	free(vtkfilename);
+  free(filename);
+  free(vtkfilename);
 
-	ierr = pTatinGenerateVTKName(prefix,"pvtu",&vtkfilename);CHKERRQ(ierr);
-	if (path) {
-		if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	} else {
-		if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	}
+  ierr = pTatinGenerateVTKName(prefix,"pvtu",&vtkfilename);CHKERRQ(ierr);
+  if (path) {
+    if (asprintf(&filename,"%s/%s",path,vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+  } else {
+    if (asprintf(&filename,"./%s",vtkfilename) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+  }
 
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	if (rank==0) {
-		ierr = __SwarmView_MPntStd_PVTU( prefix, filename );CHKERRQ(ierr);
-	}
-	free(filename);
-	free(vtkfilename);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (rank==0) {
+    ierr = __SwarmView_MPntStd_PVTU( prefix, filename );CHKERRQ(ierr);
+  }
+  free(filename);
+  free(vtkfilename);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM dav,PetscInt Nxp2[],PetscInt region_idx,PetscReal vertex_coor[])
 {
     PetscInt       Npxi,Npeta,i,j,n;
     PetscReal      xip[2],dxi,deta,Nip[4];
-	MPAccess       mpX;
-	double         tolerance;
-	int            max_its;
-	PetscBool      use_nonzero_guess,monitor;
-	DM             cda;
-	Vec            gcoords;
-	PetscScalar    *LA_gcoords;
-	const PetscInt *elnidx_u;
-	PetscInt       lmx,lmy,lmz;
+  MPAccess       mpX;
+  double         tolerance;
+  int            max_its;
+  PetscBool      use_nonzero_guess,monitor;
+  DM             cda;
+  Vec            gcoords;
+  PetscScalar    *LA_gcoords;
+  const PetscInt *elnidx_u;
+  PetscInt       lmx,lmy,lmz;
   int            _region_idx;
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
     Npxi  = Nxp2[0];
     Npeta = Nxp2[1];
@@ -1228,18 +1228,18 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
     deta = 2.0/((PetscReal)(Npeta-1));
 
 
-	tolerance         = 1.0e-10;
-	max_its           = 10;
-	use_nonzero_guess = PETSC_FALSE;
-	monitor           = PETSC_FALSE;
+  tolerance         = 1.0e-10;
+  max_its           = 10;
+  use_nonzero_guess = PETSC_FALSE;
+  monitor           = PETSC_FALSE;
 
-	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = DMDAGetElements_pTatinQ2P1(dav,0,0,&elnidx_u);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dav,0,0,&elnidx_u);CHKERRQ(ierr);
 
-	ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
+  ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
 
   PetscMPIIntCast(region_idx,&_region_idx);
 
@@ -1291,9 +1291,9 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
             }
         }
     }
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode SwarmMPntStd_CoordAssignment_InsertFromList(DataBucket db,DM dav,PetscInt nlist,PetscReal coor_l[],PetscInt region_idx,PetscBool use_natural_index)

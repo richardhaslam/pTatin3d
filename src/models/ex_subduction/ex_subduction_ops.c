@@ -38,7 +38,7 @@ static char model_help[] = "\
 |   The default setup is defined by the model labelled as \"Case 1\" from the following paper: \n\
 |    \"A benchmark comparison of spontaneous subduction models - Towards a free surface\" \n\
 |     Schmeling, Babeyko, Enns, Faccenna, Funiciello, Gerya, Golabek, Grigull, Kaus, Morra, Schmalholz, van Hunen \n\
-|		 Physics of the Earth and Planetary Interiors 171 (2008) 198--223 \n\
+|    Physics of the Earth and Planetary Interiors 171 (2008) 198--223 \n\
 |   See Figure 1 in this paper for the geometric and material paramters used. \n\
 |   Note that our \"Case 1\" setup employs a free surface, and not a `sticky-air' layer. \n\
 | \n\
@@ -68,21 +68,21 @@ static char model_help[] = "\
  option: --elv_length =  1000.0e3
  option: --elv_velocity =  0.000000000317098
  <StokesScales: ND>
-	 eta          1e+23
-	 length       1000000.0
-	 velocity     3.17098e-10
-	 time         3.15359920277e+15
-	 strain-rate  3.17098e-16
-	 pressure     31709800.0
-	 rhs-scale    0.0315359920277
+   eta          1e+23
+   length       1000000.0
+   velocity     3.17098e-10
+   time         3.15359920277e+15
+   strain-rate  3.17098e-16
+   pressure     31709800.0
+   rhs-scale    0.0315359920277
  </StokesScales>
  <StokesScales: Convert user units into scaled units>
-	 eta         -> eta         x  1e-23
-	 length      -> length      x  1e-06
-	 velocity    -> velocity    x  3153599202.77
-	 time        -> time        x  3.17098e-16
-	 strain-rate -> strain-rate x  3.15359920277e+15
-	 pressure    -> pressure    x  3.15359920277e-08
+   eta         -> eta         x  1e-23
+   length      -> length      x  1e-06
+   velocity    -> velocity    x  3153599202.77
+   time        -> time        x  3.17098e-16
+   strain-rate -> strain-rate x  3.15359920277e+15
+   pressure    -> pressure    x  3.15359920277e-08
  </StokesScales>
 
 

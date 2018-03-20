@@ -36,10 +36,10 @@
 typedef enum { MT_HORIZ=0, MT_45DEGREES, MT_3DBATHYMETRY } SubmarineLavaFlowModelType;
 
 typedef struct {
-	SubmarineLavaFlowModelType model_conf;
-	PetscInt       ngo;
-	GeometryObject go[10];
-	GeometryObjectEval go_thermal_ic[3];
+  SubmarineLavaFlowModelType model_conf;
+  PetscInt       ngo;
+  GeometryObject go[10];
+  GeometryObjectEval go_thermal_ic[3];
 } SubmarineLavaFlowCtx;
 
 #endif

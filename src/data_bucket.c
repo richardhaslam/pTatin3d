@@ -92,216 +92,216 @@ gcc -O3 -g -c data_bucket.c
 /* string helpers */
 static void DataBucketStringInList( const char name[], const int N, const DataField gfield[], BTruth *val )
 {
-	int i;
+  int i;
 
-	*val = BFALSE;
-	for( i=0; i<N; i++ ) {
-		if( strcmp( name, gfield[i]->name ) == 0 ) {
-			*val = BTRUE;
-			return;
-		}
-	}
+  *val = BFALSE;
+  for( i=0; i<N; i++ ) {
+    if( strcmp( name, gfield[i]->name ) == 0 ) {
+      *val = BTRUE;
+      return;
+    }
+  }
 }
 
 static void DataBucketStringFindInList( const char name[], const int N, const DataField gfield[], int *index )
 {
-	int i;
+  int i;
 
-	*index = -1;
-	for( i=0; i<N; i++ ) {
-		if( strcmp( name, gfield[i]->name ) == 0 ) {
-			*index = i;
-			return;
-		}
-	}
+  *index = -1;
+  for( i=0; i<N; i++ ) {
+    if( strcmp( name, gfield[i]->name ) == 0 ) {
+      *index = i;
+      return;
+    }
+  }
 }
 
 void DataFieldCreate( const char registration_function[], const char name[], const size_t size, const int L, DataField *DF )
 {
-	DataField df;
+  DataField df;
 
-	df = malloc( sizeof(struct _p_DataField) );
-	memset( df, 0, sizeof(struct _p_DataField) );
+  df = malloc( sizeof(struct _p_DataField) );
+  memset( df, 0, sizeof(struct _p_DataField) );
 
-	if (asprintf( &df->registration_function, "%s", registration_function ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
-	if (asprintf( &df->name, "%s", name ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
-	df->atomic_size = size;
-	df->L = L;
+  if (asprintf( &df->registration_function, "%s", registration_function ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
+  if (asprintf( &df->name, "%s", name ) < 0) {printf("asprintf() error. Exiting ungracefully.\n"); exit(1);}
+  df->atomic_size = size;
+  df->L = L;
 
-	df->data = malloc( size * L ); /* allocate something so we don't have to reallocate */
-	memset( df->data, 0, size * L );
+  df->data = malloc( size * L ); /* allocate something so we don't have to reallocate */
+  memset( df->data, 0, size * L );
 
-	*DF = df;
+  *DF = df;
 }
 
 void DataFieldDestroy( DataField *DF )
 {
-	DataField df = *DF;
+  DataField df = *DF;
 
-	free( df->registration_function );
-	free( df->name );
-	free( df->data );
-	free(df);
+  free( df->registration_function );
+  free( df->name );
+  free( df->data );
+  free(df);
 
-	*DF = NULL;
+  *DF = NULL;
 }
 
 /* data bucket */
 void DataBucketCreate( DataBucket *DB )
 {
-	DataBucket db;
+  DataBucket db;
 
 
-	db = malloc( sizeof(struct _p_DataBucket) );
-	memset( db, 0, sizeof(struct _p_DataBucket) );
+  db = malloc( sizeof(struct _p_DataBucket) );
+  memset( db, 0, sizeof(struct _p_DataBucket) );
 
-	db->finalised = BFALSE;
+  db->finalised = BFALSE;
 
-	/* create empty spaces for fields */
-	db->L         = 0;
-	db->buffer    = 1;
-	db->allocated = 1;
+  /* create empty spaces for fields */
+  db->L         = 0;
+  db->buffer    = 1;
+  db->allocated = 1;
 
-	db->nfields   = 0;
-	db->field     = malloc(sizeof(DataField));
+  db->nfields   = 0;
+  db->field     = malloc(sizeof(DataField));
 
-	*DB = db;
+  *DB = db;
 }
 
 void DataBucketDestroy( DataBucket *DB )
 {
-	DataBucket db = *DB;
-	int f;
+  DataBucket db = *DB;
+  int f;
 
-	/* release fields */
-	for( f=0; f<db->nfields; f++ ) {
-		DataFieldDestroy(&db->field[f]);
-	}
+  /* release fields */
+  for( f=0; f<db->nfields; f++ ) {
+    DataFieldDestroy(&db->field[f]);
+  }
 
-	/* this will catch the initially allocated objects in the event that no fields are registered */
-	if(db->field!=NULL) {
-		free(db->field);
-	}
+  /* this will catch the initially allocated objects in the event that no fields are registered */
+  if(db->field!=NULL) {
+    free(db->field);
+  }
 
-	free(db);
+  free(db);
 
-	*DB = NULL;
+  *DB = NULL;
 }
 
 void _DataBucketRegisterField(
-						DataBucket db,
-						const char registration_function[],
-						const char field_name[],
-						size_t atomic_size, DataField *_gfield )
+            DataBucket db,
+            const char registration_function[],
+            const char field_name[],
+            size_t atomic_size, DataField *_gfield )
 {
-	BTruth val;
-	DataField *field,fp;
+  BTruth val;
+  DataField *field,fp;
 
-	/* check we haven't finalised the registration of fields */
-	/*
-	if(db->finalised==BTRUE) {
-		printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
-		ERROR();
-	}
-	*/
+  /* check we haven't finalised the registration of fields */
+  /*
+  if(db->finalised==BTRUE) {
+    printf("ERROR: DataBucketFinalize() has been called. Cannot register more fields\n");
+    ERROR();
+  }
+  */
 
-	/* check for repeated name */
-	DataBucketStringInList( field_name, db->nfields, (const DataField*)db->field, &val );
-	if(val == BTRUE ) {
-		printf("ERROR: Cannot add same field twice\n");
-		ERROR();
-	}
+  /* check for repeated name */
+  DataBucketStringInList( field_name, db->nfields, (const DataField*)db->field, &val );
+  if(val == BTRUE ) {
+    printf("ERROR: Cannot add same field twice\n");
+    ERROR();
+  }
 
-	/* create new space for data */
-	field = realloc( db->field,     sizeof(DataField)*(db->nfields+1));
-	db->field     = field;
+  /* create new space for data */
+  field = realloc( db->field,     sizeof(DataField)*(db->nfields+1));
+  db->field     = field;
 
-	/* add field */
-	DataFieldCreate( registration_function, field_name, atomic_size, db->allocated, &fp );
-	db->field[ db->nfields ] = fp;
+  /* add field */
+  DataFieldCreate( registration_function, field_name, atomic_size, db->allocated, &fp );
+  db->field[ db->nfields ] = fp;
 
-	db->nfields++;
+  db->nfields++;
 
-	if(_gfield!=NULL){
-		*_gfield = fp;
-	}
+  if(_gfield!=NULL){
+    *_gfield = fp;
+  }
 }
 
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield)
 {
-	int idx;
-	BTruth found;
+  int idx;
+  BTruth found;
 
-	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,&found);
-	if(found==BFALSE) {
-		printf("ERROR: Cannot find DataField with name %s \n", name );
-		ERROR();
-	}
-	DataBucketStringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
+  DataBucketStringInList(name,db->nfields,(const DataField*)db->field,&found);
+  if(found==BFALSE) {
+    printf("ERROR: Cannot find DataField with name %s \n", name );
+    ERROR();
+  }
+  DataBucketStringFindInList(name,db->nfields,(const DataField*)db->field,&idx);
 
-	*gfield = db->field[idx];
+  *gfield = db->field[idx];
 }
 
 void DataBucketQueryDataFieldByName(DataBucket db,const char name[],BTruth *found)
 {
-	*found = BFALSE;
-	DataBucketStringInList(name,db->nfields,(const DataField*)db->field,found);
+  *found = BFALSE;
+  DataBucketStringInList(name,db->nfields,(const DataField*)db->field,found);
 }
 
 void DataBucketFinalize(DataBucket db)
 {
-	db->finalised = BTRUE;
+  db->finalised = BTRUE;
 }
 
 void DataFieldGetNumEntries(DataField df, int *sum)
 {
-	*sum = df->L;
+  *sum = df->L;
 }
 
 void DataFieldSetSize( DataField df, const int new_L )
 {
-	void *tmp_data;
+  void *tmp_data;
 
-	if( new_L <= 0 ) {
-		printf("ERROR: Cannot set size of DataField to be <= 0 \n");
-		ERROR();
-	}
-	if( new_L == df->L ) return;
+  if( new_L <= 0 ) {
+    printf("ERROR: Cannot set size of DataField to be <= 0 \n");
+    ERROR();
+  }
+  if( new_L == df->L ) return;
 
-	if( new_L > df->L ) {
+  if( new_L > df->L ) {
 
-		tmp_data = realloc( df->data, df->atomic_size * (new_L) );
-		df->data = tmp_data;
+    tmp_data = realloc( df->data, df->atomic_size * (new_L) );
+    df->data = tmp_data;
 
-		/* init new contents */
-		memset( ( ((char*)df->data)+df->L*df->atomic_size), 0, (new_L-df->L)*df->atomic_size );
+    /* init new contents */
+    memset( ( ((char*)df->data)+df->L*df->atomic_size), 0, (new_L-df->L)*df->atomic_size );
 
-	}
-	else {
-		/* reallocate pointer list, add +1 in case new_L = 0 */
-		tmp_data = realloc( df->data, df->atomic_size * (new_L+1) );
-		df->data = tmp_data;
-	}
+  }
+  else {
+    /* reallocate pointer list, add +1 in case new_L = 0 */
+    tmp_data = realloc( df->data, df->atomic_size * (new_L+1) );
+    df->data = tmp_data;
+  }
 
-	df->L = new_L;
+  df->L = new_L;
 }
 
 void DataFieldZeroBlock( DataField df, const int start, const int end )
 {
-	if( start > end ) {
-		printf("ERROR: Cannot zero a block of entries if start(%d) > end(%d) \n",start,end);
-		ERROR();
-	}
-	if( start < 0 ) {
-		printf("ERROR: Cannot zero a block of entries if start(%d) < 0 \n",start);
-		ERROR();
-	}
-	if( end > df->L ) {
-		printf("ERROR: Cannot zero a block of entries if end(%d) >= array size(%d) \n",end,df->L);
-		ERROR();
-	}
+  if( start > end ) {
+    printf("ERROR: Cannot zero a block of entries if start(%d) > end(%d) \n",start,end);
+    ERROR();
+  }
+  if( start < 0 ) {
+    printf("ERROR: Cannot zero a block of entries if start(%d) < 0 \n",start);
+    ERROR();
+  }
+  if( end > df->L ) {
+    printf("ERROR: Cannot zero a block of entries if end(%d) >= array size(%d) \n",end,df->L);
+    ERROR();
+  }
 
-	memset( ( ((char*)df->data)+start*df->atomic_size), 0, (end-start)*df->atomic_size );
+  memset( ( ((char*)df->data)+start*df->atomic_size), 0, (end-start)*df->atomic_size );
 }
 
 /*
@@ -309,170 +309,170 @@ void DataFieldZeroBlock( DataField df, const int start, const int end )
  */
 void DataBucketSetSizes( DataBucket db, const int L, const int buffer )
 {
-	int current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
+  int current_allocated,new_used,new_unused,new_buffer,new_allocated,f;
 
 
-	if( db->finalised == BFALSE ) {
-		printf("ERROR: You must call DataBucketFinalize() before DataBucketSetSizes() \n");
-		ERROR();
-	}
+  if( db->finalised == BFALSE ) {
+    printf("ERROR: You must call DataBucketFinalize() before DataBucketSetSizes() \n");
+    ERROR();
+  }
 
-	current_allocated = db->allocated;
+  current_allocated = db->allocated;
 
-	new_used   = L;
-	new_unused = current_allocated - new_used;
-	new_buffer = db->buffer;
-	if( buffer >= 0 ) { /* update the buffer value */
-		new_buffer = buffer;
-	}
-	new_allocated = new_used + new_buffer;
+  new_used   = L;
+  new_unused = current_allocated - new_used;
+  new_buffer = db->buffer;
+  if( buffer >= 0 ) { /* update the buffer value */
+    new_buffer = buffer;
+  }
+  new_allocated = new_used + new_buffer;
 
-	/* action */
-	if ( new_allocated > current_allocated ) {
-		/* increase size to new_used + new_buffer */
-		for( f=0; f<db->nfields; f++ ) {
-			DataFieldSetSize( db->field[f], new_allocated );
-		}
+  /* action */
+  if ( new_allocated > current_allocated ) {
+    /* increase size to new_used + new_buffer */
+    for( f=0; f<db->nfields; f++ ) {
+      DataFieldSetSize( db->field[f], new_allocated );
+    }
 
-		db->L         = new_used;
-		db->buffer    = new_buffer;
-		db->allocated = new_used + new_buffer;
-	}
-	else {
-		if( new_unused > 2 * new_buffer ) {
+    db->L         = new_used;
+    db->buffer    = new_buffer;
+    db->allocated = new_used + new_buffer;
+  }
+  else {
+    if( new_unused > 2 * new_buffer ) {
 
-			/* shrink array to new_used + new_buffer */
-			for( f=0; f<db->nfields; f++ ) {
-				DataFieldSetSize( db->field[f], new_allocated );
-			}
+      /* shrink array to new_used + new_buffer */
+      for( f=0; f<db->nfields; f++ ) {
+        DataFieldSetSize( db->field[f], new_allocated );
+      }
 
-			db->L         = new_used;
-			db->buffer    = new_buffer;
-			db->allocated = new_used + new_buffer;
-		}
-		else {
-			db->L      = new_used;
-			db->buffer = new_buffer;
-		}
-	}
+      db->L         = new_used;
+      db->buffer    = new_buffer;
+      db->allocated = new_used + new_buffer;
+    }
+    else {
+      db->L      = new_used;
+      db->buffer = new_buffer;
+    }
+  }
 
-	/* zero all entries from db->L to db->allocated */
-	for( f=0; f<db->nfields; f++ ) {
-		DataField field = db->field[f];
-		DataFieldZeroBlock(field, db->L,db->allocated);
-	}
+  /* zero all entries from db->L to db->allocated */
+  for( f=0; f<db->nfields; f++ ) {
+    DataField field = db->field[f];
+    DataFieldZeroBlock(field, db->L,db->allocated);
+  }
 }
 
 void DataBucketSetInitialSizes( DataBucket db, const int L, const int buffer )
 {
-	int f;
-	DataBucketSetSizes(db,L,buffer);
+  int f;
+  DataBucketSetSizes(db,L,buffer);
 
-	for( f=0; f<db->nfields; f++ ) {
-		DataField field = db->field[f];
-		DataFieldZeroBlock(field,0,db->allocated);
-	}
+  for( f=0; f<db->nfields; f++ ) {
+    DataField field = db->field[f];
+    DataFieldZeroBlock(field,0,db->allocated);
+  }
 }
 
 void DataBucketGetSizes( DataBucket db, int *L, int *buffer, int *allocated )
 {
-	if (L) { *L = db->L; }
-	if (buffer) { *buffer = db->buffer; }
-	if (allocated) { *allocated = db->allocated; }
+  if (L) { *L = db->L; }
+  if (buffer) { *buffer = db->buffer; }
+  if (allocated) { *allocated = db->allocated; }
 }
 
 void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long int *buffer, long int *allocated )
 {
-	int      ierr;
-	long int _L,_buffer,_allocated;
+  int      ierr;
+  long int _L,_buffer,_allocated;
 
-	_L = (long int)db->L;
-	_buffer = (long int)db->buffer;
-	_allocated = (long int)db->allocated;
+  _L = (long int)db->L;
+  _buffer = (long int)db->buffer;
+  _allocated = (long int)db->allocated;
 
-	if (L) {
+  if (L) {
     ierr = MPI_Allreduce(&_L,L,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   }
-	if (buffer) {
+  if (buffer) {
     ierr = MPI_Allreduce(&_buffer,buffer,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   }
-	if (allocated) {
+  if (allocated) {
     ierr =  MPI_Allreduce(&_allocated,allocated,1,MPI_LONG,MPI_SUM,comm);MPI_ERROR_CHECK(comm,ierr);
   }
 }
 
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] )
 {
-	if(L){      *L      = db->nfields; }
-	if(fields){ *fields = db->field; }
+  if(L){      *L      = db->nfields; }
+  if(fields){ *fields = db->field; }
 }
 
 void DataFieldGetAccess( const DataField gfield )
 {
-	if(gfield->active==BTRUE) {
-		printf("ERROR: Field \"%s\" is already active. You must call DataFieldRestoreAccess()\n", gfield->name );
-		ERROR();
-	}
-	gfield->active = BTRUE;
+  if(gfield->active==BTRUE) {
+    printf("ERROR: Field \"%s\" is already active. You must call DataFieldRestoreAccess()\n", gfield->name );
+    ERROR();
+  }
+  gfield->active = BTRUE;
 }
 
 void DataFieldAccessPoint( const DataField gfield, const int pid, void **ctx_p )
 {
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	/* debug mode */
-	/* check point is valid */
-	if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
-	if( pid >= gfield->L ){ printf("ERROR: index must be < %d\n",gfield->L); ERROR(); }
+  /* debug mode */
+  /* check point is valid */
+  if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
+  if( pid >= gfield->L ){ printf("ERROR: index must be < %d\n",gfield->L); ERROR(); }
 
-	if(gfield->active==BFALSE) {
-		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied\n",gfield->name);
-		ERROR();
-	}
+  if(gfield->active==BFALSE) {
+    printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied\n",gfield->name);
+    ERROR();
+  }
 #endif
 
-	//*ctx_p  = (void*)( ((char*)gfield->data) + pid * gfield->atomic_size);
-	*ctx_p = __DATATFIELD_point_access(gfield->data,pid,gfield->atomic_size);
+  //*ctx_p  = (void*)( ((char*)gfield->data) + pid * gfield->atomic_size);
+  *ctx_p = __DATATFIELD_point_access(gfield->data,pid,gfield->atomic_size);
 }
 
 void DataFieldAccessPointOffset( const DataField gfield, const size_t offset, const int pid, void **ctx_p )
 {
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	/* debug mode */
+  /* debug mode */
 
-	/* check point is valid */
-	/* if( offset < 0 ){ printf("ERROR: offset must be >= 0\n"); ERROR();  } *//* Note compiler realizes this can never happen with an unsigned int */
-	if( offset >= gfield->atomic_size ){ printf("ERROR: offset must be < %zu\n",gfield->atomic_size); ERROR(); }
+  /* check point is valid */
+  /* if( offset < 0 ){ printf("ERROR: offset must be >= 0\n"); ERROR();  } *//* Note compiler realizes this can never happen with an unsigned int */
+  if( offset >= gfield->atomic_size ){ printf("ERROR: offset must be < %zu\n",gfield->atomic_size); ERROR(); }
 
-	/* check point is valid */
-	if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
-	if( pid >= gfield->L ){ printf("ERROR: index must be < %d\n",gfield->L); ERROR(); }
+  /* check point is valid */
+  if( pid < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
+  if( pid >= gfield->L ){ printf("ERROR: index must be < %d\n",gfield->L); ERROR(); }
 
-	if(gfield->active==BFALSE) {
-		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied\n",gfield->name);
-		ERROR();
-	}
+  if(gfield->active==BFALSE) {
+    printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess() before point data can be retrivied\n",gfield->name);
+    ERROR();
+  }
 #endif
 
-	*ctx_p = __DATATFIELD_point_access_offset(gfield->data,pid,gfield->atomic_size,offset);
+  *ctx_p = __DATATFIELD_point_access_offset(gfield->data,pid,gfield->atomic_size,offset);
 }
 
 void DataFieldRestoreAccess( DataField gfield )
 {
-	if(gfield->active==BFALSE) {
-		printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess()\n", gfield->name );
-		ERROR();
-	}
-	gfield->active = BFALSE;
+  if(gfield->active==BFALSE) {
+    printf("ERROR: Field \"%s\" is not active. You must call DataFieldGetAccess()\n", gfield->name );
+    ERROR();
+  }
+  gfield->active = BFALSE;
 }
 
 void DataFieldVerifyAccess( const DataField gfield, const size_t size)
 {
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	if(gfield->atomic_size != size ) {
+  if(gfield->atomic_size != size ) {
         printf("ERROR: Field \"%s\" must be mapped to %zu bytes, your intended structure is %zu bytes in length.\n",
                gfield->name, gfield->atomic_size, size );
-		ERROR();
-	}
+    ERROR();
+  }
 #endif
 }
 
@@ -497,49 +497,49 @@ void DataFieldRestoreEntries(const DataField gfield,void **data)
 
 /* y = x */
 void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
-												  const DataBucket yb, const int pid_y )
+                          const DataBucket yb, const int pid_y )
 {
-	int f;
-	for( f=0; f<xb->nfields; f++ ) {
-		void *dest;
-		void *src;
+  int f;
+  for( f=0; f<xb->nfields; f++ ) {
+    void *dest;
+    void *src;
 
-		DataFieldGetAccess( xb->field[f] );
-		if (xb!=yb) { DataFieldGetAccess( yb->field[f] ); }
+    DataFieldGetAccess( xb->field[f] );
+    if (xb!=yb) { DataFieldGetAccess( yb->field[f] ); }
 
-		DataFieldAccessPoint( xb->field[f],pid_x, &src );
-		DataFieldAccessPoint( yb->field[f],pid_y, &dest );
+    DataFieldAccessPoint( xb->field[f],pid_x, &src );
+    DataFieldAccessPoint( yb->field[f],pid_y, &dest );
 
-		memcpy( dest, src, xb->field[f]->atomic_size );
+    memcpy( dest, src, xb->field[f]->atomic_size );
 
-		DataFieldRestoreAccess( xb->field[f] );
-		if (xb!=yb) { DataFieldRestoreAccess( yb->field[f] ); }
-	}
+    DataFieldRestoreAccess( xb->field[f] );
+    if (xb!=yb) { DataFieldRestoreAccess( yb->field[f] ); }
+  }
 
 }
 
 void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[], DataBucket *DB )
 {
-	int nfields;
-	DataField *fields;
-	DataBucketCreate(DB);
-	int f,L,buffer,allocated,p;
+  int nfields;
+  DataField *fields;
+  DataBucketCreate(DB);
+  int f,L,buffer,allocated,p;
 
-	/* copy contents of DBIn */
-	DataBucketGetDataFields(DBIn,&nfields,&fields);
-	DataBucketGetSizes(DBIn,&L,&buffer,&allocated);
+  /* copy contents of DBIn */
+  DataBucketGetDataFields(DBIn,&nfields,&fields);
+  DataBucketGetSizes(DBIn,&L,&buffer,&allocated);
 
-	for(f=0;f<nfields;f++) {
-		DataBucketRegisterField(*DB,fields[f]->name,fields[f]->atomic_size,NULL);
-	}
-	DataBucketFinalize(*DB);
+  for(f=0;f<nfields;f++) {
+    DataBucketRegisterField(*DB,fields[f]->name,fields[f]->atomic_size,NULL);
+  }
+  DataBucketFinalize(*DB);
 
-	DataBucketSetSizes(*DB,L,buffer);
+  DataBucketSetSizes(*DB,L,buffer);
 
-	/* now copy the desired guys from DBIn => DB */
-	for( p=0; p<N; p++ ) {
-		DataBucketCopyPoint(DBIn,list[p], *DB,p);
-	}
+  /* now copy the desired guys from DBIn => DB */
+  for( p=0; p<N; p++ ) {
+    DataBucketCopyPoint(DBIn,list[p], *DB,p);
+  }
 
 }
 
@@ -548,73 +548,73 @@ void DataFieldInsertPoint( const DataField field, const int index, const void *c
 {
 
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
-	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
+  /* check point is valid */
+  if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR();  }
+  if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
 #endif
 
-//	memcpy( (void*)((char*)field->data + index*field->atomic_size), ctx, field->atomic_size );
-	memcpy( __DATATFIELD_point_access(field->data,index,field->atomic_size), ctx, field->atomic_size );
+//  memcpy( (void*)((char*)field->data + index*field->atomic_size), ctx, field->atomic_size );
+  memcpy( __DATATFIELD_point_access(field->data,index,field->atomic_size), ctx, field->atomic_size );
 }
 
 // remove data at index - replace with last point
 void DataBucketRemovePointAtIndex( const DataBucket db, const int index )
 {
-	int f;
+  int f;
 
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
-	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->L+db->buffer); ERROR(); }
+  /* check point is valid */
+  if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
+  if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->L+db->buffer); ERROR(); }
 #endif
 
-	if (index >= db->L) { /* this point is not in the list - no need to error, but I will anyway */
-		printf("ERROR: You should not be trying to remove point at index=%d since it's < db->L = %d \n", index, db->L );
-		ERROR();
-	}
+  if (index >= db->L) { /* this point is not in the list - no need to error, but I will anyway */
+    printf("ERROR: You should not be trying to remove point at index=%d since it's < db->L = %d \n", index, db->L );
+    ERROR();
+  }
 
-	if (index != db->L-1) { /* not last point in list */
-		for( f=0; f<db->nfields; f++ ) {
-			DataField field = db->field[f];
+  if (index != db->L-1) { /* not last point in list */
+    for( f=0; f<db->nfields; f++ ) {
+      DataField field = db->field[f];
 
-			/* copy then remove */
-			DataFieldCopyPoint( db->L-1,field, index,field );
+      /* copy then remove */
+      DataFieldCopyPoint( db->L-1,field, index,field );
 
-			//DataFieldZeroPoint(field,index);
-		}
-	}
+      //DataFieldZeroPoint(field,index);
+    }
+  }
 
-	/* decrement size */
-	/* this will zero out an crap at the end of the list */
-	DataBucketRemovePoint(db);
+  /* decrement size */
+  /* this will zero out an crap at the end of the list */
+  DataBucketRemovePoint(db);
 
 }
 
 /* copy x into y */
 void DataFieldCopyPoint( const int pid_x, const DataField field_x,
-												 const int pid_y, const DataField field_y )
+                         const int pid_y, const DataField field_y )
 {
 
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
-	if( pid_x < 0 ){ printf("ERROR: (IN) index must be >= 0\n"); ERROR(); }
-	if( pid_x >= field_x->L ){ printf("ERROR: (IN) index must be < %d\n",field_x->L); ERROR(); }
+  /* check point is valid */
+  if( pid_x < 0 ){ printf("ERROR: (IN) index must be >= 0\n"); ERROR(); }
+  if( pid_x >= field_x->L ){ printf("ERROR: (IN) index must be < %d\n",field_x->L); ERROR(); }
 
-	if( pid_y < 0 ){ printf("ERROR: (OUT) index must be >= 0\n"); ERROR(); }
-	if( pid_y >= field_y->L ){ printf("ERROR: (OUT) index must be < %d\n",field_y->L); ERROR(); }
+  if( pid_y < 0 ){ printf("ERROR: (OUT) index must be >= 0\n"); ERROR(); }
+  if( pid_y >= field_y->L ){ printf("ERROR: (OUT) index must be < %d\n",field_y->L); ERROR(); }
 
-	if( field_y->atomic_size != field_x->atomic_size ) {
-		printf("ERROR: atomic size must match \n"); ERROR();
-	}
+  if( field_y->atomic_size != field_x->atomic_size ) {
+    printf("ERROR: atomic size must match \n"); ERROR();
+  }
 #endif
-	/*
-	memcpy( (void*)((char*)field_y->data + pid_y*field_y->atomic_size),
-					(void*)((char*)field_x->data + pid_x*field_x->atomic_size),
-				  field_x->atomic_size );
-	*/
-	memcpy(		__DATATFIELD_point_access(field_y->data,pid_y,field_y->atomic_size),
-						__DATATFIELD_point_access(field_x->data,pid_x,field_x->atomic_size),
-						field_y->atomic_size );
+  /*
+  memcpy( (void*)((char*)field_y->data + pid_y*field_y->atomic_size),
+          (void*)((char*)field_x->data + pid_x*field_x->atomic_size),
+          field_x->atomic_size );
+  */
+  memcpy(   __DATATFIELD_point_access(field_y->data,pid_y,field_y->atomic_size),
+            __DATATFIELD_point_access(field_x->data,pid_x,field_x->atomic_size),
+            field_y->atomic_size );
 
 }
 
@@ -623,40 +623,40 @@ void DataFieldCopyPoint( const int pid_x, const DataField field_x,
 void DataFieldZeroPoint( const DataField field, const int index )
 {
 #ifdef PTATIN_DATAFIELD_POINT_ACCESS_GUARD
-	/* check point is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
-	if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
+  /* check point is valid */
+  if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
+  if( index >= field->L ){ printf("ERROR: index must be < %d\n",field->L); ERROR(); }
 #endif
 
-//	memset( (void*)((char*)field->data + index*field->atomic_size), 0, field->atomic_size );
-	memset( __DATATFIELD_point_access(field->data,index,field->atomic_size), 0, field->atomic_size );
+//  memset( (void*)((char*)field->data + index*field->atomic_size), 0, field->atomic_size );
+  memset( __DATATFIELD_point_access(field->data,index,field->atomic_size), 0, field->atomic_size );
 }
 
 // zero ALL data for this point
 void DataBucketZeroPoint( const DataBucket db, const int index )
 {
-	int f;
+  int f;
 
-	/* check point is valid */
-	if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
-	if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->allocated); ERROR(); }
+  /* check point is valid */
+  if( index < 0 ){ printf("ERROR: index must be >= 0\n"); ERROR(); }
+  if( index >= db->allocated ){ printf("ERROR: index must be < %d\n",db->allocated); ERROR(); }
 
-	for(f=0;f<db->nfields;f++){
-		DataField field = db->field[f];
+  for(f=0;f<db->nfields;f++){
+    DataField field = db->field[f];
 
-		DataFieldZeroPoint(field,index);
-	}
+    DataFieldZeroPoint(field,index);
+  }
 }
 
 /* increment */
 void DataBucketAddPoint( DataBucket db )
 {
-	DataBucketSetSizes( db, db->L+1, -1 );
+  DataBucketSetSizes( db, db->L+1, -1 );
 }
 /* decrement */
 void DataBucketRemovePoint( DataBucket db )
 {
-	DataBucketSetSizes( db, db->L-1, -1 );
+  DataBucketSetSizes( db, db->L-1, -1 );
 }
 
 void DataBucketLoadFromFile(MPI_Comm comm,const char filename[], DataBucketViewType type, DataBucket *db)
@@ -1241,29 +1241,29 @@ void DataBucketView(MPI_Comm comm,DataBucket db,const char prefix[],DataBucketVi
 
 void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
 {
-	DataBucket db2;
-	int f;
+  DataBucket db2;
+  int f;
 
-	DataBucketCreate(&db2);
+  DataBucketCreate(&db2);
 
-	/* copy contents from dbA into db2 */
-	for (f=0; f<dbA->nfields; f++) {
-		DataField field;
-		size_t    atomic_size;
-		char      *name;
+  /* copy contents from dbA into db2 */
+  for (f=0; f<dbA->nfields; f++) {
+    DataField field;
+    size_t    atomic_size;
+    char      *name;
 
-		field = dbA->field[f];
+    field = dbA->field[f];
 
-		atomic_size = field->atomic_size;
-		name        = field->name;
+    atomic_size = field->atomic_size;
+    name        = field->name;
 
-		DataBucketRegisterField(db2,name,atomic_size,NULL);
-	}
-	DataBucketFinalize(db2);
-	DataBucketSetInitialSizes(db2,0,1000);
+    DataBucketRegisterField(db2,name,atomic_size,NULL);
+  }
+  DataBucketFinalize(db2);
+  DataBucketSetInitialSizes(db2,0,1000);
 
-	/* set pointer */
-	*dbB = db2;
+  /* set pointer */
+  *dbB = db2;
 }
 
 /*
@@ -1272,19 +1272,19 @@ void DataBucketDuplicateFields(DataBucket dbA,DataBucket *dbB)
  */
 void DataBucketInsertValues(DataBucket db1,DataBucket db2)
 {
-	int n_mp_points1,n_mp_points2;
-	int n_mp_points1_new,p;
+  int n_mp_points1,n_mp_points2;
+  int n_mp_points1_new,p;
 
-	DataBucketGetSizes(db1,&n_mp_points1,0,0);
-	DataBucketGetSizes(db2,&n_mp_points2,0,0);
+  DataBucketGetSizes(db1,&n_mp_points1,0,0);
+  DataBucketGetSizes(db2,&n_mp_points2,0,0);
 
-	n_mp_points1_new = n_mp_points1 + n_mp_points2;
-	DataBucketSetSizes(db1,n_mp_points1_new,-1);
+  n_mp_points1_new = n_mp_points1 + n_mp_points2;
+  DataBucketSetSizes(db1,n_mp_points1_new,-1);
 
-	for (p=0; p<n_mp_points2; p++) {
-		// db1 <<== db2 //
-		DataBucketCopyPoint( db2,p, db1,(n_mp_points1 + p) );
-	}
+  for (p=0; p<n_mp_points2; p++) {
+    // db1 <<== db2 //
+    DataBucketCopyPoint( db2,p, db1,(n_mp_points1 + p) );
+  }
 }
 
 /* helpers for parallel send/recv */

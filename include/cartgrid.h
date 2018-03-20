@@ -49,11 +49,11 @@ struct _p_CartGrid {
     PetscInt     mx,my,mz;
     CartGridType     type;
     CartGridEndian   endian;
-	PetscReal    dx,dy,dz;
+  PetscReal    dx,dy,dz;
     char         metadatafile_name[PETSC_MAX_PATH_LEN];
     char         datafile_name[PETSC_MAX_PATH_LEN];
     FILE         *data_fp;
-	void         *data;
+  void         *data;
     PetscErrorCode (*getindex)(CartGrid,PetscInt,PetscInt,PetscInt,PetscInt*);
     PetscErrorCode (*getvalue)(CartGrid,PetscReal*,void*,PetscBool*);
     PetscErrorCode (*destroy)(CartGrid);

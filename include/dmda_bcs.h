@@ -32,13 +32,13 @@
 
 
 typedef enum {
-	DMDABCList_INTERIOR_LOC=1,
-	DMDABCList_IMIN_LOC,
-	DMDABCList_IMAX_LOC,
-	DMDABCList_JMIN_LOC,
-	DMDABCList_JMAX_LOC,
-	DMDABCList_KMIN_LOC,
-	DMDABCList_KMAX_LOC
+  DMDABCList_INTERIOR_LOC=1,
+  DMDABCList_IMIN_LOC,
+  DMDABCList_IMAX_LOC,
+  DMDABCList_JMIN_LOC,
+  DMDABCList_JMAX_LOC,
+  DMDABCList_KMIN_LOC,
+  DMDABCList_KMAX_LOC
 } DMDABCListConstraintLoc;
 
 typedef enum { BCList_UNCONSTRAINED=-1, BCList_DIRICHLET=-2 } BCListConstraintType;
@@ -46,17 +46,17 @@ typedef enum { BCList_UNCONSTRAINED=-1, BCList_DIRICHLET=-2 } BCListConstraintTy
 typedef struct _p_BCList *BCList;
 
 struct _p_BCList {
-	DM          dm;
-	PetscInt    blocksize;
-	PetscInt    N,L; /* L = N * blocksize */
-	PetscInt    N_local,L_local;
-	PetscScalar *vals_global;
-	PetscInt    *dofidx_global;
-	PetscInt    *dofidx_local;
-	PetscScalar *vals_local;
-	/* PetscScalar *scale_local; */
-	PetscScalar *scale_global;
-	PetscBool   allEmpty;
+  DM          dm;
+  PetscInt    blocksize;
+  PetscInt    N,L; /* L = N * blocksize */
+  PetscInt    N_local,L_local;
+  PetscScalar *vals_global;
+  PetscInt    *dofidx_global;
+  PetscInt    *dofidx_local;
+  PetscScalar *vals_local;
+  /* PetscScalar *scale_local; */
+  PetscScalar *scale_global;
+  PetscBool   allEmpty;
 };
 
 PetscErrorCode BCListIsDirichlet(PetscInt value,PetscBool *flg);

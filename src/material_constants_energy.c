@@ -46,10 +46,10 @@ PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db)
 
 PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 {
-	int       nregions;
+  int       nregions;
   DataField dfield;
 
-	DataBucketGetSizes(db,&nregions,NULL,NULL);
+  DataBucketGetSizes(db,&nregions,NULL,NULL);
   {
     EnergyMaterialConstants *data;
 
@@ -120,7 +120,7 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
   H_scale = pressure_scale / time_scale; /* W/m^3 */
   Cp_scale = pressure_scale /(density_scale); /* J / (kg.K) = m^2.kg.s^-2.K^-1 = (kg/m^3).m^5.s^-2 . K^-1 */
 
-	DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
+  DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
   DataFieldGetEntries(dfield,(void**)&mdata);
 
   /* NOTE: beta has units of 1/Pa, so scale by reciprocal */
@@ -171,10 +171,10 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
       break;
 
     case ENERGYCONDUCTIVITY_TEMP_DEP_THRESHOLD: {
-    	EnergyConductivityThreshold *data;
+      EnergyConductivityThreshold *data;
 
-    	DataBucketGetDataFieldByName(db,EnergyConductivityThreshold_classname,&dfield);
-    	DataFieldGetEntries(dfield,(void**)&data);
+      DataBucketGetDataFieldByName(db,EnergyConductivityThreshold_classname,&dfield);
+      DataFieldGetEntries(dfield,(void**)&data);
 
     MaterialConstantsScaleValues_ConductivityThreshold(region_id,data,k_scale,k_scale,1.0,1.0);
     }
@@ -245,7 +245,7 @@ PetscErrorCode MaterialConstantsEnergyPrintAll(DataBucket db,const int region_id
   DataField dfield;
   EnergyMaterialConstants *data;
 
-	DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
+  DataBucketGetDataFieldByName(db,EnergyMaterialConstants_classname,&dfield);
   DataFieldGetEntries(dfield,(void**)&data);
 
   MaterialConstantsPrintValues_EnergyMaterialConstants(NULL,region_id,data);

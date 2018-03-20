@@ -44,30 +44,30 @@
 #include "material_constants/MaterialConst_SoftExpo_def.h"
 
 typedef enum {
-	VISCOUS_CONSTANT=0,
-	VISCOUS_FRANKK,
+  VISCOUS_CONSTANT=0,
+  VISCOUS_FRANKK,
     VISCOUS_Z,
-	VISCOUS_ARRHENIUS,
-	VISCOUS_ARRHENIUS_2
+  VISCOUS_ARRHENIUS,
+  VISCOUS_ARRHENIUS_2
 } ViscousType;
 
 typedef enum {
-	PLASTIC_NONE      =0,
-	PLASTIC_MISES     =1,
-	PLASTIC_DP        =2,
-	PLASTIC_MISES_H   =3,
-	PLASTIC_DP_H      =4,
+  PLASTIC_NONE      =0,
+  PLASTIC_MISES     =1,
+  PLASTIC_DP        =2,
+  PLASTIC_MISES_H   =3,
+  PLASTIC_DP_H      =4,
 } PlasticType;
 
 typedef enum {
-	SOFTENING_NONE=0,
-	SOFTENING_LINEAR,
-	SOFTENING_EXPONENTIAL
+  SOFTENING_NONE=0,
+  SOFTENING_LINEAR,
+  SOFTENING_EXPONENTIAL
 } SofteningType;
 
 typedef enum {
-	DENSITY_CONSTANT=0,
-	DENSITY_BOUSSINESQ
+  DENSITY_CONSTANT=0,
+  DENSITY_BOUSSINESQ
 } DensityType;
 
 PetscErrorCode MaterialConstantsCreate(DataBucket *_db);

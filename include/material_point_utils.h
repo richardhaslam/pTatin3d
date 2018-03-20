@@ -46,14 +46,14 @@ typedef enum { CoefAvgNULL=0, CoefAvgARITHMETIC, CoefAvgHARMONIC, CoefAvgGEOMETR
 
 typedef struct _p_MPAccess *MPAccess;
 struct _p_MPAccess {
-	DataBucket db;
-	DataField  *PField;
-	int        nfields;
-	/* USER: add reference to all possible material point types here */
-	int mp_std_field_idx;
-	int mp_stokes_field_idx;
-	int mp_stokespl_field_idx;
-	int mp_energy_field_idx;
+  DataBucket db;
+  DataField  *PField;
+  int        nfields;
+  /* USER: add reference to all possible material point types here */
+  int mp_std_field_idx;
+  int mp_stokes_field_idx;
+  int mp_stokespl_field_idx;
+  int mp_energy_field_idx;
 };
 
 

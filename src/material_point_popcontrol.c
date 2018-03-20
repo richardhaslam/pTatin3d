@@ -622,7 +622,7 @@ PetscErrorCode apply_mppc_nn_patch2(
 #endif
     ierr = MPI_Allreduce( &cells_needing_new_points64, &cells_needing_new_points_g64, 1, MPI_LONG, MPI_SUM, PetscObjectComm((PetscObject)da) );CHKERRQ(ierr);
     if (cells_needing_new_points_g64 == 0) {
-        //		PetscPrintf(PETSC_COMM_WORLD,"!! No population control required <global>!!\n");
+        //    PetscPrintf(PETSC_COMM_WORLD,"!! No population control required <global>!!\n");
         PetscFunctionReturn(0);
     }
     //PetscPrintf(PETSC_COMM_WORLD,"!! Population control required <global>!!\n");
@@ -1055,9 +1055,9 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
             wil = mp_std[p32].wil;
             if (wil == -2) {
 
-				DataBucketRemovePointAtIndex(db,p32);
-				DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
-				p32--; /* check replacement point */
+        DataBucketRemovePointAtIndex(db,p32);
+        DataBucketGetSizes(db,&npoints32,0,0); /* you need to update npoints as the list size decreases! */
+        p32--; /* check replacement point */
                 mp_std = PField->data;
             }
         }

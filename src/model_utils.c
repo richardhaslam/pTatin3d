@@ -71,9 +71,9 @@ PetscErrorCode MPntGetField_global_element_nInJnKindex(DM da, MPntStd *material_
     si = si/2;
     sj = sj/2;
     sk = sk/2;
-    //	lmx -= si;
-    //	lmy -= sj;
-    //	lmz -= sk;
+    //  lmx -= si;
+    //  lmy -= sj;
+    //  lmz -= sk;
     //global/localrank = mx*my*k + mx*j + i;
     lk = (PetscInt)localeid/(lmx*lmy);
     lj = (PetscInt)(localeid - lk*(lmx*lmy))/lmx;
@@ -139,31 +139,31 @@ PetscErrorCode DMDAConvertLocalElementIndex2LocalnInJnK(DM da,PetscInt localeid,
     if (nJ) { *nJ = lj; }
     if (nI) { *nI = li; }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAConvertLocalNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
-	PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
-	PetscErrorCode ierr;
+  PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
-	ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMDAGetCorners(da,&si,&sj,&sk,&lnx,&lny,&lnz);CHKERRQ(ierr);
 
-	//global/localrank = mx*my*k + mx*j + i;
-	lk = (PetscInt)localnid/(lnx*lny);
-	lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
-	li = localnid - lk*(lnx*lny) - lj*lnx;
+  //global/localrank = mx*my*k + mx*j + i;
+  lk = (PetscInt)localnid/(lnx*lny);
+  lj = (PetscInt)(localnid - lk*(lnx*lny))/lnx;
+  li = localnid - lk*(lnx*lny) - lj*lnx;
 
-	if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
-	if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
-	if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
-	if (nK) { *nK = lk + sk; }
-	if (nJ) { *nJ = lj + sj; }
-	if (nI) { *nI = li + si; }
+  if ( (li < 0) || (li >= lnx) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nI computed incorrectly"); }
+  if ( (lj < 0) || (lj >= lny) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nJ computed incorrectly"); }
+  if ( (lk < 0) || (lk >= lnz) ) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"nK computed incorrectly"); }
+  if (nK) { *nK = lk + sk; }
+  if (nJ) { *nJ = lj + sj; }
+  if (nI) { *nI = li + si; }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
@@ -195,31 +195,31 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
     const char default_opt[],
     PetscBool essential)
 {
-	PetscBool flg;
-	PetscErrorCode ierr;
+  PetscBool flg;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscOptionsGetReal(NULL,NULL,option,val,&flg);CHKERRQ(ierr);
-	if (essential) {
-		if (!flg) {
-			if (!default_opt) {
-				SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"ModelOptionMissing(%s): \n\t\t%s ",option,error);
-			} else {
-				SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"ModelOptionMissing(%s): \n\t\t%s : Suggested default values %s ",option,error,default_opt);
-			}
-		}
-	}
-	PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetReal(NULL,NULL,option,val,&flg);CHKERRQ(ierr);
+  if (essential) {
+    if (!flg) {
+      if (!default_opt) {
+        SETERRQ2(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"ModelOptionMissing(%s): \n\t\t%s ",option,error);
+      } else {
+        SETERRQ3(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"ModelOptionMissing(%s): \n\t\t%s : Suggested default values %s ",option,error,default_opt);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
 }
 
 /* Absolute value for double in C - it's called fabs(double a) or PetscAbsReal(PetscRea a) */
 PetscReal absolute(PetscReal a)
 {
-	if (a < 0) {
+  if (a < 0) {
         return(-1.0 * a);
-	} else {
-		return(a);
-	}
+  } else {
+    return(a);
+  }
 }
 
 /*
@@ -229,52 +229,52 @@ PetscReal absolute(PetscReal a)
 */
 PetscErrorCode detrend(PetscReal array[],PetscInt n)
 {
-	PetscReal x,y,a,b;
-	PetscReal sy = 0.0,sxy = 0.0,sxx = 0.0;
-	PetscInt  i;
+  PetscReal x,y,a,b;
+  PetscReal sy = 0.0,sxy = 0.0,sxx = 0.0;
+  PetscInt  i;
 
-	for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0) {
-		y = array[i];
-		sy += y;
-		sxy += x * y;
-		sxx += x * x;
-	}
-	a = sxy/sxx;
-	b = sy/(PetscReal)n;
+  for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0) {
+    y = array[i];
+    sy += y;
+    sxy += x * y;
+    sxx += x * x;
+  }
+  a = sxy/sxx;
+  b = sy/(PetscReal)n;
 
-	for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0) {
-		array[i] -= (a*x+b);
-	}
-	PetscFunctionReturn(0);
+  for (i=0, x=(-n/2.0+0.5); i<n; i++, x+=1.0) {
+    array[i] -= (a*x+b);
+  }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 {
-	PetscInt       i;
-	PetscReal      maxi;
+  PetscInt       i;
+  PetscReal      maxi;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	srand(seed);
-	rnoise[0] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+  srand(seed);
+  rnoise[0] = 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
 
-	for (i=1; i<n; i++) {
-		rnoise[i] = rnoise[i-1] + 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
-	}
+  for (i=1; i<n; i++) {
+    rnoise[i] = rnoise[i-1] + 2.0 * rand()/(RAND_MAX+1.0) - 1.0;
+  }
 
-	detrend(rnoise,n);
+  detrend(rnoise,n);
 
-	maxi = 0.0;
-	for (i=1; i<n; i++) {
-		if (PetscAbsReal(rnoise[i]) > maxi) {
-			maxi = PetscAbsReal(rnoise[i]);
-		}
-	}
-	for (i=1; i<n; i++) {
-		rnoise[i] /= maxi;
-	}
+  maxi = 0.0;
+  for (i=1; i<n; i++) {
+    if (PetscAbsReal(rnoise[i]) > maxi) {
+      maxi = PetscAbsReal(rnoise[i]);
+    }
+  }
+  for (i=1; i<n; i++) {
+    rnoise[i] /= maxi;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx)
@@ -283,8 +283,8 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
     PetscInt i,klay,nlt;
     PetscReal y,yldep,dtemp;
 
-		thermalparams = (DMDA_thermalfield_init_params*)ctx;
-		y   = pos[1] * thermalparams->lscale;
+    thermalparams = (DMDA_thermalfield_init_params*)ctx;
+    y   = pos[1] * thermalparams->lscale;
     nlt = thermalparams->nlayers;
 //  Which layer contains the current node?
     klay = 0;
@@ -313,166 +313,166 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
 
 PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 {
-	DM              cda;
-	Vec             gcoords;
-	PetscReal       *LA_gcoords;
-	PetscInt        nel,nen,e,p;
-	const PetscInt  *el_nidx;
-	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	PetscInt        ngp;
-	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
-	PetscReal       _value,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
-	PetscErrorCode  ierr;
+  DM              cda;
+  Vec             gcoords;
+  PetscReal       *LA_gcoords;
+  PetscInt        nel,nen,e,p;
+  const PetscInt  *el_nidx;
+  PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+  PetscInt        ngp;
+  PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+  PetscReal       _value,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* setup quadrature */
-	ngp = 27;
-	P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
+  /* setup quadrature */
+  ngp = 27;
+  P3D_prepare_elementQ2(ngp,WEIGHT,XI,NI,GNI);
 
-	/* setup for coords */
-	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
-	_value = 0.0;
-	for (e=0; e<nel; e++) {
-		PetscReal el_vol;
+  _value = 0.0;
+  for (e=0; e<nel; e++) {
+    PetscReal el_vol;
 
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
-		P3D_evaluate_geometry_elementQ2(ngp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+    P3D_evaluate_geometry_elementQ2(ngp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
 
-		el_vol = 0.0;
-		for (p=0; p<ngp; p++) {
-			el_vol = el_vol + 1.0 * WEIGHT[p] * detJ[p];
-		}
-		_value += el_vol;
-	}
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+    el_vol = 0.0;
+    for (p=0; p<ngp; p++) {
+      el_vol = el_vol + 1.0 * WEIGHT[p] * detJ[p];
+    }
+    _value += el_vol;
+  }
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&_value,value,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c)
 {
-	c->mz = 1;
-	PetscFunctionReturn(0);
+  c->mz = 1;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 {
-	PhysCompStokes stokes;
-	DM             stokes_pack,dav,dap;
-	PetscReal      Lz,min_dl[3],max_dl[3];
-	PetscBool      geom_max;
-	PetscErrorCode ierr;
+  PhysCompStokes stokes;
+  DM             stokes_pack,dav,dap;
+  PetscReal      Lz,min_dl[3],max_dl[3];
+  PetscBool      geom_max;
+  PetscErrorCode ierr;
 
-	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
-	stokes_pack = stokes->stokes_pack;
-	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
-	/* determine min/max dx,dy,dz for mesh */
-	ierr = DMDAComputeQ2ElementBoundingBox(dav,min_dl,max_dl);CHKERRQ(ierr);
+  /* determine min/max dx,dy,dz for mesh */
+  ierr = DMDAComputeQ2ElementBoundingBox(dav,min_dl,max_dl);CHKERRQ(ierr);
 
-	geom_max = PETSC_FALSE;
-	Lz = 1.0e32;
-	Lz = PetscMin(Lz,min_dl[0]);
-	Lz = PetscMin(Lz,min_dl[1]);
+  geom_max = PETSC_FALSE;
+  Lz = 1.0e32;
+  Lz = PetscMin(Lz,min_dl[0]);
+  Lz = PetscMin(Lz,min_dl[1]);
 
-	PetscOptionsGetBool(NULL,NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,NULL);
-	if (geom_max) {
-		Lz = 1.0e-32;
-		Lz = PetscMax(Lz,max_dl[0]);
-		Lz = PetscMax(Lz,max_dl[1]);
-	}
+  PetscOptionsGetBool(NULL,NULL,"-ptatin_geometry_quasi_2d_max",&geom_max,NULL);
+  if (geom_max) {
+    Lz = 1.0e-32;
+    Lz = PetscMax(Lz,max_dl[0]);
+    Lz = PetscMax(Lz,max_dl[1]);
+  }
 
-	if (geom_max) {
-		PetscPrintf(PETSC_COMM_WORLD,"[[pTatin3d_DefineVelocityMeshGeometryQuasi2D]] Using Lz = %1.4e from max(dx,dy) \n",Lz );
-	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"[[pTatin3d_DefineVelocityMeshGeometryQuasi2D]] Using Lz = %1.4e from min(dx,dy) \n",Lz );
-	}
+  if (geom_max) {
+    PetscPrintf(PETSC_COMM_WORLD,"[[pTatin3d_DefineVelocityMeshGeometryQuasi2D]] Using Lz = %1.4e from max(dx,dy) \n",Lz );
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"[[pTatin3d_DefineVelocityMeshGeometryQuasi2D]] Using Lz = %1.4e from min(dx,dy) \n",Lz );
+  }
 
-	ierr = DMDASetUniformCoordinates1D(dav,2,0.0,Lz);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates1D(dav,2,0.0,Lz);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 {
-	DM              cda;
-	Vec             gcoords;
-	PetscReal       *LA_gcoords;
-	PetscInt        nel,nen,e;
-	const PetscInt  *el_nidx;
-	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	PetscReal       dx,dy,dz,dl_min[3],dl_max[3];
-	PetscErrorCode  ierr;
+  DM              cda;
+  Vec             gcoords;
+  PetscReal       *LA_gcoords;
+  PetscInt        nel,nen,e;
+  const PetscInt  *el_nidx;
+  PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+  PetscReal       dx,dy,dz,dl_min[3],dl_max[3];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* setup for coords */
-	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
-	dl_min[0] = dl_min[1] = dl_min[2] = PETSC_MAX_REAL;
-	dl_max[0] = dl_max[1] = dl_max[2] = PETSC_MIN_REAL;
+  dl_min[0] = dl_min[1] = dl_min[2] = PETSC_MAX_REAL;
+  dl_max[0] = dl_max[1] = dl_max[2] = PETSC_MIN_REAL;
 
-	for (e=0;e<nel;e++) {
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+  for (e=0;e<nel;e++) {
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
 
-		dx = fabs( el_coords[3*Q2_FACE_NODE_EAST +0] - el_coords[3*Q2_FACE_NODE_WEST +0]  );
-		dy = fabs( el_coords[3*Q2_FACE_NODE_NORTH+1] - el_coords[3*Q2_FACE_NODE_SOUTH+1] );
-		dz = fabs( el_coords[3*Q2_FACE_NODE_FRONT+2] - el_coords[3*Q2_FACE_NODE_BACK +2]  );
+    dx = fabs( el_coords[3*Q2_FACE_NODE_EAST +0] - el_coords[3*Q2_FACE_NODE_WEST +0]  );
+    dy = fabs( el_coords[3*Q2_FACE_NODE_NORTH+1] - el_coords[3*Q2_FACE_NODE_SOUTH+1] );
+    dz = fabs( el_coords[3*Q2_FACE_NODE_FRONT+2] - el_coords[3*Q2_FACE_NODE_BACK +2]  );
 
-		if (dx < dl_min[0]) { dl_min[0] = dx; }
-		if (dy < dl_min[1]) { dl_min[1] = dy; }
-		if (dz < dl_min[2]) { dl_min[2] = dz; }
+    if (dx < dl_min[0]) { dl_min[0] = dx; }
+    if (dy < dl_min[1]) { dl_min[1] = dy; }
+    if (dz < dl_min[2]) { dl_min[2] = dz; }
 
-		if (dx > dl_max[0]) { dl_max[0] = dx; }
-		if (dy > dl_max[1]) { dl_max[1] = dy; }
-		if (dz > dl_max[2]) { dl_max[2] = dz; }
+    if (dx > dl_max[0]) { dl_max[0] = dx; }
+    if (dy > dl_max[1]) { dl_max[1] = dy; }
+    if (dz > dl_max[2]) { dl_max[2] = dz; }
 
-	}
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
-	ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(dl_min,gmin,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
+  ierr = MPI_Allreduce(dl_max,gmax,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dm));CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 {
-	DM              cda;
-	Vec             gcoords;
-	PetscReal       *LA_gcoords;
-	PetscInt        nel,nen,e,k;
-	const PetscInt  *el_nidx;
-	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	PetscReal       xp,yp,zp,min[3],max[3];
-	PetscErrorCode  ierr;
+  DM              cda;
+  Vec             gcoords;
+  PetscReal       *LA_gcoords;
+  PetscInt        nel,nen,e,k;
+  const PetscInt  *el_nidx;
+  PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+  PetscReal       xp,yp,zp,min[3],max[3];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* setup for coords */
-	ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(dm,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dm,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dm,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
-	min[0] = min[1] = min[2] = PETSC_MAX_REAL;
-	max[0] = max[1] = max[2] = PETSC_MIN_REAL;
+  min[0] = min[1] = min[2] = PETSC_MAX_REAL;
+  max[0] = max[1] = max[2] = PETSC_MIN_REAL;
 
-	for (e=0;e<nel;e++) {
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+  for (e=0;e<nel;e++) {
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
 
-		for (k=0; k<nen; k++) {
+    for (k=0; k<nen; k++) {
       xp = el_coords[3*k];
       yp = el_coords[3*k+1];
       zp = el_coords[3*k+2];
@@ -486,18 +486,18 @@ PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gm
       if (zp > max[2]) { max[2] = zp; }
     }
 
-	}
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
   gmin[0] = min[0];
   gmin[1] = min[1];
   gmin[2] = min[2];
 
-	gmax[0] = max[0];
-	gmax[1] = max[1];
-	gmax[2] = max[2];
+  gmax[0] = max[0];
+  gmax[1] = max[1];
+  gmax[2] = max[2];
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -507,333 +507,333 @@ PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gm
 */
 PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 {
-	PetscErrorCode ierr;
-	Vec natural_field,natural_field_red;
-	VecScatter ctx;
-	FILE *fp;
-	PetscInt M,N,P,dofs;
-	const char *oname = NULL;
-	MPI_Comm comm;
-	PetscMPIInt rank;
-	PetscInt i,n;
-	PetscScalar *LA_field;
+  PetscErrorCode ierr;
+  Vec natural_field,natural_field_red;
+  VecScatter ctx;
+  FILE *fp;
+  PetscInt M,N,P,dofs;
+  const char *oname = NULL;
+  MPI_Comm comm;
+  PetscMPIInt rank;
+  PetscInt i,n;
+  PetscScalar *LA_field;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDACreateNaturalVector(dm,&natural_field);CHKERRQ(ierr);
-	ierr = DMDAGlobalToNaturalBegin(dm,field,INSERT_VALUES,natural_field);CHKERRQ(ierr);
-	ierr = DMDAGlobalToNaturalEnd(dm,field,INSERT_VALUES,natural_field);CHKERRQ(ierr);
+  ierr = DMDACreateNaturalVector(dm,&natural_field);CHKERRQ(ierr);
+  ierr = DMDAGlobalToNaturalBegin(dm,field,INSERT_VALUES,natural_field);CHKERRQ(ierr);
+  ierr = DMDAGlobalToNaturalEnd(dm,field,INSERT_VALUES,natural_field);CHKERRQ(ierr);
 
-	ierr = VecScatterCreateToZero(natural_field,&ctx,&natural_field_red);CHKERRQ(ierr);
-	ierr = VecScatterBegin(ctx,natural_field,natural_field_red,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterEnd(ctx,natural_field,natural_field_red,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-	ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreateToZero(natural_field,&ctx,&natural_field_red);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx,natural_field,natural_field_red,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,natural_field,natural_field_red,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 
-	ierr = VecDestroy(&natural_field);CHKERRQ(ierr);
+  ierr = VecDestroy(&natural_field);CHKERRQ(ierr);
 
-	/*
-	 # DMDAFieldViewAscii:
-	 # DMDA Vec (name)
-	 # M N P x y z
-	 # dofs x
-	*/
-	ierr = DMDAGetInfo(dm,0,&M,&N,&P, 0,0,0, &dofs,0, 0,0,0, 0);CHKERRQ(ierr);
-	ierr = PetscObjectGetName((PetscObject)field,&oname);CHKERRQ(ierr);
-	ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
-	ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  /*
+   # DMDAFieldViewAscii:
+   # DMDA Vec (name)
+   # M N P x y z
+   # dofs x
+  */
+  ierr = DMDAGetInfo(dm,0,&M,&N,&P, 0,0,0, &dofs,0, 0,0,0, 0);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject)field,&oname);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)dm,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
-	if (rank == 0) {
+  if (rank == 0) {
 
-		PetscFOpen(PETSC_COMM_SELF,filename,"w",&fp);
-		if (fp == NULL) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open file %s on rank 0",filename); }
+    PetscFOpen(PETSC_COMM_SELF,filename,"w",&fp);
+    if (fp == NULL) { SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_USER,"Unable to open file %s on rank 0",filename); }
 
-		PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDAFieldViewAscii\n");
-		if (oname) {
-			PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec %s\n",oname);
-		} else {
-			PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec\n");
-		}
-		PetscFPrintf(PETSC_COMM_SELF,fp,"# M N P %D %D %D\n",M,N,P);
-		PetscFPrintf(PETSC_COMM_SELF,fp,"# dofs %D\n",dofs);
-		ierr = VecGetSize(natural_field_red,&n);CHKERRQ(ierr);
-		ierr = VecGetArray(natural_field_red,&LA_field);CHKERRQ(ierr);
-		for (i=0; i<n; i++) {
-			PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e\n",LA_field[i]);
-		}
-		ierr = VecRestoreArray(natural_field_red,&LA_field);CHKERRQ(ierr);
+    PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDAFieldViewAscii\n");
+    if (oname) {
+      PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec %s\n",oname);
+    } else {
+      PetscFPrintf(PETSC_COMM_SELF,fp,"# DMDA Vec\n");
+    }
+    PetscFPrintf(PETSC_COMM_SELF,fp,"# M N P %D %D %D\n",M,N,P);
+    PetscFPrintf(PETSC_COMM_SELF,fp,"# dofs %D\n",dofs);
+    ierr = VecGetSize(natural_field_red,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(natural_field_red,&LA_field);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      PetscFPrintf(PETSC_COMM_SELF,fp,"%1.6e\n",LA_field[i]);
+    }
+    ierr = VecRestoreArray(natural_field_red,&LA_field);CHKERRQ(ierr);
 
-		PetscFClose(PETSC_COMM_SELF,fp);
-	}
-	ierr = VecDestroy(&natural_field_red);CHKERRQ(ierr);
+    PetscFClose(PETSC_COMM_SELF,fp);
+  }
+  ierr = VecDestroy(&natural_field_red);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 {
-	DM              stokes_pack,dav,dap,cda;
-	Vec             gcoords;
-	PetscReal       *LA_gcoords;
-	PetscInt        nel,nen,e,q;
-	const PetscInt  *el_nidx;
-	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	PetscInt        nqp;
-	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
-	PetscReal       detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
-	QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
-	PetscReal         *vol_col,*rho_col;
-	PetscInt          idx,nI,nJ,nK,MX,MY,MZ;
-	PetscErrorCode  ierr;
+  DM              stokes_pack,dav,dap,cda;
+  Vec             gcoords;
+  PetscReal       *LA_gcoords;
+  PetscInt        nel,nen,e,q;
+  const PetscInt  *el_nidx;
+  PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+  PetscInt        nqp;
+  PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+  PetscReal       detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+  QPntVolCoefStokes *all_gausspoints,*cell_gausspoints;
+  PetscReal         *vol_col,*rho_col;
+  PetscInt          idx,nI,nJ,nK,MX,MY,MZ;
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* setup quadrature */
-	nqp = 27;
-	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
+  /* setup quadrature */
+  nqp = 27;
+  P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
 
-	/* get dav */
-	stokes_pack = stokes->stokes_pack;
-	ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
+  /* get dav */
+  stokes_pack = stokes->stokes_pack;
+  ierr = DMCompositeGetEntries(stokes_pack,&dav,&dap);CHKERRQ(ierr);
 
-	/* setup for coords */
-	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
-	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&el_nidx);CHKERRQ(ierr);
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&el_nidx);CHKERRQ(ierr);
 
-	/* quadrature for all cells */
-	ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
+  /* quadrature for all cells */
+  ierr = VolumeQuadratureGetAllCellData_Stokes(stokes->volQ,&all_gausspoints);CHKERRQ(ierr);
 
-	ierr = DMDAGetSizeElementQ2(dav,&MX,&MY,&MZ);CHKERRQ(ierr);
+  ierr = DMDAGetSizeElementQ2(dav,&MX,&MY,&MZ);CHKERRQ(ierr);
 
-	PetscMalloc(sizeof(PetscReal)*MX*MZ,&vol_col);  PetscMemzero(vol_col,sizeof(PetscReal)*MX*MZ);
-	PetscMalloc(sizeof(PetscReal)*MX*MZ,&rho_col);  PetscMemzero(rho_col,sizeof(PetscReal)*MX*MZ);
+  PetscMalloc(sizeof(PetscReal)*MX*MZ,&vol_col);  PetscMemzero(vol_col,sizeof(PetscReal)*MX*MZ);
+  PetscMalloc(sizeof(PetscReal)*MX*MZ,&rho_col);  PetscMemzero(rho_col,sizeof(PetscReal)*MX*MZ);
 
-	for (e=0; e<nel; e++) {
-		PetscReal el_rho,el_vol;
+  for (e=0; e<nel; e++) {
+    PetscReal el_rho,el_vol;
 
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
-		P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+    P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
 
-		ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
+    ierr = VolumeQuadratureGetCellData_Stokes(stokes->volQ,all_gausspoints,e,&cell_gausspoints);CHKERRQ(ierr);
 
-		el_rho = 0.0;
-		el_vol = 0.0;
-		for (q=0; q<nqp; q++) {
-			el_rho = el_rho + cell_gausspoints[q].rho * WEIGHT[q] * detJ[q];
-			el_vol = el_vol + 1.0 * WEIGHT[q] * detJ[q];
-		}
+    el_rho = 0.0;
+    el_vol = 0.0;
+    for (q=0; q<nqp; q++) {
+      el_rho = el_rho + cell_gausspoints[q].rho * WEIGHT[q] * detJ[q];
+      el_vol = el_vol + 1.0 * WEIGHT[q] * detJ[q];
+    }
 
-		ierr = DMDAConvertLocalElementIndex2GlobalnInJnK(dav,e,&nI,&nJ,&nK);CHKERRQ(ierr);
-		idx = nI + nK*MX;
-		rho_col[idx] = rho_col[idx] + el_rho;
-		vol_col[idx] = vol_col[idx] + el_vol;
+    ierr = DMDAConvertLocalElementIndex2GlobalnInJnK(dav,e,&nI,&nJ,&nK);CHKERRQ(ierr);
+    idx = nI + nK*MX;
+    rho_col[idx] = rho_col[idx] + el_rho;
+    vol_col[idx] = vol_col[idx] + el_vol;
 
-	}
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	for (e=0; e<MX*MZ; e++) {
-		rho_col[e] = rho_col[e] / vol_col[e];
-	}
+  for (e=0; e<MX*MZ; e++) {
+    rho_col[e] = rho_col[e] / vol_col[e];
+  }
 
-	PetscFree(vol_col);
-	PetscFree(rho_col);
+  PetscFree(vol_col);
+  PetscFree(rho_col);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ModelUtilsComputeAiryIsostaticHeights(PhysCompStokes stokes)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
 
-	ierr = ModelUtilsComputeAiryIsostaticHeights_SEQ(stokes);CHKERRQ(ierr);
+  ierr = ModelUtilsComputeAiryIsostaticHeights_SEQ(stokes);CHKERRQ(ierr);
 
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal gmin[],PetscReal gmax[])
 {
-	MPAccess         mpX;
-	int              p,n_mpoints;
-	PetscReal        min[3],max[3];
-	double           *pos_p;
-	PetscErrorCode   ierr;
+  MPAccess         mpX;
+  int              p,n_mpoints;
+  PetscReal        min[3],max[3];
+  double           *pos_p;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* initialize */
-	min[0] = PETSC_MAX_REAL;
-	min[1] = PETSC_MAX_REAL;
-	min[2] = PETSC_MAX_REAL;
-	max[0] = PETSC_MIN_REAL;
-	max[1] = PETSC_MIN_REAL;
-	max[2] = PETSC_MIN_REAL;
+  /* initialize */
+  min[0] = PETSC_MAX_REAL;
+  min[1] = PETSC_MAX_REAL;
+  min[2] = PETSC_MAX_REAL;
+  max[0] = PETSC_MIN_REAL;
+  max[1] = PETSC_MIN_REAL;
+  max[2] = PETSC_MIN_REAL;
 
-	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
-	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mpoints; p++) {
-		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  for (p=0; p<n_mpoints; p++) {
+    ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
 
-		min[0] = PetscMin(min[0],pos_p[0]);
-		min[1] = PetscMin(min[1],pos_p[1]);
-		min[2] = PetscMin(min[2],pos_p[2]);
+    min[0] = PetscMin(min[0],pos_p[0]);
+    min[1] = PetscMin(min[1],pos_p[1]);
+    min[2] = PetscMin(min[2],pos_p[2]);
 
-		max[0] = PetscMax(max[0],pos_p[0]);
-		max[1] = PetscMax(max[1],pos_p[1]);
-		max[2] = PetscMax(max[2],pos_p[2]);
-	}
-	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+    max[0] = PetscMax(max[0],pos_p[0]);
+    max[1] = PetscMax(max[1],pos_p[1]);
+    max[2] = PetscMax(max[2],pos_p[2]);
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscReal gmin[],PetscReal gmax[])
 {
-	MPAccess         mpX;
-	int              p,n_mpoints;
-	PetscReal        min[3],max[3];
-	double           *pos_p;
-	PetscErrorCode   ierr;
+  MPAccess         mpX;
+  int              p,n_mpoints;
+  PetscReal        min[3],max[3];
+  double           *pos_p;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* initialize */
-	min[0] = PETSC_MAX_REAL;
-	min[1] = PETSC_MAX_REAL;
-	min[2] = PETSC_MAX_REAL;
-	max[0] = PETSC_MIN_REAL;
-	max[1] = PETSC_MIN_REAL;
-	max[2] = PETSC_MIN_REAL;
+  /* initialize */
+  min[0] = PETSC_MAX_REAL;
+  min[1] = PETSC_MAX_REAL;
+  min[2] = PETSC_MAX_REAL;
+  max[0] = PETSC_MIN_REAL;
+  max[1] = PETSC_MIN_REAL;
+  max[2] = PETSC_MIN_REAL;
 
-	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
-	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mpoints; p++) {
-		PetscReal p_i, range_min, range_max;
-		PetscInt  idx;
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  for (p=0; p<n_mpoints; p++) {
+    PetscReal p_i, range_min, range_max;
+    PetscInt  idx;
 
-		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
 
-		idx = 0;
-		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
-		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
-		p_i = pos_p[idx];
-		if ( (p_i >= range_min) && (p_i <= range_max) ) {
-			min[idx] = PetscMin(min[idx],p_i);
-			max[idx] = PetscMax(max[idx],p_i);
-		}
+    idx = 0;
+    range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+    range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+    p_i = pos_p[idx];
+    if ( (p_i >= range_min) && (p_i <= range_max) ) {
+      min[idx] = PetscMin(min[idx],p_i);
+      max[idx] = PetscMax(max[idx],p_i);
+    }
 
-		idx = 1;
-		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
-		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
-		p_i = pos_p[idx];
-		if ( (p_i >= range_min) && (p_i <= range_max) ) {
-			min[idx] = PetscMin(min[idx],p_i);
-			max[idx] = PetscMax(max[idx],p_i);
-		}
+    idx = 1;
+    range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+    range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+    p_i = pos_p[idx];
+    if ( (p_i >= range_min) && (p_i <= range_max) ) {
+      min[idx] = PetscMin(min[idx],p_i);
+      max[idx] = PetscMax(max[idx],p_i);
+    }
 
-		idx = 2;
-		range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
-		range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
-		p_i = pos_p[idx];
-		if ( (p_i >= range_min) && (p_i <= range_max) ) {
-			min[idx] = PetscMin(min[idx],p_i);
-			max[idx] = PetscMax(max[idx],p_i);
-		}
+    idx = 2;
+    range_min = -1.0e32; if (rmin) { range_min = rmin[idx]; }
+    range_max =  1.0e32; if (rmax) { range_max = rmax[idx]; }
+    p_i = pos_p[idx];
+    if ( (p_i >= range_min) && (p_i <= range_max) ) {
+      min[idx] = PetscMin(min[idx],p_i);
+      max[idx] = PetscMax(max[idx],p_i);
+    }
 
-	}
-	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscInt region_idx,PetscReal gmin[],PetscReal gmax[])
 {
-	MPAccess         mpX;
-	int              p,n_mpoints;
-	PetscReal        min[3],max[3];
-	double           *pos_p;
-	int              region_p;
-	PetscInt         found_region = 0,found_region_g;
-	PetscErrorCode   ierr;
+  MPAccess         mpX;
+  int              p,n_mpoints;
+  PetscReal        min[3],max[3];
+  double           *pos_p;
+  int              region_p;
+  PetscInt         found_region = 0,found_region_g;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* initialize */
-	min[0] = PETSC_MAX_REAL;
-	min[1] = PETSC_MAX_REAL;
-	min[2] = PETSC_MAX_REAL;
-	max[0] = PETSC_MIN_REAL;
-	max[1] = PETSC_MIN_REAL;
-	max[2] = PETSC_MIN_REAL;
+  /* initialize */
+  min[0] = PETSC_MAX_REAL;
+  min[1] = PETSC_MAX_REAL;
+  min[2] = PETSC_MAX_REAL;
+  max[0] = PETSC_MIN_REAL;
+  max[1] = PETSC_MIN_REAL;
+  max[2] = PETSC_MIN_REAL;
 
-	DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
-	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mpoints; p++) {
-		PetscReal p_i, range_min, range_max;
-		PetscInt  idx;
+  DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  for (p=0; p<n_mpoints; p++) {
+    PetscReal p_i, range_min, range_max;
+    PetscInt  idx;
 
-		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
-		ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
 
-		//if ( (region_idx == -1) && (region_p != region_idx) ) { continue; }
+    //if ( (region_idx == -1) && (region_p != region_idx) ) { continue; }
         if (region_p != region_idx) {
             if (region_idx != -1) {
                 continue;
             }
         }
 
-		idx = 0;
-		range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
-		range_max = PETSC_MAX_REAL; if (rmax) { range_max = rmax[idx]; }
-		p_i = pos_p[idx];
-		if ( (p_i >= range_min) && (p_i <= range_max) ) {
-			min[idx] = PetscMin(min[idx],p_i);
-			max[idx] = PetscMax(max[idx],p_i);
-		}
+    idx = 0;
+    range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
+    range_max = PETSC_MAX_REAL; if (rmax) { range_max = rmax[idx]; }
+    p_i = pos_p[idx];
+    if ( (p_i >= range_min) && (p_i <= range_max) ) {
+      min[idx] = PetscMin(min[idx],p_i);
+      max[idx] = PetscMax(max[idx],p_i);
+    }
 
-		idx = 1;
-		range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
-		range_max = PETSC_MAX_REAL; if (rmax) { range_max = rmax[idx]; }
-		p_i = pos_p[idx];
-		if ( (p_i >= range_min) && (p_i <= range_max) ) {
-			min[idx] = PetscMin(min[idx],p_i);
-			max[idx] = PetscMax(max[idx],p_i);
-		}
+    idx = 1;
+    range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
+    range_max = PETSC_MAX_REAL; if (rmax) { range_max = rmax[idx]; }
+    p_i = pos_p[idx];
+    if ( (p_i >= range_min) && (p_i <= range_max) ) {
+      min[idx] = PetscMin(min[idx],p_i);
+      max[idx] = PetscMax(max[idx],p_i);
+    }
 
-		idx = 2;
-		range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
-		range_max = PETSC_MAX_REAL; if (rmax) { range_max = rmax[idx]; }
-		p_i = pos_p[idx];
-		if ( (p_i >= range_min) && (p_i <= range_max) ) {
-			min[idx] = PetscMin(min[idx],p_i);
-			max[idx] = PetscMax(max[idx],p_i);
-		}
+    idx = 2;
+    range_min = PETSC_MIN_REAL; if (rmin) { range_min = rmin[idx]; }
+    range_max = PETSC_MAX_REAL; if (rmax) { range_max = rmax[idx]; }
+    p_i = pos_p[idx];
+    if ( (p_i >= range_min) && (p_i <= range_max) ) {
+      min[idx] = PetscMin(min[idx],p_i);
+      max[idx] = PetscMax(max[idx],p_i);
+    }
 
-		found_region = 1;
-	}
-	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+    found_region = 1;
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(min,gmin,3,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(max,gmax,3,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	ierr = MPI_Allreduce(&found_region,&found_region_g,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&found_region,&found_region_g,1,MPIU_INT,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	/* no particles of the desired region were found on any processors, set min/max accordingly */
-	if (found_region_g == 0) {
-		gmin[0] = gmin[1] = gmin[2] = NAN;
-		gmax[0] = gmax[1] = gmax[2] = NAN;
-	}
+  /* no particles of the desired region were found on any processors, set min/max accordingly */
+  if (found_region_g == 0) {
+    gmin[0] = gmin[1] = gmin[2] = NAN;
+    gmax[0] = gmax[1] = gmax[2] = NAN;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal min[],PetscReal max[])
@@ -961,9 +961,9 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
     ierr = DMDAVecRestoreArray(cda,coords,&LA_coords);CHKERRQ(ierr);
 
     if (min) { ierr = MPI_Allreduce(gmin,min,3,MPIU_REAL,MPIU_MIN,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
-	if (max) { ierr = MPI_Allreduce(gmax,max,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
+  if (max) { ierr = MPI_Allreduce(gmax,max,3,MPIU_REAL,MPIU_MAX,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr); }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal avg[])
@@ -1084,58 +1084,58 @@ PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType 
 
 PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *value_vol)
 {
-	DM              cda;
-	Vec             gcoords;
-	PetscScalar    *LA_gcoords;
-	PetscInt        nel,nen,e,i,p;
-	const PetscInt  *elnidx;
-	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
-	PetscInt        nqp;
-	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
-	PetscReal       el_v[3*Q2_NODES_PER_EL_3D];
-	PetscReal       _value_vol,_value_vrms,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+  DM              cda;
+  Vec             gcoords;
+  PetscScalar    *LA_gcoords;
+  PetscInt        nel,nen,e,i,p;
+  const PetscInt  *elnidx;
+  PetscReal       el_coords[3*Q2_NODES_PER_EL_3D];
+  PetscInt        nqp;
+  PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE];
+  PetscReal       el_v[3*Q2_NODES_PER_EL_3D];
+  PetscReal       _value_vol,_value_vrms,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
     Vec             v_local;
     PetscScalar     *LA_v;
-	PetscErrorCode  ierr;
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* setup quadrature */
-	nqp = 27;
-	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
+  /* setup quadrature */
+  nqp = 27;
+  P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
 
-	/* setup local coords */
-	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  /* setup local coords */
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	/* setup local velocity */
+  /* setup local velocity */
     ierr = DMGetLocalVector(dav,&v_local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(  dav,v,INSERT_VALUES,v_local);CHKERRQ(ierr);
     ierr = VecGetArray(v_local,&LA_v);CHKERRQ(ierr);
 
-	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
-	_value_vol  = 0.0;
-	_value_vrms = 0.0;
-	for (e=0; e<nel; e++) {
-		PetscReal el_vol,el_vrms;
+  _value_vol  = 0.0;
+  _value_vrms = 0.0;
+  for (e=0; e<nel; e++) {
+    PetscReal el_vol,el_vrms;
 
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
 
         ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx[nen*e],LA_v);CHKERRQ(ierr);
 
         P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI, detJ,dNudx,dNudy,dNudz);
 
-		el_vol = 0.0;
-		for (p=0; p<nqp; p++) {
-			el_vol = el_vol + 1.0 * WEIGHT[p] * detJ[p];
-		}
-		_value_vol += el_vol;
+    el_vol = 0.0;
+    for (p=0; p<nqp; p++) {
+      el_vol = el_vol + 1.0 * WEIGHT[p] * detJ[p];
+    }
+    _value_vol += el_vol;
 
-		el_vrms = 0.0;
-		for (p=0; p<nqp; p++) {
+    el_vrms = 0.0;
+    for (p=0; p<nqp; p++) {
             PetscReal vx_q,vy_q,vz_q;
 
             vx_q = vy_q = vz_q = 0.0;
@@ -1145,20 +1145,20 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
                 vz_q = vz_q + NI[p][i] * el_v[3*i + 2];
             }
 
-			el_vrms = el_vrms + WEIGHT[p] * (vx_q*vx_q + vy_q*vy_q + vz_q*vz_q) * detJ[p];
-		}
-		_value_vrms += el_vrms;
+      el_vrms = el_vrms + WEIGHT[p] * (vx_q*vx_q + vy_q*vy_q + vz_q*vz_q) * detJ[p];
+    }
+    _value_vrms += el_vrms;
 
-	}
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     ierr = VecRestoreArray(v_local,&LA_v);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dav,&v_local);CHKERRQ(ierr);
 
     ierr = MPI_Allreduce(&_value_vol, value_vol, 1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
     ierr = MPI_Allreduce(&_value_vrms,value_vrms,1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
-	//*value_vrms = PetscSqrtReal(*value_vrms);
+  //*value_vrms = PetscSqrtReal(*value_vrms);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1168,105 +1168,105 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
 */
 PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,PetscInt stress_type,PetscReal *value)
 {
-	DM              cda;
-	Vec             gcoords,sv_local,sp_local;
-	PetscScalar     *LA_gcoords,*LA_sv,*LA_sp;
-	PetscInt        nel,nen_u,nen_p,e,p,k;
-	const PetscInt  *elnidx_u;
-	const PetscInt  *elnidx_p;
-	PetscReal       el_coords[3*Q2_NODES_PER_EL_3D],el_v[3*Q2_NODES_PER_EL_3D],el_p[P_BASIS_FUNCTIONS];
-	PetscReal       ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
-	PetscInt        nqp;
-	PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
-	PetscReal       value_local,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
-	QPntVolCoefStokes *quadraturepoints,*cell_quadraturepoints;
-	PetscErrorCode    ierr;
+  DM              cda;
+  Vec             gcoords,sv_local,sp_local;
+  PetscScalar     *LA_gcoords,*LA_sv,*LA_sp;
+  PetscInt        nel,nen_u,nen_p,e,p,k;
+  const PetscInt  *elnidx_u;
+  const PetscInt  *elnidx_p;
+  PetscReal       el_coords[3*Q2_NODES_PER_EL_3D],el_v[3*Q2_NODES_PER_EL_3D],el_p[P_BASIS_FUNCTIONS];
+  PetscReal       ux[Q2_NODES_PER_EL_3D],uy[Q2_NODES_PER_EL_3D],uz[Q2_NODES_PER_EL_3D];
+  PetscInt        nqp;
+  PetscReal       WEIGHT[NQP],XI[NQP][3],NI[NQP][NPE],GNI[NQP][3][NPE],NIp[NQP][P_BASIS_FUNCTIONS];
+  PetscReal       value_local,detJ[NQP],dNudx[NQP][NPE],dNudy[NQP][NPE],dNudz[NQP][NPE];
+  QPntVolCoefStokes *quadraturepoints,*cell_quadraturepoints;
+  PetscErrorCode    ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	/* setup quadrature */
-	nqp = volQ->npoints;
-	P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
+  /* setup quadrature */
+  nqp = volQ->npoints;
+  P3D_prepare_elementQ2(nqp,WEIGHT,XI,NI,GNI);
 
-	/* setup local coords */
-	ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  /* setup local coords */
+  ierr = DMGetCoordinateDM(dav,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(dav,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	/* setup local velocity */
+  /* setup local velocity */
     ierr = DMGetLocalVector(dav,&sv_local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(  dav,sv,INSERT_VALUES,sv_local);CHKERRQ(ierr);
     ierr = VecGetArray(sv_local,&LA_sv);CHKERRQ(ierr);
 
-	/* setup local pressure */
+  /* setup local pressure */
     ierr = DMGetLocalVector(dap,&sp_local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(  dap,sp,INSERT_VALUES,sp_local);CHKERRQ(ierr);
     ierr = VecGetArray(sp_local,&LA_sp);CHKERRQ(ierr);
 
-	ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
-	ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dav,&nel,&nen_u,&elnidx_u);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(dap,&nel,&nen_p,&elnidx_p);CHKERRQ(ierr);
 
-	ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&quadraturepoints);CHKERRQ(ierr);
+  ierr = VolumeQuadratureGetAllCellData_Stokes(volQ,&quadraturepoints);CHKERRQ(ierr);
 
     value_local = 0.0;
-	for (e=0; e<nel; e++) {
-		PetscReal value_element;
+  for (e=0; e<nel; e++) {
+    PetscReal value_element;
 
-		ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
+    ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&elnidx_u[nen_u*e],LA_gcoords);CHKERRQ(ierr);
 
         ierr = DMDAGetVectorElementFieldQ2_3D(el_v,(PetscInt*)&elnidx_u[nen_u*e],LA_sv);CHKERRQ(ierr);
-		for (k=0; k<Q2_NODES_PER_EL_3D; k++ ) {
-			ux[k] = el_v[3*k  ];
-			uy[k] = el_v[3*k+1];
-			uz[k] = el_v[3*k+2];
-		}
+    for (k=0; k<Q2_NODES_PER_EL_3D; k++ ) {
+      ux[k] = el_v[3*k  ];
+      uy[k] = el_v[3*k+1];
+      uz[k] = el_v[3*k+2];
+    }
 
-		ierr = DMDAGetScalarElementField(el_p,nen_p,(PetscInt*)&elnidx_p[nen_p*e],LA_sp);CHKERRQ(ierr);
+    ierr = DMDAGetScalarElementField(el_p,nen_p,(PetscInt*)&elnidx_p[nen_p*e],LA_sp);CHKERRQ(ierr);
 
         ierr = VolumeQuadratureGetCellData_Stokes(volQ,quadraturepoints,e,&cell_quadraturepoints);CHKERRQ(ierr);
 
-		for (p=0; p<nqp; p++) {
-			PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
-			ConstructNi_pressure(xip,el_coords,NIp[p]);
-		}
+    for (p=0; p<nqp; p++) {
+      PetscScalar xip[] = { XI[p][0], XI[p][1], XI[p][2] };
+      ConstructNi_pressure(xip,el_coords,NIp[p]);
+    }
 
         P3D_evaluate_geometry_elementQ2(nqp,el_coords,GNI,detJ,dNudx,dNudy,dNudz);
 
-		value_element = 0.0;
-		for (p=0; p<nqp; p++) {
-			PetscReal eta_qp,pressure_qp,E_qp[3][3],sigma_qp[3][3],phi_qp;
+    value_element = 0.0;
+    for (p=0; p<nqp; p++) {
+      PetscReal eta_qp,pressure_qp,E_qp[3][3],sigma_qp[3][3],phi_qp;
       /* PetscReal divu_qp */
             PetscInt ii,jj;
 
-			/* pressure */
-			pressure_qp = 0.0;
-			for (k=0; k<P_BASIS_FUNCTIONS; k++) {
-				pressure_qp += NIp[p][k] * el_p[k];
-			}
+      /* pressure */
+      pressure_qp = 0.0;
+      for (k=0; k<P_BASIS_FUNCTIONS; k++) {
+        pressure_qp += NIp[p][k] * el_p[k];
+      }
 
-			/* strain rate, e_ij = 0.5(u_{i,j} + u_{j,i}) */
-			E_qp[0][0] = E_qp[1][1] = E_qp[2][2] = 0.0;
-			E_qp[0][1] = E_qp[0][2] = E_qp[1][2] = 0.0;
-			for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
-				E_qp[0][0] += (dNudx[p][k] * ux[k]);
-				E_qp[1][1] += (dNudy[p][k] * uy[k]);
-				E_qp[2][2] += (dNudz[p][k] * uz[k]);
+      /* strain rate, e_ij = 0.5(u_{i,j} + u_{j,i}) */
+      E_qp[0][0] = E_qp[1][1] = E_qp[2][2] = 0.0;
+      E_qp[0][1] = E_qp[0][2] = E_qp[1][2] = 0.0;
+      for (k=0; k<Q2_NODES_PER_EL_3D; k++) {
+        E_qp[0][0] += (dNudx[p][k] * ux[k]);
+        E_qp[1][1] += (dNudy[p][k] * uy[k]);
+        E_qp[2][2] += (dNudz[p][k] * uz[k]);
 
-				E_qp[0][1] += 0.5 * (dNudy[p][k] * ux[k] + dNudx[p][k] * uy[k]);
-				E_qp[0][2] += 0.5 * (dNudz[p][k] * ux[k] + dNudx[p][k] * uz[k]);
-				E_qp[1][2] += 0.5 * (dNudz[p][k] * uy[k] + dNudy[p][k] * uz[k]);
-			}
+        E_qp[0][1] += 0.5 * (dNudy[p][k] * ux[k] + dNudx[p][k] * uy[k]);
+        E_qp[0][2] += 0.5 * (dNudz[p][k] * ux[k] + dNudx[p][k] * uz[k]);
+        E_qp[1][2] += 0.5 * (dNudz[p][k] * uy[k] + dNudy[p][k] * uz[k]);
+      }
             E_qp[1][0] = E_qp[0][1];
             E_qp[2][0] = E_qp[0][2];
             E_qp[2][1] = E_qp[1][2];
 
-			/* divu_qp = (E_qp[0][0] + E_qp[1][1] + E_qp[2][2]); */
+      /* divu_qp = (E_qp[0][0] + E_qp[1][1] + E_qp[2][2]); */
 
-			/* constitutive */
-			eta_qp = cell_quadraturepoints[p].eta;
+      /* constitutive */
+      eta_qp = cell_quadraturepoints[p].eta;
 
             if (stress_type == 0) {
                 /* total stress: 2 eta e_{ij} - p \delta_{ij} */
@@ -1300,19 +1300,19 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
 
             /* contraction, sigma_{ij}.e_{ij} */
             phi_qp = 0.0;
-			for (ii=0; ii<3; ii++) {
+      for (ii=0; ii<3; ii++) {
                 for (jj=0; jj<3; jj++) {
                     phi_qp = phi_qp + sigma_qp[ii][jj] * E_qp[ii][jj];
                 }
             }
             value_element = value_element + WEIGHT[p] * (phi_qp) * detJ[p];
-		}
+    }
 
         value_local = value_local + value_element;
-	}
+  }
     value_local = 0.5 * value_local;
 
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
     ierr = VecRestoreArray(sv_local,&LA_sv);CHKERRQ(ierr);
     ierr = VecRestoreArray(sp_local,&LA_sp);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(dav,&sv_local);CHKERRQ(ierr);
@@ -1321,7 +1321,7 @@ PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadr
     ierr = MPI_Allreduce(&value_local, value, 1,MPIU_REAL,MPIU_SUM,PetscObjectComm((PetscObject)dav));CHKERRQ(ierr);
 
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1339,16 +1339,16 @@ struct MPI_PairedValueRank {
 
 PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal coord[],PetscBool mask[],PetscInt region_idx,PetscReal tolerance,int *_pidx,PetscMPIInt *_rank)
 {
-	MPAccess         mpX;
-	int              p,n_mpoints;
-	double           *pos_p;
-	int              region_p;
+  MPAccess         mpX;
+  int              p,n_mpoints;
+  double           *pos_p;
+  int              region_p;
     PetscReal        sep2,tol2,min2;
     int              p_mine,p_found,rank;
   struct MPI_PairedValueRank input,output;
-	PetscErrorCode   ierr;
+  PetscErrorCode   ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
     tol2 = tolerance*tolerance;
     min2 = PETSC_MAX_REAL;
@@ -1359,11 +1359,11 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
     p_mine   = -1;
 
     DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
-	ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
-	for (p=0; p<n_mpoints; p++) {
+  ierr = MaterialPointGetAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  for (p=0; p<n_mpoints; p++) {
 
-		ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
-		ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_global_coord(mpX,p,&pos_p);CHKERRQ(ierr);
+    ierr = MaterialPointGet_phase_index(mpX,p,&region_p);CHKERRQ(ierr);
 
         if (region_idx != -1) {
             if (region_p != region_idx) {
@@ -1387,8 +1387,8 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
             p_found++;
             min2 = sep2;
         }
-	}
-	ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
+  }
+  ierr = MaterialPointRestoreAccess(materialpoint_db,&mpX);CHKERRQ(ierr);
 
   /*
    http://mpi-forum.org/docs/mpi-1.1/mpi-11-html/node79.html
@@ -1419,7 +1419,7 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
   }
 
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_db,

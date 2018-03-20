@@ -38,21 +38,21 @@ typedef enum { iPLUSMatMantle = 0, iPLUSMatPlume, iPLUSMatSlab } iPLUSMaterialTy
 
 /* define user model */
 typedef struct {
-	iPLUSModelType modeltype;
-	PetscReal   slab_eta,slab_rho;
-	PetscReal   mantle_eta,mantle_rho;
-	PetscReal   plume_eta,plume_rho;
-	PetscReal   plume_pos[3];
-	PetscReal   plume_A0;
-	PetscReal   plume_radius;
-	PetscInt    refinement_type;
-	PetscInt    nplume_elements,*plume_element;
-	PetscReal   intial_domain_volume;
-	PetscViewer logviewer;
-	PetscInt    np_plume_x,np_plume_z;
-	GeometryObject slab_geometry;
-	PetscInt    iplus_output_frequency;
-	PetscReal   eta_scale,vel_scale,time_scale,length_scale;
+  iPLUSModelType modeltype;
+  PetscReal   slab_eta,slab_rho;
+  PetscReal   mantle_eta,mantle_rho;
+  PetscReal   plume_eta,plume_rho;
+  PetscReal   plume_pos[3];
+  PetscReal   plume_A0;
+  PetscReal   plume_radius;
+  PetscInt    refinement_type;
+  PetscInt    nplume_elements,*plume_element;
+  PetscReal   intial_domain_volume;
+  PetscViewer logviewer;
+  PetscInt    np_plume_x,np_plume_z;
+  GeometryObject slab_geometry;
+  PetscInt    iplus_output_frequency;
+  PetscReal   eta_scale,vel_scale,time_scale,length_scale;
 } iPLUSCtx;
 
 

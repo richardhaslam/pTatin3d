@@ -43,8 +43,8 @@ PetscBool DMDAVecTraverseIJK_Constant(PetscScalar pos[],PetscInt global_index[],
  val = val0 + val1 + val2
  */
 typedef struct {
-	PetscScalar Ox[3];
-	PetscScalar A[3],B[3];
+  PetscScalar Ox[3];
+  PetscScalar A[3],B[3];
 } DMDAVecTraverse3d_InterpCtx;
 
 
@@ -58,12 +58,12 @@ PetscBool DMDAVecTraverseIJK_Interp(PetscScalar pos[],PetscInt global_index[],Pe
 
 
 typedef struct {
-	PetscScalar rho;
-	PetscScalar grav;
-	PetscScalar ref_height;
-	PetscInt ref_N;
-	PetscScalar surface_pressure;
-	DM surface_da;
+  PetscScalar rho;
+  PetscScalar grav;
+  PetscScalar ref_height;
+  PetscInt ref_N;
+  PetscScalar surface_pressure;
+  DM surface_da;
 } DMDAVecTraverse3d_HydrostaticPressureCalcCtx;
 
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v1(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx);

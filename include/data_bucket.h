@@ -53,21 +53,21 @@ typedef struct _p_DataBucket* DataBucket;
 
 
 struct _p_DataField {
-	char   *registration_function;
-	int    L;
-	BTruth active;
-	size_t atomic_size;
-	char   *name; /* what are they called */
-	void   *data; /* the data - an array of structs */
+  char   *registration_function;
+  int    L;
+  BTruth active;
+  size_t atomic_size;
+  char   *name; /* what are they called */
+  void   *data; /* the data - an array of structs */
 };
 
 struct _p_DataBucket {
-	int L; /* number in use */
-	int buffer; /* memory buffer used for re-allocation */
-	int allocated;  /* number allocated, this will equal datafield->L */
-	BTruth finalised;
-	int nfields; /* how many fields of this type */
-	DataField *field; /* the data */
+  int L; /* number in use */
+  int buffer; /* memory buffer used for re-allocation */
+  int allocated;  /* number allocated, this will equal datafield->L */
+  BTruth finalised;
+  int nfields; /* how many fields of this type */
+  DataField *field; /* the data */
 };
 
 #define ERROR() {\
@@ -92,10 +92,10 @@ void DataFieldDestroy( DataField *DF );
 void DataBucketCreate( DataBucket *DB );
 void DataBucketDestroy( DataBucket *DB );
 void _DataBucketRegisterField(
-															DataBucket db,
-															const char registration_function[],
-															const char field_name[],
-															size_t atomic_size, DataField *_gfield );
+                              DataBucket db,
+                              const char registration_function[],
+                              const char field_name[],
+                              size_t atomic_size, DataField *_gfield );
 
 
 #define DataBucketRegisterField(db,name,size,k) {\
@@ -120,7 +120,7 @@ void DataFieldRestoreEntries(const DataField gfield,void **data);
 
 void DataFieldInsertPoint( const DataField field, const int index, const void *ctx );
 void DataFieldCopyPoint( const int pid_x, const DataField field_x,
-												const int pid_y, const DataField field_y );
+                        const int pid_y, const DataField field_y );
 void DataFieldZeroPoint( const DataField field, const int index );
 
 void DataBucketGetDataFieldByName(DataBucket db,const char name[],DataField *gfield);
@@ -133,7 +133,7 @@ void DataBucketGetGlobalSizes(MPI_Comm comm, DataBucket db, long int *L, long in
 void DataBucketGetDataFields( DataBucket db, int *L, DataField *fields[] );
 
 void DataBucketCopyPoint( const DataBucket xb, const int pid_x,
-												 const DataBucket yb, const int pid_y );
+                         const DataBucket yb, const int pid_y );
 void DataBucketCreateFromSubset( DataBucket DBIn, const int N, const int list[], DataBucket *DB );
 void DataBucketZeroPoint( const DataBucket db, const int index );
 

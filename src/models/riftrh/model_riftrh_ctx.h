@@ -33,23 +33,23 @@
 
 /* define user model */
 typedef struct {
-	PetscReal Lx,Ly,Lz,hc,hm,ha,dxs,dys,dzs,hvbx1,hvbx2;
-	PetscReal vx_up,vx_down,rhoc,rhom,rhoa,etac,etam,etaa;
+  PetscReal Lx,Ly,Lz,hc,hm,ha,dxs,dys,dzs,hvbx1,hvbx2;
+  PetscReal vx_up,vx_down,rhoc,rhom,rhoa,etac,etam,etaa;
 
-	PetscInt  nmaterials;
+  PetscInt  nmaterials;
     PetscBool runmises;
-	PetscBool dimensional;
-	PetscReal density_bar;
-	PetscReal length_bar;
-	PetscReal viscosity_bar;
-	PetscReal velocity_bar;
-	PetscReal time_bar;
-	PetscReal pressure_bar;
-	PetscReal Ttop;
-	PetscReal Tbottom;
-	PetscBool use_semi_eulerian_mesh;
-	PetscBool output_markers;
-	PetscInt  param1,param2;
+  PetscBool dimensional;
+  PetscReal density_bar;
+  PetscReal length_bar;
+  PetscReal viscosity_bar;
+  PetscReal velocity_bar;
+  PetscReal time_bar;
+  PetscReal pressure_bar;
+  PetscReal Ttop;
+  PetscReal Tbottom;
+  PetscBool use_semi_eulerian_mesh;
+  PetscBool output_markers;
+  PetscInt  param1,param2;
         DMDA_thermalfield_init_params thermalparams;
 
 } ModelRiftrhCtx;

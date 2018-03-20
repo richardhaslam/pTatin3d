@@ -105,14 +105,14 @@ PetscErrorCode test_quantity_utils_3(void)
 
 int main(int argc,char **argv)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	ierr = pTatinInitialize(&argc,&argv,0,NULL);CHKERRQ(ierr);
+  ierr = pTatinInitialize(&argc,&argv,0,NULL);CHKERRQ(ierr);
 
   ierr = test_quantity_utils();CHKERRQ(ierr);
   ierr = test_quantity_utils_2();CHKERRQ(ierr);
   ierr = test_quantity_utils_3();CHKERRQ(ierr);
 
-	ierr = pTatinFinalize();CHKERRQ(ierr);
-	return 0;
+  ierr = pTatinFinalize();CHKERRQ(ierr);
+  return 0;
 }

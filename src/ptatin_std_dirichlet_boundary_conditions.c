@@ -56,83 +56,83 @@
 
 PetscErrorCode DirichletBC_FreeSlip(BCList bclist,DM dav,BoundaryFaceType face)
 {
-	PetscScalar    zero = 0.0;
-	PetscErrorCode ierr;
+  PetscScalar    zero = 0.0;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	switch (face) {
+  switch (face) {
 
-		case EAST_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			break;
+    case EAST_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      break;
 
-		case WEST_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			break;
+    case WEST_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      break;
 
-		case NORTH_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			break;
+    case NORTH_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      break;
 
-		case SOUTH_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			break;
+    case SOUTH_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      break;
 
-		case FRONT_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			break;
+    case FRONT_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      break;
 
-		case BACK_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
-			break;
+    case BACK_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
+      break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
-			break;
-	}
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
+      break;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DirichletBC_SetConstant(BCList bclist,DM dav,BoundaryFaceType face,PetscInt dof,PetscScalar value)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	switch (face) {
+  switch (face) {
 
-		case EAST_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case EAST_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case WEST_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case WEST_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case NORTH_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case NORTH_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case SOUTH_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case SOUTH_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case FRONT_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case FRONT_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case BACK_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case BACK_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,dof,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
-			break;
-	}
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
+      break;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -140,43 +140,43 @@ PetscErrorCode DirichletBC_SetConstant(BCList bclist,DM dav,BoundaryFaceType fac
 */
 PetscErrorCode DirichletBC_ApplyNormalVelocity(BCList bclist,DM dav,BoundaryFaceType face,PetscReal v_normal)
 {
-	PetscScalar    value = v_normal;
-	PetscErrorCode ierr;
+  PetscScalar    value = v_normal;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	switch (face) {
+  switch (face) {
 
-		case EAST_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case EAST_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case WEST_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case WEST_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case NORTH_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case NORTH_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case SOUTH_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case SOUTH_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case FRONT_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case FRONT_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		case BACK_FACE:
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-			break;
+    case BACK_FACE:
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+      break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
-			break;
-	}
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Face must N,E,S,W,F,B");
+      break;
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -189,24 +189,24 @@ PetscErrorCode DirichletBC_ApplyNormalVelocity(BCList bclist,DM dav,BoundaryFace
 */
 PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList bclist,DM dav,PetscReal exx_bc)
 {
-	PetscScalar value;
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal Lx;
-	PetscErrorCode ierr;
+  PetscScalar value;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscReal Lx;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
 
-	Lx = (MeshMax[0] - MeshMin[0]);
-	value = 0.5 * exx_bc * (Lx);
+  Lx = (MeshMax[0] - MeshMin[0]);
+  value = 0.5 * exx_bc * (Lx);
 
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	value = -value;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = -value;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -221,32 +221,32 @@ PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList bclist,DM dav,PetscReal exx
 /*
 PetscErrorCode DirichletBC_ApplyStrainRateExy(BCList bclist,DM dav,PetscReal exy_bc)
 {
-	PetscScalar value;
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal origin[3];
-	PetscReal Ly;
-	PetscErrorCode ierr;
+  PetscScalar value;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscReal origin[3];
+  PetscReal Ly;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	Ly = (MeshMax[1] - MeshMin[1]);
+  Ly = (MeshMax[1] - MeshMin[1]);
 
-	value = exy_bc * (Ly);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = exy_bc * (Ly);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	value = -value;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = -value;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	value = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 */
 
@@ -261,29 +261,29 @@ PetscErrorCode DirichletBC_ApplyStrainRateExy(BCList bclist,DM dav,PetscReal exy
 /*
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningY(BCList list,DM dav,PetscReal vx_bc)
 {
-	PetscScalar v_normal;
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal origin[3];
-	PetscErrorCode ierr;
+  PetscScalar v_normal;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscReal origin[3];
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	v_normal = vx_bc * (MeshMax[0]-origin[0]);
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = vx_bc * (MeshMin[0]-origin[0]);
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = vx_bc * (MeshMax[0]-origin[0]);
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = vx_bc * (MeshMin[0]-origin[0]);
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
 
-	v_normal = -vx_bc * (MeshMax[1]-origin[1]);
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,NORTH_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc * (MeshMin[1]-origin[1]);
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,SOUTH_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc * (MeshMax[1]-origin[1]);
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,NORTH_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc * (MeshMin[1]-origin[1]);
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,SOUTH_FACE,v_normal);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 */
 /*
@@ -303,32 +303,32 @@ PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningY(BCLis
 /*
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCList list,DM dav,PetscReal vx_bc)
 {
-	PetscScalar v_normal;
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal origin[3],Lx,Lz;
-	PetscErrorCode ierr;
+  PetscScalar v_normal;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscReal origin[3],Lx,Lz;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	Lx = (MeshMax[0] - MeshMin[0]);
-	Lz = (MeshMax[2] - MeshMin[2]);
+  Lx = (MeshMax[0] - MeshMin[0]);
+  Lz = (MeshMax[2] - MeshMin[2]);
 
-	v_normal =  vx_bc ;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc ;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal =  vx_bc ;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc ;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
 
-	v_normal =  vx_bc * Lz/Lx;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,FRONT_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc * Lz/Lx;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,BACK_FACE,v_normal);CHKERRQ(ierr);
+  v_normal =  vx_bc * Lz/Lx;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,FRONT_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc * Lz/Lx;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,BACK_FACE,v_normal);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 */
 
@@ -343,13 +343,13 @@ PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCLis
 */
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionX(BCList list,DM dav,PetscReal vx_bc)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(list,dav,0.5,vx_bc);CHKERRQ(ierr);
+  ierr = DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(list,dav,0.5,vx_bc);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -371,131 +371,131 @@ PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionX(BCList list,DM d
 /*
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(BCList list,DM dav,PetscReal beta,PetscReal vx_bc)
 {
-	PetscScalar v_normal;
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscReal origin[3];
-	PetscErrorCode ierr;
+  PetscScalar v_normal;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscReal origin[3];
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  origin[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  origin[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  origin[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	v_normal = vx_bc;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = vx_bc;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
 
-	Exx = 2.0 * vx_bc / Lx;
-	v_normal = -0.5 * Exx * beta;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,NORTH_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -v_normal;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,SOUTH_FACE,v_normal);CHKERRQ(ierr);
+  Exx = 2.0 * vx_bc / Lx;
+  v_normal = -0.5 * Exx * beta;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,NORTH_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -v_normal;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,SOUTH_FACE,v_normal);CHKERRQ(ierr);
 
-	v_normal = -vx_bc * (1.0-beta) * (MeshMax[2]-origin[2]);
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,FRONT_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc * (1.0-beta) * (MeshMin[2]-origin[2]);
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,BACK_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc * (1.0-beta) * (MeshMax[2]-origin[2]);
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,FRONT_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc * (1.0-beta) * (MeshMin[2]-origin[2]);
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,BACK_FACE,v_normal);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 */
 
 typedef struct {
-	PetscInt  dof_idx;
-	PetscReal alpha,beta,gamma;
-	PetscReal Ox[3];
+  PetscInt  dof_idx;
+  PetscReal alpha,beta,gamma;
+  PetscReal Ox[3];
 } StrainRateBCCtx;
 
 PetscBool BCListEvaluator_StrainRate(PetscScalar position[],PetscScalar *value,void *ctx)
 {
-	PetscReal       V[3];
-	PetscBool       impose_dirichlet = PETSC_TRUE;
-	StrainRateBCCtx *strainrrate_ctx;
+  PetscReal       V[3];
+  PetscBool       impose_dirichlet = PETSC_TRUE;
+  StrainRateBCCtx *strainrrate_ctx;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	strainrrate_ctx = (StrainRateBCCtx*)ctx;
+  strainrrate_ctx = (StrainRateBCCtx*)ctx;
 
-	V[0] = strainrrate_ctx->alpha * ( position[0] - strainrrate_ctx->Ox[0] );
-	V[1] = strainrrate_ctx->beta  * ( position[1] - strainrrate_ctx->Ox[1] );
-	V[2] = strainrrate_ctx->gamma * ( position[2] - strainrrate_ctx->Ox[2] );
+  V[0] = strainrrate_ctx->alpha * ( position[0] - strainrrate_ctx->Ox[0] );
+  V[1] = strainrrate_ctx->beta  * ( position[1] - strainrrate_ctx->Ox[1] );
+  V[2] = strainrrate_ctx->gamma * ( position[2] - strainrrate_ctx->Ox[2] );
 
-	switch (strainrrate_ctx->dof_idx) {
-		case 0:
-			*value = V[0];
-			break;
-		case 1:
-			*value = V[1];
-			break;
-		case 2:
-			*value = V[2];
-			break;
+  switch (strainrrate_ctx->dof_idx) {
+    case 0:
+      *value = V[0];
+      break;
+    case 1:
+      *value = V[1];
+      break;
+    case 2:
+      *value = V[2];
+      break;
 
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dof_idx must be 0,1,2");
-			break;
-	}
-	return impose_dirichlet;
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"dof_idx must be 0,1,2");
+      break;
+  }
+  return impose_dirichlet;
 }
 
 PetscReal DirichletBC_DefineExx(StrainRateBCCtx *ctx,PetscReal Exx,DM dav)
 {
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscErrorCode  ierr;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ctx->alpha = Exx;
-	ctx->beta  = 0.0;
-	ctx->gamma = 0.0;
+  ctx->alpha = Exx;
+  ctx->beta  = 0.0;
+  ctx->gamma = 0.0;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx->Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx->Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx->Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx->Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx->Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx->Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscReal DirichletBC_DefineEyy(StrainRateBCCtx *ctx,PetscReal Eyy,DM dav)
 {
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscErrorCode  ierr;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ctx->alpha = 0.0;
-	ctx->beta  = Eyy;
-	ctx->gamma = 0.0;
+  ctx->alpha = 0.0;
+  ctx->beta  = Eyy;
+  ctx->gamma = 0.0;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx->Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx->Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx->Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx->Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx->Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx->Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscReal DirichletBC_DefineEzz(StrainRateBCCtx *ctx,PetscReal Ezz,DM dav)
 {
-	PetscReal MeshMin[3],MeshMax[3];
-	PetscErrorCode  ierr;
+  PetscReal MeshMin[3],MeshMax[3];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ctx->alpha = 0.0;
-	ctx->beta  = 0.0;
-	ctx->gamma = Ezz;
+  ctx->alpha = 0.0;
+  ctx->beta  = 0.0;
+  ctx->gamma = Ezz;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx->Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx->Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx->Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx->Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx->Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx->Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -508,40 +508,40 @@ PetscReal DirichletBC_DefineEzz(StrainRateBCCtx *ctx,PetscReal Ezz,DM dav)
  */
 PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal Evalue,PetscInt direction)
 {
-	StrainRateBCCtx ctx;
-	PetscErrorCode ierr;
+  StrainRateBCCtx ctx;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-
-
-	ctx.dof_idx = direction;
-	switch (direction) {
-		case 0:
-			DirichletBC_DefineExx(&ctx,Evalue,dav);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-			break;
-
-		case 1:
-			DirichletBC_DefineEyy(&ctx,Evalue,dav);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-			break;
-
-		case 2:
-			DirichletBC_DefineEzz(&ctx,Evalue,dav);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-			ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-			break;
-
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"direction must be 0,1,2");
-			break;
-
-	}
+  PetscFunctionBegin;
 
 
-	PetscFunctionReturn(0);
+  ctx.dof_idx = direction;
+  switch (direction) {
+    case 0:
+      DirichletBC_DefineExx(&ctx,Evalue,dav);
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+      break;
+
+    case 1:
+      DirichletBC_DefineEyy(&ctx,Evalue,dav);
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+      break;
+
+    case 2:
+      DirichletBC_DefineEzz(&ctx,Evalue,dav);
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+      ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+      break;
+
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"direction must be 0,1,2");
+      break;
+
+  }
+
+
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -552,42 +552,42 @@ PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal 
 */
 PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz_bc)
 {
-	PetscReal       MeshMin[3],MeshMax[3];
-	PetscScalar     value;
-	StrainRateBCCtx ctx;
-	PetscErrorCode ierr;
+  PetscReal       MeshMin[3],MeshMax[3];
+  PetscScalar     value;
+  StrainRateBCCtx ctx;
+  PetscErrorCode ierr;
 
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	value = exz_bc * (MeshMax[0] - MeshMin[0]);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	value = -value;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = exz_bc * (MeshMax[0] - MeshMin[0]);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = -value;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	value = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
 
-	ctx.dof_idx = 0;
-	value       = exz_bc * (MeshMax[0] - MeshMin[0]);
-	ctx.alpha   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
-	ctx.beta    = 0.0;
-	ctx.gamma   = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ctx.dof_idx = 0;
+  value       = exz_bc * (MeshMax[0] - MeshMin[0]);
+  ctx.alpha   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
+  ctx.beta    = 0.0;
+  ctx.gamma   = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
 
-	value = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -598,40 +598,40 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz
  */
 PetscErrorCode DirichletBC_ApplyStrainRateExz_b(BCList bclist,DM dav,PetscReal exz_bc)
 {
-	PetscReal       MeshMin[3],MeshMax[3];
-	PetscScalar     value;
-	StrainRateBCCtx ctx;
-	PetscErrorCode ierr;
+  PetscReal       MeshMin[3],MeshMax[3];
+  PetscScalar     value;
+  StrainRateBCCtx ctx;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	value = exz_bc * (MeshMax[0] - MeshMin[0]);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	value = -value;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = exz_bc * (MeshMax[0] - MeshMin[0]);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = -value;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,0,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	value = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	ctx.dof_idx = 2;
-	value       = exz_bc * (MeshMax[0] - MeshMin[0]);
-	ctx.alpha   = 0.0;
-	ctx.beta    = 0.0;
-	ctx.gamma   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ctx.dof_idx = 2;
+  value       = exz_bc * (MeshMax[0] - MeshMin[0]);
+  ctx.alpha   = 0.0;
+  ctx.beta    = 0.0;
+  ctx.gamma   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
 
-	value = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -640,102 +640,102 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz_b(BCList bclist,DM dav,PetscReal e
  */
 PetscErrorCode DirichletBC_ApplyStrainRateExz_c(BCList bclist,DM dav,PetscReal exz_bc)
 {
-	PetscReal       MeshMin[3],MeshMax[3];
-	PetscScalar     value;
-	StrainRateBCCtx ctx;
-	PetscErrorCode ierr;
+  PetscReal       MeshMin[3],MeshMax[3];
+  PetscScalar     value;
+  StrainRateBCCtx ctx;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	ctx.dof_idx = 2;
-	value       = exz_bc * (MeshMax[0] - MeshMin[0]);
-	ctx.alpha   = 0.0;
-	ctx.beta    = 0.0;
-	ctx.gamma   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ctx.dof_idx = 2;
+  value       = exz_bc * (MeshMax[0] - MeshMin[0]);
+  ctx.alpha   = 0.0;
+  ctx.beta    = 0.0;
+  ctx.gamma   = 2.0 * value / (MeshMax[0] - MeshMin[0]);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,0,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
 
-	value = 0.0;
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  value = 0.0;
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMIN_LOC,2,BCListEvaluator_constant,(void*)&value);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCList list,DM dav,PetscReal vx_bc)
 {
-	PetscReal       MeshMin[3],MeshMax[3];
-	PetscScalar     v_normal;
-	StrainRateBCCtx ctx;
-	PetscErrorCode  ierr;
+  PetscReal       MeshMin[3],MeshMax[3];
+  PetscScalar     v_normal;
+  StrainRateBCCtx ctx;
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	v_normal =  vx_bc;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal =  vx_bc;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
 
 
-	ctx.dof_idx = 2;
-	ctx.alpha   = 0.0;
-	ctx.beta    = 0.0;
-	ctx.gamma   = -2.0 * vx_bc/(MeshMax[0] - MeshMin[0]);
+  ctx.dof_idx = 2;
+  ctx.alpha   = 0.0;
+  ctx.beta    = 0.0;
+  ctx.gamma   = -2.0 * vx_bc/(MeshMax[0] - MeshMin[0]);
 
-	ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(BCList list,DM dav,PetscReal factor,PetscReal vx_bc)
 {
-	PetscScalar     v_normal;
-	StrainRateBCCtx ctx;
-	PetscReal       Exx,MeshMin[3],MeshMax[3];
-	PetscErrorCode  ierr;
+  PetscScalar     v_normal;
+  StrainRateBCCtx ctx;
+  PetscReal       Exx,MeshMin[3],MeshMax[3];
+  PetscErrorCode  ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
-	ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
-	ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
-	ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
+  ierr = DMDAGetBoundingBox(dav,MeshMin,MeshMax);CHKERRQ(ierr);
+  ctx.Ox[0] = 0.5*(MeshMax[0] + MeshMin[0]);
+  ctx.Ox[1] = 0.5*(MeshMax[1] + MeshMin[1]);
+  ctx.Ox[2] = 0.5*(MeshMax[2] + MeshMin[2]);
 
-	if (factor<0.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"factor must be >= 0.0");
-	}
-	if (factor>1.0) {
-		SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"factor must be <= 1.0");
-	}
+  if (factor<0.0) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"factor must be >= 0.0");
+  }
+  if (factor>1.0) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"factor must be <= 1.0");
+  }
 
-	v_normal =  vx_bc;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
-	v_normal = -vx_bc;
-	ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal =  vx_bc;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,EAST_FACE,v_normal);CHKERRQ(ierr);
+  v_normal = -vx_bc;
+  ierr = DirichletBC_ApplyNormalVelocity(list,dav,WEST_FACE,v_normal);CHKERRQ(ierr);
 
-	Exx = 2.0 * vx_bc / (MeshMax[0]-MeshMin[0]);
-	ctx.alpha   = 0.0;
-	ctx.beta    = -factor * Exx;
-	ctx.gamma   = -(1.0-factor)*Exx;
+  Exx = 2.0 * vx_bc / (MeshMax[0]-MeshMin[0]);
+  ctx.alpha   = 0.0;
+  ctx.beta    = -factor * Exx;
+  ctx.gamma   = -(1.0-factor)*Exx;
 
-	ctx.dof_idx = 1;
-	ierr = DMDABCListTraverse3d(list,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(list,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ctx.dof_idx = 1;
+  ierr = DMDABCListTraverse3d(list,dav,DMDABCList_JMAX_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(list,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
 
-	ctx.dof_idx = 2;
-	ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
-	ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ctx.dof_idx = 2;
+  ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMAX_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
+  ierr = DMDABCListTraverse3d(list,dav,DMDABCList_KMIN_LOC,2,BCListEvaluator_StrainRate,(void*)&ctx);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }

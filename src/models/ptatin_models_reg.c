@@ -55,34 +55,34 @@ extern PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m);
 
 PetscErrorCode pTatinModelRegisterAll(void)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	/* call registration functions for each model here */
-	ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Rift3D_T();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Rift_oblique3d();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_ExSubduction();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_iPLUS();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Subduction_Initiation2d();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_Thermal_Convection2d();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_ThermalSB();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_SD3D();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_PAS();CHKERRQ(ierr);
-	ierr = pTatinModelRegister_PD();CHKERRQ(ierr);
+  PetscFunctionBegin;
+  /* call registration functions for each model here */
+  ierr = pTatinModelRegister_Template();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_ViscousSinker();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Gene3D();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Indentor();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Rift3D_T();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_AdvDiffExample();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Delamination();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Riftrh();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Rift_oblique3d();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_GeoMod2008();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_MultilayerFolding();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_SubmarineLavaFlow();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_ExSubduction();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_iPLUS();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Subduction_Initiation2d();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_Thermal_Convection2d();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_ThermalSB();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_SD3D();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_PAS();CHKERRQ(ierr);
+  ierr = pTatinModelRegister_PD();CHKERRQ(ierr);
 
   ierr = pTatinModelDynamicRegister("static_box",pTatinModelCreate_StaticBox);CHKERRQ(ierr);
   ierr = pTatinModelDynamicRegister("static_box_thermomech",pTatinModelCreate_StaticBoxTM);CHKERRQ(ierr);
   ierr = pTatinModelDynamicRegister("analytics_vv",pTatinModelCreate_AnlVV);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }

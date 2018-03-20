@@ -34,17 +34,17 @@
 #include "dmda_bcs.h"
 
 struct _p_PhysCompEnergy {
-	PetscReal               time,dt;
-	PetscInt                energy_mesh_type; /* 0-std dmda, 1-overlap, 2-nested */
-	PetscInt                mx,my,mz; /* global mesh size */
-	DM                      daT;
-	BCList                  T_bclist;
-	Vec                     u_minus_V;
-	Quadrature              volQ;
-	//	SurfaceQuadratureEnergy surfQ[QUAD_EDGES]; /* four edges */
-	/* SUPG DATA */
-	Vec                     Told; /* old temperature solution vector */
-	Vec                     Xold; /* old coordinate vector */
+  PetscReal               time,dt;
+  PetscInt                energy_mesh_type; /* 0-std dmda, 1-overlap, 2-nested */
+  PetscInt                mx,my,mz; /* global mesh size */
+  DM                      daT;
+  BCList                  T_bclist;
+  Vec                     u_minus_V;
+  Quadrature              volQ;
+  //  SurfaceQuadratureEnergy surfQ[QUAD_EDGES]; /* four edges */
+  /* SUPG DATA */
+  Vec                     Told; /* old temperature solution vector */
+  Vec                     Xold; /* old coordinate vector */
 };
 
 #endif

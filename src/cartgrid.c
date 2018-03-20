@@ -206,8 +206,8 @@ PetscErrorCode CartGridSetUp_InMem(CartGrid map)
     map->end[1] = map->my;
     map->end[2] = map->mz;
 
-	/* allocate data */
-	PetscMalloc(map->bytes* map->mx * map->my * map->mz,&map->data);
+  /* allocate data */
+  PetscMalloc(map->bytes* map->mx * map->my * map->mz,&map->data);
     PetscMemzero(map->data,map->bytes* map->mx * map->my * map->mz);
 
     fp_data = fopen(map->datafile_name,"r");
@@ -242,26 +242,26 @@ PetscErrorCode CartGridSetUp_OutOfCore(CartGrid map)
 PetscErrorCode CartGridGetIndex_InMem2d(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index)
 {
     PetscFunctionBegin;
-	if (i < map->start[0]) { *index = -1; PetscFunctionReturn(0); }
-	if (j < map->start[1]) { *index = -1; PetscFunctionReturn(0); }
-	if (i >= map->end[0])  { *index = -1; PetscFunctionReturn(0); }
-	if (j >= map->end[1])  { *index = -1; PetscFunctionReturn(0); }
+  if (i < map->start[0]) { *index = -1; PetscFunctionReturn(0); }
+  if (j < map->start[1]) { *index = -1; PetscFunctionReturn(0); }
+  if (i >= map->end[0])  { *index = -1; PetscFunctionReturn(0); }
+  if (j >= map->end[1])  { *index = -1; PetscFunctionReturn(0); }
 
-	*index = i + j * map->mx;
+  *index = i + j * map->mx;
     PetscFunctionReturn(0);
 }
 
 PetscErrorCode CartGridGetIndex_InMem3d(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index)
 {
     PetscFunctionBegin;
-	if (i < map->start[0]) { *index = -1; PetscFunctionReturn(0); }
-	if (j < map->start[1]) { *index = -1; PetscFunctionReturn(0); }
-	if (k < map->start[2]) { *index = -1; PetscFunctionReturn(0); }
-	if (i >= map->end[0])  { *index = -1; PetscFunctionReturn(0); }
-	if (j >= map->end[1])  { *index = -1; PetscFunctionReturn(0); }
-	if (k >= map->end[2])  { *index = -1; PetscFunctionReturn(0); }
+  if (i < map->start[0]) { *index = -1; PetscFunctionReturn(0); }
+  if (j < map->start[1]) { *index = -1; PetscFunctionReturn(0); }
+  if (k < map->start[2]) { *index = -1; PetscFunctionReturn(0); }
+  if (i >= map->end[0])  { *index = -1; PetscFunctionReturn(0); }
+  if (j >= map->end[1])  { *index = -1; PetscFunctionReturn(0); }
+  if (k >= map->end[2])  { *index = -1; PetscFunctionReturn(0); }
 
-	*index = i + j * map->mx + k * map->mx * map->my;
+  *index = i + j * map->mx + k * map->mx * map->my;
     PetscFunctionReturn(0);
 }
 
@@ -285,23 +285,23 @@ PetscErrorCode CartGridGetIndex_InMem(CartGrid map,PetscInt i,PetscInt j,PetscIn
 
 PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
-	PetscInt i,j,index;
+  PetscInt i,j,index;
     void     *value_i;
 
     PetscFunctionBegin;
-	if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
-	if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
+  if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
+  if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
 
-	if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
-	if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
+  if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
+  if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
 
-	i = (xp[0] - map->range_x[0])/map->dx;
-	j = (xp[1] - map->range_y[0])/map->dy;
-	if (i == map->mx) { i--; }
-	if (j == map->my) { j--; }
+  i = (xp[0] - map->range_x[0])/map->dx;
+  j = (xp[1] - map->range_y[0])/map->dy;
+  if (i == map->mx) { i--; }
+  if (j == map->my) { j--; }
 
-	CartGridGetIndex_InMem2d(map,i,j,-1,&index);
-	if (index < 0) { PetscFunctionReturn(0); }
+  CartGridGetIndex_InMem2d(map,i,j,-1,&index);
+  if (index < 0) { PetscFunctionReturn(0); }
 
     *found = PETSC_TRUE;
 
@@ -313,28 +313,28 @@ PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,
 
 PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
-	PetscInt i,j,k,index;
+  PetscInt i,j,k,index;
     void     *value_i;
 
     PetscFunctionBegin;
-	if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
-	if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
+  if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
+  if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
 
-	if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
-	if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
+  if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
+  if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
 
-	if (xp[2] < map->range_z[0]) { PetscFunctionReturn(0); }
-	if (xp[2] > map->range_z[1]) { PetscFunctionReturn(0); }
+  if (xp[2] < map->range_z[0]) { PetscFunctionReturn(0); }
+  if (xp[2] > map->range_z[1]) { PetscFunctionReturn(0); }
 
-	i = (xp[0] - map->range_x[0])/map->dx;
-	j = (xp[1] - map->range_y[0])/map->dy;
-	k = (xp[2] - map->range_z[0])/map->dz;
-	if (i == map->mx) { i--; }
-	if (j == map->my) { j--; }
-	if (k == map->mz) { k--; }
+  i = (xp[0] - map->range_x[0])/map->dx;
+  j = (xp[1] - map->range_y[0])/map->dy;
+  k = (xp[2] - map->range_z[0])/map->dz;
+  if (i == map->mx) { i--; }
+  if (j == map->my) { j--; }
+  if (k == map->mz) { k--; }
 
-	CartGridGetIndex_InMem3d(map,i,j,k,&index);
-	if (index < 0) { PetscFunctionReturn(0); }
+  CartGridGetIndex_InMem3d(map,i,j,k,&index);
+  if (index < 0) { PetscFunctionReturn(0); }
 
     *found = PETSC_TRUE;
 
@@ -365,20 +365,20 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Pe
 
 PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
-	PetscInt i,j,k,index;
+  PetscInt i,j,k,index;
     long     offset;
 
     PetscFunctionBegin;
-	if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
-	if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
+  if (xp[0] < map->range_x[0]) { PetscFunctionReturn(0); }
+  if (xp[0] > map->range_x[1]) { PetscFunctionReturn(0); }
 
-	if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
-	if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
+  if (xp[1] < map->range_y[0]) { PetscFunctionReturn(0); }
+  if (xp[1] > map->range_y[1]) { PetscFunctionReturn(0); }
 
-	i = (xp[0] - map->range_x[0])/map->dx;
-	j = (xp[1] - map->range_y[0])/map->dy;
-	if (i == map->mx) { i--; }
-	if (j == map->my) { j--; }
+  i = (xp[0] - map->range_x[0])/map->dx;
+  j = (xp[1] - map->range_y[0])/map->dy;
+  if (i == map->mx) { i--; }
+  if (j == map->my) { j--; }
 
     if (map->dim == 3) {
         if (xp[2] < map->range_z[0]) { PetscFunctionReturn(0); }
@@ -390,7 +390,7 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
     } else {
         CartGridGetIndex_InMem2d(map,i,j,-1,&index);
     }
-	if (index < 0) { PetscFunctionReturn(0); }
+  if (index < 0) { PetscFunctionReturn(0); }
 
     *found = PETSC_TRUE;
 
@@ -456,7 +456,7 @@ PetscErrorCode CartGridSetUp(CartGrid map)
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-	/* open file to parse */
+  /* open file to parse */
     fp = fopen(map->metadatafile_name,"r");
     if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",map->metadatafile_name);
 
@@ -605,11 +605,11 @@ PetscErrorCode CartGridViewMetaData(CartGrid map)
 
 PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
 {
-	FILE     *fp = NULL;
-	PetscInt i,j,k;
+  FILE     *fp = NULL;
+  PetscInt i,j,k;
 
     PetscFunctionBegin;
-	/* open file to parse */
+  /* open file to parse */
     fp = fopen(filename,"w");
     if (!fp) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"Failed to open %s",filename);
 
@@ -763,21 +763,21 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
 
 PetscErrorCode pTatinCtxAttachCartGrid(pTatinCtx ctx,CartGrid map)
 {
-	PetscErrorCode ierr;
+  PetscErrorCode ierr;
     PetscFunctionBegin;
-	ierr = pTatinCtxAttachModelData(ctx,"CartGrid",(void*)map);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+  ierr = pTatinCtxAttachModelData(ctx,"CartGrid",(void*)map);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinCtxGetCartGrid(pTatinCtx ctx,CartGrid *map)
 {
-	void           *mymap;
-	PetscErrorCode ierr;
+  void           *mymap;
+  PetscErrorCode ierr;
 
     PetscFunctionBegin;
-	ierr = pTatinCtxGetModelData(ctx,"CartGrid",&mymap);CHKERRQ(ierr);
-	*map = (CartGrid)mymap;
-	PetscFunctionReturn(0);
+  ierr = pTatinCtxGetModelData(ctx,"CartGrid",&mymap);CHKERRQ(ierr);
+  *map = (CartGrid)mymap;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ex1(void)
@@ -816,7 +816,7 @@ PetscErrorCode ex1(void)
     ierr = CartGridViewPV(cg,"test.vti");CHKERRQ(ierr);
     ierr = CartGridDestroy(&cg);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode ex2(void)
@@ -878,5 +878,5 @@ PetscErrorCode ex2(void)
     ierr = CartGridViewPV(cg,"test.vti");CHKERRQ(ierr);
     ierr = CartGridDestroy(&cg);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }

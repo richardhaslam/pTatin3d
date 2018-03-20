@@ -748,7 +748,7 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
           break;
 
         case OP_TYPE_REDISC_MF:
-      //	ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
+      //  ierr = KSPSetOperators(ksp_smoother,operatorA11[k],operatorA11[k]);CHKERRQ(ierr);
           ierr = KSPSetOperators(ksp_smoother,mlctx->operatorA11[k],mlctx->operatorA11[k]);CHKERRQ(ierr);
           break;
 
@@ -995,8 +995,8 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   /* work vector for solution */
   ierr = DMCreateGlobalVector(dmstokes,&X_s);CHKERRQ(ierr);
   if (activate_energy) {
-		ierr = DMCreateGlobalVector(dmenergy,&X_e);CHKERRQ(ierr);
-		ierr = pTatinPhysCompAttachData_Energy(user,X_e,NULL);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dmenergy,&X_e);CHKERRQ(ierr);
+    ierr = pTatinPhysCompAttachData_Energy(user,X_e,NULL);CHKERRQ(ierr);
   }
 
   /* initial condition */

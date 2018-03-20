@@ -253,7 +253,7 @@ PetscErrorCode XDMFDataWriteField_Generic(Vec x,
 {
     MPI_Comm       comm;
     PetscViewer    viewer;
-	char           name[PETSC_MAX_PATH_LEN];
+  char           name[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
 
     ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
@@ -322,9 +322,9 @@ PetscErrorCode XDMFDataWriteField_GenericDMDA(DM dm,Vec x,
     Vec            xn;
     PetscErrorCode ierr;
 
-	ierr = DMDACreateNaturalVector(dm,&xn);CHKERRQ(ierr);
+  ierr = DMDACreateNaturalVector(dm,&xn);CHKERRQ(ierr);
     ierr = PetscObjectGetComm((PetscObject)xn,&comm);CHKERRQ(ierr);
-	ierr = DMDAGlobalToNaturalBegin(dm,x,INSERT_VALUES,xn);CHKERRQ(ierr);
+  ierr = DMDAGlobalToNaturalBegin(dm,x,INSERT_VALUES,xn);CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalEnd(dm,x,INSERT_VALUES,xn);CHKERRQ(ierr);
 
     switch (format) {
@@ -373,7 +373,7 @@ PetscErrorCode XDMFWriteAttribute_DMDA(PetscViewer v,DM da,Vec x,
                                const char path[],const char suffix[],const char meshname[],const char fieldname[],
                                XDMFCenter c_type,XDMFDataItemFormat format)
 {
-	char           filename[PETSC_MAX_PATH_LEN];
+  char           filename[PETSC_MAX_PATH_LEN];
     PetscErrorCode ierr;
 
     if (!v) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"XDMF file pointer is corrupt"); }
@@ -617,7 +617,7 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     Vec            velocity,pressure;
     MPI_Comm       comm;
     PetscViewer    viewer;
-	char           name[PETSC_MAX_PATH_LEN],xmfoutputdir[PETSC_MAX_PATH_LEN];
+  char           name[PETSC_MAX_PATH_LEN],xmfoutputdir[PETSC_MAX_PATH_LEN];
     char           infostr[PETSC_MAX_PATH_LEN];
     char           *model_name;
     PetscBool      useH5 = PETSC_FALSE,found;
@@ -625,7 +625,7 @@ PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char
     pTatinModel    model;
     PetscErrorCode ierr;
 
-	ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
+  ierr = pTatinGetStokesContext(ctx,&stokes);CHKERRQ(ierr);
     ierr = PhysCompStokesGetDMComposite(stokes,&dmstokes);
     ierr = DMCompositeGetEntries(dmstokes,&dmv,&dmp);CHKERRQ(ierr);
     ierr = DMCompositeGetAccess(dmstokes,X,&velocity,&pressure);CHKERRQ(ierr);

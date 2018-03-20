@@ -173,7 +173,7 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,Ma
 
     fused_length = 0;
     //for (i=0; i<nsize; i++) {
-    //	PetscPrintf(PETSC_COMM_WORLD,"[%D]: start %D --->> end %D \n",i,ranges[i],ranges[i+1]);
+    //  PetscPrintf(PETSC_COMM_WORLD,"[%D]: start %D --->> end %D \n",i,ranges[i],ranges[i+1]);
     //}
 
     ierr = ISCreateStride(comm,nc,0,1,&iscol);CHKERRQ(ierr);

@@ -59,100 +59,100 @@
 
 PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 {
-	PetscErrorCode  ierr;
-	PhysCompStokes  stokes;
+  PetscErrorCode  ierr;
+  PhysCompStokes  stokes;
 
-	PetscFunctionBegin;
-	ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = PhysCompCreate_Stokes(&stokes);CHKERRQ(ierr);
 
-	stokes->mx = user->mx;
-	stokes->my = user->my;
-	stokes->mz = user->mz;
-	stokes->use_mf_stokes = user->use_mf_stokes;
+  stokes->mx = user->mx;
+  stokes->my = user->my;
+  stokes->mz = user->mz;
+  stokes->use_mf_stokes = user->use_mf_stokes;
 
-	ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
-	ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
-	ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
-	ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateMesh_Stokes3d(stokes->mx,stokes->my,stokes->mz,stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateBoundaryList_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateVolumeQuadrature_Stokes(stokes);CHKERRQ(ierr);
+  ierr = PhysCompCreateSurfaceQuadrature_Stokes(stokes);CHKERRQ(ierr);
 
-	user->stokes_ctx = stokes;
+  user->stokes_ctx = stokes;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 {
-	PetscErrorCode  ierr;
-	PhysCompStokes  stokes;
-	PetscReal       grav[3];
-	PetscInt        ncomponents;
-	PetscBool       flg;
+  PetscErrorCode  ierr;
+  PhysCompStokes  stokes;
+  PetscReal       grav[3];
+  PetscInt        ncomponents;
+  PetscBool       flg;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   ierr = pTatin3d_PhysCompStokesNew(user);CHKERRQ(ierr);
 
-	/* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
-	/* Model initialize function can overload the gravity value */
-	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
-	grav[0] = 0.0;
-	grav[1] = 1.0;
-	grav[2] = 0.0;
-	ncomponents = 3;
-	flg = PETSC_FALSE;
-	PetscOptionsGetRealArray(NULL,NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
-	ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
+  /* Default action - set gravity vector to be 0,1,0 to not break existing models which set -rho.g on the material points */
+  /* Model initialize function can overload the gravity value */
+  ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
+  grav[0] = 0.0;
+  grav[1] = 1.0;
+  grav[2] = 0.0;
+  ncomponents = 3;
+  flg = PETSC_FALSE;
+  PetscOptionsGetRealArray(NULL,NULL,"-stokes_gravity_vector",grav,&ncomponents,&flg);
+  ierr = PhysCompStokesSetGravityVector(stokes,grav);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode default_pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	char           *name;
-	DM             stokes_pack;
-	Vec            UP;
-	PetscLogDouble t0,t1;
-	static PetscBool beenhere=PETSC_FALSE;
-	PetscFunctionBegin;
+  PetscErrorCode ierr;
+  char           *name;
+  DM             stokes_pack;
+  Vec            UP;
+  PetscLogDouble t0,t1;
+  static PetscBool beenhere=PETSC_FALSE;
+  PetscFunctionBegin;
 
-	PetscTime(&t0);
-	// PVD
-	{
+  PetscTime(&t0);
+  // PVD
+  {
     char *pvdfilename;
-		char *vtkfilename;
+    char *vtkfilename;
 
     if (asprintf(&pvdfilename,"%s/timeseries_vp.pvd",ctx->outputpath) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		if (prefix) {
-			if (asprintf(&vtkfilename, "%s_vp.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		} else {
-			if (asprintf(&vtkfilename, "vp.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-		}
+    if (prefix) {
+      if (asprintf(&vtkfilename, "%s_vp.pvts",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+    } else {
+      if (asprintf(&vtkfilename, "vp.pvts") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+    }
 
     if (!beenhere) { PetscPrintf(PETSC_COMM_WORLD,"  writing pvdfilename %s \n", pvdfilename ); }
-		ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
+    ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, "");CHKERRQ(ierr);
     beenhere = PETSC_TRUE;
     free(pvdfilename);
-		free(vtkfilename);
-	}
+    free(vtkfilename);
+  }
 
-	// PVTS + VTS
-	if (prefix) {
-		if (asprintf(&name,"%s_vp",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	} else {
-		if (asprintf(&name,"vp") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
-	}
+  // PVTS + VTS
+  if (prefix) {
+    if (asprintf(&name,"%s_vp",prefix) < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+  } else {
+    if (asprintf(&name,"vp") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
+  }
 
-	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", PETSC_FUNCTION_NAME );
+  //PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", PETSC_FUNCTION_NAME );
 
-	stokes_pack = ctx->stokes_ctx->stokes_pack;
-	UP = X;
-	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
-	free(name);
-	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
+  stokes_pack = ctx->stokes_ctx->stokes_pack;
+  UP = X;
+  ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
+  free(name);
+  PetscTime(&t1);
+  /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode _pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char root[],const char snap[],const char fileprefix[])
@@ -236,11 +236,11 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
 
 PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	DM             stokes_pack;
-	Vec            UP;
-	PetscLogDouble t0,t1;
-	static PetscBool beenhere=PETSC_FALSE;
+  PetscErrorCode ierr;
+  DM             stokes_pack;
+  Vec            UP;
+  PetscLogDouble t0,t1;
+  static PetscBool beenhere=PETSC_FALSE;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
   char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
@@ -274,24 +274,24 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
   PetscTime(&t1);
   /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
-	PetscErrorCode ierr;
-	DM             stokes_pack;
-	PetscLogDouble t0,t1;
-	static PetscBool beenhere=PETSC_FALSE;
-	char           f1[PETSC_MAX_PATH_LEN];
-	char           f3[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+  DM             stokes_pack;
+  PetscLogDouble t0,t1;
+  static PetscBool beenhere=PETSC_FALSE;
+  char           f1[PETSC_MAX_PATH_LEN];
+  char           f3[PETSC_MAX_PATH_LEN];
   char pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
   char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
 
   PetscFunctionBegin;
-	PetscTime(&t0);
-	// PVD
+  PetscTime(&t0);
+  // PVD
   ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
@@ -309,175 +309,175 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
   ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
 
-	stokes_pack = ctx->stokes_ctx->stokes_pack;
+  stokes_pack = ctx->stokes_ctx->stokes_pack;
 
-	/* dump the dmda's */
-	/* dav,dap */
-	if (prefix) {
-		PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",pvoutputdir,prefix);
-		PetscSNPrintf(f3,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",pvoutputdir,prefix);
-	} else {
-		PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",pvoutputdir);
-		PetscSNPrintf(f3,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",pvoutputdir);
-	}
+  /* dump the dmda's */
+  /* dav,dap */
+  if (prefix) {
+    PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-velocity",pvoutputdir,prefix);
+    PetscSNPrintf(f3,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-pressure",pvoutputdir,prefix);
+  } else {
+    PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-velocity",pvoutputdir);
+    PetscSNPrintf(f3,PETSC_MAX_PATH_LEN-1,"%s/dmda-pressure",pvoutputdir);
+  }
 
   ierr = DMDACheckpointWrite(ctx->stokes_ctx->dav,f1);CHKERRQ(ierr);
   ierr = DMDACheckpointWrite(ctx->stokes_ctx->dap,f3);CHKERRQ(ierr);
 
-	/* dump the vectors */
-	{
-		PetscViewer viewer;
-		Vec         Xu,Xp;
+  /* dump the vectors */
+  {
+    PetscViewer viewer;
+    Vec         Xu,Xp;
 
-		ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+    ierr = DMCompositeGetAccess(stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
 
-		if (prefix) { PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-Xu",pvoutputdir,prefix); }
-		else {        PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-Xu",pvoutputdir);           }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
-		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		ierr = VecView(Xu,viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (prefix) { PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-Xu",pvoutputdir,prefix); }
+    else {        PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-Xu",pvoutputdir);           }
+    PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+    ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(Xu,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-		if (prefix) { PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-Xp",pvoutputdir,prefix); }
-		else {        PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-Xp",pvoutputdir);           }
-		PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
-		ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-		ierr = VecView(Xp,viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (prefix) { PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/%s.dmda-Xp",pvoutputdir,prefix); }
+    else {        PetscSNPrintf(f1,PETSC_MAX_PATH_LEN-1,"%s/dmda-Xp",pvoutputdir);           }
+    PetscPrintf(PETSC_COMM_WORLD,"  writing %s \n", f1 );
+    ierr = PetscViewerBinaryOpen( PETSC_COMM_WORLD,f1,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = VecView(Xp,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-		ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
-	}
+    ierr = DMCompositeRestoreAccess(ctx->stokes_ctx->stokes_pack,X,&Xu,&Xp);CHKERRQ(ierr);
+  }
 
-	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
+  PetscTime(&t1);
+  /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /* MATERIAL POINTS */
 PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 {
-	DataEx de;
-	const PetscMPIInt *neighborranks;
-	PetscMPIInt neighborranks2[27],neighborcount;
-	PetscInt i;
-	PetscLogDouble t0,t1;
-	PetscMPIInt rank;
-	PetscErrorCode ierr;
+  DataEx de;
+  const PetscMPIInt *neighborranks;
+  PetscMPIInt neighborranks2[27],neighborcount;
+  PetscInt i;
+  PetscLogDouble t0,t1;
+  PetscMPIInt rank;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
-	ierr = DMDAGetNeighbors(da,&neighborranks);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PetscObjectComm((PetscObject)da),&rank);CHKERRQ(ierr);
+  ierr = DMDAGetNeighbors(da,&neighborranks);CHKERRQ(ierr);
 
-	neighborcount = 0;
-	for (i=0; i<27; i++) {
-		neighborranks2[i] = -1;
-		if ( (neighborranks[i]>=0) && (neighborranks[i]!=rank) ) {
-			neighborranks2[neighborcount] = neighborranks[i];
-			neighborcount++;
-		}
-	}
+  neighborcount = 0;
+  for (i=0; i<27; i++) {
+    neighborranks2[i] = -1;
+    if ( (neighborranks[i]>=0) && (neighborranks[i]!=rank) ) {
+      neighborranks2[neighborcount] = neighborranks[i];
+      neighborcount++;
+    }
+  }
 
-	PetscTime(&t0);
-	de = DataExCreate(PetscObjectComm((PetscObject)da),0);
-	//	de = DataExCreate(PETSC_COMM_WORLD,0);
-	ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
-	for (i=0; i<neighborcount; i++) {
-		ierr = DataExTopologyAddNeighbour(de,neighborranks2[i]);CHKERRQ(ierr);
-	}
-	ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
-	PetscTime(&t1);
-	PetscPrintf(de->comm,"[[SwarmDMDA3dDataExchangerCreate: time = %1.4e (sec)]]\n",t1-t0);
+  PetscTime(&t0);
+  de = DataExCreate(PetscObjectComm((PetscObject)da),0);
+  //  de = DataExCreate(PETSC_COMM_WORLD,0);
+  ierr = DataExTopologyInitialize(de);CHKERRQ(ierr);
+  for (i=0; i<neighborcount; i++) {
+    ierr = DataExTopologyAddNeighbour(de,neighborranks2[i]);CHKERRQ(ierr);
+  }
+  ierr = DataExTopologyFinalize(de);CHKERRQ(ierr);
+  PetscTime(&t1);
+  PetscPrintf(de->comm,"[[SwarmDMDA3dDataExchangerCreate: time = %1.4e (sec)]]\n",t1-t0);
 
-	*_de = de;
+  *_de = de;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 {
-	DataBucket     db;
-	DataEx         ex;
-	PetscLogDouble t0,t1;
-	PetscInt       lmx,lmy,lmz;
-	PetscBool      flg;
-	int            npoints;
-	PetscErrorCode ierr;
+  DataBucket     db;
+  DataEx         ex;
+  PetscLogDouble t0,t1;
+  PetscInt       lmx,lmy,lmz;
+  PetscBool      flg;
+  int            npoints;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	/* register marker structures here */
-	PetscTime(&t0);
-	DataBucketCreate(&db);
-	DataBucketRegisterField(db,MPntStd_classname,    sizeof(MPntStd),NULL);
-	DataBucketRegisterField(db,MPntPStokes_classname,sizeof(MPntPStokes),NULL);
-	DataBucketFinalize(db);
+  PetscFunctionBegin;
+  /* register marker structures here */
+  PetscTime(&t0);
+  DataBucketCreate(&db);
+  DataBucketRegisterField(db,MPntStd_classname,    sizeof(MPntStd),NULL);
+  DataBucketRegisterField(db,MPntPStokes_classname,sizeof(MPntPStokes),NULL);
+  DataBucketFinalize(db);
     DataBucketRegisterField(db,MPntPStokesPl_classname,sizeof(MPntPStokesPl),NULL);
-	DataBucketFinalize(db);
+  DataBucketFinalize(db);
 
-	/* Choose type of projection (for eta and rho) */
-	ctx->coefficient_projection_type = 1;
-	ierr = PetscOptionsGetInt(NULL,NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&flg);CHKERRQ(ierr);
-	switch (ctx->coefficient_projection_type) {
-		case -1:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using null projection\n");
-			break;
+  /* Choose type of projection (for eta and rho) */
+  ctx->coefficient_projection_type = 1;
+  ierr = PetscOptionsGetInt(NULL,NULL,"-coefficient_projection_type",&ctx->coefficient_projection_type,&flg);CHKERRQ(ierr);
+  switch (ctx->coefficient_projection_type) {
+    case -1:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using null projection\n");
+      break;
 
         /* P0 variants */
-		case 0:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [arithmetic avg]\n");
-			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [arithmetic avg] not implemented");
-			break;
-		case 10:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [harmonic avg]\n");
-			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [harmonic avg] not implemented");
-			break;
-		case 20:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [geometric avg]\n");
-			//SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [geometric avg] not implemented");
-			break;
-		case 30:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [dominant phase]\n");
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [dominant phase] not implemented");
-			break;
+    case 0:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [arithmetic avg]\n");
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [arithmetic avg] not implemented");
+      break;
+    case 10:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [harmonic avg]\n");
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [harmonic avg] not implemented");
+      break;
+    case 20:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [geometric avg]\n");
+      //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [geometric avg] not implemented");
+      break;
+    case 30:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P0 projection [dominant phase]\n");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P0 [dominant phase] not implemented");
+      break;
 
         case 1:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q1 projection\n");
-			break;
-		case 2:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q2 projection\n");
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = Q2 not implemented");
-			break;
-		case 3:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P1 projection\n");
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P1 not implemented");
-			break;
-		case 4:
-			PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using one2one projection\n");
-			break;
-		default:
-			SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER," -coefficient_projection_type = {0,1,2,4} implying {P0,Q1,Q2,one2on}");
-			break;
-	}
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q1 projection\n");
+      break;
+    case 2:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using Q2 projection\n");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = Q2 not implemented");
+      break;
+    case 3:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using P1 projection\n");
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP," -coefficient_projection_type = P1 not implemented");
+      break;
+    case 4:
+      PetscPrintf(PETSC_COMM_WORLD,"  MaterialPointsStokes: Using one2one projection\n");
+      break;
+    default:
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER," -coefficient_projection_type = {0,1,2,4} implying {P0,Q1,Q2,one2on}");
+      break;
+  }
 
-	/* Choose coordinate layout for material points, -mp_layout 0,1 */
-	/* set initial size */
+  /* Choose coordinate layout for material points, -mp_layout 0,1 */
+  /* set initial size */
   ierr = DMDAGetLocalSizeElementQ2(dav,&lmx,&lmy,&lmz);CHKERRQ(ierr);
-	DataBucketSetInitialSizes(db,lmx*lmy*lmz*2*2*2,1000);
-	PetscTime(&t1);
-	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm initialization: %1.4lf (sec)]]\n", t1-t0);
+  DataBucketSetInitialSizes(db,lmx*lmy*lmz*2*2*2,1000);
+  PetscTime(&t1);
+  PetscPrintf(PETSC_COMM_WORLD,"[[Swarm initialization: %1.4lf (sec)]]\n", t1-t0);
 
-	PetscTime(&t0);
-	{
-		/* defaults for lattice layout */
-		PetscInt   Nxp[] = {2,2,2}; /* change with -lattice_layout_N{x,y,z} */
-		PetscReal  perturb = 0.1;   /* change with -lattice_layout_perturb */
-		/* defaults for random layout */
-		PetscInt   nPerCell = 2 * 2 * 2; /* change with -random_layout_Np */
+  PetscTime(&t0);
+  {
+    /* defaults for lattice layout */
+    PetscInt   Nxp[] = {2,2,2}; /* change with -lattice_layout_N{x,y,z} */
+    PetscReal  perturb = 0.1;   /* change with -lattice_layout_perturb */
+    /* defaults for random layout */
+    PetscInt   nPerCell = 2 * 2 * 2; /* change with -random_layout_Np */
 
-		PetscInt mplayout = 0;
+    PetscInt mplayout = 0;
 
-		PetscOptionsGetInt(NULL,NULL,"-mp_layout",&mplayout,NULL);
+    PetscOptionsGetInt(NULL,NULL,"-mp_layout",&mplayout,NULL);
         switch (mplayout) {
             case 0:
                 ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
@@ -492,100 +492,100 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
                 ierr = SwarmMPntStd_CoordAssignment_LatticeLayout3d(dav,Nxp,perturb,db);CHKERRQ(ierr);
                 break;
         }
-	}
-	PetscTime(&t1);
-	DataBucketGetSizes(db,&npoints,NULL,NULL);
-	PetscPrintf(PETSC_COMM_WORLD,"[[Swarm->coordinate assignment: %d points : %1.4lf (sec)]]\n", npoints,t1-t0);
+  }
+  PetscTime(&t1);
+  DataBucketGetSizes(db,&npoints,NULL,NULL);
+  PetscPrintf(PETSC_COMM_WORLD,"[[Swarm->coordinate assignment: %d points : %1.4lf (sec)]]\n", npoints,t1-t0);
 
 
-	/* create the data exchanger need for parallel particle movement */
-	ierr = SwarmDMDA3dDataExchangerCreate(dav,&ex);CHKERRQ(ierr);
+  /* create the data exchanger need for parallel particle movement */
+  ierr = SwarmDMDA3dDataExchangerCreate(dav,&ex);CHKERRQ(ierr);
 
-	ctx->materialpoint_db = db;
-	ctx->materialpoint_ex = ex;
+  ctx->materialpoint_db = db;
+  ctx->materialpoint_ex = ex;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 {
-	PetscErrorCode ierr;
-	DataBucket db;
-	DM cda;
-	Vec gcoords;
-	PetscScalar *LA_gcoords;
-	PetscInt nel,nen,i;
-	int e,p,n_mp_points;
-	const PetscInt *elnidx;
-	PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
-	PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];
-	DataField      PField_std;
+  PetscErrorCode ierr;
+  DataBucket db;
+  DM cda;
+  Vec gcoords;
+  PetscScalar *LA_gcoords;
+  PetscInt nel,nen,i;
+  int e,p,n_mp_points;
+  const PetscInt *elnidx;
+  PetscScalar Ni_p[Q2_NODES_PER_EL_3D];
+  PetscScalar elcoords[3*Q2_NODES_PER_EL_3D];
+  DataField      PField_std;
 
 
-	PetscFunctionBegin;
-	db = ctx->materialpoint_db;
+  PetscFunctionBegin;
+  db = ctx->materialpoint_db;
 
-	/* setup for coords */
-	ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
-	ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  /* setup for coords */
+  ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+  ierr = VecGetArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
 
-	ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
+  ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
 
-	DataBucketGetSizes(db,&n_mp_points,0,0);
-	DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
-	DataFieldGetAccess(PField_std);
+  DataBucketGetSizes(db,&n_mp_points,0,0);
+  DataBucketGetDataFieldByName(db,MPntStd_classname,&PField_std);
+  DataFieldGetAccess(PField_std);
 
-	for (p=0; p<n_mp_points; p++) {
-		MPntStd     *material_point;
-		double      xp[3];
-		double      *xi;
+  for (p=0; p<n_mp_points; p++) {
+    MPntStd     *material_point;
+    double      xp[3];
+    double      *xi;
 
-		DataFieldAccessPoint(PField_std,p,(void**)&material_point);
+    DataFieldAccessPoint(PField_std,p,(void**)&material_point);
 
-		MPntStdGetField_local_element_index(material_point,&e);
-		ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
+    MPntStdGetField_local_element_index(material_point,&e);
+    ierr = DMDAGetElementCoordinatesQ2_3D(elcoords,(PetscInt*)&elnidx[nen*e],LA_gcoords);CHKERRQ(ierr);
 
-		MPntStdGetField_local_coord(material_point,&xi);
-		pTatin_ConstructNi_Q2_3D(xi,Ni_p);
+    MPntStdGetField_local_coord(material_point,&xi);
+    pTatin_ConstructNi_Q2_3D(xi,Ni_p);
 
-		xp[0] = 0.0;
-		xp[1] = 0.0;
-		xp[2] = 0.0;
-		for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
-			xp[0] = xp[0] + Ni_p[i] * elcoords[NSD*i  ];
-			xp[1] = xp[1] + Ni_p[i] * elcoords[NSD*i+1];
-			xp[2] = xp[2] + Ni_p[i] * elcoords[NSD*i+2];
-		}
+    xp[0] = 0.0;
+    xp[1] = 0.0;
+    xp[2] = 0.0;
+    for (i=0; i<Q2_NODES_PER_EL_3D; i++) {
+      xp[0] = xp[0] + Ni_p[i] * elcoords[NSD*i  ];
+      xp[1] = xp[1] + Ni_p[i] * elcoords[NSD*i+1];
+      xp[2] = xp[2] + Ni_p[i] * elcoords[NSD*i+2];
+    }
 
-		MPntStdSetField_global_coord(material_point,xp);
+    MPntStdSetField_global_coord(material_point,xp);
 
-	}
+  }
 
-	DataFieldRestoreAccess(PField_std);
+  DataFieldRestoreAccess(PField_std);
 
-	ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
+  ierr = VecRestoreArray(gcoords,&LA_gcoords);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 {
-	PetscErrorCode ierr;
-	PetscLogDouble t0,t1;
-	static PetscBool beenhere=PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscLogDouble t0,t1;
+  static PetscBool beenhere=PETSC_FALSE;
   char name[PETSC_MAX_PATH_LEN],pvdfilename[PETSC_MAX_PATH_LEN],vtkfilename[PETSC_MAX_PATH_LEN],pvoutputdir[PETSC_MAX_PATH_LEN],root[PETSC_MAX_PATH_LEN];
   char stepprefix[PETSC_MAX_PATH_LEN];
   PetscBool found;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
   ierr = PetscSNPrintf(root,PETSC_MAX_PATH_LEN-1,"%s",ctx->outputpath);CHKERRQ(ierr);
 
   ierr = PetscSNPrintf(pvoutputdir,PETSC_MAX_PATH_LEN-1,"%s/step%D",root,ctx->step);CHKERRQ(ierr);
   ierr = pTatinTestDirectory(pvoutputdir,'w',&found);CHKERRQ(ierr);
   if (!found) { ierr = pTatinCreateDirectory(pvoutputdir);CHKERRQ(ierr); }
 
-	PetscTime(&t0);
-	// PVD
+  PetscTime(&t0);
+  // PVD
   PetscSNPrintf(pvdfilename,PETSC_MAX_PATH_LEN-1,"%s/timeseries_mpoints_std.pvd",root);
   if (prefix) { PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "%s_mpoints_std.pvtu",prefix);
   } else {      PetscSNPrintf(vtkfilename, PETSC_MAX_PATH_LEN-1, "mpoints_std.pvtu");           }
@@ -595,296 +595,296 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
   ierr = ParaviewPVDOpenAppend(beenhere,ctx->step,pvdfilename,ctx->time, vtkfilename, stepprefix);CHKERRQ(ierr);
   beenhere = PETSC_TRUE;
 
-	// PVTS + VTS
+  // PVTS + VTS
   if (prefix) { PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"%s_mpoints_std",prefix);
   } else {      PetscSNPrintf(name, PETSC_MAX_PATH_LEN-1,"mpoints_std",prefix);    }
 
-	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,pvoutputdir,name);CHKERRQ(ierr);
+  ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,pvoutputdir,name);CHKERRQ(ierr);
 
-	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
+  PetscTime(&t1);
+  /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {
-	pTatinCtx      user;
-	PetscMPIInt    rank;
-	PetscErrorCode ierr;
+  pTatinCtx      user;
+  PetscMPIInt    rank;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
   ierr = PetscNew(&user);CHKERRQ(ierr);
 
 
-	/* init */
-	user->stokes_ctx = NULL;
-	user->energy_ctx = NULL;
-//	user->coords_ctx = NULL;
+  /* init */
+  user->stokes_ctx = NULL;
+  user->energy_ctx = NULL;
+//  user->coords_ctx = NULL;
 
-	user->pack     = NULL; /* DM composite for velocity and pressure */
+  user->pack     = NULL; /* DM composite for velocity and pressure */
 
-	/* set defaults */
-	user->restart_from_file         = PETSC_FALSE;
-	user->checkpoint_every          = 1000;
-	user->checkpoint_every_nsteps   = 1000;
-	user->checkpoint_every_ncpumins = 90.0;
-	user->checkpoint_disable        = PETSC_FALSE;
+  /* set defaults */
+  user->restart_from_file         = PETSC_FALSE;
+  user->checkpoint_every          = 1000;
+  user->checkpoint_every_nsteps   = 1000;
+  user->checkpoint_every_ncpumins = 90.0;
+  user->checkpoint_disable        = PETSC_FALSE;
 
-	user->mx               = 4;
-	user->my               = 4;
-	user->mz               = 4;
-	user->use_mf_stokes    = PETSC_FALSE;
-	user->solverstatistics = PETSC_FALSE;
+  user->mx               = 4;
+  user->my               = 4;
+  user->mz               = 4;
+  user->use_mf_stokes    = PETSC_FALSE;
+  user->solverstatistics = PETSC_FALSE;
 
-	user->continuation_m   = 1;
-	user->continuation_M   = 1;
-	user->coefficient_projection_type = 1; /* Q1 */
+  user->continuation_m   = 1;
+  user->continuation_M   = 1;
+  user->coefficient_projection_type = 1; /* Q1 */
 
-	/* time step control */
-	user->nsteps           = 1;
-	user->dt_max           = 1.0e30;
-	user->dt_min           = 0.0;
-	user->dt               = 0.0;
-	user->output_frequency = 1;
-	user->time_max         = 1.0e32;
-	user->time             = 0.0;
+  /* time step control */
+  user->nsteps           = 1;
+  user->dt_max           = 1.0e30;
+  user->dt_min           = 0.0;
+  user->dt               = 0.0;
+  user->output_frequency = 1;
+  user->time_max         = 1.0e32;
+  user->time             = 0.0;
   user->step             = 0;
   user->dt_adv           = 0.0;
-	user->use_constant_dt  = PETSC_FALSE;
+  user->use_constant_dt  = PETSC_FALSE;
 
-	ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
-	ierr = MaterialConstantsCreate(&user->material_constants);CHKERRQ(ierr);
-	ierr = MaterialConstantsInitialize(user->material_constants);CHKERRQ(ierr);
-	ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
+  ierr = RheologyConstantsInitialise(&user->rheology_constants);CHKERRQ(ierr);
+  ierr = MaterialConstantsCreate(&user->material_constants);CHKERRQ(ierr);
+  ierr = MaterialConstantsInitialize(user->material_constants);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PETSC_COMM_WORLD,&user->model_data);CHKERRQ(ierr);
 
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-	if (rank == 0) {
-		pTatinGenerateFormattedTimestamp(user->formatted_timestamp);
-	}
-	ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  if (rank == 0) {
+    pTatinGenerateFormattedTimestamp(user->formatted_timestamp);
+  }
+  ierr = MPI_Bcast(user->formatted_timestamp,PETSC_MAX_PATH_LEN,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-	*ctx = user;
+  *ctx = user;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 {
-	pTatinCtx user = *ctx;
-	PetscErrorCode ierr;
+  pTatinCtx user = *ctx;
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	if (user->materialpoint_ex) { /* ierr = DataExView(user->materialpoint_ex);CHKERRQ(ierr); */ ierr = DataExDestroy(user->materialpoint_ex);CHKERRQ(ierr); }
-	if (user->materialpoint_db) { DataBucketDestroy(&user->materialpoint_db); }
+  if (user->materialpoint_ex) { /* ierr = DataExView(user->materialpoint_ex);CHKERRQ(ierr); */ ierr = DataExDestroy(user->materialpoint_ex);CHKERRQ(ierr); }
+  if (user->materialpoint_db) { DataBucketDestroy(&user->materialpoint_db); }
 
-	if (user->energy_ctx) { ierr = PhysCompDestroy_Energy(&user->energy_ctx);CHKERRQ(ierr); }
-	if (user->stokes_ctx) { ierr = PhysCompDestroy_Stokes(&user->stokes_ctx);CHKERRQ(ierr); }
-	if (user->pack) {       ierr = DMDestroy(&user->pack);CHKERRQ(ierr); }
+  if (user->energy_ctx) { ierr = PhysCompDestroy_Energy(&user->energy_ctx);CHKERRQ(ierr); }
+  if (user->stokes_ctx) { ierr = PhysCompDestroy_Stokes(&user->stokes_ctx);CHKERRQ(ierr); }
+  if (user->pack) {       ierr = DMDestroy(&user->pack);CHKERRQ(ierr); }
 
-	/*
-	 if (user->Q) { ierr = QuadratureStokesDestroy(&user->Q);CHKERRQ(ierr); }
-	 for (e=0; e<QUAD_EDGES; e++) {
-	 if (user->surfQ[e]) { ierr = SurfaceQuadratureStokesDestroy(&user->surfQ[e]);CHKERRQ(ierr); }
-	 }
-	 if (user->p_bclist) { ierr = BCListDestroy(&user->p_bclist);CHKERRQ(ierr); }
-	 if (user->u_bclist) { ierr = BCListDestroy(&user->u_bclist);CHKERRQ(ierr); }
-	 if (user->dap) { ierr = DMDestroy(&user->dap);CHKERRQ(ierr); }
-	 if (user->dav) { ierr = DMDestroy(&user->dav);CHKERRQ(ierr); }
-	 */
+  /*
+   if (user->Q) { ierr = QuadratureStokesDestroy(&user->Q);CHKERRQ(ierr); }
+   for (e=0; e<QUAD_EDGES; e++) {
+   if (user->surfQ[e]) { ierr = SurfaceQuadratureStokesDestroy(&user->surfQ[e]);CHKERRQ(ierr); }
+   }
+   if (user->p_bclist) { ierr = BCListDestroy(&user->p_bclist);CHKERRQ(ierr); }
+   if (user->u_bclist) { ierr = BCListDestroy(&user->u_bclist);CHKERRQ(ierr); }
+   if (user->dap) { ierr = DMDestroy(&user->dap);CHKERRQ(ierr); }
+   if (user->dav) { ierr = DMDestroy(&user->dav);CHKERRQ(ierr); }
+   */
 
-	if (user->material_constants) { DataBucketDestroy(&user->material_constants); }
+  if (user->material_constants) { DataBucketDestroy(&user->material_constants); }
 
-	ierr = PetscContainerDestroy(&user->model_data);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&user->model_data);CHKERRQ(ierr);
 
-	{
-		char  logfile[PETSC_MAX_PATH_LEN];
-		PetscViewer viewer;
+  {
+    char  logfile[PETSC_MAX_PATH_LEN];
+    PetscViewer viewer;
 
-		sprintf(logfile,"%s/ptatin.petsc.log_summary-%s",user->outputpath,user->formatted_timestamp);
+    sprintf(logfile,"%s/ptatin.petsc.log_summary-%s",user->outputpath,user->formatted_timestamp);
 
-		ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&viewer);CHKERRQ(ierr);
-		ierr = PetscLogView(viewer);CHKERRQ(ierr);
-		ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-	}
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,logfile,&viewer);CHKERRQ(ierr);
+    ierr = PetscLogView(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
 
-	ierr = PetscLogView(user->log);CHKERRQ(ierr);
-	ierr = pTatinLogCloseFile(user);CHKERRQ(ierr);
+  ierr = PetscLogView(user->log);CHKERRQ(ierr);
+  ierr = pTatinLogCloseFile(user);CHKERRQ(ierr);
 
-	ierr = PetscFree(user);CHKERRQ(ierr);
+  ierr = PetscFree(user);CHKERRQ(ierr);
 
-	*ctx = NULL;
+  *ctx = NULL;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data)
 {
-	PetscErrorCode ierr;
-	PetscContainer container;
+  PetscErrorCode ierr;
+  PetscContainer container;
 
   PetscFunctionBegin;
-	ierr = PetscObjectQuery((PetscObject)ctx->model_data,name,(PetscObject*)&container);CHKERRQ(ierr);
-	if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with ctx->model_data",name);
-	ierr = PetscContainerGetPointer(container,data);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)ctx->model_data,name,(PetscObject*)&container);CHKERRQ(ierr);
+  if (!container) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"No data with name \"%s\" was composed with ctx->model_data",name);
+  ierr = PetscContainerGetPointer(container,data);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data)
 {
-	PetscContainer container;
-	PetscErrorCode ierr;
+  PetscContainer container;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscContainerCreate(PETSC_COMM_WORLD,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,(void*)data);CHKERRQ(ierr);
 
-	ierr = PetscObjectCompose((PetscObject)ctx->model_data,name,(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ctx->model_data,name,(PetscObject)container);CHKERRQ(ierr);
   ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); /* decrement ref counter */
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 {
   char           optionsfile[PETSC_MAX_PATH_LEN];
-	PetscInt       mx3 = 4;
-	PetscBool      flg;
-	PetscErrorCode ierr;
+  PetscInt       mx3 = 4;
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
-	/* parse options */
-	ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
-	flg = PETSC_FALSE; ierr = PetscOptionsGetInt(NULL,NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
-	if (flg) {
-		ctx->mx = mx3;
-		ctx->my = mx3;
-		ctx->mz = mx3;
-	}
+  /* parse options */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mx",&ctx->mx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-my",&ctx->my,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-mz",&ctx->mz,&flg);CHKERRQ(ierr);
+  flg = PETSC_FALSE; ierr = PetscOptionsGetInt(NULL,NULL,"-mx3",&mx3,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ctx->mx = mx3;
+    ctx->my = mx3;
+    ctx->mz = mx3;
+  }
 
-	ierr = PetscOptionsGetBool(NULL,NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-use_mf_stokes",&ctx->use_mf_stokes,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-with_statistics",&ctx->solverstatistics,&flg);CHKERRQ(ierr);
 
-	flg = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
-	if (flg == PETSC_FALSE) {
-		sprintf(ctx->outputpath,"./output");
-	}
-	ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetString(NULL,NULL,"-output_path",ctx->outputpath,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  if (flg == PETSC_FALSE) {
+    sprintf(ctx->outputpath,"./output");
+  }
+  ierr = pTatinCreateDirectory(ctx->outputpath);CHKERRQ(ierr);
 
-	/* checkpointing */
-	ierr = PetscOptionsGetInt(NULL,NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetBool(NULL,NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
+  /* checkpointing */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-checkpoint_every",&ctx->checkpoint_every,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-checkpoint_every_nsteps",&ctx->checkpoint_every_nsteps,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-checkpoint_every_ncpumins",&ctx->checkpoint_every_ncpumins,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(NULL,NULL,"-checkpoint_disable",&ctx->checkpoint_disable,&flg);CHKERRQ(ierr);
 
-	/* time stepping */
-	ierr = PetscOptionsGetInt(NULL,NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetReal(NULL,NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsGetInt(NULL,NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
-	{
-		PetscReal constant_dt;
+  /* time stepping */
+  ierr = PetscOptionsGetInt(NULL,NULL,"-nsteps",&ctx->nsteps,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-dt_min",&ctx->dt_min,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-dt_max",&ctx->dt_max,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(NULL,NULL,"-time_max",&ctx->time_max,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(NULL,NULL,"-output_frequency",&ctx->output_frequency,&flg);CHKERRQ(ierr);
+  {
+    PetscReal constant_dt;
 
-		ierr = PetscOptionsGetReal(NULL,NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
-		if (flg) {
-			ctx->use_constant_dt = PETSC_TRUE;
-			ctx->constant_dt     = constant_dt;
-		}
-	}
+    ierr = PetscOptionsGetReal(NULL,NULL,"-constant_dt",&constant_dt,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ctx->use_constant_dt = PETSC_TRUE;
+      ctx->constant_dt     = constant_dt;
+    }
+  }
 
   /* open log file */
   ierr = pTatinLogOpenFile(ctx);CHKERRQ(ierr);
   ierr = pTatinLogHeader(ctx);CHKERRQ(ierr);
 
   sprintf(optionsfile,"%s/ptatin.options-%s",ctx->outputpath,ctx->formatted_timestamp);
-	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
+  ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
-	sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
-	ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
+  sprintf(optionsfile,"%s/ptatin.options",ctx->outputpath);
+  ierr = pTatinWriteOptionsFile(optionsfile);CHKERRQ(ierr);
 
-//	ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
+//  ierr = pTatinModelLoad(ctx);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 {
-	pTatinModel model;
-	PetscBool flgname;
-	char modelname[PETSC_MAX_PATH_LEN];
-	PetscErrorCode ierr;
+  pTatinModel model;
+  PetscBool flgname;
+  char modelname[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
 
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	flgname = PETSC_FALSE;
-	ierr = PetscOptionsGetString(NULL,NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
-	if (flgname) {
-		ierr = pTatinModelGetByName(modelname,&model);CHKERRQ(ierr);
-		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: -ptatin_model \"%s\" was detected\n",model->model_name);
-	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: -ptatin_model wasn't specified - running boring \"template\" model\n");
-		ierr = pTatinModelGetByName("template",&model);CHKERRQ(ierr);
-	}
+  flgname = PETSC_FALSE;
+  ierr = PetscOptionsGetString(NULL,NULL,"-ptatin_model",modelname,PETSC_MAX_PATH_LEN-1,&flgname);CHKERRQ(ierr);
+  if (flgname) {
+    ierr = pTatinModelGetByName(modelname,&model);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: -ptatin_model \"%s\" was detected\n",model->model_name);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"  [pTatinModel]: -ptatin_model wasn't specified - running boring \"template\" model\n");
+    ierr = pTatinModelGetByName("template",&model);CHKERRQ(ierr);
+  }
 
-	model->ptat_ctx = ctx;
-	ctx->model = model;
+  model->ptat_ctx = ctx;
+  ctx->model = model;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetTime(pTatinCtx ctx,PetscReal *time)
 {
-	if (time) { *time = ctx->time; }
-	PetscFunctionReturn(0);
+  if (time) { *time = ctx->time; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt)
 {
-	if (dt) { *dt = ctx->dt; }
-	PetscFunctionReturn(0);
+  if (dt) { *dt = ctx->dt; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
 {
-	if (db) { *db = ctx->materialpoint_db; }
-	if (de) { *de = ctx->materialpoint_ex; }
-	PetscFunctionReturn(0);
+  if (db) { *db = ctx->materialpoint_db; }
+  if (de) { *de = ctx->materialpoint_ex; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetMaterialConstants(pTatinCtx ctx,DataBucket *db)
 {
-	if (db) { *db = ctx->material_constants; }
-	PetscFunctionReturn(0);
+  if (db) { *db = ctx->material_constants; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m)
 {
-	if (m) { *m = ctx->model; }
-	PetscFunctionReturn(0);
+  if (m) { *m = ctx->model; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r)
 {
-	if (r) { *r = &ctx->rheology_constants; }
-	PetscFunctionReturn(0);
+  if (r) { *r = &ctx->rheology_constants; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
 {
-	if (s) { *s = ctx->stokes_ctx; }
-	PetscFunctionReturn(0);
+  if (s) { *s = ctx->stokes_ctx; }
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 {
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpoint is deprecated");
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
@@ -921,49 +921,49 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
     ierr = pTatinCreateDirectory(checkpoints_basedir);CHKERRQ(ierr);
   }
 
-	step                      = ctx->step;
-	checkpoint_every          = ctx->checkpoint_every;
-	checkpoint_every_nsteps   = ctx->checkpoint_every_nsteps;
-	checkpoint_every_ncpumins = ctx->checkpoint_every_ncpumins;
+  step                      = ctx->step;
+  checkpoint_every          = ctx->checkpoint_every;
+  checkpoint_every_nsteps   = ctx->checkpoint_every_nsteps;
+  checkpoint_every_ncpumins = ctx->checkpoint_every_ncpumins;
 
-	/* -------------------------------------- */
-	/* check one - this file has a fixed name */
-	if (step%checkpoint_every == 0) {
+  /* -------------------------------------- */
+  /* check one - this file has a fixed name */
+  if (step%checkpoint_every == 0) {
 
     ierr = PetscSNPrintf(test_dir,PETSC_MAX_PATH_LEN-1,"%s/checkpoints/default",ctx->outputpath);CHKERRQ(ierr);
     ierr = pTatinTestDirectory(test_dir,'w',&exists);CHKERRQ(ierr);
     if (!exists) {
       ierr = pTatinCreateDirectory(test_dir);CHKERRQ(ierr);
     }
-		PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[every]: Writing to dir %s\n",test_dir);
-		// call checkpoint routine //
-		//ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
+    PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[every]: Writing to dir %s\n",test_dir);
+    // call checkpoint routine //
+    //ierr = pTatin3dCheckpoint(ctx,X,NULL);CHKERRQ(ierr);
     ierr = pTatinCtxCheckpointWrite(ctx,test_dir,NULL,dmstokes,dmenergy,0,NULL,NULL,Xs,Xe,NULL,NULL);CHKERRQ(ierr);
-	}
+  }
 
   write_step_checkpoint = PETSC_FALSE;
 
-	/* -------------------------------------------------------------------- */
-	/* check three - look at cpu time and decide if we need to write or not */
-	PetscTime(&current_cpu_time);
-	ierr = MPI_Allreduce(&current_cpu_time,&max_current_cpu_time,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-	max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
+  /* -------------------------------------------------------------------- */
+  /* check three - look at cpu time and decide if we need to write or not */
+  PetscTime(&current_cpu_time);
+  ierr = MPI_Allreduce(&current_cpu_time,&max_current_cpu_time,1,MPIU_PETSCLOGDOUBLE,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  max_current_cpu_time = max_current_cpu_time/60.0; /* convert sec to mins */
 
-	if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
+  if (max_current_cpu_time > last_cpu_time + checkpoint_every_ncpumins) {
 
     PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_ncpumins]: Activated\n");
     write_step_checkpoint = PETSC_TRUE;
 
-		last_cpu_time = max_current_cpu_time;
-	}
+    last_cpu_time = max_current_cpu_time;
+  }
 
-	/* ----------------------------------------------------------------- */
-	/* check two - these files have a file name related to the time step */
-	if (step%checkpoint_every_nsteps == 0) {
+  /* ----------------------------------------------------------------- */
+  /* check two - these files have a file name related to the time step */
+  if (step%checkpoint_every_nsteps == 0) {
 
     PetscPrintf(PETSC_COMM_WORLD,"CheckpointManager[checkpoint_every_nsteps]: Activated\n");
     write_step_checkpoint = PETSC_TRUE;
-	}
+  }
 
   /* if either the cpu based or step based checks returned true, write a checkpoint file */
   if (write_step_checkpoint) {
@@ -996,30 +996,30 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
     }
   }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 {
-	PetscFunctionBegin;
+  PetscFunctionBegin;
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 {
-	PetscFunctionBegin;
+  PetscFunctionBegin;
   /* load coordinates of the velocity DMDA */
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMeshGeometry is deprecated");
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *data)
 {
-	PetscFunctionBegin;
-	/* load material points from file */
+  PetscFunctionBegin;
+  /* load material points from file */
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatinRestart_ApplyInitialMaterialGeometry is deprecated");
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data)
@@ -1034,7 +1034,7 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n,*refx,*refy,*refz;
-	PetscBool      view;
+  PetscBool      view;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -1065,19 +1065,19 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
   }
   ierr = PetscFree3(refx,refy,refz);CHKERRQ(ierr);
 
-	view = PETSC_FALSE;
-	ierr = PetscOptionsGetBool(NULL,((PetscObject)da)->prefix,"-da_view_hierarchy",&view,NULL);CHKERRQ(ierr);
+  view = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(NULL,((PetscObject)da)->prefix,"-da_view_hierarchy",&view,NULL);CHKERRQ(ierr);
   if (view) {
-		char levelname[PETSC_MAX_PATH_LEN];
+    char levelname[PETSC_MAX_PATH_LEN];
 
-		ierr = DMDAViewPetscVTK(da,NULL,"dav_fine.vtk");CHKERRQ(ierr);
-		for (i=0; i<nlevels; i++) {
-			PetscSNPrintf(levelname,PETSC_MAX_PATH_LEN-1,"dav_level%D.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
-			ierr = DMDAViewPetscVTK(dac[i],NULL,levelname);CHKERRQ(ierr);
-		}
-	}
+    ierr = DMDAViewPetscVTK(da,NULL,"dav_fine.vtk");CHKERRQ(ierr);
+    for (i=0; i<nlevels; i++) {
+      PetscSNPrintf(levelname,PETSC_MAX_PATH_LEN-1,"dav_level%D.vtk",nlevels-1-i); /* do shift to make 0 named as the corsest */
+      ierr = DMDAViewPetscVTK(dac[i],NULL,levelname);CHKERRQ(ierr);
+    }
+  }
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 /*
@@ -1100,45 +1100,45 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial)
 {
 
-	PetscReal dt_current;
+  PetscReal dt_current;
 
-	PetscFunctionBegin;
-	if (timescale_name) {
-		PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control(%.20s):",timescale_name);
-	} else {
-		PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control:");
-	}
+  PetscFunctionBegin;
+  if (timescale_name) {
+    PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control(%.20s):",timescale_name);
+  } else {
+    PetscPrintf(PETSC_COMM_WORLD,"  TimeStep control:");
+  }
 
-	if (ctx->use_constant_dt) {
-		ctx->dt = ctx->constant_dt;
-		PetscPrintf(PETSC_COMM_WORLD," | using constant time step ==>> dt used = %1.4e |\n", ctx->dt );
+  if (ctx->use_constant_dt) {
+    ctx->dt = ctx->constant_dt;
+    PetscPrintf(PETSC_COMM_WORLD," | using constant time step ==>> dt used = %1.4e |\n", ctx->dt );
 
-		PetscFunctionReturn(0);
-	}
+    PetscFunctionReturn(0);
+  }
 
-	dt_current = ctx->dt;
-	if (dt_trial < dt_current) {
-		PetscPrintf(PETSC_COMM_WORLD," | current = %1.4e : trial = %1.4e [accepted]", dt_current, dt_trial);
-		ctx->dt = dt_trial;
-	}
-	else {
-		PetscPrintf(PETSC_COMM_WORLD," | current = %1.4e : trial = %1.4e", dt_current, dt_trial);
-	}
-	dt_current = ctx->dt;
+  dt_current = ctx->dt;
+  if (dt_trial < dt_current) {
+    PetscPrintf(PETSC_COMM_WORLD," | current = %1.4e : trial = %1.4e [accepted]", dt_current, dt_trial);
+    ctx->dt = dt_trial;
+  }
+  else {
+    PetscPrintf(PETSC_COMM_WORLD," | current = %1.4e : trial = %1.4e", dt_current, dt_trial);
+  }
+  dt_current = ctx->dt;
 
-	/* apply limiters */
+  /* apply limiters */
   if (dt_current < ctx->dt_min) {
-		dt_current = ctx->dt_min;
-		PetscPrintf(PETSC_COMM_WORLD," | dt < dt_min : limited to = %1.4e", dt_current );
-	}
+    dt_current = ctx->dt_min;
+    PetscPrintf(PETSC_COMM_WORLD," | dt < dt_min : limited to = %1.4e", dt_current );
+  }
   if (dt_current > ctx->dt_max) {
-		dt_current = ctx->dt_max;
-		PetscPrintf(PETSC_COMM_WORLD," | dt > dt_max : restricted to = %1.4e", dt_current );
-	}
-	ctx->dt = dt_current;
-	PetscPrintf(PETSC_COMM_WORLD," | ==>> dt used = %1.4e |\n", ctx->dt );
+    dt_current = ctx->dt_max;
+    PetscPrintf(PETSC_COMM_WORLD," | dt > dt_max : restricted to = %1.4e", dt_current );
+  }
+  ctx->dt = dt_current;
+  PetscPrintf(PETSC_COMM_WORLD," | ==>> dt used = %1.4e |\n", ctx->dt );
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const char prefix[],

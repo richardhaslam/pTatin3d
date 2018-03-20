@@ -37,16 +37,16 @@
 typedef struct _p_DMDAE *DMDAE;
 
 struct _p_DMDAE {
-	PetscInt ne,lne;
-	PetscInt mx,my,mz;
-	PetscInt lmx,lmy,lmz;
-	PetscInt *lsip,*lsjp,*lskp;
-	PetscInt *lmxp,*lmyp,*lmzp;
-	PetscInt si,sj,sk;
-	PetscInt npe; /* nodes per element */
-	PetscInt nps; /* nodes per side */
-	PetscInt overlap;
-	PetscInt sgi,sgj,sgk;
+  PetscInt ne,lne;
+  PetscInt mx,my,mz;
+  PetscInt lmx,lmy,lmz;
+  PetscInt *lsip,*lsjp,*lskp;
+  PetscInt *lmxp,*lmyp,*lmzp;
+  PetscInt si,sj,sk;
+  PetscInt npe; /* nodes per element */
+  PetscInt nps; /* nodes per side */
+  PetscInt overlap;
+  PetscInt sgi,sgj,sgk;
 };
 
 PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2);
@@ -59,9 +59,9 @@ PetscErrorCode DMDestroyDMDAE(DM dm);
 
 /* helpers */
 PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
-																			 PetscInt *m,PetscInt *n,PetscInt *p,
-																			 PetscInt **si,PetscInt **sj,PetscInt **sk,
-																			 PetscInt **mx,PetscInt **my,PetscInt **mz);
+                                       PetscInt *m,PetscInt *n,PetscInt *p,
+                                       PetscInt **si,PetscInt **sj,PetscInt **sk,
+                                       PetscInt **mx,PetscInt **my,PetscInt **mz);
 PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt *esk,PetscInt *mx,PetscInt *my,PetscInt *mz);
 
 #endif

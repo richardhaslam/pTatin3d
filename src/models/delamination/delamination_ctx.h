@@ -33,22 +33,22 @@
 
 
 typedef struct {
-	PetscInt  nmaterials;
-	PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz;
-	PetscReal eta[20];
-	PetscReal rho[20];
-	PetscReal phi[20];
-	PetscReal coh[20];
-	PetscReal arrh_n[20];
-	PetscReal arrh_E[20];
-	PetscReal alpha[20];
-	PetscBool dimensional;
-	PetscReal density_bar;
-	PetscReal length_bar;
-	PetscReal viscosity_bar;
-	PetscReal velocity_bar;
-	PetscReal time_bar;
-	PetscReal pressure_bar;
+  PetscInt  nmaterials;
+  PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz;
+  PetscReal eta[20];
+  PetscReal rho[20];
+  PetscReal phi[20];
+  PetscReal coh[20];
+  PetscReal arrh_n[20];
+  PetscReal arrh_E[20];
+  PetscReal alpha[20];
+  PetscBool dimensional;
+  PetscReal density_bar;
+  PetscReal length_bar;
+  PetscReal viscosity_bar;
+  PetscReal velocity_bar;
+  PetscReal time_bar;
+  PetscReal pressure_bar;
         PetscReal rho0;
 } ModelDelaminationCtx;
 

@@ -35,9 +35,9 @@
 #include "ptatin3d.h"
 
 typedef enum {
-	RHEOLOGY_VISCOUS=0,
-	RHEOLOGY_VP_STD,
-	RHEOLOGY_LAVA
+  RHEOLOGY_VISCOUS=0,
+  RHEOLOGY_VP_STD,
+  RHEOLOGY_LAVA
 } RheologyType;
 
 
@@ -55,7 +55,7 @@ struct _p_RheologyConstants {
   /* rheology; "constant" ==>> const (short name) */
   PetscReal const_eta0[MAX_PHASE];
   PetscReal const_rho0[MAX_PHASE];
-	/* not in used in the marker version, elastic const,would require storing stress on marker... oh la la */
+  /* not in used in the marker version, elastic const,would require storing stress on marker... oh la la */
   PetscReal const_shearmod[MAX_PHASE];
   /* rheology; "von mises" ==>> mises (short name) */
   PetscReal mises_tau_yield[MAX_PHASE]; /* would be nice to refactor it to DP_Co */
@@ -72,8 +72,8 @@ struct _p_RheologyConstants {
   PetscReal soft_Co_inf [MAX_PHASE];
   PetscReal soft_phi_inf [MAX_PHASE];
 
-	PetscInt     nphases_active;
-	RheologyType rheology_type;
+  PetscInt     nphases_active;
+  RheologyType rheology_type;
 };
 
 

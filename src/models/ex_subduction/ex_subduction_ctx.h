@@ -35,12 +35,12 @@
 typedef enum { RegionId_Mantle=0, RegionId_LowerMantle, RegionId_Slab } ExSubductionRegion;
 
 typedef struct {
-	PetscReal      domain[3];
-	PetscReal      dip; /* degrees */
-	PetscReal      eta[3];
-	PetscReal      rho[3];
-	PetscInt       ngo;
-	GeometryObject go[10];
+  PetscReal      domain[3];
+  PetscReal      dip; /* degrees */
+  PetscReal      eta[3];
+  PetscReal      rho[3];
+  PetscInt       ngo;
+  GeometryObject go[10];
     PetscViewer    logviewer;
 } ExSubductionCtx;
 

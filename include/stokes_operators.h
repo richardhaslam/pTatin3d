@@ -35,30 +35,30 @@ typedef struct _p_MatStokesMF *MatStokesMF;
 typedef struct _p_MatA11MF *MatA11MF;
 
 struct _p_MatStokesMF {
-	PetscInt    mu,mp,Mu,Mp;
-	DM          stokes_pack,daUVW,dap;
-	BCList      u_bclist,p_bclist;
-	Quadrature  volQ;
-	DM          daU;
-	IS          isUVW,isU,isV,isW,isP; /* Need the IS's for GetSubMatrix */
-	PetscInt    refcnt;
+  PetscInt    mu,mp,Mu,Mp;
+  DM          stokes_pack,daUVW,dap;
+  BCList      u_bclist,p_bclist;
+  Quadrature  volQ;
+  DM          daU;
+  IS          isUVW,isU,isV,isW,isP; /* Need the IS's for GetSubMatrix */
+  PetscInt    refcnt;
 };
 
 struct _p_MatA11MF {
-	PetscInt    mu,Mu;
-	DM          daUVW;
-	BCList      u_bclist;
-	Quadrature  volQ;
-	DM          daU; /* Optionally need this */
-	IS          isUVW; /* Needed for full column space */
-	IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
-	PetscInt    refcnt;
-	PetscObjectState state;
-	PetscBool   is_setup;
-	void        *ctx; /* special context for cuda, opencl, openmp spmv implementations */
-	PetscErrorCode (*SpMVOp_MatMult)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
-	PetscErrorCode (*SpMVOp_SetUp)(MatA11MF);
-	PetscErrorCode (*SpMVOp_Destroy)(MatA11MF);
+  PetscInt    mu,Mu;
+  DM          daUVW;
+  BCList      u_bclist;
+  Quadrature  volQ;
+  DM          daU; /* Optionally need this */
+  IS          isUVW; /* Needed for full column space */
+  IS          isU,isV,isW; /* Optionally: Need the IS's for GetSubMatrix */
+  PetscInt    refcnt;
+  PetscObjectState state;
+  PetscBool   is_setup;
+  void        *ctx; /* special context for cuda, opencl, openmp spmv implementations */
+  PetscErrorCode (*SpMVOp_MatMult)(MatA11MF,Quadrature,DM,PetscScalar[],PetscScalar[]);
+  PetscErrorCode (*SpMVOp_SetUp)(MatA11MF);
+  PetscErrorCode (*SpMVOp_Destroy)(MatA11MF);
 };
 
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B);
@@ -103,8 +103,8 @@ PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3);
 #define NEV 4   /* Number of elements over which to vectorize */
 
 typedef enum {
-	GRAD,
-	GRAD_TRANSPOSE
+  GRAD,
+  GRAD_TRANSPOSE
 } GradMode;
 
 PetscErrorCode TensorContractNEV_AVX(PetscReal Rf[][3],PetscReal Sf[][3],PetscReal Tf[][3],GradMode gmode,PetscReal x[][NQP][NEV],PetscReal y[][NQP][NEV]);
@@ -112,11 +112,11 @@ __attribute__((noinline))
 PetscErrorCode JacobianInvertNEV_AVX(PetscScalar dx[3][3][NQP][NEV],PetscScalar dxdet[NQP][NEV]);
 __attribute__((noinline))
 PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
-					   PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
-					   PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
-					   PetscReal w[Q2_NODES_PER_EL_3D],
-					   PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
-					   PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV]);
+             PetscScalar dx[3][3][Q2_NODES_PER_EL_3D][NEV],
+             PetscScalar dxdet[Q2_NODES_PER_EL_3D][NEV],
+             PetscReal w[Q2_NODES_PER_EL_3D],
+             PetscScalar du[3][3][Q2_NODES_PER_EL_3D][NEV],
+             PetscScalar dv[3][3][Q2_NODES_PER_EL_3D][NEV]);
 
 
 typedef struct _p_MFA11CUDA *MFA11CUDA;

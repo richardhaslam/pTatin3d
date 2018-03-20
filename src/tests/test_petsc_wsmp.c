@@ -37,216 +37,216 @@ static const char help[] = "Test program for PCWSMP\n\n";
 
 PetscErrorCode wssmp_ex1_serial_petsc_lu(void)
 {
-	PetscInt m = 9;
-	Vec b,x;
-	Mat A;
-	KSP ksp;
-	PC pc;
-	PetscInt    rowidx,nz,colidx[9],_c[] = { 0,1,2,3,4,5,6,7,8 };
-	PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
-	PetscErrorCode ierr;
+  PetscInt m = 9;
+  Vec b,x;
+  Mat A;
+  KSP ksp;
+  PC pc;
+  PetscInt    rowidx,nz,colidx[9],_c[] = { 0,1,2,3,4,5,6,7,8 };
+  PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
+  PetscErrorCode ierr;
 
     PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
-	ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
-	ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
     ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
-	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-	/* ------------------Test from wssmp_ex1.f ------------------------- */
-	rowidx = 0; nz = 4;
-	colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 6;    colidx[3] = 7;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  /* ------------------Test from wssmp_ex1.f ------------------------- */
+  rowidx = 0; nz = 4;
+  colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 6;    colidx[3] = 7;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 1; nz = 4;
-	colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 7;    colidx[3] = 8;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 1; nz = 4;
+  colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 7;    colidx[3] = 8;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 2; nz = 6;
-	colidx[0] = 0;     colidx[1] = 1;    colidx[2] = 2;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 2; nz = 6;
+  colidx[0] = 0;     colidx[1] = 1;    colidx[2] = 2;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 3; nz = 4;
-	colidx[0] = 3;     colidx[1] = 5;    colidx[2] = 6;    colidx[3] = 7;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 3; nz = 4;
+  colidx[0] = 3;     colidx[1] = 5;    colidx[2] = 6;    colidx[3] = 7;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 4; nz = 4;
-	colidx[0] = 4;     colidx[1] = 5;    colidx[2] = 7;    colidx[3] = 8;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 4; nz = 4;
+  colidx[0] = 4;     colidx[1] = 5;    colidx[2] = 7;    colidx[3] = 8;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 5; nz = 6;
-	colidx[0] = 3;     colidx[1] = 4;    colidx[2] = 5;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 5; nz = 6;
+  colidx[0] = 3;     colidx[1] = 4;    colidx[2] = 5;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 6; nz = 6;
-	colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 3;    colidx[3] = 5;    colidx[4] = 6;    colidx[5] = 7;
-	vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = 16.0; vals[5]   = -4.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 6; nz = 6;
+  colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 3;    colidx[3] = 5;    colidx[4] = 6;    colidx[5] = 7;
+  vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = 16.0; vals[5]   = -4.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	rowidx = 7; nz = 9;
-	MatSetValues(A,1,&rowidx,nz,_c,_v,INSERT_VALUES);
+  rowidx = 7; nz = 9;
+  MatSetValues(A,1,&rowidx,nz,_c,_v,INSERT_VALUES);
 
-	rowidx = 8; nz = 6;
-	colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 4;    colidx[3] = 5;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = 16.0;
-	MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
+  rowidx = 8; nz = 6;
+  colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 4;    colidx[3] = 5;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = 16.0;
+  MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);
 
-	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-	ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
-	ierr = VecSet(b,1.0);CHKERRQ(ierr);
-	/* ------------------------------------------- */
+  ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
+  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  /* ------------------------------------------- */
 
-	ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-	ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-	ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
-	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-	ierr = MatDestroy(&A);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
 {
-	PetscInt m = 9;
-	Vec b,x;
-	Mat A;
-	KSP ksp;
-	PC pc;
-	PetscInt    rowidx,nz,colidx[9],_c[] = { 0,1,2,3,4,5,6,7,8 };
-	PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
-	PetscErrorCode ierr;
+  PetscInt m = 9;
+  Vec b,x;
+  Mat A;
+  KSP ksp;
+  PC pc;
+  PetscInt    rowidx,nz,colidx[9],_c[] = { 0,1,2,3,4,5,6,7,8 };
+  PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
+  PetscErrorCode ierr;
 
-	PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
-	ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-	ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m);CHKERRQ(ierr);
     ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
-	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-	/* ------------------Test from wssmp_ex1.f ------------------------- */
-	rowidx = 0; nz = 4;
-	colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 6;    colidx[3] = 7;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  /* ------------------Test from wssmp_ex1.f ------------------------- */
+  rowidx = 0; nz = 4;
+  colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 6;    colidx[3] = 7;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 1; nz = 4;
-	colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 7;    colidx[3] = 8;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 1; nz = 4;
+  colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 7;    colidx[3] = 8;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 2; nz = 6;
-	colidx[0] = 0;     colidx[1] = 1;    colidx[2] = 2;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 2; nz = 6;
+  colidx[0] = 0;     colidx[1] = 1;    colidx[2] = 2;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 3; nz = 4;
-	colidx[0] = 3;     colidx[1] = 5;    colidx[2] = 6;    colidx[3] = 7;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 3; nz = 4;
+  colidx[0] = 3;     colidx[1] = 5;    colidx[2] = 6;    colidx[3] = 7;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 4; nz = 4;
-	colidx[0] = 4;     colidx[1] = 5;    colidx[2] = 7;    colidx[3] = 8;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 4; nz = 4;
+  colidx[0] = 4;     colidx[1] = 5;    colidx[2] = 7;    colidx[3] = 8;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 5; nz = 6;
-	colidx[0] = 3;     colidx[1] = 4;    colidx[2] = 5;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 5; nz = 6;
+  colidx[0] = 3;     colidx[1] = 4;    colidx[2] = 5;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 6; nz = 6;
-	colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 3;    colidx[3] = 5;    colidx[4] = 6;    colidx[5] = 7;
-	vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = 16.0; vals[5]   = -4.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 6; nz = 6;
+  colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 3;    colidx[3] = 5;    colidx[4] = 6;    colidx[5] = 7;
+  vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = 16.0; vals[5]   = -4.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 7; nz = 9;
-	ierr = MatSetValues(A,1,&rowidx,nz,_c,_v,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 7; nz = 9;
+  ierr = MatSetValues(A,1,&rowidx,nz,_c,_v,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 8; nz = 6;
-	colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 4;    colidx[3] = 5;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = 16.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 8; nz = 6;
+  colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 4;    colidx[3] = 5;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = 16.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
-	ierr = VecSet(b,1.0);CHKERRQ(ierr);
-	/* ------------------------------------------- */
+  ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
+  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  /* ------------------------------------------- */
 
-	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-	ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-	ierr = PCSetType(pc,"wsmp");CHKERRQ(ierr);
-	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,"wsmp");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"first solve\n");
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"first solve\n");
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"first solve* [identical]\n");
-	ierr = VecSet(x,0.0);CHKERRQ(ierr);
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"first solve* [identical]\n");
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"second solve [same nonzero pattern]\n");
-	ierr = VecSet(x,0.0);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,A);
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"second solve [same nonzero pattern]\n");
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"third solve [different nonzero pattern]\n");
-	ierr = VecSet(x,0.0);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"third solve [different nonzero pattern]\n");
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-	ierr = MatDestroy(&A);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
 {
-	PetscInt m = 9;
-	Vec b,x;
-	Mat A;
-	KSP ksp;
-	PC pc;
-	PetscInt    rowidx,nz,colidx[9],_c[] = { 0,1,2,3,4,5,6,7,8 };
-	PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
-	PetscMPIInt size,rank;
-	PetscErrorCode ierr;
+  PetscInt m = 9;
+  Vec b,x;
+  Mat A;
+  KSP ksp;
+  PC pc;
+  PetscInt    rowidx,nz,colidx[9],_c[] = { 0,1,2,3,4,5,6,7,8 };
+  PetscScalar vals[9],_v[] = { -3.0, -3.0, -4.0, -3.0, -3.0, -4.0, -4.0, 71.0, -4.0 };
+  PetscMPIInt size,rank;
+  PetscErrorCode ierr;
 
-	PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
+  PetscPrintf(PETSC_COMM_WORLD,"%s:\n",__FUNCTION__);
 
-	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-	ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     if (size == 3) { /* special case to match the example in the manual */
@@ -265,98 +265,98 @@ PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
     ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A,9,NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,9,NULL,9,NULL);CHKERRQ(ierr);
-	ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
 
-	/* ------------------Test from wssmp_ex1.f ------------------------- */
-	rowidx = 0; nz = 4;
-	colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 6;    colidx[3] = 7;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  /* ------------------Test from wssmp_ex1.f ------------------------- */
+  rowidx = 0; nz = 4;
+  colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 6;    colidx[3] = 7;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 1; nz = 4;
-	colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 7;    colidx[3] = 8;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 1; nz = 4;
+  colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 7;    colidx[3] = 8;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 2; nz = 6;
-	colidx[0] = 0;     colidx[1] = 1;    colidx[2] = 2;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 2; nz = 6;
+  colidx[0] = 0;     colidx[1] = 1;    colidx[2] = 2;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 3; nz = 4;
-	colidx[0] = 3;     colidx[1] = 5;    colidx[2] = 6;    colidx[3] = 7;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 3; nz = 4;
+  colidx[0] = 3;     colidx[1] = 5;    colidx[2] = 6;    colidx[3] = 7;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -1.0; vals[3]   = -3.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 4; nz = 4;
-	colidx[0] = 4;     colidx[1] = 5;    colidx[2] = 7;    colidx[3] = 8;
-	vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 4; nz = 4;
+  colidx[0] = 4;     colidx[1] = 5;    colidx[2] = 7;    colidx[3] = 8;
+  vals[0]   = 14.0;  vals[1]   = -1.0; vals[2]   = -3.0; vals[3]   = -1.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 5; nz = 6;
-	colidx[0] = 3;     colidx[1] = 4;    colidx[2] = 5;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 5; nz = 6;
+  colidx[0] = 3;     colidx[1] = 4;    colidx[2] = 5;    colidx[3] = 6;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -1.0; vals[2]   = 16.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = -2.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 6; nz = 6;
-	colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 3;    colidx[3] = 5;    colidx[4] = 6;    colidx[5] = 7;
-	vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = 16.0; vals[5]   = -4.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 6; nz = 6;
+  colidx[0] = 0;     colidx[1] = 2;    colidx[2] = 3;    colidx[3] = 5;    colidx[4] = 6;    colidx[5] = 7;
+  vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = 16.0; vals[5]   = -4.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 7; nz = 9;
-	ierr = MatSetValues(A,1,&rowidx,nz,_c,_v,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 7; nz = 9;
+  ierr = MatSetValues(A,1,&rowidx,nz,_c,_v,INSERT_VALUES);CHKERRQ(ierr);
 
-	rowidx = 8; nz = 6;
-	colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 4;    colidx[3] = 5;    colidx[4] = 7;    colidx[5] = 8;
-	vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = 16.0;
-	ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
+  rowidx = 8; nz = 6;
+  colidx[0] = 1;     colidx[1] = 2;    colidx[2] = 4;    colidx[3] = 5;    colidx[4] = 7;    colidx[5] = 8;
+  vals[0]   = -1.0;  vals[1]   = -2.0; vals[2]   = -1.0; vals[3]   = -2.0; vals[4]   = -4.0; vals[5]   = 16.0;
+  ierr = MatSetValues(A,1,&rowidx,nz,colidx,vals,INSERT_VALUES);CHKERRQ(ierr);
 
-	ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-	ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-	ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
-	ierr = VecSet(b,1.0);CHKERRQ(ierr);
-	/* ------------------------------------------- */
+  ierr = MatCreateVecs(A,&b,&x);CHKERRQ(ierr);
+  ierr = VecSet(b,1.0);CHKERRQ(ierr);
+  /* ------------------------------------------- */
 
-	ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-	ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
-	ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-	ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-	ierr = PCSetType(pc,"wsmp");CHKERRQ(ierr);
-	ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ksp,A,A);CHKERRQ(ierr);
+  ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,"wsmp");CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"first solve\n");
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"first solve\n");
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	PetscPrintf(PETSC_COMM_WORLD,"first solve* [identical]\n");
-	ierr = VecSet(x,0.0);CHKERRQ(ierr);
-	ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-	ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"first solve* [identical]\n");
+  ierr = VecSet(x,0.0);CHKERRQ(ierr);
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-	ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
-	ierr = MatDestroy(&A);CHKERRQ(ierr);
-	ierr = VecDestroy(&x);CHKERRQ(ierr);
-	ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 int main(int argc,char **argv)
 {
-	PetscErrorCode ierr;
-	PetscMPIInt size;
+  PetscErrorCode ierr;
+  PetscMPIInt size;
 
-	ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
+  ierr = pTatinInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
 
-	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-	if (size == 1) {
-		//ierr = wssmp_ex1_serial_petsc_lu();CHKERRQ(ierr);
-		ierr = wssmp_ex1_serial_petsc_wsmp();CHKERRQ(ierr);
-	} else {
-		ierr = wssmp_ex1_mpi_petsc_wsmp();CHKERRQ(ierr);
-	}
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    //ierr = wssmp_ex1_serial_petsc_lu();CHKERRQ(ierr);
+    ierr = wssmp_ex1_serial_petsc_wsmp();CHKERRQ(ierr);
+  } else {
+    ierr = wssmp_ex1_mpi_petsc_wsmp();CHKERRQ(ierr);
+  }
 
-	ierr = pTatinFinalize();CHKERRQ(ierr);
-	return 0;
+  ierr = pTatinFinalize();CHKERRQ(ierr);
+  return 0;
 }

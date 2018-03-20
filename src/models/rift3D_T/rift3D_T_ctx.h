@@ -33,22 +33,22 @@
 
 
 typedef struct {
-	PetscInt  nmaterials;
+  PetscInt  nmaterials;
     PetscBool runmises;
-	PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz,rho0;
+  PetscReal Lx,Ly,Lz,Ox,Oy,Oz,vx,vy,vz,rho0;
     PetscReal Tbottom,Ttop,thermal_age0;
     PetscReal thermal_age_anom,wx_anom,wz_anom,cx_anom,cz_anom;
-	PetscBool dimensional;
-	PetscReal density_bar;
-	PetscReal length_bar;
-	PetscReal viscosity_bar;
-	PetscReal velocity_bar;
-	PetscReal time_bar;
-	PetscReal pressure_bar;
-	PetscBool use_semi_eulerian_mesh;
-	PetscBool output_markers;
-	GeometryObject G[100];
-	PetscInt  ngo;
+  PetscBool dimensional;
+  PetscReal density_bar;
+  PetscReal length_bar;
+  PetscReal viscosity_bar;
+  PetscReal velocity_bar;
+  PetscReal time_bar;
+  PetscReal pressure_bar;
+  PetscBool use_semi_eulerian_mesh;
+  PetscBool output_markers;
+  GeometryObject G[100];
+  PetscInt  ngo;
 
 } ModelRift3D_TCtx;
 

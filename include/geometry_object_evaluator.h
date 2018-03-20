@@ -40,11 +40,11 @@ typedef struct _p_GeometryObjectEval *GeometryObjectEval;
 
 struct _p_GeometryObjectEval {
   /* user methods */
-	GeometryObject go;
-	void    *data;
-	int     region_index;
-	double  region_value;
-	double  (*evaluate_region_function)(double*,void*);
+  GeometryObject go;
+  void    *data;
+  int     region_index;
+  double  region_value;
+  double  (*evaluate_region_function)(double*,void*);
 };
 
 

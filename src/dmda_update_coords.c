@@ -41,65 +41,65 @@
 
 PetscErrorCode DMDAUpdateGhostedCoordinates(DM da)
 {
-	PetscErrorCode ierr;
-	Vec da_coordinates, gcoords;
-	DM _dac;
+  PetscErrorCode ierr;
+  Vec da_coordinates, gcoords;
+  DM _dac;
 
-	PetscFunctionBegin;
-	ierr = DMGetCoordinateDM(da,&_dac);CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
-	ierr = DMGetCoordinates(da,&da_coordinates);CHKERRQ(ierr);
-	ierr = DMGlobalToLocalBegin(_dac,da_coordinates,INSERT_VALUES,gcoords);CHKERRQ(ierr);
-	ierr = DMGlobalToLocalEnd(_dac,da_coordinates,INSERT_VALUES,gcoords);CHKERRQ(ierr);
-	PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(da,&_dac);CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal(da,&gcoords);CHKERRQ(ierr);
+  ierr = DMGetCoordinates(da,&da_coordinates);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(_dac,da_coordinates,INSERT_VALUES,gcoords);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(_dac,da_coordinates,INSERT_VALUES,gcoords);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDASetCoordinatesFromLocalVector(DM da,Vec local_coords)
 {
-	PetscErrorCode ierr;
-	Vec da_coordinates;
-	DM dac;
+  PetscErrorCode ierr;
+  Vec da_coordinates;
+  DM dac;
 
-	PetscFunctionBegin;
-	ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMGetCoordinateDM(da,&dac);CHKERRQ(ierr);
 
-	/* scatter new existing coords into global_coords */
-	ierr = DMGetCoordinates( da, &da_coordinates );CHKERRQ(ierr);
-	ierr = VecZeroEntries(da_coordinates);CHKERRQ(ierr);
-	ierr = DMLocalToGlobalBegin( dac, local_coords, INSERT_VALUES, da_coordinates );CHKERRQ(ierr);
-	ierr = DMLocalToGlobalEnd  ( dac, local_coords, INSERT_VALUES, da_coordinates );CHKERRQ(ierr);
+  /* scatter new existing coords into global_coords */
+  ierr = DMGetCoordinates( da, &da_coordinates );CHKERRQ(ierr);
+  ierr = VecZeroEntries(da_coordinates);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin( dac, local_coords, INSERT_VALUES, da_coordinates );CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd  ( dac, local_coords, INSERT_VALUES, da_coordinates );CHKERRQ(ierr);
 
-	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+  ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDASetCoordinatesU(DM da,Vec coords)
 {
-	PetscErrorCode ierr;
-	Vec da_coords;
+  PetscErrorCode ierr;
+  Vec da_coords;
 
-	PetscFunctionBegin;
-	ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
-	ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
-	ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMGetCoordinates(da,&da_coords);CHKERRQ(ierr);
+  ierr = VecCopy(coords,da_coords);CHKERRQ(ierr);
+  ierr = DMDAUpdateGhostedCoordinates(da);CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode DMDACloneCoordinates(DM da,DM da_clone)
 {
-	PetscErrorCode ierr;
-	Vec coords, coords_clone;
+  PetscErrorCode ierr;
+  Vec coords, coords_clone;
 
-	PetscFunctionBegin;
-	ierr = DMGetCoordinates( da, &coords ); CHKERRQ(ierr);
-	ierr = DMGetCoordinates( da_clone, &coords_clone ); CHKERRQ(ierr);
-	ierr = VecCopy( coords, coords_clone ); CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = DMGetCoordinates( da, &coords ); CHKERRQ(ierr);
+  ierr = DMGetCoordinates( da_clone, &coords_clone ); CHKERRQ(ierr);
+  ierr = VecCopy( coords, coords_clone ); CHKERRQ(ierr);
 
-	ierr = DMGetCoordinatesLocal( da, &coords ); CHKERRQ(ierr);
-	ierr = DMGetCoordinatesLocal( da_clone, &coords_clone ); CHKERRQ(ierr);
-	ierr = VecCopy( coords, coords_clone ); CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal( da, &coords ); CHKERRQ(ierr);
+  ierr = DMGetCoordinatesLocal( da_clone, &coords_clone ); CHKERRQ(ierr);
+  ierr = VecCopy( coords, coords_clone ); CHKERRQ(ierr);
 
-	PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }

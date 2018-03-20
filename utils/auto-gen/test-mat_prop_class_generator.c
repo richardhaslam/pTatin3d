@@ -45,74 +45,74 @@
 #include "MaterialConst_ViscosityArrhenius_def.h"
 
 void MatPropProcessOptions(const char   prefix[],
-													 const int    regionid,
-													 void         *dataarray,
-													 const size_t class_size,
-													 const char   classname[],
-													 const int    nmembers,
-													 const char   *membernames[],
-													 const size_t member_sizes[],
-													 const size_t member_offsets[] )
+                           const int    regionid,
+                           void         *dataarray,
+                           const size_t class_size,
+                           const char   classname[],
+                           const int    nmembers,
+                           const char   *membernames[],
+                           const size_t member_sizes[],
+                           const size_t member_offsets[] )
 {
-	void *data;
-	int f;
-	void *offset;
-	double *mydata;
+  void *data;
+  int f;
+  void *offset;
+  double *mydata;
 
-	printf("Region: %d \n", regionid );
-	printf("Class: %s \n", classname );
+  printf("Region: %d \n", regionid );
+  printf("Class: %s \n", classname );
 
-	data = (void*)( (char*)dataarray + regionid * class_size );
+  data = (void*)( (char*)dataarray + regionid * class_size );
 
-	for (f=0; f<nmembers; f++) {
-		//printf("member_offsets = %zd \n", member_offsets[f] );
-		offset = (void*)( (char*)data + member_offsets[f] );
+  for (f=0; f<nmembers; f++) {
+    //printf("member_offsets = %zd \n", member_offsets[f] );
+    offset = (void*)( (char*)data + member_offsets[f] );
 
-		if (prefix) {
-			printf("option: -%s_%s_%s_%d\n",prefix,classname,membernames[f],regionid);
-		} else {
-			printf("option: -%s_%s_%d\n",classname,membernames[f],regionid);
-		}
-		mydata = (double*)offset;
-		//printf("mydata %p \n", mydata);
-		printf("  data value = %1.4e \n",*mydata);
-	}
+    if (prefix) {
+      printf("option: -%s_%s_%s_%d\n",prefix,classname,membernames[f],regionid);
+    } else {
+      printf("option: -%s_%s_%d\n",classname,membernames[f],regionid);
+    }
+    mydata = (double*)offset;
+    //printf("mydata %p \n", mydata);
+    printf("  data value = %1.4e \n",*mydata);
+  }
 
 }
 
 
 int main(void)
 {
-	int f;
-	MaterialConst_ViscosityArrhenius data[5];
+  int f;
+  MaterialConst_ViscosityArrhenius data[5];
 
 
-	for (f=0; f<5; f++) {
-		MaterialConst_ViscosityArrhenius *me;
+  for (f=0; f<5; f++) {
+    MaterialConst_ViscosityArrhenius *me;
 
-		data[f].enthalpy = 10.0 + (double)f;
-		data[f].preexpA = (double)(20.0 + (double)f);
-		data[f].nexp = 30.0 + (double)f;
-		data[f].Vmol = 40.0 + (double)f;
-		data[f].Tref = 50.0 + (double)f;
-		data[f].Ascale = 60.0 + (double)f;
+    data[f].enthalpy = 10.0 + (double)f;
+    data[f].preexpA = (double)(20.0 + (double)f);
+    data[f].nexp = 30.0 + (double)f;
+    data[f].Vmol = 40.0 + (double)f;
+    data[f].Tref = 50.0 + (double)f;
+    data[f].Ascale = 60.0 + (double)f;
 
-		me = &data[f];
-		printf("&data[f] = %p, (%p %p %p %p %p) \n", me,((char*)me+0),((char*)me+8),((char*)me+16),((char*)me+24),((char*)me+32) );
-		printf("e,A,n,V,T %p %p %p %p %p \n", &data[f].enthalpy,&data[f].preexpA,&data[f].nexp,&data[f].Vmol,&data[f].Tref );
-	}
-
-
-	MatPropProcessOptions(		"GENE",
-											 3,
-											 (void*)data,
-											 sizeof(MaterialConst_ViscosityArrhenius),
-											 MaterialConst_ViscosityArrhenius_classname_short,
-											 MaterialConst_ViscosityArrhenius_nmembers,
-											 MaterialConst_ViscosityArrhenius_member_names_short, /* or MaterialConst_ViscosityArrhenius_member_names for more descriptive option names */
-											 MaterialConst_ViscosityArrhenius_member_sizes,
-											 MaterialConst_ViscosityArrhenius_member_byte_offset);
+    me = &data[f];
+    printf("&data[f] = %p, (%p %p %p %p %p) \n", me,((char*)me+0),((char*)me+8),((char*)me+16),((char*)me+24),((char*)me+32) );
+    printf("e,A,n,V,T %p %p %p %p %p \n", &data[f].enthalpy,&data[f].preexpA,&data[f].nexp,&data[f].Vmol,&data[f].Tref );
+  }
 
 
-	return 0;
+  MatPropProcessOptions(    "GENE",
+                       3,
+                       (void*)data,
+                       sizeof(MaterialConst_ViscosityArrhenius),
+                       MaterialConst_ViscosityArrhenius_classname_short,
+                       MaterialConst_ViscosityArrhenius_nmembers,
+                       MaterialConst_ViscosityArrhenius_member_names_short, /* or MaterialConst_ViscosityArrhenius_member_names for more descriptive option names */
+                       MaterialConst_ViscosityArrhenius_member_sizes,
+                       MaterialConst_ViscosityArrhenius_member_byte_offset);
+
+
+  return 0;
 }
