@@ -732,7 +732,7 @@ PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivit
 
     for (s=0; s<nsteps; s++) {
 
-        /* get acces to the vector V */
+        /* get access to the vector V */
         ierr = DMGlobalToLocalBegin(daH,H,INSERT_VALUES,local_H);CHKERRQ(ierr);
         ierr = DMGlobalToLocalEnd(  daH,H,INSERT_VALUES,local_H);CHKERRQ(ierr);
         ierr = VecGetArray(local_H,&LA_H);CHKERRQ(ierr);

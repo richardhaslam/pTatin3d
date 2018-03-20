@@ -506,7 +506,7 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
   ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,local_X);CHKERRQ(ierr);
   ierr = VecGetArray(local_X,&LA_X);CHKERRQ(ierr);
 
-  /* get acces to the vector V */
+  /* get access to the vector V */
   ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
   ierr = DMGetLocalVector(cda,&local_V);CHKERRQ(ierr);
   ierr = DMGlobalToLocalBegin(cda,V,INSERT_VALUES,local_V);CHKERRQ(ierr);
@@ -944,7 +944,7 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
   ierr = VecGetArray(philastloc,&LA_philastloc);CHKERRQ(ierr);
   ierr = VecGetArray(Fphiloc,   &LA_Fphiloc);CHKERRQ(ierr);
 
-    /* get acces to the vector V */
+    /* get access to the vector V */
     ierr = DMGetCoordinateDM(da,&cda);CHKERRQ(ierr);
     ierr = DMGetLocalVector(cda,&Vloc);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(cda,data->u_minus_V,INSERT_VALUES,Vloc);CHKERRQ(ierr);
