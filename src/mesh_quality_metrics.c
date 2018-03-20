@@ -605,7 +605,7 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
   val_min = 2.0;
   for (e=0;e<nel;e++) {
     ierr = DMDAGetElementCoordinatesQ2_3D(el_coords,(PetscInt*)&el_nidx[nen*e],LA_gcoords);CHKERRQ(ierr);
-    //Loops through vertexes
+    //Loops through vertices
     get_vertex_vectors(el_coords,Q2_VERTEX_0,vectors);
     compute_cossin(vectors,cossin);
     val = (cossin[0]<cossin[1])?cossin[0]:cossin[1];
