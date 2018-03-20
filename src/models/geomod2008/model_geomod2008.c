@@ -85,7 +85,7 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* experiment info */
 	data->experiment = 1;
@@ -285,7 +285,7 @@ PetscErrorCode ApplyStokesVelocityBC_GeoMod2008(pTatinCtx c,void *ctx,BCList bcl
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	
 	vx = data->vx_bc;
@@ -355,7 +355,7 @@ PetscErrorCode ModelApplyBoundaryCondition_GeoMod2008(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	/* stokes dirichlet boundary conditions on u */
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode ModelApplyStokesVelocityBoundaryConditionMG_GeoMod2008(PetscInt n
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		/* Define boundary conditions for each level in the MG hierarchy */
@@ -395,7 +395,7 @@ PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM
 
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* reset all skin particles */
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
@@ -476,7 +476,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -493,7 +493,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = DMDASetUniformCoordinates(stokes->dav,0.0,data->Lx,0.0,data->Ly,0.0,data->Lz);CHKERRQ(ierr);
@@ -520,7 +520,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
@@ -674,7 +674,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,voi
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetMaterialPoints(c,&material_points,NULL);CHKERRQ(ierr);
 	DataBucketGetSizes(material_points,&n_mp_points,0,0);
@@ -790,7 +790,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ct
 PetscErrorCode ModelApplyInitialSolution_GeoMod2008(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscFunctionReturn(0);
 }
@@ -806,7 +806,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_GeoMod2008(pTatinCtx c,Vec X,void *c
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 		
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
@@ -846,7 +846,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_GeoMod2008(pTatinCtx user,
 	PetscErrorCode    ierr;
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -873,7 +873,7 @@ PetscErrorCode ModelOutput_GeoMod2008(pTatinCtx c,Vec X,const char prefix[],void
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	/* mesh */
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);

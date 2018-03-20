@@ -1411,7 +1411,7 @@ PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nva
   ierr = pTatinOutputParaViewMarkerFields(stokes_pack,material_points,nvars,vars,pvoutputdir,name);CHKERRQ(ierr);
 
   PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_cell.(pvd,pvts,vts): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }

@@ -59,7 +59,7 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	PetscFunctionBegin;
 	
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VISCOUS;
@@ -270,7 +270,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Delamination(pTatinCtx user,void *ctx
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = ModelDelamination_DefineBCList(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,user,data);CHKERRQ(ierr);
 	
@@ -284,7 +284,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Delamination(PetscInt nl,BCList bcl
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		ierr = ModelDelamination_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
@@ -296,8 +296,8 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Delamination(PetscInt nl,BCList bcl
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Delamination(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", PETSC_FUNCTION_NAME);
 	
 	PetscFunctionReturn(0);
 }
@@ -308,7 +308,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Delamination(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,data->Ox,data->Lx,data->Oy,data->Ly,data->Oz,data->Lz);CHKERRQ(ierr);
   {
@@ -341,7 +341,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
@@ -459,7 +459,7 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
@@ -516,7 +516,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Delamination(pTatinCtx c,Vec X,void 
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -638,7 +638,7 @@ PetscErrorCode ModelOutput_Delamination(pTatinCtx c,Vec X,const char prefix[],vo
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = ModelOutput_Delamination_CheckScales(c,X);CHKERRQ(ierr);
 	
@@ -654,7 +654,7 @@ PetscErrorCode ModelDestroy_Delamination(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* Free contents of structure */
 	

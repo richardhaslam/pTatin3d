@@ -93,7 +93,7 @@ PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* Temperature flag */
 	use_energy = PETSC_TRUE;
@@ -853,7 +853,7 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_use_initial_up_field",&use_initial_up_field,NULL);
 	
@@ -1126,7 +1126,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
@@ -1163,7 +1163,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList b
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		ierr = ModelRift_oblique3d_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
@@ -1183,7 +1183,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	
 	PetscFunctionBegin;
 
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
@@ -1249,7 +1249,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	
 
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 
 	MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
@@ -1659,7 +1659,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(user,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
@@ -1700,7 +1700,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 	PetscErrorCode     ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	ierr = PhysCompStokesGetDMComposite(stokes,&stokes_pack);CHKERRQ(ierr);
@@ -1772,7 +1772,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	//if (c->step%(50) == 0) {	
 	/* fully lagrangian update */
@@ -1828,7 +1828,7 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+  PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
   simple_output = PETSC_FALSE;
   ierr = PetscOptionsGetBool(NULL,NULL,"-model_Rift_oblique3d_simple_output",&simple_output,NULL);CHKERRQ(ierr);
@@ -1905,7 +1905,7 @@ PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscErrorCode         ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* Free contents of structure */
 	/* destroy PSwarm*/

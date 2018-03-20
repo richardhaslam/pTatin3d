@@ -940,7 +940,7 @@ PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 	
 	ierr = PetscTime(&t1);CHKERRQ(ierr);
 #ifdef PROFILE_TIMING
-	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",__FUNCT__,t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
 #endif
 	PetscFunctionReturn(0);
 }
@@ -1094,7 +1094,7 @@ PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char nam
 	
 	ierr = PetscTime(&t1);CHKERRQ(ierr);
 #ifdef PROFILE_TIMING
-	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",__FUNCT__,t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
 #endif
 	PetscFunctionReturn(0);
 }

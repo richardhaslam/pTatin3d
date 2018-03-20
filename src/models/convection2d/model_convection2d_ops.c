@@ -80,7 +80,7 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatin3d_DefineVelocityMeshQuasi2D(c);CHKERRQ(ierr);
 	
@@ -217,7 +217,7 @@ PetscErrorCode Thermal_Convection2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
 	//ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,2,BCListEvaluator_constant,(void*)&zero);CHKERRQ(ierr);
@@ -251,7 +251,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = Thermal_Convection2d_VelocityBC(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,c,data);CHKERRQ(ierr);
 	
@@ -285,7 +285,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Thermal_Convection2d(PetscInt nl,BC
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		ierr = Thermal_Convection2d_VelocityBC(bclist[n],dav[n],c,data);CHKERRQ(ierr);
@@ -297,7 +297,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Thermal_Convection2d(PetscInt nl,BC
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscFunctionReturn(0);
 }
@@ -309,7 +309,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Thermal_Convection2d(pTatinCtx c,vo
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
 	ierr = pTatin3d_DefineVelocityMeshGeometryQuasi2D(c);CHKERRQ(ierr);
@@ -333,7 +333,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
 	
@@ -434,7 +434,7 @@ PetscErrorCode ModelApplyInitialSolution_Thermal_Convection2d(pTatinCtx c,Vec X,
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	ierr = DMCompositeGetEntries(stokes_pack,&dau,&dap);CHKERRQ(ierr);
@@ -488,7 +488,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d(pTati
 
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -513,7 +513,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Thermal_Convection2d(pTatinCtx c,Vec
 {
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 #if 0	
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -537,7 +537,7 @@ PetscErrorCode ModelOutput_Thermal_Convection2d(pTatinCtx c,Vec X,const char pre
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
@@ -588,7 +588,7 @@ PetscErrorCode ModelDestroy_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = PetscFree(data);CHKERRQ(ierr);
 	

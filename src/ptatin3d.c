@@ -143,14 +143,14 @@ PetscErrorCode default_pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ct
 		if (asprintf(&name,"vp") < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"asprintf() failed");
 	}
 	
-	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", __FUNCT__ );
+	//PetscPrintf(PETSC_COMM_WORLD,"[[DESIGN FLAW]] %s: require better physics modularity to extract (u,p) <---| (X) \n", PETSC_FUNCTION_NAME );
 	
 	stokes_pack = ctx->stokes_ctx->stokes_pack;
 	UP = X;
 	ierr = pTatinOutputParaViewMeshVelocityPressure(stokes_pack,UP,ctx->outputpath,name);CHKERRQ(ierr);
 	free(name);
 	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_vp.(pvd,pvts,vts): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -272,7 +272,7 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
   ierr = pTatinOutputLiteParaViewMeshVelocity(stokes_pack,UP,pvoutputdir,name);CHKERRQ(ierr);
   
   PetscTime(&t1);
-  /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
+  /*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_v.(pvd,pvts,vts): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -349,7 +349,7 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 	}	
 		
 	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_{Xu,Xp}: CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 	
 	PetscFunctionReturn(0);
 }
@@ -602,7 +602,7 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	ierr = SwarmOutputParaView_MPntStd(ctx->materialpoint_db,pvoutputdir,name);CHKERRQ(ierr);
 	
 	PetscTime(&t1);
-	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", __FUNCT__,prefix,t1-t0);*/
+	/*PetscPrintf(PETSC_COMM_WORLD,"%s() -> %s_mpoints_std.(pvd,pvtu,vtu): CPU time %1.2e (sec) \n", PETSC_FUNCTION_NAME,prefix,t1-t0);*/
 
 	PetscFunctionReturn(0);
 }

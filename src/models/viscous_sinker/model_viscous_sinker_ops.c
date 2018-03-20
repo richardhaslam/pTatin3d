@@ -65,7 +65,7 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	PetscFunctionBegin;
 
 
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
   rheology                = &c->rheology_constants;
 	rheology->rheology_type = RHEOLOGY_VISCOUS;
@@ -141,7 +141,7 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 	PetscErrorCode ierr;
 
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	switch (data->boundary_conditon_type) {
 		case VSBC_FreeSlip:
@@ -398,7 +398,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		
@@ -540,8 +540,8 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
 PetscErrorCode ModelApplyMaterialBoundaryCondition_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
-	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
+	PetscPrintf(PETSC_COMM_WORLD,"  NOT IMPLEMENTED \n", PETSC_FUNCTION_NAME);
 	
 	PetscFunctionReturn(0);
 }
@@ -552,7 +552,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,0.0,data->Lx, 0.0,data->Ly, 0.0,data->Lz);CHKERRQ(ierr);
 
@@ -607,7 +607,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(pTatin
 	int                    phase;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	
 	/* define properties on material points */
@@ -784,7 +784,7 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 	
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscOptionsGetBool(NULL,NULL,"-model_viscous_sinker_inclusion_view",&inclusion_view,NULL);
 	
@@ -1017,7 +1017,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 //
 	stokes_pack = c->stokes_ctx->stokes_pack;
@@ -1043,7 +1043,7 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	// testing 
@@ -1075,7 +1075,7 @@ PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	
 	stokes_pack = c->stokes_ctx->stokes_pack;
@@ -1116,7 +1116,7 @@ PetscErrorCode ModelDestroy_ViscousSinker(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* Free contents of structure */
 	

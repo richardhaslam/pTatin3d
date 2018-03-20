@@ -214,7 +214,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* set initial velocity field */
 	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
@@ -452,7 +452,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
 	DataField        PField_visc_const,PField_dens_const;
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
 	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	
@@ -589,7 +589,7 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     
     /* get the velocity mesh */

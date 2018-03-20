@@ -958,7 +958,7 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 	ierr = DMCompositeRestoreAccess(stokes_pack,Y,&Yu,&Yp);CHKERRQ(ierr);
 	
 //	{
-//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", PETSC_FUNCTION_NAME);
 //		ierr = VecCopy(X,Y);CHKERRQ(ierr);
 //	}
 	
@@ -1049,7 +1049,7 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
 	ierr = DMCompositeRestoreAccess(stokes_pack,Y,&Yu,&Yp);CHKERRQ(ierr);
 	
 	//	{
-	//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+	//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", PETSC_FUNCTION_NAME);
 	//		ierr = VecCopy(X,Y);CHKERRQ(ierr);
 	//	}
 	
@@ -1342,7 +1342,7 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 	ierr = BCListInsertZero(ctx->u_bclist,Y);CHKERRQ(ierr);
 	
 //	{
-//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", PETSC_FUNCTION_NAME);
 //		ierr = VecSet(Y,1.0);CHKERRQ(ierr);
 //	}
 	ierr = PetscLogEventEnd(MAT_MultMFA12,A,X,Y,0);CHKERRQ(ierr);
@@ -1478,7 +1478,7 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
 	 */
 	
 //	{
-//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", __FUNCT__);
+//		PetscPrintf(PETSC_COMM_WORLD,"%s: DUMMY MAT MULT FOR PLUMBING TESTING \n", PETSC_FUNCTION_NAME);
 //		ierr = VecSet(Y,1.0);CHKERRQ(ierr);
 //	}
 	ierr = PetscLogEventEnd(MAT_MultMFA21,A,X,Y,0);CHKERRQ(ierr);

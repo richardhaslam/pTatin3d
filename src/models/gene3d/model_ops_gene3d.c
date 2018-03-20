@@ -58,7 +58,7 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
     PetscFunctionBegin;
 	
 	
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     rheology = &c->rheology_constants;
 	
@@ -276,7 +276,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Gene3D(pTatinCtx user,void *ctx)
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     switch (data->boundary_conditon_type)
 	{
@@ -361,8 +361,8 @@ PetscErrorCode ModelApplyBoundaryCondition_Gene3D(pTatinCtx user,void *ctx)
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Gene3D(pTatinCtx c,void *ctx)
 {
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
-    PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
+    PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", PETSC_FUNCTION_NAME);
 	
     PetscFunctionReturn (0);
 }
@@ -373,7 +373,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Gene3D(pTatinCtx c,void *ctx)
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     ierr =	DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox, data->Lx, data->Oy, data->Ly, data->Oz, data->Lz); CHKERRQ(ierr);
 	
@@ -398,7 +398,7 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
     PetscBool flg;
 	
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     /* define properties on material points */
     db = c->materialpoint_db;
@@ -481,7 +481,7 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
     
     
 	PetscFunctionBegin;
-    PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf (PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     ierr = PetscOptionsGetString(NULL,MODEL_NAME,"-map_file",map_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
     if (flg == PETSC_FALSE) {
@@ -577,7 +577,7 @@ PetscErrorCode ModelSetInitialStokesVariableOnMarker_Gene3D(pTatinCtx c,void *ct
     RheologyConstants *rheology;
 	
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     rheology = &c->rheology_constants;
     db = c->materialpoint_db;
@@ -724,8 +724,8 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3D(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyUpdateMeshGeometry_Gene3D(pTatinCtx c,Vec X,void *ctx)
 {
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
-    PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
+    PetscPrintf(PETSC_COMM_WORLD, "  NOT IMPLEMENTED \n", PETSC_FUNCTION_NAME);
 	
     PetscFunctionReturn (0);
 }
@@ -735,7 +735,7 @@ PetscErrorCode ModelOutput_Gene3D(pTatinCtx c,Vec X,const char prefix[],void *ct
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
     ierr = pTatin3d_ModelOutput_MPntStd(c,prefix); CHKERRQ(ierr);
@@ -749,7 +749,7 @@ PetscErrorCode ModelDestroy_Gene3D(pTatinCtx c,void *ctx)
     PetscErrorCode ierr;
 	
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD, "[[%s]]\n", PETSC_FUNCTION_NAME);
     data = (ModelGENE3DCtx*)ctx;
     
     /* Free contents of structure */

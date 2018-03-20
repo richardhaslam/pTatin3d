@@ -383,7 +383,7 @@ PetscErrorCode SwarmViewGeneric_VTUXML_binary_appended(DataBucket db,const int n
 	
 	ierr = PetscTime(&t1);CHKERRQ(ierr);
 #ifdef PROFILE_TIMING
-	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",__FUNCT__,t1-t0);
+	PetscPrintf(PETSC_COMM_WORLD,"VTKWriter(%s): Time %1.4e sec\n",PETSC_FUNCTION_NAME,t1-t0);
 #endif
 	PetscFunctionReturn(0);
 }

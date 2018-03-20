@@ -260,7 +260,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *mode
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* set initial velocity field */
 	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
@@ -299,7 +299,7 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     DataBucketGetDataFieldByName(materialconstants_db,MaterialConst_DensityConst_classname,&PField_DensityConst);
 	DensityConst_data      = (MaterialConst_DensityConst*)PField_DensityConst->data;
@@ -416,7 +416,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
     PetscReal        slab_length;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
 	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	
@@ -866,7 +866,7 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     /* get the velocity mesh */
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);

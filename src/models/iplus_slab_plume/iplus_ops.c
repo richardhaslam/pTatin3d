@@ -70,7 +70,7 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
     
     PetscFunctionBegin;
     
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     PetscOptionsGetInt(NULL,NULL,"-iplus_modeltype",&modeltype,&flg);
     if (flg) {
@@ -190,7 +190,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
     
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -305,7 +305,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
     
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatinGetMaterialPoints(c,&materialpoint_db,NULL);CHKERRQ(ierr);
     DataBucketGetSizes(materialpoint_db,&n_mpoints,0,0);
@@ -339,7 +339,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
 PetscErrorCode ModelApplyInitialSolution_iPLUS(pTatinCtx c,Vec X,void *ctx)
 {
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     PetscFunctionReturn(0);
 }
@@ -436,7 +436,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
     PetscErrorCode   ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     if ( (data->modeltype == iPLUsModelPlume) || (data->modeltype == iPLUsModelSlabPlume) ) {
         ierr = iPLUS_ApplyMaterialBoundaryCondition_Plume(c,data);CHKERRQ(ierr);
@@ -540,7 +540,7 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
     PetscErrorCode   ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     if (c->step%data->iplus_output_frequency == 0) {
         /* ---- Velocity-Pressure Mesh Output ---- */
@@ -623,7 +623,7 @@ PetscErrorCode ModelDestroy_iPLUS(pTatinCtx c,void *ctx)
     PetscErrorCode   ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     /* Free contents of structure */
     if (data->plume_element) {

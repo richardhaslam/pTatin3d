@@ -139,7 +139,7 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
     char            logfilename[PETSC_MAX_PATH_LEN];
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     PetscPrintf(PETSC_COMM_WORLD,"%s\n",model_help);
     
     data->domain[0] = 3000.0e3 / char_length;
@@ -236,7 +236,7 @@ PetscErrorCode ExSubduction_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ExSubduc
     PetscErrorCode ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     val_V = 0.0;
     ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_JMIN_LOC,1,BCListEvaluator_constant,(void*)&val_V);CHKERRQ(ierr);
@@ -258,7 +258,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ExSubduction(PetscInt nl,BCList bcl
     PetscErrorCode  ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     for (n=0; n<nl; n++) {
         ierr = ExSubduction_VelocityBC(bclist[n],dav[n],c,data);CHKERRQ(ierr);
@@ -274,7 +274,7 @@ PetscErrorCode ModelApplyBoundaryCondition_ExSubduction(pTatinCtx c,void *ctx)
     PetscErrorCode  ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     /* velocity */
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ExSubduction(pTatinCtx c,void *ctx)
     PetscErrorCode  ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -321,7 +321,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *
     PetscErrorCode  ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatinGetMaterialPoints(c,&material_point_db,NULL);CHKERRQ(ierr);
     DataBucketGetSizes(material_point_db,&n_mp_points,0,0);
@@ -365,7 +365,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void 
     Vec             velocity,pressure;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -389,7 +389,7 @@ PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],vo
     PetscReal        slab_range_yp[2];
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatin3d_ModelOutputLite_Velocity_Stokes(c,X,prefix);CHKERRQ(ierr);
     
@@ -446,7 +446,7 @@ PetscErrorCode ModelDestroy_ExSubduction(pTatinCtx c,void *ctx)
     PetscErrorCode  ierr;
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     /* Free contents of structure */
     if (data->logviewer) {

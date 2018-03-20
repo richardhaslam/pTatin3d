@@ -64,7 +64,7 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	cm_yr2m_s = 1.0e-2 / ( 365.25 * 24.0 * 60.0 * 60.0 ) ;
 	
@@ -319,7 +319,7 @@ PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 #if 1	
 	ierr = DMDABCListTraverse3d(bclist,dav,DMDABCList_IMAX_LOC,0,BCListEvaluator_X_Subduction_Initiation2d,(void*)c);CHKERRQ(ierr);
@@ -357,7 +357,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,v
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = Subduction_Initiation2d_VelocityBC(c->stokes_ctx->u_bclist,c->stokes_ctx->dav,c,data);CHKERRQ(ierr);
 	
@@ -393,7 +393,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		ierr = Subduction_Initiation2d_VelocityBC(bclist[n],dav[n],c,data);CHKERRQ(ierr);
@@ -405,7 +405,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscFunctionReturn(0);
 }
@@ -417,7 +417,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Subduction_Initiation2d(pTatinCtx c
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, data->Ox,data->Lx, data->Oy,data->Ly, data->Oz, data->Lz);CHKERRQ(ierr);
 	//	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav, 0.0,data->Lx, 0.0,data->Ly, 0.0, data->Lz);CHKERRQ(ierr);	
@@ -441,7 +441,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetMaterialPoints(c,&db,NULL);CHKERRQ(ierr);
 	
@@ -722,7 +722,7 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	
 	PetscFunctionBegin;	
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = DMDAGetInfo(da,0, &M,&N,&P, 0,0,0, &ndof,0, 0,0,0, 0);CHKERRQ(ierr);
 	if (dof_idx >= ndof) { SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"dof_index >= dm->blocksize"); }
@@ -783,7 +783,7 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -849,7 +849,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pT
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -880,7 +880,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,
 	
 	PetscFunctionBegin;
 
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -906,7 +906,7 @@ PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char 
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* output velocity/pressure */
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
@@ -960,7 +960,7 @@ PetscErrorCode ModelDestroy_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	
 	PetscFunctionBegin;
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = PetscFree(data);CHKERRQ(ierr);
 	

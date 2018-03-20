@@ -58,7 +58,7 @@ PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data
     
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     /* determine ranks living on the base j=0 */
     PetscObjectGetComm((PetscObject)dav,&comm);
@@ -283,7 +283,7 @@ PetscErrorCode iPLUS_ApplyMaterialBoundaryCondition_Plume(pTatinCtx c,iPLUSCtx *
     
     
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;

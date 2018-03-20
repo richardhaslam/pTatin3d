@@ -88,7 +88,7 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscFunctionBegin;
 	
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscPrintf(PETSC_COMM_WORLD,"Rift model expects the following dimensions for input\n");
 	PetscPrintf(PETSC_COMM_WORLD," Box geometry: [m] \n");
@@ -406,7 +406,7 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 	
 	PetscFunctionBegin;
     scissor = PETSC_FALSE;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     ierr = PetscOptionsGetBool(NULL,NULL,"-model_rift3D_T_scissors",&scissor,NULL);CHKERRQ(ierr);
    
 	vy  =  data->vy;
@@ -417,7 +417,7 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 	
     if(scissor == PETSC_FALSE){
         PetscScalar    vxl,vxr,vzf,vzb;
-        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
         vxl = -data->vx;
         vxr =  data->vx;
         vzf = -data->vz;
@@ -433,10 +433,10 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
     }else{
         PetscReal    coeffs[5];
         PetscBool    rigid=PETSC_FALSE;
-        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
         // set center of rotation x0
         coeffs[0]= 6.0;
-        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+        PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
         // set center of rotation z0
         coeffs[1]= 4.0;
         // set direction of interpolation
@@ -473,7 +473,7 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = ModelRift3D_T_DefineBCList(user->stokes_ctx->u_bclist,user->stokes_ctx->dav,user,data);CHKERRQ(ierr);
 	
@@ -521,7 +521,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		ierr = ModelRift3D_T_DefineBCList(bclist[n],dav[n],user,data);CHKERRQ(ierr);
@@ -533,7 +533,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] - Not implemented \n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] - Not implemented \n", PETSC_FUNCTION_NAME);
 	PetscFunctionReturn(0);
 }
 
@@ -551,10 +551,10 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 	PetscErrorCode     ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
 #ifndef REMOVE_FACE_INJECTION
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] FACE_INJECTION IS BEING IGNORED - POTENTIAL BUG DETECTED \n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]] FACE_INJECTION IS BEING IGNORED - POTENTIAL BUG DETECTED \n", PETSC_FUNCTION_NAME);
 #endif
 	
 #ifdef REMOVE_FACE_INJECTION
@@ -633,7 +633,7 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTa
 	
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -688,7 +688,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = DMDASetUniformCoordinates(c->stokes_ctx->dav,data->Ox,data->Lx,data->Oy,data->Ly,data->Oz,data->Lz);
     CHKERRQ(ierr);
@@ -708,7 +708,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
     
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+    PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     ierr = ModelApplyInitialMaterialGeometry_Notchtest(c,ctx);
     CHKERRQ(ierr);
@@ -725,7 +725,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
@@ -754,7 +754,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,V
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* fully lagrangian update */
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
@@ -779,7 +779,7 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	PetscErrorCode    ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 	// just plot the velocity field (coords and vel stored in file as floats)
@@ -830,7 +830,7 @@ PetscErrorCode ModelDestroy_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* Free contents of structure */
 	
@@ -854,7 +854,7 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Ve
 	PetscFunctionBegin;
 	
 	
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	if (!data->runmises) {
         DataBucketGetDataFieldByName(user->material_constants,MaterialConst_MaterialType_classname,&PField);
@@ -910,7 +910,7 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	stokes_pack = c->stokes_ctx->stokes_pack;
 	
@@ -1058,7 +1058,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 	PetscErrorCode         ierr;
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	/* define properties on material points */
 	db = c->materialpoint_db;

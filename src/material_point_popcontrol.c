@@ -833,7 +833,7 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     
     ierr = PetscLogEventBegin(PTATIN_MaterialPointPopulationControlInsert,0,0,0,0);CHKERRQ(ierr);
 #if (MPPC_LOG_LEVEL >= 1)
-    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", __FUNCT__);
+    PetscPrintf(PetscObjectComm((PetscObject)da),"[LOG] %s: \n", PETSC_FUNCTION_NAME);
 #endif
     ierr = DMDAGetElements_pTatinQ2P1(da,&nel,&nen,&elnidx);CHKERRQ(ierr);
     

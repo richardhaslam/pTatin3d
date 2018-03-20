@@ -195,7 +195,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void 
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* set initial velocity field */
 	ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
@@ -317,7 +317,7 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
     
     if (modeldata->output_si) {
         /* get the velocity mesh */
@@ -415,7 +415,7 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
 	PetscErrorCode   ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     ierr = pTatinGetStokesContext(ptatinctx,&stokes);CHKERRQ(ierr);
     stokes_pack = stokes->stokes_pack;
@@ -481,7 +481,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
   /* PetscReal                       H; */
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 
 	ierr = pTatinGetMaterialConstants(c,&materialconstants);CHKERRQ(ierr);
 	

@@ -110,7 +110,7 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	
 	PetscFunctionBegin;
 
-	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", __FUNCT__,user->mx,user->my,user->mz );
+	PetscPrintf(PETSC_COMM_WORLD,"\n+  Test [%s]: Mesh %D x %D x %D \n", PETSC_FUNCTION_NAME,user->mx,user->my,user->mz );
 
 	/* create the mf operators */
 	da = user->dav;

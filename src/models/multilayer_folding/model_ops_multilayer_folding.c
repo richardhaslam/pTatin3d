@@ -61,7 +61,7 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* assign defaults */
 	data->max_layers = 100;
@@ -236,7 +236,7 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/*          Boundary conditions 
 	 
@@ -328,7 +328,7 @@ PetscErrorCode ModelApplyBoundaryCondition_MultilayerFolding(pTatinCtx c,void *c
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	bclist = c->stokes_ctx->u_bclist;
 	dav    = c->stokes_ctx->dav;
@@ -345,7 +345,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_MultilayerFolding(PetscInt nl,BCLis
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	for (n=0; n<nl; n++) {
 		/* Define boundary conditions for each level in the MG hierarchy */
@@ -358,7 +358,7 @@ PetscErrorCode ModelApplyBoundaryConditionMG_MultilayerFolding(PetscInt nl,BCLis
 PetscErrorCode ModelApplyMaterialBoundaryCondition_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	PetscFunctionReturn(0);
 }
@@ -375,7 +375,7 @@ PetscErrorCode MultilayerFoldingSetMeshGeometry(DM dav, void *ctx)
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = DMDAGetInfo(dav,0,&M,&N,&P,0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
 	ierr = DMDAGetCorners(dav,&si,&sj,&sk,&nx,&ny,&nz);CHKERRQ(ierr);
@@ -497,7 +497,7 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	interface_heights = data->interface_heights;
 	layer_res_j = data->layer_res_j;
@@ -604,7 +604,7 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 	
     
 	PetscFunctionBegin;
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);CHKERRQ(ierr);
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
@@ -698,7 +698,7 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
     PetscBool layer2damge[100];
     
 	PetscFunctionBegin;
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);CHKERRQ(ierr);
     
     dmin = 0.0;
     dmax = 0.0;
@@ -822,7 +822,7 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* define properties on material points */
 	db = c->materialpoint_db;
@@ -942,7 +942,7 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 	
 
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 		
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -1011,7 +1011,7 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 	
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
 	stokes_pack = stokes->stokes_pack;
@@ -1073,7 +1073,7 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_MultilayerFolding(pTatinCtx c,v
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
     mp_geom = 0;
     PetscOptionsGetInt(NULL,NULL,"-model_multilayer_folding_mp_geom",&mp_geom,0);
@@ -1097,7 +1097,7 @@ PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void 
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* step 1 - create structured grid */
 	Lx = data->Lx;
@@ -1202,7 +1202,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -1231,7 +1231,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		DMDACoor3d span_xz[4];
 		PetscReal  gmin[3],gmax[3];
 		
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating basal layer remeshing\n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating basal layer remeshing\n", PETSC_FUNCTION_NAME);
 		//ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,"before");CHKERRQ(ierr);
 
 		/* clean up base */
@@ -1265,7 +1265,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 		
 		if ((tracking_layer_phase == PETSC_TRUE) && (value[0] > 20.0)) {
 		//if ((tracking_layer_phase == PETSC_TRUE) && (c->step >= 30)) {
-			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing\n", __FUNCT__);
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing\n", PETSC_FUNCTION_NAME);
 		
 			/* DAM: I think this function farts higher than its arse and should be removed */
 			/* reset material point coordinates and set eta/rho */
@@ -1282,7 +1282,7 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 			tracking_layer_phase = PETSC_FALSE;
 			
 		} else if (tracking_layer_phase == PETSC_FALSE) {
-			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Subsequent marker remeshing\n", __FUNCT__);
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Subsequent marker remeshing\n", PETSC_FUNCTION_NAME);
 			/* 1 - re-initialize the basement layer element spacing */
 			ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
 			
@@ -1305,7 +1305,7 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshBasalLayer(PetscReal AR,DM dav,Mode
     
 	/* Remesh only the first layer if the aspect ratio is > AR */
 	if (AR > AR_max) {
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating basal layer remeshing\n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating basal layer remeshing\n", PETSC_FUNCTION_NAME);
 		
 		/* clean up base */
 		ierr = DMDAGetBoundingBox(dav,gmin,gmax);CHKERRQ(ierr);
@@ -1342,17 +1342,17 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v1(PetscReal AR,DM
 	span_xz[3].x = gmax[0];    span_xz[3].y = gmin[1];    span_xz[3].z = gmin[2];
 	
 	if (AR > AR_max) {
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", PETSC_FUNCTION_NAME);
 
 		if (tracking_layer_phase ) {
-			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", __FUNCT__);
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", PETSC_FUNCTION_NAME);
 			
 			/* 0 switch projection type */
 			c->coefficient_projection_type = 1;
 			tracking_layer_phase = PETSC_FALSE;
 		} 
 
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Performing remeshing\n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Performing remeshing\n", PETSC_FUNCTION_NAME);
 		/* 1 - re-initialize the basement layer element spacing */
 		ierr = DMDARemeshSetUniformCoordinatesInPlane_IK(dav,0,span_xz);CHKERRQ(ierr);
 		/* 2 - clean up the interior */
@@ -1374,7 +1374,7 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v2(PetscReal AR,DM
 
 	
 	if (AR > AR_max) {
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating marker remeshing [projection]\n", PETSC_FUNCTION_NAME);
 		
 		/*
 		 Reset position of mesh 
@@ -1384,14 +1384,14 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v2(PetscReal AR,DM
 		ierr = UpdateMeshGeometry_FullLagrangian(dav,velocity,-dt);CHKERRQ(ierr);
 		
 		if (tracking_layer_phase ) {
-			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", __FUNCT__);
+			PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Switching to material point projection\n", PETSC_FUNCTION_NAME);
 			
 			/* 0 switch projection type */
 			c->coefficient_projection_type = 1;
 			tracking_layer_phase = PETSC_FALSE;
 		} 
 		
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Performing remeshing\n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]]   Performing remeshing\n", PETSC_FUNCTION_NAME);
 		
 		/* [A] create mesh advection velocity field in x-z */
 		ierr = DMCreateGlobalVector(dav,&mesh_velocity);CHKERRQ(ierr);
@@ -1467,12 +1467,12 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav
 	
     
 	if (AR > AR_max) {
-		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating remeshing \n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"[[%s]] Activating remeshing \n", PETSC_FUNCTION_NAME);
 		remesh = PETSC_TRUE;
 	}
 	
 	if (remesh) {
-		PetscPrintf(PETSC_COMM_WORLD,"Performing surface remeshing \n", __FUNCT__);
+		PetscPrintf(PETSC_COMM_WORLD,"Performing surface remeshing \n", PETSC_FUNCTION_NAME);
 		/*
 		 Reset position of mesh 
 		 This is required as (i) AR is estimated on the deformed mesh
@@ -1559,7 +1559,7 @@ PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X
 	
     
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatinGetTimestep(c,&step);CHKERRQ(ierr);
 	ierr = pTatinGetStokesContext(c,&stokes);CHKERRQ(ierr);
@@ -1633,7 +1633,7 @@ PetscErrorCode ModelInitialCondition_MultilayerFolding(pTatinCtx c,Vec X,void *c
 	 DMDAVecTraverse3d_InterpCtx IntpCtx;*/
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	/*
 	 stokes_pack = c->stokes_ctx->stokes_pack;
 	 
@@ -1982,7 +1982,7 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	ierr = pTatin3d_ModelOutput_VelocityPressure_Stokes(c,X,prefix);CHKERRQ(ierr);
 
@@ -2023,7 +2023,7 @@ PetscErrorCode ModelDestroy_MultilayerFolding(pTatinCtx c,void *ctx)
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", __FUNCT__);
+	PetscPrintf(PETSC_COMM_WORLD,"[[%s]]\n", PETSC_FUNCTION_NAME);
 	
 	/* Free contents of structure */
 	
