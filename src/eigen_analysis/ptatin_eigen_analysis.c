@@ -201,8 +201,6 @@ static PetscErrorCode ASMDump(PC pc)
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -298,8 +296,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dStokesBuildMeshHierarchy"
 PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_hierarchy[])
 {
   PetscErrorCode ierr;
@@ -334,8 +330,6 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dStokesReportMeshHierarchy"
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
 {
   PetscErrorCode ierr;
@@ -378,8 +372,6 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dCreateStokesOperators"
 PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_stokes_field[],
                                              PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
                                              BCList u_bclist[],Quadrature volQ[],
@@ -562,8 +554,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dStokesKSPConfigureFSGMG"
 PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[])
 {
   PetscInt k,nsplits;
@@ -609,8 +599,6 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 }
 
 /* analysers */
-#undef __FUNCT__  
-#define __FUNCT__ "_slepc_eigen"
 PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char description[])
 {
   EPS            eps;         /* eigenproblem solver context */
@@ -697,8 +685,6 @@ PetscErrorCode _slepc_eigen(Mat A,EPSProblemType prob_type,const char descriptio
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_Stokes"
 PetscErrorCode ptatinEigenAnalyser_Stokes(SNES snes,PetscBool view)
 {
   KSP ksp_stokes;
@@ -717,8 +703,6 @@ PetscErrorCode ptatinEigenAnalyser_Stokes(SNES snes,PetscBool view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_StokesPC"
 PetscErrorCode ptatinEigenAnalyser_StokesPC(SNES snes,PetscBool view)
 {
   KSP ksp_stokes;
@@ -744,8 +728,6 @@ PetscErrorCode ptatinEigenAnalyser_StokesPC(SNES snes,PetscBool view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_A11PC"
 PetscErrorCode ptatinEigenAnalyser_A11PC(SNES snes,PetscBool view)
 {
   KSP ksp_stokes,ksp_A11,*sub_ksp;
@@ -775,8 +757,6 @@ PetscErrorCode ptatinEigenAnalyser_A11PC(SNES snes,PetscBool view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_A11PCToMatlab"
 PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
 {
   KSP ksp_stokes,ksp_A11,*sub_ksp;
@@ -838,8 +818,6 @@ PetscErrorCode ptatinEigenAnalyser_A11PCToMatlab(SNES snes,PetscBool view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_A11PCSmoother"
 PetscErrorCode ptatinEigenAnalyser_A11PCSmoother(SNES snes,PetscBool view)
 {
   KSP ksp_stokes,ksp_A11,*sub_ksp,ksp_level;
@@ -892,8 +870,6 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmoother(SNES snes,PetscBool view)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_A11SmootherComputeExplicitOperator"
 PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,PetscBool view)
 {
   KSP            ksp_stokes,ksp_A11,*sub_ksp,ksp_level;
@@ -962,8 +938,6 @@ PetscErrorCode ptatinEigenAnalyser_A11SmootherComputeExplicitOperator(SNES snes,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator"
 PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES snes,PetscBool view)
 {
   KSP ksp_stokes,ksp_A11,*sub_ksp,ksp_level;
@@ -1057,8 +1031,6 @@ PetscErrorCode ptatinEigenAnalyser_A11PCSmootherComputeExplicitOperator(SNES sne
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ptatinEigenAnalyser_A11KSPSmoother"
 PetscErrorCode ptatinEigenAnalyser_A11KSPSmoother(SNES snes,PetscBool view)
 {
   KSP ksp_stokes,ksp_A11,*sub_ksp,ksp_level;
@@ -1112,8 +1084,6 @@ PetscErrorCode ptatinEigenAnalyser_A11KSPSmoother(SNES snes,PetscBool view)
 
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_linear_viscous_forward_model_driver"
 PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv)
 {
   DM             multipys_pack,dav,dap;
@@ -1411,8 +1381,6 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

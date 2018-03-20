@@ -35,8 +35,6 @@
 #include "dmda_element_q2p1.h"
 #include "quadrature.h"
 
-#undef __FUNCT__  
-#define __FUNCT__ "QuadratureCreate"
 PetscErrorCode QuadratureCreate(Quadrature *quadrature)
 {
 	Quadrature Q;
@@ -52,8 +50,6 @@ PetscErrorCode QuadratureCreate(Quadrature *quadrature)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "QuadratureDestroy"
 PetscErrorCode QuadratureDestroy(Quadrature *quadrature)
 {
 	Quadrature Q;
@@ -74,8 +70,6 @@ PetscErrorCode QuadratureDestroy(Quadrature *quadrature)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "QuadratureView"
 PetscErrorCode QuadratureView(Quadrature q)
 {
 	
@@ -157,8 +151,6 @@ void QuadratureCreateGauss_3pnt_3D(PetscInt *ngp,PetscReal **_q_coor,PetscReal *
 }
 
 /* surface quadrature */
-#undef __FUNCT__  
-#define __FUNCT__ "SurfaceQuadratureCreate"
 PetscErrorCode SurfaceQuadratureCreate(SurfaceQuadrature *quadrature)
 {
 	SurfaceQuadrature Q;
@@ -174,8 +166,6 @@ PetscErrorCode SurfaceQuadratureCreate(SurfaceQuadrature *quadrature)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_SurfaceQuadratureCreate"
 PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementFace index,PetscInt nfaces)
 {
 	ConformingElementFamily e;
@@ -204,8 +194,6 @@ PetscErrorCode _SurfaceQuadratureCreate(SurfaceQuadrature quadrature,HexElementF
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_SurfaceQuadratureCellIndexSetUp"
 PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFace index,PetscInt nface_edge,DM da)
 {
 	PetscInt eli,elj,elk;
@@ -303,8 +291,6 @@ PetscErrorCode _SurfaceQuadratureCellIndexSetUp(SurfaceQuadrature Q,HexElementFa
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SurfaceQuadratureDestroy"
 PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 {
 	SurfaceQuadrature Q;
@@ -327,16 +313,12 @@ PetscErrorCode SurfaceQuadratureDestroy(SurfaceQuadrature *quadrature)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGetElementFamily"
 PetscErrorCode SurfaceQuadratureGetElementFamily(SurfaceQuadrature q,ConformingElementFamily *e)
 {
 	if (e) { *e = q->e; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGetQuadratureInfo"
 PetscErrorCode SurfaceQuadratureGetQuadratureInfo(SurfaceQuadrature q,PetscInt *nqp,QPoint2d **qp2,QPoint3d **qp3)
 {
 	if (nqp) { *nqp = q->ngp; }
@@ -345,8 +327,6 @@ PetscErrorCode SurfaceQuadratureGetQuadratureInfo(SurfaceQuadrature q,PetscInt *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGetFaceInfo"
 PetscErrorCode SurfaceQuadratureGetFaceInfo(SurfaceQuadrature q,HexElementFace *faceid,PetscInt *nfaces,PetscInt **ellist)
 {
 	if (faceid) { *faceid = q->face_id; }
@@ -355,8 +335,6 @@ PetscErrorCode SurfaceQuadratureGetFaceInfo(SurfaceQuadrature q,HexElementFace *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureInterpolate3D"
 PetscErrorCode SurfaceQuadratureInterpolate3D(SurfaceQuadrature q,QPoint3d *qp3d,PetscInt ndof,PetscReal field[],PetscReal value[])
 {
     int    k,d;

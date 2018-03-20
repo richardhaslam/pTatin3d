@@ -46,8 +46,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "sub_comm.h"
 #include "dmda_redundant.h"
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_material_points_check_ic"
 PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 {
 	DM              multipys_pack,dav;
@@ -181,8 +179,6 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

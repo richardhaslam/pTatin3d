@@ -212,8 +212,6 @@ void cJSON_GetObjectValue_arraylength(cJSON *cj,const char name[],int *found,int
   *nv = len;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cJSONGetPetscInt"
 PetscErrorCode cJSONGetPetscInt(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *val,PetscBool *found)
 {
   PetscMPIInt commsize,commrank;
@@ -237,8 +235,6 @@ PetscErrorCode cJSONGetPetscInt(MPI_Comm comm,cJSON *cj,const char name[],PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cJSONGetPetscReal"
 PetscErrorCode cJSONGetPetscReal(MPI_Comm comm,cJSON *cj,const char name[],PetscReal *val,PetscBool *found)
 {
   PetscMPIInt commsize,commrank;
@@ -262,8 +258,6 @@ PetscErrorCode cJSONGetPetscReal(MPI_Comm comm,cJSON *cj,const char name[],Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cJSONGetPetscRealArray"
 PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *nvalues,PetscReal **values,PetscBool *found)
 {
   PetscMPIInt commsize,commrank;
@@ -307,8 +301,6 @@ PetscErrorCode cJSONGetPetscRealArray(MPI_Comm comm,cJSON *cj,const char name[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cJSONGetPetscIntArray"
 PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],PetscInt *nvalues,PetscInt **values,PetscBool *found)
 {
   PetscMPIInt commsize,commrank;
@@ -356,8 +348,6 @@ PetscErrorCode cJSONGetPetscIntArray(MPI_Comm comm,cJSON *cj,const char name[],P
 /*
  A "petsc string" is simply char val[PETSC_MAX_PATH_LEN];
 */
-#undef __FUNCT__
-#define __FUNCT__ "cJSONGetPetscString"
 PetscErrorCode cJSONGetPetscString(MPI_Comm comm,cJSON *cj,const char name[],char val[],PetscBool *found)
 {
   PetscMPIInt commsize,commrank;
@@ -388,8 +378,6 @@ PetscErrorCode cJSONGetPetscString(MPI_Comm comm,cJSON *cj,const char name[],cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "cJSONGetPetscBool"
 PetscErrorCode cJSONGetPetscBool(MPI_Comm comm,cJSON *cj,const char name[],PetscBool *val,PetscBool *found)
 {
   PetscMPIInt commsize,commrank;
@@ -415,8 +403,6 @@ PetscErrorCode cJSONGetPetscBool(MPI_Comm comm,cJSON *cj,const char name[],Petsc
 }
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "SETERRQ_JSONKEY"
 PetscErrorCode SETERRQ_JSONKEY(MPI_Comm comm,const char keyname[])
 {
   SETERRQ1(comm,PETSC_ERR_FILE_UNEXPECTED,"Failed to locate essential JSON key \"%s\"",keyname);

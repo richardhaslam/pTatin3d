@@ -185,8 +185,6 @@ def write_out_SetDefault( protoype, ClassName, ClassNameShort, variable_name_lis
 		print(l)
 		return
 	
-	print '#undef __FUNCT__'
-	print '#define __FUNCT__ \"MaterialConstantsSetDefault_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsSetDefault_'+ ClassNameShort +'( \n    int nr,'+ ClassName +' _data[],'
 	for f in xrange(L-1):
 		print '    ' + variable_type_list[f] + ' ' +  variable_name_list[f] + ','
@@ -328,8 +326,6 @@ def write_out_SetValues( protoype, ClassName, ClassNameShort, variable_name_list
 		return
 
 
-	print '#undef __FUNCT__'
-	print '#define __FUNCT__ \"MaterialConstantsSetValues_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsSetValues_'+ ClassNameShort +'(const int region_id,'+ ClassName +' _data[],'
 	for f in xrange(L-1):
 		if variable_extend_list[f] == 1:
@@ -377,8 +373,6 @@ def write_out_ScaleValues( protoype, ClassName, ClassNameShort, variable_name_li
 		print(l)
 		return
 
-	print '#undef __FUNCT__'
-	print '#define __FUNCT__ \"MaterialConstantsScaleValues_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsScaleValues_'+ ClassNameShort +'(const int region_id,'+ ClassName +' _data[],'
 	for f in xrange(L-1):
 		print '    ' + floatlist[f] + ' ' +  floatvarlist[f] + ','
@@ -422,8 +416,6 @@ def write_out_SetFromOptions( protoype, ClassName, ClassNameShort, variable_name
 
 	type   = [ 'float', 'double', 'int' ]
 
-	print '#undef __FUNCT__'
-	print '#define __FUNCT__ \"MaterialConstantsSetFromOptions_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsSetFromOptions_'+ ClassNameShort +'(const char model_name[],const int region_id,' + ClassName +' _data[],PetscBool essential)\n{'
 
 	print '  char                         opt_name[PETSC_MAX_PATH_LEN];'
@@ -509,8 +501,6 @@ def write_out_PrintValues( protoype, ClassName, ClassNameShort, variable_name_li
 		return
 
 
-	print '#undef __FUNCT__'
-	print '#define __FUNCT__ \"MaterialConstantsPrintValues_'+ ClassNameShort+'\"'
 	print 'PetscErrorCode MaterialConstantsPrintValues_'+ ClassNameShort +'(const char model_name[],const int region_id,' + ClassName +' _data[])\n{'
 	print '  ' + ClassName + ' *data = &_data[region_id];'
 	print '  char   opt_name[PETSC_MAX_PATH_LEN];\n'

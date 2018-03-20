@@ -51,8 +51,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "stokes_operators.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
 	
@@ -62,8 +60,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 }
 	
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_pTatin3d_gmg_galerkin"
 PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 {
 	DM             multipys_pack,dav;
@@ -292,8 +288,6 @@ PetscErrorCode test_pTatin3d_gmg_galerkin(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_pTatin3d_gmg_mf"
 PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 {
 	DM             multipys_pack,dav;
@@ -575,8 +569,6 @@ PetscErrorCode test_pTatin3d_gmg_mf(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_putatin"
 PetscErrorCode test_putatin(int argc,char **argv)
 {
 	DM             dav;
@@ -641,8 +633,6 @@ PetscErrorCode test_putatin(int argc,char **argv)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

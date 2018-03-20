@@ -40,8 +40,6 @@
 
 
 /* DA Q2 1D,2D,3D */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetLocalSizeElementQ1"
 PetscErrorCode DMDAGetLocalSizeElementQ1(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
 	PetscInt cntx,cnty,cntz;
@@ -90,8 +88,6 @@ PetscErrorCode DMDAGetLocalSizeElementQ1(DM da,PetscInt *mx,PetscInt *my,PetscIn
 }
 
 /* DA Q2 1D,2D,3D */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCornersElementQ1"
 PetscErrorCode DMDAGetCornersElementQ1(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
 	PetscInt sig,sjg,skg,M,N,P,width;
@@ -117,8 +113,6 @@ PetscErrorCode DMDAGetCornersElementQ1(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_DA_Q1_3D"
 PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx)
 {
   DM_DA          *da = (DM_DA*)dm->data;
@@ -206,8 +200,6 @@ PetscErrorCode DMDAGetElements_DA_Q1_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementsQ1"
 PetscErrorCode DMDAGetElementsQ1(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx)
 {
 	PetscInt dim,sw;
@@ -234,8 +226,6 @@ PetscErrorCode DMDAGetElementsQ1(DM dm,PetscInt *nel,PetscInt *npe,const PetscIn
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetElementType_Q1"
 PetscErrorCode  DMDASetElementType_Q1(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
@@ -253,8 +243,6 @@ PetscErrorCode  DMDASetElementType_Q1(DM da)
 }
 
 /* constructors */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAProjectCoordinatesQ2toOverlappingQ1_3d"
 PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
 {
 	PetscErrorCode ierr;
@@ -327,8 +315,6 @@ PetscErrorCode DMDAProjectCoordinatesQ2toOverlappingQ1_3d(DM daq2,DM daq1)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMDACreateOverlappingQ1FromQ2"
 PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
@@ -474,8 +460,6 @@ PetscErrorCode DMDACreateOverlappingQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMDACreateNestedQ1FromQ2"
 PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
@@ -650,8 +634,6 @@ PetscErrorCode DMDACreateNestedQ1FromQ2(DM dmq2,PetscInt ndofs,DM *dmq1)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMDACreateQ1"
 PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,PetscInt ndofs,DM *dmq1)
 {
 	DM dm;
@@ -717,8 +699,6 @@ PetscErrorCode DMDACreateQ1(MPI_Comm comm,PetscInt MX,PetscInt MY,PetscInt MZ,Pe
 }
 
 /* element helpers */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEQ1_GetElementCoordinates_3D"
 PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
@@ -732,8 +712,6 @@ PetscErrorCode DMDAEQ1_GetElementCoordinates_3D(PetscScalar elcoords[],PetscInt 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEQ1_GetScalarElementField_3D"
 PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
@@ -745,8 +723,6 @@ PetscErrorCode DMDAEQ1_GetScalarElementField_3D(PetscScalar elfield[],PetscInt e
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEQ1_GetVectorElementField_3D"
 PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
@@ -760,8 +736,6 @@ PetscErrorCode DMDAEQ1_GetVectorElementField_3D(PetscScalar elfield[],PetscInt e
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEQ1_SetValuesLocalStencil_AddValues_DOF"
 PetscErrorCode DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
 {
   PetscInt n,d,el_idx,idx;
@@ -777,8 +751,6 @@ PetscErrorCode DMDAEQ1_SetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEQ1_GetElementLocalIndicesDOF"
 PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;
@@ -792,8 +764,6 @@ PetscErrorCode DMDAEQ1_GetElementLocalIndicesDOF(PetscInt el_localIndices[],Pets
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAProjectVectorQ2toOverlappingQ1_3d"
 PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
 {
 	PetscErrorCode ierr;
@@ -853,8 +823,6 @@ PetscErrorCode DMDAProjectVectorQ2toOverlappingQ1_3d(DM daq2,Vec x2,DM daq1,Vec 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAProjectVectorQ2toNestedQ1_3d"
 PetscErrorCode DMDAProjectVectorQ2toNestedQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
 {
 	PetscErrorCode ierr;
@@ -880,8 +848,6 @@ PetscErrorCode DMDAProjectVectorQ2toNestedQ1_3d(DM daq2,Vec x2,DM daq1,Vec x1)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAProjectVectorQ2toQ1"
 PetscErrorCode DMDAProjectVectorQ2toQ1(DM daq2,Vec x2,DM daq1,Vec x1,PetscInt mesh_type)
 {
 	PetscErrorCode ierr;
@@ -918,8 +884,6 @@ PetscErrorCode DMDAProjectVectorQ2toQ1(DM daq2,Vec x2,DM daq1,Vec x1,PetscInt me
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAProjectCoordinatesQ2toQ1"
 PetscErrorCode DMDAProjectCoordinatesQ2toQ1(DM daq2,DM daq1,PetscInt mesh_type)
 {
 	PetscErrorCode ierr;

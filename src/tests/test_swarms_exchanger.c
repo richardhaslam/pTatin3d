@@ -68,8 +68,6 @@ const char MaterialPointVPClassName[] = "DBF_MaterialPointVP";
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmTest_Communication1"
 PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
 {
     PetscErrorCode ierr;
@@ -320,8 +318,6 @@ PetscErrorCode SwarmTest_Communication1(MPI_Comm comm)
    (iii) This requires us to tag points which are to be removed and this
          requires we send/add received entries BEFORE removing points from the data bucket
 */
-#undef __FUNCT__
-#define __FUNCT__ "SwarmTest_Communication2"
 PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
 {
     PetscErrorCode ierr;
@@ -565,8 +561,6 @@ PetscErrorCode SwarmTest_Communication2(MPI_Comm comm)
  Communication example when data bucket contains two different data types.
  Strategy adopted is packs/sends/unpacks all entries in the data bucket at once.
  */
-#undef __FUNCT__
-#define __FUNCT__ "SwarmTest_Communication3"
 PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
 {
     PetscErrorCode ierr;
@@ -779,8 +773,6 @@ PetscErrorCode SwarmTest_Communication3(MPI_Comm comm)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int nargs,char **args)
 {
     int test_id;

@@ -62,8 +62,6 @@ static const char help[] = "Advection perforamnce / profiling test.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -162,8 +160,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_mp_advection"
 PetscErrorCode test_mp_advection(int argc,char **argv)
 {
 	DM        multipys_pack,dav,dap;
@@ -676,8 +672,6 @@ PetscErrorCode test_mp_advection(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateTestVelocityField_0"
 PetscBool EvaluateTestVelocityField_0(PetscScalar coor[],PetscScalar *value,void *ctx)
 {
     PetscInt dof;
@@ -707,8 +701,6 @@ PetscBool EvaluateTestVelocityField_0(PetscScalar coor[],PetscScalar *value,void
 }
 
 #include <petsc/ptatin_petsc_ex43-solcx.h>
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateTestVelocityField_1"
 PetscBool EvaluateTestVelocityField_1(PetscScalar coor[],PetscScalar *value,void *ctx)
 {
     PetscInt  dof;
@@ -761,8 +753,6 @@ PetscBool EvaluateTestVelocityField_1(PetscScalar coor[],PetscScalar *value,void
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DefineTestVelocityField"
 PetscErrorCode DefineTestVelocityField(PetscInt vfield_idx,DM dmv,Vec velocity)
 {
     PetscErrorCode ierr;
@@ -791,8 +781,6 @@ PetscErrorCode DefineTestVelocityField(PetscInt vfield_idx,DM dmv,Vec velocity)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointAdvectionTest2"
 PetscErrorCode MaterialPointAdvectionTest2(void)
 {
 	pTatinCtx       user;
@@ -1049,8 +1037,6 @@ PetscErrorCode MaterialPointAdvectionTest2(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

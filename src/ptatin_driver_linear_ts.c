@@ -60,8 +60,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN, OP_TYPE_MFGALERKIN } OperatorType;
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssembleMFGalerkin"
 PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature volQ_fine,DM dav_coarse,Mat Ac)
 {
 	PetscInt    refi,refj,refk,nni,nnj,nnk,n,sei,sej,sek;
@@ -385,8 +383,6 @@ PetscErrorCode MatAssembleMFGalerkin(DM dav_fine,BCList u_bclist_fine,Quadrature
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
     pTatinCtx         user;
@@ -482,8 +478,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dStokesBuildMeshHierarchy"
 PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_hierarchy[])
 {
 	PetscErrorCode ierr;
@@ -518,8 +512,6 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dStokesReportMeshHierarchy"
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
 {
 	PetscErrorCode ierr;
@@ -563,8 +555,6 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dCreateStokesOperators"
 PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_stokes_field[],
                                              PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
                                              BCList u_bclist[],Quadrature volQ[],
@@ -826,8 +816,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dStokesKSPConfigureFSGMG"
 PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[],DM dav_hierarchy[])
 {
 	PetscInt k,nsplits;
@@ -893,8 +881,6 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_linear_viscous_forward_model_driver"
 PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv)
 {
 	DM        multipys_pack,dav,dap;
@@ -1332,8 +1318,6 @@ PetscErrorCode pTatin3d_linear_viscous_forward_model_driver(int argc,char **argv
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

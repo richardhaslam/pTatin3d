@@ -118,8 +118,6 @@ void sort_NNSortCx(const int np32, NNSortCtx list[])
 #endif
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_find_min"
 PetscErrorCode _find_min(double pos[],PetscInt point_count,double patch_point_coords[],PetscInt *idx)
 {
     PetscInt p;
@@ -155,8 +153,6 @@ static inline double AVD3dDistanceTest(double p0[],double p1[],double p2[])
     return (p1[0]+p2[0]-p0[0]-p0[0])*(p1[0]-p2[0]) + (p1[1]+p2[1]-p0[1]-p0[1])*(p1[1]-p2[1]) + (p1[2]+p2[2]-p0[2]-p0[2])*(p1[2]-p2[2]);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_find_min_fast"
 PetscErrorCode _find_min_fast(double pos[],PetscInt point_count,double patch_point_coords[],PetscInt *idx)
 {
     PetscInt p,closest;
@@ -185,8 +181,6 @@ PetscErrorCode _find_min_fast(double pos[],PetscInt point_count,double patch_poi
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_find_min_sep_brute_force"
 PetscErrorCode _find_min_sep_brute_force(double pos[],PetscInt point_count,NNSortCtx patch_points[],PetscInt *idx)
 {
     PetscInt p;
@@ -216,8 +210,6 @@ PetscErrorCode _find_min_sep_brute_force(double pos[],PetscInt point_count,NNSor
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_find_min_sep_qsort"
 PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx patch_points[],PetscInt *idx)
 {
     PetscInt p;
@@ -278,8 +270,6 @@ PetscErrorCode _find_min_sep_qsort(double pos[],PetscInt point_count,NNSortCtx p
  [LOG]  time(apply_mppc_nn_patch): 1.2710e+01 (sec)
  
 */
-#undef __FUNCT__
-#define __FUNCT__ "apply_mppc_nn_patch"
 PetscErrorCode apply_mppc_nn_patch(
                                    PetscInt ncells, PetscInt pcell_list[],
                                    PSortCtx plist[],
@@ -549,8 +539,6 @@ PetscErrorCode apply_mppc_nn_patch(
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "apply_mppc_nn_patch2"
 PetscErrorCode apply_mppc_nn_patch2(
                                     PetscInt ncells, PetscInt pcell_list[],
                                     PSortCtx plist[],
@@ -829,8 +817,6 @@ PetscErrorCode apply_mppc_nn_patch2(
  5)  inject nxp x nyp into cell
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "MPPC_NearestNeighbourPatch"
 PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,PetscInt patch_extend,PetscInt nxp,PetscInt nyp,PetscInt nzp,PetscReal pertub,DM da,DataBucket db)
 {
     PetscInt        *pcell_list;
@@ -917,8 +903,6 @@ PetscErrorCode MPPC_NearestNeighbourPatch(PetscInt np_lower,PetscInt np_upper,Pe
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPPC_SimpleRemoval"
 PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBool reverse_order_removal)
 {
     PetscInt        *cell_count,count;
@@ -1092,8 +1076,6 @@ PetscErrorCode MPPC_SimpleRemoval(PetscInt np_upper,DM da,DataBucket db,PetscBoo
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointPopulationControl_v1"
 PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 {
     PetscErrorCode ierr;
@@ -1167,8 +1149,6 @@ PetscErrorCode MaterialPointPopulationControl_v1(pTatinCtx ctx)
 /*
  Assign all markers with phase = MATERIAL_POINT_PHASE_UNASSIGNED to closest phase
  */
-#undef __FUNCT__
-#define __FUNCT__ "apply_mppc_region_assignment"
 PetscErrorCode apply_mppc_region_assignment(
                                             PetscInt nel, PetscInt cell_count[], PetscInt pcell_list[],
                                             PetscInt np, PSortCtx plist[],
@@ -1397,8 +1377,6 @@ PetscErrorCode apply_mppc_region_assignment(
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointRegionAssignment_v1"
 PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 {
     PetscInt       *pcell_list;
@@ -1525,8 +1503,6 @@ PetscErrorCode MaterialPointRegionAssignment_v1(DataBucket db,DM da)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "apply_mppc_region_assignment_v2"
 PetscErrorCode apply_mppc_region_assignment_v2(
                                                PetscInt nel, PetscInt cell_count[], PetscInt pcell_list[],
                                                PetscInt np, PSortCtx plist[],
@@ -1732,8 +1708,6 @@ PetscErrorCode apply_mppc_region_assignment_v2(
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MaterialPointRegionAssignment_v2"
 PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
 {
     PetscInt       *pcell_list;
@@ -1859,8 +1833,6 @@ PetscErrorCode MaterialPointRegionAssignment_v2(DataBucket db,DM da)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPPCCreateSortedCtx"
 PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_nc,PSortCtx **_plist,PetscInt **_pcell_list)
 {
     PetscInt        *pcell_list;
@@ -1920,8 +1892,6 @@ PetscErrorCode MPPCCreateSortedCtx(DataBucket db,DM da,PetscInt *_np,PetscInt *_
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPPCDestroySortedCtx"
 PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscInt **_pcell_list)
 {
     PetscInt        *pcell_list;
@@ -1944,8 +1914,6 @@ PetscErrorCode MPPCDestroySortedCtx(DataBucket db,DM da,PSortCtx **_plist,PetscI
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPPCSortedCtxGetNumberOfPointsPerCell"
 PetscErrorCode MPPCSortedCtxGetNumberOfPointsPerCell(DataBucket db,PetscInt cell_idx,PetscInt pcell_list[],PetscInt *np)
 {
     PetscInt       points_per_cell;
@@ -1956,8 +1924,6 @@ PetscErrorCode MPPCSortedCtxGetNumberOfPointsPerCell(DataBucket db,PetscInt cell
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPPCSortedCtxGetPointByCell"
 PetscErrorCode MPPCSortedCtxGetPointByCell(DataBucket db,PetscInt cell_idx,PetscInt pidx,PSortCtx plist[],PetscInt pcell_list[],MPntStd **point)
 {
     PetscInt       points_per_cell;

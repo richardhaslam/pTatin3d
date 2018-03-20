@@ -157,8 +157,6 @@ static inline void ComputeAverageTrace3d(double A[NSD][NSD],double *A2)
 }
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "private_EvaluateRheologyNonlinearitiesMarkers_VPSTD"
 PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM daT,PetscScalar Tfield[])
 {
 	PetscErrorCode ierr;
@@ -723,8 +721,6 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx use
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateRheologyNonlinearitiesMarkers_VPSTD"
 PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[])
 {
 	PhysCompEnergy energy;
@@ -763,8 +759,6 @@ PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_VPSTD(pTatinCtx user,DM dau
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyViscosityCutOffMarkers_VPSTD"
 PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 {
 	PetscErrorCode    ierr;
@@ -848,8 +842,6 @@ PetscErrorCode ApplyViscosityCutOffMarkers_VPSTD(pTatinCtx user)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "StokesCoefficient_UpdateTimeDependentQuantities_VPSTD"
 PetscErrorCode StokesCoefficient_UpdateTimeDependentQuantities_VPSTD(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[])
 {
 	PetscErrorCode ierr;

@@ -34,8 +34,6 @@
 #include "output_paraview.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_SNESMonitor_StdoutStokesResiduals3d"
 PetscErrorCode pTatin_SNESMonitor_StdoutStokesResiduals3d(SNES snes,PetscInt n,PetscReal fnorm,void *data)
 {
 	PetscErrorCode ierr;
@@ -62,8 +60,6 @@ PetscErrorCode pTatin_SNESMonitor_StdoutStokesResiduals3d(SNES snes,PetscInt n,P
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_KSPMonitor_StdoutStokesResiduals3d"
 PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
 {
     PetscErrorCode ierr;
@@ -96,8 +92,6 @@ PetscErrorCode pTatin_KSPMonitor_StdoutStokesResiduals3d(KSP ksp,PetscInt n,Pets
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_KSPMonitor_ParaviewStokesResiduals3d"
 PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
 {
     PetscErrorCode ierr;
@@ -143,8 +137,6 @@ PetscErrorCode pTatin_KSPMonitor_ParaviewStokesResiduals3d(KSP ksp,PetscInt n,Pe
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_pTatin_SNESMonitorStokes_Paraview"
 PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,const char field[])
 {
     PetscErrorCode ierr;
@@ -195,8 +187,6 @@ PetscErrorCode _pTatin_SNESMonitorStokes_Paraview(SNES snes,pTatinCtx ctx,Vec X,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_SNESMonitorStokes_Solution_Paraview"
 PetscErrorCode pTatin_SNESMonitorStokes_Solution_Paraview(SNES snes,PetscInt n,PetscReal rnorm,void *data)
 {
     PetscErrorCode ierr;
@@ -212,8 +202,6 @@ PetscErrorCode pTatin_SNESMonitorStokes_Solution_Paraview(SNES snes,PetscInt n,P
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_SNESMonitorStokes_SolutionUpdate_Paraview"
 PetscErrorCode pTatin_SNESMonitorStokes_SolutionUpdate_Paraview(SNES snes,PetscInt n,PetscReal rnorm,void *data)
 {
     PetscErrorCode ierr;
@@ -229,8 +217,6 @@ PetscErrorCode pTatin_SNESMonitorStokes_SolutionUpdate_Paraview(SNES snes,PetscI
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_SNESMonitorStokes_Residual_Paraview"
 PetscErrorCode pTatin_SNESMonitorStokes_Residual_Paraview(SNES snes,PetscInt n,PetscReal rnorm,void *data)
 {
     PetscErrorCode ierr;
@@ -247,8 +233,6 @@ PetscErrorCode pTatin_SNESMonitorStokes_Residual_Paraview(SNES snes,PetscInt n,P
 }
 
 /* monitors */
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_Stokes_ActivateMonitors"
 PetscErrorCode pTatin_Stokes_ActivateMonitors(pTatinCtx user,SNES snes)
 {
     PetscErrorCode ierr;

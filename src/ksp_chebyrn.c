@@ -50,8 +50,6 @@ typedef struct {
 } KSP_ChebychevRN;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPVecNorm_ChebychevRN"
 static PetscErrorCode KSPVecNorm_ChebychevRN(KSP ksp,Vec x,NormType type,PetscReal *val)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -76,8 +74,6 @@ static PetscErrorCode KSPVecNorm_ChebychevRN(KSP ksp,Vec x,NormType type,PetscRe
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetUp_ChebychevRN"
 PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -166,8 +162,6 @@ PetscErrorCode KSPSetUp_ChebychevRN(KSP ksp)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebychevSetEigenvalues_ChebychevRN"
 PetscErrorCode  KSPChebychevSetEigenvalues_ChebychevRN(KSP ksp,PetscReal emax,PetscReal emin)
 {
     KSP_ChebychevRN *chebychevP = (KSP_ChebychevRN*)ksp->data;
@@ -182,8 +176,6 @@ PetscErrorCode  KSPChebychevSetEigenvalues_ChebychevRN(KSP ksp,PetscReal emax,Pe
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebychevSetEstimateEigenvalues_ChebychevRN"
 PetscErrorCode  KSPChebychevSetEstimateEigenvalues_ChebychevRN(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -223,8 +215,6 @@ PetscErrorCode  KSPChebychevSetEstimateEigenvalues_ChebychevRN(KSP ksp,PetscReal
 }
 EXTERN_C_END
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebychevRNSetEigenvalues"
 PetscErrorCode  KSPChebychevRNSetEigenvalues(KSP ksp,PetscReal emax,PetscReal emin)
 {
     PetscErrorCode ierr;
@@ -237,8 +227,6 @@ PetscErrorCode  KSPChebychevRNSetEigenvalues(KSP ksp,PetscReal emax,PetscReal em
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPChebychevRNSetEstimateEigenvalues"
 PetscErrorCode KSPChebychevRNSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscReal b,PetscReal c,PetscReal d)
 {
     PetscErrorCode ierr;
@@ -253,8 +241,6 @@ PetscErrorCode KSPChebychevRNSetEstimateEigenvalues(KSP ksp,PetscReal a,PetscRea
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSetFromOptions_ChebychevRN"
 PetscErrorCode KSPSetFromOptions_ChebychevRN(PetscOptionItems *PetscOptionsObject,KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -290,8 +276,6 @@ PetscErrorCode KSPSetFromOptions_ChebychevRN(PetscOptionItems *PetscOptionsObjec
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_ChebychevRN_lag_norm"
 PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -473,8 +457,6 @@ PetscErrorCode KSPSolve_ChebychevRN_lag_norm(KSP ksp)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_ChebychevRN_red_norm"
 PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -639,8 +621,6 @@ PetscErrorCode KSPSolve_ChebychevRN_red_norm(KSP ksp)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_ChebychevRN_nonblock_norm"
 PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -816,8 +796,6 @@ PetscErrorCode KSPSolve_ChebychevRN_nonblock_norm(KSP ksp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_ChebychevRN"
 PetscErrorCode KSPSolve_ChebychevRN(KSP ksp)
 {
     PetscErrorCode  ierr;
@@ -850,8 +828,6 @@ PetscErrorCode KSPSolve_ChebychevRN(KSP ksp)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPView_ChebychevRN"
 PetscErrorCode KSPView_ChebychevRN(KSP ksp,PetscViewer viewer)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -879,8 +855,6 @@ PetscErrorCode KSPView_ChebychevRN(KSP ksp,PetscViewer viewer)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPDestroy_ChebychevRN"
 PetscErrorCode KSPDestroy_ChebychevRN(KSP ksp)
 {
     KSP_ChebychevRN  *cheb = (KSP_ChebychevRN*)ksp->data;
@@ -923,8 +897,6 @@ PetscErrorCode KSPDestroy_ChebychevRN(KSP ksp)
  M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreate_ChebychevRN"
 PetscErrorCode  KSPCreate_ChebychevRN(KSP ksp)
 {
     PetscErrorCode   ierr;

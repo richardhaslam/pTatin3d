@@ -36,8 +36,6 @@
 
 #define __DMDACompareStructures(var,v1,v2)PetscSynchronizedPrintf( comm, "[%d]: DMDA->%s are different { %D , %D } \n", ((int)rank), (var), (int)((v1)),(int)((v2)) )
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACompareStructures"
 PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 {
 	PetscInt si1,sj1,sk1 , si2,sj2,sk2;
@@ -100,8 +98,6 @@ PetscErrorCode DMDACompareStructures(DM da1,DM da2,PetscBool *flg)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDA_CheckNodeIndex2d"
 PetscErrorCode DMDA_CheckNodeIndex2d(DM da,PetscBool ghosted,PetscInt i,PetscInt j,PetscInt k )
 {
 	PetscInt si,sj,nx,ny;
@@ -121,8 +117,6 @@ PetscErrorCode DMDA_CheckNodeIndex2d(DM da,PetscBool ghosted,PetscInt i,PetscInt
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDA_CheckNodeIndex3d"
 PetscErrorCode DMDA_CheckNodeIndex3d(DM da,PetscBool ghosted,PetscInt i,PetscInt j,PetscInt k )
 {
 	PetscErrorCode ierr;

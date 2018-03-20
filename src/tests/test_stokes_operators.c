@@ -45,8 +45,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "stokes_operators.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "_GenerateTestVector"
 PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 {
 	PetscErrorCode ierr;
@@ -93,8 +91,6 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "_GenerateTestVectorDAP"
 PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 {
 	PetscErrorCode ierr;
@@ -141,8 +137,6 @@ PetscErrorCode _GenerateTestVectorDAP(DM da,PetscInt dofs,PetscInt index,Vec x)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ass_A11"
 PetscErrorCode ass_A11(PhysCompStokes stk)
 {
 	PetscErrorCode ierr;
@@ -184,8 +178,6 @@ PetscErrorCode ass_A11(PhysCompStokes stk)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ass_B22"
 PetscErrorCode ass_B22(PhysCompStokes stk)
 {
 	PetscErrorCode ierr;
@@ -230,8 +222,6 @@ PetscErrorCode ass_B22(PhysCompStokes stk)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "compare_mf_A11"
 PetscErrorCode compare_mf_A11(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
@@ -328,8 +318,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "compare_mf_A21"
 PetscErrorCode compare_mf_A21(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
@@ -398,8 +386,6 @@ PetscErrorCode compare_mf_A21(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "compare_mf_A12"
 PetscErrorCode compare_mf_A12(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
@@ -467,8 +453,6 @@ PetscErrorCode compare_mf_A12(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "compare_mf_A"
 PetscErrorCode compare_mf_A(PhysCompStokes user)
 {
 	Mat            A,B;
@@ -534,8 +518,6 @@ PetscErrorCode compare_mf_A(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "compare_mf_diagA11"
 PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
@@ -597,8 +579,6 @@ PetscErrorCode compare_mf_diagA11(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "apply_mf_A11"
 PetscErrorCode apply_mf_A11(PhysCompStokes user)
 {
 	MatStokesMF    StkCtx;
@@ -658,8 +638,6 @@ PetscErrorCode apply_mf_A11(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "apply_asm_A11"
 PetscErrorCode apply_asm_A11(PhysCompStokes user)
 {
 	Mat            B;
@@ -719,8 +697,6 @@ PetscErrorCode apply_asm_A11(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "perform_viscous_solve"
 PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 {
 	Mat            A,B;
@@ -838,8 +814,6 @@ PetscErrorCode perform_viscous_solve(PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_assemble_stokes"
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
 	PetscErrorCode  ierr;
@@ -958,8 +932,6 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 
 extern PetscErrorCode PCCreate_SemiRedundant(PC pc);
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

@@ -88,8 +88,6 @@ PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysC
 PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscBool zip_file,Vec *VP);
 PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],char name[]);
 
-#undef __FUNCT__  
-#define __FUNCT__ "_strlcat"
 PetscErrorCode _strlcat(char orig[],const char append[],size_t L)
 {
 #ifdef HAVE_STRLCAT
@@ -113,8 +111,6 @@ PetscErrorCode _strlcat(char orig[],const char append[],size_t L)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinVecFieldWrite"
 PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
 {
 	char fieldname[PETSC_MAX_PATH_LEN];
@@ -143,8 +139,6 @@ PetscErrorCode pTatinVecFieldWrite(Vec x,const char name[],PetscBool zip_file)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinVecFieldRead"
 PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
 {
 	char fieldname[PETSC_MAX_PATH_LEN];
@@ -176,8 +170,6 @@ PetscErrorCode pTatinVecFieldRead(const char name[],PetscBool zip_file,Vec x)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompOutput_StokesRawVelocityPressure"
 PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X,PetscBool zip_file,const char outputpath[],const char prefix[])
 {
 	PetscLogDouble t0,t1,tl,tg;
@@ -223,8 +215,6 @@ PetscErrorCode PhysCompOutput_StokesRawVelocityPressure(PhysCompStokes ctx,Vec X
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesLoad_X"
 PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscBool zip_file,Vec *VP)
 {
 	Vec            X;
@@ -247,8 +237,6 @@ PetscErrorCode PhysCompStokesLoad_X(PhysCompStokes ctx,const char xname[],PetscB
  the same number of processors during write/read produces output incorrectly ordered when plotted on the DMDA.
  For this reason, I write out the u,p vectors seperately, each in their own file.
 */
-#undef __FUNCT__  
-#define __FUNCT__ "_test_load_and_writevts_from_checkpoint_file"
 PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 {
 	PhysCompStokes ctx;
@@ -311,8 +299,6 @@ PetscErrorCode _test_load_and_writevts_from_checkpoint_file(void)
 
 
 /* minimal loading from checkpoint file for viz of u,v,w,p fields */
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesLoad_DM"
 PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysCompStokes *ctx)
 {
 	PhysCompStokes stokes;
@@ -336,8 +322,6 @@ PetscErrorCode PhysCompStokesLoad_DM(const char vname[],const char pname[],PhysC
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesLoad_VP"
 PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const char pname[],PetscBool zip_file,Vec *VP)
 {
 	Vec            X,Xv,Xp;
@@ -359,8 +343,6 @@ PetscErrorCode PhysCompStokesLoad_VP(PhysCompStokes ctx,const char vname[],const
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesWrite_DM_X"
 PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char outputpath[],char name[])
 {
 	PetscInt       output_type;
@@ -388,8 +370,6 @@ PetscErrorCode PhysCompStokesWrite_DM_X(PhysCompStokes ctx,Vec VP,const char out
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_Stokes"
 PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 {
 	PhysCompStokes ctx;
@@ -456,8 +436,6 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Stokes(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_Energy"
 PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 {
 	PhysCompStokes ctx;
@@ -516,8 +494,6 @@ PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_Energy(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0"
 PetscErrorCode pTatinLoadFromCheckpointWriteToVTS_MarkerCellFieldsP0(void)
 {
 	PhysCompStokes ctx;

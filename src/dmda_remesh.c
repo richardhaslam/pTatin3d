@@ -37,8 +37,6 @@
 #include "dmda_remesh.h"
 #include "mesh_deformation.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCornerCoordinatesInPlane_IJ"
 PetscErrorCode DMDAGetCornerCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACoor3d coords[])
 {
 	PetscInt ii,jj,si,sj,sk;
@@ -115,8 +113,6 @@ PetscErrorCode DMDAGetCornerCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACoor3d co
  (i,j+1)[1]  (i+1,j+1)[2]
  (i,j)  [0]  (i+1,j)  [3]
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshSetUniformCoordinatesInPlane_IJ"
 PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACoor3d coords[])
 {
 	PetscErrorCode ierr;
@@ -172,8 +168,6 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IJ(DM da,PetscInt K,DMDACo
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshSetUniformCoordinatesInPlane_IK"
 PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IK(DM da,PetscInt J,DMDACoor3d coords[])
 {
 	PetscErrorCode ierr;
@@ -228,8 +222,6 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesInPlane_IK(DM da,PetscInt J,DMDACo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI"
 PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, PetscInt startK, PetscInt endK )
 {
 	PetscInt si,sj,sk,nx,ny,nz,i,j,k;
@@ -392,8 +384,6 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d_MPI( DM da, Petsc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI"
 PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( DM da, PetscInt startJ, PetscInt endJ )
 {
 	PetscInt si,sj,sk,nx,ny,nz,i,j,k;
@@ -472,8 +462,6 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d_MPI( DM da, Petsc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenKLayers3d"
 PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d( DM da, PetscInt startK, PetscInt endK )
 {
 	MPI_Comm comm;
@@ -493,8 +481,6 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenKLayers3d( DM da, PetscInt 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshSetUniformCoordinatesBetweenJLayers3d"
 PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt startJ, PetscInt endJ )
 {
 	MPI_Comm comm;
@@ -514,8 +500,6 @@ PetscErrorCode DMDARemeshSetUniformCoordinatesBetweenJLayers3d( DM da, PetscInt 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARemeshJMAX_UpdateHeightsFromInterior"
 PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da)
 {
 	PetscErrorCode ierr;
@@ -590,8 +574,6 @@ PetscErrorCode DMDARemeshJMAX_UpdateHeightsFromInterior(DM da)
  xprime = slope * (x - x_ref) + xprime_ref
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetCoordinatesColumnRefinement"
 PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal factor,PetscReal x1_frac,PetscReal x2_frac)
 {
 	PetscErrorCode ierr;
@@ -794,8 +776,6 @@ PetscErrorCode DMDASetCoordinatesColumnRefinement(DM da,PetscInt dir,PetscReal f
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACoordinateRefinementTransferFunction_OrthogonalFaces"
 PetscErrorCode DMDACoordinateRefinementTransferFunction_OrthogonalFaces(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
 {
     PetscErrorCode ierr;
@@ -879,8 +859,6 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_OrthogonalFaces(DM da,Pe
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry"
 PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
 {
     PetscErrorCode ierr;
@@ -1058,8 +1036,6 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction_PreserveFaceGeometry(DM 
    (ii) for case when you wish to preserve an existing geometry on two faces
  To utilize case (ii), set preserve_face_geometry = PETSC_TRUE
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDACoordinateRefinementTransferFunction"
 PetscErrorCode DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,PetscBool preserve_face_geometry,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
 {
     PetscErrorCode ierr;
@@ -1073,8 +1049,6 @@ PetscErrorCode DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,Petsc
 }
 
 /* Deprecated */
-#undef __FUNCT__
-#define __FUNCT__ "_DMDACoordinateRefinementTransferFunction"
 PetscErrorCode _DMDACoordinateRefinementTransferFunction(DM da,PetscInt dir,PetscInt npoints,PetscReal xref[],PetscReal xnatural[])
 {
     PetscErrorCode ierr;

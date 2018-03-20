@@ -49,8 +49,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 /*
  assumed y is the surface
  */
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinSurfaceMeshCreate"
 PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
 {
 	PetscErrorCode ierr;
@@ -140,8 +138,6 @@ PetscErrorCode pTatinSurfaceMeshCreate(DM dav, DM *da_spm,Vec *_height)
  => insert onto volume mesh
 */
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin_InjectSurfaceMeshOntoMechanicalDomain"
 PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec height,DM da_vol)
 {
 	PetscInt M,N,P,M2d,P2d;
@@ -256,8 +252,6 @@ PetscErrorCode pTatin_InjectSurfaceMeshOntoMechanicalDomain(DM da_surf,Vec heigh
 /* 
  maps (vol) x,y,z => (surf) x,y,height
 */
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh"
 PetscErrorCode pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh(DM da_vol,DM da_surf,Vec height)
 {
 	PetscInt si,sk,nx,nz,M,N,P;
@@ -314,8 +308,6 @@ PetscErrorCode pTatin_InjectMechanicalDomainSurfaceOntoSurfaceMesh(DM da_vol,DM 
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_material_points_check_ic"
 PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 {
 	DM              multipys_pack,dav;
@@ -467,8 +459,6 @@ PetscErrorCode pTatin3d_material_points_check_ic(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

@@ -45,8 +45,6 @@ struct _p_MatEigenOperator {
 	Vec t;
 };
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MatEigenOperator"
 PetscErrorCode MatMult_MatEigenOperator(Mat A,Vec X,Vec Y)
 {
 	MatEigenOperator  ctx;
@@ -79,8 +77,6 @@ PetscErrorCode MatMult_MatEigenOperator(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MatEigenOperator"
 PetscErrorCode MatDestroy_MatEigenOperator(Mat A)
 {
 	MatEigenOperator  ctx;
@@ -99,8 +95,6 @@ PetscErrorCode MatDestroy_MatEigenOperator(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateEigenOperatorFromKSPOperators"
 PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 {
 	Mat    Aop,Bop,B;
@@ -172,8 +166,6 @@ PetscErrorCode MatCreateEigenOperatorFromKSPOperators(KSP ksp,Mat *A)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MatEigenOperatorKSP"
 PetscErrorCode MatMult_MatEigenOperatorKSP(Mat A,Vec X,Vec Y)
 {
 	KSP  ctx;
@@ -187,8 +179,6 @@ PetscErrorCode MatMult_MatEigenOperatorKSP(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateEigenOperatorFromKSP"
 PetscErrorCode MatCreateEigenOperatorFromKSP(KSP ksp,Mat *A)
 {
 	Mat    Aop,Bop,B;

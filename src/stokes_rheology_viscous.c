@@ -34,8 +34,6 @@
 #include "MPntPStokes_def.h"
 #include "data_bucket.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateRheologyNonlinearitiesMarkers_Viscous"
 PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_Viscous(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
 	PetscErrorCode ierr;

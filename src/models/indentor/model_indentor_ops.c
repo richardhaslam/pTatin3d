@@ -43,8 +43,6 @@
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Indentor"
 PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
 {
 	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
@@ -250,8 +248,6 @@ PetscErrorCode ModelInitialize_Indentor(pTatinCtx c,void *ctx)
  
  */
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_indentor"
 PetscBool BCListEvaluator_indentor( PetscScalar position[], PetscScalar *value, void *ctx ) 
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
@@ -280,8 +276,6 @@ PetscBool BCListEvaluator_indentor( PetscScalar position[], PetscScalar *value, 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Indentor"
 PetscErrorCode ModelApplyBoundaryCondition_Indentor(pTatinCtx user,void *ctx)
 {
 	PetscScalar zero = 0.0;
@@ -315,8 +309,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Indentor(pTatinCtx user,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Indentor"
 PetscErrorCode ModelApplyBoundaryConditionMG_Indentor(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	PetscScalar zero = 0.0;
@@ -353,8 +345,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Indentor(PetscInt nl,BCList bclist[
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Indentor"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Indentor(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -364,8 +354,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Indentor(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Indentor"
 PetscErrorCode ModelApplyInitialMeshGeometry_Indentor(pTatinCtx c,void *ctx)
 {
 	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
@@ -379,8 +367,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Indentor(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Indentor"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 {
 	ModelIndentorCtx *data = (ModelIndentorCtx*)ctx;
@@ -457,8 +443,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Indentor(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Indentor"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Indentor(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscFunctionBegin;
@@ -468,8 +452,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Indentor(pTatinCtx c,Vec X,void *ctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Indentor_CheckScales"
 PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 {
 	Vec Xcopy,velocity,pressure,F,RHS;
@@ -577,8 +559,6 @@ PetscErrorCode ModelOutput_Indentor_CheckScales(pTatinCtx c,Vec X)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Indentor"
 PetscErrorCode ModelOutput_Indentor(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscErrorCode ierr;
@@ -594,8 +574,6 @@ PetscErrorCode ModelOutput_Indentor(pTatinCtx c,Vec X,const char prefix[],void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Indentor"
 PetscErrorCode ModelDestroy_Indentor(pTatinCtx c,void *ctx)
 {
 	ModelIndentorCtx *data;
@@ -613,8 +591,6 @@ PetscErrorCode ModelDestroy_Indentor(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Indentor"
 PetscErrorCode pTatinModelRegister_Indentor(void)
 {
 	ModelIndentorCtx *data;

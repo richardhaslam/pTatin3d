@@ -42,8 +42,6 @@
 #include "iplus_ctx.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_DetermineElementsContainingPlumeInlet"
 PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data)
 {
     MPI_Comm       comm;
@@ -130,8 +128,6 @@ PetscErrorCode iPLUS_DetermineElementsContainingPlumeInlet(DM dav,iPLUSCtx *data
  -create cell layout for each element in plume
  -insert points inside, initializing with plume values
  */
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_InsertPlumeMaterial"
 PetscErrorCode iPLUS_InsertPlumeMaterial(DM dav,DataBucket materialpoint_db,iPLUSCtx *data)
 {
     MPAccess         mpX;
@@ -242,8 +238,6 @@ PetscErrorCode iPLUS_InsertPlumeMaterial(DM dav,DataBucket materialpoint_db,iPLU
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_Inflow_BCListEvaluator"
 PetscBool iPLUS_Inflow_BCListEvaluator(PetscScalar position[],PetscScalar *value,void *ctx)
 {
     PetscBool      impose_dirichlet = PETSC_TRUE;
@@ -277,8 +271,6 @@ PetscBool iPLUS_Inflow_BCListEvaluator(PetscScalar position[],PetscScalar *value
     return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_ApplyMaterialBoundaryCondition_Plume"
 PetscErrorCode iPLUS_ApplyMaterialBoundaryCondition_Plume(pTatinCtx c,iPLUSCtx *data)
 {
     PhysCompStokes   stokes;

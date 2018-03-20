@@ -71,8 +71,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Rift3D_T"
 PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -368,8 +366,6 @@ PetscErrorCode ModelInitialize_Rift3D_T(pTatinCtx c,void *ctx)
  Returns the parameters and function need to define initial thermal field.
  The function returned can be used to define either the initial condition for T or the boundary condition for T.
  */
-#undef __FUNCT__
-#define __FUNCT__ "ModelRift3D_T_GetDescription_InitialThermalField"
 PetscErrorCode ModelRift3D_T_GetDescription_InitialThermalField(ModelRift3D_TCtx *data,PetscReal coeffs[],PetscBool (**func)(PetscScalar*,PetscScalar*,void*) )
 {
 	PetscFunctionBegin;
@@ -402,8 +398,6 @@ PetscErrorCode ModelRift3D_T_GetDescription_InitialThermalField(ModelRift3D_TCtx
  ModelApplyBoundaryConditionMG_Rift3D_T();
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "ModelRift3D_T_DefineBCList"
 PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRift3D_TCtx *data)
 {
 	PetscScalar    vy;
@@ -472,8 +466,6 @@ PetscErrorCode ModelRift3D_T_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Rift3D_T"
 PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -522,8 +514,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift3D_T(pTatinCtx user,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Rift3D_T"
 PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -540,8 +530,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift3D_T(PetscInt nl,BCList bclist[
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D_T"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -549,8 +537,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatinCtx c,void *ctx)
 {
 	PhysCompStokes     stokes;
@@ -632,8 +618,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian(pTatin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTatinCtx c,void *ctx)
 {
 	PhysCompStokes     stokes;
@@ -698,8 +682,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift3D_T_semi_eulerian_v2(pTa
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Rift3D_T"
 PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -721,8 +703,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Rift3D_T"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
 {
     
@@ -736,8 +716,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift3D_T(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Rift3D_T"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscReal        step;
@@ -767,8 +745,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T(pTatinCtx c,Vec X,void *ctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscReal        step;
@@ -795,8 +771,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift3D_T_semi_eulerian(pTatinCtx c,V
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Rift3D_T"
 PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelRift3D_TCtx  *data = (ModelRift3D_TCtx*)ctx;
@@ -850,8 +824,6 @@ PetscErrorCode ModelOutput_Rift3D_T(pTatinCtx c,Vec X,const char prefix[],void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Rift3D_T"
 PetscErrorCode ModelDestroy_Rift3D_T(pTatinCtx c,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -868,8 +840,6 @@ PetscErrorCode ModelDestroy_Rift3D_T(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Rift3D_T"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Vec X,void *ctx)
 {
 	DM                stokes_pack,dau,dap;
@@ -926,8 +896,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift3D_T(pTatinCtx user,Ve
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialCondition_Rift3D_T"
 PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;
@@ -1036,8 +1004,6 @@ PetscErrorCode ModelApplyInitialCondition_Rift3D_T(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Rift3D_T"
 PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 {
 	ModelRift3D_TCtx *data;
@@ -1080,8 +1046,6 @@ PetscErrorCode pTatinModelRegister_Rift3D_T(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Notchtest"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Notchtest(pTatinCtx c,void *ctx)
 {
 	ModelRift3D_TCtx *data = (ModelRift3D_TCtx*)ctx;

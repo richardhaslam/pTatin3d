@@ -42,8 +42,6 @@
 #include "dmda_redundant.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAPerturbCoordinates"
 PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
 {
 	PetscScalar perturb;
@@ -100,8 +98,6 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturbA)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_DMDACreate3dRedundant"
 PetscErrorCode test_DMDACreate3dRedundant(PetscInt nx,PetscInt ny,PetscInt nz)
 {
 	PetscErrorCode ierr;

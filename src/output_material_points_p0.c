@@ -55,8 +55,6 @@
 #include "output_material_points.h"
 #include "output_material_points_p0.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0_ProjectIntegerField"
 PetscErrorCode MarkerCellFieldsP0_ProjectIntegerField(DataBucket db,MaterialPointVariable variable,Vec scalar)
 {
   PetscScalar *LA_scalar,var;
@@ -137,8 +135,6 @@ PetscErrorCode MarkerCellFieldsP0_ProjectIntegerField(DataBucket db,MaterialPoin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0_ProjectScalarField"
 PetscErrorCode MarkerCellFieldsP0_ProjectScalarField(DataBucket db,MaterialPointVariable variable,Vec pointcounts,Vec scalar)
 {
   PetscScalar *LA_scalar,var;
@@ -199,8 +195,6 @@ PetscErrorCode MarkerCellFieldsP0_ProjectScalarField(DataBucket db,MaterialPoint
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0_CountPointsPerCell"
 PetscErrorCode MarkerCellFieldsP0_CountPointsPerCell(DM dmp0,DataBucket db,Vec pointcounts)
 {
 	int            eidx,p,n_mp;
@@ -225,8 +219,6 @@ PetscErrorCode MarkerCellFieldsP0_CountPointsPerCell(DM dmp0,DataBucket db,Vec p
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0Read_PetscVec"
 PetscErrorCode MarkerCellFieldsP0Read_PetscVec(Vec scalar,const MaterialPointVariable var_name,
                                                const char basename[])
 {
@@ -247,8 +239,6 @@ PetscErrorCode MarkerCellFieldsP0Read_PetscVec(Vec scalar,const MaterialPointVar
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0Write_ParaViewVTS"
 PetscErrorCode MarkerCellFieldsP0Write_ParaViewVTS(DM dmscalar,DM dmp0,Vec scalar,Vec pointcounts,
                                                       DataBucket material_points,
                                                       const char basename[],
@@ -472,8 +462,6 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaViewVTS(DM dmscalar,DM dmp0,Vec scala
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0Write_ParaViewPVTS"
 PetscErrorCode MarkerCellFieldsP0Write_ParaViewPVTS(DM dascalar,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -542,8 +530,6 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaViewPVTS(DM dascalar,const int nvars,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0Write_ParaView"
 PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_points,const char basename[],
                                                   const int nvars,const MaterialPointVariable vars[],
                                                   PetscBool low_precision,
@@ -606,8 +592,6 @@ PetscErrorCode MarkerCellFieldsP0Write_ParaView(DM pack,DataBucket material_poin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dModelOutput_MarkerCellFieldsP0_ParaView"
 PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,const int nvars,const MaterialPointVariable vars[],PetscBool low_precision,const char prefix[])
 {
 	PetscErrorCode ierr;
@@ -654,8 +638,6 @@ PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_ParaView(pTatinCtx ctx,con
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MarkerCellFieldsP0Write_PetscVec"
 PetscErrorCode MarkerCellFieldsP0Write_PetscVec(DM dmscalar,DM dmp0,Vec scalar,Vec pointcounts,
                                                 DataBucket material_points,const int nvars,const MaterialPointVariable vars[],
                                                 const char basename[])
@@ -688,8 +670,6 @@ PetscErrorCode MarkerCellFieldsP0Write_PetscVec(DM dmscalar,DM dmp0,Vec scalar,V
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec"
 PetscErrorCode pTatin3dModelOutput_MarkerCellFieldsP0_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,const int nvars,const MaterialPointVariable vars[],const char prefix[])
 {
 	PetscErrorCode ierr;

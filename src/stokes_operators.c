@@ -85,8 +85,6 @@ PetscLogEvent MAT_MultMFA11_QuasiNewtonX;
 PetscLogEvent MAT_MultMFA12_QuasiNewtonX; 
 PetscLogEvent MAT_MultMFA21_QuasiNewtonX; 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatStokesMFCreate"
 PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 {
 	PetscErrorCode ierr;
@@ -100,8 +98,6 @@ PetscErrorCode MatStokesMFCreate(MatStokesMF *B)
 	*B = Stk;
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
-#define __FUNCT__ "MatA11MFCreate"
 PetscErrorCode MatA11MFCreate(MatA11MF *B)
 {
 	PetscFunctionList MatMult_flist = NULL;
@@ -160,8 +156,6 @@ PetscErrorCode MatA11MFCreate(MatA11MF *B)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatStokesMFSetup"
 PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
 {
 	PetscErrorCode ierr;
@@ -229,8 +223,6 @@ PetscErrorCode MatStokesMFSetup(MatStokesMF StkCtx,PhysCompStokes user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatA11MFSetup"
 PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bclist)
 {
 	PetscErrorCode ierr;
@@ -280,8 +272,6 @@ PetscErrorCode MatA11MFSetup(MatA11MF A11Ctx,DM dav,Quadrature volQ,BCList u_bcl
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatStokesMFDestroy"
 PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
 {
 	MatStokesMF A;
@@ -311,8 +301,6 @@ PetscErrorCode MatStokesMFDestroy(MatStokesMF *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatA11MFDestroy"
 PetscErrorCode MatA11MFDestroy(MatA11MF *B)
 {
 	MatA11MF A;
@@ -345,8 +333,6 @@ PetscErrorCode MatA11MFDestroy(MatA11MF *B)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MatStokesMF"
 PetscErrorCode MatDestroy_MatStokesMF(Mat A)
 {
 	MatStokesMF     ctx;
@@ -359,8 +345,6 @@ PetscErrorCode MatDestroy_MatStokesMF(Mat A)
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MatA11MF"
 PetscErrorCode MatDestroy_MatA11MF(Mat A)
 {
 	MatA11MF       ctx;
@@ -374,8 +358,6 @@ PetscErrorCode MatDestroy_MatA11MF(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MatA11MF_QuasiNewtonX"
 PetscErrorCode MatDestroy_MatA11MF_QuasiNewtonX(Mat A)
 {
 	MatA11MF        ctx;
@@ -397,8 +379,6 @@ PetscErrorCode MatDestroy_MatA11MF_QuasiNewtonX(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MatStokesMF_QuasiNewtonX"
 PetscErrorCode MatDestroy_MatStokesMF_QuasiNewtonX(Mat A)
 {
 	MatStokesMF     ctx;
@@ -420,8 +400,6 @@ PetscErrorCode MatDestroy_MatStokesMF_QuasiNewtonX(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatStokesMFCopy"
 PetscErrorCode MatStokesMFCopy(MatStokesMF A,MatStokesMF *B)
 {
 	PetscErrorCode ierr;
@@ -458,8 +436,6 @@ PetscErrorCode MatStokesMFCopy(MatStokesMF A,MatStokesMF *B)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatA11MFCopy"
 PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 {
 	PetscErrorCode ierr;
@@ -493,8 +469,6 @@ PetscErrorCode MatA11MFCopy(MatA11MF A,MatA11MF *B)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCopy_StokesMF_A11MF"
 PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 {
 	PetscErrorCode ierr;
@@ -523,8 +497,6 @@ PetscErrorCode MatCopy_StokesMF_A11MF(MatStokesMF A,MatA11MF *B)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultAdd_basic"
 PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3)
 {
 	PetscErrorCode ierr;
@@ -552,8 +524,6 @@ PetscErrorCode MatMultAdd_basic(Mat A,Vec v1,Vec v2,Vec v3)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMultTransposeAdd_generic"
 PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
 {
 	Vec vt;
@@ -576,8 +546,6 @@ PetscErrorCode MatMultTransposeAdd_generic(Mat mat,Vec v1,Vec v2,Vec v3)
  
  
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateSubMatrix_MFStokes_A"
 PetscErrorCode MatCreateSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
 {
 	MatStokesMF ctx,copyA;
@@ -791,8 +759,6 @@ PetscErrorCode MatCreateSubMatrix_MFStokes_A(Mat A,IS isr,IS isc,MatReuse cll,Ma
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateSubMatrix_MFStokes_A11"
 PetscErrorCode MatCreateSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,Mat *B)
 {
 	MatA11MF  ctx;
@@ -915,8 +881,6 @@ PetscErrorCode MatCreateSubMatrix_MFStokes_A11(Mat A,IS isr,IS isc,MatReuse cll,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A"
 PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
 {
 	MatStokesMF       ctx;
@@ -1002,8 +966,6 @@ PetscErrorCode MatMult_MFStokes_A(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A_QuasiNewtonX"
 PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
 {
 	MatStokesMF       ctx;
@@ -1095,8 +1057,6 @@ PetscErrorCode MatMult_MFStokes_A_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetDiagonal_MFStokes_A11"
 PetscErrorCode MatGetDiagonal_MFStokes_A11(Mat A,Vec X)
 {
 	MatA11MF          ctx;
@@ -1138,8 +1098,6 @@ PetscErrorCode MatGetDiagonal_MFStokes_A11(Mat A,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetDiagonal_MFStokes_A11LowOrder"
 PetscErrorCode MatGetDiagonal_MFStokes_A11LowOrder(Mat A,Vec X)
 {
 	MatA11MF          ctx;
@@ -1181,8 +1139,6 @@ PetscErrorCode MatGetDiagonal_MFStokes_A11LowOrder(Mat A,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A11"
 PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
 {
 	MatA11MF          ctx;
@@ -1248,8 +1204,6 @@ PetscErrorCode MatMult_MFStokes_A11(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A11LowOrder"
 PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
 {
 	MatA11MF          ctx;
@@ -1327,8 +1281,6 @@ PetscErrorCode MatMult_MFStokes_A11LowOrder(Mat A,Vec X,Vec Y)
  IN:  X - a pressure vector 
  OUT: Y - a velocity vector 
 */
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A12"
 PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
 {
 	MatStokesMF       ctx;
@@ -1397,8 +1349,6 @@ PetscErrorCode MatMult_MFStokes_A12(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A12_QuasiNewtonX"
 PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
 {
 	MatStokesMF       ctx;
@@ -1471,8 +1421,6 @@ PetscErrorCode MatMult_MFStokes_A12_QuasiNewtonX(Mat A,Vec X,Vec Y)
  IN:  X - a velocity vector 
  OUT: Y - a pressure vector 
  */
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A21"
 PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
 {
 	MatStokesMF       ctx;
@@ -1537,8 +1485,6 @@ PetscErrorCode MatMult_MFStokes_A21(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A21_QuasiNewtonX"
 PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
 {
 	MatStokesMF       ctx;
@@ -1607,8 +1553,6 @@ PetscErrorCode MatMult_MFStokes_A21_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatMult_MFStokes_A11_QuasiNewtonX"
 PetscErrorCode MatMult_MFStokes_A11_QuasiNewtonX(Mat A,Vec X,Vec Y)
 {
 	MatA11MF          ctx;
@@ -1672,8 +1616,6 @@ PetscErrorCode MatMult_MFStokes_A11_QuasiNewtonX(Mat A,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetDiagonal_MFStokes_A11_QuasiNewtonX"
 PetscErrorCode MatGetDiagonal_MFStokes_A11_QuasiNewtonX(Mat A,Vec X)
 {
 	MatA11MF          ctx;
@@ -1723,8 +1665,6 @@ PetscErrorCode MatGetDiagonal_MFStokes_A11_QuasiNewtonX(Mat A,Vec X)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A)
 {
 	Mat B;
@@ -1744,8 +1684,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A(MatStokesMF Stk,Mat *A)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,Mat *A)
 {
 	DM  dax;
@@ -1771,8 +1709,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A_QuasiNewtonX(MatStokesMF Stk,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A11"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 {
 	Mat B;
@@ -1797,8 +1733,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11(MatA11MF A11,Mat *A)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,Mat *A)
 {
 	DM  dax;
@@ -1828,8 +1762,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11_QuasiNewtonX(MatA11MF A11,M
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A11LowOrder"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A)
 {
 	Mat B;
@@ -1858,8 +1790,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A11LowOrder(MatA11MF A11,Mat *A
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A12"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12(MatStokesMF Stk,Mat *A12)
 {
 	Mat B;
@@ -1877,8 +1807,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12(MatStokesMF Stk,Mat *A12)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A12_QuasiNewtonX"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12_QuasiNewtonX(MatStokesMF Stk,Mat *A12)
 {
 	DM  dax;
@@ -1902,8 +1830,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A12_QuasiNewtonX(MatStokesMF St
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A21"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21(MatStokesMF Stk,Mat *A21)
 {
 	Mat B;
@@ -1921,8 +1847,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21(MatStokesMF Stk,Mat *A21)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX(MatStokesMF Stk,Mat *A21)
 {
 	DM  dax;
@@ -1950,8 +1874,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_A21_QuasiNewtonX(MatStokesMF St
  Should be
  PetscErrorCode StokesQ2P1CreateMatrix_MFOperator(PhysCompStokes user,Mat *B)
  */
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_Operator"
 PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 {
 	PetscBool      same;
@@ -1984,8 +1906,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_Operator(PhysCompStokes user,Mat *B)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX"
 PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes user,Mat *B)
 {
 	PetscBool      same;
@@ -2018,8 +1938,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_MFOperator_QuasiNewtonX(PhysCompStokes use
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrixNest_Operator"
 PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt tA11,PetscInt tA12,PetscInt tA21,Mat *B)
 {
 	PetscBool      same;
@@ -2107,8 +2025,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_Operator(PhysCompStokes user,PetscInt 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrixNest_PCOperator"
 PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscInt tA11,PetscInt tA12,PetscInt tA21,Mat *B)
 {
 	PetscBool      same;
@@ -2206,8 +2122,6 @@ PetscErrorCode StokesQ2P1CreateMatrixNest_PCOperator(PhysCompStokes user,PetscIn
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesA12Preallocation_basic"
 PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 {
 	PetscInt nnz,onnz;
@@ -2244,8 +2158,6 @@ PetscErrorCode StokesA12Preallocation_basic(Mat mat,DM dav,DM dap)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesA21Preallocation_basic"
 PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 {
 	PetscInt nnz,onnz;
@@ -2285,8 +2197,6 @@ PetscErrorCode StokesA21Preallocation_basic(Mat mat,DM dav,DM dap)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_A12"
 PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat)
 {
   DM             pack,dav,dap;
@@ -2330,8 +2240,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_A12(PhysCompStokes user,Mat *mat)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "StokesQ2P1CreateMatrix_A21"
 PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
 {
   DM             pack,dav,dap;
@@ -2375,8 +2283,6 @@ PetscErrorCode StokesQ2P1CreateMatrix_A21(PhysCompStokes user,Mat *mat)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreate_StokesA11_asm"
 PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],Mat *mat)
 {
   DM             pack,dav,dap;
@@ -2410,8 +2316,6 @@ PetscErrorCode MatCreate_StokesA11_asm(PhysCompStokes user,const char prefix[],M
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatShellGetMatStokesMF"
 PetscErrorCode MatShellGetMatStokesMF(Mat A,MatStokesMF *mf)
 {
 	MatStokesMF     ctx;
@@ -2424,8 +2328,6 @@ PetscErrorCode MatShellGetMatStokesMF(Mat A,MatStokesMF *mf)
 	
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
-#define __FUNCT__ "MatShellGetMatA11MF"
 PetscErrorCode MatShellGetMatA11MF(Mat A,MatA11MF *mf)
 {
 	MatA11MF     ctx;

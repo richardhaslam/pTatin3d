@@ -41,8 +41,6 @@
 #include "material_point_utils.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "EnergyEvaluateCoefficients_MaterialPoints"
 PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscReal time,DM dmT,PetscScalar LA_T[],PetscScalar LA_U[])
 {
 	PetscErrorCode ierr;
@@ -276,8 +274,6 @@ PetscErrorCode EnergyEvaluateCoefficients_MaterialPoints(pTatinCtx user,PetscRea
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EnergyEvaluateCoefficients"
 PetscErrorCode EnergyEvaluateCoefficients(pTatinCtx user,PetscReal time,DM dmT,PetscScalar LA_T[],PetscScalar LA_U[])
 {
 	PetscErrorCode ierr;

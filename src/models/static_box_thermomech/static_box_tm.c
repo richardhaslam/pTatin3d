@@ -49,8 +49,6 @@ PSwarm pswarm;
  Coefficients for the energy uses a combination of region-wise (rho,Cp) and material-point-wised defined properties (kappa,H)
  Coefficients for the mechanics defined strictly via users definition of material-point properties
 */
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_StaticBoxTM_variant1"
 PetscErrorCode ModelInitialize_StaticBoxTM_variant1(pTatinCtx c,void *ctx)
 {
   RheologyConstants       *rheology;
@@ -96,8 +94,6 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant1(pTatinCtx c,void *ctx)
  Coefficients for the energy prescribed region-wise
  Coefficients for the mechanics defined region-wise
 */
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_StaticBoxTM_variant2"
 PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
 {
   RheologyConstants       *rheology;
@@ -171,8 +167,6 @@ PetscErrorCode ModelInitialize_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_StaticBoxTM"
 PetscErrorCode ModelApplyBoundaryCondition_StaticBoxTM(pTatinCtx c,void *ctx)
 {
   PetscScalar    zero = 0.0;
@@ -209,8 +203,6 @@ PetscErrorCode ModelApplyBoundaryCondition_StaticBoxTM(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_StaticBoxTM"
 PetscErrorCode ModelApplyBoundaryConditionMG_StaticBoxTM(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
   PetscScalar    zero = 0.0;
@@ -231,8 +223,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_StaticBoxTM(PetscInt nl,BCList bcli
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_StaticBoxTM"
 PetscErrorCode ModelApplyInitialMeshGeometry_StaticBoxTM(pTatinCtx c,void *ctx)
 {
   PetscReal      Lx,Ly,Lz;
@@ -249,8 +239,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_StaticBoxTM(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_StaticBoxTM_variant1"
 PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant1(pTatinCtx c,void *ctx)
 {
   int            p,npoints;
@@ -302,8 +290,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant1(pTatinCtx 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_StaticBoxTM_variant2"
 PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant2(pTatinCtx c,void *ctx)
 {
   int            p,npoints;
@@ -334,8 +320,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_StaticBoxTM_variant2(pTatinCtx 
  depth_interface = 3.0
  rho1 = 5.0
  */
-#undef __FUNCT__
-#define __FUNCT__ "ComputeHydrostaticPressure"
 static PetscErrorCode ComputeHydrostaticPressure(PetscReal depth,PetscReal rho0,PetscReal *pressure)
 {
   PetscFunctionBegin;
@@ -354,8 +338,6 @@ static PetscErrorCode ComputeHydrostaticPressure(PetscReal depth,PetscReal rho0,
    T0 = T(y0)
    T1 = T(y1)
 */
-#undef __FUNCT__
-#define __FUNCT__ "Compute1DTemperature"
 static PetscErrorCode Compute1DTemperature(PetscReal y,PetscReal Q,PetscReal *t,PetscReal *dtdy)
 {
   PetscReal k,T0,T1,y1,gamma,A,B;
@@ -374,8 +356,6 @@ static PetscErrorCode Compute1DTemperature(PetscReal y,PetscReal Q,PetscReal *t,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_StaticBoxTM"
 PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   PetscReal      nrm[3];
@@ -523,8 +503,6 @@ PetscErrorCode ModelOutput_StaticBoxTM(pTatinCtx c,Vec X,const char prefix[],voi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialCondition_StaticBoxTM"
 PetscErrorCode ModelInitialCondition_StaticBoxTM(pTatinCtx c,Vec X,void *ctx)
 {
   PhysCompStokes stokes_ctx;
@@ -557,8 +535,6 @@ PetscErrorCode ModelInitialCondition_StaticBoxTM(pTatinCtx c,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_StaticBoxTM"
 PetscErrorCode ModelDestroy_StaticBoxTM(pTatinCtx c,void *ctx)
 {
   PetscErrorCode ierr;
@@ -569,8 +545,6 @@ PetscErrorCode ModelDestroy_StaticBoxTM(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelCreate_StaticBoxTM"
 PetscErrorCode pTatinModelCreate_StaticBoxTM(pTatinModel m)
 {
   PetscBool use_v1 = PETSC_FALSE;

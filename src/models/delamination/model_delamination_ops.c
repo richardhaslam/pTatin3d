@@ -47,8 +47,6 @@ PetscReal cm_per_year2m_per_sec = 1.0e-2 / ( 365.0 * 24.0 * 60.0 * 60.0 ) ;
 PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Delamination"
 PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -237,8 +235,6 @@ PetscErrorCode ModelInitialize_Delamination(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDelamination_DefineBCList"
 PetscErrorCode ModelDelamination_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelDelaminationCtx *data)
 {
 	PetscScalar    vxl,vxr,vzf,vzb,vy;
@@ -268,8 +264,6 @@ PetscErrorCode ModelDelamination_DefineBCList(BCList bclist,DM dav,pTatinCtx use
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Delamination"
 PetscErrorCode ModelApplyBoundaryCondition_Delamination(pTatinCtx user,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -283,8 +277,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Delamination(pTatinCtx user,void *ctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Delamination"
 PetscErrorCode ModelApplyBoundaryConditionMG_Delamination(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -301,8 +293,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Delamination(PetscInt nl,BCList bcl
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Delamination"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Delamination(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -312,8 +302,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Delamination(pTatinCtx c,void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Delamination"
 PetscErrorCode ModelApplyInitialMeshGeometry_Delamination(pTatinCtx c,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -331,8 +319,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Delamination(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Delamination"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -462,8 +448,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Delamination(pTatinCtx c,void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialCondition_Delamination"
 PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -522,8 +506,6 @@ PetscErrorCode ModelApplyInitialCondition_Delamination(pTatinCtx c,Vec X,void *c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Delamination"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Delamination(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscReal        step;
@@ -553,8 +535,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Delamination(pTatinCtx c,Vec X,void 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Delamination_CheckScales"
 PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 {
 	Vec Xcopy,velocity,pressure,F,RHS;
@@ -653,8 +633,6 @@ PetscErrorCode ModelOutput_Delamination_CheckScales(pTatinCtx c,Vec X)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Delamination"
 PetscErrorCode ModelOutput_Delamination(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscErrorCode ierr;
@@ -670,8 +648,6 @@ PetscErrorCode ModelOutput_Delamination(pTatinCtx c,Vec X,const char prefix[],vo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Delamination"
 PetscErrorCode ModelDestroy_Delamination(pTatinCtx c,void *ctx)
 {
 	ModelDelaminationCtx *data = (ModelDelaminationCtx*)ctx;
@@ -688,8 +664,6 @@ PetscErrorCode ModelDestroy_Delamination(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Delamination"
 PetscErrorCode pTatinModelRegister_Delamination(void)
 {
 	ModelDelaminationCtx *data;

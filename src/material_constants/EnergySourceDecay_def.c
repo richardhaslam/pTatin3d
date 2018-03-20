@@ -106,8 +106,6 @@ void MaterialConstantsSetDefaultAll_SourceDecay(
 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_SourceDecay"
 PetscErrorCode MaterialConstantsSetFromOptions_SourceDecay(const char model_name[],const int region_id,EnergySourceDecay _data[],PetscBool essential)
 {
   char                         opt_name[PETSC_MAX_PATH_LEN];
@@ -136,8 +134,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceDecay(const char model_name
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_SourceDecay"
 PetscErrorCode MaterialConstantsPrintValues_SourceDecay(const char model_name[],const int region_id,EnergySourceDecay _data[]) 
 {
   EnergySourceDecay *data = &_data[region_id];
@@ -162,8 +158,6 @@ PetscErrorCode MaterialConstantsPrintValues_SourceDecay(const char model_name[],
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_SourceDecay"
 PetscErrorCode MaterialConstantsSetValues_SourceDecay(const int region_id,EnergySourceDecay _data[],
     double H0,
     double lambda)
@@ -174,8 +168,6 @@ PetscErrorCode MaterialConstantsSetValues_SourceDecay(const int region_id,Energy
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_SourceDecay"
 PetscErrorCode MaterialConstantsScaleValues_SourceDecay(const int region_id,EnergySourceDecay _data[],
     double H0,
     double lambda)

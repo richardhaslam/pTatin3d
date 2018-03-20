@@ -63,8 +63,6 @@ typedef struct {
     PetscBool       log;
 } PC_DMDARepart;
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDARepartitionDetermineRankFromGlobalIJK"
 PetscErrorCode _DMDARepartitionDetermineRankFromGlobalIJK(PetscInt i,PetscInt j,PetscInt k,
                                                          PetscInt Mp,PetscInt Np,PetscInt Pp,
                                                          PetscInt start_i[],PetscInt start_j[],PetscInt start_k[],
@@ -104,8 +102,6 @@ PetscErrorCode _DMDARepartitionDetermineRankFromGlobalIJK(PetscInt i,PetscInt j,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDARepartitionDetermineGlobalS0"
 PetscErrorCode _DMDARepartitionDetermineGlobalS0(PetscMPIInt rank_re,PetscInt Mp_re,PetscInt Np_re,PetscInt Pp_re,
                                                 PetscInt range_i_re[],PetscInt range_j_re[],PetscInt range_k_re[],PetscInt *s0)
 {
@@ -135,8 +131,6 @@ PetscErrorCode _DMDARepartitionDetermineGlobalS0(PetscMPIInt rank_re,PetscInt Mp
  Vec xred; = [ a b c d e ][ 0 ][ f g h ][ 0 ]     <after scatter>
  Vec xsub; = [ a b c d e ] [ f g h ]              <defined on subcomm>
 */
-#undef __FUNCT__
-#define __FUNCT__ "_DMDARepart_SetupScatters"
 PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
 {
     PetscErrorCode ierr;
@@ -231,8 +225,6 @@ PetscErrorCode _DMDARepart_SetupScatters(PC pc,PC_DMDARepart *red)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDARepart_SetupPMatrix"
 PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
 {
     PetscErrorCode ierr;
@@ -324,8 +316,6 @@ PetscErrorCode _DMDARepart_SetupPMatrix(PC pc,PC_DMDARepart *red)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDARepart_UpdateOperator"
 PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
 {
     PetscErrorCode ierr;
@@ -457,8 +447,6 @@ PetscErrorCode _DMDARepart_UpdateOperator(PC pc,PC_DMDARepart *red)
 }
 
 /* implementations for DMDARepart */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_DMDARepart"
 static PetscErrorCode PCSetUp_DMDARepart(PC pc)
 {
     PetscErrorCode ierr;
@@ -644,8 +632,6 @@ static PetscErrorCode PCSetUp_DMDARepart(PC pc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_DMDARepart"
 static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
 {
     PetscErrorCode ierr;
@@ -710,8 +696,6 @@ static PetscErrorCode PCApply_DMDARepart(PC pc,Vec x,Vec y)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_DMDARepart"
 static PetscErrorCode PCReset_DMDARepart(PC pc)
 {
     PetscErrorCode ierr;
@@ -741,8 +725,6 @@ static PetscErrorCode PCReset_DMDARepart(PC pc)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_DMDARepart"
 static PetscErrorCode PCDestroy_DMDARepart(PC pc)
 {
     PetscErrorCode ierr;
@@ -758,8 +740,6 @@ static PetscErrorCode PCDestroy_DMDARepart(PC pc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_DMDARepart"
 static PetscErrorCode PCSetFromOptions_DMDARepart(PetscOptionItems *PetscOptionsObject,PC pc)
 {
     PetscErrorCode ierr;
@@ -772,8 +752,6 @@ static PetscErrorCode PCSetFromOptions_DMDARepart(PetscOptionItems *PetscOptions
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_DMDARepart"
 static PetscErrorCode PCView_DMDARepart(PC pc,PetscViewer viewer)
 {
     PetscErrorCode  ierr;
@@ -809,8 +787,6 @@ static PetscErrorCode PCView_DMDARepart(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_DMDARepart"
 PetscErrorCode PCCreate_DMDARepart(PC pc)
 {
     PetscErrorCode   ierr;

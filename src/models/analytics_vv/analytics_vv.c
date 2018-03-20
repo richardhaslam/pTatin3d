@@ -48,8 +48,6 @@
 
 PSwarm pswarm;
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_AnlVV"
 PetscErrorCode ModelInitialize_AnlVV(pTatinCtx c,void *ctx)
 {
   RheologyConstants *rheology;
@@ -68,8 +66,6 @@ PetscErrorCode ModelInitialize_AnlVV(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_AnlVV"
 PetscErrorCode ModelApplyBoundaryCondition_AnlVV(pTatinCtx c,void *ctx)
 {
   PetscScalar    zero = 0.0;
@@ -87,8 +83,6 @@ PetscErrorCode ModelApplyBoundaryCondition_AnlVV(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_AnlVV"
 PetscErrorCode ModelApplyBoundaryConditionMG_AnlVV(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
   PetscScalar    zero = 0.0;
@@ -110,8 +104,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_AnlVV(PetscInt nl,BCList bclist[],D
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_AnlVV"
 PetscErrorCode ModelApplyInitialMeshGeometry_AnlVV(pTatinCtx c,void *ctx)
 {
   PetscReal      Lx,Ly,Lz;
@@ -128,8 +120,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_AnlVV(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_AnlVV_solkx"
 PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *ctx)
 {
   int            p,n_mp_points;
@@ -229,8 +219,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solkx(pTatinCtx c,void *c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_AnlVV_solcx"
 PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solcx(pTatinCtx c,void *ctx)
 {
   int            p,n_mp_points;
@@ -298,8 +286,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AnlVV_solcx(pTatinCtx c,void *c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_AnlVV"
 PetscErrorCode ModelOutput_AnlVV(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   PetscErrorCode ierr;
@@ -373,8 +359,6 @@ PetscErrorCode ModelOutput_AnlVV(pTatinCtx c,Vec X,const char prefix[],void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialCondition_AnlVV"
 PetscErrorCode ModelInitialCondition_AnlVV(pTatinCtx c,Vec X,void *ctx)
 {
   PhysCompStokes stokes_ctx;
@@ -396,8 +380,6 @@ PetscErrorCode ModelInitialCondition_AnlVV(pTatinCtx c,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_AnlVV"
 PetscErrorCode ModelDestroy_AnlVV(pTatinCtx c,void *ctx)
 {
   PetscErrorCode ierr;
@@ -408,8 +390,6 @@ PetscErrorCode ModelDestroy_AnlVV(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelCreate_AnlVV"
 PetscErrorCode pTatinModelCreate_AnlVV(pTatinModel m)
 {
   PetscErrorCode ierr;

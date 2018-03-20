@@ -127,8 +127,6 @@ const double char_rhsscale=    0.0315359920277;
 
 #define geom_eps 1.0e-8
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_ExSubduction"
 PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
 {
     ExSubductionCtx *data = (ExSubductionCtx*)ctx;
@@ -232,8 +230,6 @@ PetscErrorCode ModelInitialize_ExSubduction(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ExSubduction_VelocityBC"
 PetscErrorCode ExSubduction_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ExSubductionCtx *data)
 {
     PetscReal      val_V;
@@ -255,8 +251,6 @@ PetscErrorCode ExSubduction_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ExSubduc
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_ExSubduction"
 PetscErrorCode ModelApplyBoundaryConditionMG_ExSubduction(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
     PetscInt        n;
@@ -272,8 +266,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ExSubduction(PetscInt nl,BCList bcl
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_ExSubduction"
 PetscErrorCode ModelApplyBoundaryCondition_ExSubduction(pTatinCtx c,void *ctx)
 {
     ExSubductionCtx *data = (ExSubductionCtx*)ctx;
@@ -294,8 +286,6 @@ PetscErrorCode ModelApplyBoundaryCondition_ExSubduction(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_ExSubduction"
 PetscErrorCode ModelApplyInitialMeshGeometry_ExSubduction(pTatinCtx c,void *ctx)
 {
     ExSubductionCtx *data = (ExSubductionCtx*)ctx;
@@ -320,8 +310,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ExSubduction(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_ExSubduction"
 PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *ctx)
 {
     ExSubductionCtx *data = (ExSubductionCtx*)ctx;
@@ -369,8 +357,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ExSubduction(pTatinCtx c,void *
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_ExSubduction"
 PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void *ctx)
 {
     PetscErrorCode  ierr;
@@ -394,8 +380,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ExSubduction(pTatinCtx c,Vec X,void 
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_ExSubduction"
 PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
     ExSubductionCtx  *data = (ExSubductionCtx*)ctx;
@@ -456,8 +440,6 @@ PetscErrorCode ModelOutput_ExSubduction(pTatinCtx c,Vec X,const char prefix[],vo
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_ExSubduction"
 PetscErrorCode ModelDestroy_ExSubduction(pTatinCtx c,void *ctx)
 {
     ExSubductionCtx *data = (ExSubductionCtx*)ctx;
@@ -477,8 +459,6 @@ PetscErrorCode ModelDestroy_ExSubduction(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_ExSubduction"
 PetscErrorCode pTatinModelRegister_ExSubduction(void)
 {
     ExSubductionCtx  *data;

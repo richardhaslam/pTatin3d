@@ -36,8 +36,6 @@
 #include "geometry_object_parse.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectLoadJSON"
 PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,GeometryObject **golist)
 {
     PetscErrorCode ierr;
@@ -138,8 +136,6 @@ PetscErrorCode GeometryObjectLoadJSON(const char filename[],PetscInt *n,Geometry
  ]
  
 */
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectListParseJSON"
 PetscErrorCode GeometryObjectListParseJSON(cJSON *jfile,int *_nlist,GeometryObject **_list)
 {
     PetscErrorCode ierr;
@@ -314,8 +310,6 @@ GeometryObjectSetOperators_Scan:
 /* ------------------------------------------------------------------------------------------- */
 /* Implementations */
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectQueryFromJSONIsSetOperation"
 PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *isset)
 {
     int       found;
@@ -337,8 +331,6 @@ PetscErrorCode GeometryObjectQueryFromJSONIsSetOperation(cJSON *obj,PetscBool *i
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectParseDetermineAxis"
 PetscErrorCode GeometryObjectParseDetermineAxis(const char axisname[],GeomRotateAxis *a)
 {
     PetscBool same;
@@ -365,8 +357,6 @@ PetscErrorCode GeometryObjectParseDetermineAxis(const char axisname[],GeomRotate
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectParseDetermineSign"
 PetscErrorCode GeometryObjectParseDetermineSign(const char name[],GeomSign *a)
 {
     PetscBool same;
@@ -388,8 +378,6 @@ PetscErrorCode GeometryObjectParseDetermineSign(const char name[],GeomSign *a)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectParseDetermineSetOperatorType"
 PetscErrorCode GeometryObjectParseDetermineSetOperatorType(const char name[],GeomSetOperatorType *a)
 {
     PetscBool same;
@@ -418,8 +406,6 @@ PetscErrorCode GeometryObjectParseDetermineSetOperatorType(const char name[],Geo
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectPrimitiveLoadFromJSON"
 PetscErrorCode GeometryObjectPrimitiveLoadFromJSON(cJSON *obj,GeometryObject *g)
 {
     char           *type,*name;

@@ -68,8 +68,6 @@
 #include "model_convection2d_ctx.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Thermal_Convection2d"
 PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
@@ -213,8 +211,6 @@ PetscErrorCode ModelInitialize_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Thermal_Convection2d_VelocityBC"
 PetscErrorCode Thermal_Convection2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ModelThermal_Convection2dCtx *data)
 {
 	PetscErrorCode ierr;
@@ -247,8 +243,6 @@ PetscErrorCode Thermal_Convection2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Thermal_Convection2d"
 PetscErrorCode ModelApplyBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
@@ -283,8 +277,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Thermal_Convection2d"
 PetscErrorCode ModelApplyBoundaryConditionMG_Thermal_Convection2d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
@@ -302,8 +294,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Thermal_Convection2d(PetscInt nl,BC
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Thermal_Convection2d"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -312,8 +302,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Thermal_Convection2d(pTatinCt
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Thermal_Convection2d"
 PetscErrorCode ModelApplyInitialMeshGeometry_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
@@ -333,8 +321,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Thermal_Convection2d(pTatinCtx c,vo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Thermal_Convection2d"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
@@ -402,8 +388,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Thermal_Convection2d(pTatinCtx 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_PerturbationThermal_Convection2d"
 PetscBool DMDAVecTraverse3d_PerturbationThermal_Convection2d(PetscScalar position[], PetscScalar *val, void *ctx) 
 {
 	PetscScalar x,y;
@@ -435,8 +419,6 @@ PetscBool DMDAVecTraverse3d_PerturbationThermal_Convection2d(PetscScalar positio
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_Thermal_Convection2d"
 PetscErrorCode ModelApplyInitialSolution_Thermal_Convection2d(pTatinCtx c,Vec X, void *ctx)
 {
 	
@@ -496,8 +478,6 @@ PetscErrorCode ModelApplyInitialSolution_Thermal_Convection2d(pTatinCtx c,Vec X,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d(pTatinCtx c,Vec X,void *ctx)
 {
 	DM                stokes_pack,dau,dap;
@@ -529,8 +509,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Thermal_Convection2d(pTati
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Thermal_Convection2d"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Thermal_Convection2d(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscFunctionBegin;
@@ -552,8 +530,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Thermal_Convection2d(pTatinCtx c,Vec
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Thermal_Convection2d"
 PetscErrorCode ModelOutput_Thermal_Convection2d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscBool      active_energy;
@@ -605,8 +581,6 @@ PetscErrorCode ModelOutput_Thermal_Convection2d(pTatinCtx c,Vec X,const char pre
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Thermal_Convection2d"
 PetscErrorCode ModelDestroy_Thermal_Convection2d(pTatinCtx c,void *ctx)
 {
 	ModelThermal_Convection2dCtx *data = (ModelThermal_Convection2dCtx*)ctx;
@@ -621,8 +595,6 @@ PetscErrorCode ModelDestroy_Thermal_Convection2d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Thermal_Convection2d"
 PetscErrorCode pTatinModelRegister_Thermal_Convection2d(void)
 {
 	ModelThermal_Convection2dCtx *data;

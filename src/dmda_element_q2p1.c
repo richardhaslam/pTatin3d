@@ -36,8 +36,6 @@
 
 
 /* DA Q2 1D,2D,3D */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetSizeElementQ2"
 PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ)
 {
 	const PetscInt order = 2;
@@ -72,8 +70,6 @@ PetscErrorCode DMDAGetSizeElementQ2(DM da,PetscInt *MX,PetscInt *MY,PetscInt *MZ
 }
 
 /* DA Q2 1D,2D,3D */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetLocalSizeElementQ2"
 PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
 	PetscInt i,j,k,start;
@@ -214,8 +210,6 @@ PetscErrorCode DMDAGetLocalSizeElementQ2(DM da,PetscInt *mx,PetscInt *my,PetscIn
 }
 
 /* DA Q2 1D,2D,3D */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetCornersElementQ2"
 PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscInt *sek,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
 	PetscInt i,j,k;
@@ -269,8 +263,6 @@ PetscErrorCode DMDAGetCornersElementQ2(DM da,PetscInt *sei,PetscInt *sej,PetscIn
 }
 
 /* DA Q2 1D,2D,3D */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetOwnershipRangesElementQ2"
 PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt **si,PetscInt **sj,PetscInt **sk,PetscInt **_mx,PetscInt **_my,PetscInt **_mz)
 {
 	PetscMPIInt nproc,rank;
@@ -373,8 +365,6 @@ PetscErrorCode DMDAGetOwnershipRangesElementQ2(DM da,PetscInt *m,PetscInt *n,Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_DA_Q2_3D"
 PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx)
 {
   DM_DA          *da = (DM_DA*)dm->data;
@@ -478,8 +468,6 @@ PetscErrorCode DMDAGetElements_DA_Q2_3D(DM dm,PetscInt *nel,PetscInt *npe,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_DA_Q2"
 PetscErrorCode DMDAGetElements_DA_Q2(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -500,8 +488,6 @@ PetscErrorCode DMDAGetElements_DA_Q2(DM dm,PetscInt *nel,PetscInt *nen,const Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_DA_P0MD_3D"
 PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,const PetscInt **eidx)
 {
   DM_DA          *da = (DM_DA*)dm->data;
@@ -559,8 +545,6 @@ PetscErrorCode DMDAGetElements_DA_P0MD_3D(DM dm,PetscInt *nel,PetscInt *npe,cons
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_DA_P1"
 PetscErrorCode DMDAGetElements_DA_P1(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -581,8 +565,6 @@ PetscErrorCode DMDAGetElements_DA_P1(DM dm,PetscInt *nel,PetscInt *nen,const Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElements_pTatinQ2P1"
 PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -601,8 +583,6 @@ PetscErrorCode DMDAGetElements_pTatinQ2P1(DM dm,PetscInt *nel,PetscInt *nen,cons
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetElementType_Q2"
 PetscErrorCode  DMDASetElementType_Q2(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
@@ -622,8 +602,6 @@ PetscErrorCode  DMDASetElementType_Q2(DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetElementType_P1"
 PetscErrorCode  DMDASetElementType_P1(DM da)
 {
   DM_DA          *dd = (DM_DA*)da->data;
@@ -645,8 +623,6 @@ PetscErrorCode  DMDASetElementType_P1(DM da)
 
 
 /* element helpers */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementCoordinatesQ2_3D"
 PetscErrorCode DMDAGetElementCoordinatesQ2_3D(PetscScalar elcoords[],PetscInt elnid[],PetscScalar LA_gcoords[])
 {
 	PetscInt n;
@@ -660,8 +636,6 @@ PetscErrorCode DMDAGetElementCoordinatesQ2_3D(PetscScalar elcoords[],PetscInt el
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetScalarElementFieldQ2_3D"
 PetscErrorCode DMDAGetScalarElementFieldQ2_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
@@ -672,8 +646,6 @@ PetscErrorCode DMDAGetScalarElementFieldQ2_3D(PetscScalar elfield[],PetscInt eln
 	}
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetVectorElementFieldQ2_3D"
 PetscErrorCode DMDAGetVectorElementFieldQ2_3D(PetscScalar elfield[],PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
@@ -687,8 +659,6 @@ PetscErrorCode DMDAGetVectorElementFieldQ2_3D(PetscScalar elfield[],PetscInt eln
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetScalarElementField"
 PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,PetscInt elnid[],PetscScalar LA_gfield[])
 {
 	PetscInt n;
@@ -700,8 +670,6 @@ PetscErrorCode DMDAGetScalarElementField(PetscScalar elfield[],PetscInt npe,Pets
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_DOF"
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
 {
   PetscInt n,d,el_idx,idx;
@@ -717,8 +685,6 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_DOF(PetscScalar *fields_F,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_SetValues_DOF"
 PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,PetscInt ndof,PetscInt eqn[],PetscScalar Fe[])
 {
   PetscInt n,d,el_idx,idx;
@@ -734,8 +700,6 @@ PetscErrorCode DMDASetValuesLocalStencil_SetValues_DOF(PetscScalar *fields_F,Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Q2GetElementLocalIndicesDOF"
 PetscErrorCode Q2GetElementLocalIndicesDOF(PetscInt el_localIndices[],PetscInt ndof,PetscInt elnid[])
 {
 	PetscInt n,d;

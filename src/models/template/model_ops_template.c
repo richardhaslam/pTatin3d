@@ -37,8 +37,6 @@
 #include "model_template_ctx.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Template"
 PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
 {
   ModelTemplateCtx *data;
@@ -55,8 +53,6 @@ PetscErrorCode ModelInitialize_Template(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Template"
 PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
 {
   /* ModelTemplateCtx *data; */
@@ -77,8 +73,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Template(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Template"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
 {
   /* ModelTemplateCtx *data; */
@@ -90,8 +84,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Template(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_Template"
 PetscErrorCode ModelApplyInitialSolution_Template(pTatinCtx c,Vec X,void *ctx)
 {
   /* ModelTemplateCtx *data; */
@@ -103,8 +95,6 @@ PetscErrorCode ModelApplyInitialSolution_Template(pTatinCtx c,Vec X,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Template_VelocityBC"
 PetscErrorCode Template_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ModelTemplateCtx *data)
 {
   PetscFunctionBegin;
@@ -112,8 +102,6 @@ PetscErrorCode Template_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ModelTemplat
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Template"
 PetscErrorCode ModelApplyBoundaryCondition_Template(pTatinCtx c,void *ctx)
 {
   ModelTemplateCtx *data;
@@ -140,8 +128,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Template(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Template"
 PetscErrorCode ModelApplyBoundaryConditionMG_Template(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
   ModelTemplateCtx *data;
@@ -160,8 +146,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Template(PetscInt nl,BCList bclist[
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Template"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ctx)
 {
   /* ModelTemplateCtx *data; */
@@ -173,8 +157,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Template(pTatinCtx c,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Template"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx)
 {
   /* ModelTemplateCtx *data; */
@@ -186,8 +168,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Template(pTatinCtx c,Vec X,void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Template"
 PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   /* ModelTemplateCtx *data; */
@@ -243,8 +223,6 @@ PetscErrorCode ModelOutput_Template(pTatinCtx c,Vec X,const char prefix[],void *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Template"
 PetscErrorCode ModelDestroy_Template(pTatinCtx c,void *ctx)
 {
   ModelTemplateCtx *data;
@@ -262,8 +240,6 @@ PetscErrorCode ModelDestroy_Template(pTatinCtx c,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Template"
 PetscErrorCode pTatinModelRegister_Template(void)
 {
   ModelTemplateCtx *data;

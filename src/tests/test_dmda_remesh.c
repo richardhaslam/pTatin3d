@@ -41,8 +41,6 @@
 #include "dmda_remesh.h"
 #include "mesh_deformation.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesInPlane_IJ"
 PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscInt ny,PetscInt nz)
 {
 	PetscErrorCode ierr;
@@ -95,8 +93,6 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesInPlane_IJ(PetscInt nx,PetscI
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d"
 PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,PetscInt ny,PetscInt nz)
 {
 	PetscErrorCode ierr;
@@ -164,8 +160,6 @@ PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d(PetscInt nx,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b"
 PetscErrorCode test_DMDARemeshSetUniformCoordinatesBetweenKLayers3d_b(PetscInt nx,PetscInt ny,PetscInt nz)
 {
 	PetscErrorCode ierr;

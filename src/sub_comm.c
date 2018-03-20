@@ -32,8 +32,6 @@
 #include "petsc.h"
 #include "sub_comm.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "_PetscMPISubCommCreate"
 PetscErrorCode _PetscMPISubCommCreate(PetscMPISubComm *scomm)
 {
     PetscMPISubComm comm;
@@ -46,8 +44,6 @@ PetscErrorCode _PetscMPISubCommCreate(PetscMPISubComm *scomm)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommDestroy"
 PetscErrorCode PetscMPISubCommDestroy(PetscMPISubComm *scomm)
 {
     PetscMPISubComm comm;
@@ -64,48 +60,36 @@ PetscErrorCode PetscMPISubCommDestroy(PetscMPISubComm *scomm)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommGetActive"
 PetscErrorCode PetscMPISubCommGetActive(PetscMPISubComm sc,PetscBool *a)
 {
     *a = sc->parent_rank_active_in_subcomm;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommGetParentComm"
 PetscErrorCode PetscMPISubCommGetParentComm(PetscMPISubComm sc,MPI_Comm *a)
 {
     *a = sc->parent_comm;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommGetComm"
 PetscErrorCode PetscMPISubCommGetComm(PetscMPISubComm sc,MPI_Comm *a)
 {
     *a = sc->sub_comm;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommGetNumSubRanks"
 PetscErrorCode PetscMPISubCommGetNumSubRanks(PetscMPISubComm sc,PetscMPIInt *a)
 {
     *a = sc->nranks_from_parent;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommGetActiveRanks"
 PetscErrorCode PetscMPISubCommGetActiveRanks(PetscMPISubComm sc,PetscMPIInt **a)
 {
     *a = sc->ranks_from_parent;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommCreate_Stride"
 PetscErrorCode PetscMPISubCommCreate_Stride(MPI_Comm parent_comm,PetscInt parent_reduction_factor,PetscMPISubComm *scomm)
 {
     PetscMPISubComm comm;
@@ -174,8 +158,6 @@ PetscErrorCode PetscMPISubCommCreate_Stride(MPI_Comm parent_comm,PetscInt parent
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscMPISubCommCreate"
 PetscErrorCode PetscMPISubCommCreate(MPI_Comm parent_comm,PetscInt parent_reduction_factor,PetscMPISubComm *scomm)
 {
     PetscInt       creation_type;

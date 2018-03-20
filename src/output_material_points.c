@@ -74,8 +74,6 @@ const char *MaterialPointVariableParaviewDataType[] =  {
   0
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "_write_float"
 PetscErrorCode _write_float(FILE *vtk_fp,const PetscInt mx,const PetscInt my,const PetscInt mz,float LA_cell[])
 {
 	PetscInt i,j,k;
@@ -92,8 +90,6 @@ PetscErrorCode _write_float(FILE *vtk_fp,const PetscInt mx,const PetscInt my,con
 	}
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "_write_double"
 PetscErrorCode _write_double(FILE *vtk_fp,const PetscInt mx,const PetscInt my,const PetscInt mz,double LA_cell[])
 {
 	PetscInt i,j,k;
@@ -110,8 +106,6 @@ PetscErrorCode _write_double(FILE *vtk_fp,const PetscInt mx,const PetscInt my,co
 	}
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "_write_int"
 PetscErrorCode _write_int(FILE *vtk_fp,const PetscInt mx,const PetscInt my,const PetscInt mz,int LA_cell[])
 {
 	PetscInt i,j,k;
@@ -128,8 +122,6 @@ PetscErrorCode _write_int(FILE *vtk_fp,const PetscInt mx,const PetscInt my,const
 	}
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "_write_short"
 PetscErrorCode _write_short(FILE *vtk_fp,const PetscInt mx,const PetscInt my,const PetscInt mz,short LA_cell[])
 {
 	PetscInt i,j,k;
@@ -147,8 +139,6 @@ PetscErrorCode _write_short(FILE *vtk_fp,const PetscInt mx,const PetscInt my,con
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_check_for_empty_cells_double"
 PetscErrorCode _check_for_empty_cells_double(const PetscInt mx,const PetscInt my,const PetscInt mz,int cell_count[],double LA_cell[])
 {
 	int uei,uej,uek;
@@ -227,8 +217,6 @@ PetscErrorCode _check_for_empty_cells_double(const PetscInt mx,const PetscInt my
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_check_for_empty_cells_float"
 PetscErrorCode _check_for_empty_cells_float(const PetscInt mx,const PetscInt my,const PetscInt mz,int cell_count[],float LA_cell[])
 {
 	int uei,uej,uek;
@@ -307,8 +295,6 @@ PetscErrorCode _check_for_empty_cells_float(const PetscInt mx,const PetscInt my,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_compute_cell_value_double"
 PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable variable,const PetscInt mx,const PetscInt my,const PetscInt mz,double LA_cell[])
 {
 	int *cell_count;
@@ -399,8 +385,6 @@ PetscErrorCode _compute_cell_value_double(DataBucket db,MaterialPointVariable va
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_compute_cell_value_float"
 PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable variable,const PetscInt mx,const PetscInt my,const PetscInt mz,float LA_cell[])
 {
 	int *cell_count;
@@ -492,8 +476,6 @@ PetscErrorCode _compute_cell_value_float(DataBucket db,MaterialPointVariable var
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_compute_cell_composition"
 PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBucket db,const PetscInt mx,const PetscInt my,const PetscInt mz,int LA_cell[])
 {
 	int *closest_point;
@@ -736,8 +718,6 @@ PetscErrorCode _compute_cell_composition(DM dau,PetscScalar LA_gcoords[],DataBuc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_compute_cell_nearest_point"
 PetscErrorCode _compute_cell_nearest_point(DM dau,PetscScalar LA_gcoords[],DataBucket db,const PetscInt mx,const PetscInt my,const PetscInt mz,int closest_point[],PetscBool *empty_cells_detected)
 {
   int e,ueid,ueid2,umx,umy,uei,uej,uek,i,j,k,li,lj,lk,ii,jj,kk;
@@ -954,8 +934,6 @@ PetscErrorCode _compute_cell_nearest_point(DM dau,PetscScalar LA_gcoords[],DataB
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_compute_cell_value_short"
 PetscErrorCode _compute_cell_value_short(DataBucket db,MaterialPointVariable variable,const PetscInt ncells,const int closest_point[],short LA_cell[])
 {
   int e,pid,n_mp;
@@ -1006,8 +984,6 @@ PetscErrorCode _compute_cell_value_short(DataBucket db,MaterialPointVariable var
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputParaViewMarkerFields_VTS"
 PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_points,const int nvars,const MaterialPointVariable vars[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -1288,8 +1264,6 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_VTS(DM dau,DataBucket material_p
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputParaViewMarkerFields_PVTS"
 PetscErrorCode pTatinOutputParaViewMarkerFields_PVTS(DM dau,const int nvars,const MaterialPointVariable vars[],const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -1359,8 +1333,6 @@ PetscErrorCode pTatinOutputParaViewMarkerFields_PVTS(DM dau,const int nvars,cons
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinOutputParaViewMarkerFields"
 PetscErrorCode pTatinOutputParaViewMarkerFields(DM pack,DataBucket material_points,const int nvars,const MaterialPointVariable vars[],const char path[],const char prefix[])
 {
 	char *vtkfilename,*filename;
@@ -1401,8 +1373,6 @@ PetscErrorCode pTatinOutputParaViewMarkerFields(DM pack,DataBucket material_poin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_ModelOutput_MarkerCellFields"
 PetscErrorCode pTatin3d_ModelOutput_MarkerCellFields(pTatinCtx ctx,const int nvars,const MaterialPointVariable vars[],const char prefix[])
 {
 	PetscErrorCode ierr;

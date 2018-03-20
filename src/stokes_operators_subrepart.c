@@ -75,8 +75,6 @@ struct _p_MFA11SubRepart {
   MFA11CUDA        cudactx;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "TransferQPData_A11_SubRepart"
 static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal (*wp)[NQP],Quadrature volQ,QPntVolCoefStokes *all_gausspoints,PetscReal *gaussdata_w_repart_base,MPI_Win win_gaussdata_w_repart)
 {
   PetscErrorCode          ierr;
@@ -109,8 +107,6 @@ static PetscErrorCode TransferQPData_A11_SubRepart(MFA11SubRepart ctx,PetscReal 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TransferCoordinates_A11_SubRepart"
 static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const PetscReal *LA_gcoords,PetscReal *LA_gcoords_repart_base,MPI_Win win_LA_gcoords_repart)
 {
   PetscErrorCode ierr;
@@ -137,8 +133,6 @@ static PetscErrorCode TransferCoordinates_A11_SubRepart(MFA11SubRepart ctx,const
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TransferUfield_A11_SubRepart"
 static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *ufield)
 {
   PetscErrorCode ierr;
@@ -166,8 +160,6 @@ static PetscErrorCode TransferUfield_A11_SubRepart(MFA11SubRepart ctx,PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TransferYu_A11_SubRepart"
 static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Yu)
 {
   PetscErrorCode ierr;
@@ -196,8 +188,6 @@ static PetscErrorCode TransferYu_A11_SubRepart(MFA11SubRepart ctx,PetscScalar *Y
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11SetUp_SubRepart"
 PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
 {
   PetscErrorCode  ierr;
@@ -458,8 +448,6 @@ PetscErrorCode MFA11SetUp_SubRepart(MatA11MF mf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11Destroy_SubRepart"
 PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
 {
   PetscErrorCode  ierr;
@@ -502,8 +490,6 @@ PetscErrorCode MFA11Destroy_SubRepart(MatA11MF mf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_SubRepart"
 PetscErrorCode MFStokesWrapper_A11_SubRepart(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
   PetscErrorCode          ierr;

@@ -64,8 +64,6 @@
 //#define AFFINEGEOM_LOWORDER_OPERATORS
 
 /* --- A11 --- */
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_diagA11"
 PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -132,8 +130,6 @@ PetscErrorCode MFStokesWrapper_diagA11(Quadrature volQ,DM dau,PetscScalar Yu[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_diagA11LowOrder"
 PetscErrorCode MFStokesWrapper_diagA11LowOrder(Quadrature volQ,DM dau,PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -234,8 +230,6 @@ extern void f_matmultmf_stokes_mixedfem3d_b11_(double*,double*, double*,double*,
 #endif
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11"
 PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -356,8 +350,6 @@ PetscErrorCode MFStokesWrapper_A11(MatA11MF mf,Quadrature volQ,DM dau,PetscScala
  Supports using tri-linear element transformations
  
 */
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11PC"
 PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -495,8 +487,6 @@ PetscErrorCode MFStokesWrapper_A11PC(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11PC_2x2x2"
 PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -619,8 +609,6 @@ PetscErrorCode MFStokesWrapper_A11PC_2x2x2(Quadrature volQ,DM dau,PetscScalar uf
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11PC_1x1x1"
 PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -716,8 +704,6 @@ PetscErrorCode MFStokesWrapper_A11PC_1x1x1(Quadrature volQ,DM dau,PetscScalar uf
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A"
 PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Yu[],PetscScalar Yp[])
 {	
 	PetscErrorCode ierr;
@@ -799,8 +785,6 @@ PetscErrorCode MFStokesWrapper_A(Quadrature volQ,DM dau,PetscScalar ufield[],DM 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A12"
 PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -871,8 +855,6 @@ PetscErrorCode MFStokesWrapper_A12(Quadrature volQ,DM dau,DM dap,PetscScalar Xp[
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A21"
 PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[],PetscScalar Yp[])
 {	
 	PetscErrorCode ierr;
@@ -951,8 +933,6 @@ PetscErrorCode MFStokesWrapper_A21(Quadrature volQ,DM dau,DM dap,PetscScalar Xu[
 }
 
 /* --- A11_UPX --- */
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_diagA11_UPX"
 PetscErrorCode MFStokesWrapper_diagA11_UPX(Quadrature volQ,DM dau,DM dax,PetscScalar xfield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -1014,8 +994,6 @@ PetscErrorCode MFStokesWrapper_diagA11_UPX(Quadrature volQ,DM dau,DM dax,PetscSc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_UPX"
 PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dax,PetscScalar xfield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -1080,8 +1058,6 @@ PetscErrorCode MFStokesWrapper_A11_UPX(Quadrature volQ,DM dau,PetscScalar ufield
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A_UPX"
 PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM dax,PetscScalar xfield[],PetscScalar Yu[],PetscScalar Yp[])
 {	
 	PetscErrorCode ierr;
@@ -1157,8 +1133,6 @@ PetscErrorCode MFStokesWrapper_A_UPX(Quadrature volQ,DM dau,PetscScalar ufield[]
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A12_UPX"
 PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar pfield[],DM dax,PetscScalar xfield[],PetscScalar Yu[])
 {	
 	PetscErrorCode ierr;
@@ -1222,8 +1196,6 @@ PetscErrorCode MFStokesWrapper_A12_UPX(Quadrature volQ,DM dau,DM dap,PetscScalar
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A21_UPX"
 PetscErrorCode MFStokesWrapper_A21_UPX(Quadrature volQ,DM dau,PetscScalar ufield[],DM dap,DM dax,PetscScalar xfield[],PetscScalar Yp[])
 {	
 	PetscErrorCode ierr;

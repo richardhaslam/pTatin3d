@@ -52,8 +52,6 @@ MPI
  Send data
  Reshuffle data into natural ordering
 */
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_DMDAAllGatherCoorJMax"
 PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long int *_nx,long int *_nz,double *_x[],double *_y[],double *_z[])
 {
 	DM         da_surf;
@@ -146,8 +144,6 @@ PetscErrorCode ptatin3d_DMDAAllGatherCoorJMax(DM dm,PetscMPIInt output_rank,long
  Send chunk
  Recieve and insert
 */
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_DMDAAllScatterCoorJMax"
 PetscErrorCode ptatin3d_DMDAAllScatterCoorJMax(PetscMPIInt intput_rank,double ymax[],DM dm)
 {
 	PetscFunctionBegin;
@@ -159,8 +155,6 @@ PetscErrorCode ptatin3d_DMDAAllScatterCoorJMax(PetscMPIInt intput_rank,double ym
 /* 
  Interpolate mechanical model surface onto lem grid.
 */
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_SEQLEMHelper_InterpolateM2L"
 PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateM2L(DM m_surf,DM l_surf)
 {
 	PetscFunctionBegin;
@@ -169,8 +163,6 @@ PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateM2L(DM m_surf,DM l_surf)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_SEQLEMHelper_InterpolateL2M"
 PetscErrorCode ptatin3d_SEQLEMHelper_InterpolateL2M(DM l_surf,DM m_surf)
 {
 	PetscFunctionBegin;
@@ -219,8 +211,6 @@ int spmA_InitialiseTopo_pTatin3d(SPMAData *spm,int nx,int nz,double x[],double z
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "_ptatin3d_ApplyLandscapeEvolutionModel_SPMA"
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 {
 	PhysCompStokes  stokes;
@@ -310,8 +300,6 @@ PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 /* ----------------------------------------------------------------------------------------------- */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_ApplyLandscapeEvolutionModel_SPMA"
 PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_SPMA(pTatinCtx pctx,Vec X)
 {
 #ifdef PTATIN_HAVE_SPMA

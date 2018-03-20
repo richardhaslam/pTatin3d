@@ -49,8 +49,6 @@
 
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_remesh"
 PetscErrorCode pTatin3d_remesh(void)
 {
 	PetscErrorCode  ierr;

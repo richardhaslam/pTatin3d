@@ -38,8 +38,6 @@
 
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogOpenFile"
 PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 {
 	PetscBool      stdout = PETSC_FALSE;
@@ -63,8 +61,6 @@ PetscErrorCode pTatinLogOpenFile(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogCloseFile"
 PetscErrorCode pTatinLogCloseFile(pTatinCtx ctx)
 {
 	PetscBool      stdout = PETSC_FALSE;
@@ -78,8 +74,6 @@ PetscErrorCode pTatinLogCloseFile(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogHeader"
 PetscErrorCode pTatinLogHeader(pTatinCtx ctx)
 {
 	char username[PETSC_MAX_PATH_LEN];
@@ -121,8 +115,6 @@ PetscErrorCode pTatinLogHeader(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasic"
 PetscErrorCode pTatinLogBasic(pTatinCtx ctx)
 {
   if (!ctx->log) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatinCtx->log is NULL");
@@ -133,8 +125,6 @@ PetscErrorCode pTatinLogBasic(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicKSP"
 PetscErrorCode pTatinLogBasicKSP(pTatinCtx ctx,const char kspname[],KSP ksp)
 {
 	PetscReal rnorm;
@@ -154,8 +144,6 @@ PetscErrorCode pTatinLogBasicKSP(pTatinCtx ctx,const char kspname[],KSP ksp)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicSNES"
 PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 {
     Vec       r;
@@ -197,8 +185,6 @@ PetscErrorCode pTatinLogBasicSNES(pTatinCtx ctx,const char snesname[],SNES snes)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicStokesSolution"
 PetscErrorCode pTatinLogBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X)
 {
 	char fieldname[120];
@@ -238,8 +224,6 @@ PetscErrorCode pTatinLogBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinViewBasicStokesSolution"
 PetscErrorCode pTatinViewBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X)
 {
 	PetscViewer  tmp;
@@ -254,8 +238,6 @@ PetscErrorCode pTatinViewBasicStokesSolution(pTatinCtx ctx,DM pack,Vec X)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicStokesSolutionResiduals"
 PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM pack,Vec X)
 {
 	char fieldname[120];
@@ -300,8 +282,6 @@ PetscErrorCode pTatinLogBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinViewBasicStokesSolutionResiduals"
 PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM pack,Vec X)
 {
 	PetscViewer  tmp;
@@ -316,8 +296,6 @@ PetscErrorCode pTatinViewBasicStokesSolutionResiduals(pTatinCtx ctx,SNES snes,DM
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicDMDA"
 PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 {
 	PetscReal min[3],max[3];
@@ -360,8 +338,6 @@ PetscErrorCode pTatinLogBasicDMDA(pTatinCtx ctx,const char dmname[],DM dm)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicMaterialPoints"
 PetscErrorCode pTatinLogBasicMaterialPoints(pTatinCtx ctx,const char mpname[],DataBucket db)
 {
 	int npoints,buffer,allocated;
@@ -373,8 +349,6 @@ PetscErrorCode pTatinLogBasicMaterialPoints(pTatinCtx ctx,const char mpname[],Da
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogBasicCPUtime"
 PetscErrorCode pTatinLogBasicCPUtime(pTatinCtx ctx,const char component_description[],double time)
 {
   if (!ctx->log) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatinCtx->log is NULL");
@@ -382,8 +356,6 @@ PetscErrorCode pTatinLogBasicCPUtime(pTatinCtx ctx,const char component_descript
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogNote"
 PetscErrorCode pTatinLogNote(pTatinCtx ctx,const char comment[])
 {
   if (!ctx->log) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatinCtx->log is NULL");
@@ -391,8 +363,6 @@ PetscErrorCode pTatinLogNote(pTatinCtx ctx,const char comment[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogNote2"
 PetscErrorCode pTatinLogNote2(pTatinCtx ctx,const char comment1[],const char comment2[])
 {
   if (!ctx->log) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"pTatinCtx->log is NULL");
@@ -400,8 +370,6 @@ PetscErrorCode pTatinLogNote2(pTatinCtx ctx,const char comment1[],const char com
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinLogPetscLog"
 PetscErrorCode pTatinLogPetscLog(pTatinCtx ctx,const char comment[])
 {
 	PetscErrorCode ierr;

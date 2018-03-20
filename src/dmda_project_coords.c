@@ -36,8 +36,6 @@
 #include "dmda_update_coords.h"
 #include "dmda_project_coords.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARestrictCoordinatesHierarchy"
 PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 {
 	DM daf,dac;
@@ -72,8 +70,6 @@ PetscErrorCode DMDARestrictCoordinatesHierarchy(DM da[],PetscInt nlevels)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDARestrictCoordinates"
 PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 {
 	DM cdaf,cdac;
@@ -99,8 +95,6 @@ PetscErrorCode DMDARestrictCoordinates(DM daf,DM dac)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetCoarseningFactor"
 PetscErrorCode  DMDASetCoarseningFactor(DM da,PetscInt cx,PetscInt cy,PetscInt cz)
 {
     DM_DA *dd = (DM_DA*)da->data;

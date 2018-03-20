@@ -50,8 +50,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, void *ctx );
 PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *ctx );
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Riftrh"
 PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -390,8 +388,6 @@ PetscErrorCode ModelInitialize_Riftrh(pTatinCtx c,void *ctx)
 }
 
 /* SET AN INITIAL BACK GROUND STRAIN RATE, TEMPERATURE, PRESSURE */
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_Riftrh"
 PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -463,8 +459,6 @@ PetscErrorCode ModelApplyInitialSolution_Riftrh(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelRiftrh_DefineBCList"
 PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRiftrhCtx *data)
 {
 	PetscScalar    vxl,vxr,vybottom,zero,height,length;
@@ -531,8 +525,6 @@ PetscErrorCode ModelRiftrh_DefineBCList(BCList bclist,DM dav,pTatinCtx user,Mode
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_riftrhl"
 PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, void *data )
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
@@ -553,8 +545,6 @@ PetscBool BCListEvaluator_riftrhl( PetscScalar position[], PetscScalar *value, v
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_riftrhr"
 PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, void *data )
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
@@ -575,8 +565,6 @@ PetscBool BCListEvaluator_riftrhr( PetscScalar position[], PetscScalar *value, v
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Riftrh"
 PetscErrorCode ModelApplyBoundaryCondition_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -609,8 +597,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Riftrh(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Riftrh"
 PetscErrorCode ModelApplyBoundaryConditionMG_Riftrh(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	PetscInt n;
@@ -630,8 +616,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Riftrh(PetscInt nl,BCList bclist[],
 
 // adding particles on the lower boundary to accommodate inflow
 // adding particles on the left and right boundary to accommodate inflow
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCtx c,void *ctx)
 {
 #if 0
@@ -704,8 +688,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Riftrh_semi_eulerian(pTatinCt
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Riftrh"
 PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -725,8 +707,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Riftrh(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Riftrh"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -865,8 +845,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Riftrh(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Riftrh"
 /* ASSIGN INITIAL VISCOSITY BASED ON INITIAL STRAIN RATE PRESSURE */
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec X,void *ctx)
 {
@@ -901,8 +879,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Riftrh(pTatinCtx user,Vec 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian"
 /* DEFINE ALE */
 PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
@@ -931,8 +907,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Riftrh_semi_eulerian(pTatinCtx c,Vec
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Riftrh"
 PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelRiftrhCtx  *data = (ModelRiftrhCtx*)ctx;
@@ -978,8 +952,6 @@ PetscErrorCode ModelOutput_Riftrh(pTatinCtx c,Vec X,const char prefix[],void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Riftrh"
 PetscErrorCode ModelDestroy_Riftrh(pTatinCtx c,void *ctx)
 {
 	ModelRiftrhCtx *data = (ModelRiftrhCtx*)ctx;
@@ -996,8 +968,6 @@ PetscErrorCode ModelDestroy_Riftrh(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Riftrh"
 /* ASSIGN ALL FUNCTIONS DEFINED ABOVE */
 PetscErrorCode pTatinModelRegister_Riftrh(void)
 {

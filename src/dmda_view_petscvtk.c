@@ -34,8 +34,6 @@
 #include "dmda_view_petscvtk.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAViewPetscVTK"
 PetscErrorCode DMDAViewPetscVTK(DM da,Vec field,const char name[])
 {
 	Vec x;

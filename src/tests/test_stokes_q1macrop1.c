@@ -43,8 +43,6 @@ extern PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,co
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "test_q1macrop1_a"
 PetscErrorCode test_q1macrop1_a(void)
 {
 	PetscErrorCode ierr;
@@ -96,8 +94,6 @@ PetscErrorCode test_q1macrop1_a(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

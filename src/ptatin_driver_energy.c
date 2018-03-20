@@ -53,8 +53,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "QPntVolCoefEnergy_def.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_energy_tester"
 PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 {
 	pTatinModel     model;
@@ -277,8 +275,6 @@ PetscErrorCode pTatin3d_energy_tester(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

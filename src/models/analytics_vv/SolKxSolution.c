@@ -2,8 +2,6 @@
 #include <petsc.h>
 #include <models/analytics_vv/SolKxSolution.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "SolKxSolution"
 /*
  SolKxSolution - Exact Stokes solutions for exponentially varying viscosity
  
@@ -513,8 +511,6 @@ PetscErrorCode SolKxSolution(const PetscReal pos[], PetscReal m, PetscInt n, Pet
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateV_SolKx"
 PetscErrorCode EvaluateV_SolKx(PetscReal pos[],PetscReal vel[],void *ctx)
 {
   ParamsSolKx *data = (ParamsSolKx*)ctx;
@@ -526,8 +522,6 @@ PetscErrorCode EvaluateV_SolKx(PetscReal pos[],PetscReal vel[],void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateE_SolKx"
 PetscErrorCode EvaluateE_SolKx(PetscReal pos[],PetscReal E[],void *ctx)
 {
   ParamsSolKx *data = (ParamsSolKx*)ctx;
@@ -552,8 +546,6 @@ PetscErrorCode EvaluateE_SolKx(PetscReal pos[],PetscReal E[],void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateP_SolKx"
 PetscErrorCode EvaluateP_SolKx(PetscReal pos[],PetscReal p[],void *ctx)
 {
   ParamsSolKx *data = (ParamsSolKx*)ctx;
@@ -564,8 +556,6 @@ PetscErrorCode EvaluateP_SolKx(PetscReal pos[],PetscReal p[],void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SolKxParamsSetValues"
 PetscErrorCode SolKxParamsSetValues(ParamsSolKx *data,PetscReal m,PetscInt n,PetscReal B)
 {
   data->m = m;

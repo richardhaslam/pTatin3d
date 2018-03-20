@@ -54,8 +54,6 @@
 #include "ptatin_std_dirichlet_boundary_conditions.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_FreeSlip"
 PetscErrorCode DirichletBC_FreeSlip(BCList bclist,DM dav,BoundaryFaceType face)
 {
 	PetscScalar    zero = 0.0;
@@ -97,8 +95,6 @@ PetscErrorCode DirichletBC_FreeSlip(BCList bclist,DM dav,BoundaryFaceType face)
 	PetscFunctionReturn(0);	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_SetConstant"
 PetscErrorCode DirichletBC_SetConstant(BCList bclist,DM dav,BoundaryFaceType face,PetscInt dof,PetscScalar value)
 {
 	PetscErrorCode ierr;
@@ -142,8 +138,6 @@ PetscErrorCode DirichletBC_SetConstant(BCList bclist,DM dav,BoundaryFaceType fac
 /* 
  Note: This is not general and will not work on deformed boundaries.
 */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyNormalVelocity"
 PetscErrorCode DirichletBC_ApplyNormalVelocity(BCList bclist,DM dav,BoundaryFaceType face,PetscReal v_normal)
 {
 	PetscScalar    value = v_normal;
@@ -193,8 +187,6 @@ PetscErrorCode DirichletBC_ApplyNormalVelocity(BCList bclist,DM dav,BoundaryFace
  Exx = du/dx = (vx_east - vx_west)/Lx = 2 Vx_bc / Lx
  Vx_bc = 0.5 . Exx . Lx 
 */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyStrainRateExx"
 PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList bclist,DM dav,PetscReal exx_bc)
 {
 	PetscScalar value;
@@ -227,8 +219,6 @@ PetscErrorCode DirichletBC_ApplyStrainRateExx(BCList bclist,DM dav,PetscReal exx
  Vx_bc = Exy . Ly
 */
 /*
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyStrainRateExy"
 PetscErrorCode DirichletBC_ApplyStrainRateExy(BCList bclist,DM dav,PetscReal exy_bc)
 {
 	PetscScalar value;
@@ -269,8 +259,6 @@ PetscErrorCode DirichletBC_ApplyStrainRateExy(BCList bclist,DM dav,PetscReal exy
  Apply y component of v_shear() along north-south boundary faces 
 */
 /*
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningY"
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningY(BCList list,DM dav,PetscReal vx_bc)
 {
 	PetscScalar v_normal;
@@ -313,8 +301,6 @@ PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningY(BCLis
  
 */
 /*
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ"
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCList list,DM dav,PetscReal vx_bc)
 {
 	PetscScalar v_normal;
@@ -355,8 +341,6 @@ PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCLis
  Apply y component of v_shear() along north-south boundary faces 
  Apply z component of v_shear() along front-back boundary faces 
 */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyConstantVolumeDomain_ExtensionX"
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionX(BCList list,DM dav,PetscReal vx_bc)
 {
 	PetscErrorCode ierr;
@@ -385,8 +369,6 @@ PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionX(BCList list,DM d
  
 */
 /*
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening"
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(BCList list,DM dav,PetscReal beta,PetscReal vx_bc)
 {
 	PetscScalar v_normal;
@@ -427,8 +409,6 @@ typedef struct {
 	PetscReal Ox[3];
 } StrainRateBCCtx;
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_StrainRate"
 PetscBool BCListEvaluator_StrainRate(PetscScalar position[],PetscScalar *value,void *ctx) 
 {
 	PetscReal       V[3];
@@ -461,8 +441,6 @@ PetscBool BCListEvaluator_StrainRate(PetscScalar position[],PetscScalar *value,v
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_DefineExx"
 PetscReal DirichletBC_DefineExx(StrainRateBCCtx *ctx,PetscReal Exx,DM dav)
 {
 	PetscReal MeshMin[3],MeshMax[3];
@@ -482,8 +460,6 @@ PetscReal DirichletBC_DefineExx(StrainRateBCCtx *ctx,PetscReal Exx,DM dav)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_DefineEyy"
 PetscReal DirichletBC_DefineEyy(StrainRateBCCtx *ctx,PetscReal Eyy,DM dav)
 {
 	PetscReal MeshMin[3],MeshMax[3];
@@ -503,8 +479,6 @@ PetscReal DirichletBC_DefineEyy(StrainRateBCCtx *ctx,PetscReal Eyy,DM dav)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_DefineEzz"
 PetscReal DirichletBC_DefineEzz(StrainRateBCCtx *ctx,PetscReal Ezz,DM dav)
 {
 	PetscReal MeshMin[3],MeshMax[3];
@@ -532,8 +506,6 @@ PetscReal DirichletBC_DefineEzz(StrainRateBCCtx *ctx,PetscReal Ezz,DM dav)
  Exx = du/dx = (vx_east - vx_west)/Lx = 2 Vx_bc / Lx
  Vx_bc = 0.5 . Exx . Lx 
  */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyDirectStrainRate"
 PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal Evalue,PetscInt direction)
 {
 	StrainRateBCCtx ctx;
@@ -578,8 +550,6 @@ PetscErrorCode DirichletBC_ApplyDirectStrainRate(BCList bclist,DM dav,PetscReal 
  Along front/back faces we prescribe a normal velocity in (vx=0,vz) which is consistent with the sense of shear.
  x velocity compnent on front/bac is set to be zero
 */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyStrainRateExz"
 PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz_bc)
 {
 	PetscReal       MeshMin[3],MeshMax[3];
@@ -626,8 +596,6 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz(BCList bclist,DM dav,PetscReal exz
  Along east/west faces we prescribe a normal velocity in (vx,vz=0) which is consistent with the sense of shear.
  z velocity compnent on east/west is set to be zero
  */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyStrainRateExz_b"
 PetscErrorCode DirichletBC_ApplyStrainRateExz_b(BCList bclist,DM dav,PetscReal exz_bc)
 {
 	PetscReal       MeshMin[3],MeshMax[3];
@@ -670,8 +638,6 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz_b(BCList bclist,DM dav,PetscReal e
  Along east/west faces we prescribe a normal velocity in (vx,vz=0) which is consistent with the sense of shear.
  z velocity compnent on east/west is set to be zero
  */
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyStrainRateExz_c"
 PetscErrorCode DirichletBC_ApplyStrainRateExz_c(BCList bclist,DM dav,PetscReal exz_bc)
 {
 	PetscReal       MeshMin[3],MeshMax[3];
@@ -701,8 +667,6 @@ PetscErrorCode DirichletBC_ApplyStrainRateExz_c(BCList bclist,DM dav,PetscReal e
 	PetscFunctionReturn(0);	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ"
 PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCList list,DM dav,PetscReal vx_bc)
 {
 	PetscReal       MeshMin[3],MeshMax[3];
@@ -734,8 +698,6 @@ PetscErrorCode DirichletBC_ApplyConstantAreaSection_ExtensionX_ShorteningZ(BCLis
 	PetscFunctionReturn(0);	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening"
 PetscErrorCode DirichletBC_ApplyConstantVolumeDomain_ExtensionXFractionShortening(BCList list,DM dav,PetscReal factor,PetscReal vx_bc)
 {
 	PetscScalar     v_normal;

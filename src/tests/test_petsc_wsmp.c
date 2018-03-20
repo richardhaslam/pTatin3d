@@ -35,8 +35,6 @@ static const char help[] = "Test program for PCWSMP\n\n";
 #include "petscksp.h"
 #include "ptatin_init.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "wssmp_ex1_serial_petsc_lu"
 PetscErrorCode wssmp_ex1_serial_petsc_lu(void)
 {
 	PetscInt m = 9;
@@ -127,8 +125,6 @@ PetscErrorCode wssmp_ex1_serial_petsc_lu(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "wssmp_ex1_serial_petsc_wsmp"
 PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
 {
 	PetscInt m = 9;
@@ -235,8 +231,6 @@ PetscErrorCode wssmp_ex1_serial_petsc_wsmp(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "wssmp_ex1_mpi_petsc_wsmp"
 PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
 {
 	PetscInt m = 9;
@@ -348,8 +342,6 @@ PetscErrorCode wssmp_ex1_mpi_petsc_wsmp(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

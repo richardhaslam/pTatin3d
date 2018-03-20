@@ -46,8 +46,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 #include "dmda_element_q2p1.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "_GenerateTestVector"
 PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 {
 	PetscErrorCode ierr;
@@ -94,8 +92,6 @@ PetscErrorCode _GenerateTestVector(DM da,PetscInt dofs,PetscInt index,Vec x)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "compare_mf_A11"
 PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 {
 	MatStokesMF    StkCtx;
@@ -221,8 +217,6 @@ PetscErrorCode compare_mf_A11(PhysCompStokes user,Quadrature volQ_2x2x2)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_assemble_stokes"
 PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 {
 	PetscErrorCode ierr;
@@ -333,8 +327,6 @@ PetscErrorCode pTatin3d_assemble_stokes(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

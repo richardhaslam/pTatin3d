@@ -12,8 +12,6 @@
  stats[3,4,5] = max-x,y,z
  stats[6,7,8] = average x,y,z
 */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointComputeCoordStats"
 PetscErrorCode MaterialPointComputeCoordStats(DataBucket db,PetscReal stats[])
 {
   int d,p,npoints;
@@ -72,8 +70,6 @@ PetscErrorCode MaterialPointComputeCoordStats(DataBucket db,PetscReal stats[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatin_db_checkpoint"
 PetscErrorCode ptatin_db_checkpoint(void)
 {
   PetscErrorCode ierr;
@@ -230,8 +226,6 @@ PetscErrorCode ptatin_db_checkpoint(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

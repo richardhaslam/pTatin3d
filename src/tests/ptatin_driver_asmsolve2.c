@@ -68,8 +68,6 @@ typedef struct {
 	IS           *is_stokes_field;
 } AuuMultiLevelCtx;
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -168,8 +166,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_StokesMGAuu"
 PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -329,8 +325,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_gmg2_material_points"
 PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 {
 	DM        multipys_pack,dav,dap;
@@ -1049,8 +1043,6 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

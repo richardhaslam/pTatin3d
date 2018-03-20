@@ -317,8 +317,6 @@ static const char * opencl_spmv_kernel_sources =
 "} \n";
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11SetUp_OpenCL"
 PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf)
 {
   PetscErrorCode ierr;
@@ -403,8 +401,6 @@ PetscErrorCode MFA11SetUp_OpenCL(MatA11MF mf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11Destroy_OpenCL"
 PetscErrorCode MFA11Destroy_OpenCL(MatA11MF mf)
 {
   PetscErrorCode ierr;
@@ -439,8 +435,6 @@ PetscErrorCode MFA11Destroy_OpenCL(MatA11MF mf)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_OpenCL"
 PetscErrorCode MFStokesWrapper_A11_OpenCL(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;

@@ -33,8 +33,6 @@
 #include "geometry_object.h"
 #include "geometry_object_parse.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "test_GeometryObjectParse_cJSON"
 PetscErrorCode test_GeometryObjectParse_cJSON(char filename[])
 {
   PetscErrorCode  ierr;
@@ -86,8 +84,6 @@ PetscErrorCode test_GeometryObjectParse_cJSON(char filename[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_GeometryObjectParse2_cJSON"
 PetscErrorCode test_GeometryObjectParse2_cJSON(void)
 {
   PetscErrorCode ierr;

@@ -53,8 +53,6 @@
 #include "model_subduction_initiation2d_ctx.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Subduction_Initiation2d"
 PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -250,8 +248,6 @@ PetscErrorCode ModelInitialize_Subduction_Initiation2d(pTatinCtx c,void *ctx)
  BCListEvaluator_type1_Subduction_Initiation2d()
  BCListEvaluator_type2_Subduction_Initiation2d()
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_X_Subduction_Initiation2d"
 PetscBool BCListEvaluator_X_Subduction_Initiation2d( PetscScalar position[], PetscScalar *value, void *ctx ) 
 {
 	ModelSubduction_Initiation2dCtx *model_data_ctx;
@@ -292,8 +288,6 @@ PetscBool BCListEvaluator_X_Subduction_Initiation2d( PetscScalar position[], Pet
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_Y_Subduction_Initiation2d"
 PetscBool BCListEvaluator_Y_Subduction_Initiation2d( PetscScalar position[], PetscScalar *value, void *ctx ) 
 {
 	ModelSubduction_Initiation2dCtx *model_data_ctx;
@@ -318,8 +312,6 @@ PetscBool BCListEvaluator_Y_Subduction_Initiation2d( PetscScalar position[], Pet
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Subduction_Initiation2d_VelocityBC"
 PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx c,ModelSubduction_Initiation2dCtx *data)
 {
 	PetscScalar zero = 0.0;
@@ -357,8 +349,6 @@ PetscErrorCode Subduction_Initiation2d_VelocityBC(BCList bclist,DM dav,pTatinCtx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Subduction_Initiation2d"
 PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -395,8 +385,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,v
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Subduction_Initiation2d"
 PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -414,8 +402,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Subduction_Initiation2d(PetscInt nl
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -424,8 +410,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Subduction_Initiation2d(pTati
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Subduction_Initiation2d"
 PetscErrorCode ModelApplyInitialMeshGeometry_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -445,8 +429,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Subduction_Initiation2d(pTatinCtx c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Subduction_Initiation2d"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -659,8 +641,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Subduction_Initiation2d(pTatinC
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d"
 PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar position[], PetscScalar *val, void *ctx ) 
 {
 	PetscScalar x,y;
@@ -728,8 +708,6 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionSubduction_Initiation2d( PetscScalar p
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d"
 PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,PetscInt dof_idx,ModelSubduction_Initiation2dCtx *data)
 {
 	PetscInt       i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
@@ -790,8 +768,6 @@ PetscErrorCode DMDAVecTraverse3d_Interp_X_Subduction_Initiation2d(DM da,Vec X,Pe
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_Subduction_Initiation2d"
 PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec X, void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -863,8 +839,6 @@ PetscErrorCode ModelApplyInitialSolution_Subduction_Initiation2d(pTatinCtx c,Vec
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pTatinCtx c,Vec X,void *ctx)
 {
 	DM                stokes_pack,dau,dap;
@@ -896,8 +870,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Subduction_Initiation2d(pT
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Subduction_Initiation2d"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscReal      step;
@@ -925,8 +897,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Subduction_Initiation2d(pTatinCtx c,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Subduction_Initiation2d"
 PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscBool         active_energy;
@@ -983,8 +953,6 @@ PetscErrorCode ModelOutput_Subduction_Initiation2d(pTatinCtx c,Vec X,const char 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Subduction_Initiation2d"
 PetscErrorCode ModelDestroy_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 {
 	ModelSubduction_Initiation2dCtx *data = (ModelSubduction_Initiation2dCtx*)ctx;
@@ -999,8 +967,6 @@ PetscErrorCode ModelDestroy_Subduction_Initiation2d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Subduction_Initiation2d"
 PetscErrorCode pTatinModelRegister_Subduction_Initiation2d(void)
 {
 	ModelSubduction_Initiation2dCtx *data;

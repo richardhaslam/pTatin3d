@@ -66,8 +66,6 @@
 #define ETA_LAVA  50.0
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_SubmarineLavaFlow"
 PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -194,8 +192,6 @@ PetscErrorCode ModelInitialize_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyBasalVelocityJBC"
 PetscBool ApplyBasalVelocityJBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *vy_values;
@@ -214,8 +210,6 @@ PetscBool ApplyBasalVelocityJBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyBasalVelocityJBC_Spherical"
 PetscBool ApplyBasalVelocityJBC_Spherical(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *vy_values;
@@ -234,8 +228,6 @@ PetscBool ApplyBasalVelocityJBC_Spherical(PetscScalar pos[],PetscScalar *val,voi
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyBasalVelocityJQuadraticBC"
 PetscBool ApplyBasalVelocityJQuadraticBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *vy_values;
@@ -256,8 +248,6 @@ PetscBool ApplyBasalVelocityJQuadraticBC(PetscScalar pos[],PetscScalar *val,void
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SubmarineLavaFlow_VelocityBC"
 PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,SubmarineLavaFlowCtx *data)
 {
 	PetscReal val_V;
@@ -294,8 +284,6 @@ PetscErrorCode SubmarineLavaFlow_VelocityBC(BCList bclist,DM dav,pTatinCtx c,Sub
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyBasalThermalBC"
 PetscBool ApplyBasalThermalBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *base_values;
@@ -314,8 +302,6 @@ PetscBool ApplyBasalThermalBC(PetscScalar pos[],PetscScalar *val,void *ctx)
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyBasalThermalBC_Spherical"
 PetscBool ApplyBasalThermalBC_Spherical(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscReal *base_values;
@@ -334,8 +320,6 @@ PetscBool ApplyBasalThermalBC_Spherical(PetscScalar pos[],PetscScalar *val,void 
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SubmarineLavaFlow_EnergyBC"
 PetscErrorCode SubmarineLavaFlow_EnergyBC(BCList bclist,DM daT,pTatinCtx c,SubmarineLavaFlowCtx *data)
 {
 	PetscReal val_T;
@@ -361,8 +345,6 @@ PetscErrorCode SubmarineLavaFlow_EnergyBC(BCList bclist,DM daT,pTatinCtx c,Subma
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_SubmarineLavaFlow"
 PetscErrorCode ModelApplyBoundaryConditionMG_SubmarineLavaFlow(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
 	PetscInt n;
@@ -380,8 +362,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_SubmarineLavaFlow(PetscInt nl,BCLis
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_SubmarineLavaFlow"
 PetscErrorCode ModelApplyBoundaryCondition_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -411,8 +391,6 @@ PetscErrorCode ModelApplyBoundaryCondition_SubmarineLavaFlow(pTatinCtx c,void *c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SubmarineLavaFlow_ApplyInflow"
 PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *data)
 {
 	PetscErrorCode ierr;
@@ -587,8 +565,6 @@ PetscErrorCode SubmarineLavaFlow_ApplyInflow(pTatinCtx c,SubmarineLavaFlowCtx *d
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -604,8 +580,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_SubmarineLavaFlow(pTatinCtx c
 	PetscFunctionReturn(0);
 }
 	
-#undef __FUNCT__
-#define __FUNCT__ "lower_surface"
 PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
 {
 	PetscScalar x,z,factor;
@@ -626,8 +600,6 @@ PetscBool lower_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar 
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "upper_surface"
 PetscBool upper_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar *val,void *ctx)
 {
 	PetscScalar x,z,factor;
@@ -647,8 +619,6 @@ PetscBool upper_surface(PetscScalar pos[],PetscInt G[],PetscInt L[],PetscScalar 
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_SubmarineLavaFlow"
 PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -704,8 +674,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SubmarineLavaFlow(pTatinCtx c,void 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_SubmarineLavaFlow"
 PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -795,8 +763,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SubmarineLavaFlow(pTatinCtx c,v
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC"
 PetscBool EvaluateSubmarineLavaFlow_EnergyIC(PetscScalar pos[],PetscScalar *icvalue,void *data)
 {
 	PetscInt k;
@@ -816,8 +782,6 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC(PetscScalar pos[],PetscScalar *icva
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC2"
 PetscBool EvaluateSubmarineLavaFlow_EnergyIC2(PetscScalar pos[],PetscScalar *icvalue,void *data)
 {
 	PetscScalar  radius;
@@ -838,8 +802,6 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC2(PetscScalar pos[],PetscScalar *icv
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateSubmarineLavaFlow_EnergyIC2_Spherical"
 PetscBool EvaluateSubmarineLavaFlow_EnergyIC2_Spherical(PetscScalar pos[],PetscScalar *icvalue,void *data)
 {
 	PetscScalar  radius;
@@ -854,8 +816,6 @@ PetscBool EvaluateSubmarineLavaFlow_EnergyIC2_Spherical(PetscScalar pos[],PetscS
 	return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_SubmarineLavaFlow"
 PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -886,8 +846,6 @@ PetscErrorCode ModelApplyInitialSolution_SubmarineLavaFlow(pTatinCtx c,Vec X,voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_SubmarineLavaFlow"
 PetscErrorCode ModelApplyUpdateMeshGeometry_SubmarineLavaFlow(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscFunctionBegin;
@@ -896,8 +854,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_SubmarineLavaFlow(pTatinCtx c,Vec X,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_SubmarineLavaFlow"
 PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscBool energy_active,output_markers;
@@ -943,8 +899,6 @@ PetscErrorCode ModelOutput_SubmarineLavaFlow(pTatinCtx c,Vec X,const char prefix
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_SubmarineLavaFlow"
 PetscErrorCode ModelDestroy_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 {
 	SubmarineLavaFlowCtx *data = (SubmarineLavaFlowCtx*)ctx;
@@ -961,8 +915,6 @@ PetscErrorCode ModelDestroy_SubmarineLavaFlow(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_SubmarineLavaFlow"
 PetscErrorCode pTatinModelRegister_SubmarineLavaFlow(void)
 {
 	SubmarineLavaFlowCtx *data;

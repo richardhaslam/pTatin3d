@@ -49,16 +49,12 @@ typedef struct {
 } UserModelCtx;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelTest_ApplyBoundaryCondition"
 PetscErrorCode ModelTest_ApplyBoundaryCondition(pTatinCtx c,void *ctx)
 {
 	UserModelCtx *data = (UserModelCtx*)ctx;
 	printf("alpha = %lf \n", data->alpha );
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "ModelTest_ApplyInitialMaterialGeometry"
 PetscErrorCode ModelTest_ApplyInitialMaterialGeometry(pTatinCtx c,void *ctx)
 {
 	UserModelCtx *data = (UserModelCtx*)ctx;
@@ -67,8 +63,6 @@ PetscErrorCode ModelTest_ApplyInitialMaterialGeometry(pTatinCtx c,void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "test_model"
 PetscErrorCode test_model(void)
 {
 	UserModelCtx *data;

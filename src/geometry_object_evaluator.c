@@ -37,8 +37,6 @@
 #include "geometry_object_evaluator.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalCreate"
 PetscErrorCode GeometryObjectEvalCreate(const char name[],GeometryObjectEval *G)
 {
 	GeometryObjectEval goe;
@@ -55,8 +53,6 @@ PetscErrorCode GeometryObjectEvalCreate(const char name[],GeometryObjectEval *G)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalDestroy"
 PetscErrorCode GeometryObjectEvalDestroy(GeometryObjectEval *G)
 {
 	GeometryObjectEval goe;
@@ -76,8 +72,6 @@ PetscErrorCode GeometryObjectEvalDestroy(GeometryObjectEval *G)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalSetGeometryObject"
 PetscErrorCode GeometryObjectEvalSetGeometryObject(GeometryObjectEval goe,GeometryObject go)
 {
 	PetscErrorCode ierr;
@@ -93,8 +87,6 @@ PetscErrorCode GeometryObjectEvalSetGeometryObject(GeometryObjectEval goe,Geomet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalGetGeometryObject"
 PetscErrorCode GeometryObjectEvalGetGeometryObject(GeometryObjectEval goe,GeometryObject *go)
 {
 	if (go) {
@@ -103,24 +95,18 @@ PetscErrorCode GeometryObjectEvalGetGeometryObject(GeometryObjectEval goe,Geomet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalSetRegionIndex"
 PetscErrorCode GeometryObjectEvalSetRegionIndex(GeometryObjectEval goe,int region_id)
 {
 	goe->region_index = region_id;
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalSetRegionValue"
 PetscErrorCode GeometryObjectEvalSetRegionValue(GeometryObjectEval goe,double value)
 {
 	goe->region_value = value;
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalSetRegionFunction"
 PetscErrorCode GeometryObjectEvalSetRegionFunction(GeometryObjectEval goe,double (*func)(double*,void*),void *data)
 {
 	goe->data = data;
@@ -128,8 +114,6 @@ PetscErrorCode GeometryObjectEvalSetRegionFunction(GeometryObjectEval goe,double
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvaluateRegionIndex"
 PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObjectEval goe,double pos[],int *region,PetscBool *assigned)
 {
 	int inside;
@@ -156,8 +140,6 @@ PetscErrorCode GeometryObjectEvaluateRegionIndex(GeometryObjectEval goe,double p
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvaluateRegionValue"
 PetscErrorCode GeometryObjectEvaluateRegionValue(GeometryObjectEval goe,double pos[],double *value,PetscBool *assigned)
 {
 	int inside;
@@ -185,8 +167,6 @@ PetscErrorCode GeometryObjectEvaluateRegionValue(GeometryObjectEval goe,double p
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvaluateRegionFunction"
 PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObjectEval goe,double pos[],double *value,PetscBool *assigned)
 {
 	int inside;
@@ -219,8 +199,6 @@ PetscErrorCode GeometryObjectEvaluateRegionFunction(GeometryObjectEval goe,doubl
 }
 
 /* wrappers */
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectFindByName"
 PetscErrorCode GeometryObjectEvalFindByName(GeometryObjectEval G[],const char name[],GeometryObjectEval *g)
 {
 	GeometryObjectEval item;
@@ -245,8 +223,6 @@ PetscErrorCode GeometryObjectEvalFindByName(GeometryObjectEval G[],const char na
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeometryObjectEvalIdFindByName"
 PetscErrorCode GeometryObjectEvalIdFindByName(GeometryObjectEval G[],const char name[],PetscInt *GoId)
 {
 	GeometryObjectEval item;

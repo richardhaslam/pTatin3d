@@ -33,8 +33,6 @@
 #include "dmdae.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAECreate"
 PetscErrorCode DMDAECreate(DMDAE *dae)
 {
   DMDAE d;
@@ -49,8 +47,6 @@ PetscErrorCode DMDAECreate(DMDAE *dae)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEDestroy"
 PetscErrorCode DMDAEDestroy(DMDAE *dae)
 {
 	DMDAE d;
@@ -71,8 +67,6 @@ PetscErrorCode DMDAEDestroy(DMDAE *dae)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEDeepCopy"
 PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2)
 {
 	PetscErrorCode ierr;
@@ -118,8 +112,6 @@ PetscErrorCode DMDAEDeepCopy(DMDAE dae1,PetscInt NP[],DMDAE dae2)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAECopy"
 PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2)
 {
 	
@@ -158,8 +150,6 @@ PetscErrorCode DMDAECopy(DMDAE dae1,DMDAE dae2)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMAttachDMDAE"
 PetscErrorCode DMAttachDMDAE(DM dm)
 {
   PetscContainer container;
@@ -178,8 +168,6 @@ PetscErrorCode DMAttachDMDAE(DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMGetDMDAE"
 PetscErrorCode DMGetDMDAE(DM dm,DMDAE *dae)
 {
   DMDAE          d;
@@ -196,8 +184,6 @@ PetscErrorCode DMGetDMDAE(DM dm,DMDAE *dae)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDestroyDMDAE"
 PetscErrorCode DMDestroyDMDAE(DM dm)
 {
 	DMDAE d;
@@ -215,8 +201,6 @@ PetscErrorCode DMDestroyDMDAE(DM dm)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEGetOwnershipRanges"
 PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
                                        PetscInt *m,PetscInt *n,PetscInt *p,
                                        PetscInt **si,PetscInt **sj,PetscInt **sk,
@@ -245,8 +229,6 @@ PetscErrorCode DMDAEGetOwnershipRanges(DM dm,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAEGetCornersElement"
 PetscErrorCode DMDAEGetCornersElement(DM dm,PetscInt *esi,PetscInt *esj,PetscInt *esk,PetscInt *mx,PetscInt *my,PetscInt *mz)
 {
 	DMDAE dae;

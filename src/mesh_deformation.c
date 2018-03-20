@@ -45,8 +45,6 @@ grid deformation etc.
  gbump_amp * exp(gbump_lambda*(x*x+z*z))+1
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "MeshDeformation_GaussianBump_YMAX"
 PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,PetscReal gbump_lambda)
 {
 	PetscErrorCode ierr;
@@ -133,8 +131,6 @@ PetscErrorCode MeshDeformation_GaussianBump_YMAX(DM da,PetscReal gbump_amp,Petsc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MeshDeformation_Sinusodial_ZMAX"
 PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 {
 	PetscErrorCode ierr;
@@ -186,8 +182,6 @@ PetscErrorCode MeshDeformation_Sinusodial_ZMAX(DM da)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MeshDeformation_ShearXY"
 PetscErrorCode MeshDeformation_ShearXY(DM da)
 {
 	PetscErrorCode ierr;
@@ -236,8 +230,6 @@ PetscErrorCode MeshDeformation_ShearXY(DM da)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetUniformCoordinates1D"
 PetscErrorCode DMDASetUniformCoordinates1D(DM da,PetscInt dir,PetscReal X0,PetscReal X1)
 {
 	PetscErrorCode ierr;
@@ -305,8 +297,6 @@ PetscInt side    : Value of 0 or 1, indicating the direction in which you wish t
                    will occur towards c0. side=1 implies refinement occurs towards c1.
 PetscReal factor : Controls aggressiveness of coarsening. Larger values cause very rapid coarsening.
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetGraduatedCoordinates1D"
 PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,PetscReal factor)
 {
 	PetscErrorCode ierr;
@@ -399,8 +389,6 @@ PetscErrorCode DMDASetGraduatedCoordinates1D(DM da,PetscInt dir,PetscInt side,Pe
  xprime = slope * (x - x_ref) + xprime_ref
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetCoordinatesCentralSqueeze1D"
 PetscErrorCode DMDASetCoordinatesCentralSqueeze1D(DM da,PetscInt dir,PetscReal factor,PetscReal x0,PetscReal x1,PetscReal x2,PetscReal x3)
 {
 	PetscErrorCode ierr;

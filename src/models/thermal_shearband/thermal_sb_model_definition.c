@@ -59,8 +59,6 @@ typedef struct {
 } ThermalSBData;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_ThermalSB"
 PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 {
 	ThermalSBData      *modeldata = (ThermalSBData*)modelctx;
@@ -188,8 +186,6 @@ PetscErrorCode ModelInitialize_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_ThermalSB"
 PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 {
 	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
@@ -222,8 +218,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ThermalSB(pTatinCtx ptatinctx,void 
 }
 
 /* velocity bcs */
-#undef __FUNCT__
-#define __FUNCT__ "ThermalSB_VelocityBC"
 PetscErrorCode ThermalSB_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ThermalSBData *modelctx)
 {
     ThermalSBData  *modeldata = (ThermalSBData*)modelctx;
@@ -275,8 +269,6 @@ PetscErrorCode ThermalSB_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,The
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_ThermalSB"
 PetscErrorCode ModelApplyBoundaryCondition_ThermalSB(pTatinCtx ptatinctx,void *modelctx)
 {
 	ThermalSBData         *modeldata = (ThermalSBData*)modelctx;
@@ -299,8 +291,6 @@ PetscErrorCode ModelApplyBoundaryCondition_ThermalSB(pTatinCtx ptatinctx,void *m
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_ThermalSB"
 PetscErrorCode ModelApplyBoundaryConditionMG_ThermalSB(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx ptatinctx,void *modelctx)
 {
 	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
@@ -317,8 +307,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ThermalSB(PetscInt nl,BCList bclist
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_ThermalSB"
 PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx)
 {
 	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
@@ -415,8 +403,6 @@ PetscErrorCode ModelOutput_ThermalSB(pTatinCtx ptatinctx,Vec X,const char prefix
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_ThermalSB"
 PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,void *modelctx)
 {
 	ThermalSBData    *modeldata = (ThermalSBData*)modelctx;
@@ -477,8 +463,6 @@ PetscErrorCode ModelApplyInitialSolution_ThermalSB(pTatinCtx ptatinctx,Vec X,voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_ThermalSB"
 PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx)
 {
 	ThermalSBData    *data = (ThermalSBData*)ctx;
@@ -565,8 +549,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ThermalSB(pTatinCtx c,void *ctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_ThermalSB"
 PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscReal        step,gmin[3],gmax[3];
@@ -595,8 +577,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ThermalSB(pTatinCtx c,Vec X,void *ct
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_ThermalSB"
 PetscErrorCode ModelDestroy_ThermalSB(pTatinCtx c,void *ctx)
 {
 	ThermalSBData *data = (ThermalSBData*)ctx;
@@ -610,8 +590,6 @@ PetscErrorCode ModelDestroy_ThermalSB(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_ThermalSB"
 PetscErrorCode pTatinModelRegister_ThermalSB(void)
 {
 	ThermalSBData   *data;

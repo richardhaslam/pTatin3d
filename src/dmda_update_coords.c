@@ -39,8 +39,6 @@
 
 #include "dmda_update_coords.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAUpdateGhostedCoordinates"
 PetscErrorCode DMDAUpdateGhostedCoordinates(DM da)
 {
 	PetscErrorCode ierr;
@@ -56,8 +54,6 @@ PetscErrorCode DMDAUpdateGhostedCoordinates(DM da)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetCoordinatesFromLocalVector"
 PetscErrorCode DMDASetCoordinatesFromLocalVector(DM da,Vec local_coords)
 {
 	PetscErrorCode ierr;
@@ -78,8 +74,6 @@ PetscErrorCode DMDASetCoordinatesFromLocalVector(DM da,Vec local_coords)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetCoordinatesU"
 PetscErrorCode DMDASetCoordinatesU(DM da,Vec coords)
 {
 	PetscErrorCode ierr;
@@ -93,8 +87,6 @@ PetscErrorCode DMDASetCoordinatesU(DM da,Vec coords)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACloneCoordinates"
 PetscErrorCode DMDACloneCoordinates(DM da,DM da_clone)
 {
 	PetscErrorCode ierr;

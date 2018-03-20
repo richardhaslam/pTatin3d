@@ -58,8 +58,6 @@
 
 #include "model_utils.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntGetField_global_element_nInJnKindex"
 PetscErrorCode MPntGetField_global_element_nInJnKindex(DM da, MPntStd *material_point, PetscInt *nI, PetscInt *nJ, PetscInt *nK)
 {
     PetscInt    li, lj, lk,lmx, lmy, lmz, si, sj, sk;
@@ -92,8 +90,6 @@ PetscErrorCode MPntGetField_global_element_nInJnKindex(DM da, MPntStd *material_
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAConvertLocalElementIndex2GlobalnInJnK"
 PetscErrorCode DMDAConvertLocalElementIndex2GlobalnInJnK(DM da,PetscInt localeid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
     PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
@@ -122,8 +118,6 @@ PetscErrorCode DMDAConvertLocalElementIndex2GlobalnInJnK(DM da,PetscInt localeid
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAConvertLocalElementIndex2LocalnInJnK"
 PetscErrorCode DMDAConvertLocalElementIndex2LocalnInJnK(DM da,PetscInt localeid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
     PetscInt       li,lj,lk,lmx,lmy,lmz,si,sj,sk;
@@ -148,8 +142,6 @@ PetscErrorCode DMDAConvertLocalElementIndex2LocalnInJnK(DM da,PetscInt localeid,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAConvertLocalNodeIndex2GlobalnInJnK"
 PetscErrorCode DMDAConvertLocalNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
 	PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
@@ -174,8 +166,6 @@ PetscErrorCode DMDAConvertLocalNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,Pe
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAConvertLocalGhostNodeIndex2GlobalnInJnK"
 PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalnInJnK(DM da,PetscInt localnid,PetscInt *nI,PetscInt *nJ,PetscInt *nK)
 {
     PetscInt       li,lj,lk,lnx,lny,lnz,si,sj,sk;
@@ -200,8 +190,6 @@ PetscErrorCode DMDAConvertLocalGhostNodeIndex2GlobalnInJnK(DM da,PetscInt localn
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelGetOptionReal"
 PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
     const char error[],
     const char default_opt[],
@@ -225,8 +213,6 @@ PetscErrorCode pTatinModelGetOptionReal(const char option[],PetscReal *val,
 }
 
 /* Absolute value for double in C - it's called fabs(double a) or PetscAbsReal(PetscRea a) */
-#undef __FUNCT__
-#define __FUNCT__ "absolute"
 PetscReal absolute(PetscReal a)
 {   
 	if (a < 0) {
@@ -241,8 +227,6 @@ PetscReal absolute(PetscReal a)
  Assume a regular spacing and chose an appropriate coordinate system such
  sum x_i = 0
 */
-#undef __FUNCT__
-#define __FUNCT__ "detrend"
 PetscErrorCode detrend(PetscReal array[],PetscInt n)
 {
 	PetscReal x,y,a,b;
@@ -264,8 +248,6 @@ PetscErrorCode detrend(PetscReal array[],PetscInt n)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "rednoise"
 PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 {
 	PetscInt       i;
@@ -295,8 +277,6 @@ PetscErrorCode rednoise(PetscReal rnoise[],PetscInt n,PetscInt seed)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse_InitialThermalField3D"
 PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
     DMDA_thermalfield_init_params *thermalparams;
@@ -331,8 +311,6 @@ PetscBool DMDAVecTraverse_InitialThermalField3D(PetscScalar pos[],PetscScalar *v
     return PETSC_TRUE;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshVolume"
 PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 {
 	DM              cda;
@@ -377,16 +355,12 @@ PetscErrorCode DMDAComputeMeshVolume(DM dm,PetscReal *value)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_DefineVelocityMeshQuasi2D"
 PetscErrorCode pTatin3d_DefineVelocityMeshQuasi2D(pTatinCtx c)
 {
 	c->mz = 1;
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_DefineVelocityMeshGeometryQuasi2D"
 PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 {
 	PhysCompStokes stokes;
@@ -425,8 +399,6 @@ PetscErrorCode pTatin3d_DefineVelocityMeshGeometryQuasi2D(pTatinCtx c)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeQ2ElementBoundingBox"
 PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 {
 	DM              cda;
@@ -474,8 +446,6 @@ PetscErrorCode DMDAComputeQ2ElementBoundingBox(DM dm,PetscReal gmin[],PetscReal 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeQ2LocalBoundingBox"
 PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gmax[])
 {
 	DM              cda;
@@ -535,8 +505,6 @@ PetscErrorCode DMDAComputeQ2LocalBoundingBox(DM dm,PetscReal gmin[],PetscReal gm
  We scatter the vector created from a DMDA into the natural i+j*nx+k*nx*ny ordering,
  then we scatter this i,j,k ordered vector onto rank 0 and write the contents out in ascii.
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAFieldViewAscii"
 PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 {
 	PetscErrorCode ierr;
@@ -602,8 +570,6 @@ PetscErrorCode DMDAFieldViewAscii(DM dm,Vec field,const char filename[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelUtilsComputeAiryIsostaticHeights_SEQ"
 PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 {
 	DM              stokes_pack,dav,dap,cda;
@@ -677,8 +643,6 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights_SEQ(PhysCompStokes stokes)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelUtilsComputeAiryIsostaticHeights"
 PetscErrorCode ModelUtilsComputeAiryIsostaticHeights(PhysCompStokes stokes)
 {
 	PetscErrorCode ierr;
@@ -690,8 +654,6 @@ PetscErrorCode ModelUtilsComputeAiryIsostaticHeights(PhysCompStokes stokes)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntStdComputeBoundingBox"
 PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
@@ -731,8 +693,6 @@ PetscErrorCode MPntStdComputeBoundingBox(DataBucket materialpoint_db,PetscReal g
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntStdComputeBoundingBoxInRange"
 PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
@@ -795,8 +755,6 @@ PetscErrorCode MPntStdComputeBoundingBoxInRange(DataBucket materialpoint_db,Pets
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntStdComputeBoundingBoxInRangeInRegion"
 PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint_db,PetscReal rmin[],PetscReal rmax[],PetscInt region_idx,PetscReal gmin[],PetscReal gmax[])
 {
 	MPAccess         mpX;
@@ -878,8 +836,6 @@ PetscErrorCode MPntStdComputeBoundingBoxInRangeInRegion(DataBucket materialpoint
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeBoundingBoxBoundaryFace"
 PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal min[],PetscReal max[])
 {
     DM cda;
@@ -1010,8 +966,6 @@ PetscErrorCode DMDAComputeBoundingBoxBoundaryFace(DM dav,BoundaryFaceType ft,Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeCoordinateAverageBoundaryFace"
 PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType ft,PetscReal avg[])
 {
     DM             cda;
@@ -1128,8 +1082,6 @@ PetscErrorCode DMDAComputeCoordinateAverageBoundaryFace(DM dav,BoundaryFaceType 
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StokesComputeVRMS"
 PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *value_vol)
 {
 	DM              cda;
@@ -1214,8 +1166,6 @@ PetscErrorCode StokesComputeVRMS(DM dav,Vec v,PetscReal *value_vrms,PetscReal *v
  
  Phi = 0.5 ( \int (\tau - pI) : \epsilon' dV )
 */
-#undef __FUNCT__
-#define __FUNCT__ "StokesComputeViscousDissipation"
 PetscErrorCode StokesComputeViscousDissipation(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,PetscInt stress_type,PetscReal *value)
 {
 	DM              cda;
@@ -1387,8 +1337,6 @@ struct MPI_PairedValueRank {
   int    rank;
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntStdIdentifyFromPosition"
 PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal coord[],PetscBool mask[],PetscInt region_idx,PetscReal tolerance,int *_pidx,PetscMPIInt *_rank)
 {
 	MPAccess         mpX;
@@ -1474,8 +1422,6 @@ PetscErrorCode MPntStdIdentifyFromPosition(DataBucket materialpoint_db,PetscReal
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntStdCoordinateMinIdentifyPointIndex"
 PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_db,
                     int region_idx,
                     int pmin_x[],int pmin_y[],int pmin_z[])
@@ -1547,8 +1493,6 @@ PetscErrorCode MPntStdCoordinateMinIdentifyPointIndex(DataBucket materialpoint_d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MPntStdCoordinateMaxIdentifyPointIndex"
 PetscErrorCode MPntStdCoordinateMaxIdentifyPointIndex(DataBucket materialpoint_db,
                                                   int region_idx,
                                                   int pmax_x[],int pmax_y[],int pmax_z[])

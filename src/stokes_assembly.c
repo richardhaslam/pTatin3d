@@ -112,8 +112,6 @@ void FormStokes3D_transB_isoD_B( const int npe,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemble_StokesA_AUU"
 PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature volQ)
 {
 	PetscErrorCode ierr;
@@ -298,8 +296,6 @@ PetscErrorCode MatAssemble_StokesA_AUU(Mat A,DM dau,BCList u_bclist,Quadrature v
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemble_StokesPC_ScaledMassMatrix"
 PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList p_bclist,Quadrature volQ)
 {
 	PetscErrorCode ierr;
@@ -453,8 +449,6 @@ PetscErrorCode MatAssemble_StokesPC_ScaledMassMatrix(Mat A,DM dau,DM dap,BCList 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemble_StokesA_A12"
 PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCList p_bclist,Quadrature volQ)
 {
 	PetscErrorCode ierr;
@@ -598,8 +592,6 @@ PetscErrorCode MatAssemble_StokesA_A12(Mat A,DM dau,DM dap,BCList u_bclist,BCLis
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemble_StokesA_A21"
 PetscErrorCode MatAssemble_StokesA_A21(Mat A,DM dau,DM dap,BCList u_bclist,BCList p_bclist,Quadrature volQ)
 {
 	PetscErrorCode ierr;

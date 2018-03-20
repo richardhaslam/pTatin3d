@@ -76,8 +76,6 @@ PetscErrorCode _PSwarmFieldUpdate_AdvectLagrangian(PSwarm ps,DM dmv,Vec v);
  
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmInitializePackage"
 PetscErrorCode PSwarmInitializePackage(void)
 {
     PetscErrorCode   ierr;
@@ -91,16 +89,12 @@ PetscErrorCode PSwarmInitializePackage(void)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetOptionsPrefix"
 PetscErrorCode PSwarmSetOptionsPrefix(PSwarm ps,const char prefix[])
 {
     PetscObjectSetOptionsPrefix((PetscObject)ps,prefix);
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmCreate"
 PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
 {
     PetscErrorCode ierr;
@@ -134,8 +128,6 @@ PetscErrorCode PSwarmCreate(MPI_Comm comm,PSwarm *ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmCreateFromPtatinCtx"
 PetscErrorCode PSwarmCreateFromPtatinCtx(pTatinCtx pctx,PSwarm *ps)
 {
     PetscErrorCode ierr;
@@ -150,16 +142,12 @@ PetscErrorCode PSwarmCreateFromPtatinCtx(pTatinCtx pctx,PSwarm *ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetPtatinCtx"
 PetscErrorCode PSwarmSetPtatinCtx(PSwarm ps,pTatinCtx pctx)
 {
     ps->pctx = pctx;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetDataBucket"
 PetscErrorCode PSwarmSetDataBucket(PSwarm ps,DataBucket db)
 {
     if (ps->db && !ps->db_set_by_user) {
@@ -170,16 +158,12 @@ PetscErrorCode PSwarmSetDataBucket(PSwarm ps,DataBucket db)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmGetDataBucket"
 PetscErrorCode PSwarmGetDataBucket(PSwarm ps,DataBucket *db)
 {
     if (db) { *db = ps->db; }
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetDataExchanger"
 PetscErrorCode PSwarmSetDataExchanger(PSwarm ps,DataEx de)
 {
     PetscErrorCode ierr;
@@ -191,8 +175,6 @@ PetscErrorCode PSwarmSetDataExchanger(PSwarm ps,DataEx de)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmDefineCommTopologyFromDMDA"
 PetscErrorCode PSwarmDefineCommTopologyFromDMDA(PSwarm ps,DM dm)
 {
     PetscErrorCode ierr;
@@ -201,8 +183,6 @@ PetscErrorCode PSwarmDefineCommTopologyFromDMDA(PSwarm ps,DM dm)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmAttachStateVecVelocityPressure"
 PetscErrorCode PSwarmAttachStateVecVelocityPressure(PSwarm ps,Vec x)
 {
     PetscErrorCode ierr;
@@ -218,8 +198,6 @@ PetscErrorCode PSwarmAttachStateVecVelocityPressure(PSwarm ps,Vec x)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmAttachStateVecTemperature"
 PetscErrorCode PSwarmAttachStateVecTemperature(PSwarm ps,Vec x)
 {
     PetscErrorCode ierr;
@@ -235,8 +213,6 @@ PetscErrorCode PSwarmAttachStateVecTemperature(PSwarm ps,Vec x)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewInfo"
 PetscErrorCode PSwarmViewInfo(PSwarm ps)
 {
   const char *prefix;
@@ -275,8 +251,6 @@ PetscErrorCode PSwarmViewInfo(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmDestroy"
 PetscErrorCode PSwarmDestroy(PSwarm *ps)
 {
     PetscErrorCode ierr;
@@ -299,8 +273,6 @@ PetscErrorCode PSwarmDestroy(PSwarm *ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetTransportModeType"
 PetscErrorCode PSwarmSetTransportModeType(PSwarm ps,PSwarmTransportModeType type)
 {
     PetscFunctionBegin;
@@ -322,8 +294,6 @@ PetscErrorCode PSwarmSetTransportModeType(PSwarm ps,PSwarmTransportModeType type
 }
 
 /* Pressure update functionality */
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmUpdate_Pressure"
 PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
 {
   PetscErrorCode ierr;
@@ -387,8 +357,6 @@ PetscErrorCode PSwarmUpdate_Pressure(PSwarm ps,DM dmv,DM dmp,Vec pressure)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetFieldType_Pressure"
 PetscErrorCode PSwarmSetFieldType_Pressure(PSwarm ps)
 {
   BTruth found;
@@ -408,8 +376,6 @@ PetscErrorCode PSwarmSetFieldType_Pressure(PSwarm ps)
  [1] Register data
  [2] Define any updates for history variables
 */
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetFieldUpdateType"
 PetscErrorCode PSwarmSetFieldUpdateType(PSwarm ps,PSwarmFieldUpdateType type)
 {
     PetscErrorCode ierr;
@@ -438,16 +404,12 @@ PetscErrorCode PSwarmSetFieldUpdateType(PSwarm ps,PSwarmFieldUpdateType type)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_PSwarmFieldUpdate_AdvectEulerian"
 PetscErrorCode _PSwarmFieldUpdate_AdvectEulerian(PSwarm ps,DM dmv,Vec v)
 {
     ps->state = PSW_TS_INSYNC;
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_PSwarmFieldUpdate_AdvectLagrangian"
 PetscErrorCode _PSwarmFieldUpdate_AdvectLagrangian(PSwarm ps,DM dmv,Vec v)
 {
     PetscErrorCode ierr;
@@ -456,8 +418,6 @@ PetscErrorCode _PSwarmFieldUpdate_AdvectLagrangian(PSwarm ps,DM dmv,Vec v)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmFieldUpdate_Advect"
 PetscErrorCode PSwarmFieldUpdate_Advect(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -498,8 +458,6 @@ PetscErrorCode PSwarmFieldUpdate_Advect(PSwarm ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmFieldUpdate_FiniteStrain"
 PetscErrorCode PSwarmFieldUpdate_FiniteStrain(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -537,8 +495,6 @@ PetscErrorCode PSwarmFieldUpdate_FiniteStrain(PSwarm ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmFieldUpdate_PressTempTime"
 PetscErrorCode PSwarmFieldUpdate_PressTempTime(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -581,8 +537,6 @@ PetscErrorCode PSwarmFieldUpdate_PressTempTime(PSwarm ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmFieldUpdateAll"
 PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -647,8 +601,6 @@ PetscErrorCode PSwarmFieldUpdateAll(PSwarm ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout"
 PetscErrorCode SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(DataBucket db,DM da,PetscReal xmin[],PetscReal xmax[],PetscInt Nxp[],PetscReal perturb)
 {
   DataField    PField;
@@ -766,8 +718,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RestrictedLatticeLayout(DataBucket d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUpCoords_FillDM"
 PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -787,8 +737,6 @@ PetscErrorCode PSwarmSetUpCoords_FillDM(PSwarm ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUpCoords_FillDMWithinBoundingBox"
 PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
 {
   PetscErrorCode ierr;
@@ -836,8 +784,6 @@ PetscErrorCode PSwarmSetUpCoords_FillDMWithinBoundingBox(PSwarm ps)
  by i + j*nx + k*nx*ny. In this way, associating a particle coordinate with a 
  point in a structured mesh using pid will be safe.
 */
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUpCoords_FillBox"
 PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
 {
   PetscErrorCode ierr;
@@ -982,8 +928,6 @@ PetscErrorCode PSwarmSetUpCoords_FillBox(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUpCoords_FromUserList"
 PetscErrorCode PSwarmSetUpCoords_FromUserList(PSwarm ps)
 {
   PetscErrorCode ierr;
@@ -1043,8 +987,6 @@ PetscErrorCode PSwarmSetUpCoords_FromUserList(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUpCoords"
 PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
 {
   PetscErrorCode ierr;
@@ -1093,8 +1035,6 @@ PetscErrorCode PSwarmSetUpCoords(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetUp"
 PetscErrorCode PSwarmSetUp(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -1136,8 +1076,6 @@ PetscErrorCode PSwarmSetUp(PSwarm ps)
 }
 
 /* set from options */
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetFromOptions"
 PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
 {
     PetscErrorCode ierr;
@@ -1169,8 +1107,6 @@ PetscErrorCode PSwarmSetFromOptions(PSwarm ps)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmCreateMultipleInstances"
 PetscErrorCode PSwarmCreateMultipleInstances(MPI_Comm comm,PSwarm **pslist)
 {
     PetscErrorCode ierr;
@@ -1214,8 +1150,6 @@ PetscErrorCode PSwarmCreateMultipleInstances(MPI_Comm comm,PSwarm **pslist)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmCoordinatesSetSynchronization"
 PetscErrorCode PSwarmCoordinatesSetSynchronization(PSwarm ps,PetscBool val)
 {
   if (val) { ps->state = PSW_TS_INSYNC; }
@@ -1259,8 +1193,6 @@ void MPntStd_VTUWriteBinaryAppendedHeader_pid(FILE *vtk_fp,int *offset,const int
   *offset = *offset + sizeof(int) + N * sizeof(long int);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarm_VTUWriteBinaryAppendedHeaderAllFields"
 PetscErrorCode PSwarm_VTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db,int npoints,int *byte_offset)
 {
   BTruth found;
@@ -1344,8 +1276,6 @@ void MPntStd_VTUWriteBinaryAppendedData_pid(FILE *vtk_fp,const int N,const MPntS
   }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarm_VTUWriteBinaryAppendedDataAllFields"
 PetscErrorCode PSwarm_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db)
 {
 	int npoints;
@@ -1381,8 +1311,6 @@ PetscErrorCode PSwarm_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucke
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarm_PVTUWriteBinaryAppendedHeaderAllFields"
 PetscErrorCode PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBucket db)
 {
   BTruth found;
@@ -1401,8 +1329,6 @@ PetscErrorCode PSwarm_PVTUWriteBinaryAppendedHeaderAllFields(FILE *vtk_fp,DataBu
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmView_VTUXML_binary_appended"
 PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 {
 	FILE *vtk_fp;
@@ -1552,8 +1478,6 @@ PetscErrorCode PSwarmView_VTUXML_binary_appended(PSwarm ps,const char name[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewParaview_VTU"
 PetscErrorCode PSwarmViewParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	char *vtkfilename,filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
@@ -1578,8 +1502,6 @@ PetscErrorCode PSwarmViewParaview_VTU(PSwarm ps,const char path[],const char ste
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "__PSwarmViewParaview_PVTU"
 PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],const char fileprefix[],PetscMPIInt nplist[])
 {
 	PetscMPIInt nproc;
@@ -1650,8 +1572,6 @@ PetscErrorCode __PSwarmViewParaview_PVTU(DataBucket db,const char filename[],con
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewParaview_PVTU"
 PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	char *vtufilename,fileprefix[PETSC_MAX_PATH_LEN],fileprefix2[PETSC_MAX_PATH_LEN];
@@ -1693,8 +1613,6 @@ PetscErrorCode PSwarmViewParaview_PVTU(DataBucket db,const char path[],const cha
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewParaview_PVD"
 PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	PetscErrorCode ierr;
@@ -1741,8 +1659,6 @@ PetscErrorCode PSwarmViewParaview_PVD(PSwarm ps,const char path[],const char ste
 
  
 */
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmView_PerRank"
 PetscErrorCode PSwarmView_PerRank(PSwarm ps)
 {
   PhysCompStokes stokes;
@@ -1780,8 +1696,6 @@ PetscErrorCode PSwarmView_PerRank(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSetRegionIndex"
 PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx)
 {
   MPntStd *tracer;
@@ -1798,8 +1712,6 @@ PetscErrorCode PSwarmSetRegionIndex(PSwarm ps,PetscInt ridx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pSwarmParaViewMeshDeformationBaseVTS"
 PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscReal xmin[],PetscReal dx[],PetscInt nx[],const char name[])
 {
 	PetscInt i,j,k;
@@ -1866,8 +1778,6 @@ PetscErrorCode pSwarmParaViewMeshDeformationBaseVTS(PetscReal xmin[],PetscReal d
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewSingletonParaview_PVD"
 PetscErrorCode PSwarmViewSingletonParaview_PVD(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	PetscErrorCode ierr;
@@ -1897,8 +1807,6 @@ PetscErrorCode PSwarmViewSingletonParaview_PVD(PSwarm ps,const char path[],const
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmSingleton_VTUWriteBinaryAppendedDataAllFields"
 PetscErrorCode PSwarmSingleton_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,DataBucket db,MPI_Comm comm)
 {
 	int i,npoints,npoints_g = 0;
@@ -1988,8 +1896,6 @@ PetscErrorCode PSwarmSingleton_VTUWriteBinaryAppendedDataAllFields(FILE *vtk_fp,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewSingleton_VTUXML_binary_appended"
 PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char name[])
 {
 	FILE *vtk_fp;
@@ -2169,8 +2075,6 @@ PetscErrorCode PSwarmViewSingleton_VTUXML_binary_appended(PSwarm ps,const char n
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmViewSingletonParaview_VTU"
 PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const char stepprefix[],const char petscprefix[])
 {
 	char vtkfilename[PETSC_MAX_PATH_LEN],filename[PETSC_MAX_PATH_LEN],basename[PETSC_MAX_PATH_LEN];
@@ -2190,8 +2094,6 @@ PetscErrorCode PSwarmViewSingletonParaview_VTU(PSwarm ps,const char path[],const
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmView_Singleton"
 PetscErrorCode PSwarmView_Singleton(PSwarm ps)
 {
   PhysCompStokes stokes;
@@ -2219,8 +2121,6 @@ PetscErrorCode PSwarmView_Singleton(PSwarm ps)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PSwarmView"
 PetscErrorCode PSwarmView(PSwarm ps,PSwarmViewType type)
 {
   PetscErrorCode ierr;

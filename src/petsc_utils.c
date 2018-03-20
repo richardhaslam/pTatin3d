@@ -34,8 +34,6 @@
  Performs reduction on first rank in communicator
  Useful for KSP/SNES monitors which do not require result on all ranks (global reduction)
 */
-#undef __FUNCT__
-#define __FUNCT__ "VecNormLocal"
 PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val)
 {
     PetscScalar    *array;
@@ -117,8 +115,6 @@ PetscErrorCode VecNormLocal(Vec x,NormType type,PetscReal *val)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecStrideNormLocal"
 /*@
  VecStrideNormLocal - Computes the norm of subvector of a vector defined
  by a starting point and a stride on the first rank in communicator

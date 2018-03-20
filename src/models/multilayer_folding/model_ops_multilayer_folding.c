@@ -50,8 +50,6 @@
 #include "ptatin_utils.h"
 
 
-#undef __FUNCT__ 
-#define __FUNCT__ "ModelInitialize_MultilayerFolding"
 PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -231,8 +229,6 @@ PetscErrorCode ModelInitialize_MultilayerFolding(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BoundaryCondition_MultilayerFolding"
 PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCtx user,ModelMultilayerFoldingCtx *data)
 {
 	PetscReal         zero;
@@ -323,8 +319,6 @@ PetscErrorCode BoundaryCondition_MultilayerFolding(DM dav,BCList bclist,pTatinCt
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_MultilayerFolding"
 PetscErrorCode ModelApplyBoundaryCondition_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -343,8 +337,6 @@ PetscErrorCode ModelApplyBoundaryCondition_MultilayerFolding(pTatinCtx c,void *c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_MultilayerFolding"
 PetscErrorCode ModelApplyBoundaryConditionMG_MultilayerFolding(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -363,8 +355,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_MultilayerFolding(PetscInt nl,BCLis
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_MultilayerFolding"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -373,8 +363,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_MultilayerFolding(pTatinCtx c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingSetMeshGeometry"
 PetscErrorCode MultilayerFoldingSetMeshGeometry(DM dav, void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -422,8 +410,6 @@ PetscErrorCode MultilayerFoldingSetMeshGeometry(DM dav, void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingRemeshingAccordingToTheInterfaces"
 PetscErrorCode MultilayerFoldingRemeshingAccordingToTheInterfaces(DM dav, void *ctx)
 {   
 	
@@ -495,8 +481,6 @@ PetscErrorCode MultilayerFoldingRemeshingAccordingToTheInterfaces(DM dav, void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingSetPerturbedInterfaces"
 PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -610,8 +594,6 @@ PetscErrorCode MultilayerFoldingSetPerturbedInterfaces(DM dav, void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InitialMaterialGeometryMaterialPoints_MultilayerFolding"
 PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -703,8 +685,6 @@ PetscErrorCode InitialMaterialGeometryMaterialPoints_MultilayerFolding(pTatinCtx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFolding_InitialMaterialGeometry_DamageMP"
 PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
 	PetscErrorCode ierr;
@@ -824,8 +804,6 @@ PetscErrorCode MultilayerFolding_InitialMaterialGeometry_DamageMP(pTatinCtx c,Mo
 }
 
 /* DAML This function is totally fucking inefficient */
-#undef __FUNCT__
-#define __FUNCT__ "InitialMaterialGeometryQuadraturePoints_MultilayerFolding"
 PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -949,8 +927,6 @@ PetscErrorCode InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinC
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_InitialMaterialGeometryQuadraturePoints_MultilayerFolding"
 PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -1024,8 +1000,6 @@ PetscErrorCode _InitialMaterialGeometryQuadraturePoints_MultilayerFolding(pTatin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFolding_SetMaterialPointPropertiesFromLayer"
 PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
 	PetscErrorCode   ierr;
@@ -1091,8 +1065,6 @@ PetscErrorCode MultilayerFolding_SetMaterialPointPropertiesFromLayer(pTatinCtx c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_MultilayerFolding"
 PetscErrorCode ModelApplyInitialMaterialGeometry_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -1116,8 +1088,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_MultilayerFolding(pTatinCtx c,v
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_MultilayerFolding"
 PetscErrorCode ModelApplyInitialMeshGeometry_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -1175,8 +1145,6 @@ DAM: I'm really not convinced this function is
  
  The only useful thing I see that this function does is switch the projection type.
 */
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFolding_Mesh2MarkerRemesh"
 PetscErrorCode MultilayerFolding_Mesh2MarkerRemesh(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
 	PetscErrorCode ierr;
@@ -1217,8 +1185,6 @@ PetscErrorCode MultilayerFolding_Mesh2MarkerRemesh(pTatinCtx c,ModelMultilayerFo
  4/ remesh
  5/ Check mesh quality metrics
  */
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_MultilayerFolding"
 PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -1328,8 +1294,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingUpdate_RemeshBasalLayer"
 PetscErrorCode MultilayerFoldingUpdate_RemeshBasalLayer(PetscReal AR,DM dav,ModelMultilayerFoldingCtx *data)
 {
 	PetscInt       res_j;
@@ -1359,8 +1323,6 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshBasalLayer(PetscReal AR,DM dav,Mode
 	PetscFunctionReturn(0);	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingUpdate_RemeshMarkerProjection_v1"
 PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v1(PetscReal AR,DM dav,pTatinCtx c)
 {
 	PetscInt         JMAX;
@@ -1400,8 +1362,6 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v1(PetscReal AR,DM
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingUpdate_RemeshMarkerProjection_v2"
 PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v2(PetscReal AR,DM dav,Vec velocity,PetscReal dt,ModelMultilayerFoldingCtx *data,pTatinCtx c)
 {
 	Vec              mesh_velocity;
@@ -1495,8 +1455,6 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshMarkerProjection_v2(PetscReal AR,DM
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingUpdate_RemeshResampleSurface"
 PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav,Vec velocity,PetscReal dt,ModelMultilayerFoldingCtx *data,pTatinCtx c)
 {
 	Vec              mesh_velocity;
@@ -1583,8 +1541,6 @@ PetscErrorCode MultilayerFoldingUpdate_RemeshResampleSurface(PetscReal AR,DM dav
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_ModelApplyUpdateMeshGeometry_MultilayerFolding"
 PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -1666,8 +1622,6 @@ PetscErrorCode _ModelApplyUpdateMeshGeometry_MultilayerFolding(pTatinCtx c,Vec X
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialCondition_MultilayerFolding"
 PetscErrorCode ModelInitialCondition_MultilayerFolding(pTatinCtx c,Vec X,void *ctx)
 {
 	/*
@@ -1773,8 +1727,6 @@ double extract_q_3d(double amp, double exx, double ezz, double l, double m, doub
 	return q; 
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingOutputAmplitudeMax"
 PetscErrorCode MultilayerFoldingOutputAmplitudeMax(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
 	PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
@@ -1848,8 +1800,6 @@ PetscErrorCode MultilayerFoldingOutputAmplitudeMax(pTatinCtx c,ModelMultilayerFo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingOutput_q"
 PetscErrorCode MultilayerFoldingOutput_q(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
 	PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
@@ -1947,8 +1897,6 @@ PetscErrorCode MultilayerFoldingOutput_q(pTatinCtx c,ModelMultilayerFoldingCtx *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MultilayerFoldingOutputAmplitude"
 PetscErrorCode MultilayerFoldingOutputAmplitude(pTatinCtx c,ModelMultilayerFoldingCtx *data)
 {
 	PetscInt jinter,i,k,si,sj,sk,nx,ny,nz;
@@ -2025,8 +1973,6 @@ PetscErrorCode MultilayerFoldingOutputAmplitude(pTatinCtx c,ModelMultilayerFoldi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_MultilayerFolding"
 PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -2071,8 +2017,6 @@ PetscErrorCode ModelOutput_MultilayerFolding(pTatinCtx c,Vec X,const char prefix
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_MultilayerFolding"
 PetscErrorCode ModelDestroy_MultilayerFolding(pTatinCtx c,void *ctx)
 {
 	ModelMultilayerFoldingCtx *data = (ModelMultilayerFoldingCtx*)ctx;
@@ -2089,8 +2033,6 @@ PetscErrorCode ModelDestroy_MultilayerFolding(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_MultilayerFolding"
 PetscErrorCode pTatinModelRegister_MultilayerFolding(void)
 {
 	ModelMultilayerFoldingCtx *data;

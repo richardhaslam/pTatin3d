@@ -343,8 +343,6 @@ void compute_quadrilateral_area_approximate(PetscReal quad_coords[],PetscReal *a
 /*
   max_(over all elements) [  max_face_length_e / min_face_length_e ]
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetric_AspectRatio"
 PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 {
 	DM              cda;
@@ -402,8 +400,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric_AspectRatio(DM dm,PetscReal *value)
 /*
  min_(over all elements) [  8 x min(|J|_e) / vol_e ]
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetric_Distortion"
 PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 {
 	DM              cda;
@@ -464,8 +460,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric_Distortion(DM dm,PetscReal *value)
 /*
  min_(over all elements) [  min_diagonal_length_e / max_diagonal_length_e ]
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetric_DiagonalRatio"
 PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value)
 {
 	DM              cda;
@@ -533,8 +527,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric_DiagonalRatio(DM dm,PetscReal *value
 /*
  min_(over all elements) [  min_{each face pair} area_1/area_0  ]
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetric_FaceAreaRatio"
 PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value)
 {
 	DM              cda;
@@ -591,8 +583,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric_FaceAreaRatio(DM dm,PetscReal *value
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetric_VertexAngle"
 PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 {
 	DM              cda;
@@ -665,8 +655,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric_VertexAngle(DM dm,PetscReal *value)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetric"
 PetscErrorCode DMDAComputeMeshQualityMetric(DM dm,MeshQualityMeasure measure,PetscReal *value)
 {
 	PetscErrorCode ierr;
@@ -699,8 +687,6 @@ PetscErrorCode DMDAComputeMeshQualityMetric(DM dm,MeshQualityMeasure measure,Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAComputeMeshQualityMetricList"
 PetscErrorCode DMDAComputeMeshQualityMetricList(DM dm,const PetscInt nmeasures,MeshQualityMeasure measure[],PetscReal value[])
 {
 	PetscInt       i;
@@ -721,8 +707,6 @@ PetscErrorCode DMDAComputeMeshQualityMetricList(DM dm,const PetscInt nmeasures,M
  range[]:       contains lower and upper bounds for the given metric
  valid_range[]: contains recommended lower and upper bounds for the given metric
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDMeshQualityMetricGetInfo"
 PetscErrorCode DMDMeshQualityMetricGetInfo(DM dm,MeshQualityMeasure measure,PetscReal range[],PetscReal valid_range[])
 {	
 	PetscFunctionBegin;

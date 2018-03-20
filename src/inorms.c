@@ -10,8 +10,6 @@
 #include <dmda_element_q2p1.h>
 
 
-#undef __FUNCT__
-#define __FUNCT__ "Evaluate_uL2_uH1_pL2"
 PetscErrorCode Evaluate_uL2_uH1_pL2(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,
                                     PetscErrorCode (*exact_v)(PetscReal*,PetscReal*,void*),
                                     PetscErrorCode (*exact_L)(PetscReal*,PetscReal*,void*),
@@ -187,8 +185,6 @@ PetscErrorCode Evaluate_uL2_uH1_pL2(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Evaluate_uL2_symuH1_pL2"
 PetscErrorCode Evaluate_uL2_symuH1_pL2(DM dav,DM dap,Vec sv,Vec sp,Quadrature volQ,
                                     PetscErrorCode (*exact_v)(PetscReal*,PetscReal*,void*),
                                     PetscErrorCode (*exact_E)(PetscReal*,PetscReal*,void*),

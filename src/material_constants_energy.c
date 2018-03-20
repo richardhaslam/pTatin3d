@@ -31,8 +31,6 @@
 #include "data_bucket.h"
 #include "material_constants_energy.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsEnergyInitialize"
 PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db)
 {
   DataBucketRegisterField(db,EnergyMaterialConstants_classname,       sizeof(EnergyMaterialConstants),NULL);
@@ -46,8 +44,6 @@ PetscErrorCode MaterialConstantsEnergyInitialize(DataBucket db)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsEnergySetDefaults"
 PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 {
 	int       nregions;
@@ -108,8 +104,6 @@ PetscErrorCode MaterialConstantsEnergySetDefaults(DataBucket db)
 }
 
 /* Assume temperature scale = 1 K */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsEnergyScaleAll"
 PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id,
                                                PetscReal length_scale,
                                                PetscReal time_scale,
@@ -246,8 +240,6 @@ PetscErrorCode MaterialConstantsEnergyScaleAll(DataBucket db,const int region_id
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsEnergyPrintAll"
 PetscErrorCode MaterialConstantsEnergyPrintAll(DataBucket db,const int region_id)
 {
   DataField dfield;

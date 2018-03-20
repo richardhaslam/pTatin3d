@@ -80,8 +80,6 @@ void MaterialConstantsSetDefaultAll_SourceConst(
 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_SourceConst"
 PetscErrorCode MaterialConstantsSetFromOptions_SourceConst(const char model_name[],const int region_id,EnergySourceConst _data[],PetscBool essential)
 {
   char                         opt_name[PETSC_MAX_PATH_LEN];
@@ -101,8 +99,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceConst(const char model_name
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_SourceConst"
 PetscErrorCode MaterialConstantsPrintValues_SourceConst(const char model_name[],const int region_id,EnergySourceConst _data[]) 
 {
   EnergySourceConst *data = &_data[region_id];
@@ -120,8 +116,6 @@ PetscErrorCode MaterialConstantsPrintValues_SourceConst(const char model_name[],
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_SourceConst"
 PetscErrorCode MaterialConstantsSetValues_SourceConst(const int region_id,EnergySourceConst _data[],
     double H)
 {
@@ -130,8 +124,6 @@ PetscErrorCode MaterialConstantsSetValues_SourceConst(const int region_id,Energy
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_SourceConst"
 PetscErrorCode MaterialConstantsScaleValues_SourceConst(const int region_id,EnergySourceConst _data[],
     double H)
 {

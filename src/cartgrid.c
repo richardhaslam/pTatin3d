@@ -42,8 +42,6 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Pe
 PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found);
 
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridCreate"
 PetscErrorCode CartGridCreate(CartGrid *map)
 {
   PetscErrorCode ierr;
@@ -62,8 +60,6 @@ PetscErrorCode CartGridCreate(CartGrid *map)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridDestroy"
 PetscErrorCode CartGridDestroy(CartGrid *map)
 {
   CartGrid p;
@@ -90,8 +86,6 @@ PetscErrorCode CartGridDestroy(CartGrid *map)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetType"
 PetscErrorCode CartGridSetType(CartGrid map,CartGridType t)
 {
     PetscFunctionBegin;
@@ -119,8 +113,6 @@ PetscErrorCode CartGridSetType(CartGrid map,CartGridType t)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetDim"
 PetscErrorCode CartGridSetDim(CartGrid map,PetscInt dim)
 {
     PetscFunctionBegin;
@@ -128,8 +120,6 @@ PetscErrorCode CartGridSetDim(CartGrid map,PetscInt dim)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetSizes"
 PetscErrorCode CartGridSetSizes(CartGrid map,PetscInt m,PetscInt n,PetscInt p)
 {
     PetscFunctionBegin;
@@ -139,8 +129,6 @@ PetscErrorCode CartGridSetSizes(CartGrid map,PetscInt m,PetscInt n,PetscInt p)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetDataType"
 PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type)
 {
     PetscFunctionBegin;
@@ -182,8 +170,6 @@ PetscErrorCode CartGridSetDataType(CartGrid map,CartGridDataType type)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetDomain"
 PetscErrorCode CartGridSetDomain(CartGrid map,PetscReal xr[],PetscReal yr[],PetscReal zr[])
 {
     PetscFunctionBegin;
@@ -193,8 +179,6 @@ PetscErrorCode CartGridSetDomain(CartGrid map,PetscReal xr[],PetscReal yr[],Pets
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetFilename"
 PetscErrorCode CartGridSetFilename(CartGrid map,const char fname[])
 {
     PetscFunctionBegin;
@@ -202,8 +186,6 @@ PetscErrorCode CartGridSetFilename(CartGrid map,const char fname[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetDataFilename"
 PetscErrorCode CartGridSetDataFilename(CartGrid map,const char fname[])
 {
     PetscFunctionBegin;
@@ -211,8 +193,6 @@ PetscErrorCode CartGridSetDataFilename(CartGrid map,const char fname[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetUp_InMem"
 PetscErrorCode CartGridSetUp_InMem(CartGrid map)
 {
     FILE *fp_data = NULL;
@@ -238,8 +218,6 @@ PetscErrorCode CartGridSetUp_InMem(CartGrid map)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetUp_OutOfCore"
 PetscErrorCode CartGridSetUp_OutOfCore(CartGrid map)
 {
     FILE *fp_data = NULL;
@@ -261,8 +239,6 @@ PetscErrorCode CartGridSetUp_OutOfCore(CartGrid map)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetIndex_InMem2d"
 PetscErrorCode CartGridGetIndex_InMem2d(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index)
 {
     PetscFunctionBegin;
@@ -275,8 +251,6 @@ PetscErrorCode CartGridGetIndex_InMem2d(CartGrid map,PetscInt i,PetscInt j,Petsc
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetIndex_InMem3d"
 PetscErrorCode CartGridGetIndex_InMem3d(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index)
 {
     PetscFunctionBegin;
@@ -291,8 +265,6 @@ PetscErrorCode CartGridGetIndex_InMem3d(CartGrid map,PetscInt i,PetscInt j,Petsc
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetIndex_InMem"
 PetscErrorCode CartGridGetIndex_InMem(CartGrid map,PetscInt i,PetscInt j,PetscInt k,PetscInt *index)
 {
     PetscErrorCode ierr;
@@ -311,8 +283,6 @@ PetscErrorCode CartGridGetIndex_InMem(CartGrid map,PetscInt i,PetscInt j,PetscIn
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetValue_InMem2d"
 PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
 	PetscInt i,j,index;
@@ -341,8 +311,6 @@ PetscErrorCode CartGridGetValue_InMem2d(CartGrid map,PetscReal xp[],void *value,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetValue_InMem3d"
 PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
 	PetscInt i,j,k,index;
@@ -376,8 +344,6 @@ PetscErrorCode CartGridGetValue_InMem3d(CartGrid map,PetscReal xp[],void *value,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetValue_InMem"
 PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
     PetscErrorCode ierr;
@@ -397,8 +363,6 @@ PetscErrorCode CartGridGetValue_InMem(CartGrid map,PetscReal xp[],void *value,Pe
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetValue_OutOfCore"
 PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
 	PetscInt i,j,k,index;
@@ -442,8 +406,6 @@ PetscErrorCode CartGridGetValue_OutOfCore(CartGrid map,PetscReal xp[],void *valu
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridGetValue"
 PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,PetscBool *found)
 {
   PetscErrorCode ierr;
@@ -454,8 +416,6 @@ PetscErrorCode CartGridGetValue(CartGrid map,PetscReal xp[],void *value,PetscBoo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "trimright"
 PetscErrorCode trimright(char str[])
 {
     size_t len;
@@ -474,8 +434,6 @@ PetscErrorCode trimright(char str[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "trimnewline"
 PetscErrorCode trimnewline(char str[])
 {
     size_t len;
@@ -487,8 +445,6 @@ PetscErrorCode trimnewline(char str[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridSetUp"
 PetscErrorCode CartGridSetUp(CartGrid map)
 {
     FILE           *fp;
@@ -617,8 +573,6 @@ ParseHeader:
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridViewMetaData"
 PetscErrorCode CartGridViewMetaData(CartGrid map)
 {
     FILE *fp;
@@ -649,8 +603,6 @@ PetscErrorCode CartGridViewMetaData(CartGrid map)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CartGridViewPV"
 PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
 {
 	FILE     *fp = NULL;
@@ -809,8 +761,6 @@ PetscErrorCode CartGridViewPV(CartGrid map,const char filename[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCtxAttachCartGrid"
 PetscErrorCode pTatinCtxAttachCartGrid(pTatinCtx ctx,CartGrid map)
 {
 	PetscErrorCode ierr;
@@ -819,8 +769,6 @@ PetscErrorCode pTatinCtxAttachCartGrid(pTatinCtx ctx,CartGrid map)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCtxGetCartGrid"
 PetscErrorCode pTatinCtxGetCartGrid(pTatinCtx ctx,CartGrid *map)
 {
 	void           *mymap;
@@ -832,8 +780,6 @@ PetscErrorCode pTatinCtxGetCartGrid(pTatinCtx ctx,CartGrid *map)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ex1"
 PetscErrorCode ex1(void)
 {
     CartGrid       cg;
@@ -873,8 +819,6 @@ PetscErrorCode ex1(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ex2"
 PetscErrorCode ex2(void)
 {
     PetscReal      xr[2],yr[2],zr[2];

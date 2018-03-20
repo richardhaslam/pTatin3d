@@ -47,8 +47,6 @@
 #include "quadrature.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_AssignUniquePointIdentifiers"
 PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucket db,int start_pid,int end_pid)
 {
 	DataField      PField;
@@ -100,8 +98,6 @@ PetscErrorCode SwarmMPntStd_AssignUniquePointIdentifiers(MPI_Comm comm,DataBucke
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_LatticeLayout3d"
 PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,DataBucket db)
 {
 	DataField    PField;
@@ -222,8 +218,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_LatticeLayout3d(DM da,PetscInt Nxp[]
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_GaussLayout3d"
 PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 {
 	DataField    PField;
@@ -309,8 +303,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_GaussLayout3d(DM da,DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_RandomLayout3d"
 PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCell,DataBucket db)
 {
 	DataField    PField;
@@ -407,8 +399,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_RandomLayout3d(DM da,PetscInt nPerCe
  (a) a population type routine [need new population control routine for this]
  (b) direcly via the user specification
 */
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d"
 PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,DataBucket db)
 {
 	DataField    PField;
@@ -640,8 +630,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_FaceLatticeLayout3d(DM da,PetscInt N
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d"
 PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(DM da,PetscInt Nxp[],PetscReal perturb,PetscInt face_idx,PetscInt ncells_list,PetscInt cell_list[],PetscInt *start_pidx,PetscInt *n_pidx,DataBucket db)
 {
 	DataField    PField;
@@ -829,8 +817,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignmentFromElementList_FaceLatticeLayout3d(D
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmView_MPntStd_VTKascii"
 PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 {
 	FILE *vtk_fp;
@@ -959,8 +945,6 @@ PetscErrorCode SwarmView_MPntStd_VTKascii(DataBucket db,const char name[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmView_MPntStd_VTKappended_binary"
 PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char name[])
 {
 	FILE *vtk_fp;
@@ -1115,8 +1099,6 @@ PetscErrorCode SwarmView_MPntStd_VTKappended_binary(DataBucket db,const char nam
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "__SwarmView_MPntStd_PVTU"
 PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 {
 	PetscMPIInt nproc;
@@ -1182,8 +1164,6 @@ PetscErrorCode __SwarmView_MPntStd_PVTU(const char prefix[],const char name[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmOutputParaView_MPntStd"
 PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const char prefix[])
 { 
 	char *vtkfilename,*filename;
@@ -1225,8 +1205,6 @@ PetscErrorCode SwarmOutputParaView_MPntStd(DataBucket db,const char path[],const
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_InsertWithinPlane"
 PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM dav,PetscInt Nxp2[],PetscInt region_idx,PetscReal vertex_coor[])
 {
     PetscInt       Npxi,Npeta,i,j,n;
@@ -1318,8 +1296,6 @@ PetscErrorCode SwarmMPntStd_CoordAssignment_InsertWithinPlane(DataBucket db,DM d
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmMPntStd_CoordAssignment_InsertFromList"
 PetscErrorCode SwarmMPntStd_CoordAssignment_InsertFromList(DataBucket db,DM dav,PetscInt nlist,PetscReal coor_l[],PetscInt region_idx,PetscBool use_natural_index)
 {
   PetscInt       n;

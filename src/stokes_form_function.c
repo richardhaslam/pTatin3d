@@ -43,8 +43,6 @@
 #include "quadrature.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_profile"
 PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar u[],DM dap,PetscScalar p[],PetscScalar Rp[])
 {	
 	PetscErrorCode ierr;
@@ -98,8 +96,6 @@ PetscErrorCode FormFunctionLocal_profile(PhysCompStokes user,DM dau,PetscScalar 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_U"
 PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Ru[])
 {	
 	PetscErrorCode ierr;
@@ -245,8 +241,6 @@ PetscErrorCode FormFunctionLocal_U(PhysCompStokes user,DM dau,PetscScalar ufield
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_U_tractionBC"
 PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Ru[])
 {	
 	PetscErrorCode ierr;
@@ -367,8 +361,6 @@ PetscErrorCode FormFunctionLocal_U_tractionBC(PhysCompStokes user,DM dau,PetscSc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_P"
 PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Rp[])
 {	
 	PetscErrorCode ierr;
@@ -482,8 +474,6 @@ PetscErrorCode FormFunctionLocal_P(PhysCompStokes user,DM dau,PetscScalar ufield
  = x_i + phi - x_i
  = phi
  */
-#undef __FUNCT__  
-#define __FUNCT__ "FormFunction_Stokes"
 PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -572,8 +562,6 @@ PetscErrorCode FormFunction_Stokes(SNES snes,Vec X,Vec F,void *ctx)
 //#include "stokes_q2p1_mf_operators_def.c"
 //#include "stokes_q2p1_mf_operators_diag_def.c"
 
-#undef __FUNCT__
-#define __FUNCT__ "MF_Stokes_yAx"
 PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],PetscScalar Yu[],PetscScalar Yp[])
 {	
 	PetscErrorCode ierr;
@@ -652,8 +640,6 @@ PetscErrorCode MF_Stokes_yAx(PhysCompStokes user,DM dau,PetscScalar ufield[],DM 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MF_Stokes"
 PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -736,8 +722,6 @@ PetscErrorCode MF_Stokes(Vec X,Vec Y,void *ctx)
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_U_QuasiNewtonX"
 PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,PetscScalar LA_ufield[],DM dap,PetscScalar LA_pfield[],DM daX,PetscScalar LA_Xfield[],PetscScalar Ru[])
 {	
 	PetscErrorCode ierr;
@@ -875,8 +859,6 @@ PetscErrorCode FormFunctionLocal_U_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_P_QuasiNewtonX"
 PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,PetscScalar LA_ufield[],DM dap,PetscScalar LA_pfield[],DM daX,PetscScalar LA_Xfield[],PetscScalar Rp[])
 {	
 	PetscErrorCode ierr;
@@ -979,8 +961,6 @@ PetscErrorCode FormFunctionLocal_P_QuasiNewtonX(PhysCompStokes user,DM dau,Petsc
  = x_i + phi - x_i
  = phi
  */
-#undef __FUNCT__  
-#define __FUNCT__ "FormFunction_Stokes_QuasiNewtonX"
 PetscErrorCode FormFunction_Stokes_QuasiNewtonX(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode    ierr;
@@ -1086,8 +1066,6 @@ typedef struct {
     pTatinCtx user_context;
 } pTatinStokesFields;
 
-#undef __FUNCT__
-#define __FUNCT__ "StokesUPXNewton_FormJux_MFFD"
 PetscErrorCode StokesUPXNewton_FormJux_MFFD(void *mffd_ctx,Vec x,Vec Fu)
 {
     PetscErrorCode     ierr;
@@ -1159,8 +1137,6 @@ PetscErrorCode StokesUPXNewton_FormJux_MFFD(void *mffd_ctx,Vec x,Vec Fu)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StokesUPXNewton_FormJpx_MFFD"
 PetscErrorCode StokesUPXNewton_FormJpx_MFFD(void *mffd_ctx,Vec x,Vec Fp)
 {
     PetscErrorCode     ierr;
@@ -1230,8 +1206,6 @@ PetscErrorCode StokesUPXNewton_FormJpx_MFFD(void *mffd_ctx,Vec x,Vec Fp)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "StokesUPXNewton_FormJuu_MFFD"
 PetscErrorCode StokesUPXNewton_FormJuu_MFFD(void *mffd_ctx,Vec x,Vec Fu)
 {
     PetscErrorCode     ierr;
@@ -1300,8 +1274,6 @@ PetscErrorCode StokesUPXNewton_FormJuu_MFFD(void *mffd_ctx,Vec x,Vec Fu)
 #include <petsc/private/matimpl.h>
 #include <petsc/ptatin_petsc_mffdimpl.h> /* ptatin supplied header copied from PETSc source tree */
 
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_StokesJctx"
 PetscErrorCode MatDestroy_StokesJctx(MatMFFD ctx)
 {
     PetscErrorCode ierr;
@@ -1324,8 +1296,6 @@ PetscErrorCode MatDestroy_StokesJctx(MatMFFD ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateStokesJux"
 PetscErrorCode MatCreateStokesJux(pTatinCtx ctx,void *Jctx,Mat *_Jux)
 {
     PetscErrorCode     ierr;
@@ -1383,8 +1353,6 @@ PetscErrorCode MatCreateStokesJux(pTatinCtx ctx,void *Jctx,Mat *_Jux)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateStokesJuu"
 PetscErrorCode MatCreateStokesJuu(pTatinCtx ctx,void *Jctx,Mat *_Juu)
 {
     PetscErrorCode     ierr;
@@ -1442,8 +1410,6 @@ PetscErrorCode MatCreateStokesJuu(pTatinCtx ctx,void *Jctx,Mat *_Juu)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateStokesJpx"
 PetscErrorCode MatCreateStokesJpx(pTatinCtx ctx,void *Jctx,Mat *_Jpx)
 {
     PetscErrorCode     ierr;
@@ -1501,8 +1467,6 @@ PetscErrorCode MatCreateStokesJpx(pTatinCtx ctx,void *Jctx,Mat *_Jpx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStokesJijGetContext"
 PetscErrorCode MatStokesJijGetContext(Mat J,void **data)
 {
     MatMFFD            mffd_ctx;
@@ -1516,8 +1480,6 @@ PetscErrorCode MatStokesJijGetContext(Mat J,void **data)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStokesJijUpdateGlobalFields"
 PetscErrorCode MatStokesJijUpdateGlobalFields(Mat J,Vec u,Vec p,Vec x)
 {
     PetscErrorCode     ierr;
@@ -1534,8 +1496,6 @@ PetscErrorCode MatStokesJijUpdateGlobalFields(Mat J,Vec u,Vec p,Vec x)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatStokesJijUpdateLocalFields"
 PetscErrorCode MatStokesJijUpdateLocalFields(Mat J,Vec u,Vec p,Vec x)
 {
     PetscErrorCode     ierr;
@@ -1552,8 +1512,6 @@ PetscErrorCode MatStokesJijUpdateLocalFields(Mat J,Vec u,Vec p,Vec x)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "patch_MatMFFDSetBase_MFFD"
 PetscErrorCode patch_MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 {
     MatMFFD        ctx = (MatMFFD)J->data;

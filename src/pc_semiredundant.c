@@ -46,8 +46,6 @@ typedef struct {
 
 
 /* helpers for gather matrix and scattering vectors */
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSemiRedundant"
 PetscErrorCode MatCreateSemiRedundant(Mat A,PetscMPISubComm subcomm,MatReuse reuse,Mat *_red)
 {
     PetscErrorCode ierr;
@@ -144,8 +142,6 @@ PetscErrorCode MatCreateSemiRedundant(Mat A,PetscMPISubComm subcomm,MatReuse reu
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatCreateSemiRedundantFuseBlocks"
 PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,MatReuse reuse,Mat *_red)
 {
     PetscErrorCode ierr;
@@ -276,8 +272,6 @@ PetscErrorCode MatCreateSemiRedundantFuseBlocks(Mat A,PetscMPISubComm subcomm,Ma
 }
 
 /* implementations for SemiRedundant */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_SemiRedundant"
 static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
 {
     PetscErrorCode   ierr;
@@ -398,8 +392,6 @@ static PetscErrorCode PCSetUp_SemiRedundant(PC pc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_SemiRedundant"
 static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
 {
     PetscErrorCode   ierr;
@@ -454,8 +446,6 @@ static PetscErrorCode PCApply_SemiRedundant(PC pc,Vec x,Vec y)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_SemiRedundant"
 static PetscErrorCode PCReset_SemiRedundant(PC pc)
 {
     PetscErrorCode   ierr;
@@ -475,8 +465,6 @@ static PetscErrorCode PCReset_SemiRedundant(PC pc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_SemiRedundant"
 static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
 {
     PetscErrorCode   ierr;
@@ -492,8 +480,6 @@ static PetscErrorCode PCDestroy_SemiRedundant(PC pc)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_SemiRedundant"
 static PetscErrorCode PCSetFromOptions_SemiRedundant(PetscOptionItems *PetscOptionsObject,PC pc)
 {
     PetscErrorCode   ierr;
@@ -507,8 +493,6 @@ static PetscErrorCode PCSetFromOptions_SemiRedundant(PetscOptionItems *PetscOpti
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PCView_SemiRedundant"
 static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
 {
     PetscErrorCode   ierr;
@@ -549,8 +533,6 @@ static PetscErrorCode PCView_SemiRedundant(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCCreate_SemiRedundant"
 PetscErrorCode PCCreate_SemiRedundant(PC pc)
 {
     PetscErrorCode   ierr;

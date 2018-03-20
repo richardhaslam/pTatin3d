@@ -252,8 +252,6 @@ void PhaseMapGetMaxPhases(PhaseMap phasemap,int *maxphase)
 	*maxphase = phasemap->nphases;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCtxAttachPhaseMap"
 PetscErrorCode pTatinCtxAttachPhaseMap(pTatinCtx ctx,PhaseMap map)
 {
 	PetscErrorCode ierr;
@@ -265,8 +263,6 @@ PetscErrorCode pTatinCtxAttachPhaseMap(pTatinCtx ctx,PhaseMap map)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCtxGetPhaseMap"
 PetscErrorCode pTatinCtxGetPhaseMap(pTatinCtx ctx,PhaseMap *map)
 {
 	void *mymap;

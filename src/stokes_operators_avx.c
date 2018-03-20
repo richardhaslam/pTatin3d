@@ -46,8 +46,6 @@
 #define ALIGN32 __attribute__((aligned(32))) /* AVX packed instructions need 32-byte alignment */
 
 
-#undef __FUNCT__
-#define __FUNCT__ "TensorContractNEV_AVX"
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
@@ -205,8 +203,6 @@ PetscErrorCode QuadratureAction_A11_AVX(const QPntVolCoefStokes *gausspt[],
 	return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_AVX"
 PetscErrorCode MFStokesWrapper_A11_AVX(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;
@@ -440,8 +436,6 @@ static PetscErrorCode QuadratureAction_A_AVX(const QPntVolCoefStokes *gausspt[],
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A_AVX"
 PetscErrorCode MFStokesWrapper_A_AVX(Quadrature volQ,
                                      DM dau,PetscScalar ufield[],
                                      DM dap,PetscScalar pfield[],
@@ -685,8 +679,6 @@ static PetscErrorCode QuadratureAction_A12_AVX(
   return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A12_AVX"
 PetscErrorCode MFStokesWrapper_A12_AVX(Quadrature volQ,DM dau,DM dap,PetscScalar pfield[],PetscScalar Yu[])
 {
   PetscErrorCode ierr;

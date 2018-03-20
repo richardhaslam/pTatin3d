@@ -61,8 +61,6 @@ extern void fastscape_(char *name,int *len,double *sheight,int* snx,int* sny,dou
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3"
 PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
   pTatinCtx pctx,Vec X,
   PetscInt refinement_factor,
@@ -85,8 +83,6 @@ PetscErrorCode ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3"
 PetscErrorCode _ptatin3d_ApplyLandscapeEvolutionModel_FastScape_V3(
   pTatinCtx pctx,Vec X,
   PetscInt refinement_factor,

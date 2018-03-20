@@ -57,8 +57,6 @@
 
 /* PHYSICS MESHES */
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_PhysCompStokesNew"
 PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 {
 	PetscErrorCode  ierr;
@@ -82,8 +80,6 @@ PetscErrorCode pTatin3d_PhysCompStokesNew(pTatinCtx user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_PhysCompStokesCreate"
 PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 {
 	PetscErrorCode  ierr;
@@ -110,8 +106,6 @@ PetscErrorCode pTatin3d_PhysCompStokesCreate(pTatinCtx user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "default_pTatin3d_ModelOutput_VelocityPressure_Stokes"
 PetscErrorCode default_pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
@@ -161,8 +155,6 @@ PetscErrorCode default_pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_pTatin3d_ModelOutput_VelocityPressure_Stokes"
 PetscErrorCode _pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char root[],const char snap[],const char fileprefix[])
 {
   PetscErrorCode ierr;
@@ -196,8 +188,6 @@ PetscErrorCode _pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes_per_dir"
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_per_dir(pTatinCtx ctx,Vec X)
 {
   char name[PETSC_MAX_PATH_LEN];
@@ -215,8 +205,6 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_per_dir(pTatinCtx ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes_flat"
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_flat(pTatinCtx ctx,Vec X)
 {
   char fileprefix[PETSC_MAX_PATH_LEN];
@@ -228,8 +216,6 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes_flat(pTatinCtx ctx,V
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_ModelOutput_VelocityPressure_Stokes"
 PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
   char name[PETSC_MAX_PATH_LEN];
@@ -248,8 +234,6 @@ PetscErrorCode pTatin3d_ModelOutput_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_ModelOutputLite_Velocity_Stokes"
 PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
@@ -293,8 +277,6 @@ PetscErrorCode pTatin3d_ModelOutputLite_Velocity_Stokes(pTatinCtx ctx,Vec X,cons
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes"
 PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
@@ -373,8 +355,6 @@ PetscErrorCode pTatin3d_ModelOutputPetscVec_VelocityPressure_Stokes(pTatinCtx ct
 }
 
 /* MATERIAL POINTS */
-#undef __FUNCT__
-#define __FUNCT__ "SwarmDMDA3dDataExchangerCreate"
 PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 {
 	DataEx de;
@@ -415,8 +395,6 @@ PetscErrorCode SwarmDMDA3dDataExchangerCreate(DM da,DataEx *_de)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dCreateMaterialPoints"
 PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 {
 	DataBucket     db;
@@ -529,8 +507,6 @@ PetscErrorCode pTatin3dCreateMaterialPoints(pTatinCtx ctx,DM dav)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointCoordinateSetUp"
 PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
 {
 	PetscErrorCode ierr;
@@ -592,8 +568,6 @@ PetscErrorCode MaterialPointCoordinateSetUp(pTatinCtx ctx,DM da)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_ModelOutput_MPntStd"
 PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 {
 	PetscErrorCode ierr;
@@ -633,8 +607,6 @@ PetscErrorCode pTatin3d_ModelOutput_MPntStd(pTatinCtx ctx,const char prefix[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dCreateContext"
 PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 {
 	pTatinCtx      user;
@@ -698,8 +670,6 @@ PetscErrorCode pTatin3dCreateContext(pTatinCtx *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dDestroyContext"
 PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 {
 	pTatinCtx user = *ctx;
@@ -750,8 +720,6 @@ PetscErrorCode pTatin3dDestroyContext(pTatinCtx *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinCtxGetModelData"
 PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data)
 {
 	PetscErrorCode ierr;
@@ -765,8 +733,6 @@ PetscErrorCode pTatinCtxGetModelData(pTatinCtx ctx,const char name[],void **data
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinCtxAttachModelData"
 PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *data)
 {
 	PetscContainer container;
@@ -782,8 +748,6 @@ PetscErrorCode pTatinCtxAttachModelData(pTatinCtx ctx,const char name[],void *da
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dSetFromOptions"
 PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 {
   char           optionsfile[PETSC_MAX_PATH_LEN];
@@ -849,8 +813,6 @@ PetscErrorCode pTatin3dSetFromOptions(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelLoad"
 PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 {
 	pTatinModel model;
@@ -876,24 +838,18 @@ PetscErrorCode pTatinModelLoad(pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetTime"
 PetscErrorCode pTatinGetTime(pTatinCtx ctx,PetscReal *time)
 {
 	if (time) { *time = ctx->time; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetTimestep"
 PetscErrorCode pTatinGetTimestep(pTatinCtx ctx,PetscReal *dt)
 {
 	if (dt) { *dt = ctx->dt; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetMaterialPoints"
 PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
 {
 	if (db) { *db = ctx->materialpoint_db; }
@@ -901,48 +857,36 @@ PetscErrorCode pTatinGetMaterialPoints(pTatinCtx ctx,DataBucket *db,DataEx *de)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetMaterialConstants"
 PetscErrorCode pTatinGetMaterialConstants(pTatinCtx ctx,DataBucket *db)
 {
 	if (db) { *db = ctx->material_constants; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetModel"
 PetscErrorCode pTatinGetModel(pTatinCtx ctx,pTatinModel *m)
 {
 	if (m) { *m = ctx->model; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetRheology"
 PetscErrorCode pTatinGetRheology(pTatinCtx ctx,RheologyConstants **r)
 {
 	if (r) { *r = &ctx->rheology_constants; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetStokesContext"
 PetscErrorCode pTatinGetStokesContext(pTatinCtx ctx,PhysCompStokes *s)
 {
 	if (s) { *s = ctx->stokes_ctx; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dCheckpoint"
 PetscErrorCode pTatin3dCheckpoint(pTatinCtx ctx,Vec X,const char prefix[])
 {
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"pTatin3dCheckpoint is deprecated");
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dCheckpointManager"
 PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
 {
   PetscErrorCode   ierr;
@@ -1055,8 +999,6 @@ PetscErrorCode pTatin3dCheckpointManager(pTatinCtx ctx,Vec Xs)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinRestart_Initialize"
 PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 {
 	PetscFunctionBegin;
@@ -1064,8 +1006,6 @@ PetscErrorCode pTatinRestart_Initialize(pTatinCtx ctx,void *data)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinRestart_ApplyInitialMeshGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 {
 	PetscFunctionBegin;
@@ -1074,8 +1014,6 @@ PetscErrorCode pTatinRestart_ApplyInitialMeshGeometry(pTatinCtx ctx,void *data)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinRestart_ApplyInitialMaterialGeometry"
 PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *data)
 {
 	PetscFunctionBegin;
@@ -1084,8 +1022,6 @@ PetscErrorCode pTatinRestart_ApplyInitialMaterialGeometry(pTatinCtx ctx,void *da
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinRestart_ApplyInitialSolution"
 PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data)
 {
   PetscFunctionBegin;
@@ -1094,8 +1030,6 @@ PetscErrorCode pTatinRestart_ApplyInitialSolution(pTatinCtx ctx,Vec X,void *data
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMCoarsenHierarchy2_DA"
 PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
 {
   PetscErrorCode ierr;
@@ -1163,8 +1097,6 @@ PetscErrorCode  DMCoarsenHierarchy2_DA(DM da,PetscInt nlevels,DM dac[])
  
  dt = min( dt_1, dt_2, dt_3 ) subject to some global min/max cut offs.
  */
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin_SetTimestep"
 PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],PetscReal dt_trial)
 {
 	
@@ -1209,8 +1141,6 @@ PetscErrorCode pTatin_SetTimestep(pTatinCtx ctx,const char timescale_name[],Pets
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCtxCheckpointWrite"
 PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const char prefix[],
                                         DM dms,DM dme,
                                         PetscInt nfields,const char *dmnames[],DM dmlist[],
@@ -1445,8 +1375,6 @@ PetscErrorCode pTatinCtxCheckpointWrite(pTatinCtx ctx,const char path[],const ch
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dLoadContext_FromFile"
 PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx)
 {
   pTatinCtx ctx;
@@ -1549,8 +1477,6 @@ PetscErrorCode pTatin3dLoadContext_FromFile(pTatinCtx *_ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dLoadState_FromFile"
 PetscErrorCode pTatin3dLoadState_FromFile(pTatinCtx ctx,DM dmstokes,DM dmenergy,Vec Xs,Vec Xt)
 {
   PetscErrorCode ierr;
@@ -1613,8 +1539,6 @@ PetscErrorCode pTatin3dLoadState_FromFile(pTatinCtx ctx,DM dmstokes,DM dmenergy,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3d_PhysCompStokesLoad_FromFile"
 PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
 {
   
@@ -1723,8 +1647,6 @@ PetscErrorCode pTatin3d_PhysCompStokesLoad_FromFile(pTatinCtx ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dLoadMaterialPoints_FromFile"
 PetscErrorCode pTatin3dLoadMaterialPoints_FromFile(pTatinCtx ctx,DM dmv)
 {
   DataBucket     db;
@@ -1816,8 +1738,6 @@ PetscErrorCode pTatin3dLoadMaterialPoints_FromFile(pTatinCtx ctx,DM dmv)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinPhysCompActivate_Energy_FromFile"
 PetscErrorCode pTatinPhysCompActivate_Energy_FromFile(pTatinCtx ctx)
 {
   PetscErrorCode ierr;

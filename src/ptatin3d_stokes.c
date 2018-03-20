@@ -45,8 +45,6 @@
 #include "QPntSurfCoefStokes_def.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "StokesVelocity_GetElementLocalIndices"
 PetscErrorCode StokesVelocity_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
 {
 	PetscInt n;
@@ -59,8 +57,6 @@ PetscErrorCode StokesVelocity_GetElementLocalIndices(PetscInt el_localIndices[],
 	}
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "StokesPressure_GetElementLocalIndices"
 PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
 {
 	PetscInt n;
@@ -71,8 +67,6 @@ PetscErrorCode StokesPressure_GetElementLocalIndices(PetscInt el_localIndices[],
 	}
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "StokesVelocityScalar_GetElementLocalIndices"
 PetscErrorCode StokesVelocityScalar_GetElementLocalIndices(PetscInt el_localIndices[],PetscInt elnid[])
 {
 	PetscInt n;
@@ -86,8 +80,6 @@ PetscErrorCode StokesVelocityScalar_GetElementLocalIndices(PetscInt el_localIndi
 
 
 /* physics component loader */
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreate_Stokes"
 PetscErrorCode PhysCompCreate_Stokes(PhysCompStokes *ctx)
 {
 	PetscErrorCode ierr;
@@ -100,8 +92,6 @@ PetscErrorCode PhysCompCreate_Stokes(PhysCompStokes *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompDestroy_Stokes"
 PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
 {
 	PetscErrorCode ierr;
@@ -135,8 +125,6 @@ PetscErrorCode PhysCompDestroy_Stokes(PhysCompStokes *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateMesh_Stokes3d"
 PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,const PetscInt mz,PhysCompStokes ctx)
 {
 	DM dav,dap,multipys_pack;
@@ -210,8 +198,6 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d(const PetscInt mx,const PetscInt my,c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateBoundaryList_Stokes"
 PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx)
 {
 	DM dav;
@@ -230,8 +216,6 @@ PetscErrorCode PhysCompCreateBoundaryList_Stokes(PhysCompStokes ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateVolumeQuadrature_Stokes"
 PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
 {
 	DM dav;
@@ -251,8 +235,6 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes(PhysCompStokes ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesSetGravityUnitVector"
 PetscErrorCode PhysCompStokesSetGravityUnitVector(PhysCompStokes ctx,PetscReal grav[])
 {
 	PetscReal      norm_g;
@@ -265,8 +247,6 @@ PetscErrorCode PhysCompStokesSetGravityUnitVector(PhysCompStokes ctx,PetscReal g
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesScaleGravityVector"
 PetscErrorCode PhysCompStokesScaleGravityVector(PhysCompStokes ctx,PetscReal fac)
 {
 	PetscFunctionBegin;
@@ -276,8 +256,6 @@ PetscErrorCode PhysCompStokesScaleGravityVector(PhysCompStokes ctx,PetscReal fac
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompStokesSetGravityVector"
 PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[])
 {
 	PetscFunctionBegin;
@@ -287,8 +265,6 @@ PetscErrorCode PhysCompStokesSetGravityVector(PhysCompStokes ctx,PetscReal grav[
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_Velocity"
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])
 {
   PetscInt n,idx;
@@ -307,8 +283,6 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Velocity(PetscScalar *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_InsertValues_Stokes_Velocity"
 PetscErrorCode DMDASetValuesLocalStencil_InsertValues_Stokes_Velocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])
 {
   PetscInt n,idx;
@@ -327,8 +301,6 @@ PetscErrorCode DMDASetValuesLocalStencil_InsertValues_Stokes_Velocity(PetscScala
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_Pressure"
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(PetscScalar *fields_F,PetscInt p_eqn[],PetscScalar Fe_p[])
 {
   PetscInt n,idx;
@@ -341,8 +313,6 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_Pressure(PetscScalar *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity"
 PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity(PetscScalar *fields_F,PetscInt u_eqn[],PetscScalar Fe_u[])
 {
   PetscInt n,idx;
@@ -355,8 +325,6 @@ PetscErrorCode DMDASetValuesLocalStencil_AddValues_Stokes_ScalarVelocity(PetscSc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompSetup_Stokes"
 PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
 {
   DM dap,multipys_pack;
@@ -431,8 +399,6 @@ PetscErrorCode PhysCompSetup_Stokes(PhysCompStokes ctx,DM dav)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinStokesKSPMonitorBlocks"
 PetscErrorCode pTatinStokesKSPMonitorBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *data)
 {
 	PetscErrorCode ierr;
@@ -463,8 +429,6 @@ PetscErrorCode pTatinStokesKSPMonitorBlocks(KSP ksp,PetscInt n,PetscReal rnorm,v
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VolumeQuadratureCreate_GaussLegendreStokes"
 PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt np_per_dim,PetscInt ncells,Quadrature *quadrature)
 {
 	Quadrature Q;
@@ -519,8 +483,6 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreStokes(PetscInt nsd,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VolumeQuadratureGetAllCellData_Stokes"
 PetscErrorCode VolumeQuadratureGetAllCellData_Stokes(Quadrature Q,QPntVolCoefStokes *coeffs[])
 {
 	QPntVolCoefStokes *quadraturepoint_data;
@@ -534,8 +496,6 @@ PetscErrorCode VolumeQuadratureGetAllCellData_Stokes(Quadrature Q,QPntVolCoefSto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VolumeQuadratureGetCellData_Stokes"
 PetscErrorCode VolumeQuadratureGetCellData_Stokes(Quadrature Q,QPntVolCoefStokes coeffs[],PetscInt cidx,QPntVolCoefStokes *cell[])
 {
   PetscFunctionBegin;
@@ -548,8 +508,6 @@ PetscErrorCode VolumeQuadratureGetCellData_Stokes(Quadrature Q,QPntVolCoefStokes
 }
 
 /* surface quadrature */
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureCreate_GaussLegendreStokes"
 PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace index,SurfaceQuadrature *quadrature)
 {
 	SurfaceQuadrature Q;
@@ -624,8 +582,6 @@ PetscErrorCode SurfaceQuadratureCreate_GaussLegendreStokes(DM da,HexElementFace 
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGeometrySetUpStokes"
 PetscErrorCode SurfaceQuadratureGeometrySetUpStokes(SurfaceQuadrature Q,DM da)
 {
 	PetscErrorCode ierr;
@@ -635,8 +591,6 @@ PetscErrorCode SurfaceQuadratureGeometrySetUpStokes(SurfaceQuadrature Q,DM da)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureOrientationSetUpStokes"
 PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da)
 {
 	PetscErrorCode ierr;
@@ -714,8 +668,6 @@ PetscErrorCode SurfaceQuadratureOrientationSetUpStokes(SurfaceQuadrature Q,DM da
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureOrientationViewGnuplotStokes"
 PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q,DM da,const char name[])
 {
 	PetscErrorCode ierr;
@@ -817,8 +769,6 @@ PetscErrorCode SurfaceQuadratureOrientationViewGnuplotStokes(SurfaceQuadrature Q
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGetAllCellData_Stokes"
 PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSurfCoefStokes *coeffs[])
 {
 	QPntSurfCoefStokes *quadraturepoint_data;
@@ -836,8 +786,6 @@ PetscErrorCode SurfaceQuadratureGetAllCellData_Stokes(SurfaceQuadrature Q,QPntSu
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SurfaceQuadratureGetCellData_Stokes"
 PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfCoefStokes coeffs[],PetscInt cidx,QPntSurfCoefStokes *cell[])
 {
   PetscFunctionBegin;
@@ -853,8 +801,6 @@ PetscErrorCode SurfaceQuadratureGetCellData_Stokes(SurfaceQuadrature Q,QPntSurfC
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateSurfaceQuadrature_Stokes"
 PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 {
 	DM       dav;
@@ -895,8 +841,6 @@ PetscErrorCode PhysCompCreateSurfaceQuadrature_Stokes(PhysCompStokes ctx)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokes_ConvergenceTest_UPstol"
 PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal xnorm,PetscReal snorm,PetscReal fnorm,SNESConvergedReason *reason,void *ctx)
 {
 	Vec X,dX,Xu,Xp,dXu,dXp;
@@ -974,8 +918,6 @@ PetscErrorCode SNESStokes_ConvergenceTest_UPstol(SNES snes,PetscInt it,PetscReal
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokes_SetConvergenceTest_UPstol"
 PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user)
 {
 	const char *prefix;
@@ -993,8 +935,6 @@ PetscErrorCode SNESStokes_SetConvergenceTest_UPstol(SNES snes,pTatinCtx user)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsInsertPrefixString"
 PetscErrorCode PetscOptionsInsertPrefixString(const char prefix[],const char option[])
 {
 	PetscErrorCode ierr;
@@ -1014,8 +954,6 @@ PetscErrorCode PetscOptionsInsertPrefixString(const char prefix[],const char opt
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokesPCSetOptions_A"
 PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 {
 	const char *prefix;
@@ -1052,8 +990,6 @@ PetscErrorCode SNESStokesPCSetOptions_A(SNES snes)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokesPCMGSetOptions"
 PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglog)
 {
 	const char *prefix;
@@ -1101,8 +1037,6 @@ PetscErrorCode SNESStokesPCMGSetOptions(SNES snes,PetscInt maxits,PetscBool mglo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokesPCMGCoarseSetOptions_IterativeASM"
 PetscErrorCode SNESStokesPCMGCoarseSetOptions_IterativeASM(SNES snes,PetscReal rtol,PetscInt maxits,PetscInt overlap)
 {
 	const char *prefix;
@@ -1130,8 +1064,6 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_IterativeASM(SNES snes,PetscReal r
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokesPCMGCoarseSetOptions_NestedIterativeASM"
 PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,PetscReal rtol,PetscInt maxits,PetscInt maxitsnested,PetscInt overlap)
 {
 	const char *prefix;
@@ -1168,8 +1100,6 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_NestedIterativeASM(SNES snes,Petsc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESStokesPCMGCoarseSetOptions_SparseDirect"
 PetscErrorCode SNESStokesPCMGCoarseSetOptions_SparseDirect(SNES snes)
 {
 	const char *prefix;
@@ -1193,16 +1123,12 @@ PetscErrorCode SNESStokesPCMGCoarseSetOptions_SparseDirect(SNES snes)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetDMComposite"
 PetscErrorCode PhysCompStokesGetDMComposite(PhysCompStokes stokes,DM *dmc)
 {
     if (dmc) { *dmc = stokes->stokes_pack; }
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetDMs"
 PetscErrorCode PhysCompStokesGetDMs(PhysCompStokes stokes,DM *dmv,DM *dmp)
 {
     if (dmv) { *dmv = stokes->dav; }
@@ -1210,8 +1136,6 @@ PetscErrorCode PhysCompStokesGetDMs(PhysCompStokes stokes,DM *dmv,DM *dmp)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetBCList"
 PetscErrorCode PhysCompStokesGetBCList(PhysCompStokes stokes,BCList *ulist,BCList *plist)
 {
     if (ulist) { *ulist = stokes->u_bclist; }
@@ -1219,15 +1143,11 @@ PetscErrorCode PhysCompStokesGetBCList(PhysCompStokes stokes,BCList *ulist,BCLis
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetVolumeQuadrature"
 PetscErrorCode PhysCompStokesGetVolumeQuadrature(PhysCompStokes stokes,Quadrature *q)
 {
     if (q) { *q = stokes->volQ; }
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetVolumeQuadratureAllCellData"
 PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stokes,QPntVolCoefStokes *coeffs[])
 {
     PetscErrorCode ierr;
@@ -1237,16 +1157,12 @@ PetscErrorCode PhysCompStokesGetVolumeQuadratureAllCellData(PhysCompStokes stoke
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetSurfaceQuadrature"
 PetscErrorCode PhysCompStokesGetSurfaceQuadrature(PhysCompStokes stokes,HexElementFace fid,SurfaceQuadrature *sq)
 {
     if (sq) { *sq = stokes->surfQ[fid]; };
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompStokesGetSurfaceQuadratureAllCellData"
 PetscErrorCode PhysCompStokesGetSurfaceQuadratureAllCellData(PhysCompStokes stokes,HexElementFace fid,QPntSurfCoefStokes *coeffs[])
 {
 	PetscErrorCode ierr;
@@ -1256,8 +1172,6 @@ PetscErrorCode PhysCompStokesGetSurfaceQuadratureAllCellData(PhysCompStokes stok
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Stokes_KSPConvergenceTest_ScaledResiduals"
 PetscErrorCode Stokes_KSPConvergenceTest_ScaledResiduals(KSP ksp,PetscInt it,PetscReal rnorm,KSPConvergedReason *reason,void *data)
 {
 	PetscErrorCode  ierr;
@@ -1405,8 +1319,6 @@ PetscErrorCode Stokes_KSPConvergenceTest_ScaledResiduals(KSP ksp,PetscInt it,Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESStokes_KSPSetConvergenceTest_ScaledResiduals"
 PetscErrorCode SNESStokes_KSPSetConvergenceTest_ScaledResiduals(SNES snes,pTatinCtx user)
 {
   KSP            ksp;

@@ -59,8 +59,6 @@
 #include "iplus_ctx.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_iPLUS"
 PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -180,8 +178,6 @@ PetscErrorCode ModelInitialize_iPLUS(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_iPLUS"
 PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -297,8 +293,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_iPLUS(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_iPLUS"
 PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -342,8 +336,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_iPLUS(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_iPLUS"
 PetscErrorCode ModelApplyInitialSolution_iPLUS(pTatinCtx c,Vec X,void *ctx)
 {
     PetscFunctionBegin;
@@ -352,8 +344,6 @@ PetscErrorCode ModelApplyInitialSolution_iPLUS(pTatinCtx c,Vec X,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_VelocityBC"
 PetscErrorCode iPLUS_VelocityBC(BCList bclist,DM dav,pTatinCtx c,iPLUSCtx *data)
 {
     PetscScalar    zero;
@@ -401,8 +391,6 @@ PetscErrorCode iPLUS_VelocityBC(BCList bclist,DM dav,pTatinCtx c,iPLUSCtx *data)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_iPLUS"
 PetscErrorCode ModelApplyBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -425,8 +413,6 @@ PetscErrorCode ModelApplyBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_iPLUS"
 PetscErrorCode ModelApplyBoundaryConditionMG_iPLUS(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -444,8 +430,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_iPLUS(PetscInt nl,BCList bclist[],D
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_iPLUS"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -461,8 +445,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_iPLUS(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_iPLUS"
 PetscErrorCode ModelApplyUpdateMeshGeometry_iPLUS(pTatinCtx c,Vec X,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -496,8 +478,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_iPLUS(pTatinCtx c,Vec X,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUSOutput_ComputeVerticalRangeOfRegion"
 PetscErrorCode iPLUSOutput_ComputeVerticalRangeOfRegion(DataBucket materialpoint_db,PetscInt region_idx,PetscReal range_yp[])
 {
     MPAccess         mpX;
@@ -542,8 +522,6 @@ PetscErrorCode iPLUSOutput_ComputeVerticalRangeOfRegion(DataBucket materialpoint
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUSOutput_ComputeDomainVolume"
 PetscErrorCode iPLUSOutput_ComputeDomainVolume(DM dav,PetscReal *volume)
 {
     PetscErrorCode ierr;
@@ -555,8 +533,6 @@ PetscErrorCode iPLUSOutput_ComputeDomainVolume(DM dav,PetscReal *volume)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_iPLUS"
 PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -641,8 +617,6 @@ PetscErrorCode ModelOutput_iPLUS(pTatinCtx c,Vec X,const char prefix[],void *ctx
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_iPLUS"
 PetscErrorCode ModelDestroy_iPLUS(pTatinCtx c,void *ctx)
 {
     iPLUSCtx         *data = (iPLUSCtx*)ctx;
@@ -665,8 +639,6 @@ PetscErrorCode ModelDestroy_iPLUS(pTatinCtx c,void *ctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_iPLUS"
 PetscErrorCode pTatinModelRegister_iPLUS(void)
 {
     iPLUSCtx       *data;

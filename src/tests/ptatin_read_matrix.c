@@ -35,8 +35,6 @@
 
 static const char help[] = "Driver to read petsc matrices";
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

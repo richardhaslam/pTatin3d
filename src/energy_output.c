@@ -47,8 +47,6 @@
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "_apply_threshold"
 PetscErrorCode _apply_threshold(PetscScalar x[],const PetscInt N,const PetscScalar threshold,const PetscScalar value)
 {
 	PetscInt i;
@@ -64,8 +62,6 @@ PetscErrorCode _apply_threshold(PetscScalar x[],const PetscInt N,const PetscScal
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshEnergyVTS_ascii"
 PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Quadrature Q,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
@@ -232,8 +228,6 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_ascii(DM daT,Quadrature Q,Vec X,const c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshEnergyVTS_binary"
 PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Quadrature Q,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
@@ -416,8 +410,6 @@ PetscErrorCode pTatinOutputMeshEnergyVTS_binary(DM daT,Quadrature Q,Vec X,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshEnergyVTS"
 PetscErrorCode pTatinOutputMeshEnergyVTS(DM daT,Quadrature Q,Vec X,PetscBool binary,const char name[])
 {
 	PetscErrorCode ierr;
@@ -431,8 +423,6 @@ PetscErrorCode pTatinOutputMeshEnergyVTS(DM daT,Quadrature Q,Vec X,PetscBool bin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAQ1PieceExtendForGhostLevelZero"
 PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level, DM da, const char local_file_prefix[] )
 {
 	PetscMPIInt    nproc,rank;
@@ -497,8 +487,6 @@ PetscErrorCode DAQ1PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshEnergyPVTS"
 PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,Quadrature Q,const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -558,8 +546,6 @@ PetscErrorCode pTatinOutputMeshEnergyPVTS(DM daT,Quadrature Q,const char prefix[
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinOutputParaViewMeshEnergy"
 PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Quadrature Q,Vec X,const char path[],const char prefix[])
 {
 	char           *vtkfilename,*filename;
@@ -593,8 +579,6 @@ PetscErrorCode pTatinOutputParaViewMeshEnergy(DM daT,Quadrature Q,Vec X,const ch
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_ModelOutput_Temperature_Energy"
 PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;
@@ -640,8 +624,6 @@ PetscErrorCode pTatin3d_ModelOutput_Temperature_Energy(pTatinCtx ctx,Vec X,const
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dModelOutput_Energy_PetscVec"
 PetscErrorCode pTatin3dModelOutput_Energy_PetscVec(pTatinCtx ctx,PetscBool dm_velocity_data_required,Vec X,const char prefix[])
 {
 	PetscErrorCode ierr;

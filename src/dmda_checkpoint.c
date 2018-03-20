@@ -35,8 +35,6 @@
 #include "dmda_checkpoint.h"
 #include "cjson_utils.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDALoadGlobalVectorFromFile"
 PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 {
 	PetscErrorCode ierr;
@@ -72,8 +70,6 @@ PetscErrorCode DMDALoadGlobalVectorFromFile(DM da,const char name[],Vec *da_x)
 	PetscFunctionReturn(0);	
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMDALoadCoordinatesFromFile"
 PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 {
 	PetscErrorCode ierr;
@@ -102,8 +98,6 @@ PetscErrorCode DMDALoadCoordinatesFromFile(DM da,const char name[])
 	PetscFunctionReturn(0);		
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMDAWriteVectorToFile"
 PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 {
 	char fieldname[PETSC_MAX_PATH_LEN];
@@ -132,8 +126,6 @@ PetscErrorCode DMDAWriteVectorToFile(Vec x,const char name[],PetscBool zip_file)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "VecLoadFromFile"
 PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 {
 	PetscErrorCode ierr;
@@ -161,8 +153,6 @@ PetscErrorCode VecLoadFromFile(Vec x,const char name[])
 	PetscFunctionReturn(0);	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACheckpointWrite"
 PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
 {
   char jfilename[PETSC_MAX_PATH_LEN],cfilename[PETSC_MAX_PATH_LEN];
@@ -381,8 +371,6 @@ PetscErrorCode DMDACheckpointWrite(DM da,const char jprefix[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDAParseLayout_JSON"
 PetscErrorCode _DMDAParseLayout_JSON(cJSON *jdmda,MPI_Comm comm,
                       char prefix[],
                       PetscInt *dim,
@@ -435,8 +423,6 @@ PetscErrorCode _DMDAParseLayout_JSON(cJSON *jdmda,MPI_Comm comm,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDAParsePartition_JSON"
 PetscErrorCode _DMDAParsePartition_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
                                      PetscInt mr[],
                                      PetscInt **lri,PetscInt **lrj,PetscInt **lrk,
@@ -489,8 +475,6 @@ PetscErrorCode _DMDAParsePartition_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_DMDAParseRefine_JSON"
 PetscErrorCode _DMDAParseRefine_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
                                      PetscInt refine[])
 {
@@ -516,8 +500,6 @@ PetscErrorCode _DMDAParseRefine_JSON(cJSON *jdmda,MPI_Comm comm,PetscInt dim,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACheckpointLoad"
 PetscErrorCode DMDACheckpointLoad(MPI_Comm comm,const char jfilename[],DM *_da)
 {
   PetscErrorCode ierr;

@@ -50,8 +50,6 @@
 #include "ptatin3d_energy.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetContext_Energy"
 PetscErrorCode pTatinGetContext_Energy(pTatinCtx ctx,PhysCompEnergy *e)
 {
 	PetscFunctionBegin;
@@ -59,8 +57,6 @@ PetscErrorCode pTatinGetContext_Energy(pTatinCtx ctx,PhysCompEnergy *e)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinContextValid_Energy"
 PetscErrorCode pTatinContextValid_Energy(pTatinCtx ctx,PetscBool *exists)
 {
 	PetscFunctionBegin;
@@ -71,8 +67,6 @@ PetscErrorCode pTatinContextValid_Energy(pTatinCtx ctx,PetscBool *exists)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompCreate_Energy"
 PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 {
 	PetscErrorCode ierr;
@@ -96,8 +90,6 @@ PetscErrorCode pTatinPhysCompCreate_Energy(pTatinCtx user)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompActivate_Energy"
 PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load)
 {
 	PetscErrorCode ierr;
@@ -109,8 +101,6 @@ PetscErrorCode pTatinPhysCompActivate_Energy(pTatinCtx user,PetscBool load)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompAttachData_Energy"
 PetscErrorCode pTatinPhysCompAttachData_Energy(pTatinCtx user,Vec T,Mat A)
 {
 	PhysCompEnergy e;
@@ -130,8 +120,6 @@ PetscErrorCode pTatinPhysCompAttachData_Energy(pTatinCtx user,Vec T,Mat A)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompGetData_Energy"
 PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A)
 {
 	PhysCompEnergy e;
@@ -151,8 +139,6 @@ PetscErrorCode pTatinPhysCompGetData_Energy(pTatinCtx user,Vec *T,Mat *A)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointQuadraturePointProjectionC0_Q2Energy"
 PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucket materialpoint_db,MaterialPointField field,const int member,Quadrature Q)
 {
 	DMDAE          dae,dae_clone;
@@ -304,8 +290,6 @@ PetscErrorCode MaterialPointQuadraturePointProjectionC0_Q2Energy(DM da,DataBucke
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinPhysCompEnergy_MPProjectionQ1"
 PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
 {
 	PhysCompEnergy energy;
@@ -333,8 +317,6 @@ PetscErrorCode pTatinPhysCompEnergy_MPProjectionQ1(pTatinCtx ctx)
  u - V = u - (X_current - X_old)/dt
 			 = (dt.u - X_current + X_old)/dt
 */
-#undef __FUNCT__  
-#define __FUNCT__ "_pTatinPhysCompEnergy_UpdateALEVelocity"
 PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,PetscReal dt)
 {
 	Vec            coordinates;
@@ -360,8 +342,6 @@ PetscErrorCode _pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompEnergy energy,Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompEnergy_UpdateALEVelocity"
 PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,PhysCompEnergy energy,PetscReal dt)
 {
 	DM             cdaT;
@@ -384,8 +364,6 @@ PetscErrorCode pTatinPhysCompEnergy_UpdateALEVelocity(PhysCompStokes s,Vec X,Phy
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompEnergy_Update"
 PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T)
 {
 	Vec            coords;
@@ -407,8 +385,6 @@ PetscErrorCode pTatinPhysCompEnergy_Update(PhysCompEnergy e,DM dav,Vec T)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompEnergy_Initialise"
 PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T)
 {
 	Vec            coords;
@@ -428,8 +404,6 @@ PetscErrorCode pTatinPhysCompEnergy_Initialise(PhysCompEnergy e,Vec T)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinPhysCompEnergy_ComputeTimestep"
 PetscErrorCode pTatinPhysCompEnergy_ComputeTimestep(PhysCompEnergy energy,Vec X,PetscReal *timestep)
 {
 	Vec         philoc,Vloc,coordsloc;

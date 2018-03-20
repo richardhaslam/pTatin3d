@@ -53,8 +53,6 @@ PetscLogEvent PTATIN_MaterialPointAdvCommunication;
 PetscLogEvent PTATIN_MaterialPointAdvRemoval;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointStd_AdvectEuler"
 PetscErrorCode MaterialPointStd_AdvectEuler(DM da,Vec velocity,PetscReal step,int npoints,MPntStd marker[])
 {
 	Vec             Lvelocity;
@@ -110,8 +108,6 @@ PetscErrorCode MaterialPointStd_AdvectEuler(DM da,Vec velocity,PetscReal step,in
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmUpdatePosition_ComputeCourantStep"
 PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscReal *step)
 {
 	Vec             Lvelocity, gcoords;
@@ -202,8 +198,6 @@ PetscErrorCode SwarmUpdatePosition_ComputeCourantStep(DM da,Vec velocity,PetscRe
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmUpdateProperties_MPntStd"
 PetscErrorCode SwarmUpdateProperties_MPntStd(DataBucket db,pTatinCtx ctx,Vec X)
 {
 	BTruth found;
@@ -217,8 +211,6 @@ PetscErrorCode SwarmUpdateProperties_MPntStd(DataBucket db,pTatinCtx ctx,Vec X)
 }
 
 /* ADVECT MARKERS */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointStd_UpdateGlobalCoordinates"
 PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates(DataBucket materialpoints,DM dav,Vec velocity,PetscReal dt)
 {
 	PetscErrorCode ierr;
@@ -240,8 +232,6 @@ PetscErrorCode MaterialPointStd_UpdateGlobalCoordinates(DataBucket materialpoint
 }
 
 /* UPDATE local coordinates */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointStd_UpdateLocalCoordinates"
 PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints,DM dav)
 {
 	PetscErrorCode ierr;
@@ -294,8 +284,6 @@ PetscErrorCode MaterialPointStd_UpdateLocalCoordinates(DataBucket materialpoints
 }
 
 /* remove all points which didn't find a home */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointStd_Removal"
 PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
 {
 	int            p,npoints,escaped;
@@ -340,8 +328,6 @@ PetscErrorCode MaterialPointStd_Removal(DataBucket materialpoints)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SwarmUpdatePosition_Communication_Generic"
 PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,DataEx de)
 {
 	DataField      PField_std;
@@ -584,8 +570,6 @@ PetscErrorCode SwarmUpdatePosition_Communication_Generic(DataBucket db,DM da,Dat
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialPointStd_UpdateCoordinates"
 PetscErrorCode MaterialPointStd_UpdateCoordinates(DataBucket materialpoints,DM dav,DataEx de)
 {
 	PetscErrorCode ierr;

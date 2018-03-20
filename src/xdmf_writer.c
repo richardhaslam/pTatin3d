@@ -19,8 +19,6 @@ const char *XDMFDataItemEndianNames[] = { "Native" , "Big" , "Little" , 0 };
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "_XDMFMeta_XDMFOpenClose"
 PetscErrorCode _XDMFMeta_XDMFOpenClose(MPI_Comm comm,const char name[],PetscBool open,PetscViewer *v)
 {
     PetscErrorCode ierr;
@@ -40,8 +38,6 @@ PetscErrorCode _XDMFMeta_XDMFOpenClose(MPI_Comm comm,const char name[],PetscBool
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_XDMFMeta_DomainOpenClose"
 PetscErrorCode _XDMFMeta_DomainOpenClose(PetscViewer v,const char name[],PetscBool open)
 {
     if (open) {
@@ -55,8 +51,6 @@ PetscErrorCode _XDMFMeta_DomainOpenClose(PetscViewer v,const char name[],PetscBo
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_XDMFMeta_GridOpenClose_DMDA"
 PetscErrorCode _XDMFMeta_GridOpenClose_DMDA(PetscViewer v,DM da,const char suffix[],const char meshname[],XDMFDataItemFormat format,PetscBool open)
 {
     PetscErrorCode ierr;
@@ -136,8 +130,6 @@ PetscErrorCode _XDMFMeta_GridOpenClose_DMDA(PetscViewer v,DM da,const char suffi
  format=Binary Endian=Big
  
 */
-#undef __FUNCT__
-#define __FUNCT__ "_XDMFMeta_AddAttributeField_DMDA"
 PetscErrorCode _XDMFMeta_AddAttributeField_DMDA(PetscViewer v,DM da,Vec x,
                                                const char suffix[],const char meshname[],const char fieldname[],
                                                XDMFCenter c_type,XDMFDataItemFormat format)
@@ -255,8 +247,6 @@ PetscErrorCode _XDMFMeta_AddAttributeField_DMDA(PetscViewer v,DM da,Vec x,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFDataWriteField_Generic"
 PetscErrorCode XDMFDataWriteField_Generic(Vec x,
                                            const char path[],const char filename[],
                                            XDMFDataItemFormat format)
@@ -322,8 +312,6 @@ PetscErrorCode XDMFDataWriteField_Generic(Vec x,
  As a work around, I will write a flat vector in the natural
  ordering using VecView() of a standard (non-DM created) vector.
 */
-#undef __FUNCT__
-#define __FUNCT__ "XDMFDataWriteField_GenericDMDA"
 PetscErrorCode XDMFDataWriteField_GenericDMDA(DM dm,Vec x,
                                           const char path[],const char filename[],
                                           XDMFDataItemFormat format)
@@ -381,8 +369,6 @@ PetscErrorCode XDMFDataWriteField_GenericDMDA(DM dm,Vec x,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFWriteAttribute_DMDA"
 PetscErrorCode XDMFWriteAttribute_DMDA(PetscViewer v,DM da,Vec x,
                                const char path[],const char suffix[],const char meshname[],const char fieldname[],
                                XDMFCenter c_type,XDMFDataItemFormat format)
@@ -404,8 +390,6 @@ PetscErrorCode XDMFWriteAttribute_DMDA(PetscViewer v,DM da,Vec x,
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFWriteDataItemByReference_DMDA"
 PetscErrorCode XDMFWriteDataItemByReference_DMDA(PetscViewer v,DM dm,const char fieldname[],const char filename[],XDMFDataItemFormat format)
 {
     PetscInt       ndof,M,N,P;
@@ -427,8 +411,6 @@ PetscErrorCode XDMFWriteDataItemByReference_DMDA(PetscViewer v,DM dm,const char 
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "_XDMFMeta_AddAttributeFunctionField_DMDA"
 PetscErrorCode _XDMFMeta_AddAttributeFunctionField_DMDA(PetscViewer v,const char function[],
                                                 DM da,Vec x,
                                                 const char suffix[],const char meshname[],const char fieldname[],
@@ -497,8 +479,6 @@ PetscErrorCode _XDMFMeta_AddAttributeFunctionField_DMDA(PetscViewer v,const char
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFWriteAttributeFunction_DMDA"
 PetscErrorCode XDMFWriteAttributeFunction_DMDA(PetscViewer v,const char function[],
                                                DM da,Vec x,
                                                const char path[],const char suffix[],const char meshname[],const char fieldname[],
@@ -513,8 +493,6 @@ PetscErrorCode XDMFWriteAttributeFunction_DMDA(PetscViewer v,const char function
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaXDMFOpen"
 PetscErrorCode XDMFMetaXDMFOpen(MPI_Comm comm,const char name[],PetscViewer *v)
 {
     PetscErrorCode ierr;
@@ -524,8 +502,6 @@ PetscErrorCode XDMFMetaXDMFOpen(MPI_Comm comm,const char name[],PetscViewer *v)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaXDMFClose"
 PetscErrorCode XDMFMetaXDMFClose(PetscViewer *v)
 {
     PetscErrorCode ierr;
@@ -535,8 +511,6 @@ PetscErrorCode XDMFMetaXDMFClose(PetscViewer *v)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaDomainOpen"
 PetscErrorCode XDMFMetaDomainOpen(PetscViewer v,const char name[])
 {
     PetscErrorCode ierr;
@@ -547,8 +521,6 @@ PetscErrorCode XDMFMetaDomainOpen(PetscViewer v,const char name[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaDomainClose"
 PetscErrorCode XDMFMetaDomainClose(PetscViewer v)
 {
     PetscErrorCode ierr;
@@ -559,8 +531,6 @@ PetscErrorCode XDMFMetaDomainClose(PetscViewer v)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaWriteTime"
 PetscErrorCode XDMFMetaWriteTime(PetscViewer v,PetscReal value)
 {
     if (!v) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"XDMF file pointer is corrupt"); }
@@ -568,8 +538,6 @@ PetscErrorCode XDMFMetaWriteTime(PetscViewer v,PetscReal value)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaWriteInformationString"
 PetscErrorCode XDMFMetaWriteInformationString(PetscViewer v,const char name[],const char value[])
 {
     if (!v) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"XDMF file pointer is corrupt"); }
@@ -577,8 +545,6 @@ PetscErrorCode XDMFMetaWriteInformationString(PetscViewer v,const char name[],co
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaWriteInformationInt"
 PetscErrorCode XDMFMetaWriteInformationInt(PetscViewer v,const char name[],PetscInt value)
 {
     if (!v) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"XDMF file pointer is corrupt"); }
@@ -586,8 +552,6 @@ PetscErrorCode XDMFMetaWriteInformationInt(PetscViewer v,const char name[],Petsc
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaWriteInformationReal"
 PetscErrorCode XDMFMetaWriteInformationReal(PetscViewer v,const char name[],PetscReal value)
 {
     if (!v) { SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN,"XDMF file pointer is corrupt"); }
@@ -595,8 +559,6 @@ PetscErrorCode XDMFMetaWriteInformationReal(PetscViewer v,const char name[],Pets
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFMetaWriteInformationRealList"
 PetscErrorCode XDMFMetaWriteInformationRealList(PetscViewer v,const char name[],PetscInt n,PetscReal values[])
 {
     PetscInt       i;
@@ -615,8 +577,6 @@ PetscErrorCode XDMFMetaWriteInformationRealList(PetscViewer v,const char name[],
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFGridOpen_DMDA"
 PetscErrorCode XDMFGridOpen_DMDA(PetscViewer v,DM dm,const char path[],const char suffix[],const char meshname[],XDMFDataItemFormat format)
 {
     char           filename[PETSC_MAX_PATH_LEN];
@@ -640,8 +600,6 @@ PetscErrorCode XDMFGridOpen_DMDA(PetscViewer v,DM dm,const char path[],const cha
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "XDMFGridClose_DMDA"
 PetscErrorCode XDMFGridClose_DMDA(PetscViewer v)
 {
     PetscErrorCode ierr;
@@ -652,8 +610,6 @@ PetscErrorCode XDMFGridClose_DMDA(PetscViewer v)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatin3d_StokesOutput_VelocityXDMF"
 PetscErrorCode ptatin3d_StokesOutput_VelocityXDMF(pTatinCtx ctx,Vec X,const char suffix[])
 {
     PhysCompStokes stokes;

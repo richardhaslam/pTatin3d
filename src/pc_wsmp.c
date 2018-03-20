@@ -104,8 +104,6 @@ static PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsm
 static PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp);
 static PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp);
 
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_CheckCSR"
 static PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -179,8 +177,6 @@ static PetscErrorCode PCWSMP_CheckCSR(Mat A,PC_WSMP *wsmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_VecView"
 static PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -207,8 +203,6 @@ static PetscErrorCode PCWSMP_VecView(const char name[],PC_WSMP *wsmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_CSRView"
 static PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
 {
   PetscErrorCode ierr;
@@ -273,8 +267,6 @@ static PetscErrorCode PCWSMP_CSRView(Mat A,int ia[],int ja[],double aij[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Default_MatIsSymmetric"
 static PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
@@ -307,8 +299,6 @@ static PetscErrorCode Default_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_MatIsSymmetric"
 static PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 {
   PetscErrorCode ierr;
@@ -328,8 +318,6 @@ static PetscErrorCode PCWSMP_MatIsSymmetric(Mat A,PetscReal tol,PetscBool *flg)
 }
 
 /* helpers to get AIJ info from sequential and parallel matrices */
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_ExtractUpperTriangular_MatSeqAIJ"
 static PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut,PetscBool reuse,double **_vals)
 {
   PetscErrorCode ierr;
@@ -445,8 +433,6 @@ static PetscErrorCode PCWSMP_ExtractUpperTriangular_MatSeqAIJ(Mat parent,Mat A,i
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ"
 static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
   PetscErrorCode ierr;
@@ -457,8 +443,6 @@ static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatSeqAIJ(Mat A,int *_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ"
 static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_nnz_ut,int **_ia_ut,int **_ja_ut)
 {
   PetscErrorCode ierr;
@@ -485,8 +469,6 @@ static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularIJ_MatMPIAIJ(Mat A,int *_
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "xxx_PCWSMP_ExtractUpperTriangularAIJ"
 static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse,int nnz_ut,double **_vals_ut)
 {
   PetscErrorCode ierr;
@@ -518,8 +500,6 @@ static PetscErrorCode xxx_PCWSMP_ExtractUpperTriangularAIJ(Mat A,PetscBool reuse
 }
 
 /* wrappers for WSMP to hide some ugly #if and if sequential type statements */
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_call_wsmp"
 static PetscErrorCode PCWSMP_call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
@@ -556,8 +536,6 @@ static PetscErrorCode PCWSMP_call_wsmp(MPI_Comm comm,PC_WSMP *wsmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_call_wsffree"
 static PetscErrorCode PCWSMP_call_wsffree(PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
@@ -576,8 +554,6 @@ static PetscErrorCode PCWSMP_call_wsffree(PC_WSMP *wsmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_call_wsmp_clear"
 static PetscErrorCode PCWSMP_call_wsmp_clear(PC_WSMP *wsmp)
 {
   PetscFunctionBegin;
@@ -606,8 +582,6 @@ static PetscErrorCode PCWSMP_call_wsmp_clear(PC_WSMP *wsmp)
  commout = fcomm
  
  
- #undef __FUNCT__
- #define __FUNCT__ "call_wsmp_wsetmpicomm"
  PetscErrorCode call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
  {
  integer ierr,my_rank,size
@@ -618,8 +592,6 @@ static PetscErrorCode PCWSMP_call_wsmp_clear(PC_WSMP *wsmp)
  */
 
 /*
-#undef __FUNCT__
-#define __FUNCT__ "PCWSMP_call_wsmp_wsetmpicomm"
 static PetscErrorCode PCWSMP_call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 {
 #ifdef TATIN_HAVE_PWSSMP
@@ -637,8 +609,6 @@ static PetscErrorCode PCWSMP_call_wsmp_wsetmpicomm(PC_WSMP *wsmp,MPI_Comm comm)
 */
 
 /* implementations for PC_WSMP */
-#undef __FUNCT__
-#define __FUNCT__ "PCSetUp_WSMP"
 static PetscErrorCode PCSetUp_WSMP(PC pc)
 {
   PetscErrorCode ierr;
@@ -804,8 +774,6 @@ static PetscErrorCode PCSetUp_WSMP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCApply_WSMP"
 static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
@@ -861,8 +829,6 @@ static PetscErrorCode PCApply_WSMP(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCReset_WSMP"
 static PetscErrorCode PCReset_WSMP(PC pc)
 {
   PetscErrorCode   ierr;
@@ -883,8 +849,6 @@ static PetscErrorCode PCReset_WSMP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCDestroy_WSMP"
 static PetscErrorCode PCDestroy_WSMP(PC pc)
 {
   PetscErrorCode ierr;
@@ -897,8 +861,6 @@ static PetscErrorCode PCDestroy_WSMP(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WSMPSetFromOptions_Ordering"
 static PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -961,8 +923,6 @@ static PetscErrorCode WSMPSetFromOptions_Ordering(PC pc,PC_WSMP *wsmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WSMPSetFromOptions_SymbolicFactorization"
 static PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -978,8 +938,6 @@ static PetscErrorCode WSMPSetFromOptions_SymbolicFactorization(PC pc,PC_WSMP *ws
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WSMPSetFromOptions_BackSubstitution"
 static PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -995,8 +953,6 @@ static PetscErrorCode WSMPSetFromOptions_BackSubstitution(PC pc,PC_WSMP *wsmp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WSMPSetFromOptions_IterativeRefinement"
 static PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -1022,8 +978,6 @@ static PetscErrorCode WSMPSetFromOptions_IterativeRefinement(PC pc,PC_WSMP *wsmp
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "WSMPSetFromOptions_NumericFactorization"
 static PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsmp)
 {
   PetscErrorCode ierr;
@@ -1076,8 +1030,6 @@ static PetscErrorCode WSMPSetFromOptions_NumericFactorization(PC pc,PC_WSMP *wsm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetFromOptions_WSMP"
 static PetscErrorCode PCSetFromOptions_WSMP(PetscOptionItems *PetscOptionsObject,PC pc)
 {
   PetscErrorCode ierr;
@@ -1111,8 +1063,6 @@ static PetscErrorCode PCSetFromOptions_WSMP(PetscOptionItems *PetscOptionsObject
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PCView_WSMP"
 static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
 {
   PetscErrorCode ierr;
@@ -1189,8 +1139,6 @@ static PetscErrorCode PCView_WSMP(PC pc,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "PCCreate_WSMP"
 PetscErrorCode PCCreate_WSMP(PC pc)
 {
   PetscErrorCode ierr;

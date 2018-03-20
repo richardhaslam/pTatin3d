@@ -46,8 +46,6 @@
 
 const char MODEL_NAME[] = "model_GENE3D_";
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Gene3D"
 PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
 {
     ModelGENE3DCtx    *data = (ModelGENE3DCtx*)ctx;
@@ -271,8 +269,6 @@ PetscErrorCode ModelInitialize_Gene3D(pTatinCtx c,void *ctx)
     PetscFunctionReturn (0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Gene3D"
 PetscErrorCode ModelApplyBoundaryCondition_Gene3D(pTatinCtx user,void *ctx)
 {
     ModelGENE3DCtx *data = (ModelGENE3DCtx*)ctx;
@@ -362,8 +358,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Gene3D(pTatinCtx user,void *ctx)
     PetscFunctionReturn (0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Gene3D"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Gene3D(pTatinCtx c,void *ctx)
 {
     PetscFunctionBegin;
@@ -373,8 +367,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Gene3D(pTatinCtx c,void *ctx)
     PetscFunctionReturn (0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Gene3D"
 PetscErrorCode ModelApplyInitialMeshGeometry_Gene3D(pTatinCtx c,void *ctx)
 {
     ModelGENE3DCtx *data = (ModelGENE3DCtx*)ctx;
@@ -390,8 +382,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Gene3D(pTatinCtx c,void *ctx)
 
 //=====================================================================================================================================
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelSetMarkerIndexLayeredCake_Gene3D"
 PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
@@ -476,8 +466,6 @@ PetscErrorCode ModelSetMarkerIndexLayeredCake_Gene3D (pTatinCtx c,void *ctx)
 }
 
 //===============================================================================================================================
-#undef __FUNCT__
-#define __FUNCT__ "ModelSetMarkerIndexFromMap_Gene3D"
 PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
 /* define phase index on material points from a map file extruded in z direction */
 {
@@ -579,8 +567,6 @@ PetscErrorCode ModelSetMarkerIndexFromMap_Gene3D(pTatinCtx c,void *ctx)
 
 //======================================================================================================================================
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelSetInitialStokesVariableOnMarker_Gene3D"
 PetscErrorCode ModelSetInitialStokesVariableOnMarker_Gene3D(pTatinCtx c,void *ctx)
 /* define properties on material points */
 {
@@ -625,8 +611,6 @@ PetscErrorCode ModelSetInitialStokesVariableOnMarker_Gene3D(pTatinCtx c,void *ct
 
 //======================================================================================================================================
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelGene3DInit"
 PetscErrorCode ModelGene3DInit(DataBucket db)
 {
     int                p,n_mp_points;
@@ -655,8 +639,6 @@ PetscErrorCode ModelGene3DInit(DataBucket db)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelGene3DCheckPhase"
 PetscErrorCode ModelGene3DCheckPhase(DataBucket db,RheologyConstants *rheology)
 {
     int                p,n_mp_points;
@@ -699,8 +681,6 @@ PetscErrorCode ModelGene3DCheckPhase(DataBucket db,RheologyConstants *rheology)
  2) all markers are assigned a phase index between [0 -- nphases_active-1]
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Gene3D"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3D(pTatinCtx c,void *ctx)
 {
     PetscErrorCode ierr;
@@ -741,8 +721,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Gene3D(pTatinCtx c,void *ctx)
 
 
 //======================================================================================================================================
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Gene3D"
 PetscErrorCode ModelApplyUpdateMeshGeometry_Gene3D(pTatinCtx c,Vec X,void *ctx)
 {
     PetscFunctionBegin;
@@ -752,8 +730,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Gene3D(pTatinCtx c,Vec X,void *ctx)
     PetscFunctionReturn (0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Gene3D"
 PetscErrorCode ModelOutput_Gene3D(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
     PetscErrorCode ierr;
@@ -767,8 +743,6 @@ PetscErrorCode ModelOutput_Gene3D(pTatinCtx c,Vec X,const char prefix[],void *ct
     PetscFunctionReturn (0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Gene3D"
 PetscErrorCode ModelDestroy_Gene3D(pTatinCtx c,void *ctx)
 {
     ModelGENE3DCtx *data;
@@ -786,8 +760,6 @@ PetscErrorCode ModelDestroy_Gene3D(pTatinCtx c,void *ctx)
     PetscFunctionReturn (0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Gene3D"
 PetscErrorCode pTatinModelRegister_Gene3D(void)
 {
     ModelGENE3DCtx *data;

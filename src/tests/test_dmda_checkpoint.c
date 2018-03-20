@@ -43,8 +43,6 @@
 #include "dmda_checkpoint.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_dmda_checkpoint_pack"
 PetscErrorCode test_dmda_checkpoint_pack(void) 
 {
 	DM  da;
@@ -123,8 +121,6 @@ PetscErrorCode test_dmda_checkpoint_pack(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_dmda_checkpoint_load"
 PetscErrorCode test_dmda_checkpoint_load( void ) 
 {
 	DM  da;
@@ -164,8 +160,6 @@ PetscErrorCode test_dmda_checkpoint_load( void )
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "test_DMDACheckPoint"
 PetscErrorCode test_DMDACheckPoint(void)
 {
 	PetscErrorCode ierr;

@@ -38,8 +38,6 @@
 #include "ptatin_version_info.h"
 #include "ptatin_utils.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCreateDirectory"
 PetscErrorCode pTatinCreateDirectory(const char dirname[])
 {
 	PetscMPIInt rank;
@@ -81,8 +79,6 @@ PetscErrorCode pTatinCreateDirectory(const char dirname[])
  PetscPrintf(PETSC_COMM_WORLD,"All opts: %s \n", copts);
  ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,"test.opts",PETSC_FALSE);CHKERRQ(ierr);
  */
-#undef __FUNCT__
-#define __FUNCT__ "pTatinWriteOptionsFile"
 PetscErrorCode pTatinWriteOptionsFile(const char filename[])
 {
 	PetscViewer viewer;
@@ -242,8 +238,6 @@ int ptatin_RandomNumberGetInt(int min,int max)
 	return ri;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetRangeMaximumMemoryUsage"
 PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[])
 {
 	PetscErrorCode ierr;
@@ -265,8 +259,6 @@ PetscErrorCode pTatinGetRangeMaximumMemoryUsage(PetscReal range[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinGetRangeCurrentMemoryUsage"
 PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
 {
 	PetscErrorCode ierr;
@@ -288,8 +280,6 @@ PetscErrorCode pTatinGetRangeCurrentMemoryUsage(PetscReal range[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinTestDirectory"
 PetscErrorCode pTatinTestDirectory(const char dirname[],char mode,PetscBool *_exists)
 {
   PetscMPIInt rank;
@@ -311,8 +301,6 @@ PetscErrorCode pTatinTestDirectory(const char dirname[],char mode,PetscBool *_ex
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinTestFile"
 PetscErrorCode pTatinTestFile(const char filename[],char mode,PetscBool *_exists)
 {
   PetscMPIInt rank;

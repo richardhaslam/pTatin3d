@@ -43,8 +43,6 @@
 #include "dmda_view_petscvtk.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAPerturbCoordinates"
 PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturb)
 {
 	PetscBool flg;
@@ -99,8 +97,6 @@ PetscErrorCode DMDAPerturbCoordinates(DM da,PetscScalar perturb)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_DMDADuplicateLayout"
 PetscErrorCode test_DMDADuplicateLayout(PetscInt nx,PetscInt ny,PetscInt nz)
 {
 	PetscErrorCode ierr;

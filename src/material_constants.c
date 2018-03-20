@@ -35,8 +35,6 @@
 #include "material_constants_energy.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsCreate"
 PetscErrorCode MaterialConstantsCreate(DataBucket *_db)
 {
 	DataBucket db;
@@ -46,8 +44,6 @@ PetscErrorCode MaterialConstantsCreate(DataBucket *_db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsStokesInitialize"
 PetscErrorCode MaterialConstantsStokesInitialize(DataBucket db)
 {
 	
@@ -74,8 +70,6 @@ PetscErrorCode MaterialConstantsStokesInitialize(DataBucket db)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsInitialize"
 PetscErrorCode MaterialConstantsInitialize(DataBucket db)
 {
 	PetscErrorCode ierr;
@@ -95,8 +89,6 @@ PetscErrorCode MaterialConstantsInitialize(DataBucket db)
 }
 
 /* MaterialType */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_MaterialType"
 PetscErrorCode MaterialConstantsSetDefault_MaterialType(DataBucket db)
 {
 	int                        r,nregions;
@@ -119,8 +111,6 @@ PetscErrorCode MaterialConstantsSetDefault_MaterialType(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_MaterialType"
 PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256];
@@ -183,8 +173,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_MaterialType(DataBucket db,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_MaterialType"
 PetscErrorCode MaterialConstantsPrintValues_MaterialType(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -224,8 +212,6 @@ PetscErrorCode MaterialConstantsPrintValues_MaterialType(DataBucket db,const int
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_MaterialType"
 PetscErrorCode MaterialConstantsSetValues_MaterialType(DataBucket db,const int region_id,PetscInt visc_t,PetscInt plast_t,PetscInt soft_t,PetscInt dens_t)
 {
 	DataField                    PField;
@@ -261,8 +247,6 @@ PetscErrorCode MaterialConstantsSetValues_MaterialType(DataBucket db,const int r
 }
 
 /* DensityConst */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_DensityConst"
 PetscErrorCode MaterialConstantsSetDefault_DensityConst(DataBucket db)
 {
 	int                          r,nregions;
@@ -282,8 +266,6 @@ PetscErrorCode MaterialConstantsSetDefault_DensityConst(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_DensityConst"
 PetscErrorCode MaterialConstantsSetFromOptions_DensityConst(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256];
@@ -316,8 +298,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityConst(DataBucket db,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_DensityConst"
 PetscErrorCode MaterialConstantsPrintValues_DensityConst(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -341,8 +321,6 @@ PetscErrorCode MaterialConstantsPrintValues_DensityConst(DataBucket db,const int
   
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_DensityConst"
 PetscErrorCode MaterialConstantsSetValues_DensityConst(DataBucket db,const int region_id,PetscReal density)
 {
 	DataField                    PField;
@@ -362,8 +340,6 @@ PetscErrorCode MaterialConstantsSetValues_DensityConst(DataBucket db,const int r
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_DensityConst"
 PetscErrorCode MaterialConstantsScaleValues_DensityConst(DataBucket db,const int region_id,PetscReal rho_star)
 {
 	DataField                    PField;
@@ -387,8 +363,6 @@ PetscErrorCode MaterialConstantsScaleValues_DensityConst(DataBucket db,const int
 
 
 /* DensityBoussinesq */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_DensityBoussinesq"
 PetscErrorCode MaterialConstantsSetDefault_DensityBoussinesq(DataBucket db)
 {
 	int                            r,nregions;
@@ -410,8 +384,6 @@ PetscErrorCode MaterialConstantsSetDefault_DensityBoussinesq(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_DensityBoussinesq"
 PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                            opt_name[256];
@@ -462,8 +434,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_DensityBoussinesq(DataBucket db,c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_DensityBoussinesq"
 PetscErrorCode MaterialConstantsPrintValues_DensityBoussinesq(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -495,8 +465,6 @@ PetscErrorCode MaterialConstantsPrintValues_DensityBoussinesq(DataBucket db,cons
     
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_DensityBoussinesq"
 PetscErrorCode MaterialConstantsSetValues_DensityBoussinesq(DataBucket db,const int region_id,PetscReal density,PetscReal alpha,PetscReal beta)
 {
 	DataField                       PField;
@@ -522,8 +490,6 @@ PetscErrorCode MaterialConstantsSetValues_DensityBoussinesq(DataBucket db,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_DensityBoussinesq"
 PetscErrorCode MaterialConstantsScaleValues_DensityBoussinesq(DataBucket db,const int region_id,PetscReal rho_star,PetscReal sigma_star)
 {
 	DataField                       PField;
@@ -558,8 +524,6 @@ PetscErrorCode MaterialConstantsScaleValues_DensityBoussinesq(DataBucket db,cons
 
 
 /* ViscosityConst */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_ViscosityConst"
 PetscErrorCode MaterialConstantsSetDefault_ViscosityConst(DataBucket db)
 {
 	int                          r,nregions;
@@ -579,8 +543,6 @@ PetscErrorCode MaterialConstantsSetDefault_ViscosityConst(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityConst"
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityConst(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256];
@@ -613,8 +575,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityConst(DataBucket db,cons
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_ViscosityConst"
 PetscErrorCode MaterialConstantsPrintValues_ViscosityConst(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -641,8 +601,6 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityConst(DataBucket db,const i
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_ViscosityConst"
 PetscErrorCode MaterialConstantsSetValues_ViscosityConst(DataBucket db,const int region_id,PetscReal viscosity)
 {
 	DataField                    PField;
@@ -662,8 +620,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityConst(DataBucket db,const int
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_ViscosityConst"
 PetscErrorCode MaterialConstantsScaleValues_ViscosityConst(DataBucket db,const int region_id,PetscReal eta_star)
 {
 	DataField                    PField;
@@ -685,8 +641,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityConst(DataBucket db,const i
 }
 
 /* ViscosityZ */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_ViscosityZ"
 PetscErrorCode MaterialConstantsSetDefault_ViscosityZ(DataBucket db)
 {
 	int                          r,nregions;
@@ -708,8 +662,6 @@ PetscErrorCode MaterialConstantsSetDefault_ViscosityZ(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityZ"
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityZ(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256];
@@ -758,8 +710,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityZ(DataBucket db,const ch
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_ViscosityZ"
 PetscErrorCode MaterialConstantsPrintValues_ViscosityZ(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -793,8 +743,6 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityZ(DataBucket db,const int r
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_ViscosityZ"
 PetscErrorCode MaterialConstantsSetValues_ViscosityZ(DataBucket db,const int region_id,PetscReal eta0,PetscReal zeta,PetscReal zref)
 {
 	DataField                    PField;
@@ -823,8 +771,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityZ(DataBucket db,const int reg
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_ViscosityZ"
 PetscErrorCode MaterialConstantsScaleValues_ViscosityZ(DataBucket db,const int region_id,PetscReal eta_star,PetscReal L_star)
 {
 	DataField                    PField;
@@ -856,8 +802,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityZ(DataBucket db,const int r
 
 
 /* Viscosity Arrhenius */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_ViscosityArrh"
 PetscErrorCode MaterialConstantsSetDefault_ViscosityArrh(DataBucket db)
 {
 	int                          r,nregions;
@@ -884,8 +828,6 @@ PetscErrorCode MaterialConstantsSetDefault_ViscosityArrh(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityArrh"
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256];
@@ -958,8 +900,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityArrh(DataBucket db,const
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_ViscosityArrh"
 PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -1011,8 +951,6 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityArrh(DataBucket db,const in
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_ViscosityArrh"
 PetscErrorCode MaterialConstantsSetValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal preexpA,PetscReal Ascale,PetscReal entalpy,PetscReal Vmol,PetscReal nexp,PetscReal Tref)
 {
 	DataField                    PField;
@@ -1055,8 +993,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityArrh(DataBucket db,const int 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_ViscosityArrh"
 PetscErrorCode MaterialConstantsScaleValues_ViscosityArrh(DataBucket db,const int region_id,PetscReal eta_star,PetscReal sigma_star)
 {
 	DataField                    PField;
@@ -1079,8 +1015,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityArrh(DataBucket db,const in
 
 
 /* ViscosityFK */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_ViscosityFK"
 PetscErrorCode MaterialConstantsSetDefault_ViscosityFK(DataBucket db)
 {
 	int                          r,nregions;
@@ -1101,8 +1035,6 @@ PetscErrorCode MaterialConstantsSetDefault_ViscosityFK(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_ViscosityFK"
 PetscErrorCode MaterialConstantsSetFromOptions_ViscosityFK(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256];
@@ -1144,8 +1076,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ViscosityFK(DataBucket db,const c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_ViscosityFK"
 PetscErrorCode MaterialConstantsPrintValues_ViscosityFK(DataBucket db,const int region_id)
 {
 	char                         opt_name[256];
@@ -1176,8 +1106,6 @@ PetscErrorCode MaterialConstantsPrintValues_ViscosityFK(DataBucket db,const int 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_ViscosityFK"
 PetscErrorCode MaterialConstantsSetValues_ViscosityFK(DataBucket db,const int region_id,PetscReal eta0,PetscReal theta)
 {
 	DataField                    PField;
@@ -1203,8 +1131,6 @@ PetscErrorCode MaterialConstantsSetValues_ViscosityFK(DataBucket db,const int re
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_ViscosityFK"
 PetscErrorCode MaterialConstantsScaleValues_ViscosityFK(DataBucket db,const int region_id,PetscReal eta_star)
 {
 	DataField                    PField;
@@ -1230,8 +1156,6 @@ PetscErrorCode MaterialConstantsScaleValues_ViscosityFK(DataBucket db,const int 
 /*##########################################################################*/
 
 /* PlasticMises */
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_PlasticMises"
 PetscErrorCode MaterialConstantsSetDefault_PlasticMises(DataBucket db)
 {
 	int                          r,nregions;
@@ -1253,8 +1177,6 @@ PetscErrorCode MaterialConstantsSetDefault_PlasticMises(DataBucket db)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_PlasticMises"
 PetscErrorCode MaterialConstantsSetFromOptions_PlasticMises(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256],*field_name;
@@ -1299,8 +1221,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticMises(DataBucket db,const 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_PlasticMises"
 PetscErrorCode MaterialConstantsPrintValues_PlasticMises(DataBucket db,const int region_id)
 {
 	char                         opt_name[256],*field_name;
@@ -1332,8 +1252,6 @@ PetscErrorCode MaterialConstantsPrintValues_PlasticMises(DataBucket db,const int
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_PlasticMises"
 PetscErrorCode MaterialConstantsSetValues_PlasticMises(DataBucket db,const int region_id,PetscReal yield_stress,PetscReal yield_stress_inf)
 {
 	DataField                    PField;
@@ -1358,8 +1276,6 @@ PetscErrorCode MaterialConstantsSetValues_PlasticMises(DataBucket db,const int r
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_PlasticMises"
 PetscErrorCode MaterialConstantsScaleValues_PlasticMises(DataBucket db,const int region_id,PetscReal stress_star)
 {
 	DataField                    PField;
@@ -1389,8 +1305,6 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticMises(DataBucket db,const int
 
 
 /*DP*/ 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_PlasticDP"
 PetscErrorCode MaterialConstantsSetDefault_PlasticDP(DataBucket db)
 {
 	int                          r,nregions;
@@ -1415,8 +1329,6 @@ PetscErrorCode MaterialConstantsSetDefault_PlasticDP(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_PlasticDP"
 PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256],*field_name;
@@ -1505,8 +1417,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_PlasticDP(DataBucket db,const cha
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_PlasticDP"
 PetscErrorCode MaterialConstantsPrintValues_PlasticDP(DataBucket db,const int region_id)
 {
 	char                         opt_name[256],*field_name;
@@ -1564,8 +1474,6 @@ PetscErrorCode MaterialConstantsPrintValues_PlasticDP(DataBucket db,const int re
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_PlasticDP"
 PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int region_id,PetscReal friction,PetscReal friction_inf,PetscReal cohesion,PetscReal cohesion_inf,PetscReal tens_cutoff,PetscReal hst_cutoff)
 {
 	DataField                    PField;
@@ -1613,8 +1521,6 @@ PetscErrorCode MaterialConstantsSetValues_PlasticDP(DataBucket db,const int regi
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_PlasticDP"
 PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int region_id, PetscReal stress_star)
 {
 	DataField                    PField;
@@ -1651,8 +1557,6 @@ PetscErrorCode MaterialConstantsScaleValues_PlasticDP(DataBucket db,const int re
 /*######################       SOFTENING LAWS        ########################*/
 /*  NONE OF THEM NEED SCALING FOR THE MOMENT  BUT I AM THINKING ABOUT ONE    */
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_SoftLin"
 PetscErrorCode MaterialConstantsSetDefault_SoftLin(DataBucket db)
 {
 	int                          r,nregions;
@@ -1673,8 +1577,6 @@ PetscErrorCode MaterialConstantsSetDefault_SoftLin(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_SoftLin"
 PetscErrorCode MaterialConstantsSetFromOptions_SoftLin(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256],*field_name;
@@ -1721,8 +1623,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftLin(DataBucket db,const char 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_SoftLin"
 PetscErrorCode MaterialConstantsPrintValues_SoftLin(DataBucket db,const int region_id)
 {
 	char                         opt_name[256],*field_name;
@@ -1755,8 +1655,6 @@ PetscErrorCode MaterialConstantsPrintValues_SoftLin(DataBucket db,const int regi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_SoftLin"
 PetscErrorCode MaterialConstantsSetValues_SoftLin(DataBucket db,const int region_id,PetscReal emin,PetscReal emax)
 {
 	DataField                    PField;
@@ -1783,8 +1681,6 @@ PetscErrorCode MaterialConstantsSetValues_SoftLin(DataBucket db,const int region
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefault_SoftExpo"
 PetscErrorCode MaterialConstantsSetDefault_SoftExpo(DataBucket db)
 {
 	int                          r,nregions;
@@ -1805,8 +1701,6 @@ PetscErrorCode MaterialConstantsSetDefault_SoftExpo(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_SoftExpo"
 PetscErrorCode MaterialConstantsSetFromOptions_SoftExpo(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	char                         opt_name[256],*field_name;
@@ -1853,8 +1747,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_SoftExpo(DataBucket db,const char
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_SoftExpo"
 PetscErrorCode MaterialConstantsPrintValues_SoftExpo(DataBucket db,const int region_id)
 {
 	char                         opt_name[256],*field_name;
@@ -1887,8 +1779,6 @@ PetscErrorCode MaterialConstantsPrintValues_SoftExpo(DataBucket db,const int reg
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_SoftExpo"
 PetscErrorCode MaterialConstantsSetValues_SoftExpo(DataBucket db,const int region_id,PetscReal emin,PetscReal efold)
 {
 	DataField                    PField;
@@ -1923,8 +1813,6 @@ PetscErrorCode MaterialConstantsSetValues_SoftExpo(DataBucket db,const int regio
 
 /*###################### GENERAL STUFF FOR CONSTANTS ########################*/
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsReportParseError"
 PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const char field_name[],const int region)
 {
 	PetscFunctionBegin;
@@ -1937,8 +1825,6 @@ PetscErrorCode MaterialConstantsReportParseError(const char model_name[],const c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetDefaults"
 PetscErrorCode MaterialConstantsSetDefaults(DataBucket db)
 {
 	PetscErrorCode ierr;
@@ -1959,8 +1845,6 @@ PetscErrorCode MaterialConstantsSetDefaults(DataBucket db)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions"
 PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_name[],const int region_id,PetscBool essential)
 {
 	DataField                    PField;
@@ -2057,8 +1941,6 @@ PetscErrorCode MaterialConstantsSetFromOptions(DataBucket db,const char model_na
 	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleAll"
 PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,PetscReal L_star, PetscReal U_star,PetscReal t_star,PetscReal eta_star,PetscReal rho_star,PetscReal P_star)
 {
 	DataField                    PField;
@@ -2152,8 +2034,6 @@ PetscErrorCode MaterialConstantsScaleAll(DataBucket db,const int region_id,Petsc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintAll"
 PetscErrorCode MaterialConstantsPrintAll(DataBucket db,const int region_id)
 {
 	DataField                    PField;

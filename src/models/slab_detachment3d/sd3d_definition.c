@@ -70,8 +70,6 @@ typedef struct {
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_SD3D"
 PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
 {
 	SD3DCtx            *modeldata = (SD3DCtx*)modelctx;
@@ -253,8 +251,6 @@ PetscErrorCode ModelInitialize_SD3D(pTatinCtx ptatinctx,void *modelctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_SD3D"
 PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *modelctx)
 {
 	SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
@@ -283,8 +279,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_SD3D(pTatinCtx ptatinctx,void *mode
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3D_InsertSlabEdge"
 PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBucket materialpoint_db,SD3DCtx *modeldata)
 {
 	MPAccess         mpX;
@@ -409,8 +403,6 @@ PetscErrorCode SD3D_InsertSlabEdge(DataBucket materialconstants_db,DM dav,DataBu
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_SD3D"
 PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
 {
 	SD3DCtx          *data = (SD3DCtx*)ctx;
@@ -585,8 +577,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_SD3D(pTatinCtx c,void *ctx)
 }
 
 /* velocity bcs */
-#undef __FUNCT__
-#define __FUNCT__ "SD3D_VelocityBC"
 PetscErrorCode SD3D_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,SD3DCtx *modeldata)
 {
 	PetscErrorCode ierr;
@@ -618,8 +608,6 @@ PetscErrorCode SD3D_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,SD3DCtx 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_SD3D"
 PetscErrorCode ModelApplyBoundaryCondition_SD3D(pTatinCtx ptatinctx,void *modelctx)
 {
 	SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
@@ -638,8 +626,6 @@ PetscErrorCode ModelApplyBoundaryCondition_SD3D(pTatinCtx ptatinctx,void *modelc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_SD3D"
 PetscErrorCode ModelApplyBoundaryConditionMG_SD3D(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx ptatinctx,void *modelctx)
 {
 	SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
@@ -655,8 +641,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_SD3D(PetscInt nl,BCList bclist[],DM
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeDs"
 PetscErrorCode SD3DOutput_ComputeDs(DataBucket db,PetscReal *Ds)
 {
     PetscReal gmin[3],gmax[3];
@@ -670,8 +654,6 @@ PetscErrorCode SD3DOutput_ComputeDs(DataBucket db,PetscReal *Ds)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeWDn_minX"
 PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *Dn)
 {
     PetscBool      coord_mask[] = { PETSC_TRUE, PETSC_FALSE, PETSC_FALSE };
@@ -715,8 +697,6 @@ PetscErrorCode SD3DOutput_ComputeWDn_minX(DataBucket db,PetscReal *W,PetscReal *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeWDn_backface_minX"
 PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,PetscReal *Dn)
 {
     PetscBool      coord_mask[] = { PETSC_TRUE, PETSC_FALSE, PETSC_FALSE };
@@ -760,8 +740,6 @@ PetscErrorCode SD3DOutput_ComputeWDn_backface_minX(DataBucket db,PetscReal *W,Pe
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeWDn_frontface_minZ"
 PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,PetscReal *Dn)
 {
     PetscBool      coord_mask[] = { PETSC_FALSE, PETSC_FALSE, PETSC_TRUE };
@@ -805,8 +783,6 @@ PetscErrorCode SD3DOutput_ComputeWDn_frontface_minZ(DataBucket db,PetscReal *W,P
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeZrange"
 PetscErrorCode SD3DOutput_ComputeZrange(DM dav,PetscReal range[])
 {
     PetscReal gmin[3],gmax[3];
@@ -820,8 +796,6 @@ PetscErrorCode SD3DOutput_ComputeZrange(DM dav,PetscReal range[])
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeVrms"
 PetscErrorCode SD3DOutput_ComputeVrms(DM dav,Vec v,PetscReal *volume,PetscReal *vrms)
 {
     PetscReal v2,vol,VRMS;
@@ -836,8 +810,6 @@ PetscErrorCode SD3DOutput_ComputeVrms(DM dav,Vec v,PetscReal *volume,PetscReal *
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SD3DOutput_ComputeViscousDissipation"
 PetscErrorCode SD3DOutput_ComputeViscousDissipation(pTatinCtx ptatinctx,PhysCompStokes stokes,Vec X,PetscReal *_value)
 {
     DM              stokes_pack,dav,dap;
@@ -882,8 +854,6 @@ PetscErrorCode SD3DOutput_ComputeViscousDissipation(pTatinCtx ptatinctx,PhysComp
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_SD3D"
 PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx)
 {
 	SD3DCtx          *modeldata = (SD3DCtx*)modelctx;
@@ -1059,8 +1029,6 @@ PetscErrorCode ModelOutput_SD3D(pTatinCtx ptatinctx,Vec X,const char prefix[],vo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_SD3D"
 PetscErrorCode ModelDestroy_SD3D(pTatinCtx c,void *ctx)
 {
 	SD3DCtx *data = (SD3DCtx*)ctx;
@@ -1074,8 +1042,6 @@ PetscErrorCode ModelDestroy_SD3D(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_SD3D"
 PetscErrorCode pTatinModelRegister_SD3D(void)
 {
 	SD3DCtx         *data;

@@ -74,8 +74,6 @@ typedef struct {
 } AuuMultiLevelCtx;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESGetKSP_"
 PetscErrorCode SNESGetKSP_(SNES snes,SNES *this_snes,KSP *this_ksp)
 {
     PetscBool is_ngmres = PETSC_FALSE;
@@ -94,8 +92,6 @@ PetscErrorCode SNESGetKSP_(SNES snes,SNES *this_snes,KSP *this_ksp)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComposeWithMGCtx"
 PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
 {
 	PetscErrorCode ierr;
@@ -109,8 +105,6 @@ PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SNESDestroyMGCtx"
 PetscErrorCode SNESDestroyMGCtx(SNES snes)
 {
 	PetscErrorCode ierr;
@@ -127,8 +121,6 @@ PetscErrorCode SNESDestroyMGCtx(SNES snes)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dStokesKSPConfigureFSGMG"
 PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[],DM dav_hierarchy[])
 {
 	PetscInt k,nsplits;
@@ -184,8 +176,6 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dStokesBuildMeshHierarchy"
 PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_hierarchy[])
 {
 	PetscErrorCode ierr;
@@ -220,8 +210,6 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dStokesReportMeshHierarchy"
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
 {
 	PetscErrorCode ierr;
@@ -293,8 +281,6 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dCreateStokesOperators"
 PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_stokes_field[],
 																						 PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
 																						 BCList u_bclist[],Quadrature volQ[],
@@ -524,8 +510,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
  -pc_fieldsplit_real_diagonal 
  
 */
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3dCreateStokesOperatorsAnestBnest"
 PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx,IS is_stokes_field[],
 																						 PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
 																						 BCList u_bclist[],Quadrature volQ[],
@@ -744,8 +728,6 @@ PetscErrorCode pTatin3dCreateStokesOperatorsAnestBnest(PhysCompStokes stokes_ctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_StokesMGAuu"
 PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -1047,8 +1029,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_nonlinear_viscous_forward_model_driver"
 PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **argv)
 {
 	pTatinCtx       user;
@@ -1743,8 +1723,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **a
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_nonlinear_viscous_forward_model_driver_v1"
 PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char **argv)
 {
 	pTatinCtx       user;
@@ -2535,8 +2513,6 @@ PetscErrorCode pTatin3d_nonlinear_viscous_forward_model_driver_v1(int argc,char 
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "experimental_pTatin3d_nonlinear_viscous_forward_model_driver"
 PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int argc,char **argv)
 {
 	pTatinCtx       user;
@@ -3224,8 +3200,6 @@ PetscErrorCode experimental_pTatin3d_nonlinear_viscous_forward_model_driver(int 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscBool experimental_driver,experimental_driver1;

@@ -44,8 +44,6 @@ typedef struct {
 } AuuMultiLevelCtx;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dStokesBuildMeshHierarchy"
 PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_hierarchy[])
 {
   PetscErrorCode ierr;
@@ -79,8 +77,6 @@ PetscErrorCode pTatin3dStokesBuildMeshHierarchy(DM dav,PetscInt nlevels,DM dav_h
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dStokesReportMeshHierarchy"
 PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarchy[])
 {
   PetscErrorCode ierr;
@@ -127,8 +123,6 @@ PetscErrorCode pTatin3dStokesReportMeshHierarchy(PetscInt nlevels,DM dav_hierarc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dCreateStokesOperators"
 PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_stokes_field[],
                                              PetscInt nlevels,DM dav_hierarchy[],Mat interpolation_v[],
                                              BCList u_bclist[],Quadrature volQ[],
@@ -347,8 +341,6 @@ PetscErrorCode pTatin3dCreateStokesOperators(PhysCompStokes stokes_ctx,IS is_sto
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HMG_SetUp"
 PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
 {
   DM             dav_hierarchy[MAX_MG_LEVELS];
@@ -462,8 +454,6 @@ PetscErrorCode HMG_SetUp(AuuMultiLevelCtx *mlctx, pTatinCtx user)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HMG_Destroy"
 PetscErrorCode HMG_Destroy(AuuMultiLevelCtx *mlctx)
 {
   PetscInt       k;
@@ -497,8 +487,6 @@ PetscErrorCode HMG_Destroy(AuuMultiLevelCtx *mlctx)
   
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "HMGOperator_Destroy"
 PetscErrorCode HMGOperator_Destroy(AuuMultiLevelCtx *mlctx)
 {
   PetscInt       k,nlevels;
@@ -513,8 +501,6 @@ PetscErrorCode HMGOperator_Destroy(AuuMultiLevelCtx *mlctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "HMGOperator_SetUp"
 PetscErrorCode HMGOperator_SetUp(AuuMultiLevelCtx *mlctx,pTatinCtx user,Mat *A,Mat *B)
 {
   OperatorType   level_type[MAX_MG_LEVELS];
@@ -545,8 +531,6 @@ PetscErrorCode HMGOperator_SetUp(AuuMultiLevelCtx *mlctx,pTatinCtx user,Mat *A,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESComposeWithMGCtx"
 PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
 {
   PetscErrorCode ierr;
@@ -559,8 +543,6 @@ PetscErrorCode SNESComposeWithMGCtx(SNES snes,AuuMultiLevelCtx *mgctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNESDestroyMGCtx"
 PetscErrorCode SNESDestroyMGCtx(SNES snes)
 {
   PetscErrorCode ierr;
@@ -575,8 +557,6 @@ PetscErrorCode SNESDestroyMGCtx(SNES snes)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin3dStokesKSPConfigureFSGMG"
 PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat operatorA11[],Mat operatorB11[],Mat interpolation_v[],DM dav_hierarchy[])
 {
   PetscInt       k,nsplits;
@@ -623,8 +603,6 @@ PetscErrorCode pTatin3dStokesKSPConfigureFSGMG(KSP ksp,PetscInt nlevels,Mat oper
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian_StokesMGAuu"
 PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -884,8 +862,6 @@ PetscErrorCode FormJacobian_StokesMGAuu(SNES snes,Vec X,Mat A,Mat B,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinNonlinearStokesSolveCreate"
 PetscErrorCode pTatinNonlinearStokesSolveCreate(pTatinCtx user,Mat A,Mat B,Vec F,AuuMultiLevelCtx *mgctx,SNES *s)
 {
   SNES           snes;
@@ -915,8 +891,6 @@ PetscErrorCode pTatinNonlinearStokesSolveCreate(pTatinCtx user,Mat A,Mat B,Vec F
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinNonlinearStokesSolve"
 PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const char stagename[])
 {
   PetscLogDouble time[2];
@@ -949,8 +923,6 @@ PetscErrorCode pTatinNonlinearStokesSolve(pTatinCtx user,SNES snes,Vec X,const c
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GenerateICStateFromModelDefinition"
 PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
 {
   pTatinCtx       user;
@@ -1205,8 +1177,6 @@ PetscErrorCode GenerateICStateFromModelDefinition(pTatinCtx *pctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "LoadICStateFromModelDefinition"
 PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,PetscBool write_checkpoint)
 {
   pTatinCtx       user;
@@ -1341,8 +1311,6 @@ PetscErrorCode LoadICStateFromModelDefinition(pTatinCtx *pctx,Vec *v1,Vec *v2,Pe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DummyRun"
 PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
 {
   PetscInt         k,step0;
@@ -1583,8 +1551,6 @@ PetscErrorCode DummyRun(pTatinCtx pctx,Vec v1,Vec v2)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char *argv[])
 {
   PetscErrorCode ierr;

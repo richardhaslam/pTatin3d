@@ -160,8 +160,6 @@ void MaterialConstantsSetDefaultAll_ConductivityThreshold(
 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_ConductivityThreshold"
 PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char model_name[],const int region_id,EnergyConductivityThreshold _data[],PetscBool essential)
 {
   char                         opt_name[PETSC_MAX_PATH_LEN];
@@ -216,8 +214,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityThreshold(const char 
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_ConductivityThreshold"
 PetscErrorCode MaterialConstantsPrintValues_ConductivityThreshold(const char model_name[],const int region_id,EnergyConductivityThreshold _data[]) 
 {
   EnergyConductivityThreshold *data = &_data[region_id];
@@ -256,8 +252,6 @@ PetscErrorCode MaterialConstantsPrintValues_ConductivityThreshold(const char mod
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_ConductivityThreshold"
 PetscErrorCode MaterialConstantsSetValues_ConductivityThreshold(const int region_id,EnergyConductivityThreshold _data[],
     double k0,
     double k1,
@@ -272,8 +266,6 @@ PetscErrorCode MaterialConstantsSetValues_ConductivityThreshold(const int region
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_ConductivityThreshold"
 PetscErrorCode MaterialConstantsScaleValues_ConductivityThreshold(const int region_id,EnergyConductivityThreshold _data[],
     double k0,
     double k1,

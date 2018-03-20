@@ -42,8 +42,6 @@
 #include "stokes_rheology_lava.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "RheologyConstantsInitialise"
 PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
 {	
   PetscInt p;
@@ -93,8 +91,6 @@ PetscErrorCode RheologyConstantsInitialise(RheologyConstants *R)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_EvaluateRheologyNonlinearitiesMarkers"
 PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {	
   RheologyConstants *rheo;
@@ -197,8 +193,6 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearitiesMarkers(pTatinCtx user,DM da
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_EvaluateRheologyNonlinearities"
 PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
 	PetscErrorCode ierr;
@@ -209,8 +203,6 @@ PetscErrorCode pTatin_EvaluateRheologyNonlinearities(pTatinCtx user,DM dau,Petsc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin_EvaluateCoefficientNonlinearities_Stokes"
 PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,Vec X)
 {
   PetscErrorCode    ierr;
@@ -247,8 +239,6 @@ PetscErrorCode pTatin_EvaluateCoefficientNonlinearities_Stokes(pTatinCtx ptatin,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_StokesCoefficient_UpdateTimeDependentQuantities"
 PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx user,DM dau,PetscScalar u[],DM dap,PetscScalar p[])
 {
   RheologyConstants *rheo;
@@ -306,8 +296,6 @@ PetscErrorCode pTatin_StokesCoefficient_UpdateTimeDependentQuantities(pTatinCtx 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin_UpdateCoefficientTemporalDependence_Stokes"
 PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptatin,Vec X)
 {
   PetscErrorCode    ierr;
@@ -338,8 +326,6 @@ PetscErrorCode pTatin_UpdateCoefficientTemporalDependence_Stokes(pTatinCtx ptati
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatin_ApplyStokesGravityModel"
 PetscErrorCode pTatin_ApplyStokesGravityModel(pTatinCtx ctx)
 {
 	PetscErrorCode    ierr;

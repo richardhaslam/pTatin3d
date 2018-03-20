@@ -269,8 +269,6 @@ void MaterialConstantsSetDefaultAll_EnergyMaterialConstants(
 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_EnergyMaterialConstants"
 PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const char model_name[],const int region_id,EnergyMaterialConstants _data[],PetscBool essential)
 {
   char                         opt_name[PETSC_MAX_PATH_LEN];
@@ -365,8 +363,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_EnergyMaterialConstants(const cha
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_EnergyMaterialConstants"
 PetscErrorCode MaterialConstantsPrintValues_EnergyMaterialConstants(const char model_name[],const int region_id,EnergyMaterialConstants _data[]) 
 {
   EnergyMaterialConstants *data = &_data[region_id];
@@ -421,8 +417,6 @@ PetscErrorCode MaterialConstantsPrintValues_EnergyMaterialConstants(const char m
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_EnergyMaterialConstants"
 PetscErrorCode MaterialConstantsSetValues_EnergyMaterialConstants(const int region_id,EnergyMaterialConstants _data[],
     double alpha,
     double beta,
@@ -445,8 +439,6 @@ PetscErrorCode MaterialConstantsSetValues_EnergyMaterialConstants(const int regi
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_EnergyMaterialConstants"
 PetscErrorCode MaterialConstantsScaleValues_EnergyMaterialConstants(const int region_id,EnergyMaterialConstants _data[],
     double alpha,
     double beta,

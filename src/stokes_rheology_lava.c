@@ -97,8 +97,6 @@ static inline void ComputeSecondInvariant3d(double A[NSD][NSD],double *A2)
 	*A2 = sqrt( 0.5 * sum );	
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "private_EvaluateRheologyNonlinearitiesMarkers_LAVA"
 PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[],DM daT,PetscScalar Tfield[])
 {
 	PetscErrorCode ierr;
@@ -376,8 +374,6 @@ PetscErrorCode private_EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateRheologyNonlinearitiesMarkers_LAVA"
 PetscErrorCode EvaluateRheologyNonlinearitiesMarkers_LAVA(pTatinCtx user,DM dau,PetscScalar ufield[],DM dap,PetscScalar pfield[])
 {
 	PhysCompEnergy energy;

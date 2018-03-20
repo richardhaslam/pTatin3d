@@ -51,8 +51,6 @@ static const char help[] = "Stokes solver using Q2-Pm1 mixed finite elements.\n"
 
 typedef enum { OP_TYPE_REDISC_ASM=0, OP_TYPE_REDISC_MF, OP_TYPE_GALERKIN } OperatorType;
 
-#undef __FUNCT__  
-#define __FUNCT__ "FormJacobian_Stokes"
 PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx         user;
@@ -152,8 +150,6 @@ PetscErrorCode FormJacobian_Stokes(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_material_points"
 PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 {
 	DM        multipys_pack,dav;
@@ -278,8 +274,6 @@ PetscErrorCode pTatin3d_material_points(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_galerkin_mg_material_points"
 PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 {
 	DM        multipys_pack,dav;
@@ -498,8 +492,6 @@ PetscErrorCode pTatin3d_galerkin_mg_material_points(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_gmg_material_points"
 PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 {
 	DM        multipys_pack,dav;
@@ -841,8 +833,6 @@ PetscErrorCode pTatin3d_gmg_material_points(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatin3d_gmg2_material_points"
 PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 {
 	DM        multipys_pack,dav,dap;
@@ -1405,8 +1395,6 @@ PetscErrorCode pTatin3d_gmg2_material_points(int argc,char **argv)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

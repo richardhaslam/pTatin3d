@@ -54,8 +54,6 @@
  Lx[0] = 0.06 / char_length;  Lx[1] = 0.015 / char_length;   Lx[2] = 0.3 / char_length;
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_CreateSlabGeometry_Standard"
 PetscErrorCode iPLUS_CreateSlabGeometry_Standard(iPLUSCtx *data)
 {
     GeometryObject plate,tip;
@@ -84,8 +82,6 @@ PetscErrorCode iPLUS_CreateSlabGeometry_Standard(iPLUSCtx *data)
 }
 
 /* ------------- Schellart, G3, 2008 slab geometry ------------- */
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_CreateSlabGeometry_Schellart_G3_2008"
 PetscErrorCode iPLUS_CreateSlabGeometry_Schellart_G3_2008(iPLUSCtx *data)
 {
     GeometryObject plate,tip;
@@ -127,8 +123,6 @@ PetscErrorCode iPLUS_CreateSlabGeometry_Schellart_G3_2008(iPLUSCtx *data)
 }
 
 /* ------------- G3, 2014 slab geometry ------------- */
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_CreateSlabGeometry_G3_2014"
 PetscErrorCode iPLUS_CreateSlabGeometry_G3_2014(iPLUSCtx *data)
 {
     GeometryObject plate,tip;
@@ -165,8 +159,6 @@ PetscErrorCode iPLUS_CreateSlabGeometry_G3_2014(iPLUSCtx *data)
 }
 
 /* ------------- Li & Ribe, JGR, 2012 slab geometry ------------- */
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_CreateSlabGeometry_LiRibe_JGR_2012"
 PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
 {
     GeometryObject plate,tail,nose;
@@ -289,8 +281,6 @@ PetscErrorCode iPLUS_CreateSlabGeometry_LiRibe_JGR_2012(iPLUSCtx *data)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_DefineSlabMaterial"
 PetscErrorCode iPLUS_DefineSlabMaterial(DM dav,DataBucket materialpoint_db,iPLUSCtx *data)
 {
     MPAccess       mpX;
@@ -319,8 +309,6 @@ PetscErrorCode iPLUS_DefineSlabMaterial(DM dav,DataBucket materialpoint_db,iPLUS
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "iPLUS_CreateSlabGeometry"
 PetscErrorCode iPLUS_CreateSlabGeometry(iPLUSCtx *data)
 {
     PetscErrorCode ierr;

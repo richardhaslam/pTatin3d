@@ -240,8 +240,6 @@ static __global__ void set_zero_CUDA_kernel(PetscScalar *Yu, PetscInt localsize)
 
 extern "C" {
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11SetUp_CUDA"
 PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
 {
   PetscErrorCode ierr;
@@ -255,8 +253,6 @@ PetscErrorCode MFA11SetUp_CUDA(MatA11MF mf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11CUDA_SetUp"
 PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA cudactx)
 {
     PetscErrorCode ierr;
@@ -291,8 +287,6 @@ PetscErrorCode MFA11CUDA_SetUp(MFA11CUDA cudactx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11Destroy_CUDA"
 PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
 {
   PetscErrorCode ierr;
@@ -307,8 +301,6 @@ PetscErrorCode MFA11Destroy_CUDA(MatA11MF mf)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFA11CUDA_CleanUp"
 PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA cudactx)
 {
     PetscErrorCode ierr;
@@ -330,8 +322,6 @@ PetscErrorCode MFA11CUDA_CleanUp(MFA11CUDA cudactx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CopyTo_A11_CUDA"
 PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *ufield,const PetscReal *LA_gcoords,const PetscReal *gaussdata_host,PetscInt nel,PetscInt nen_u,const PetscInt *elnidx_u,PetscInt nnodes_local)
 {
   PetscErrorCode ierr;
@@ -441,8 +431,6 @@ PetscErrorCode CopyTo_A11_CUDA(MatA11MF mf,MFA11CUDA cudactx,const PetscScalar *
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ProcessElements_A11_CUDA"
 PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscInt localsize)
 {
   PetscErrorCode ierr;
@@ -457,8 +445,6 @@ PetscErrorCode ProcessElements_A11_CUDA(MFA11CUDA cudactx,PetscInt nen_u,PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CopyFrom_A11_CUDA"
 PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt localsize)
 {
   PetscErrorCode ierr;
@@ -468,8 +454,6 @@ PetscErrorCode CopyFrom_A11_CUDA(MFA11CUDA cudactx,PetscScalar *Yu,PetscInt loca
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_CUDA"
 PetscErrorCode MFStokesWrapper_A11_CUDA(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
   PetscErrorCode          ierr;

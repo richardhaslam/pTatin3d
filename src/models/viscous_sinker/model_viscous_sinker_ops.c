@@ -55,8 +55,6 @@
 #include "viscous_sinker_ctx.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_ViscousSinker"
 PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -136,8 +134,6 @@ PetscErrorCode ModelInitialize_ViscousSinker(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_ViscousSinker"
 PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -394,8 +390,6 @@ PetscErrorCode ModelApplyBoundaryCondition_ViscousSinker(pTatinCtx user,void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_ViscousSinker"
 PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -543,8 +537,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_ViscousSinker(PetscInt nl,BCList bc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_ViscousSinker"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -554,8 +546,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_ViscousSinker(pTatinCtx c,voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_ViscousSinker"
 PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -609,8 +599,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_ViscousSinker(pTatinCtx c,void *ctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion"
 PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(pTatinCtx c,ModelViscousSinkerCtx *data)
 {
 	int                    p,n_mp_points;
@@ -696,8 +684,6 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_SingleInclusion(pTatin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "compute_inclusion_origins"
 PetscErrorCode compute_inclusion_origins(PetscInt ninclusions,PetscReal rmax,PetscReal Lx,PetscReal Ly,PetscReal Lz,
 																				 PetscReal **_pos)
 {
@@ -785,8 +771,6 @@ START_INCLUSION:
 }
 
 	
-#undef __FUNCT__
-#define __FUNCT__ "ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions"
 PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTatinCtx c,ModelViscousSinkerCtx *data,PetscInt ninclusions)
 {
 	int                    p,n_mp_points;
@@ -909,8 +893,6 @@ PetscErrorCode ViscousSinker_ApplyInitialMaterialGeometry_MultipleInclusions(pTa
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_ViscousSinker"
 PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -1028,8 +1010,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_ViscousSinker(pTatinCtx c,void 
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_ViscousSinker"
 PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 {
 	Vec velocity,pressure;
@@ -1058,8 +1038,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_ViscousSinker(pTatinCtx c,Vec X,void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_ViscousSinker"
 PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscErrorCode ierr;
@@ -1088,8 +1066,6 @@ PetscErrorCode ModelOutput_ViscousSinker(pTatinCtx c,Vec X,const char prefix[],v
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialCondition_ViscousSinker"
 PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 {
 	DM stokes_pack,dau,dap;
@@ -1134,8 +1110,6 @@ PetscErrorCode ModelInitialCondition_ViscousSinker(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_ViscousSinker"
 PetscErrorCode ModelDestroy_ViscousSinker(pTatinCtx c,void *ctx)
 {
 	ModelViscousSinkerCtx *data = (ModelViscousSinkerCtx*)ctx;
@@ -1152,8 +1126,6 @@ PetscErrorCode ModelDestroy_ViscousSinker(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_ViscousSinker"
 PetscErrorCode pTatinModelRegister_ViscousSinker(void)
 {
 	ModelViscousSinkerCtx *data;

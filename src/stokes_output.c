@@ -42,8 +42,6 @@
 
 
 /* surface quadrature point viewer */
-#undef __FUNCT__  
-#define __FUNCT__ "_SurfaceQuadratureViewParaviewVTU_Stokes"
 PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,DM da,const char name[])
 {
 	PetscErrorCode ierr;
@@ -228,8 +226,6 @@ PetscErrorCode _SurfaceQuadratureViewParaviewVTU_Stokes(SurfaceQuadrature surfQ,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "_SurfaceQuadratureViewParaviewPVTU_Stokes"
 PetscErrorCode _SurfaceQuadratureViewParaviewPVTU_Stokes(const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -295,8 +291,6 @@ PetscErrorCode _SurfaceQuadratureViewParaviewPVTU_Stokes(const char prefix[],con
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "SurfaceQuadratureViewParaview_Stokes"
 PetscErrorCode SurfaceQuadratureViewParaview_Stokes(PhysCompStokes ctx,const char path[],const char prefix[])
 {
 	PetscInt e;

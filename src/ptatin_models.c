@@ -48,8 +48,6 @@ PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
 PetscLogEvent PTATIN_ModelOutput;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelCreate"
 PetscErrorCode pTatinModelCreate(pTatinModel *model)
 {
 	PetscErrorCode ierr;
@@ -83,8 +81,6 @@ PetscErrorCode pTatinModelCreate(pTatinModel *model)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelDestroy"
 PetscErrorCode pTatinModelDestroy(pTatinModel *m)
 {
   pTatinModel    model;
@@ -102,8 +98,6 @@ PetscErrorCode pTatinModelDestroy(pTatinModel *m)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelSetName"
 PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[])
 {
 	PetscFunctionBegin;
@@ -111,8 +105,6 @@ PetscErrorCode pTatinModelSetName(pTatinModel model,const char name[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelSetUserData"
 PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data)
 {
 	PetscFunctionBegin;
@@ -120,8 +112,6 @@ PetscErrorCode pTatinModelSetUserData(pTatinModel model,void *data)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelGetUserData"
 PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data)
 {
 	PetscFunctionBegin;
@@ -131,8 +121,6 @@ PetscErrorCode pTatinModelGetUserData(pTatinModel model,void **data)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelGetName"
 PetscErrorCode pTatinModelGetName(pTatinModel model,char **name)
 {
 	PetscFunctionBegin;
@@ -142,8 +130,6 @@ PetscErrorCode pTatinModelGetName(pTatinModel model,char **name)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinModelGetModelData"
 PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **data)
 {
 	PetscErrorCode ierr;
@@ -157,8 +143,6 @@ PetscErrorCode pTatinModelGetModelData(pTatinModel ctx,const char name[],void **
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinModelSetModelData"
 PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *data)
 {
 	PetscContainer container;
@@ -174,8 +158,6 @@ PetscErrorCode pTatinModelSetModelData(pTatinModel ctx,const char name[],void *d
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelSetFunctionPointer"
 PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperation type,void(*func)(void))
 {
 	PetscFunctionBegin;
@@ -222,8 +204,6 @@ PetscErrorCode pTatinModelSetFunctionPointer(pTatinModel model,pTatinModelOperat
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatin_match_model_index"
 PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 {
 	PetscBool match;
@@ -248,8 +228,6 @@ PetscErrorCode ptatin_match_model_index(const char modelname[],PetscInt *index)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister"
 PetscErrorCode pTatinModelRegister(pTatinModel model)
 {
 	PetscInt cnt,list_length,index;
@@ -293,8 +271,6 @@ PetscErrorCode pTatinModelRegister(pTatinModel model)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelDynamicRegister"
 PetscErrorCode pTatinModelDynamicRegister(const char modelname[],PetscErrorCode (*create)(pTatinModel))
 {
   PetscErrorCode ierr;
@@ -316,8 +292,6 @@ PetscErrorCode pTatinModelDynamicRegister(const char modelname[],PetscErrorCode 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelStaticGetByName"
 PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
 {	
 	PetscErrorCode ierr;
@@ -335,8 +309,6 @@ PetscErrorCode pTatinModelStaticGetByName(const char name[],pTatinModel *model)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelDynamicGetByName"
 PetscErrorCode pTatinModelDynamicGetByName(const char modelname[],pTatinModel *model)
 {
   PetscErrorCode ierr;
@@ -356,8 +328,6 @@ PetscErrorCode pTatinModelDynamicGetByName(const char modelname[],pTatinModel *m
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelGetByName"
 PetscErrorCode pTatinModelGetByName(const char name[],pTatinModel *model)
 {
   PetscErrorCode ierr;
@@ -399,8 +369,6 @@ PetscErrorCode (*FP_pTatin2d_ModelOutput)(void*);
 PetscErrorCode (*FP_pTatin2d_ModelDestroy)(void*);
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_Destroy"
 PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -414,8 +382,6 @@ PetscErrorCode pTatinModel_Destroy(pTatinModel model,pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_Output"
 PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
@@ -432,8 +398,6 @@ PetscErrorCode pTatinModel_Output(pTatinModel model,pTatinCtx ctx,Vec X,const ch
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyInitialSolution"
 PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,Vec X)
 {
 	PetscErrorCode ierr;
@@ -450,8 +414,6 @@ PetscErrorCode pTatinModel_ApplyInitialSolution(pTatinModel model,pTatinCtx ctx,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyInitialStokesVariableMarkers"
 PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,pTatinCtx ctx,Vec X)
 {
 	PetscErrorCode ierr;
@@ -468,8 +430,6 @@ PetscErrorCode pTatinModel_ApplyInitialStokesVariableMarkers(pTatinModel model,p
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_UpdateMeshGeometry"
 PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Vec X)
 {
 	PetscErrorCode ierr;
@@ -486,8 +446,6 @@ PetscErrorCode pTatinModel_UpdateMeshGeometry(pTatinModel model,pTatinCtx ctx,Ve
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyInitialMaterialGeometry"
 PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -504,8 +462,6 @@ PetscErrorCode pTatinModel_ApplyInitialMaterialGeometry(pTatinModel model,pTatin
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyInitialMeshGeometry"
 PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -522,8 +478,6 @@ PetscErrorCode pTatinModel_ApplyInitialMeshGeometry(pTatinModel model,pTatinCtx 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_Initialize"
 PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -538,8 +492,6 @@ PetscErrorCode pTatinModel_Initialize(pTatinModel model,pTatinCtx ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyBoundaryCondition"
 PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -556,8 +508,6 @@ PetscErrorCode pTatinModel_ApplyBoundaryCondition(pTatinModel model,pTatinCtx ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyBoundaryConditionMG"
 PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],DM dav[],pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -576,8 +526,6 @@ PetscErrorCode pTatinModel_ApplyBoundaryConditionMG(PetscInt nl,BCList bclist[],
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModel_ApplyMaterialBoundaryCondition"
 PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTatinCtx ctx)
 {
 	PetscErrorCode ierr;
@@ -594,8 +542,6 @@ PetscErrorCode pTatinModel_ApplyMaterialBoundaryCondition(pTatinModel model,pTat
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelDeRegisterAll"
 PetscErrorCode pTatinModelDeRegisterAll(void)
 {
   PetscErrorCode ierr;

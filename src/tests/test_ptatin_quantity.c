@@ -3,8 +3,6 @@
 #include <ptatin_init.h>
 #include <quantity.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "test_quantity_utils"
 PetscErrorCode test_quantity_utils(void)
 {
   PetscErrorCode ierr;
@@ -37,8 +35,6 @@ PetscErrorCode test_quantity_utils(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_quantity_utils_2"
 PetscErrorCode test_quantity_utils_2(void)
 {
   PetscErrorCode ierr;
@@ -71,8 +67,6 @@ PetscErrorCode test_quantity_utils_2(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_quantity_utils_3"
 PetscErrorCode test_quantity_utils_3(void)
 {
   PetscErrorCode ierr;
@@ -109,8 +103,6 @@ PetscErrorCode test_quantity_utils_3(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
 	PetscErrorCode ierr;

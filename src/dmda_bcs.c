@@ -31,16 +31,12 @@
 #include "petscdm.h"
 #include "dmda_bcs.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListIsDirichlet"
 PetscErrorCode BCListIsDirichlet(PetscInt value,PetscBool *flg)
 {
 	if (value==BCList_DIRICHLET) { *flg = PETSC_TRUE;  }
 	else                         { *flg = PETSC_FALSE; }
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "BCListInitialize"
 PetscErrorCode BCListInitialize(BCList list)
 {
 	PetscInt       n;
@@ -57,8 +53,6 @@ PetscErrorCode BCListInitialize(BCList list)
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "BCListCreate"
 PetscErrorCode BCListCreate(BCList *list)
 {
 	BCList ll;
@@ -72,8 +66,6 @@ PetscErrorCode BCListCreate(BCList *list)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListDestroy"
 PetscErrorCode BCListDestroy(BCList *list)
 {
 	BCList         ll = *list;
@@ -117,8 +109,6 @@ PetscErrorCode BCListDestroy(BCList *list)
 	*list = NULL;
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "BCListSetSizes"
 PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_local)
 {
 	PetscReal mem_usage = 0.0;
@@ -156,8 +146,6 @@ PetscErrorCode BCListSetSizes(BCList list,PetscInt bs,PetscInt N,PetscInt N_loca
   */
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "BCListUpdateCache"
 PetscErrorCode BCListUpdateCache(BCList list)
 {
 	PetscInt       n,cnt;
@@ -174,8 +162,6 @@ PetscErrorCode BCListUpdateCache(BCList list)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListInitGlobal"
 PetscErrorCode BCListInitGlobal(BCList list)
 {
     ISLocalToGlobalMapping ltog;
@@ -219,8 +205,6 @@ PetscErrorCode BCListInitGlobal(BCList list)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListGlobalToLocal"
 PetscErrorCode BCListGlobalToLocal(BCList list)
 {
 	PetscInt i,lsize;
@@ -289,8 +273,6 @@ PetscErrorCode BCListGlobalToLocal(BCList list)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDABCListCreate"
 PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 {
 	BCList ll;
@@ -329,16 +311,12 @@ PetscErrorCode DMDABCListCreate(DM da,BCList *list)
 }
 
 /* read/write */
-#undef __FUNCT__
-#define __FUNCT__ "BCListGetGlobalIndices"
 PetscErrorCode BCListGetGlobalIndices(BCList list,PetscInt *n,PetscInt **idx)
 {
 	if (n) {   *n   = list->L; }
 	if (idx) { *idx = list->dofidx_global; }
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "BCListRestoreGlobalIndices"
 PetscErrorCode BCListRestoreGlobalIndices(BCList list,PetscInt *n,PetscInt **idx)
 {
 	PetscErrorCode ierr;
@@ -352,8 +330,6 @@ PetscErrorCode BCListRestoreGlobalIndices(BCList list,PetscInt *n,PetscInt **idx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListGetGlobalValues"
 PetscErrorCode BCListGetGlobalValues(BCList list,PetscInt *n,PetscScalar **vals)
 {
 	if (n) {   *n     = list->L; }
@@ -361,8 +337,6 @@ PetscErrorCode BCListGetGlobalValues(BCList list,PetscInt *n,PetscScalar **vals)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListGetDofIdx"
 PetscErrorCode BCListGetDofIdx(BCList list,PetscInt *Lg,PetscInt **dofidx_global,PetscInt *Ll,PetscInt **dofidx_local)
 {
 	if (Lg)            { *Lg   = list->L; }
@@ -372,8 +346,6 @@ PetscErrorCode BCListGetDofIdx(BCList list,PetscInt *Lg,PetscInt **dofidx_global
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_constant"
 PetscBool BCListEvaluator_constant( PetscScalar position[], PetscScalar *value, void *ctx ) 
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
@@ -388,8 +360,6 @@ PetscBool BCListEvaluator_constant( PetscScalar position[], PetscScalar *value, 
  if (isbc_local[i] == dirch) y[i] = xbc[i]
  else                        y[i] = y[i] 
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsert"
 PetscErrorCode BCListInsert(BCList list,Vec y)
 {
 	PetscInt m,k,L;
@@ -413,8 +383,6 @@ PetscErrorCode BCListInsert(BCList list,Vec y)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsertValueIntoDirichletSlot"
 PetscErrorCode BCListInsertValueIntoDirichletSlot(BCList list,PetscScalar value,Vec y)
 {
 	PetscInt m,k,L;
@@ -446,8 +414,6 @@ PetscErrorCode BCListInsertValueIntoDirichletSlot(BCList list,PetscScalar value,
  if (isbc_local[i] == dirch) y[i] = 0.0
  else                        y[i] = y[i] 
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsertZero"
 PetscErrorCode BCListInsertZero(BCList list,Vec y)
 {
 	PetscInt m,k,L;
@@ -475,8 +441,6 @@ PetscErrorCode BCListInsertZero(BCList list,Vec y)
  if (isbc_local[i] == dirch) y[i] = xbc[i]
  else                        y[i] = y[i] 
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsertLocal"
 PetscErrorCode BCListInsertLocal(BCList list,Vec y)
 {
 	PetscInt M,k,L;
@@ -511,8 +475,6 @@ PetscErrorCode BCListInsertLocal(BCList list,Vec y)
  if (isbc_local[i] == dirch) y[i] = 0.0
  else                        y[i] = y[i] 
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsertLocalZero"
 PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
 {
 	PetscInt M,k,L;
@@ -546,8 +508,6 @@ PetscErrorCode BCListInsertLocalZero(BCList list,Vec y)
  Apply's
  F = scale(X-phi) where ever a dirichlet is encountered.
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListResidualDirichlet"
 PetscErrorCode BCListResidualDirichlet(BCList list,const Vec X,Vec F)
 {
   PetscInt m,k,L;
@@ -589,8 +549,6 @@ PetscErrorCode BCListResidualDirichlet(BCList list,const Vec X,Vec F)
  Apply's
  F = scale(X) where ever a dirichlet is encountered.
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsertDirichlet_MatMult"
 PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,const Vec X,Vec F)
 {
     PetscInt m,k,L;
@@ -644,8 +602,6 @@ PetscErrorCode BCListInsertDirichlet_MatMult(BCList list,const Vec X,Vec F)
  }
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDABCListTraverse3d"
 PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc doflocation,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscScalar*,void*),void *ctx)
 {
 	PetscInt i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
@@ -842,8 +798,6 @@ PetscErrorCode DMDABCListTraverse3d(BCList list,DM da,DMDABCListConstraintLoc do
 }
 
 /* FLATTENED VARIANT */
-#undef __FUNCT__
-#define __FUNCT__ "BCListFlattenedCreate"
 PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
 {
 	PetscErrorCode ierr;
@@ -935,8 +889,6 @@ PetscErrorCode BCListFlattenedCreate(BCList std,BCList *flat)
  if (isbc_local[i] == dirch) y[i] = xbc[i]
  else                        y[i] = y[i] 
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListFlatInsert"
 PetscErrorCode BCListFlatInsert(BCList list,Vec y)
 {
 	PetscInt m,k,L;
@@ -964,8 +916,6 @@ PetscErrorCode BCListFlatInsert(BCList list,Vec y)
  if (isbc_local[i] == dirch) y[i] = xbc[i]
  else                        y[i] = y[i] 
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListFlatInsertLocal"
 PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
 {
 	PetscInt M,k,L;
@@ -999,8 +949,6 @@ PetscErrorCode BCListFlatInsertLocal(BCList list,Vec y)
  Apply's
  F = scale(X-phi) where ever a dirichlet is encountered.
  */
-#undef __FUNCT__
-#define __FUNCT__ "BCListFlatResidualDirichlet"
 PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
 {
 	PetscInt k,L;
@@ -1032,8 +980,6 @@ PetscErrorCode BCListFlatResidualDirichlet(BCList list,Vec X,Vec F)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListApplyDirichletMask"
 PetscErrorCode BCListApplyDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList list)
 {
 	PetscInt k,L;
@@ -1050,8 +996,6 @@ PetscErrorCode BCListApplyDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListRemoveDirichletMask"
 PetscErrorCode BCListRemoveDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList list)
 {
 	PetscInt k,L;
@@ -1069,8 +1013,6 @@ PetscErrorCode BCListRemoveDirichletMask(PetscInt N_EQNS, PetscInt gidx[],BCList
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListInsertScaling"
 PetscErrorCode BCListInsertScaling(Mat A,PetscInt N_EQNS, PetscInt gidx[],BCList list)
 {
 	PetscInt k,L;

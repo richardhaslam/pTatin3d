@@ -80,8 +80,6 @@ void MaterialConstantsSetDefaultAll_SourceAdiabaticAdv(
 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_SourceAdiabaticAdv"
 PetscErrorCode MaterialConstantsSetFromOptions_SourceAdiabaticAdv(const char model_name[],const int region_id,EnergySourceAdiabaticAdvection _data[],PetscBool essential)
 {
   char                         opt_name[PETSC_MAX_PATH_LEN];
@@ -101,8 +99,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_SourceAdiabaticAdv(const char mod
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_SourceAdiabaticAdv"
 PetscErrorCode MaterialConstantsPrintValues_SourceAdiabaticAdv(const char model_name[],const int region_id,EnergySourceAdiabaticAdvection _data[]) 
 {
   EnergySourceAdiabaticAdvection *data = &_data[region_id];
@@ -120,8 +116,6 @@ PetscErrorCode MaterialConstantsPrintValues_SourceAdiabaticAdv(const char model_
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_SourceAdiabaticAdv"
 PetscErrorCode MaterialConstantsSetValues_SourceAdiabaticAdv(const int region_id,EnergySourceAdiabaticAdvection _data[],
     double dTdy)
 {
@@ -130,8 +124,6 @@ PetscErrorCode MaterialConstantsSetValues_SourceAdiabaticAdv(const int region_id
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_SourceAdiabaticAdv"
 PetscErrorCode MaterialConstantsScaleValues_SourceAdiabaticAdv(const int region_id,EnergySourceAdiabaticAdvection _data[],
     double dTdy)
 {

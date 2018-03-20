@@ -134,8 +134,6 @@ double AdvDiffResidualForceTerm_UpwindXiCriticalAssumption(double pecletNumber)
     }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AdvDiff3dComputeAverageCellSize"
 PetscErrorCode AdvDiff3dComputeAverageCellSize(PetscScalar el_coords[],PetscScalar DX[])
 {
 	PetscInt d,k;
@@ -169,8 +167,6 @@ PetscErrorCode AdvDiff3dComputeAverageCellSize(PetscScalar el_coords[],PetscScal
 }
 
 /* Eqn 4.3.7 */
-#undef __FUNCT__
-#define __FUNCT__ "AdvDiff3dComputeElementPecletNumber_qp"
 PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],PetscScalar u[],
                                                       PetscScalar kappa_el,
                                                       PetscScalar *alpha)
@@ -208,8 +204,6 @@ PetscErrorCode AdvDiff3dComputeElementPecletNumber_qp( PetscScalar el_coords[],P
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DASUPG3dComputeElementTimestep_qp"
 PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd)
 {
 	PetscInt    d,k;
@@ -278,8 +272,6 @@ PetscErrorCode DASUPG3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscSc
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AdvDiff3dComputeElementTimestep_qp"
 PetscErrorCode AdvDiff3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscScalar u[],PetscReal kappa_el,PetscReal *dta,PetscReal *dtd)
 {
 	PetscInt    d,k;
@@ -316,8 +308,6 @@ PetscErrorCode AdvDiff3dComputeElementTimestep_qp(PetscScalar el_coords[],PetscS
 /*
  Eqns 3.3.11 (transient) + 3.3.4, 3.3.5, 3.3.6
  */
-#undef __FUNCT__
-#define __FUNCT__ "DASUPG3dComputeElementStreamlineDiffusion_qp"
 PetscErrorCode DASUPG3dComputeElementStreamlineDiffusion_qp(PetscScalar el_coords[],PetscScalar u[],
                                                             PetscInt nqp, PetscScalar qp_detJ[], PetscScalar qp_w[],
                                                             PetscScalar qp_kappa[],
@@ -396,8 +386,6 @@ void ConstructNiSUPG_Q1_3D(PetscScalar Up[],PetscScalar kappa_hat,PetscScalar Ni
     }
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AElement_FormJacobian_T_supg"
 PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,PetscScalar el_coords[],
                                             PetscScalar gp_kappa[],
                                             PetscScalar el_V[],
@@ -469,8 +457,6 @@ PetscErrorCode AElement_FormJacobian_T_supg( PetscScalar Re[],PetscReal dt,Petsc
 /*
  Computes M + dt.(L + A)
  */
-#undef __FUNCT__
-#define __FUNCT__ "TS_FormJacobianEnergy"
 PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat B,void *ctx)
 {
   pTatinCtx      ptatin = (pTatinCtx)ctx;
@@ -648,8 +634,6 @@ PetscErrorCode TS_FormJacobianEnergy(PetscReal time,Vec X,PetscReal dt,Mat A,Mat
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNES_FormJacobianEnergy"
 PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 {
   pTatinCtx      ptatin = (pTatinCtx)ctx;
@@ -663,8 +647,6 @@ PetscErrorCode SNES_FormJacobianEnergy(SNES snes,Vec X,Mat A,Mat B,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AElement_FormFunction_T_supg"
 PetscErrorCode AElement_FormFunction_T_supg(
                                             PetscScalar Re[],
                                             PetscReal dt,
@@ -779,8 +761,6 @@ PetscErrorCode AElement_FormFunction_T_supg(
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocal_T"
 PetscErrorCode FormFunctionLocal_T(
                                    PhysCompEnergy data,
                                    PetscReal dt,
@@ -920,8 +900,6 @@ PetscErrorCode FormFunctionLocal_T(
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "TS_FormFunctionEnergy"
 PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,void *ctx)
 {
   pTatinCtx      ptatin = (pTatinCtx)ctx;
@@ -1007,8 +985,6 @@ PetscErrorCode TS_FormFunctionEnergy(PetscReal time,Vec X,PetscReal dt,Vec F,voi
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SNES_FormFunctionEnergy"
 PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
 {
   pTatinCtx      ptatin = (pTatinCtx)ctx;
@@ -1028,8 +1004,6 @@ PetscErrorCode SNES_FormFunctionEnergy(SNES snes,Vec X,Vec F,void *ctx)
  */
 
 /* compute tau */
-#undef __FUNCT__
-#define __FUNCT__ "AdvDiffComputeTau_BrooksHughes"
 PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_el,PetscScalar *tau)
 {
 	PetscInt k,d;
@@ -1069,8 +1043,6 @@ PetscErrorCode AdvDiffComputeTau_BrooksHughes(PetscScalar el_coords[],PetscScala
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AdvDiffComputeTau_TezduyarOsawa"
 PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScalar el_vel[],PetscScalar kappa_cell,PetscScalar theta,PetscScalar dt,PetscScalar *tau)
 {
 	PetscErrorCode ierr;
@@ -1114,8 +1086,6 @@ PetscErrorCode AdvDiffComputeTau_TezduyarOsawa(PetscScalar el_coords[],PetscScal
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AdvDiffComputeTau_UserDefinedConstant"
 PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscScalar *tau)
 {
 	static int been_here;
@@ -1165,8 +1135,6 @@ PetscErrorCode AdvDiffComputeTau_UserDefinedConstant(PetscScalar const_t,PetscSc
  J := M'(x^k+1) + dt.G(x^k+1) + dt.K'(x^k+1)
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "AElement_FormJacobian_T_tau"
 PetscErrorCode AElement_FormJacobian_T_tau(
                                            PetscScalar Re[],
                                            PetscReal dt,
@@ -1277,8 +1245,6 @@ PetscErrorCode AElement_FormJacobian_T_tau(
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "AElement_FormFunction_T_tau"
 PetscErrorCode AElement_FormFunction_T_tau(
                                            PetscScalar Re[],
                                            PetscReal dt,

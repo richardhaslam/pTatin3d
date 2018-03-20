@@ -67,8 +67,6 @@ typedef struct {
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_PD"
 PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx           *modeldata = (ModelCtx*)modelctx;
@@ -207,8 +205,6 @@ PetscErrorCode ModelInitialize_PD(pTatinCtx ptatinctx,void *modelctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_PD"
 PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -247,8 +243,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PD(pTatinCtx ptatinctx,void *modelc
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PD_MaterialGeometry_ex1"
 PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
 {
 	MPAccess         mpX;
@@ -313,8 +307,6 @@ PetscErrorCode PD_MaterialGeometry_ex1(pTatinCtx ptatctx,ModelCtx *mctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PD_MaterialGeometry_ex2"
 PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
 {
 	MPAccess         mpX;
@@ -379,8 +371,6 @@ PetscErrorCode PD_MaterialGeometry_ex2(pTatinCtx ptatctx,ModelCtx *mctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PD_MaterialGeometry_ex3"
 PetscErrorCode PD_MaterialGeometry_ex3(pTatinCtx ptatctx,ModelCtx *mctx)
 {
 	MPAccess         mpX;
@@ -448,8 +438,6 @@ PetscErrorCode PD_MaterialGeometry_ex3(pTatinCtx ptatctx,ModelCtx *mctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_PD"
 PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
 {
 	ModelCtx         *data = (ModelCtx*)ctx;
@@ -536,8 +524,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PD(pTatinCtx c,void *ctx)
 }
 
 /* velocity bcs */
-#undef __FUNCT__
-#define __FUNCT__ "PD_VelocityBC"
 PetscErrorCode PD_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ModelCtx *modeldata)
 {
 	PetscErrorCode ierr;
@@ -559,8 +545,6 @@ PetscErrorCode PD_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ModelCtx *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_PD"
 PetscErrorCode ModelApplyBoundaryCondition_PD(pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -579,8 +563,6 @@ PetscErrorCode ModelApplyBoundaryCondition_PD(pTatinCtx ptatinctx,void *modelctx
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_PD"
 PetscErrorCode ModelApplyBoundaryConditionMG_PD(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -596,8 +578,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_PD(PetscInt nl,BCList bclist[],DM d
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_PD"
 PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -683,8 +663,6 @@ PetscErrorCode ModelOutput_PD(pTatinCtx ptatinctx,Vec X,const char prefix[],void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_PD"
 PetscErrorCode ModelDestroy_PD(pTatinCtx c,void *ctx)
 {
 	ModelCtx *data = (ModelCtx*)ctx;
@@ -698,8 +676,6 @@ PetscErrorCode ModelDestroy_PD(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_PD"
 PetscErrorCode pTatinModelRegister_PD(void)
 {
 	ModelCtx        *data;

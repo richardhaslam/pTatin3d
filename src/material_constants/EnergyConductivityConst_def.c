@@ -80,8 +80,6 @@ void MaterialConstantsSetDefaultAll_ConductivityConst(
 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetFromOptions_ConductivityConst"
 PetscErrorCode MaterialConstantsSetFromOptions_ConductivityConst(const char model_name[],const int region_id,EnergyConductivityConst _data[],PetscBool essential)
 {
   char                         opt_name[PETSC_MAX_PATH_LEN];
@@ -103,8 +101,6 @@ PetscErrorCode MaterialConstantsSetFromOptions_ConductivityConst(const char mode
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsPrintValues_ConductivityConst"
 PetscErrorCode MaterialConstantsPrintValues_ConductivityConst(const char model_name[],const int region_id,EnergyConductivityConst _data[]) 
 {
   EnergyConductivityConst *data = &_data[region_id];
@@ -122,8 +118,6 @@ PetscErrorCode MaterialConstantsPrintValues_ConductivityConst(const char model_n
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsSetValues_ConductivityConst"
 PetscErrorCode MaterialConstantsSetValues_ConductivityConst(const int region_id,EnergyConductivityConst _data[],
     double k0)
 {
@@ -132,8 +126,6 @@ PetscErrorCode MaterialConstantsSetValues_ConductivityConst(const int region_id,
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "MaterialConstantsScaleValues_ConductivityConst"
 PetscErrorCode MaterialConstantsScaleValues_ConductivityConst(const int region_id,EnergyConductivityConst _data[],
     double k0)
 {

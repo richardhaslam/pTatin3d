@@ -68,8 +68,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *value, void *ctx );
 PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *value, void *ctx );
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_Rift_oblique3d"
 PetscErrorCode ModelInitialize_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
@@ -841,8 +839,6 @@ CHKERRQ(ierr);
 }
 
 /* SET AN INITIAL BACK GROUND STRAIN RATE, TEMPERATURE, PRESSURE */
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_Rift_oblique3d"
 PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
@@ -917,8 +913,6 @@ PetscErrorCode ModelApplyInitialSolution_Rift_oblique3d(pTatinCtx c,Vec X,void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelRift_oblique3d_DefineBCList"
 PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx user,ModelRift_oblique3dCtx *data)
 {
 	PhysCompStokes stokes;
@@ -1080,8 +1074,7 @@ PetscErrorCode ModelRift_oblique3d_DefineBCList(BCList bclist,DM dav,pTatinCtx u
 	PetscFunctionReturn(0);
 }
 
-/*#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_rift_oblique3dl"
+/*
 PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *value, void *data )
 {
 	ModelRift_oblique3dCtx *datal = (ModelRift_oblique3dCtx*)data;
@@ -1102,8 +1095,6 @@ PetscBool BCListEvaluator_rift_oblique3dl( PetscScalar position[], PetscScalar *
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_rift_oblique3dr"
 PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *value, void *data )
 {
 	ModelRift_oblique3dCtx *datal = (ModelRift_oblique3dCtx*)data;
@@ -1125,8 +1116,6 @@ PetscBool BCListEvaluator_rift_oblique3dr( PetscScalar position[], PetscScalar *
 }
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_Rift_oblique3d"
 PetscErrorCode ModelApplyBoundaryCondition_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
@@ -1167,8 +1156,6 @@ PetscErrorCode ModelApplyBoundaryCondition_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_Rift_oblique3d"
 PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
@@ -1187,8 +1174,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_Rift_oblique3d(PetscInt nl,BCList b
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_Rift_oblique3d"
 PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
@@ -1246,8 +1231,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_Rift_oblique3d(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_Rift_oblique3d"
 PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
@@ -1665,8 +1648,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_Rift_oblique3d(pTatinCtx c,void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_Rift_oblique3d"
 /* ASSIGN INITIAL VISCOSITY BASED ON INITIAL STRAIN RATE PRESSURE */
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx user,Vec X,void *ctx)
 {
@@ -1704,8 +1685,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_Rift_oblique3d(pTatinCtx u
 
 // adding particles on the lower boundary to accommodate inflow
 // adding particles on the left and right boundary to accommodate inflow
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(pTatinCtx c,void *ctx)
 {
 #if 0
@@ -1780,8 +1759,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_Rift_oblique3d_semi_eulerian(
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian"
 /* DEFINE ALE */
 PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinCtx c,Vec X,void *ctx)
 {
@@ -1842,8 +1819,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_Rift_oblique3d_semi_eulerian(pTatinC
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_Rift_oblique3d"
 PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
   ModelRift_oblique3dCtx  *data = (ModelRift_oblique3dCtx*)ctx;
@@ -1924,8 +1899,6 @@ PetscErrorCode ModelOutput_Rift_oblique3d(pTatinCtx c,Vec X,const char prefix[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_Rift_oblique3d"
 PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 {
 	ModelRift_oblique3dCtx *data = (ModelRift_oblique3dCtx*)ctx;
@@ -1944,8 +1917,6 @@ PetscErrorCode ModelDestroy_Rift_oblique3d(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_Rift_oblique3d"
 /* ASSIGN ALL FUNCTIONS DEFINED ABOVE */
 PetscErrorCode pTatinModelRegister_Rift_oblique3d(void)
 {

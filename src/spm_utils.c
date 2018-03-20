@@ -66,8 +66,6 @@ Contains routines for assisting with:
 */
 
 /* Parallel mechanical -> sequential spm */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGatherIKRedundantSurfaceDMDA"
 PetscErrorCode DMDAGatherIKRedundantSurfaceDMDA(DM dm_mech,DM *dm_msurf0)
 {
 	PetscErrorCode ierr;
@@ -117,8 +115,6 @@ PetscErrorCode DMDAGatherIKRedundantSurfaceDMDA(DM dm_mech,DM *dm_msurf0)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "InterpolateMSurf0ToSPMSurfIKGrid"
 PetscErrorCode InterpolateMSurf0ToSPMSurfIKGrid(DM dm_msurf0,PetscInt spm_mi,PetscInt spm_mj,PetscReal *spm_coords,PetscReal *spm_H)
 {
 	PetscErrorCode ierr;
@@ -230,8 +226,6 @@ PetscErrorCode InterpolateMSurf0ToSPMSurfIKGrid(DM dm_msurf0,PetscInt spm_mi,Pet
 /*
 	Treat nodal spm data as "cell-centered" with a mesh which extends from x0-0.5*dx 
 */
-#undef __FUNCT__
-#define __FUNCT__ "InterpolateSPMSurfIKGridToMSurf0"
 PetscErrorCode InterpolateSPMSurfIKGridToMSurf0(PetscInt spm_mi,PetscInt spm_mj,PetscReal *spm_coords,PetscReal *spm_H,DM dm_msurf0)
 {
 	PetscErrorCode ierr;
@@ -317,8 +311,6 @@ PetscErrorCode InterpolateSPMSurfIKGridToMSurf0(PetscInt spm_mi,PetscInt spm_mj,
  MPI_Send
  Insert on each sub-domain 
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAScatterIKRedundantSurfaceDMDA"
 PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 {
 	PetscErrorCode ierr;
@@ -461,8 +453,6 @@ PetscErrorCode DMDAScatterIKRedundantSurfaceDMDA(DM dm_msurf0,DM dm_mech)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_spm_utils_MPItoSEQ"
 PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
 {
 	DM             dm_spmsurf0;
@@ -550,8 +540,6 @@ PetscErrorCode test_spm_utils_MPItoSEQ(DM dav)
   Extract partitioning from dm_mechanical, using this to create semi-redundant 2D DMDA defined in x,y
   Fetch part of coordinates need from dm_mechanical
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGatherIKSemiRedundantSurfaceDMDA"
 PetscErrorCode DMDAGatherIKSemiRedundantSurfaceDMDA(DM dm_mech,DM *_dm_msurf)
 {
 	PetscFunctionBegin;
@@ -559,8 +547,6 @@ PetscErrorCode DMDAGatherIKSemiRedundantSurfaceDMDA(DM dm_mech,DM *_dm_msurf)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAScatterIKSemiRedundantSurfaceDMDA"
 PetscErrorCode DMDAScatterIKSemiRedundantSurfaceDMDA(DM dm_msurf,DM dm_mech)
 {
 	PetscFunctionBegin;
@@ -570,8 +556,6 @@ PetscErrorCode DMDAScatterIKSemiRedundantSurfaceDMDA(DM dm_msurf,DM dm_mech)
 
 /* Parallel mechanical -> parallel spm (with overlapping global nodes) */
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGatherIKSurfaceDMDA"
 PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 {
 	PetscErrorCode ierr;
@@ -649,8 +633,6 @@ PetscErrorCode DMDAGatherIKSurfaceDMDA(DM dm_mech,DM *_dm_msurf,Vec *_elevation)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAScatterIKSurfaceDMDA"
 PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech)
 {
 	PetscErrorCode ierr;
@@ -798,8 +780,6 @@ PetscErrorCode DMDAScatterIKSurfaceDMDA(DM dm_msurf,Vec height,DM dm_mech)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_spm_utils_MPItoMPI"
 PetscErrorCode test_spm_utils_MPItoMPI(DM dav)
 {
 	DM             dm_spmsurf;
@@ -829,8 +809,6 @@ PetscErrorCode test_spm_utils_MPItoMPI(DM dav)
  Keep surface DM which overlaps with the volume DM (_dm_msurf)
  The surface DM used for the SPM should be _dm_msurf_ref.
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGatherIKNestedSurfaceDMDA"
 PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_msurf,Mat *_R,DM *_dm_msurf_ref,Vec *_elevation_ref)
 {
 	PetscErrorCode ierr;
@@ -927,8 +905,6 @@ PetscErrorCode DMDAGatherIKNestedSurfaceDMDA(DM dm_mech,PetscInt ref[],DM *_dm_m
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAScatterIKNestedSurfaceDMDA"
 PetscErrorCode DMDAScatterIKNestedSurfaceDMDA(DM dm_msurf,DM dm_msurf_overlap,Mat R,Vec height,DM dm_mech)
 {
 	Vec            scale,height_vol;
@@ -953,8 +929,6 @@ PetscErrorCode DMDAScatterIKNestedSurfaceDMDA(DM dm_msurf,DM dm_msurf_overlap,Ma
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "test_nested_spm_utils_MPItoMPI"
 PetscErrorCode test_nested_spm_utils_MPItoMPI(DM dav)
 {
 	DM             dm_spmsurf,dm_spmsurf_overlap;

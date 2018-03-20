@@ -41,8 +41,6 @@
 #include "dmda_update_coords.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "test_DMDAUpdateGhostedCoordinates"
 PetscErrorCode test_DMDAUpdateGhostedCoordinates(PetscInt nx,PetscInt ny,PetscInt nz)
 {
 	PetscErrorCode ierr;

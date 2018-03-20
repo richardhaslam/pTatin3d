@@ -47,8 +47,6 @@ PetscInt model_setup = 0;
 PetscReal vel_scale       = 1.0;
 PetscReal diffusion_scale = 1.0;
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_AdvDiffExample"
 PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 {	
   DataBucket              materialconstants;
@@ -99,8 +97,6 @@ PetscErrorCode ModelInitialize_AdvDiffExample(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "BCListEvaluator_HughesSkewTest"
 PetscBool BCListEvaluator_HughesSkewTest( PetscScalar position[], PetscScalar *value, void *ctx ) 
 {
 	PetscBool impose_dirichlet = PETSC_TRUE;
@@ -114,8 +110,6 @@ PetscBool BCListEvaluator_HughesSkewTest( PetscScalar position[], PetscScalar *v
 	return impose_dirichlet;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_AdvDiffExample"
 PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 {
 	PetscErrorCode ierr;
@@ -178,8 +172,6 @@ PetscErrorCode ModelApplyBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_AdvDiffExample"
 PetscErrorCode ModelApplyBoundaryConditionMG_AdvDiffExample(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	PetscInt       n;
@@ -194,8 +186,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_AdvDiffExample(PetscInt nl,BCList b
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_AdvDiffExample"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_AdvDiffExample(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -204,8 +194,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_AdvDiffExample(pTatinCtx c,vo
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_AdvDiffExample"
 PetscErrorCode ModelApplyInitialMeshGeometry_AdvDiffExample(pTatinCtx c,void *ctx)
 {
 	PetscErrorCode ierr;
@@ -224,8 +212,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_AdvDiffExample(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_AdvDiffExample"
 PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void *ctx)
 {
 	PetscErrorCode ierr;
@@ -322,8 +308,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_AdvDiffExample(pTatinCtx c,void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_AdvDiffExample"
 PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *ctx)
 {
 	PhysCompStokes stokes;
@@ -448,8 +432,6 @@ PetscErrorCode ModelApplyInitialSolution_AdvDiffExample(pTatinCtx c,Vec X,void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_AdvDiffExample"
 PetscErrorCode ModelApplyUpdateMeshGeometry_AdvDiffExample(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscFunctionBegin;
@@ -458,8 +440,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_AdvDiffExample(pTatinCtx c,Vec X,voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_AdvDiffExample"
 PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	PetscErrorCode ierr;
@@ -525,8 +505,6 @@ PetscErrorCode ModelOutput_AdvDiffExample(pTatinCtx c,Vec X,const char prefix[],
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_AdvDiffExample"
 PetscErrorCode ModelDestroy_AdvDiffExample(pTatinCtx c,void *ctx)
 {
 	PetscFunctionBegin;
@@ -535,8 +513,6 @@ PetscErrorCode ModelDestroy_AdvDiffExample(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_AdvDiffExample"
 PetscErrorCode pTatinModelRegister_AdvDiffExample(void)
 {
 	pTatinModel m;

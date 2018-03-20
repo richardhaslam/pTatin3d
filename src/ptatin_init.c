@@ -39,8 +39,6 @@
 #define STR_VALUE(arg)      #arg
 #define STRINGIFY_ARG(name) STR_VALUE(name)
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinCheckCompilationFlags"
 PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 {
 	char *loc = NULL;
@@ -63,8 +61,6 @@ PetscErrorCode pTatinCheckCompilationFlags(const char flags[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinWritePreamble"
 PetscErrorCode pTatinWritePreamble(void)
 {
 	PetscErrorCode ierr;
@@ -170,8 +166,6 @@ extern PetscLogEvent PTATIN_ModelUpdateMeshGeometry;
 extern PetscLogEvent PTATIN_ModelOutput;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinInitialize"
 PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const char help[])
 {
 	PetscErrorCode ierr;
@@ -238,8 +232,6 @@ PetscErrorCode pTatinInitialize(int *argc,char ***args,const char file[],const c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinFinalize"
 PetscErrorCode pTatinFinalize(void)
 {
 	PetscErrorCode ierr;

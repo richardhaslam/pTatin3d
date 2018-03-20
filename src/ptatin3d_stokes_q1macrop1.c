@@ -39,8 +39,6 @@
 
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateMesh_Stokes3d_Q1MacroP1"
 PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const PetscInt my,const PetscInt mz,PhysCompStokes ctx)
 {
 	DM dav,dap,multipys_pack;
@@ -118,8 +116,6 @@ PetscErrorCode PhysCompCreateMesh_Stokes3d_Q1MacroP1(const PetscInt mx,const Pet
  velocity cells into the local coordinate system used by the macro element.
  
 */
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1"
 PetscErrorCode PhysCompCreateVolumeQuadrature_Stokes_Q1MacroP1(PhysCompStokes ctx)
 {
 	DM dav;

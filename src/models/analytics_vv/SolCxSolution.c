@@ -2275,8 +2275,6 @@ PetscErrorCode SolCxSolution(const PetscReal pos[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateV_SolCx"
 PetscErrorCode EvaluateV_SolCx(PetscReal pos[],PetscReal vel[],void *ctx)
 {
   ParamsSolCx *data = (ParamsSolCx*)ctx;
@@ -2288,8 +2286,6 @@ PetscErrorCode EvaluateV_SolCx(PetscReal pos[],PetscReal vel[],void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateE_SolCx"
 PetscErrorCode EvaluateE_SolCx(PetscReal pos[],PetscReal E[],void *ctx)
 {
   ParamsSolCx *data = (ParamsSolCx*)ctx;
@@ -2314,8 +2310,6 @@ PetscErrorCode EvaluateE_SolCx(PetscReal pos[],PetscReal E[],void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateP_SolCx"
 PetscErrorCode EvaluateP_SolCx(PetscReal pos[],PetscReal p[],void *ctx)
 {
   ParamsSolCx *data = (ParamsSolCx*)ctx;
@@ -2326,8 +2320,6 @@ PetscErrorCode EvaluateP_SolCx(PetscReal pos[],PetscReal p[],void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "SolCxParamsSetValues"
 PetscErrorCode SolCxParamsSetValues(ParamsSolCx *data,PetscReal etaA,PetscReal etaB,PetscReal xc,PetscInt n)
 {
   data->etaA = etaA;

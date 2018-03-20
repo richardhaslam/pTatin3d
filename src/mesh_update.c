@@ -53,8 +53,6 @@
 #include "mesh_update.h"
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDABilinearizeQ2Elements"
 PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 {
 	DM cda;
@@ -139,8 +137,6 @@ PetscErrorCode DMDABilinearizeQ2Elements(DM dau)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_FullLagrangian"
 PetscErrorCode UpdateMeshGeometry_FullLagrangian(DM dav,Vec velocity,PetscReal step)
 {
 	Vec            coordinates;
@@ -155,8 +151,6 @@ PetscErrorCode UpdateMeshGeometry_FullLagrangian(DM dav,Vec velocity,PetscReal s
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh"
 PetscErrorCode UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(DM dav,Vec velocity,PetscReal step)
 {
 	Vec            velocity_ale;
@@ -187,8 +181,6 @@ PetscErrorCode UpdateMeshGeometry_VerticalLagrangianSurfaceRemesh(DM dav,Vec vel
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh"
 PetscErrorCode UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh(DM dav,Vec velocity,PetscReal step)
 {
 	PetscInt       M,N,P;
@@ -239,8 +231,6 @@ PetscErrorCode UpdateMeshGeometry_FullLagrangianWithVerticalSurfaceRemesh(DM dav
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_DecoupledHorizontalVerticalMeshMovement"
 PetscErrorCode UpdateMeshGeometry_DecoupledHorizontalVerticalMeshMovement(DM dav,Vec velocity,PetscReal step)
 {
 	PetscInt       M,N,P;
@@ -327,8 +317,6 @@ PetscErrorCode UpdateMeshGeometry_DecoupledHorizontalVerticalMeshMovement(DM dav
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX_InterpolateMSurfToVolSurf"
 PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX_InterpolateMSurfToVolSurf(DM dm_msurf,DM dm_vol)
 {
 	PetscErrorCode ierr;
@@ -480,8 +468,6 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX_Interpola
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX"
 PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Vec vel_fluid,Vec vel_mesh,PetscReal step)
 {
 	PetscInt       M,N,P;
@@ -604,8 +590,6 @@ PetscErrorCode UpdateMeshGeometry_FullLag_ResampleJMax_RemeshJMIN2JMAX(DM dav,Ve
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_ComputeSurfaceCourantTimestep"
 PetscErrorCode UpdateMeshGeometry_ComputeSurfaceCourantTimestep(DM dav,Vec velocity,PetscReal vert_displacement_max,PetscReal *step)
 {
 	PetscReal vy;
@@ -667,8 +651,6 @@ PetscErrorCode UpdateMeshGeometry_ComputeSurfaceCourantTimestep(DM dav,Vec veloc
  
  
 */
-#undef __FUNCT__
-#define __FUNCT__ "UpdateMeshGeometry_ApplyDiffusionJMAX"
 PetscErrorCode UpdateMeshGeometry_ApplyDiffusionJMAX(DM dav,PetscReal diffusivity,PetscReal timespan,
                                                      PetscBool dirichlet_east,PetscBool dirichlet_west,PetscBool dirichlet_front,PetscBool dirichlet_back,PetscBool only_update_surface)
 {

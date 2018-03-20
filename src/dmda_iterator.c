@@ -33,8 +33,6 @@
 #include "dmda_update_coords.h"
 #include "dmda_iterator.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d"
 PetscErrorCode DMDAVecTraverse3d(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscScalar*,void*),void *ctx)
 {
 	PetscInt i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
@@ -90,8 +88,6 @@ PetscErrorCode DMDAVecTraverse3d(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)(
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK"
 PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)
 {
 	PetscInt i,j,k,si,sj,sk,m,n,p,M,N,P,ndof;
@@ -159,8 +155,6 @@ PetscErrorCode DMDAVecTraverseIJK(DM da,Vec X,PetscInt dof_idx,PetscBool (*eval)
 
 /* HELPERS */
 /* constant evaluator */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_Constant"
 PetscBool DMDAVecTraverse3d_Constant(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscScalar c = *( (PetscScalar*)ctx );
@@ -169,8 +163,6 @@ PetscBool DMDAVecTraverse3d_Constant(PetscScalar pos[],PetscScalar *val,void *ct
 	impose = PETSC_TRUE;
 	return impose;
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_Constant"
 PetscBool DMDAVecTraverseIJK_Constant(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	PetscScalar c = *( (PetscScalar*)ctx );
@@ -181,8 +173,6 @@ PetscBool DMDAVecTraverseIJK_Constant(PetscScalar pos[],PetscInt global_index[],
 }
 
 /* linearly interpolate evaluator */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_InterpCtxSetUp_X"
 PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_X(DMDAVecTraverse3d_InterpCtx *c,PetscScalar a, PetscScalar b,PetscScalar ox)
 {
 	PetscFunctionBegin;	
@@ -199,8 +189,6 @@ PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_X(DMDAVecTraverse3d_InterpCtx *c
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_ROTXZ_X"
 PetscBool DMDAVecTraverse3d_ROTXZ_X(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
     PetscScalar z;
@@ -225,8 +213,6 @@ PetscBool DMDAVecTraverse3d_ROTXZ_X(PetscScalar pos[],PetscScalar *val,void *ctx
     
     return impose;
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_ROTXZ_Z"
 PetscBool DMDAVecTraverse3d_ROTXZ_Z(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
     PetscScalar x;
@@ -250,8 +236,6 @@ PetscBool DMDAVecTraverse3d_ROTXZ_Z(PetscScalar pos[],PetscScalar *val,void *ctx
     return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_InterpCtxSetUp_Y"
 PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_Y(DMDAVecTraverse3d_InterpCtx *c,PetscScalar a, PetscScalar b,PetscScalar oy)
 {
 	PetscFunctionBegin;	
@@ -266,8 +250,6 @@ PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_Y(DMDAVecTraverse3d_InterpCtx *c
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_InterpCtxSetUp_Z"
 PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_Z(DMDAVecTraverse3d_InterpCtx *c,PetscScalar a, PetscScalar b,PetscScalar oz)
 {
 	PetscFunctionBegin;	
@@ -282,8 +264,6 @@ PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp_Z(DMDAVecTraverse3d_InterpCtx *c
 	
 	PetscFunctionReturn(0);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_InterpCtxSetUp"
 PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp(DMDAVecTraverse3d_InterpCtx *c,PetscInt dir,PetscScalar a, PetscScalar b,PetscScalar ox)
 {
 	PetscFunctionBegin;	
@@ -302,8 +282,6 @@ PetscErrorCode DMDAVecTraverse3d_InterpCtxSetUp(DMDAVecTraverse3d_InterpCtx *c,P
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_Interp"
 PetscBool DMDAVecTraverse3d_Interp(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	DMDAVecTraverse3d_InterpCtx *c = (DMDAVecTraverse3d_InterpCtx*)ctx;
@@ -315,8 +293,6 @@ PetscBool DMDAVecTraverse3d_Interp(PetscScalar pos[],PetscScalar *val,void *ctx)
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_Interp"
 PetscBool DMDAVecTraverseIJK_Interp(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	DMDAVecTraverse3d_InterpCtx *c = (DMDAVecTraverse3d_InterpCtx*)ctx;
@@ -329,8 +305,6 @@ PetscBool DMDAVecTraverseIJK_Interp(PetscScalar pos[],PetscInt global_index[],Pe
 }
 
 /* hydrostatic pressure evaluator */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_HydroStaticPressure_v1"
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v1(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
@@ -345,8 +319,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v1(PetscScalar pos[],PetscInt g
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_HydroStaticPressure_v2"
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v2(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
@@ -366,8 +338,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_v2(PetscScalar pos[],PetscInt g
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2"
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
@@ -381,8 +351,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure_dpdy_v2(PetscScalar pos[],Petsc
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_HydroStaticPressure"
 PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	DMDAVecTraverse3d_HydrostaticPressureCalcCtx *c = (DMDAVecTraverse3d_HydrostaticPressureCalcCtx*)ctx;
@@ -408,8 +376,6 @@ PetscBool DMDAVecTraverseIJK_HydroStaticPressure(PetscScalar pos[],PetscInt glob
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_GaussianXY"
 PetscBool DMDAVecTraverse3d_GaussianXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
@@ -423,8 +389,6 @@ PetscBool DMDAVecTraverse3d_GaussianXY(PetscScalar pos[],PetscScalar *val,void *
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_GaussianXYZ"
 PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
@@ -439,8 +403,6 @@ PetscBool DMDAVecTraverse3d_GaussianXYZ(PetscScalar pos[],PetscScalar *val,void 
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_StepX"
 PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
@@ -457,8 +419,6 @@ PetscBool DMDAVecTraverse3d_StepX(PetscScalar pos[],PetscScalar *val,void *ctx)
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_StepWithDirection"
 PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	int dir = *((int*)ctx);
@@ -499,8 +459,6 @@ PetscBool DMDAVecTraverse3d_StepWithDirection(PetscScalar pos[],PetscScalar *val
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_StepXY"
 PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
@@ -518,8 +476,6 @@ PetscBool DMDAVecTraverse3d_StepXY(PetscScalar pos[],PetscScalar *val,void *ctx)
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_StepXYZ"
 PetscBool DMDAVecTraverse3d_StepXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscBool impose;
@@ -552,8 +508,6 @@ PetscBool DMDAVecTraverse3d_StepXYZ(PetscScalar pos[],PetscScalar *val,void *ctx
  ierr = DMDAVecTraverse3d(daT,temperature,0, DMDAVecTraverse3d_LinearFunctionXYZ, (void*)vals);CHKERRQ(ierr);
  
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_LinearFunctionXYZ"
 PetscBool DMDAVecTraverse3d_LinearFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscScalar x,y,z;
@@ -577,8 +531,6 @@ PetscBool DMDAVecTraverse3d_LinearFunctionXYZ(PetscScalar pos[],PetscScalar *val
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverse3d_ERFC3DFunctionXYZ"
 PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val,void *ctx)
 {
 	PetscScalar x,y,z;
@@ -609,8 +561,6 @@ PetscBool DMDAVecTraverse3d_ERFC3DFunctionXYZ(PetscScalar pos[],PetscScalar *val
 	return impose;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDAVecTraverseIJK_ZeroInteriorMinusNmax"
 PetscBool DMDAVecTraverseIJK_ZeroInteriorMinusNmax(PetscScalar pos[],PetscInt global_index[],PetscInt local_index[],PetscScalar *val,void *ctx)
 {
 	PetscInt  upper_limit = *((PetscInt*)ctx);
@@ -643,8 +593,6 @@ PetscBool DMDAVecTraverseIJK_ZeroInteriorMinusNmax(PetscScalar pos[],PetscInt gl
    PetscScalar *val: the value of the new coodinate
    PetscBool flag: flag indicates whether the output "val" should be set into the coordinate vector for the DMDA   
 */
-#undef __FUNCT__
-#define __FUNCT__ "DMDACoordTraverseIJK"
 PetscErrorCode DMDACoordTraverseIJK(DM da,PetscInt plane,PetscInt index,PetscInt coord_dof,PetscBool (*eval)(PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,void*),void *ctx)
 {
 	PetscInt       i,j,k,si,sj,sk,m,n,p;

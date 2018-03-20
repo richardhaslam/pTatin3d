@@ -39,16 +39,12 @@ Quantity *PTATIN_SI_QLIST = NULL;
 Quantity *PTATIN_GEO_QLIST = NULL;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "QuantityView"
 PetscErrorCode QuantityView(Quantity q)
 {
   PetscPrintf(PETSC_COMM_WORLD,"  \"%20s\" %1.4e %s \n",q->name,q->magnitude,q->unit);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "QuantityCreate"
 PetscErrorCode QuantityCreate(Quantity *q)
 {
   Quantity       qq;
@@ -62,8 +58,6 @@ PetscErrorCode QuantityCreate(Quantity *q)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "QuantitySetValues"
 PetscErrorCode QuantitySetValues(Quantity q,const char name[],const char unit[],PetscReal mag)
 {
   PetscSNPrintf(q->name,PETSC_MAX_PATH_LEN,"%s",name);
@@ -73,8 +67,6 @@ PetscErrorCode QuantitySetValues(Quantity q,const char name[],const char unit[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "QuantitySetMagnitude"
 PetscErrorCode QuantitySetMagnitude(Quantity q,PetscReal mag)
 {
   q->magnitude = mag;
@@ -82,8 +74,6 @@ PetscErrorCode QuantitySetMagnitude(Quantity q,PetscReal mag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "QuantitySetUnit"
 PetscErrorCode QuantitySetUnit(Quantity q,const char unit[])
 {
   PetscSNPrintf(q->unit,PETSC_MAX_PATH_LEN,"%s",unit);
@@ -98,8 +88,6 @@ PetscErrorCode QuantitySetUnit(Quantity q,const char unit[])
 
 // [1] geo -> model
 /*  #define QuantityXYZ_ConvertFromGeoUnit2ModelUnit(g) QuantityApplyND(geo_list[QXYZ],(g)) */
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_GeoUnits2ModelUnits_Vec"
 inline PetscErrorCode pQConvert_GeoUnits2ModelUnits_Vec(QuantityType type,Vec x)
 {
   PetscErrorCode ierr;
@@ -109,8 +97,6 @@ inline PetscErrorCode pQConvert_GeoUnits2ModelUnits_Vec(QuantityType type,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_GeoUnits2ModelUnits_ArrayInPlace"
 inline PetscErrorCode pQConvert_GeoUnits2ModelUnits_ArrayInPlace(QuantityType type,PetscInt len,PetscReal vals[])
 {
   PetscInt i;
@@ -122,8 +108,6 @@ inline PetscErrorCode pQConvert_GeoUnits2ModelUnits_ArrayInPlace(QuantityType ty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_GeoUnits2ModelUnits_Array"
 inline PetscErrorCode pQConvert_GeoUnits2ModelUnits_Array(QuantityType type,PetscInt len,PetscReal ain[],PetscReal aout[])
 {
   PetscInt i;
@@ -137,8 +121,6 @@ inline PetscErrorCode pQConvert_GeoUnits2ModelUnits_Array(QuantityType type,Pets
 
 // [2] model -> geo
 /*  #define QuantityXYZ_ConvertFromModelUnit2GeoUnit(m) QuantityApplyD(geo_list[QXYZ],(m)) */
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_ModelUnits2GeoUnits_Vec"
 inline PetscErrorCode pQConvert_ModelUnits2GeoUnits_Vec(QuantityType type,Vec x)
 {
   PetscErrorCode ierr;
@@ -148,8 +130,6 @@ inline PetscErrorCode pQConvert_ModelUnits2GeoUnits_Vec(QuantityType type,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_ModelUnits2GeoUnits_ArrayInPlace"
 inline PetscErrorCode pQConvert_ModelUnits2GeoUnits_ArrayInPlace(QuantityType type,PetscInt len,PetscReal vals[])
 {
   PetscInt i;
@@ -161,8 +141,6 @@ inline PetscErrorCode pQConvert_ModelUnits2GeoUnits_ArrayInPlace(QuantityType ty
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_ModelUnits2GeoUnits_Array"
 inline PetscErrorCode pQConvert_ModelUnits2GeoUnits_Array(QuantityType type,PetscInt len,PetscReal ain[],PetscReal aout[])
 {
   PetscInt i;
@@ -177,8 +155,6 @@ inline PetscErrorCode pQConvert_ModelUnits2GeoUnits_Array(QuantityType type,Pets
 // [3] si -> model
 /* #define QuantityXYZ_ConvertFromSI2ModelUnit(g)      QuantityApplyND(list[QXYZ],(g)) */
 /*
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_SIUnits2ModelUnits"
 inline PetscErrorCode pQConvert_SIUnits2ModelUnits(QuantityType type,PetscReal *a)
 {
   if (type > QNull) printf("unknown type detected\n");
@@ -188,8 +164,6 @@ inline PetscErrorCode pQConvert_SIUnits2ModelUnits(QuantityType type,PetscReal *
 }
 */
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_SIUnits2ModelUnits_Vec"
 inline PetscErrorCode pQConvert_SIUnits2ModelUnits_Vec(QuantityType type,Vec x)
 {
   PetscErrorCode ierr;
@@ -199,8 +173,6 @@ inline PetscErrorCode pQConvert_SIUnits2ModelUnits_Vec(QuantityType type,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_SIUnits2ModelUnits_ArrayInPlace"
 inline PetscErrorCode pQConvert_SIUnits2ModelUnits_ArrayInPlace(QuantityType type,PetscInt len,PetscReal vals[])
 {
   PetscInt i;
@@ -212,8 +184,6 @@ inline PetscErrorCode pQConvert_SIUnits2ModelUnits_ArrayInPlace(QuantityType typ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_SIUnits2ModelUnits_Array"
 inline PetscErrorCode pQConvert_SIUnits2ModelUnits_Array(QuantityType type,PetscInt len,PetscReal ain[],PetscReal aout[])
 {
   PetscInt i;
@@ -227,8 +197,6 @@ inline PetscErrorCode pQConvert_SIUnits2ModelUnits_Array(QuantityType type,Petsc
 
 // [4] model -> si
 /* #define QuantityXYZ_ConvertFromModelUnit2SI(m)      QuantityApplyD(list[QXYZ],(m)) */
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_ModelUnits2SIUnits_Vec"
 inline PetscErrorCode pQConvert_ModelUnits2SIUnits_Vec(QuantityType type,Vec x)
 {
   PetscErrorCode ierr;
@@ -238,8 +206,6 @@ inline PetscErrorCode pQConvert_ModelUnits2SIUnits_Vec(QuantityType type,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_ModelUnits2SIUnits_ArrayInPlace"
 inline PetscErrorCode pQConvert_ModelUnits2SIUnits_ArrayInPlace(QuantityType type,PetscInt len,PetscReal vals[])
 {
   PetscInt i;
@@ -251,8 +217,6 @@ inline PetscErrorCode pQConvert_ModelUnits2SIUnits_ArrayInPlace(QuantityType typ
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pQConvert_ModelUnits2SIUnits_Array"
 inline PetscErrorCode pQConvert_ModelUnits2SIUnits_Array(QuantityType type,PetscInt len,PetscReal ain[],PetscReal aout[])
 {
   PetscInt i;
@@ -264,8 +228,6 @@ inline PetscErrorCode pQConvert_ModelUnits2SIUnits_Array(QuantityType type,Petsc
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatinQuantitySetupSIUnitList_UsingLVEScales"
 PetscErrorCode ptatinQuantitySetupSIUnitList_UsingLVEScales(PetscReal LengScale,PetscReal VeloScale,PetscReal ViscScale)
 {
   PetscReal Tstar;
@@ -290,8 +252,6 @@ PetscErrorCode ptatinQuantitySetupSIUnitList_UsingLVEScales(PetscReal LengScale,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatinQuantitySetupGeoUnitList"
 PetscErrorCode ptatinQuantitySetupGeoUnitList(void)
 {
   PetscReal secondsPerYear,secondsPerkyr;
@@ -318,8 +278,6 @@ PetscErrorCode ptatinQuantitySetupGeoUnitList(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatinQuantitySetup_UsingLVEScales"
 PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
 {
   PetscInt       i,n;
@@ -381,8 +339,6 @@ PetscErrorCode ptatinQuantitySetup_UsingLVEScales(ptatinInputUnits units)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatinQuantityCreate"
 PetscErrorCode ptatinQuantityCreate(void)
 {
   PetscInt         i,n;
@@ -420,8 +376,6 @@ PetscErrorCode ptatinQuantityCreate(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ptatinQuantityDestroy"
 PetscErrorCode ptatinQuantityDestroy(void)
 {
   PetscInt i,n;

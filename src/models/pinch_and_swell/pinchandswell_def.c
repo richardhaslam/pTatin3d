@@ -67,8 +67,6 @@ typedef struct {
 
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_PAS"
 PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx           *modeldata = (ModelCtx*)modelctx;
@@ -189,8 +187,6 @@ PetscErrorCode ModelInitialize_PAS(pTatinCtx ptatinctx,void *modelctx)
     PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_PAS"
 PetscErrorCode ModelApplyInitialMeshGeometry_PAS(pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -218,8 +214,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_PAS(pTatinCtx ptatinctx,void *model
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_PAS"
 PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
 {
 	ModelCtx         *data = (ModelCtx*)ctx;
@@ -294,8 +288,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_PAS(pTatinCtx c,void *ctx)
 }
 
 /* velocity bcs */
-#undef __FUNCT__
-#define __FUNCT__ "PAS_VelocityBC"
 PetscErrorCode PAS_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ModelCtx *modeldata)
 {
 	PetscErrorCode ierr;
@@ -317,8 +309,6 @@ PetscErrorCode PAS_VelocityBC(BCList bclist,DM dav,pTatinCtx ptatinctx,ModelCtx 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_PAS"
 PetscErrorCode ModelApplyBoundaryCondition_PAS(pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -337,8 +327,6 @@ PetscErrorCode ModelApplyBoundaryCondition_PAS(pTatinCtx ptatinctx,void *modelct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryConditionMG_PAS"
 PetscErrorCode ModelApplyBoundaryConditionMG_PAS(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx ptatinctx,void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -354,8 +342,6 @@ PetscErrorCode ModelApplyBoundaryConditionMG_PAS(PetscInt nl,BCList bclist[],DM 
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_PAS"
 PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],void *modelctx)
 {
 	ModelCtx         *modeldata = (ModelCtx*)modelctx;
@@ -440,8 +426,6 @@ PetscErrorCode ModelOutput_PAS(pTatinCtx ptatinctx,Vec X,const char prefix[],voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_PAS"
 PetscErrorCode ModelDestroy_PAS(pTatinCtx c,void *ctx)
 {
 	ModelCtx *data = (ModelCtx*)ctx;
@@ -455,8 +439,6 @@ PetscErrorCode ModelDestroy_PAS(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_PAS"
 PetscErrorCode pTatinModelRegister_PAS(void)
 {
 	ModelCtx        *data;

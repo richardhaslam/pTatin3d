@@ -73,8 +73,6 @@ PetscReal h2s     = 60.0 * 60.0;
 PetscReal deg2rad = M_PI/180.0;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelInitialize_GeoMod2008"
 PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008  data = (ModelCtxGeoMod2008)ctx;
@@ -280,8 +278,6 @@ PetscErrorCode ModelInitialize_GeoMod2008(pTatinCtx c,void *ctx)
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "ApplyStokesVelocityBC_GeoMod2008"
 PetscErrorCode ApplyStokesVelocityBC_GeoMod2008(pTatinCtx c,void *ctx,BCList bclist,DM dav)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -353,8 +349,6 @@ PetscErrorCode ApplyStokesVelocityBC_GeoMod2008(pTatinCtx c,void *ctx,BCList bcl
 
 
 /* wrapper function for applying boundary condition on fine grid */
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyBoundaryCondition_GeoMod2008"
 PetscErrorCode ModelApplyBoundaryCondition_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	PhysCompStokes stokes;
@@ -373,8 +367,6 @@ PetscErrorCode ModelApplyBoundaryCondition_GeoMod2008(pTatinCtx c,void *ctx)
 }
 
 /* wrapper function for applying boundary condition on all multi-grid levels */
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyStokesVelocityBoundaryConditionMG_GeoMod2008"
 PetscErrorCode ModelApplyStokesVelocityBoundaryConditionMG_GeoMod2008(PetscInt nl,BCList bclist[],DM dav[],pTatinCtx user,void *ctx)
 {
 	PetscInt       n;
@@ -391,8 +383,6 @@ PetscErrorCode ModelApplyStokesVelocityBoundaryConditionMG_GeoMod2008(PetscInt n
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "GeomMod2008ApplyFrictionalBoundarySkin"
 PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM dav,DataBucket material_points)
 {
 	PetscInt         M,N,P;
@@ -477,8 +467,6 @@ PetscErrorCode GeomMod2008ApplyFrictionalBoundarySkin(ModelCtxGeoMod2008 data,DM
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyMaterialBoundaryCondition_GeoMod2008"
 PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -498,8 +486,6 @@ PetscErrorCode ModelApplyMaterialBoundaryCondition_GeoMod2008(pTatinCtx c,void *
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMeshGeometry_GeoMod2008"
 PetscErrorCode ModelApplyInitialMeshGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -519,8 +505,6 @@ PetscErrorCode ModelApplyInitialMeshGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_GeoMod2008_exp1"
 PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -676,8 +660,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp1(pTatinCtx c,voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_GeoMod2008_exp2"
 PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,void *ctx)
 {
 	DataBucket     material_points;
@@ -778,8 +760,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008_exp2(pTatinCtx c,voi
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialMaterialGeometry_GeoMod2008"
 PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -807,8 +787,6 @@ PetscErrorCode ModelApplyInitialMaterialGeometry_GeoMod2008(pTatinCtx c,void *ct
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialSolution_GeoMod2008"
 PetscErrorCode ModelApplyInitialSolution_GeoMod2008(pTatinCtx c,Vec X,void *ctx)
 {
 	PetscFunctionBegin;
@@ -817,8 +795,6 @@ PetscErrorCode ModelApplyInitialSolution_GeoMod2008(pTatinCtx c,Vec X,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyUpdateMeshGeometry_GeoMod2008"
 PetscErrorCode ModelApplyUpdateMeshGeometry_GeoMod2008(pTatinCtx c,Vec X,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -860,8 +836,6 @@ PetscErrorCode ModelApplyUpdateMeshGeometry_GeoMod2008(pTatinCtx c,Vec X,void *c
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelApplyInitialStokesVariableMarkers_GeoMod2008"
 PetscErrorCode ModelApplyInitialStokesVariableMarkers_GeoMod2008(pTatinCtx user,Vec X,void *ctx)
 {
 	
@@ -893,8 +867,6 @@ PetscErrorCode ModelApplyInitialStokesVariableMarkers_GeoMod2008(pTatinCtx user,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelOutput_GeoMod2008"
 PetscErrorCode ModelOutput_GeoMod2008(pTatinCtx c,Vec X,const char prefix[],void *ctx)
 {
 	DataBucket     materialpoint_db;
@@ -920,8 +892,6 @@ PetscErrorCode ModelOutput_GeoMod2008(pTatinCtx c,Vec X,const char prefix[],void
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ModelDestroy_GeoMod2008"
 PetscErrorCode ModelDestroy_GeoMod2008(pTatinCtx c,void *ctx)
 {
 	ModelCtxGeoMod2008 data = (ModelCtxGeoMod2008)ctx;
@@ -937,8 +907,6 @@ PetscErrorCode ModelDestroy_GeoMod2008(pTatinCtx c,void *ctx)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinModelRegister_GeoMod2008"
 PetscErrorCode pTatinModelRegister_GeoMod2008(void)
 {
 	ModelCtxGeoMod2008 data;

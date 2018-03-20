@@ -34,8 +34,6 @@
 #include <dmda_element_q2p1.h>
 #include <stokes_operators.h>
 
-#undef __FUNCT__
-#define __FUNCT__ "TensorContractNEV"
 /*
  * Performs three tensor contractions: y[l,a,b,c] += T[a,k] S[b,j] R[c,i] x[l,k,j,i]
  */
@@ -180,8 +178,6 @@ static PetscErrorCode QuadratureAction(const QPntVolCoefStokes *gausspt[],
 	return 0;
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MFStokesWrapper_A11_Tensor"
 PetscErrorCode MFStokesWrapper_A11_Tensor(MatA11MF mf,Quadrature volQ,DM dau,PetscScalar ufield[],PetscScalar Yu[])
 {
 	PetscErrorCode ierr;

@@ -46,8 +46,6 @@ const char *PTatinFieldNames[] =  {
 
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinGenerateParallelVTKName"
 PetscErrorCode pTatinGenerateParallelVTKName(const char prefix[],const char suffix[],char **name)
 {
 	char *nn;
@@ -66,8 +64,6 @@ PetscErrorCode pTatinGenerateParallelVTKName(const char prefix[],const char suff
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinGenerateVTKName"
 PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],char **name)
 {
 	char *nn;
@@ -84,8 +80,6 @@ PetscErrorCode pTatinGenerateVTKName(const char prefix[],const char suffix[],cha
 }
 
 /* PVD helpers */
-#undef __FUNCT__
-#define __FUNCT__ "ParaviewPVDOpen"
 PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 {
 	PetscMPIInt rank;
@@ -114,8 +108,6 @@ PetscErrorCode ParaviewPVDOpen(const char pvdfilename[])
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ParaviewPVDAppend"
 PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char datafile[], const char DirectoryName[])
 {
 	PetscMPIInt rank;
@@ -166,8 +158,6 @@ PetscErrorCode ParaviewPVDAppend(const char pvdfilename[],double time,const char
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ParaviewPVDOpenAppend"
 PetscErrorCode ParaviewPVDOpenAppend(PetscBool not_first,PetscInt step,const char pvdfilename[],double time,const char datafile[], const char directory_name[])
 {
   PetscBool      file_found;
@@ -202,8 +192,6 @@ PetscErrorCode ParaviewPVDOpenAppend(PetscBool not_first,PetscInt step,const cha
 
 
 /* V-P mesh */
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinOutputParaViewMeshVelocityPressure"
 PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char path[],const char prefix[])
 {
 	char           *vtkfilename,*filename;
@@ -243,8 +231,6 @@ PetscErrorCode pTatinOutputParaViewMeshVelocityPressure(DM pack,Vec X,const char
 }
 
 /* V-P mesh */
-#undef __FUNCT__  
-#define __FUNCT__ "pTatinOutputLiteParaViewMeshVelocity"
 PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char path[],const char prefix[])
 {
 	char           *vtkfilename,*filename;
@@ -283,8 +269,6 @@ PetscErrorCode pTatinOutputLiteParaViewMeshVelocity(DM pack,Vec X,const char pat
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshVelocityPressureVTS_v0"
 PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
@@ -414,8 +398,6 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0(DM pack,Vec X,const char n
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshVelocityPressureVTS_v0_binary"
 PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
@@ -576,8 +558,6 @@ PetscErrorCode pTatinOutputMeshVelocityPressureVTS_v0_binary(DM pack,Vec X,const
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputLiteMeshVelocityVTS_v0_binary"
 PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const char name[])
 {
 	PetscErrorCode ierr;
@@ -702,8 +682,6 @@ PetscErrorCode pTatinOutputLiteMeshVelocityVTS_v0_binary(DM pack,Vec X,const cha
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputMeshVelocityPressurePVTS"
 PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -766,8 +744,6 @@ PetscErrorCode pTatinOutputMeshVelocityPressurePVTS(DM pack,const char prefix[],
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputLiteMeshVelocityPVTS"
 PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char prefix[],const char name[])
 {
 	PetscErrorCode ierr;
@@ -826,8 +802,6 @@ PetscErrorCode pTatinOutputLiteMeshVelocityPVTS(DM pack,const char prefix[],cons
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DAQ2PieceExtendForGhostLevelZero"
 PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level, DM dau, const char local_file_prefix[] )
 {
 	PetscMPIInt nproc,rank;
@@ -901,8 +875,6 @@ PetscErrorCode DAQ2PieceExtendForGhostLevelZero( FILE *vtk_fp, int indent_level,
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "_pTatinOutputLiteMeshVelocitySlicedPVTS"
 PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
                                      PetscInt processor_span[],
                                      PetscInt olx[],PetscInt lmx[],
@@ -984,8 +956,6 @@ PetscErrorCode _pTatinOutputLiteMeshVelocitySlicedPVTS(FILE *vtk_fp,
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "pTatinOutputLiteMeshVelocitySlicedPVTS"
 PetscErrorCode pTatinOutputLiteMeshVelocitySlicedPVTS(DM pack,const char path[],const char prefix[])
 {
 	PetscErrorCode ierr;

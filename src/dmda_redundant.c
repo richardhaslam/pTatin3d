@@ -42,8 +42,6 @@
  This function is a copy of DMDACreate3d() without the call to DMSetFromOptions()
   Note: this can now be removed, as this call was taken out in PETSc 3.8
 */
-#undef __FUNCT__
-#define __FUNCT__ "x_DMDACreate3d"
 PetscErrorCode  x_DMDACreate3d(
   MPI_Comm comm,DMBoundaryType wrap[],DMDAStencilType stencil_type,
   PetscInt M, PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,
@@ -75,8 +73,6 @@ PetscErrorCode  x_DMDACreate3d(
  The nodes which are retrieved are:
  si , si + 1, si + 2, ... ei-1 
  */
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate3dRedundant"
 PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj, PetscInt ej, PetscInt sk, PetscInt ek,PetscInt n_dofs,DM *_seq_DA )
 {
 	PetscInt M,N,P,dof;
@@ -215,8 +211,6 @@ PetscErrorCode DMDACreate3dRedundant(DM da,PetscInt si, PetscInt ei, PetscInt sj
 }
 
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreate3dSemiRedundant"
 PetscErrorCode DMDACreate3dSemiRedundant(DM da,PetscInt nred,PetscMPISubComm *sub,DM *sda)
 {
 	MPI_Comm comm,subcomm;

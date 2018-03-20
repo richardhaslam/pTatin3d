@@ -34,8 +34,6 @@
 #include "dmda_update_coords.h"
 #include "dmda_duplicate.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDADuplicateLayout"
 PetscErrorCode DMDADuplicateLayout(DM da1,PetscInt dof2,PetscInt sw2,DMDAStencilType st2,DM *da2)
 {
     PetscInt        si1,sj1,sk1;

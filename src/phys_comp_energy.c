@@ -67,8 +67,6 @@
 #include "cjson_utils.h"
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreate_Energy"
 PetscErrorCode PhysCompCreate_Energy(PhysCompEnergy *E)
 {
 	PetscErrorCode ierr;
@@ -82,8 +80,6 @@ PetscErrorCode PhysCompCreate_Energy(PhysCompEnergy *E)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompDestroy_Energy"
 PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
 {
 	PetscErrorCode ierr;
@@ -112,8 +108,6 @@ PetscErrorCode PhysCompDestroy_Energy(PhysCompEnergy *E)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateMesh_Energy"
 PetscErrorCode PhysCompCreateMesh_Energy(PhysCompEnergy E,DM dav,PetscInt mx,PetscInt my, PetscInt mz,PetscInt mesh_generator_type)
 {
 	PetscErrorCode ierr;
@@ -176,8 +170,6 @@ PetscErrorCode PhysCompCreateMesh_Energy(PhysCompEnergy E,DM dav,PetscInt mx,Pet
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateBoundaryList_Energy"
 PetscErrorCode PhysCompCreateBoundaryList_Energy(PhysCompEnergy E)
 {
 	DM daT;
@@ -193,8 +185,6 @@ PetscErrorCode PhysCompCreateBoundaryList_Energy(PhysCompEnergy E)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompCreateVolumeQuadrature_Energy"
 PetscErrorCode PhysCompCreateVolumeQuadrature_Energy(PhysCompEnergy E)
 {
 	PetscInt dim, np_per_dim, ncells;
@@ -214,8 +204,6 @@ PetscErrorCode PhysCompCreateVolumeQuadrature_Energy(PhysCompEnergy E)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompNew_Energy"
 PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,PetscInt mesh_generator_type,PhysCompEnergy *E)
 {
 	PetscErrorCode  ierr;
@@ -242,8 +230,6 @@ PetscErrorCode PhysCompNew_Energy(DM dav,PetscInt mx,PetscInt my, PetscInt mz,Pe
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompLoad_Energy"
 PetscErrorCode PhysCompLoad_Energy(void)
 {
 	PetscFunctionBegin;
@@ -251,8 +237,6 @@ PetscErrorCode PhysCompLoad_Energy(void)
 	PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompSave_Energy"
 PetscErrorCode PhysCompSave_Energy(void)
 {
 	PetscFunctionBegin;
@@ -261,8 +245,6 @@ PetscErrorCode PhysCompSave_Energy(void)
 }
 
 /* quadrature */
-#undef __FUNCT__
-#define __FUNCT__ "VolumeQuadratureCreate_GaussLegendreEnergy"
 PetscErrorCode VolumeQuadratureCreate_GaussLegendreEnergy(PetscInt nsd,PetscInt np_per_dim,PetscInt ncells,Quadrature *quadrature)
 {
 	Quadrature Q;
@@ -317,8 +299,6 @@ PetscErrorCode VolumeQuadratureCreate_GaussLegendreEnergy(PetscInt nsd,PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VolumeQuadratureGetAllCellData_Energy"
 PetscErrorCode VolumeQuadratureGetAllCellData_Energy(Quadrature Q,QPntVolCoefEnergy *coeffs[])
 {
 	QPntVolCoefEnergy *quadraturepoint_data;
@@ -332,8 +312,6 @@ PetscErrorCode VolumeQuadratureGetAllCellData_Energy(Quadrature Q,QPntVolCoefEne
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VolumeQuadratureGetCellData_Energy"
 PetscErrorCode VolumeQuadratureGetCellData_Energy(Quadrature Q,QPntVolCoefEnergy coeffs[],PetscInt cidx,QPntVolCoefEnergy *cell[])
 {
   PetscFunctionBegin;
@@ -346,8 +324,6 @@ PetscErrorCode VolumeQuadratureGetCellData_Energy(Quadrature Q,QPntVolCoefEnergy
 }
 
 /* material points */
-#undef __FUNCT__  
-#define __FUNCT__ "PhysCompAddMaterialPointCoefficients_Energy"
 PetscErrorCode PhysCompAddMaterialPointCoefficients_Energy(DataBucket db)
 {
 	PetscFunctionBegin;
@@ -358,16 +334,12 @@ PetscErrorCode PhysCompAddMaterialPointCoefficients_Energy(DataBucket db)
 }
 
 /* unneeded */
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompCheckpointLoad_Energy"
 PetscErrorCode PhysCompCheckpointLoad_Energy(const char prefix[],PhysCompEnergy e)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompCheckpointWrite_Energy"
 PetscErrorCode PhysCompCheckpointWrite_Energy(PhysCompEnergy e,PetscBool write_dmda,const char path[],const char prefix[])
 {
   char jfilename[PETSC_MAX_PATH_LEN],vfilename[3][PETSC_MAX_PATH_LEN],daprefix[PETSC_MAX_PATH_LEN];
@@ -490,8 +462,6 @@ PetscErrorCode PhysCompCheckpointWrite_Energy(PhysCompEnergy e,PetscBool write_d
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompLoad2_Energy"
 PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy *E)
 {
   PetscErrorCode ierr;
@@ -582,8 +552,6 @@ PetscErrorCode PhysCompLoad2_Energy(DM dav,const char jfilename[],PhysCompEnergy
 }
 
 /* unneeded */
-#undef __FUNCT__
-#define __FUNCT__ "PhysCompSave2_Energy"
 PetscErrorCode PhysCompSave2_Energy(PhysCompEnergy e)
 {
   PetscFunctionBegin;
