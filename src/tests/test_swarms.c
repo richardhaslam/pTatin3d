@@ -66,7 +66,7 @@ int SwarmTest_Initialization1(void)
   int        L;
 
 
-  printf("[[%s]]\n",__FUNCTION__);
+  printf("[[%s]]\n",__func__);
 
   /* Create object */
   DataBucketCreate(&db);
@@ -97,7 +97,7 @@ int SwarmTest_Initialization2(void)
   int        L;
 
 
-  printf("[[%s]]\n",__FUNCTION__);
+  printf("[[%s]]\n",__func__);
 
   /* Create object */
   DataBucketCreate(&db);
@@ -131,7 +131,7 @@ int SwarmTest_AccessPatterns1(void)
   int        k,L;
 
 
-  printf("[[%s]]\n",__FUNCTION__);
+  printf("[[%s]]\n",__func__);
 
   DataBucketCreate(&db);
   DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
@@ -192,7 +192,7 @@ int SwarmTest_AccessPatterns2(void)
   int           k,L;
 
 
-  printf("[[%s]]\n",__FUNCTION__);
+  printf("[[%s]]\n",__func__);
 
   DataBucketCreate(&db);
   DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
@@ -257,7 +257,7 @@ int SwarmTest_AccessPatterns3(void)
   int        k,L;
 
 
-  printf("[[%s]]\n",__FUNCTION__);
+  printf("[[%s]]\n",__func__);
 
   /* Create object */
   DataBucketCreate(&db);
@@ -334,7 +334,7 @@ int SwarmTest_LengthManipulations1(void)
   int           k,L,Lnew;
 
 
-  printf("[[%s]]\n",__FUNCTION__);
+  printf("[[%s]]\n",__func__);
 
   DataBucketCreate(&db);
   DataBucketRegisterField(db,MaterialPointClassName,sizeof(MaterialPoint),NULL);
@@ -451,7 +451,7 @@ int SwarmTest_Parallel1(MPI_Comm comm)
   MPI_Comm_size(comm,&nproc);
   MPI_Comm_rank(comm,&rank);
   if (rank) {
-    printf("[[%s]]\n",__FUNCTION__);
+    printf("[[%s]]\n",__func__);
   }
   MPI_Barrier(comm);
 

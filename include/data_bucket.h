@@ -71,13 +71,13 @@ struct _p_DataBucket {
 };
 
 #define ERROR() {\
-printf("ERROR: %s() from line %d in %s !!\n", __FUNCTION__, __LINE__, __FILE__);\
+printf("ERROR: %s() from line %d in %s !!\n", __func__, __LINE__, __FILE__);\
 exit(EXIT_FAILURE);\
 }
 
 #define MPI_ERROR_CHECK(comm,ierr) {\
   if (ierr != MPI_SUCCESS) { \
-    printf("MPI ERROR: %s() from line %d in %s !! Aborting.\n", __FUNCTION__, __LINE__, __FILE__);\
+    printf("MPI ERROR: %s() from line %d in %s !! Aborting.\n", __func__, __LINE__, __FILE__);\
     MPI_Abort(comm,ierr);\
   }\
 }
@@ -100,7 +100,7 @@ void _DataBucketRegisterField(
 
 #define DataBucketRegisterField(db,name,size,k) {\
   char *location;\
-  if (asprintf(&location,"Registered by %s() at line %d within file %s", __FUNCTION__, __LINE__, __FILE__) < 0) {printf("asprintf() failed. Exiting ungracefully.\n"); exit(1);}\
+  if (asprintf(&location,"Registered by %s() at line %d within file %s", __func__, __LINE__, __FILE__) < 0) {printf("asprintf() failed. Exiting ungracefully.\n"); exit(1);}\
   _DataBucketRegisterField( (db), location, (name), (size), (k) );\
   free(location);\
 }
